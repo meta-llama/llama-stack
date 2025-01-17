@@ -6,54 +6,65 @@
 
 from typing import Literal, Union
 
-from llama_models.schema_utils import register_schema
+from llama_models.schema_utils import json_schema_type, register_schema
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
 
+@json_schema_type
 class StringType(BaseModel):
     type: Literal["string"] = "string"
 
 
+@json_schema_type
 class NumberType(BaseModel):
     type: Literal["number"] = "number"
 
 
+@json_schema_type
 class BooleanType(BaseModel):
     type: Literal["boolean"] = "boolean"
 
 
+@json_schema_type
 class ArrayType(BaseModel):
     type: Literal["array"] = "array"
 
 
+@json_schema_type
 class ObjectType(BaseModel):
     type: Literal["object"] = "object"
 
 
+@json_schema_type
 class JsonType(BaseModel):
     type: Literal["json"] = "json"
 
 
+@json_schema_type
 class UnionType(BaseModel):
     type: Literal["union"] = "union"
 
 
+@json_schema_type
 class ChatCompletionInputType(BaseModel):
     # expects List[Message] for messages
     type: Literal["chat_completion_input"] = "chat_completion_input"
 
 
+@json_schema_type
 class CompletionInputType(BaseModel):
     # expects InterleavedTextMedia for content
     type: Literal["completion_input"] = "completion_input"
 
 
+@json_schema_type
 class AgentTurnInputType(BaseModel):
     # expects List[Message] for messages (may also include attachments?)
     type: Literal["agent_turn_input"] = "agent_turn_input"
 
 
+@json_schema_type
 class DialogType(BaseModel):
     # expects List[Message] for messages
     # this type semantically contains the output label whereas ChatCompletionInputType does not

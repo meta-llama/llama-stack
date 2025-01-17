@@ -6067,6 +6067,76 @@
                     "step"
                 ]
             },
+            "AgentTurnInputType": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "agent_turn_input",
+                        "default": "agent_turn_input"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ]
+            },
+            "ArrayType": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "array",
+                        "default": "array"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ]
+            },
+            "BooleanType": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "boolean",
+                        "default": "boolean"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ]
+            },
+            "ChatCompletionInputType": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "chat_completion_input",
+                        "default": "chat_completion_input"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ]
+            },
+            "CompletionInputType": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "completion_input",
+                        "default": "completion_input"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ]
+            },
             "Dataset": {
                 "type": "object",
                 "properties": {
@@ -6130,148 +6200,108 @@
                     "metadata"
                 ]
             },
+            "JsonType": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "json",
+                        "default": "json"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ]
+            },
+            "NumberType": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "number",
+                        "default": "number"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ]
+            },
+            "ObjectType": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "object",
+                        "default": "object"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ]
+            },
             "ParamType": {
                 "oneOf": [
                     {
-                        "type": "object",
-                        "properties": {
-                            "type": {
-                                "type": "string",
-                                "const": "string",
-                                "default": "string"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "type"
-                        ]
+                        "$ref": "#/components/schemas/StringType"
                     },
                     {
-                        "type": "object",
-                        "properties": {
-                            "type": {
-                                "type": "string",
-                                "const": "number",
-                                "default": "number"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "type"
-                        ]
+                        "$ref": "#/components/schemas/NumberType"
                     },
                     {
-                        "type": "object",
-                        "properties": {
-                            "type": {
-                                "type": "string",
-                                "const": "boolean",
-                                "default": "boolean"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "type"
-                        ]
+                        "$ref": "#/components/schemas/BooleanType"
                     },
                     {
-                        "type": "object",
-                        "properties": {
-                            "type": {
-                                "type": "string",
-                                "const": "array",
-                                "default": "array"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "type"
-                        ]
+                        "$ref": "#/components/schemas/ArrayType"
                     },
                     {
-                        "type": "object",
-                        "properties": {
-                            "type": {
-                                "type": "string",
-                                "const": "object",
-                                "default": "object"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "type"
-                        ]
+                        "$ref": "#/components/schemas/ObjectType"
                     },
                     {
-                        "type": "object",
-                        "properties": {
-                            "type": {
-                                "type": "string",
-                                "const": "json",
-                                "default": "json"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "type"
-                        ]
+                        "$ref": "#/components/schemas/JsonType"
                     },
                     {
-                        "type": "object",
-                        "properties": {
-                            "type": {
-                                "type": "string",
-                                "const": "union",
-                                "default": "union"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "type"
-                        ]
+                        "$ref": "#/components/schemas/UnionType"
                     },
                     {
-                        "type": "object",
-                        "properties": {
-                            "type": {
-                                "type": "string",
-                                "const": "chat_completion_input",
-                                "default": "chat_completion_input"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "type"
-                        ]
+                        "$ref": "#/components/schemas/ChatCompletionInputType"
                     },
                     {
-                        "type": "object",
-                        "properties": {
-                            "type": {
-                                "type": "string",
-                                "const": "completion_input",
-                                "default": "completion_input"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "type"
-                        ]
+                        "$ref": "#/components/schemas/CompletionInputType"
                     },
                     {
-                        "type": "object",
-                        "properties": {
-                            "type": {
-                                "type": "string",
-                                "const": "agent_turn_input",
-                                "default": "agent_turn_input"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "type"
-                        ]
+                        "$ref": "#/components/schemas/AgentTurnInputType"
                     }
+                ]
+            },
+            "StringType": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "string",
+                        "default": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ]
+            },
+            "UnionType": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "union",
+                        "default": "union"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
                 ]
             },
             "EvalTask": {
@@ -8923,6 +8953,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgentTool\" />"
         },
         {
+            "name": "AgentTurnInputType",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgentTurnInputType\" />"
+        },
+        {
             "name": "AgentTurnResponseEvent",
             "description": "Streamed agent execution response.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/AgentTurnResponseEvent\" />"
         },
@@ -8966,6 +9000,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AppendRowsRequest\" />"
         },
         {
+            "name": "ArrayType",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ArrayType\" />"
+        },
+        {
             "name": "BasicScoringFnParams",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BasicScoringFnParams\" />"
         },
@@ -8993,12 +9031,20 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BenchmarkEvalTaskConfig\" />"
         },
         {
+            "name": "BooleanType",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BooleanType\" />"
+        },
+        {
             "name": "BuiltinTool",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BuiltinTool\" />"
         },
         {
             "name": "CancelTrainingJobRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CancelTrainingJobRequest\" />"
+        },
+        {
+            "name": "ChatCompletionInputType",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ChatCompletionInputType\" />"
         },
         {
             "name": "ChatCompletionRequest",
@@ -9023,6 +9069,10 @@
         {
             "name": "Checkpoint",
             "description": "Checkpoint created during training runs\n\n<SchemaDefinition schemaRef=\"#/components/schemas/Checkpoint\" />"
+        },
+        {
+            "name": "CompletionInputType",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CompletionInputType\" />"
         },
         {
             "name": "CompletionMessage",
@@ -9167,6 +9217,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/JobStatus\" />"
         },
         {
+            "name": "JsonType",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/JsonType\" />"
+        },
+        {
             "name": "KeyValueMemoryBank",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/KeyValueMemoryBank\" />"
         },
@@ -9282,6 +9336,14 @@
         },
         {
             "name": "Models"
+        },
+        {
+            "name": "NumberType",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/NumberType\" />"
+        },
+        {
+            "name": "ObjectType",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ObjectType\" />"
         },
         {
             "name": "OptimizerConfig",
@@ -9491,6 +9553,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/StopReason\" />"
         },
         {
+            "name": "StringType",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/StringType\" />"
+        },
+        {
             "name": "StructuredLogEvent",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/StructuredLogEvent\" />"
         },
@@ -9623,6 +9689,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/URL\" />"
         },
         {
+            "name": "UnionType",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UnionType\" />"
+        },
+        {
             "name": "UnstructuredLogEvent",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UnstructuredLogEvent\" />"
         },
@@ -9682,6 +9752,7 @@
                 "AgentSessionCreateResponse",
                 "AgentStepResponse",
                 "AgentTool",
+                "AgentTurnInputType",
                 "AgentTurnResponseEvent",
                 "AgentTurnResponseStepCompletePayload",
                 "AgentTurnResponseStepProgressPayload",
@@ -9692,20 +9763,24 @@
                 "AggregationFunctionType",
                 "AppEvalTaskConfig",
                 "AppendRowsRequest",
+                "ArrayType",
                 "BasicScoringFnParams",
                 "BatchChatCompletionRequest",
                 "BatchChatCompletionResponse",
                 "BatchCompletionRequest",
                 "BatchCompletionResponse",
                 "BenchmarkEvalTaskConfig",
+                "BooleanType",
                 "BuiltinTool",
                 "CancelTrainingJobRequest",
+                "ChatCompletionInputType",
                 "ChatCompletionRequest",
                 "ChatCompletionResponse",
                 "ChatCompletionResponseEvent",
                 "ChatCompletionResponseEventType",
                 "ChatCompletionResponseStreamChunk",
                 "Checkpoint",
+                "CompletionInputType",
                 "CompletionMessage",
                 "CompletionRequest",
                 "CompletionResponse",
@@ -9737,6 +9812,7 @@
                 "InvokeToolRequest",
                 "Job",
                 "JobStatus",
+                "JsonType",
                 "KeyValueMemoryBank",
                 "KeyValueMemoryBankParams",
                 "KeywordMemoryBank",
@@ -9764,6 +9840,8 @@
                 "Model",
                 "ModelCandidate",
                 "ModelType",
+                "NumberType",
+                "ObjectType",
                 "OptimizerConfig",
                 "OptimizerType",
                 "PaginatedRowsResult",
@@ -9812,6 +9890,7 @@
                 "SpanStatus",
                 "SpanWithStatus",
                 "StopReason",
+                "StringType",
                 "StructuredLogEvent",
                 "SupervisedFineTuneRequest",
                 "SyntheticDataGenerateRequest",
@@ -9842,6 +9921,7 @@
                 "TrainingConfig",
                 "Turn",
                 "URL",
+                "UnionType",
                 "UnstructuredLogEvent",
                 "UserMessage",
                 "VectorMemoryBank",
