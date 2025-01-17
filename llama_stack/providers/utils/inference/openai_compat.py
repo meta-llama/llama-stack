@@ -6,17 +6,15 @@
 
 from typing import AsyncGenerator, Dict, List, Optional
 
-from llama_models.llama3.api.chat_format import ChatFormat
-
 from llama_models.datatypes import (
     GreedySamplingStrategy,
+    SamplingParams,
     TopKSamplingStrategy,
     TopPSamplingStrategy,
-    SamplingParams,
 )
-from llama_models.llama3.api.datatypes import (
-    StopReason,
-)
+
+from llama_models.llama3.api.chat_format import ChatFormat
+from llama_models.llama3.api.datatypes import StopReason
 from pydantic import BaseModel
 
 from llama_stack.apis.common.content_types import (
