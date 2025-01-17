@@ -1,0 +1,18 @@
+inference:
+  tests:
+  - inference/test_vision_inference.py::test_vision_chat_completion_streaming
+  - inference/test_vision_inference.py::test_vision_chat_completion_non_streaming
+  - inference/test_text_inference.py::test_structured_output
+  - inference/test_text_inference.py::test_chat_completion_streaming
+  - inference/test_text_inference.py::test_chat_completion_non_streaming
+  - inference/test_text_inference.py::test_chat_completion_with_tool_calling
+  - inference/test_text_inference.py::test_chat_completion_with_tool_calling_streaming
+
+  scenarios:
+  - fixture_combo_id: fireworks
+  - provider_fixtures:
+      inference: together
+
+  inference_models:
+  - meta-llama/Llama-3.1-8B-Instruct
+  - meta-llama/Llama-3.2-11B-Vision-Instruct

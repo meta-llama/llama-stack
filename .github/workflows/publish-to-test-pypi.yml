@@ -201,7 +201,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
+      FIREWORKS_API_KEY: ${{ secrets.FIREWORKS_API_KEY }}
       TAVILY_SEARCH_API_KEY: ${{ secrets.TAVILY_SEARCH_API_KEY }}
+
     steps:
     - uses: actions/checkout@v4
       with:
@@ -241,4 +243,14 @@ jobs:
         pytest -v -s --nbval-lax ./docs/notebooks/Llama_Stack_Building_AI_Applications.ipynb
         pytest -v -s --nbval-lax ./docs/notebooks/Llama_Stack_Benchmark_Evals.ipynb
 
-    # TODO: add trigger for integration test workflow & docker builds
+    - name: Integration tests
+      run: |
+        pip install -U \
+            torch torchvision \
+            pytest pytest_asyncio \
+            fairscale lm-format-enforcer \
+            zmq chardet pypdf \
+            pandas sentence_transformers together \
+            aiosqlite groq fireworks-ai \
+            pytest-asyncio pytest_html
+        pytest ./llama_stack/providers/tests/ --config=github_ci_test_config.yaml
