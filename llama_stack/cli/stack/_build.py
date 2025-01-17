@@ -182,8 +182,8 @@ def _generate_run_config(
     """
     apis = list(build_config.distribution_spec.providers.keys())
     run_config = StackRunConfig(
-        docker_image=(
-            image_name if build_config.image_type == ImageType.docker.value else None
+        container_image=(
+            image_name if build_config.image_type == ImageType.container.value else None
         ),
         image_name=image_name,
         apis=apis,
@@ -238,7 +238,7 @@ def _run_stack_build_command_from_build_config(
     image_name: Optional[str] = None,
     template_name: Optional[str] = None,
 ) -> None:
-    if build_config.image_type == ImageType.docker.value:
+    if build_config.image_type == ImageType.container.value:
         if template_name:
             image_name = f"distribution-{template_name}"
         else:

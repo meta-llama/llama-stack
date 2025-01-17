@@ -92,7 +92,7 @@ def get_distribution_template() -> DistributionTemplate:
         name=name,
         distro_type="self_hosted",
         description="Use (an external) TGI server for running LLM inference",
-        docker_image=None,
+        container_image=None,
         template_path=Path(__file__).parent / "doc_template.md",
         providers=providers,
         default_models=[inference_model, safety_model],

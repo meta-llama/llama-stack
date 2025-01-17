@@ -73,7 +73,7 @@ class AutoRoutedProviderSpec(ProviderSpec):
     provider_type: str = "router"
     config_class: str = ""
 
-    docker_image: Optional[str] = None
+    container_image: Optional[str] = None
     routing_table_api: Api
     module: str
     provider_data_validator: Optional[str] = Field(
@@ -89,7 +89,7 @@ class AutoRoutedProviderSpec(ProviderSpec):
 class RoutingTableProviderSpec(ProviderSpec):
     provider_type: str = "routing_table"
     config_class: str = ""
-    docker_image: Optional[str] = None
+    container_image: Optional[str] = None
 
     router_api: Api
     module: str
@@ -101,7 +101,7 @@ class DistributionSpec(BaseModel):
         default="",
         description="Description of the distribution",
     )
-    docker_image: Optional[str] = None
+    container_image: Optional[str] = None
     providers: Dict[str, Union[str, List[str]]] = Field(
         default_factory=dict,
         description="""
@@ -127,9 +127,9 @@ Reference to the distribution this package refers to. For unregistered (adhoc) p
 this could be just a hash
 """,
     )
-    docker_image: Optional[str] = Field(
+    container_image: Optional[str] = Field(
         default=None,
-        description="Reference to the docker image if this package refers to a container",
+        description="Reference to the container image if this package refers to a container",
     )
     apis: List[str] = Field(
         default_factory=list,
@@ -168,5 +168,5 @@ class BuildConfig(BaseModel):
     )
     image_type: str = Field(
         default="conda",
-        description="Type of package to build (conda | docker | venv)",
+        description="Type of package to build (conda | container | venv)",
     )

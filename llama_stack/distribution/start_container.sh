@@ -31,7 +31,7 @@ if [ $# -lt 3 ]; then
 fi
 
 build_name="$1"
-docker_image="localhost/distribution-$build_name"
+container_image="localhost/distribution-$build_name"
 shift
 
 yaml_config="$1"
@@ -92,4 +92,4 @@ $DOCKER_BINARY run $DOCKER_OPTS -it \
   $mounts \
   --env LLAMA_STACK_PORT=$port \
   --entrypoint='["python", "-m", "llama_stack.distribution.server.server", "--yaml-config", "/app/config.yaml"]' \
-  $docker_image:$version_tag
+  $container_image:$version_tag

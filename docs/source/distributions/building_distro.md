@@ -19,11 +19,11 @@ llama stack build -h
 
 We will start build our distribution (in the form of a Conda environment, or Docker image). In this step, we will specify:
 - `name`: the name for our distribution (e.g. `my-stack`)
-- `image_type`: our build image type (`conda | docker`)
+- `image_type`: our build image type (`conda | container`)
 - `distribution_spec`: our distribution specs for specifying API providers
   - `description`: a short description of the configurations for the distribution
   - `providers`: specifies the underlying implementation for serving each API endpoint
-  - `image_type`: `conda` | `docker` to specify whether to build the distribution in the form of Docker image or Conda environment.
+  - `image_type`: `conda` | `container` to specify whether to build the distribution in the form of Docker image or Conda environment.
 
 After this step is complete, a file named `<name>-build.yaml` and template file `<name>-run.yaml` will be generated and saved at the output file path specified at the end of the command.
 

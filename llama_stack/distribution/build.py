@@ -38,7 +38,7 @@ SERVER_DEPENDENCIES = [
 
 
 class ImageType(Enum):
-    docker = "docker"
+    container = "container"
     conda = "conda"
     venv = "venv"
 
@@ -77,7 +77,7 @@ def get_provider_dependencies(
 
             provider_spec = providers_for_api[provider_type]
             deps.extend(provider_spec.pip_packages)
-            if provider_spec.docker_image:
+            if provider_spec.container_image:
                 raise ValueError("A stack's dependencies cannot have a docker image")
 
     normal_deps = []
@@ -109,23 +109,23 @@ def build_image(
     image_name: str,
     template_name: Optional[str] = None,
 ):
-    docker_image = build_config.distribution_spec.docker_image or "python:3.10-slim"
+    container_image = build_config.distribution_spec.container_image or "python:3.10-slim"
 
     normal_deps, special_deps = get_provider_dependencies(
         build_config.distribution_spec.providers
     )
     normal_deps += SERVER_DEPENDENCIES
 
-    if build_config.image_type == ImageType.docker.value:
+    if build_config.image_type == ImageType.container.value:
         script = str(
             importlib.resources.files("llama_stack") / "distribution/build_container.sh"
         )
         args = [
             script,
             image_name,
-            docker_image,
+            container_image,
             str(build_file_path),
-            str(BUILDS_BASE_DIR / ImageType.docker.value),
+            str(BUILDS_BASE_DIR / ImageType.container.value),
             " ".join(normal_deps),
         ]
     elif build_config.image_type == ImageType.conda.value:

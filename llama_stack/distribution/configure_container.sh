@@ -24,7 +24,7 @@ if [ $# -lt 2 ]; then
   exit 1
 fi
 
-docker_image="$1"
+container_image="$1"
 host_build_dir="$2"
 container_build_dir="/app/builds"
 
@@ -43,5 +43,5 @@ $DOCKER_BINARY run $DOCKER_OPTS -it \
   --entrypoint "/usr/local/bin/llama" \
   -v $host_build_dir:$container_build_dir \
   $mounts \
-  $docker_image \
+  $container_image \
   stack configure ./llamastack-build.yaml --output-dir $container_build_dir
