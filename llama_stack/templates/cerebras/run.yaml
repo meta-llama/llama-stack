@@ -105,8 +105,7 @@ models:
   model_id: all-MiniLM-L6-v2
   provider_id: sentence-transformers
   model_type: embedding
-shields:
-- shield_id: meta-llama/Llama-Guard-3-8B
+shields: []
 memory_banks: []
 datasets: []
 scoring_fns: []

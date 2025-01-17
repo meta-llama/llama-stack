@@ -9,12 +9,7 @@ from pathlib import Path
 from llama_models.sku_list import all_registered_models
 
 from llama_stack.apis.models.models import ModelType
-from llama_stack.distribution.datatypes import (
-    ModelInput,
-    Provider,
-    ShieldInput,
-    ToolGroupInput,
-)
+from llama_stack.distribution.datatypes import ModelInput, Provider, ToolGroupInput
 from llama_stack.providers.inline.inference.sentence_transformers import (
     SentenceTransformersInferenceConfig,
 )
@@ -108,7 +103,7 @@ def get_distribution_template() -> DistributionTemplate:
                     "memory": [memory_provider],
                 },
                 default_models=default_models + [embedding_model],
-                default_shields=[ShieldInput(shield_id="meta-llama/Llama-Guard-3-8B")],
+                default_shields=[],
                 default_tool_groups=default_tool_groups,
             ),
         },
