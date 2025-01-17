@@ -206,18 +206,13 @@ def test_builtin_tool_code_execution(llama_stack_client, agent_config):
     assert "Tool:code_interpreter Response" in logs_str
 
 
-def test_code_execution(llama_stack_client):
-    agent_config = AgentConfig(
-        model="meta-llama/Llama-3.1-8B-Instruct",
-        instructions="You are a helpful assistant",
-        toolgroups=[
+def test_code_execution(llama_stack_client, agent_config):
+    agent_config = {
+        **agent_config,
+        "toolgroups": [
             "builtin::code_interpreter",
         ],
-        tool_choice="required",
-        input_shields=[],
-        output_shields=[],
-        enable_session_persistence=False,
-    )
+    }
 
     codex_agent = Agent(llama_stack_client, agent_config)
     session_id = codex_agent.create_session("test-session")
