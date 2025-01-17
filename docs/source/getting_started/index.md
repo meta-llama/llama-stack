@@ -1,6 +1,6 @@
 # Quick Start
 
-In this guide, we'll through how you can use the Llama Stack client SDK to build a simple RAG agent.
+In this guide, we'll walk through how you can use the Llama Stack client SDK to build a simple RAG agent.
 
 The most critical requirement for running the agent is running inference on the underlying Llama model. Depending on what hardware (GPUs) you have available, you have various options. We will use `Ollama` for this purpose as it is the easiest to get started with and yet robust.
 
