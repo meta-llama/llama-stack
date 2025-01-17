@@ -150,7 +150,7 @@ class InlineProviderSpec(ProviderSpec):
     container_image: Optional[str] = Field(
         default=None,
         description="""
-The docker image to use for this implementation. If one is provided, pip_packages will be ignored.
+The container image to use for this implementation. If one is provided, pip_packages will be ignored.
 If a provider depends on other providers, the dependencies MUST NOT specify a container image.
 """,
     )

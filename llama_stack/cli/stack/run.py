@@ -92,7 +92,7 @@ class StackRun(Subcommand):
             )
 
         if not config_file.exists() and not has_yaml_suffix:
-            # check if it's a build config saved to docker dir
+            # check if it's a build config saved to container dir
             config_file = Path(
                 BUILDS_BASE_DIR / ImageType.container.value / f"{args.config}-run.yaml"
             )

@@ -78,7 +78,7 @@ def get_provider_dependencies(
             provider_spec = providers_for_api[provider_type]
             deps.extend(provider_spec.pip_packages)
             if provider_spec.container_image:
-                raise ValueError("A stack's dependencies cannot have a docker image")
+                raise ValueError("A stack's dependencies cannot have a container image")
 
     normal_deps = []
     special_deps = []

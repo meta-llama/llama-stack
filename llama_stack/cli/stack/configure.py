@@ -27,7 +27,7 @@ class StackConfigure(Subcommand):
         self.parser.add_argument(
             "config",
             type=str,
-            help="Path to the build config file (e.g. ~/.llama/builds/<image_type>/<name>-build.yaml). For docker, this could also be the name of the docker image. ",
+            help="Path to the build config file (e.g. ~/.llama/builds/<image_type>/<name>-build.yaml). For container, this could also be the name of the container image. ",
         )
 
         self.parser.add_argument(

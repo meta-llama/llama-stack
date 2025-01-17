@@ -17,13 +17,13 @@ pip install -e .
 llama stack build -h
 ```
 
-We will start build our distribution (in the form of a Conda environment, or Docker image). In this step, we will specify:
+We will start build our distribution (in the form of a Conda environment, or Container image). In this step, we will specify:
 - `name`: the name for our distribution (e.g. `my-stack`)
 - `image_type`: our build image type (`conda | container`)
 - `distribution_spec`: our distribution specs for specifying API providers
   - `description`: a short description of the configurations for the distribution
   - `providers`: specifies the underlying implementation for serving each API endpoint
-  - `image_type`: `conda` | `container` to specify whether to build the distribution in the form of Docker image or Conda environment.
+  - `image_type`: `conda` | `container` to specify whether to build the distribution in the form of Container image or Conda environment.
 
 After this step is complete, a file named `<name>-build.yaml` and template file `<name>-run.yaml` will be generated and saved at the output file path specified at the end of the command.
 
@@ -35,7 +35,7 @@ After this step is complete, a file named `<name>-build.yaml` and template file 
 llama stack build
 
 > Enter a name for your Llama Stack (e.g. my-local-stack): my-stack
-> Enter the image type you want your Llama Stack to be built as (docker or conda): conda
+> Enter the image type you want your Llama Stack to be built as (container or conda): conda
 
 Llama Stack is composed of several APIs working together. Let's select
 the provider types (implementations) you want to use for these APIs.
@@ -348,26 +348,26 @@ llama stack build --config llama_stack/templates/ollama/build.yaml
 ```
 :::
 
-:::{tab-item} Building Docker
+:::{tab-item} Building Container
 > [!TIP]
-> Podman is supported as an alternative to Docker. Set `DOCKER_BINARY` to `podman` in your environment to use Podman.
+> Podman is supported as an alternative to Docker. Set `CONTAINER_BINARY` to `podman` in your environment to use Podman.
 
-To build a docker image, you may start off from a template and use the `--image-type docker` flag to specify `docker` as the build image type.
-
-```
-llama stack build --template ollama --image-type docker
-```
+To build a container image, you may start off from a template and use the `--image-type container` flag to specify `container` as the build image type.
 
 ```
-$ llama stack build --template ollama --image-type docker
+llama stack build --template ollama --image-type container
+```
+
+```
+$ llama stack build --template ollama --image-type container
 ...
-Dockerfile created successfully in /tmp/tmp.viA3a3Rdsg/DockerfileFROM python:3.10-slim
+Containerfile created successfully in /tmp/tmp.viA3a3Rdsg/ContainerfileFROM python:3.10-slim
 ...
 
 You can now edit ~/meta-llama/llama-stack/tmp/configs/ollama-run.yaml and run `llama stack run ~/meta-llama/llama-stack/tmp/configs/ollama-run.yaml`
 ```
 
-After this step is successful, you should be able to find the built docker image and test it with `llama stack run <path/to/run.yaml>`.
+After this step is successful, you should be able to find the built container image and test it with `llama stack run <path/to/run.yaml>`.
 :::
 
 ::::

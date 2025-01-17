@@ -6,8 +6,8 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-DOCKER_BINARY=${DOCKER_BINARY:-docker}
-DOCKER_OPTS=${DOCKER_OPTS:-}
+CONTAINER_BINARY=${CONTAINER_BINARY:-docker}
+CONTAINER_OPTS=${CONTAINER_OPTS:-}
 LLAMA_CHECKPOINT_DIR=${LLAMA_CHECKPOINT_DIR:-}
 LLAMA_STACK_DIR=${LLAMA_STACK_DIR:-}
 TEST_PYPI_VERSION=${TEST_PYPI_VERSION:-}
@@ -64,7 +64,7 @@ set -x
 
 if command -v selinuxenabled &> /dev/null && selinuxenabled; then
   # Disable SELinux labels
-  DOCKER_OPTS="$DOCKER_OPTS --security-opt label=disable"
+  CONTAINER_OPTS="$CONTAINER_OPTS --security-opt label=disable"
 fi
 
 mounts=""
@@ -73,7 +73,7 @@ if [ -n "$LLAMA_STACK_DIR" ]; then
 fi
 if [ -n "$LLAMA_CHECKPOINT_DIR" ]; then
   mounts="$mounts -v $LLAMA_CHECKPOINT_DIR:/root/.llama"
-  DOCKER_OPTS="$DOCKER_OPTS --gpus=all"
+  CONTAINER_OPTS="$CONTAINER_OPTS --gpus=all"
 fi
 
 version_tag="latest"
@@ -85,7 +85,7 @@ elif [ -n "$TEST_PYPI_VERSION" ]; then
   version_tag="test-$TEST_PYPI_VERSION"
 fi
 
-$DOCKER_BINARY run $DOCKER_OPTS -it \
+$CONTAINER_BINARY run $CONTAINER_OPTS -it \
   -p $port:$port \
   $env_vars \
   -v "$yaml_config:/app/config.yaml" \
