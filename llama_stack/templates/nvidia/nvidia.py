@@ -8,10 +8,9 @@ from pathlib import Path
 
 from llama_models.sku_list import all_registered_models
 
-from llama_stack.distribution.datatypes import ModelInput, Provider
+from llama_stack.distribution.datatypes import ModelInput, Provider, ToolGroupInput
 from llama_stack.providers.remote.inference.nvidia import NVIDIAConfig
 from llama_stack.providers.remote.inference.nvidia.nvidia import _MODEL_ALIASES
-
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
 
@@ -50,6 +49,20 @@ def get_distribution_template() -> DistributionTemplate:
         )
         for m in _MODEL_ALIASES
     ]
+    default_tool_groups = [
+        ToolGroupInput(
+            toolgroup_id="builtin::websearch",
+            provider_id="tavily-search",
+        ),
+        ToolGroupInput(
+            toolgroup_id="builtin::memory",
+            provider_id="memory-runtime",
+        ),
+        ToolGroupInput(
+            toolgroup_id="builtin::code_interpreter",
+            provider_id="code-interpreter",
+        ),
+    ]
 
     return DistributionTemplate(
         name="nvidia",
@@ -65,6 +78,7 @@ def get_distribution_template() -> DistributionTemplate:
                     "inference": [inference_provider],
                 },
                 default_models=default_models,
+                default_tool_groups=default_tool_groups,
             ),
         },
         run_config_env_vars={

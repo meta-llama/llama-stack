@@ -100,6 +100,7 @@ def get_distribution_template() -> DistributionTemplate:
                     "memory": [memory_provider],
                 },
                 default_models=[inference_model, embedding_model],
+                default_tool_groups=default_tool_groups,
             ),
             "run-with-safety.yaml": RunConfigSettings(
                 provider_overrides={

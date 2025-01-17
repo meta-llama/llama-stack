@@ -105,4 +105,10 @@ memory_banks: []
 datasets: []
 scoring_fns: []
 eval_tasks: []
-tool_groups: []
+tool_groups:
+- toolgroup_id: builtin::websearch
+  provider_id: tavily-search
+- toolgroup_id: builtin::memory
+  provider_id: memory-runtime
+- toolgroup_id: builtin::code_interpreter
+  provider_id: code-interpreter
