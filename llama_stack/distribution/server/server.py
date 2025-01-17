@@ -263,7 +263,7 @@ class ClientVersionMiddleware:
                             error_msg = json.dumps(
                                 {
                                     "error": {
-                                        "message": f"Client version {client_version} is not compatible with server version {self.server_version}. Please upgrade your client."
+                                        "message": f"Client version {client_version} is not compatible with server version {self.server_version}. Please update your client."
                                     }
                                 }
                             ).encode()

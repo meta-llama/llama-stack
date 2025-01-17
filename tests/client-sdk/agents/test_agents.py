@@ -80,7 +80,7 @@ class TestClientTool(ClientTool):
 
 
 @pytest.fixture(scope="session")
-def agent_config(llama_stack_client):
+def model_id(llama_stack_client):
     available_models = [
         model.identifier
         for model in llama_stack_client.models.list()
@@ -88,6 +88,11 @@ def agent_config(llama_stack_client):
     ]
     model_id = available_models[0]
     print(f"Using model: {model_id}")
+    return model_id
+
+
+@pytest.fixture(scope="session")
+def agent_config(llama_stack_client, model_id):
     available_shields = [
         shield.identifier for shield in llama_stack_client.shields.list()
     ]
@@ -246,10 +251,8 @@ def test_custom_tool(llama_stack_client, agent_config):
     client_tool = TestClientTool()
     agent_config = {
         **agent_config,
-        "model": "meta-llama/Llama-3.2-3B-Instruct",
         "toolgroups": ["builtin::websearch"],
         "client_tools": [client_tool.get_tool_definition()],
-        "tool_prompt_format": "python_list",
     }
 
     agent = Agent(llama_stack_client, agent_config, client_tools=(client_tool,))
