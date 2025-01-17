@@ -225,6 +225,7 @@ def test_text_chat_completion_with_tool_calling_and_non_streaming(
         tool_prompt_format=provider_tool_format,
         stream=False,
     )
+    print(response)
     # No content is returned for the system message since we expect the
     # response to be a tool call
     assert response.completion_message.content == ""

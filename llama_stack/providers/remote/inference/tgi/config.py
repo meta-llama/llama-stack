@@ -15,10 +15,10 @@ class TGIImplConfig(BaseModel):
     url: str = Field(
         description="The URL for the TGI serving endpoint",
     )
-    api_token: Optional[SecretStr] = Field(
-        default=None,
-        description="A bearer token if your TGI endpoint is protected.",
-    )
+    # api_token: Optional[SecretStr] = Field(
+    #     default=None,
+    #     description="A bearer token if your TGI endpoint is protected.",
+    # )
 
     @classmethod
     def sample_run_config(cls, url: str = "${env.TGI_URL}", **kwargs):
