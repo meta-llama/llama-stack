@@ -244,6 +244,7 @@ jobs:
         pytest -v -s --nbval-lax ./docs/notebooks/Llama_Stack_Benchmark_Evals.ipynb
 
     - name: Integration tests
+      if: always()
       run: |
         pip install -U \
             torch torchvision \
