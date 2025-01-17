@@ -1,6 +1,5 @@
 version: '2'
 image_name: fireworks
-conda_env: fireworks
 apis:
 - agents
 - datasetio

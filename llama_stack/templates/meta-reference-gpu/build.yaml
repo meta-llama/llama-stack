@@ -1,5 +1,4 @@
 version: '2'
-name: meta-reference-gpu
 distribution_spec:
   description: Use Meta Reference for running LLM inference
   providers:

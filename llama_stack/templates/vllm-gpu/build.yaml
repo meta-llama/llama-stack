@@ -1,5 +1,4 @@
 version: '2'
-name: vllm-gpu
 distribution_spec:
   description: Use a built-in vLLM engine for running LLM inference
   providers:

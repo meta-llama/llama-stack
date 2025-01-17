@@ -1,6 +1,5 @@
 version: '2'
 image_name: ollama
-conda_env: ollama
 apis:
 - agents
 - datasetio

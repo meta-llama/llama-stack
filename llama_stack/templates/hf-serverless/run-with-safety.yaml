@@ -1,6 +1,5 @@
 version: '2'
 image_name: hf-serverless
-conda_env: hf-serverless
 apis:
 - agents
 - datasetio

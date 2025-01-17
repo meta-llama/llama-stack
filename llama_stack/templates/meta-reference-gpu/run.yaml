@@ -1,6 +1,5 @@
 version: '2'
 image_name: meta-reference-gpu
-conda_env: meta-reference-gpu
 apis:
 - agents
 - datasetio

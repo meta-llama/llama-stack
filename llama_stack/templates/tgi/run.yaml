@@ -1,6 +1,5 @@
 version: '2'
 image_name: tgi
-conda_env: tgi
 apis:
 - agents
 - datasetio

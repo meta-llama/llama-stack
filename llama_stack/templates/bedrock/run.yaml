@@ -1,6 +1,5 @@
 version: '2'
 image_name: bedrock
-conda_env: bedrock
 apis:
 - agents
 - datasetio

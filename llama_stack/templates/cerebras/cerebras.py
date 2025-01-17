@@ -27,7 +27,7 @@ def get_distribution_template() -> DistributionTemplate:
     providers = {
         "inference": ["remote::cerebras"],
         "safety": ["inline::llama-guard"],
-        "memory": ["inline::meta-reference"],
+        "memory": ["inline::faiss", "remote::chromadb", "remote::pgvector"],
         "agents": ["inline::meta-reference"],
         "eval": ["inline::meta-reference"],
         "datasetio": ["remote::huggingface", "inline::localfs"],

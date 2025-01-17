@@ -346,6 +346,7 @@
     "blobfile",
     "cerebras_cloud_sdk",
     "chardet",
+    "chromadb-client",
     "datasets",
     "faiss-cpu",
     "fastapi",

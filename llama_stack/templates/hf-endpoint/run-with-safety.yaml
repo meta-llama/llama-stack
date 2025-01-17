@@ -1,6 +1,5 @@
 version: '2'
 image_name: hf-endpoint
-conda_env: hf-endpoint
 apis:
 - agents
 - datasetio

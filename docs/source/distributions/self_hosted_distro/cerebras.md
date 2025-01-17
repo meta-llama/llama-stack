@@ -8,7 +8,7 @@ The `llamastack/distribution-cerebras` distribution consists of the following pr
 | datasetio | `remote::huggingface`, `inline::localfs` |
 | eval | `inline::meta-reference` |
 | inference | `remote::cerebras` |
-| memory | `inline::meta-reference` |
+| memory | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
 | safety | `inline::llama-guard` |
 | scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |
 | telemetry | `inline::meta-reference` |

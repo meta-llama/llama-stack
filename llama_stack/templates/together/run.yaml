@@ -1,6 +1,5 @@
 version: '2'
 image_name: together
-conda_env: together
 apis:
 - agents
 - datasetio

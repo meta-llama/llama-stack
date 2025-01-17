@@ -1,6 +1,5 @@
 version: '2'
 image_name: vllm-gpu
-conda_env: vllm-gpu
 apis:
 - agents
 - datasetio

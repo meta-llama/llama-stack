@@ -1,5 +1,4 @@
 version: '2'
-name: cerebras
 distribution_spec:
   description: Use Cerebras for running LLM inference
   providers:
@@ -8,7 +7,9 @@ distribution_spec:
     safety:
     - inline::llama-guard
     memory:
-    - inline::meta-reference
+    - inline::faiss
+    - remote::chromadb
+    - remote::pgvector
     agents:
     - inline::meta-reference
     eval:
