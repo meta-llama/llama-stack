@@ -227,9 +227,11 @@ async def completion_request_to_prompt_model_input_info(
 def augment_content_with_response_format_prompt(response_format, content):
     if fmt_prompt := response_format_prompt(response_format):
         if isinstance(content, list):
-            return content + [fmt_prompt]
+            return content + [TextContentItem(text=fmt_prompt)]
+        elif isinstance(content, str):
+            return [TextContentItem(text=content), TextContentItem(text=fmt_prompt)]
         else:
-            return [content, fmt_prompt]
+            return [content, TextContentItem(text=fmt_prompt)]
 
     return content
 

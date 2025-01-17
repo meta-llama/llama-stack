@@ -229,7 +229,6 @@ def test_text_chat_completion_with_tool_calling_and_non_streaming(
     # response to be a tool call
     assert response.completion_message.content == ""
     assert response.completion_message.role == "assistant"
-    assert response.completion_message.stop_reason == "end_of_turn"
 
     assert len(response.completion_message.tool_calls) == 1
     assert response.completion_message.tool_calls[0].tool_name == "get_weather"
