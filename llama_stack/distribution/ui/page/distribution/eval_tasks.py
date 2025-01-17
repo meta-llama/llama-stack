@@ -16,7 +16,8 @@ def eval_tasks():
         d.identifier: d.to_dict() for d in llama_stack_api.client.eval_tasks.list()
     }
 
-    selected_eval_task = st.selectbox(
-        "Select an eval task", list(eval_tasks_info.keys()), key="eval_task_inspect"
-    )
-    st.json(eval_tasks_info[selected_eval_task], expanded=True)
+    if len(eval_tasks_info) > 0:
+        selected_eval_task = st.selectbox(
+            "Select an eval task", list(eval_tasks_info.keys()), key="eval_task_inspect"
+        )
+        st.json(eval_tasks_info[selected_eval_task], expanded=True)

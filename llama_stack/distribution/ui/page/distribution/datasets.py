@@ -14,6 +14,6 @@ def datasets():
     datasets_info = {
         d.identifier: d.to_dict() for d in llama_stack_api.client.datasets.list()
     }
-
-    selected_dataset = st.selectbox("Select a dataset", list(datasets_info.keys()))
-    st.json(datasets_info[selected_dataset], expanded=True)
+    if len(datasets_info) > 0:
+        selected_dataset = st.selectbox("Select a dataset", list(datasets_info.keys()))
+        st.json(datasets_info[selected_dataset], expanded=True)
