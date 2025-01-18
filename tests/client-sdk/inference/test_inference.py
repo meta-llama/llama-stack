@@ -11,7 +11,7 @@ import pytest
 from pydantic import BaseModel
 
 PROVIDER_TOOL_PROMPT_FORMAT = {
-    "remote::ollama": "python_list",
+    "remote::ollama": "json",
     "remote::together": "json",
     "remote::fireworks": "json",
 }

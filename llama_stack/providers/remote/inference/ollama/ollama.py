@@ -172,6 +172,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
             model=model.provider_resource_id,
             content=content,
             sampling_params=sampling_params,
+            response_format=response_format,
             stream=stream,
             logprobs=logprobs,
         )
