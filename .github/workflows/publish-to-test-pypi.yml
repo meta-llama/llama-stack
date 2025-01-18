@@ -1,14 +1,15 @@
 name: Publish Python 🐍 distribution 📦 to TestPyPI
 
 on:
-  workflow_dispatch:  # Keep manual trigger
-    inputs:
-      version:
-        description: 'Version number (e.g. 0.0.63.dev20250111)'
-        required: true
-        type: string
-  schedule:
-    - cron: "0 0 * * *"  # Run every day at midnight
+  push:
+  # workflow_dispatch:  # Keep manual trigger
+  #   inputs:
+  #     version:
+  #       description: 'Version number (e.g. 0.0.63.dev20250111)'
+  #       required: true
+  #       type: string
+  # schedule:
+  #   - cron: "0 0 * * *"  # Run every day at midnight
 
 jobs:
   trigger-client-and-models-build:
