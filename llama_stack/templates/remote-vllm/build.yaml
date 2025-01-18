@@ -12,6 +12,15 @@ distribution_spec:
     - inline::llama-guard
     agents:
     - inline::meta-reference
+    eval:
+    - inline::meta-reference
+    datasetio:
+    - remote::huggingface
+    - inline::localfs
+    scoring:
+    - inline::basic
+    - inline::llm-as-judge
+    - inline::braintrust
     telemetry:
     - inline::meta-reference
     tool_runtime:
@@ -19,4 +28,5 @@ distribution_spec:
     - remote::tavily-search
     - inline::code-interpreter
     - inline::memory-runtime
+    - remote::model-context-protocol
 image_type: conda

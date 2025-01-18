@@ -145,7 +145,9 @@ async def resolve_impls(
                 log.warning(
                     f"Provider `{provider.provider_type}` for API `{api}` is deprecated and will be removed in a future release: {p.deprecation_warning}",
                 )
-            p.deps__ = [a.value for a in p.api_dependencies]
+            p.deps__ = [a.value for a in p.api_dependencies] + [
+                a.value for a in p.optional_api_dependencies
+            ]
             spec = ProviderWithSpec(
                 spec=p,
                 **(provider.model_dump()),
@@ -229,6 +231,9 @@ async def resolve_impls(
     inner_impls_by_provider_id = {f"inner-{x.value}": {} for x in router_apis}
     for api_str, provider in sorted_providers:
         deps = {a: impls[a] for a in provider.spec.api_dependencies}
+        for a in provider.spec.optional_api_dependencies:
+            if a in impls:
+                deps[a] = impls[a]
 
         inner_impls = {}
         if isinstance(provider.spec, RoutingTableProviderSpec):
@@ -265,7 +270,7 @@ def topological_sort(
                 deps.append(dep)
 
         for dep in deps:
-            if dep not in visited:
+            if dep not in visited and dep in providers_with_specs:
                 dfs((dep, providers_with_specs[dep]), visited, stack)
 
         stack.append(api_str)

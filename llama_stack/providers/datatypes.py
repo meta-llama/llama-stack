@@ -96,6 +96,9 @@ class ProviderSpec(BaseModel):
         default_factory=list,
         description="Higher-level API surfaces may depend on other providers to provide their functionality",
     )
+    optional_api_dependencies: List[Api] = Field(
+        default_factory=list,
+    )
     deprecation_warning: Optional[str] = Field(
         default=None,
         description="If this provider is deprecated, specify the warning message here",
@@ -147,11 +150,11 @@ class InlineProviderSpec(ProviderSpec):
         default_factory=list,
         description="The pip dependencies needed for this implementation",
     )
-    docker_image: Optional[str] = Field(
+    container_image: Optional[str] = Field(
         default=None,
         description="""
-The docker image to use for this implementation. If one is provided, pip_packages will be ignored.
-If a provider depends on other providers, the dependencies MUST NOT specify a docker image.
+The container image to use for this implementation. If one is provided, pip_packages will be ignored.
+If a provider depends on other providers, the dependencies MUST NOT specify a container image.
 """,
     )
     module: str = Field(
@@ -194,7 +197,7 @@ API responses, specify the adapter here.
     )
 
     @property
-    def docker_image(self) -> Optional[str]:
+    def container_image(self) -> Optional[str]:
         return None
 
     @property

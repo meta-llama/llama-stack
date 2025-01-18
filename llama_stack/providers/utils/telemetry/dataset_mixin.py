@@ -22,6 +22,9 @@ class TelemetryDatasetMixin:
         dataset_id: str,
         max_depth: Optional[int] = None,
     ) -> None:
+        if self.datasetio_api is None:
+            raise RuntimeError("DatasetIO API not available")
+
         spans = await self.query_spans(
             attribute_filters=attribute_filters,
             attributes_to_return=attributes_to_save,

@@ -72,7 +72,7 @@ def is_tracing_enabled(tracer):
 class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
     def __init__(self, config: TelemetryConfig, deps: Dict[str, Any]) -> None:
         self.config = config
-        self.datasetio_api = deps[Api.datasetio]
+        self.datasetio_api = deps.get(Api.datasetio)
 
         resource = Resource.create(
             {

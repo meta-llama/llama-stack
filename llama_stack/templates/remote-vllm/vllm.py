@@ -27,12 +27,16 @@ def get_distribution_template() -> DistributionTemplate:
         "memory": ["inline::faiss", "remote::chromadb", "remote::pgvector"],
         "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],
+        "eval": ["inline::meta-reference"],
+        "datasetio": ["remote::huggingface", "inline::localfs"],
+        "scoring": ["inline::basic", "inline::llm-as-judge", "inline::braintrust"],
         "telemetry": ["inline::meta-reference"],
         "tool_runtime": [
             "remote::brave-search",
             "remote::tavily-search",
             "inline::code-interpreter",
             "inline::memory-runtime",
+            "remote::model-context-protocol",
         ],
     }
     name = "remote-vllm"

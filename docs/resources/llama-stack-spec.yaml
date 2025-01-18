@@ -105,6 +105,16 @@ components:
         - name
         - args
         type: object
+    AgentTurnInputType:
+      additionalProperties: false
+      properties:
+        type:
+          const: agent_turn_input
+          default: agent_turn_input
+          type: string
+      required:
+      - type
+      type: object
     AgentTurnResponseEvent:
       additionalProperties: false
       properties:
@@ -290,6 +300,16 @@ components:
       - dataset_id
       - rows
       type: object
+    ArrayType:
+      additionalProperties: false
+      properties:
+        type:
+          const: array
+          default: array
+          type: string
+      required:
+      - type
+      type: object
     BasicScoringFnParams:
       additionalProperties: false
       properties:
@@ -395,6 +415,16 @@ components:
       - type
       - eval_candidate
       type: object
+    BooleanType:
+      additionalProperties: false
+      properties:
+        type:
+          const: boolean
+          default: boolean
+          type: string
+      required:
+      - type
+      type: object
     BuiltinTool:
       enum:
       - brave_search
@@ -409,6 +439,16 @@ components:
           type: string
       required:
       - job_uuid
+      type: object
+    ChatCompletionInputType:
+      additionalProperties: false
+      properties:
+        type:
+          const: chat_completion_input
+          default: chat_completion_input
+          type: string
+      required:
+      - type
       type: object
     ChatCompletionRequest:
       additionalProperties: false
@@ -492,6 +532,16 @@ components:
       type: object
     Checkpoint:
       description: Checkpoint created during training runs
+    CompletionInputType:
+      additionalProperties: false
+      properties:
+        type:
+          const: completion_input
+          default: completion_input
+          type: string
+      required:
+      - type
+      type: object
     CompletionMessage:
       additionalProperties: false
       properties:
@@ -1007,6 +1057,16 @@ components:
       - failed
       - scheduled
       type: string
+    JsonType:
+      additionalProperties: false
+      properties:
+        type:
+          const: json
+          default: json
+          type: string
+      required:
+      - type
+      type: object
     KeyValueMemoryBank:
       additionalProperties: false
       properties:
@@ -1440,6 +1500,26 @@ components:
       - llm
       - embedding
       type: string
+    NumberType:
+      additionalProperties: false
+      properties:
+        type:
+          const: number
+          default: number
+          type: string
+      required:
+      - type
+      type: object
+    ObjectType:
+      additionalProperties: false
+      properties:
+        type:
+          const: object
+          default: object
+          type: string
+      required:
+      - type
+      type: object
     OptimizerConfig:
       additionalProperties: false
       properties:
@@ -1488,96 +1568,16 @@ components:
       type: object
     ParamType:
       oneOf:
-      - additionalProperties: false
-        properties:
-          type:
-            const: string
-            default: string
-            type: string
-        required:
-        - type
-        type: object
-      - additionalProperties: false
-        properties:
-          type:
-            const: number
-            default: number
-            type: string
-        required:
-        - type
-        type: object
-      - additionalProperties: false
-        properties:
-          type:
-            const: boolean
-            default: boolean
-            type: string
-        required:
-        - type
-        type: object
-      - additionalProperties: false
-        properties:
-          type:
-            const: array
-            default: array
-            type: string
-        required:
-        - type
-        type: object
-      - additionalProperties: false
-        properties:
-          type:
-            const: object
-            default: object
-            type: string
-        required:
-        - type
-        type: object
-      - additionalProperties: false
-        properties:
-          type:
-            const: json
-            default: json
-            type: string
-        required:
-        - type
-        type: object
-      - additionalProperties: false
-        properties:
-          type:
-            const: union
-            default: union
-            type: string
-        required:
-        - type
-        type: object
-      - additionalProperties: false
-        properties:
-          type:
-            const: chat_completion_input
-            default: chat_completion_input
-            type: string
-        required:
-        - type
-        type: object
-      - additionalProperties: false
-        properties:
-          type:
-            const: completion_input
-            default: completion_input
-            type: string
-        required:
-        - type
-        type: object
-      - additionalProperties: false
-        properties:
-          type:
-            const: agent_turn_input
-            default: agent_turn_input
-            type: string
-        required:
-        - type
-        type: object
+      - $ref: '#/components/schemas/StringType'
+      - $ref: '#/components/schemas/NumberType'
+      - $ref: '#/components/schemas/BooleanType'
+      - $ref: '#/components/schemas/ArrayType'
+      - $ref: '#/components/schemas/ObjectType'
+      - $ref: '#/components/schemas/JsonType'
+      - $ref: '#/components/schemas/UnionType'
+      - $ref: '#/components/schemas/ChatCompletionInputType'
+      - $ref: '#/components/schemas/CompletionInputType'
+      - $ref: '#/components/schemas/AgentTurnInputType'
     PostTrainingJob:
       additionalProperties: false
       properties:
@@ -2479,6 +2479,16 @@ components:
       - end_of_message
       - out_of_tokens
       type: string
+    StringType:
+      additionalProperties: false
+      properties:
+        type:
+          const: string
+          default: string
+          type: string
+      required:
+      - type
+      type: object
     StructuredLogEvent:
       additionalProperties: false
       properties:
@@ -3130,6 +3140,16 @@ components:
           type: string
       required:
       - uri
+      type: object
+    UnionType:
+      additionalProperties: false
+      properties:
+        type:
+          const: union
+          default: union
+          type: string
+      required:
+      - type
       type: object
     UnstructuredLogEvent:
       additionalProperties: false
@@ -5588,6 +5608,9 @@ tags:
   name: AgentStepResponse
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgentTool" />
   name: AgentTool
+- description: <SchemaDefinition schemaRef="#/components/schemas/AgentTurnInputType"
+    />
+  name: AgentTurnInputType
 - description: 'Streamed agent execution response.
 
 
@@ -5624,6 +5647,8 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/AppendRowsRequest"
     />
   name: AppendRowsRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/ArrayType" />
+  name: ArrayType
 - description: <SchemaDefinition schemaRef="#/components/schemas/BasicScoringFnParams"
     />
   name: BasicScoringFnParams
@@ -5643,11 +5668,16 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/BenchmarkEvalTaskConfig"
     />
   name: BenchmarkEvalTaskConfig
+- description: <SchemaDefinition schemaRef="#/components/schemas/BooleanType" />
+  name: BooleanType
 - description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinTool" />
   name: BuiltinTool
 - description: <SchemaDefinition schemaRef="#/components/schemas/CancelTrainingJobRequest"
     />
   name: CancelTrainingJobRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/ChatCompletionInputType"
+    />
+  name: ChatCompletionInputType
 - description: <SchemaDefinition schemaRef="#/components/schemas/ChatCompletionRequest"
     />
   name: ChatCompletionRequest
@@ -5676,6 +5706,9 @@ tags:
 
     <SchemaDefinition schemaRef="#/components/schemas/Checkpoint" />'
   name: Checkpoint
+- description: <SchemaDefinition schemaRef="#/components/schemas/CompletionInputType"
+    />
+  name: CompletionInputType
 - description: <SchemaDefinition schemaRef="#/components/schemas/CompletionMessage"
     />
   name: CompletionMessage
@@ -5770,6 +5803,8 @@ tags:
   name: Job
 - description: <SchemaDefinition schemaRef="#/components/schemas/JobStatus" />
   name: JobStatus
+- description: <SchemaDefinition schemaRef="#/components/schemas/JsonType" />
+  name: JsonType
 - description: <SchemaDefinition schemaRef="#/components/schemas/KeyValueMemoryBank"
     />
   name: KeyValueMemoryBank
@@ -5847,6 +5882,10 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/ModelType" />
   name: ModelType
 - name: Models
+- description: <SchemaDefinition schemaRef="#/components/schemas/NumberType" />
+  name: NumberType
+- description: <SchemaDefinition schemaRef="#/components/schemas/ObjectType" />
+  name: ObjectType
 - description: <SchemaDefinition schemaRef="#/components/schemas/OptimizerConfig"
     />
   name: OptimizerConfig
@@ -5988,6 +6027,8 @@ tags:
   name: SpanWithStatus
 - description: <SchemaDefinition schemaRef="#/components/schemas/StopReason" />
   name: StopReason
+- description: <SchemaDefinition schemaRef="#/components/schemas/StringType" />
+  name: StringType
 - description: <SchemaDefinition schemaRef="#/components/schemas/StructuredLogEvent"
     />
   name: StructuredLogEvent
@@ -6080,6 +6121,8 @@ tags:
   name: Turn
 - description: <SchemaDefinition schemaRef="#/components/schemas/URL" />
   name: URL
+- description: <SchemaDefinition schemaRef="#/components/schemas/UnionType" />
+  name: UnionType
 - description: <SchemaDefinition schemaRef="#/components/schemas/UnstructuredLogEvent"
     />
   name: UnstructuredLogEvent
@@ -6126,6 +6169,7 @@ x-tagGroups:
   - AgentSessionCreateResponse
   - AgentStepResponse
   - AgentTool
+  - AgentTurnInputType
   - AgentTurnResponseEvent
   - AgentTurnResponseStepCompletePayload
   - AgentTurnResponseStepProgressPayload
@@ -6136,20 +6180,24 @@ x-tagGroups:
   - AggregationFunctionType
   - AppEvalTaskConfig
   - AppendRowsRequest
+  - ArrayType
   - BasicScoringFnParams
   - BatchChatCompletionRequest
   - BatchChatCompletionResponse
   - BatchCompletionRequest
   - BatchCompletionResponse
   - BenchmarkEvalTaskConfig
+  - BooleanType
   - BuiltinTool
   - CancelTrainingJobRequest
+  - ChatCompletionInputType
   - ChatCompletionRequest
   - ChatCompletionResponse
   - ChatCompletionResponseEvent
   - ChatCompletionResponseEventType
   - ChatCompletionResponseStreamChunk
   - Checkpoint
+  - CompletionInputType
   - CompletionMessage
   - CompletionRequest
   - CompletionResponse
@@ -6181,6 +6229,7 @@ x-tagGroups:
   - InvokeToolRequest
   - Job
   - JobStatus
+  - JsonType
   - KeyValueMemoryBank
   - KeyValueMemoryBankParams
   - KeywordMemoryBank
@@ -6208,6 +6257,8 @@ x-tagGroups:
   - Model
   - ModelCandidate
   - ModelType
+  - NumberType
+  - ObjectType
   - OptimizerConfig
   - OptimizerType
   - PaginatedRowsResult
@@ -6256,6 +6307,7 @@ x-tagGroups:
   - SpanStatus
   - SpanWithStatus
   - StopReason
+  - StringType
   - StructuredLogEvent
   - SupervisedFineTuneRequest
   - SyntheticDataGenerateRequest
@@ -6286,6 +6338,7 @@ x-tagGroups:
   - TrainingConfig
   - Turn
   - URL
+  - UnionType
   - UnstructuredLogEvent
   - UserMessage
   - VectorMemoryBank

@@ -182,7 +182,8 @@ def test_builtin_tool_web_search(llama_stack_client, agent_config):
     assert "tool_execution>" in logs_str
     assert "Tool:brave_search Response:" in logs_str
     assert "mark zuckerberg" in logs_str.lower()
-    assert "No Violation" in logs_str
+    if len(agent_config["output_shields"]) > 0:
+        assert "No Violation" in logs_str
 
 
 def test_builtin_tool_code_execution(llama_stack_client, agent_config):

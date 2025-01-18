@@ -121,7 +121,7 @@ if prompt := st.chat_input("Example: What is Llama Stack?"):
         if stream:
             for chunk in response:
                 if chunk.event.event_type == "progress":
-                    full_response += chunk.event.delta
+                    full_response += chunk.event.delta.text
                 message_placeholder.markdown(full_response + "▌")
             message_placeholder.markdown(full_response)
         else:

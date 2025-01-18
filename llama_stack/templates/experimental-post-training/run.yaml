@@ -1,6 +1,6 @@
 version: '2'
 image_name: experimental-post-training
-docker_image: null
+container_image: null
 conda_env: experimental-post-training
 apis:
 - agents

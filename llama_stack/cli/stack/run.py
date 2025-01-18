@@ -92,9 +92,9 @@ class StackRun(Subcommand):
             )
 
         if not config_file.exists() and not has_yaml_suffix:
-            # check if it's a build config saved to docker dir
+            # check if it's a build config saved to container dir
             config_file = Path(
-                BUILDS_BASE_DIR / ImageType.docker.value / f"{args.config}-run.yaml"
+                BUILDS_BASE_DIR / ImageType.container.value / f"{args.config}-run.yaml"
             )
 
         if not config_file.exists() and not has_yaml_suffix:
@@ -115,12 +115,12 @@ class StackRun(Subcommand):
         config_dict = yaml.safe_load(config_file.read_text())
         config = parse_and_maybe_upgrade_config(config_dict)
 
-        if config.docker_image:
+        if config.container_image:
             script = (
                 importlib.resources.files("llama_stack")
                 / "distribution/start_container.sh"
             )
-            run_args = [script, config.docker_image]
+            run_args = [script, config.container_image]
         else:
             current_conda_env = os.environ.get("CONDA_DEFAULT_ENV")
             image_name = args.image_name or current_conda_env

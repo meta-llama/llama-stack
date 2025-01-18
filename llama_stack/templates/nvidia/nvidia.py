@@ -29,6 +29,7 @@ def get_distribution_template() -> DistributionTemplate:
             "remote::tavily-search",
             "inline::code-interpreter",
             "inline::memory-runtime",
+            "remote::model-context-protocol",
         ],
     }
 
@@ -68,7 +69,7 @@ def get_distribution_template() -> DistributionTemplate:
         name="nvidia",
         distro_type="remote_hosted",
         description="Use NVIDIA NIM for running LLM inference",
-        docker_image=None,
+        container_image=None,
         template_path=Path(__file__).parent / "doc_template.md",
         providers=providers,
         default_models=default_models,

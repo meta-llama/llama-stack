@@ -39,6 +39,7 @@ def get_distribution_template() -> DistributionTemplate:
             "remote::tavily-search",
             "inline::code-interpreter",
             "inline::memory-runtime",
+            "remote::model-context-protocol",
         ],
     }
     name = "together"
@@ -96,7 +97,7 @@ def get_distribution_template() -> DistributionTemplate:
         name=name,
         distro_type="self_hosted",
         description="Use Together.AI for running LLM inference",
-        docker_image=None,
+        container_image=None,
         template_path=Path(__file__).parent / "doc_template.md",
         providers=providers,
         default_models=default_models,

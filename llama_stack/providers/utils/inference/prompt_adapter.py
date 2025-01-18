@@ -188,7 +188,7 @@ async def localize_image_content(media: ImageContentItem) -> Tuple[bytes, str]:
 async def convert_image_content_to_url(
     media: ImageContentItem, download: bool = False, include_format: bool = True
 ) -> str:
-    if media.url and not download:
+    if media.url and (not download or media.url.uri.startswith("data")):
         return media.url.uri
 
     content, format = await localize_image_content(media)
