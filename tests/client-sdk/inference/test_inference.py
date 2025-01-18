@@ -339,7 +339,7 @@ def test_image_chat_completion_non_streaming(llama_stack_client, vision_model_id
     )
     message_content = response.completion_message.content.lower().strip()
     assert len(message_content) > 0
-    assert any([expected in message_content for expected in {"dog", "puppy", "pup"}])
+    assert any(expected in message_content for expected in {"dog", "puppy", "pup"})
 
 
 def test_image_chat_completion_streaming(llama_stack_client, vision_model_id):
