@@ -6,6 +6,7 @@
 
 import argparse
 import os
+import sys
 from pathlib import Path
 
 from llama_stack.cli.subcommand import Subcommand
@@ -70,7 +71,7 @@ class StackRun(Subcommand):
             BUILDS_BASE_DIR,
             DISTRIBS_BASE_DIR,
         )
-        from llama_stack.distribution.utils.exec import run_with_pty
+        from llama_stack.distribution.utils.exec import run_command, run_with_pty
 
         if not args.config:
             self.parser.error("Must specify a config file to run")
@@ -190,4 +191,8 @@ class StackRun(Subcommand):
                 return
             run_args.extend(["--env", f"{key}={value}"])
 
-        run_with_pty(run_args)
+        is_terminal = os.isatty(sys.stdout.fileno())
+        if is_terminal:
+            run_with_pty(run_args)
+        else:
+            run_command(run_args)

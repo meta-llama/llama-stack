@@ -85,6 +85,15 @@ jobs:
         run: |
           docker images
 
+      - name: Start up built docker image
+        run: |
+          cd distributions/together
+          docker compose up
+
+      - name: Start up built docker image
+        run: |
+          llama-stack-client models list
+
       - name: Push to dockerhub
         run: |
           TEMPLATES=("ollama" "bedrock" "remote-vllm" "fireworks" "together" "tgi" "meta-reference-gpu")
