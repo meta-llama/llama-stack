@@ -29,6 +29,7 @@ def get_distribution_template() -> DistributionTemplate:
             "remote::tavily-search",
             "inline::code-interpreter",
             "inline::memory-runtime",
+            "remote::model-context-protocol",
         ],
     }
 

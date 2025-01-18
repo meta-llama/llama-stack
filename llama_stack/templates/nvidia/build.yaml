@@ -26,4 +26,5 @@ distribution_spec:
     - remote::tavily-search
     - inline::code-interpreter
     - inline::memory-runtime
+    - remote::model-context-protocol
 image_type: conda
