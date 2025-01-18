@@ -95,6 +95,7 @@ jobs:
         run: |
           cd distributions/fireworks
           docker compose up -d
+          cd ..
           # Wait for the container to start
           timeout=300
           while ! curl -s -f http://localhost:8321/v1/version > /dev/null && [ $timeout -gt 0 ]; do
@@ -108,15 +109,15 @@ jobs:
             exit 1
           fi
 
-          cd ../..
+      - name: Run simple models list test on docker server
+        run: |
+          curl http://localhost:8321/v1/models/list
+
+      # TODO: figure out why client cannot find server but curl works
+      - name: Run pytest on docker server
+        run: |
           pip install pytest pytest-md-report
-          LLAMA_STACK_BASE_URL="http://localhost:8321" pytest -v tests/client-sdk/inference/test_inference.py --md-report --md-report-verbose=1
-
-
-      # - name: Run test on docker server
-      #   run: |
-      #     pip install pytest pytest-md-report
-      #     LLAMA_STACK_BASE_URL="http://localhost:8321" pytest -v tests/client-sdk/inference/test_inference.py --md-report --md-report-verbose=1
+          LLAMA_STACK_BASE_URL="http://0.0.0.0:8321" pytest -v tests/client-sdk/inference/test_inference.py --md-report --md-report-verbose=1
 
       # - name: Push to dockerhub
       #   run: |
