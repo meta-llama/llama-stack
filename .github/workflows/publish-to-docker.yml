@@ -91,7 +91,7 @@ jobs:
         run: |
           docker images
 
-      # TODO (xiyan): make this into a matrix and test all templates other than fireworks
+      # TODO (xiyan): make the following 2 steps into a matrix and test all templates other than fireworks
       - name: Start up built docker image
         run: |
           cd distributions/fireworks
