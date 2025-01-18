@@ -111,13 +111,14 @@ jobs:
 
       - name: Run simple models list test on docker server
         run: |
-          curl http://localhost:8321/v1/models/list
+          curl http://localhost:8321/v1/models
 
       # TODO: figure out why client cannot find server but curl works
       - name: Run pytest on docker server
         run: |
           pip install pytest pytest-md-report
-          LLAMA_STACK_BASE_URL="http://0.0.0.0:8321" pytest -v tests/client-sdk/inference/test_inference.py --md-report --md-report-verbose=1
+          export LLAMA_STACK_BASE_URL="http://localhost:8321"
+          LLAMA_STACK_BASE_URL="http://localhost:8321" pytest -v tests/client-sdk/inference/test_inference.py --md-report --md-report-verbose=1
 
       # - name: Push to dockerhub
       #   run: |
