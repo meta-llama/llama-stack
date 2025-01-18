@@ -41,6 +41,8 @@ from llama_stack.providers.utils.inference.openai_compat import (
     get_sampling_options,
     process_chat_completion_response,
     process_chat_completion_stream_response,
+    process_completion_response,
+    process_completion_stream_response,
 )
 from llama_stack.providers.utils.inference.prompt_adapter import (
     chat_completion_request_to_prompt,
@@ -92,7 +94,19 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> Union[CompletionResponse, CompletionResponseStreamChunk]:
-        raise NotImplementedError("Completion not implemented for vLLM")
+        model = await self.model_store.get_model(model_id)
+        request = CompletionRequest(
+            model=model.provider_resource_id,
+            content=content,
+            sampling_params=sampling_params,
+            response_format=response_format,
+            stream=stream,
+            logprobs=logprobs,
+        )
+        if stream:
+            return self._stream_completion(request)
+        else:
+            return await self._nonstream_completion(request)
 
     async def chat_completion(
         self,
@@ -152,6 +166,26 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         async for chunk in process_chat_completion_stream_response(
             stream, self.formatter
         ):
+            yield chunk
+
+    async def _nonstream_completion(
+        self, request: CompletionRequest
+    ) -> CompletionResponse:
+        params = await self._get_params(request)
+        r = self.client.completions.create(**params)
+        return process_completion_response(r, self.formatter)
+
+    async def _stream_completion(self, request: CompletionRequest) -> AsyncGenerator:
+        params = await self._get_params(request)
+
+        # Wrapper for async generator similar
+        async def _to_async_generator():
+            stream = self.client.completions.create(**params)
+            for chunk in stream:
+                yield chunk
+
+        stream = _to_async_generator()
+        async for chunk in process_completion_stream_response(stream, self.formatter):
             yield chunk
 
     async def register_model(self, model: Model) -> Model:
