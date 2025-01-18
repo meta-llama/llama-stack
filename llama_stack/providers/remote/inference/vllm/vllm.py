@@ -177,7 +177,8 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         if isinstance(request, ChatCompletionRequest):
             if media_present:
                 input_dict["messages"] = [
-                    await convert_message_to_openai_dict(m) for m in request.messages
+                    await convert_message_to_openai_dict(m, download=True)
+                    for m in request.messages
                 ]
             else:
                 input_dict["prompt"] = await chat_completion_request_to_prompt(
