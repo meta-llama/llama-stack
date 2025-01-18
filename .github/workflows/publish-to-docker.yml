@@ -1,7 +1,7 @@
 name: Docker Build and Publish
 
 on:
-  push:
+  # push:
   workflow_dispatch:
     inputs:
       version:
