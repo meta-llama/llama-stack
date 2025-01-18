@@ -1,6 +1,6 @@
 services:
   llamastack:
-    image: distribution-fireworks:test-0.0.63.dev51206766
+    image: llamastack/distribution-fireworks
     ports:
       - "8321:8321"
     environment:

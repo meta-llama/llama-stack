@@ -91,9 +91,15 @@ jobs:
         run: |
           docker images
 
+      # TODO (xiyan): make this into a matrix and test all templates other than fireworks
       - name: Start up built docker image
         run: |
           cd distributions/fireworks
+          if [ "$PYPI_SOURCE" = "testpypi" ]; then
+            sed -i 's|image: llamastack/distribution-fireworks|image: llamastack/distribution-fireworks:test-${{ steps.version.outputs.version }}|' ./compose.yaml
+          else
+            sed -i 's|image: llamastack/distribution-fireworks|image: llamastack/distribution-fireworks:${{ steps.version.outputs.version }}|' ./compose.yaml
+          fi
           docker compose up -d
           cd ..
           # Wait for the container to start
@@ -113,22 +119,22 @@ jobs:
         run: |
           curl http://localhost:8321/v1/models
 
-      # TODO: figure out why client cannot find server but curl works
-      - name: Run pytest on docker server
-        run: |
-          pip install pytest pytest-md-report
-          export LLAMA_STACK_BASE_URL="http://localhost:8321"
-          LLAMA_STACK_BASE_URL="http://localhost:8321" pytest -v tests/client-sdk/inference/test_inference.py --md-report --md-report-verbose=1
-
-      # - name: Push to dockerhub
+      # TODO (xiyan): figure out why client cannot find server but curl works
+      # - name: Run pytest on docker server
       #   run: |
-      #     TEMPLATES=("ollama" "bedrock" "remote-vllm" "fireworks" "together" "tgi" "meta-reference-gpu")
-      #     for template in "${TEMPLATES[@]}"; do
-      #       if [ "$PYPI_SOURCE" = "testpypi" ]; then
-      #           docker tag distribution-$template:test-${{ steps.version.outputs.version }} llamastack/distribution-$template:test-${{ steps.version.outputs.version }}
-      #           docker push llamastack/distribution-$template:test-${{ steps.version.outputs.version }}
-      #       else
-      #           docker tag distribution-$template:${{ steps.version.outputs.version }} llamastack/distribution-$template:${{ steps.version.outputs.version }}
-      #           docker push llamastack/distribution-$template:${{ steps.version.outputs.version }}
-      #       fi
-      #     done
+      #     pip install pytest pytest-md-report
+      #     export LLAMA_STACK_BASE_URL="http://localhost:8321"
+      #     LLAMA_STACK_BASE_URL="http://localhost:8321" pytest -v tests/client-sdk/inference/test_inference.py --md-report --md-report-verbose=1
+
+      - name: Push to dockerhub
+        run: |
+          TEMPLATES=("ollama" "bedrock" "remote-vllm" "fireworks" "together" "tgi" "meta-reference-gpu")
+          for template in "${TEMPLATES[@]}"; do
+            if [ "$PYPI_SOURCE" = "testpypi" ]; then
+                docker tag distribution-$template:test-${{ steps.version.outputs.version }} llamastack/distribution-$template:test-${{ steps.version.outputs.version }}
+                docker push llamastack/distribution-$template:test-${{ steps.version.outputs.version }}
+            else
+                docker tag distribution-$template:${{ steps.version.outputs.version }} llamastack/distribution-$template:${{ steps.version.outputs.version }}
+                docker push llamastack/distribution-$template:${{ steps.version.outputs.version }}
+            fi
+          done

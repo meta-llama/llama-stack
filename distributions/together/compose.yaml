@@ -1,6 +1,6 @@
 services:
   llamastack:
-    image: distribution-together:test-0.0.63.dev51206766
+    image: llamastack/distribution-together
     ports:
       - "8321:8321"
     environment:
