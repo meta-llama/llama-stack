@@ -5,9 +5,9 @@
 # the root directory of this source tree.
 
 import base64
+import os
 
 import pytest
-import requests
 from pydantic import BaseModel
 
 PROVIDER_TOOL_PROMPT_FORMAT = {
@@ -74,12 +74,12 @@ def get_weather_tool_definition():
 
 @pytest.fixture
 def base64_image_url():
-    downloadable_url = "https://www.healthypawspetinsurance.com/Images/V3/DogAndPuppyInsurance/Dog_CTA_Desktop_HeroImage.jpg"
-    response = requests.get(downloadable_url)
-    response.raise_for_status()
-    base64_string = base64.b64encode(response.content).decode("utf-8")
-    base64_url = f"data:image;base64,{base64_string}"
-    return base64_url
+    image_path = os.path.join(os.path.dirname(__file__), "dog.png")
+    with open(image_path, "rb") as image_file:
+        # Convert the image to base64
+        base64_string = base64.b64encode(image_file.read()).decode("utf-8")
+        base64_url = f"data:image;base64,{base64_string}"
+        return base64_url
 
 
 def test_completion_non_streaming(llama_stack_client, text_model_id):
