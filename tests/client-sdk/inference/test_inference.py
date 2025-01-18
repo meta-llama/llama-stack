@@ -4,7 +4,10 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import base64
+
 import pytest
+import requests
 from pydantic import BaseModel
 
 PROVIDER_TOOL_PROMPT_FORMAT = {
@@ -67,6 +70,16 @@ def get_weather_tool_definition():
             },
         },
     }
+
+
+@pytest.fixture
+def base64_image_url():
+    downloadable_url = "https://www.healthypawspetinsurance.com/Images/V3/DogAndPuppyInsurance/Dog_CTA_Desktop_HeroImage.jpg"
+    response = requests.get(downloadable_url)
+    response.raise_for_status()
+    base64_string = base64.b64encode(response.content).decode("utf-8")
+    base64_url = f"data:image;base64,{base64_string}"
+    return base64_url
 
 
 def test_completion_non_streaming(llama_stack_client, text_model_id):
@@ -326,7 +339,7 @@ def test_image_chat_completion_non_streaming(llama_stack_client, vision_model_id
     )
     message_content = response.completion_message.content.lower().strip()
     assert len(message_content) > 0
-    assert any(expected in message_content for expected in {"dog", "puppy", "pup"})
+    assert any([expected in message_content for expected in {"dog", "puppy", "pup"}])
 
 
 def test_image_chat_completion_streaming(llama_stack_client, vision_model_id):
@@ -356,3 +369,31 @@ def test_image_chat_completion_streaming(llama_stack_client, vision_model_id):
         streamed_content += chunk.event.delta.text.lower()
     assert len(streamed_content) > 0
     assert any(expected in streamed_content for expected in {"dog", "puppy", "pup"})
+
+
+def test_image_chat_completion_base64_url(
+    llama_stack_client, vision_model_id, base64_image_url
+):
+
+    message = {
+        "role": "user",
+        "content": [
+            {
+                "type": "image",
+                "url": {
+                    "uri": base64_image_url,
+                },
+            },
+            {
+                "type": "text",
+                "text": "Describe what is in this image.",
+            },
+        ],
+    }
+    response = llama_stack_client.inference.chat_completion(
+        model_id=vision_model_id,
+        messages=[message],
+        stream=False,
+    )
+    message_content = response.completion_message.content.lower().strip()
+    assert len(message_content) > 0
