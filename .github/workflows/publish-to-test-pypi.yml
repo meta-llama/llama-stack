@@ -249,4 +249,5 @@ jobs:
       run: |
         llama stack build --template fireworks --image-type venv
         llama stack build --template together --image-type venv
+        pip install pytest_html
         pytest ./llama_stack/providers/tests/ --config=github_ci_test_config.yaml
