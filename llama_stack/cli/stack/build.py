@@ -47,8 +47,8 @@ class StackBuild(Subcommand):
         self.parser.add_argument(
             "--image-type",
             type=str,
-            help="Image Type to use for the build. This can be either conda or docker. If not specified, will use the image type from the template config.",
-            choices=["conda", "docker", "venv"],
+            help="Image Type to use for the build. This can be either conda or container or venv. If not specified, will use the image type from the template config.",
+            choices=["conda", "container", "venv"],
             default="conda",
         )
 
