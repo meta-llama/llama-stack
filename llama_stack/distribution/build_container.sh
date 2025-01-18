@@ -23,7 +23,6 @@ special_pip_deps="$6"
 set -euo pipefail
 
 build_name="$1"
-image_name="distribution-$build_name"
 container_base=$2
 build_file_path=$3
 host_build_dir=$4
@@ -184,7 +183,7 @@ else
 fi
 
 # Add version tag to image name
-image_tag="$image_name:$version_tag"
+image_tag="$build_name:$version_tag"
 
 # Detect platform architecture
 ARCH=$(uname -m)

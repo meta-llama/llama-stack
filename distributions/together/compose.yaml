@@ -1,13 +1,11 @@
 services:
   llamastack:
     image: llamastack/distribution-together
-    network_mode: "host"
-    volumes:
-      - ~/.llama:/root/.llama
-      - ./run.yaml:/root/llamastack-run-together.yaml
     ports:
       - "8321:8321"
-    entrypoint: bash -c "python -m llama_stack.distribution.server.server --yaml_config /root/llamastack-run-together.yaml"
+    environment:
+      - TOGETHER_API_KEY=${TOGETHER_API_KEY}
+    entrypoint: bash -c "python -m llama_stack.distribution.server.server --template together"
     deploy:
       restart_policy:
         condition: on-failure

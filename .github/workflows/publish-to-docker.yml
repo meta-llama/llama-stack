@@ -11,6 +11,10 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    env:
+      TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
+      FIREWORKS_API_KEY: ${{ secrets.FIREWORKS_API_KEY }}
+      TAVILY_SEARCH_API_KEY: ${{ secrets.TAVILY_SEARCH_API_KEY }}
     permissions:
       contents: read
       packages: write
@@ -32,7 +36,7 @@ jobs:
         id: version
         run: |
           if [ "${{ github.event_name }}" = "push" ]; then
-            echo "VERSION=0.0.63.dev20250114" >> $GITHUB_OUTPUT
+            echo "VERSION=0.0.63.dev51206766" >> $GITHUB_OUTPUT
           else
             echo "VERSION=${{ inputs.version }}" >> $GITHUB_OUTPUT
           fi
@@ -84,6 +88,41 @@ jobs:
       - name: List docker images
         run: |
           docker images
+
+      # TODO (xiyan): make the following 2 steps into a matrix and test all templates other than fireworks
+      - name: Start up built docker image
+        run: |
+          cd distributions/fireworks
+          if [ "$PYPI_SOURCE" = "testpypi" ]; then
+            sed -i 's|image: llamastack/distribution-fireworks|image: distribution-fireworks:test-${{ steps.version.outputs.version }}|' ./compose.yaml
+          else
+            sed -i 's|image: llamastack/distribution-fireworks|image: distribution-fireworks:${{ steps.version.outputs.version }}|' ./compose.yaml
+          fi
+          docker compose up -d
+          cd ..
+          # Wait for the container to start
+          timeout=300
+          while ! curl -s -f http://localhost:8321/v1/version > /dev/null && [ $timeout -gt 0 ]; do
+            echo "Waiting for endpoint to be available..."
+            sleep 5
+            timeout=$((timeout - 5))
+          done
+
+          if [ $timeout -le 0 ]; then
+            echo "Timeout waiting for endpoint to become available"
+            exit 1
+          fi
+
+      - name: Run simple models list test on docker server
+        run: |
+          curl http://localhost:8321/v1/models
+
+      # TODO (xiyan): figure out why client cannot find server but curl works
+      # - name: Run pytest on docker server
+      #   run: |
+      #     pip install pytest pytest-md-report
+      #     export LLAMA_STACK_BASE_URL="http://localhost:8321"
+      #     LLAMA_STACK_BASE_URL="http://localhost:8321" pytest -v tests/client-sdk/inference/test_inference.py --md-report --md-report-verbose=1
 
       - name: Push to dockerhub
         run: |
