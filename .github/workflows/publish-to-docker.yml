@@ -75,9 +75,9 @@ jobs:
           TEMPLATES=("ollama" "bedrock" "remote-vllm" "fireworks" "together" "tgi" "meta-reference-gpu")
           for template in "${TEMPLATES[@]}"; do
             if [ "$PYPI_SOURCE" = "testpypi" ]; then
-                TEST_PYPI_VERSION=${{ steps.version.outputs.version }} llama stack build --template $template --image-type docker
+                TEST_PYPI_VERSION=${{ steps.version.outputs.version }} llama stack build --template $template --image-type container
             else
-                PYPI_VERSION=${{ steps.version.outputs.version }} llama stack build --template $template --image-type docker
+                PYPI_VERSION=${{ steps.version.outputs.version }} llama stack build --template $template --image-type container
             fi
           done
 
