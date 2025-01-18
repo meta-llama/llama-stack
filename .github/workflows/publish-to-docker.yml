@@ -108,10 +108,14 @@ jobs:
             exit 1
           fi
 
-      - name: Run test on docker server
-        run: |
           pip install pytest pytest-md-report
           LLAMA_STACK_BASE_URL="http://localhost:8321" pytest -v tests/client-sdk/inference/test_inference.py --md-report --md-report-verbose=1
+
+
+      # - name: Run test on docker server
+      #   run: |
+      #     pip install pytest pytest-md-report
+      #     LLAMA_STACK_BASE_URL="http://localhost:8321" pytest -v tests/client-sdk/inference/test_inference.py --md-report --md-report-verbose=1
 
       # - name: Push to dockerhub
       #   run: |
