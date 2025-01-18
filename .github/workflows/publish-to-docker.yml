@@ -96,9 +96,9 @@ jobs:
         run: |
           cd distributions/fireworks
           if [ "$PYPI_SOURCE" = "testpypi" ]; then
-            sed -i 's|image: llamastack/distribution-fireworks|image: llamastack/distribution-fireworks:test-${{ steps.version.outputs.version }}|' ./compose.yaml
+            sed -i 's|image: llamastack/distribution-fireworks|image: distribution-fireworks:test-${{ steps.version.outputs.version }}|' ./compose.yaml
           else
-            sed -i 's|image: llamastack/distribution-fireworks|image: llamastack/distribution-fireworks:${{ steps.version.outputs.version }}|' ./compose.yaml
+            sed -i 's|image: llamastack/distribution-fireworks|image: distribution-fireworks:${{ steps.version.outputs.version }}|' ./compose.yaml
           fi
           docker compose up -d
           cd ..
