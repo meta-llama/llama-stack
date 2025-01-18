@@ -84,7 +84,6 @@ class RunConfigSettings(BaseModel):
         return StackRunConfig(
             image_name=name,
             container_image=container_image,
-            conda_env=name,
             apis=apis,
             providers=provider_configs,
             metadata_store=SqliteKVStoreConfig.sample_run_config(
