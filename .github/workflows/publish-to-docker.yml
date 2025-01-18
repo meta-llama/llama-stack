@@ -1,6 +1,7 @@
 name: Docker Build and Publish
 
 on:
+  push:
   workflow_dispatch:
     inputs:
       version:
@@ -11,6 +12,10 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    env:
+      TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
+      FIREWORKS_API_KEY: ${{ secrets.FIREWORKS_API_KEY }}
+      TAVILY_SEARCH_API_KEY: ${{ secrets.TAVILY_SEARCH_API_KEY }}
     permissions:
       contents: read
       packages: write
@@ -32,7 +37,7 @@ jobs:
         id: version
         run: |
           if [ "${{ github.event_name }}" = "push" ]; then
-            echo "VERSION=0.0.63.dev20250114" >> $GITHUB_OUTPUT
+            echo "VERSION=0.0.63.dev51206766" >> $GITHUB_OUTPUT
           else
             echo "VERSION=${{ inputs.version }}" >> $GITHUB_OUTPUT
           fi
@@ -72,7 +77,8 @@ jobs:
 
       - name: Build docker image
         run: |
-          TEMPLATES=("ollama" "bedrock" "remote-vllm" "fireworks" "together" "tgi" "meta-reference-gpu")
+          # TEMPLATES=("ollama" "bedrock" "remote-vllm" "fireworks" "together" "tgi" "meta-reference-gpu")
+          TEMPLATES=("fireworks")
           for template in "${TEMPLATES[@]}"; do
             if [ "$PYPI_SOURCE" = "testpypi" ]; then
                 TEST_PYPI_VERSION=${{ steps.version.outputs.version }} llama stack build --template $template --image-type container
@@ -87,22 +93,34 @@ jobs:
 
       - name: Start up built docker image
         run: |
-          cd distributions/together
-          docker compose up
-
-      - name: Start up built docker image
-        run: |
-          llama-stack-client models list
-
-      - name: Push to dockerhub
-        run: |
-          TEMPLATES=("ollama" "bedrock" "remote-vllm" "fireworks" "together" "tgi" "meta-reference-gpu")
-          for template in "${TEMPLATES[@]}"; do
-            if [ "$PYPI_SOURCE" = "testpypi" ]; then
-                docker tag distribution-$template:test-${{ steps.version.outputs.version }} llamastack/distribution-$template:test-${{ steps.version.outputs.version }}
-                docker push llamastack/distribution-$template:test-${{ steps.version.outputs.version }}
-            else
-                docker tag distribution-$template:${{ steps.version.outputs.version }} llamastack/distribution-$template:${{ steps.version.outputs.version }}
-                docker push llamastack/distribution-$template:${{ steps.version.outputs.version }}
-            fi
+          cd distributions/fireworks
+          docker compose up -d
+          # Wait for the container to start
+          timeout=300
+          while ! curl -s -f http://localhost:8321/v1/version > /dev/null && [ $timeout -gt 0 ]; do
+            echo "Waiting for endpoint to be available..."
+            sleep 5
+            timeout=$((timeout - 5))
           done
+
+          if [ $timeout -le 0 ]; then
+            echo "Timeout waiting for endpoint to become available"
+            exit 1
+          fi
+
+      - name: Run test on docker server
+        run: |
+          LLAMA_STACK_BASE_URL="http://localhost:8321" pytest -v tests/client-sdk/inference/test_inference.py --md-report --md-report-verbose=1
+
+      # - name: Push to dockerhub
+      #   run: |
+      #     TEMPLATES=("ollama" "bedrock" "remote-vllm" "fireworks" "together" "tgi" "meta-reference-gpu")
+      #     for template in "${TEMPLATES[@]}"; do
+      #       if [ "$PYPI_SOURCE" = "testpypi" ]; then
+      #           docker tag distribution-$template:test-${{ steps.version.outputs.version }} llamastack/distribution-$template:test-${{ steps.version.outputs.version }}
+      #           docker push llamastack/distribution-$template:test-${{ steps.version.outputs.version }}
+      #       else
+      #           docker tag distribution-$template:${{ steps.version.outputs.version }} llamastack/distribution-$template:${{ steps.version.outputs.version }}
+      #           docker push llamastack/distribution-$template:${{ steps.version.outputs.version }}
+      #       fi
+      #     done

@@ -1,11 +1,11 @@
 services:
   llamastack:
-    image: llamastack/together
+    image: distribution-together:test-0.0.63.dev51206766
     ports:
       - "8321:8321"
     environment:
       - TOGETHER_API_KEY=${TOGETHER_API_KEY}
-    entrypoint: bash -c "llama stack run together"
+    entrypoint: bash -c "python -m llama_stack.distribution.server.server --template together"
     deploy:
       restart_policy:
         condition: on-failure

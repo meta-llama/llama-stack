@@ -1,11 +1,11 @@
 services:
   llamastack:
-    image: llamastack/fireworks
+    image: distribution-fireworks:test-0.0.63.dev51206766
     ports:
       - "8321:8321"
     environment:
       - FIREWORKS_API_KEY=${FIREWORKS_API_KEY}
-    entrypoint: bash -c "llama stack run fireworks"
+    entrypoint: bash -c "python -m llama_stack.distribution.server.server --template fireworks"
     deploy:
       restart_policy:
         condition: on-failure
