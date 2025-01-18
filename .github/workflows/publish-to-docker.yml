@@ -1,7 +1,6 @@
 name: Docker Build and Publish
 
 on:
-  push:
   workflow_dispatch:
     inputs:
       version:
@@ -77,8 +76,7 @@ jobs:
 
       - name: Build docker image
         run: |
-          # TEMPLATES=("ollama" "bedrock" "remote-vllm" "fireworks" "together" "tgi" "meta-reference-gpu")
-          TEMPLATES=("fireworks")
+          TEMPLATES=("ollama" "bedrock" "remote-vllm" "fireworks" "together" "tgi" "meta-reference-gpu")
           for template in "${TEMPLATES[@]}"; do
             if [ "$PYPI_SOURCE" = "testpypi" ]; then
                 TEST_PYPI_VERSION=${{ steps.version.outputs.version }} llama stack build --template $template --image-type container
