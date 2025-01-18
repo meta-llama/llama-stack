@@ -246,12 +246,6 @@ jobs:
     - name: Integration tests
       if: always()
       run: |
-        pip install -U \
-            torch torchvision \
-            pytest pytest_asyncio \
-            fairscale lm-format-enforcer \
-            zmq chardet pypdf \
-            pandas sentence_transformers together \
-            aiosqlite groq fireworks-ai \
-            pytest-asyncio pytest_html
+        llama stack build --template fireworks --image-type venv
+        llama stack build --template together --image-type venv
         pytest ./llama_stack/providers/tests/ --config=github_ci_test_config.yaml
