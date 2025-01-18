@@ -130,6 +130,7 @@ def build_image(
             str(BUILDS_BASE_DIR / ImageType.container.value),
             " ".join(normal_deps),
         ]
+        print("!!!! args", args)
     elif build_config.image_type == ImageType.conda.value:
         script = str(
             importlib.resources.files("llama_stack") / "distribution/build_conda_env.sh"
