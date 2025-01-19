@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from enum import Enum
 from typing import Any, List, Optional, Protocol
 from urllib.parse import urlparse
 
@@ -12,38 +11,14 @@ from llama_models.schema_utils import json_schema_type
 from pydantic import BaseModel, Field
 
 from llama_stack.apis.datasets import Dataset
+
+from llama_stack.apis.datatypes import Api
 from llama_stack.apis.eval_tasks import EvalTask
 from llama_stack.apis.memory_banks.memory_banks import MemoryBank
 from llama_stack.apis.models import Model
 from llama_stack.apis.scoring_functions import ScoringFn
 from llama_stack.apis.shields import Shield
 from llama_stack.apis.tools import Tool
-
-
-@json_schema_type
-class Api(Enum):
-    inference = "inference"
-    safety = "safety"
-    agents = "agents"
-    memory = "memory"
-    datasetio = "datasetio"
-    scoring = "scoring"
-    eval = "eval"
-    post_training = "post_training"
-    tool_runtime = "tool_runtime"
-
-    telemetry = "telemetry"
-
-    models = "models"
-    shields = "shields"
-    memory_banks = "memory_banks"
-    datasets = "datasets"
-    scoring_functions = "scoring_functions"
-    eval_tasks = "eval_tasks"
-    tool_groups = "tool_groups"
-
-    # built-in API
-    inspect = "inspect"
 
 
 class ModelsProtocolPrivate(Protocol):
