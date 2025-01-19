@@ -21,8 +21,6 @@ from llama_stack.apis.eval import Eval
 from llama_stack.apis.eval_tasks import EvalTasks
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.inspect import Inspect
-from llama_stack.apis.memory import Memory
-from llama_stack.apis.memory_banks import MemoryBanks
 from llama_stack.apis.models import Models
 from llama_stack.apis.post_training import PostTraining
 from llama_stack.apis.safety import Safety
@@ -32,6 +30,8 @@ from llama_stack.apis.shields import Shields
 from llama_stack.apis.synthetic_data_generation import SyntheticDataGeneration
 from llama_stack.apis.telemetry import Telemetry
 from llama_stack.apis.tools import ToolGroups, ToolRuntime
+from llama_stack.apis.vector_dbs import VectorDBs
+from llama_stack.apis.vector_io import VectorIO
 from llama_stack.distribution.datatypes import StackRunConfig
 from llama_stack.distribution.distribution import get_provider_registry
 from llama_stack.distribution.resolver import ProviderRegistry, resolve_impls
@@ -42,7 +42,7 @@ log = logging.getLogger(__name__)
 
 
 class LlamaStack(
-    MemoryBanks,
+    VectorDBs,
     Inference,
     BatchInference,
     Agents,
@@ -51,7 +51,7 @@ class LlamaStack(
     Datasets,
     Telemetry,
     PostTraining,
-    Memory,
+    VectorIO,
     Eval,
     EvalTasks,
     Scoring,
@@ -69,7 +69,7 @@ class LlamaStack(
 RESOURCES = [
     ("models", Api.models, "register_model", "list_models"),
     ("shields", Api.shields, "register_shield", "list_shields"),
-    ("memory_banks", Api.memory_banks, "register_memory_bank", "list_memory_banks"),
+    ("vector_dbs", Api.vector_dbs, "register_vector_db", "list_vector_dbs"),
     ("datasets", Api.datasets, "register_dataset", "list_datasets"),
     (
         "scoring_fns",

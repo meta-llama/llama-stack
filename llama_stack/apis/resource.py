@@ -14,7 +14,7 @@ from pydantic import BaseModel, Field
 class ResourceType(Enum):
     model = "model"
     shield = "shield"
-    memory_bank = "memory_bank"
+    vector_db = "vector_db"
     dataset = "dataset"
     scoring_function = "scoring_function"
     eval_task = "eval_task"

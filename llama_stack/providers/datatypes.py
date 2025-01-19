@@ -14,11 +14,11 @@ from llama_stack.apis.datasets import Dataset
 
 from llama_stack.apis.datatypes import Api
 from llama_stack.apis.eval_tasks import EvalTask
-from llama_stack.apis.memory_banks.memory_banks import MemoryBank
 from llama_stack.apis.models import Model
 from llama_stack.apis.scoring_functions import ScoringFn
 from llama_stack.apis.shields import Shield
 from llama_stack.apis.tools import Tool
+from llama_stack.apis.vector_dbs import VectorDB
 
 
 class ModelsProtocolPrivate(Protocol):
@@ -31,10 +31,10 @@ class ShieldsProtocolPrivate(Protocol):
     async def register_shield(self, shield: Shield) -> None: ...
 
 
-class MemoryBanksProtocolPrivate(Protocol):
-    async def register_memory_bank(self, memory_bank: MemoryBank) -> None: ...
+class VectorDBsProtocolPrivate(Protocol):
+    async def register_vector_db(self, vector_db: VectorDB) -> None: ...
 
-    async def unregister_memory_bank(self, memory_bank_id: str) -> None: ...
+    async def unregister_vector_db(self, vector_db_id: str) -> None: ...
 
 
 class DatasetsProtocolPrivate(Protocol):

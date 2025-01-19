@@ -33,7 +33,6 @@ from llama_stack.apis.inference import (
     ToolResponseMessage,
     UserMessage,
 )
-from llama_stack.apis.memory import MemoryBank
 from llama_stack.apis.safety import SafetyViolation
 from llama_stack.apis.tools import ToolDef
 from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
@@ -132,8 +131,6 @@ class Session(BaseModel):
     session_name: str
     turns: List[Turn]
     started_at: datetime
-
-    memory_bank: Optional[MemoryBank] = None
 
 
 class AgentToolGroupWithArgs(BaseModel):

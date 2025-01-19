@@ -13,14 +13,14 @@ from llama_stack.apis.datasets import Dataset, DatasetInput
 from llama_stack.apis.eval import Eval
 from llama_stack.apis.eval_tasks import EvalTask, EvalTaskInput
 from llama_stack.apis.inference import Inference
-from llama_stack.apis.memory import Memory
-from llama_stack.apis.memory_banks import MemoryBank, MemoryBankInput
 from llama_stack.apis.models import Model, ModelInput
 from llama_stack.apis.safety import Safety
 from llama_stack.apis.scoring import Scoring
 from llama_stack.apis.scoring_functions import ScoringFn, ScoringFnInput
 from llama_stack.apis.shields import Shield, ShieldInput
 from llama_stack.apis.tools import Tool, ToolGroup, ToolGroupInput, ToolRuntime
+from llama_stack.apis.vector_dbs import VectorDB, VectorDBInput
+from llama_stack.apis.vector_io import VectorIO
 from llama_stack.providers.datatypes import Api, ProviderSpec
 from llama_stack.providers.utils.kvstore.config import KVStoreConfig
 
@@ -34,7 +34,7 @@ RoutingKey = Union[str, List[str]]
 RoutableObject = Union[
     Model,
     Shield,
-    MemoryBank,
+    VectorDB,
     Dataset,
     ScoringFn,
     EvalTask,
@@ -47,7 +47,7 @@ RoutableObjectWithProvider = Annotated[
     Union[
         Model,
         Shield,
-        MemoryBank,
+        VectorDB,
         Dataset,
         ScoringFn,
         EvalTask,
@@ -60,7 +60,7 @@ RoutableObjectWithProvider = Annotated[
 RoutedProtocol = Union[
     Inference,
     Safety,
-    Memory,
+    VectorIO,
     DatasetIO,
     Scoring,
     Eval,
@@ -153,7 +153,7 @@ a default SQLite store will be used.""",
     # registry of "resources" in the distribution
     models: List[ModelInput] = Field(default_factory=list)
     shields: List[ShieldInput] = Field(default_factory=list)
-    memory_banks: List[MemoryBankInput] = Field(default_factory=list)
+    vector_dbs: List[VectorDBInput] = Field(default_factory=list)
     datasets: List[DatasetInput] = Field(default_factory=list)
     scoring_fns: List[ScoringFnInput] = Field(default_factory=list)
     eval_tasks: List[EvalTaskInput] = Field(default_factory=list)

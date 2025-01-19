@@ -38,7 +38,7 @@ EMBEDDING_DEPS = [
 def available_providers() -> List[ProviderSpec]:
     return [
         InlineProviderSpec(
-            api=Api.memory,
+            api=Api.vector_io,
             provider_type="inline::meta-reference",
             pip_packages=EMBEDDING_DEPS + ["faiss-cpu"],
             module="llama_stack.providers.inline.memory.faiss",
@@ -47,7 +47,7 @@ def available_providers() -> List[ProviderSpec]:
             api_dependencies=[Api.inference],
         ),
         InlineProviderSpec(
-            api=Api.memory,
+            api=Api.vector_io,
             provider_type="inline::faiss",
             pip_packages=EMBEDDING_DEPS + ["faiss-cpu"],
             module="llama_stack.providers.inline.memory.faiss",
@@ -55,7 +55,7 @@ def available_providers() -> List[ProviderSpec]:
             api_dependencies=[Api.inference],
         ),
         remote_provider_spec(
-            Api.memory,
+            Api.vector_io,
             AdapterSpec(
                 adapter_type="chromadb",
                 pip_packages=EMBEDDING_DEPS + ["chromadb-client"],
@@ -65,7 +65,7 @@ def available_providers() -> List[ProviderSpec]:
             api_dependencies=[Api.inference],
         ),
         InlineProviderSpec(
-            api=Api.memory,
+            api=Api.vector_io,
             provider_type="inline::chromadb",
             pip_packages=EMBEDDING_DEPS + ["chromadb"],
             module="llama_stack.providers.inline.memory.chroma",
@@ -73,7 +73,7 @@ def available_providers() -> List[ProviderSpec]:
             api_dependencies=[Api.inference],
         ),
         remote_provider_spec(
-            Api.memory,
+            Api.vector_io,
             AdapterSpec(
                 adapter_type="pgvector",
                 pip_packages=EMBEDDING_DEPS + ["psycopg2-binary"],
@@ -83,7 +83,7 @@ def available_providers() -> List[ProviderSpec]:
             api_dependencies=[Api.inference],
         ),
         remote_provider_spec(
-            Api.memory,
+            Api.vector_io,
             AdapterSpec(
                 adapter_type="weaviate",
                 pip_packages=EMBEDDING_DEPS + ["weaviate-client"],
@@ -94,7 +94,7 @@ def available_providers() -> List[ProviderSpec]:
             api_dependencies=[Api.inference],
         ),
         remote_provider_spec(
-            api=Api.memory,
+            api=Api.vector_io,
             adapter=AdapterSpec(
                 adapter_type="sample",
                 pip_packages=[],
@@ -104,7 +104,7 @@ def available_providers() -> List[ProviderSpec]:
             api_dependencies=[],
         ),
         remote_provider_spec(
-            Api.memory,
+            Api.vector_io,
             AdapterSpec(
                 adapter_type="qdrant",
                 pip_packages=EMBEDDING_DEPS + ["qdrant-client"],

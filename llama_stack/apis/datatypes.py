@@ -14,7 +14,7 @@ class Api(Enum):
     inference = "inference"
     safety = "safety"
     agents = "agents"
-    memory = "memory"
+    vector_io = "vector_io"
     datasetio = "datasetio"
     scoring = "scoring"
     eval = "eval"
@@ -25,7 +25,7 @@ class Api(Enum):
 
     models = "models"
     shields = "shields"
-    memory_banks = "memory_banks"
+    vector_dbs = "vector_dbs"
     datasets = "datasets"
     scoring_functions = "scoring_functions"
     eval_tasks = "eval_tasks"

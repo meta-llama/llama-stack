@@ -13,55 +13,45 @@ from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
 from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel, Field
 
-from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.inference import InterleavedContent
-from llama_stack.apis.memory_banks import MemoryBank
+from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
-
-
-@json_schema_type
-class MemoryBankDocument(BaseModel):
-    document_id: str
-    content: InterleavedContent | URL
-    mime_type: str | None = None
-    metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
 class Chunk(BaseModel):
     content: InterleavedContent
-    token_count: int
-    document_id: str
+    metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
 @json_schema_type
-class QueryDocumentsResponse(BaseModel):
+class QueryChunksResponse(BaseModel):
     chunks: List[Chunk]
     scores: List[float]
 
 
-class MemoryBankStore(Protocol):
-    def get_memory_bank(self, bank_id: str) -> Optional[MemoryBank]: ...
+class VectorDBStore(Protocol):
+    def get_vector_db(self, vector_db_id: str) -> Optional[VectorDB]: ...
 
 
 @runtime_checkable
 @trace_protocol
-class Memory(Protocol):
-    memory_bank_store: MemoryBankStore
+class VectorIO(Protocol):
+    vector_db_store: VectorDBStore
 
     # this will just block now until documents are inserted, but it should
     # probably return a Job instance which can be polled for completion
-    @webmethod(route="/memory/insert", method="POST")
-    async def insert_documents(
+    @webmethod(route="/vector-io/insert", method="POST")
+    async def insert_chunks(
         self,
-        bank_id: str,
-        documents: List[MemoryBankDocument],
+        vector_db_id: str,
+        chunks: List[Chunk],
         ttl_seconds: Optional[int] = None,
     ) -> None: ...
 
-    @webmethod(route="/memory/query", method="POST")
-    async def query_documents(
+    @webmethod(route="/vector-io/query", method="POST")
+    async def query_chunks(
         self,
-        bank_id: str,
+        vector_db_id: str,
         query: InterleavedContent,
         params: Optional[Dict[str, Any]] = None,
-    ) -> QueryDocumentsResponse: ...
+    ) -> QueryChunksResponse: ...

@@ -15,8 +15,6 @@ from llama_stack.apis.eval import Eval
 from llama_stack.apis.eval_tasks import EvalTasks
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.inspect import Inspect
-from llama_stack.apis.memory import Memory
-from llama_stack.apis.memory_banks import MemoryBanks
 from llama_stack.apis.models import Models
 from llama_stack.apis.post_training import PostTraining
 from llama_stack.apis.safety import Safety
@@ -25,6 +23,8 @@ from llama_stack.apis.scoring_functions import ScoringFunctions
 from llama_stack.apis.shields import Shields
 from llama_stack.apis.telemetry import Telemetry
 from llama_stack.apis.tools import ToolGroups, ToolRuntime
+from llama_stack.apis.vector_dbs import VectorDBs
+from llama_stack.apis.vector_io import VectorIO
 from llama_stack.distribution.client import get_client_impl
 from llama_stack.distribution.datatypes import (
     AutoRoutedProviderSpec,
@@ -40,7 +40,6 @@ from llama_stack.providers.datatypes import (
     DatasetsProtocolPrivate,
     EvalTasksProtocolPrivate,
     InlineProviderSpec,
-    MemoryBanksProtocolPrivate,
     ModelsProtocolPrivate,
     ProviderSpec,
     RemoteProviderConfig,
@@ -48,6 +47,7 @@ from llama_stack.providers.datatypes import (
     ScoringFunctionsProtocolPrivate,
     ShieldsProtocolPrivate,
     ToolsProtocolPrivate,
+    VectorDBsProtocolPrivate,
 )
 
 log = logging.getLogger(__name__)
@@ -62,8 +62,8 @@ def api_protocol_map() -> Dict[Api, Any]:
         Api.agents: Agents,
         Api.inference: Inference,
         Api.inspect: Inspect,
-        Api.memory: Memory,
-        Api.memory_banks: MemoryBanks,
+        Api.vector_io: VectorIO,
+        Api.vector_dbs: VectorDBs,
         Api.models: Models,
         Api.safety: Safety,
         Api.shields: Shields,
@@ -84,7 +84,7 @@ def additional_protocols_map() -> Dict[Api, Any]:
     return {
         Api.inference: (ModelsProtocolPrivate, Models, Api.models),
         Api.tool_groups: (ToolsProtocolPrivate, ToolGroups, Api.tool_groups),
-        Api.memory: (MemoryBanksProtocolPrivate, MemoryBanks, Api.memory_banks),
+        Api.vector_io: (VectorDBsProtocolPrivate, VectorDBs, Api.vector_dbs),
         Api.safety: (ShieldsProtocolPrivate, Shields, Api.shields),
         Api.datasetio: (DatasetsProtocolPrivate, Datasets, Api.datasets),
         Api.scoring: (
