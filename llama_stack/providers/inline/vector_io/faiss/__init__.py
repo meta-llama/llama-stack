@@ -11,12 +11,12 @@ from .config import FaissImplConfig
 
 
 async def get_provider_impl(config: FaissImplConfig, deps: Dict[Api, ProviderSpec]):
-    from .faiss import FaissMemoryImpl
+    from .faiss import FaissVectorIOImpl
 
     assert isinstance(
         config, FaissImplConfig
     ), f"Unexpected config type: {type(config)}"
 
-    impl = FaissMemoryImpl(config, deps[Api.inference])
+    impl = FaissVectorIOImpl(config, deps[Api.inference])
     await impl.initialize()
     return impl
