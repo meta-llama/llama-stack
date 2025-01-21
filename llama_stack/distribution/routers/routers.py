@@ -440,7 +440,7 @@ class ToolRuntimeRouter(ToolRuntime):
     ) -> None:
         self.routing_table = routing_table
 
-        # TODO: this should be in sync with "get_all_api_endpoints()"
+        # HACK ALERT this should be in sync with "get_all_api_endpoints()"
         # TODO: make sure rag_tool vs builtin::memory is correct everywhere
         self.rag_tool = self.RagToolImpl(routing_table)
         setattr(self, "rag_tool.query_context", self.rag_tool.query_context)

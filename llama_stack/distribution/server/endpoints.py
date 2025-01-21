@@ -38,6 +38,8 @@ def get_all_api_endpoints() -> Dict[Api, List[ApiEndpoint]]:
     for api, protocol in protocols.items():
         endpoints = []
         protocol_methods = inspect.getmembers(protocol, predicate=inspect.isfunction)
+
+        # HACK ALERT
         if api == Api.tool_runtime:
             for tool_group in SpecialToolGroup:
                 sub_protocol = toolgroup_protocols[tool_group]

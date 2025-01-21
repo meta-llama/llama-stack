@@ -970,7 +970,7 @@ async def execute_tool_call_maybe(
 
     result = await tool_runtime_api.invoke_tool(
         tool_name=name,
-        args=dict(
+        kwargs=dict(
             session_id=session_id,
             **tool_call_args,
         ),
