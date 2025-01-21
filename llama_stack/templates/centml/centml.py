@@ -13,12 +13,17 @@ from llama_stack.providers.inline.inference.sentence_transformers import (
     SentenceTransformersInferenceConfig,
 )
 from llama_stack.providers.inline.memory.faiss.config import FaissImplConfig
-from llama_stack.providers.remote.inference.centml.config import CentMLImplConfig
+from llama_stack.providers.remote.inference.centml.config import (
+    CentMLImplConfig,
+)
 
 # If your CentML adapter has a MODEL_ALIASES constant with known model mappings:
 from llama_stack.providers.remote.inference.centml.centml import MODEL_ALIASES
 
-from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
+from llama_stack.templates.template import (
+    DistributionTemplate,
+    RunConfigSettings,
+)
 
 
 def get_distribution_template() -> DistributionTemplate:
@@ -33,7 +38,11 @@ def get_distribution_template() -> DistributionTemplate:
         "telemetry": ["inline::meta-reference"],
         "eval": ["inline::meta-reference"],
         "datasetio": ["remote::huggingface", "inline::localfs"],
-        "scoring": ["inline::basic", "inline::llm-as-judge", "inline::braintrust"],
+        "scoring": [
+            "inline::basic",
+            "inline::llm-as-judge",
+            "inline::braintrust",
+        ],
     }
     name = "centml"
 
@@ -94,7 +103,9 @@ def get_distribution_template() -> DistributionTemplate:
                     "memory": [memory_provider],
                 },
                 default_models=default_models + [embedding_model],
-                default_shields=[ShieldInput(shield_id="meta-llama/Llama-Guard-3-8B")],
+                default_shields=[
+                    ShieldInput(shield_id="meta-llama/Llama-Guard-3-8B")
+                ],
             ),
         },
         run_config_env_vars={

@@ -163,3 +163,6 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = "llama_stack.distribution.resolver"
 follow_imports = "normal"                    # This will force type checking on this module
+
+[tool.ruff]
+line-length = 80
