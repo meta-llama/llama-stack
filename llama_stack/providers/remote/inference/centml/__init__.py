@@ -8,8 +8,10 @@ from pydantic import BaseModel
 
 from .config import CentMLImplConfig
 
+
 class CentMLProviderDataValidator(BaseModel):
     centml_api_key: str
+
 
 async def get_adapter_impl(config: CentMLImplConfig, _deps):
     """
@@ -21,9 +23,9 @@ async def get_adapter_impl(config: CentMLImplConfig, _deps):
     from .centml import CentMLInferenceAdapter
 
     # Ensure the provided config is indeed a CentMLImplConfig
-    assert isinstance(
-        config, CentMLImplConfig
-    ), f"Unexpected config type: {type(config)}"
+    assert isinstance(config, CentMLImplConfig), (
+        f"Unexpected config type: {type(config)}"
+    )
 
     # Instantiate and initialize the adapter
     adapter = CentMLInferenceAdapter(config)
