@@ -9,6 +9,8 @@ from typing import Dict, List
 
 from pydantic import BaseModel
 
+from llama_stack.apis.tools import SpecialToolGroups
+
 from llama_stack.apis.version import LLAMA_STACK_API_VERSION
 
 from llama_stack.distribution.resolver import api_protocol_map
@@ -29,6 +31,15 @@ def get_all_api_endpoints() -> Dict[Api, List[ApiEndpoint]]:
     for api, protocol in protocols.items():
         endpoints = []
         protocol_methods = inspect.getmembers(protocol, predicate=inspect.isfunction)
+        if api == Api.tool_runtime:
+            for tool_group in SpecialToolGroups:
+                print(f"tool_group: {tool_group}")
+                sub_protocol = getattr(protocol, tool_group.value)
+                sub_protocol_methods = inspect.getmembers(
+                    sub_protocol, predicate=inspect.isfunction
+                )
+                for name, method in sub_protocol_methods:
+                    protocol_methods.append((f"{tool_group.value}.{name}", method))
 
         for name, method in protocol_methods:
             if not hasattr(method, "__webmethod__"):

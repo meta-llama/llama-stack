@@ -13,8 +13,6 @@ from .memory import MemoryToolRuntimeImpl
 
 
 async def get_provider_impl(config: MemoryToolRuntimeConfig, deps: Dict[str, Any]):
-    impl = MemoryToolRuntimeImpl(
-        config, deps[Api.memory], deps[Api.memory_banks], deps[Api.inference]
-    )
+    impl = MemoryToolRuntimeImpl(config, deps[Api.vector_io], deps[Api.inference])
     await impl.initialize()
     return impl

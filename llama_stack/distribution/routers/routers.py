@@ -406,6 +406,12 @@ class ToolRuntimeRouter(ToolRuntime):
     ) -> None:
         self.routing_table = routing_table
 
+        # TODO: this should be in sync with "get_all_api_endpoints()"
+        # TODO: make sure rag_tool vs builtin::memory is correct everywhere
+        self.rag_tool = self.routing_table.get_provider_impl("builtin::memory")
+        setattr(self, "rag_tool.query_context", self.rag_tool.query_context)
+        setattr(self, "rag_tool.insert_documents", self.rag_tool.insert_documents)
+
     async def initialize(self) -> None:
         pass
 

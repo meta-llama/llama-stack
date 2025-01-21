@@ -19,7 +19,6 @@ import numpy as np
 from llama_models.llama3.api.tokenizer import Tokenizer
 from numpy.typing import NDArray
 
-from pydantic import BaseModel, Field
 from pypdf import PdfReader
 
 from llama_stack.apis.common.content_types import (
@@ -27,6 +26,7 @@ from llama_stack.apis.common.content_types import (
     TextContentItem,
     URL,
 )
+from llama_stack.apis.tools import RAGDocument
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import Chunk, QueryChunksResponse
 from llama_stack.providers.datatypes import Api
@@ -34,15 +34,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
     interleaved_content_as_str,
 )
 
-
 log = logging.getLogger(__name__)
-
-
-class MemoryBankDocument(BaseModel):
-    document_id: str
-    content: InterleavedContent | URL
-    mime_type: str | None = None
-    metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
 def parse_pdf(data: bytes) -> str:
@@ -122,7 +114,7 @@ def concat_interleaved_content(content: List[InterleavedContent]) -> Interleaved
     return ret
 
 
-async def content_from_doc(doc: MemoryBankDocument) -> str:
+async def content_from_doc(doc: RAGDocument) -> str:
     if isinstance(doc.content, URL):
         if doc.content.uri.startswith("data:"):
             return content_from_data(doc.content.uri)

@@ -333,6 +333,8 @@ async def instantiate_provider(
     impl.__provider_spec__ = provider_spec
     impl.__provider_config__ = config
 
+    # TODO: check compliance for special tool groups
+    # the impl should be for Api.tool_runtime, the name should be the special tool group, the protocol should be the special tool group protocol
     check_protocol_compliance(impl, protocols[provider_spec.api])
     if (
         not isinstance(provider_spec, AutoRoutedProviderSpec)

@@ -47,7 +47,7 @@ async def default_rag_query_generator(
     messages: List[InterleavedContent],
     **kwargs,
 ):
-    return config.sep.join(interleaved_content_as_str(m) for m in messages)
+    return config.separator.join(interleaved_content_as_str(m) for m in messages)
 
 
 async def llm_rag_query_generator(

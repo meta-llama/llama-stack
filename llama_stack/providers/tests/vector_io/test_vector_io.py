@@ -8,13 +8,12 @@ import uuid
 
 import pytest
 
+from llama_stack.apis.tools import RAGDocument
+
 from llama_stack.apis.vector_dbs import ListVectorDBsResponse, VectorDB
 from llama_stack.apis.vector_io import QueryChunksResponse
 
-from llama_stack.providers.utils.memory.vector_store import (
-    make_overlapped_chunks,
-    MemoryBankDocument,
-)
+from llama_stack.providers.utils.memory.vector_store import make_overlapped_chunks
 
 # How to run this test:
 #
@@ -26,22 +25,22 @@ from llama_stack.providers.utils.memory.vector_store import (
 @pytest.fixture(scope="session")
 def sample_chunks():
     docs = [
-        MemoryBankDocument(
+        RAGDocument(
             document_id="doc1",
             content="Python is a high-level programming language.",
             metadata={"category": "programming", "difficulty": "beginner"},
         ),
-        MemoryBankDocument(
+        RAGDocument(
             document_id="doc2",
             content="Machine learning is a subset of artificial intelligence.",
             metadata={"category": "AI", "difficulty": "advanced"},
         ),
-        MemoryBankDocument(
+        RAGDocument(
             document_id="doc3",
             content="Data structures are fundamental to computer science.",
             metadata={"category": "computer science", "difficulty": "intermediate"},
         ),
-        MemoryBankDocument(
+        RAGDocument(
             document_id="doc4",
             content="Neural networks are inspired by biological neural networks.",
             metadata={"category": "AI", "difficulty": "advanced"},
