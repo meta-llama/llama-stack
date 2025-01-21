@@ -27,6 +27,10 @@ from llama_stack.apis.tools import (
 )
 from llama_stack.apis.vector_io import QueryChunksResponse, VectorIO
 from llama_stack.providers.datatypes import ToolsProtocolPrivate
+from llama_stack.providers.utils.memory.vector_store import (
+    content_from_doc,
+    make_overlapped_chunks,
+)
 
 from .config import MemoryToolRuntimeConfig
 from .context_retriever import generate_rag_query
@@ -60,10 +64,28 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
     async def insert_documents(
         self,
         documents: List[RAGDocument],
-        vector_db_ids: List[str],
+        vector_db_id: str,
         chunk_size_in_tokens: int = 512,
     ) -> None:
-        pass
+        chunks = []
+        for doc in documents:
+            content = await content_from_doc(doc)
+            chunks.extend(
+                make_overlapped_chunks(
+                    doc.document_id,
+                    content,
+                    chunk_size_in_tokens,
+                    chunk_size_in_tokens // 4,
+                )
+            )
+
+        if not chunks:
+            return
+
+        await self.vector_io_api.insert_chunks(
+            chunks=chunks,
+            vector_db_id=vector_db_id,
+        )
 
     async def query_context(
         self,
@@ -104,13 +126,18 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
         tokens = 0
         picked = []
         for c in chunks[: query_config.max_chunks]:
-            tokens += c.token_count
+            metadata = c.metadata
+            tokens += metadata["token_count"]
             if tokens > query_config.max_tokens_in_context:
                 log.error(
                     f"Using {len(picked)} chunks; reached max tokens in context: {tokens}",
                 )
                 break
-            picked.append(f"id:{c.document_id}; content:{c.content}")
+            picked.append(
+                TextContentItem(
+                    text=f"id:{metadata['document_id']}; content:{c.content}",
+                )
+            )
 
         return RAGQueryResult(
             content=[

@@ -373,21 +373,30 @@ class ChatAgent(ShieldRunnerMixin):
         documents: Optional[List[Document]] = None,
         toolgroups_for_turn: Optional[List[AgentToolGroup]] = None,
     ) -> AsyncGenerator:
+        # TODO: simplify all of this code, it can be simpler
         toolgroup_args = {}
+        toolgroups = set()
         for toolgroup in self.agent_config.toolgroups:
             if isinstance(toolgroup, AgentToolGroupWithArgs):
+                toolgroups.add(toolgroup.name)
                 toolgroup_args[toolgroup.name] = toolgroup.args
+            else:
+                toolgroups.add(toolgroup)
         if toolgroups_for_turn:
             for toolgroup in toolgroups_for_turn:
                 if isinstance(toolgroup, AgentToolGroupWithArgs):
+                    toolgroups.add(toolgroup.name)
                     toolgroup_args[toolgroup.name] = toolgroup.args
+                else:
+                    toolgroups.add(toolgroup)
 
         tool_defs, tool_to_group = await self._get_tool_defs(toolgroups_for_turn)
         if documents:
             await self.handle_documents(
                 session_id, documents, input_messages, tool_defs
             )
-        if "builtin::memory" in toolgroup_args and len(input_messages) > 0:
+
+        if "builtin::memory" in toolgroups and len(input_messages) > 0:
             with tracing.span(MEMORY_QUERY_TOOL) as span:
                 step_id = str(uuid.uuid4())
                 yield AgentTurnResponseStreamChunk(
@@ -399,7 +408,7 @@ class ChatAgent(ShieldRunnerMixin):
                     )
                 )
 
-                args = toolgroup_args["builtin::memory"]
+                args = toolgroup_args.get("builtin::memory", {})
                 vector_db_ids = args.get("vector_db_ids", [])
                 session_info = await self.storage.get_session_info(session_id)
 
@@ -423,7 +432,7 @@ class ChatAgent(ShieldRunnerMixin):
                         )
                     )
                 )
-                retrieved_context = await self.tool_runtime_api.rag_tool.query_context(
+                result = await self.tool_runtime_api.rag_tool.query_context(
                     content=concat_interleaved_content(
                         [msg.content for msg in input_messages]
                     ),
@@ -434,6 +443,7 @@ class ChatAgent(ShieldRunnerMixin):
                     ),
                     vector_db_ids=vector_db_ids,
                 )
+                retrieved_context = result.content
 
                 yield AgentTurnResponseStreamChunk(
                     event=AgentTurnResponseEvent(
@@ -862,7 +872,7 @@ class ChatAgent(ShieldRunnerMixin):
     async def add_to_session_memory_bank(
         self, session_id: str, data: List[Document]
     ) -> None:
-        bank_id = await self._ensure_memory_bank(session_id)
+        vector_db_id = await self._ensure_memory_bank(session_id)
         documents = [
             RAGDocument(
                 document_id=str(uuid.uuid4()),
@@ -874,7 +884,7 @@ class ChatAgent(ShieldRunnerMixin):
         ]
         await self.tool_runtime_api.rag_tool.insert_documents(
             documents=documents,
-            vector_db_ids=[bank_id],
+            vector_db_id=vector_db_id,
             chunk_size_in_tokens=512,
         )
 

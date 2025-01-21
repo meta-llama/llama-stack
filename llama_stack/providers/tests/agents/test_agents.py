@@ -214,8 +214,10 @@ class TestAgents:
         turn_response = [
             chunk async for chunk in await agents_impl.create_agent_turn(**turn_request)
         ]
-
         assert len(turn_response) > 0
+
+        # FIXME: we need to check the content of the turn response and ensure
+        # RAG actually worked
 
     @pytest.mark.asyncio
     async def test_create_agent_turn_with_tavily_search(

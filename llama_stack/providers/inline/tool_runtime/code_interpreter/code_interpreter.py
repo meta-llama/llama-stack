@@ -60,9 +60,9 @@ class CodeInterpreterToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime):
         ]
 
     async def invoke_tool(
-        self, tool_name: str, args: Dict[str, Any]
+        self, tool_name: str, kwargs: Dict[str, Any]
     ) -> ToolInvocationResult:
-        script = args["code"]
+        script = kwargs["code"]
         req = CodeExecutionRequest(scripts=[script])
         res = self.code_executor.execute(req)
         pieces = [res["process_status"]]

@@ -68,11 +68,11 @@ class WolframAlphaToolRuntimeImpl(
         ]
 
     async def invoke_tool(
-        self, tool_name: str, args: Dict[str, Any]
+        self, tool_name: str, kwargs: Dict[str, Any]
     ) -> ToolInvocationResult:
         api_key = self._get_api_key()
         params = {
-            "input": args["query"],
+            "input": kwargs["query"],
             "appid": api_key,
             "format": "plaintext",
             "output": "json",

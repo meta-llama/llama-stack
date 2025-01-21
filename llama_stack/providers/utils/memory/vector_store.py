@@ -153,7 +153,13 @@ def make_overlapped_chunks(
         chunk = tokenizer.decode(toks)
         # chunk is a string
         chunks.append(
-            Chunk(content=chunk, token_count=len(toks), document_id=document_id)
+            Chunk(
+                content=chunk,
+                metadata={
+                    "token_count": len(toks),
+                    "document_id": document_id,
+                },
+            )
         )
 
     return chunks

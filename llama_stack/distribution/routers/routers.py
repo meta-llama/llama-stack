@@ -36,7 +36,14 @@ from llama_stack.apis.scoring import (
     ScoringFnParams,
 )
 from llama_stack.apis.shields import Shield
-from llama_stack.apis.tools import ToolDef, ToolRuntime
+from llama_stack.apis.tools import (
+    RAGDocument,
+    RAGQueryConfig,
+    RAGQueryResult,
+    RAGToolRuntime,
+    ToolDef,
+    ToolRuntime,
+)
 from llama_stack.apis.vector_io import Chunk, QueryChunksResponse, VectorIO
 from llama_stack.providers.datatypes import RoutingTable
 
@@ -400,6 +407,33 @@ class EvalRouter(Eval):
 
 
 class ToolRuntimeRouter(ToolRuntime):
+    class RagToolImpl(RAGToolRuntime):
+        def __init__(
+            self,
+            routing_table: RoutingTable,
+        ) -> None:
+            self.routing_table = routing_table
+
+        async def query_context(
+            self,
+            content: InterleavedContent,
+            query_config: RAGQueryConfig,
+            vector_db_ids: List[str],
+        ) -> RAGQueryResult:
+            return await self.routing_table.get_provider_impl(
+                "rag_tool.query_context"
+            ).query_context(content, query_config, vector_db_ids)
+
+        async def insert_documents(
+            self,
+            documents: List[RAGDocument],
+            vector_db_id: str,
+            chunk_size_in_tokens: int = 512,
+        ) -> None:
+            return await self.routing_table.get_provider_impl(
+                "rag_tool.insert_documents"
+            ).insert_documents(documents, vector_db_id, chunk_size_in_tokens)
+
     def __init__(
         self,
         routing_table: RoutingTable,
@@ -408,7 +442,7 @@ class ToolRuntimeRouter(ToolRuntime):
 
         # TODO: this should be in sync with "get_all_api_endpoints()"
         # TODO: make sure rag_tool vs builtin::memory is correct everywhere
-        self.rag_tool = self.routing_table.get_provider_impl("builtin::memory")
+        self.rag_tool = self.RagToolImpl(routing_table)
         setattr(self, "rag_tool.query_context", self.rag_tool.query_context)
         setattr(self, "rag_tool.insert_documents", self.rag_tool.insert_documents)
 
@@ -418,10 +452,10 @@ class ToolRuntimeRouter(ToolRuntime):
     async def shutdown(self) -> None:
         pass
 
-    async def invoke_tool(self, tool_name: str, args: Dict[str, Any]) -> Any:
+    async def invoke_tool(self, tool_name: str, kwargs: Dict[str, Any]) -> Any:
         return await self.routing_table.get_provider_impl(tool_name).invoke_tool(
             tool_name=tool_name,
-            args=args,
+            kwargs=kwargs,
         )
 
     async def list_runtime_tools(

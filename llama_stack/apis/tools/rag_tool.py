@@ -74,17 +74,17 @@ class RAGQueryConfig(BaseModel):
 @runtime_checkable
 @trace_protocol
 class RAGToolRuntime(Protocol):
-    @webmethod(route="/tool-runtime/rag-tool/insert", method="POST")
+    @webmethod(route="/tool-runtime/rag-tool/insert-documents", method="POST")
     async def insert_documents(
         self,
         documents: List[RAGDocument],
-        vector_db_ids: List[str],
+        vector_db_id: str,
         chunk_size_in_tokens: int = 512,
     ) -> None:
         """Index documents so they can be used by the RAG system"""
         ...
 
-    @webmethod(route="/tool-runtime/rag-tool/query", method="POST")
+    @webmethod(route="/tool-runtime/rag-tool/query-context", method="POST")
     async def query_context(
         self,
         content: InterleavedContent,
