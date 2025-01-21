@@ -132,7 +132,7 @@ class ToolGroups(Protocol):
         ...
 
 
-class SpecialToolGroups(Enum):
+class SpecialToolGroup(Enum):
     rag_tool = "rag_tool"
 
 
