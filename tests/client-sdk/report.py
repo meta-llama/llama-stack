@@ -68,6 +68,26 @@ SUPPORTED_MODELS = {
             CoreModelId.llama_guard_3_11b_vision.value,
         ]
     ),
+    "tgi": set(
+        [
+            model.core_model_id.value
+            for model in all_registered_models()
+            if model.huggingface_repo
+        ]
+    ),
+    "vllm": set(
+        [
+            model.core_model_id.value
+            for model in all_registered_models()
+            if model.huggingface_repo
+        ]
+    ),
+    "cerebras": set(
+        [
+            CoreModelId.llama3_1_8b_instruct.value,
+            CoreModelId.llama3_3_70b_instruct.value,
+        ]
+    ),
 }
 
 
