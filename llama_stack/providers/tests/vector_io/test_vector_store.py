@@ -11,8 +11,11 @@ from pathlib import Path
 
 import pytest
 
-from llama_stack.apis.memory.memory import MemoryBankDocument, URL
-from llama_stack.providers.utils.memory.vector_store import content_from_doc
+from llama_stack.providers.utils.memory.vector_store import (
+    content_from_doc,
+    MemoryBankDocument,
+    URL,
+)
 
 DUMMY_PDF_PATH = Path(os.path.abspath(__file__)).parent / "fixtures" / "dummy.pdf"
 

@@ -302,7 +302,7 @@ def pytest_collection_modifyitems(session, config, items):
 pytest_plugins = [
     "llama_stack.providers.tests.inference.fixtures",
     "llama_stack.providers.tests.safety.fixtures",
-    "llama_stack.providers.tests.memory.fixtures",
+    "llama_stack.providers.tests.vector_io.fixtures",
     "llama_stack.providers.tests.agents.fixtures",
     "llama_stack.providers.tests.datasetio.fixtures",
     "llama_stack.providers.tests.scoring.fixtures",

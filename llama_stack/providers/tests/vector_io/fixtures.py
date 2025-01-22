@@ -12,11 +12,12 @@ import pytest_asyncio
 
 from llama_stack.apis.models import ModelInput, ModelType
 from llama_stack.distribution.datatypes import Api, Provider
-from llama_stack.providers.inline.memory.chroma import ChromaInlineImplConfig
-from llama_stack.providers.inline.memory.faiss import FaissImplConfig
-from llama_stack.providers.remote.memory.chroma import ChromaRemoteImplConfig
-from llama_stack.providers.remote.memory.pgvector import PGVectorConfig
-from llama_stack.providers.remote.memory.weaviate import WeaviateConfig
+
+from llama_stack.providers.inline.vector_io.chroma import ChromaInlineImplConfig
+from llama_stack.providers.inline.vector_io.faiss import FaissImplConfig
+from llama_stack.providers.remote.vector_io.chroma import ChromaRemoteImplConfig
+from llama_stack.providers.remote.vector_io.pgvector import PGVectorConfig
+from llama_stack.providers.remote.vector_io.weaviate import WeaviateConfig
 from llama_stack.providers.tests.resolver import construct_stack_for_test
 from llama_stack.providers.utils.kvstore.config import SqliteKVStoreConfig
 
@@ -32,12 +33,12 @@ def embedding_model(request):
 
 
 @pytest.fixture(scope="session")
-def memory_remote() -> ProviderFixture:
+def vector_io_remote() -> ProviderFixture:
     return remote_stack_fixture()
 
 
 @pytest.fixture(scope="session")
-def memory_faiss() -> ProviderFixture:
+def vector_io_faiss() -> ProviderFixture:
     temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".db")
     return ProviderFixture(
         providers=[
@@ -53,7 +54,7 @@ def memory_faiss() -> ProviderFixture:
 
 
 @pytest.fixture(scope="session")
-def memory_pgvector() -> ProviderFixture:
+def vector_io_pgvector() -> ProviderFixture:
     return ProviderFixture(
         providers=[
             Provider(
@@ -72,7 +73,7 @@ def memory_pgvector() -> ProviderFixture:
 
 
 @pytest.fixture(scope="session")
-def memory_weaviate() -> ProviderFixture:
+def vector_io_weaviate() -> ProviderFixture:
     return ProviderFixture(
         providers=[
             Provider(
@@ -89,7 +90,7 @@ def memory_weaviate() -> ProviderFixture:
 
 
 @pytest.fixture(scope="session")
-def memory_chroma() -> ProviderFixture:
+def vector_io_chroma() -> ProviderFixture:
     url = os.getenv("CHROMA_URL")
     if url:
         config = ChromaRemoteImplConfig(url=url)
@@ -110,23 +111,23 @@ def memory_chroma() -> ProviderFixture:
     )
 
 
-MEMORY_FIXTURES = ["faiss", "pgvector", "weaviate", "remote", "chroma"]
+VECTOR_IO_FIXTURES = ["faiss", "pgvector", "weaviate", "chroma"]
 
 
 @pytest_asyncio.fixture(scope="session")
-async def memory_stack(embedding_model, request):
+async def vector_io_stack(embedding_model, request):
     fixture_dict = request.param
 
     providers = {}
     provider_data = {}
-    for key in ["inference", "memory"]:
+    for key in ["inference", "vector_io"]:
         fixture = request.getfixturevalue(f"{key}_{fixture_dict[key]}")
         providers[key] = fixture.providers
         if fixture.provider_data:
             provider_data.update(fixture.provider_data)
 
     test_stack = await construct_stack_for_test(
-        [Api.memory, Api.inference],
+        [Api.vector_io, Api.inference],
         providers,
         provider_data,
         models=[
@@ -140,4 +141,4 @@ async def memory_stack(embedding_model, request):
         ],
     )
 
-    return test_stack.impls[Api.memory], test_stack.impls[Api.memory_banks]
+    return test_stack.impls[Api.vector_io], test_stack.impls[Api.vector_dbs]

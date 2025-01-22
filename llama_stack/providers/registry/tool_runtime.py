@@ -23,7 +23,7 @@ def available_providers() -> List[ProviderSpec]:
             pip_packages=[],
             module="llama_stack.providers.inline.tool_runtime.memory",
             config_class="llama_stack.providers.inline.tool_runtime.memory.config.MemoryToolRuntimeConfig",
-            api_dependencies=[Api.memory, Api.memory_banks, Api.inference],
+            api_dependencies=[Api.vector_io, Api.vector_dbs, Api.inference],
         ),
         InlineProviderSpec(
             api=Api.tool_runtime,

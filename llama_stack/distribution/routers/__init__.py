@@ -14,11 +14,11 @@ from llama_stack.providers.datatypes import Api, RoutingTable
 from .routing_tables import (
     DatasetsRoutingTable,
     EvalTasksRoutingTable,
-    MemoryBanksRoutingTable,
     ModelsRoutingTable,
     ScoringFunctionsRoutingTable,
     ShieldsRoutingTable,
     ToolGroupsRoutingTable,
+    VectorDBsRoutingTable,
 )
 
 
@@ -29,7 +29,7 @@ async def get_routing_table_impl(
     dist_registry: DistributionRegistry,
 ) -> Any:
     api_to_tables = {
-        "memory_banks": MemoryBanksRoutingTable,
+        "vector_dbs": VectorDBsRoutingTable,
         "models": ModelsRoutingTable,
         "shields": ShieldsRoutingTable,
         "datasets": DatasetsRoutingTable,
@@ -51,14 +51,14 @@ async def get_auto_router_impl(api: Api, routing_table: RoutingTable, _deps) -> 
         DatasetIORouter,
         EvalRouter,
         InferenceRouter,
-        MemoryRouter,
         SafetyRouter,
         ScoringRouter,
         ToolRuntimeRouter,
+        VectorIORouter,
     )
 
     api_to_routers = {
-        "memory": MemoryRouter,
+        "vector_io": VectorIORouter,
         "inference": InferenceRouter,
         "safety": SafetyRouter,
         "datasetio": DatasetIORouter,
