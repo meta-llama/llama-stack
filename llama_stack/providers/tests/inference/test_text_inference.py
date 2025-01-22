@@ -208,7 +208,6 @@ class TestInference:
                 assert not chunk.logprobs, "Logprobs should be empty"
 
     @pytest.mark.asyncio(loop_scope="session")
-    @pytest.mark.skip("This test is not quite robust")
     async def test_completion_structured_output(self, inference_model, inference_stack):
         inference_impl, _ = inference_stack
 
