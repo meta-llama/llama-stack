@@ -34,30 +34,6 @@ def inference_provider_type(llama_stack_client):
     return inference_providers[0].provider_type
 
 
-@pytest.fixture(scope="session")
-def text_model_id(llama_stack_client):
-    available_models = [
-        model.identifier
-        for model in llama_stack_client.models.list()
-        if model.identifier.startswith("meta-llama") and "405" not in model.identifier
-    ]
-    assert len(available_models) > 0
-    return available_models[0]
-
-
-@pytest.fixture(scope="session")
-def vision_model_id(llama_stack_client):
-    available_models = [
-        model.identifier
-        for model in llama_stack_client.models.list()
-        if "vision" in model.identifier.lower()
-    ]
-    if len(available_models) == 0:
-        pytest.skip("No vision models available")
-
-    return available_models[0]
-
-
 @pytest.fixture
 def get_weather_tool_definition():
     return {
@@ -107,6 +83,7 @@ def test_text_completion_streaming(llama_stack_client, text_model_id):
     assert "blue" in "".join(streamed_content).lower().strip()
 
 
+@pytest.mark.skip("Most inference providers don't support log probs yet")
 def test_completion_log_probs_non_streaming(llama_stack_client, text_model_id):
     response = llama_stack_client.inference.completion(
         content="Complete the sentence: Micheael Jordan is born in ",
@@ -124,6 +101,7 @@ def test_completion_log_probs_non_streaming(llama_stack_client, text_model_id):
     assert all(len(logprob.logprobs_by_token) == 3 for logprob in response.logprobs)
 
 
+@pytest.mark.skip("Most inference providers don't support log probs yet")
 def test_completion_log_probs_streaming(llama_stack_client, text_model_id):
     response = llama_stack_client.inference.completion(
         content="Complete the sentence: Micheael Jordan is born in ",

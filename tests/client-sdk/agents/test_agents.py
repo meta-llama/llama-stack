@@ -80,18 +80,6 @@ class TestClientTool(ClientTool):
 
 
 @pytest.fixture(scope="session")
-def text_model_id(llama_stack_client):
-    available_models = [
-        model.identifier
-        for model in llama_stack_client.models.list()
-        if model.identifier.startswith("meta-llama") and "405" not in model.identifier
-    ]
-    model_id = available_models[0]
-    print(f"Using model: {model_id}")
-    return model_id
-
-
-@pytest.fixture(scope="session")
 def agent_config(llama_stack_client, text_model_id):
     available_shields = [
         shield.identifier for shield in llama_stack_client.shields.list()
