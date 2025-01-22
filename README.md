@@ -6,7 +6,8 @@
 
 [**Quick Start**](https://llama-stack.readthedocs.io/en/latest/getting_started/index.html) | [**Documentation**](https://llama-stack.readthedocs.io/en/latest/index.html) | [**Zero-to-Hero Guide**](https://github.com/meta-llama/llama-stack/tree/main/docs/zero_to_hero_guide)
 
-Llama Stack defines and standardizes the set of core building blocks needed to bring generative AI applications to market. These building blocks are presented in the form of interoperable APIs with a broad set of Service Providers providing their implementations.
+Llama Stack defines and standardizes the core building blocks needed to bring generative AI applications to market. It provides a unified set of APIs with implementations from leading service providers, enabling seamless transitions between development and production environments.
+
 
 <div style="text-align: center;">
   <img
@@ -17,62 +18,28 @@ Llama Stack defines and standardizes the set of core building blocks needed to b
   />
 </div>
 
-Our goal is to provide pre-packaged implementations which can be operated in a variety of deployment environments: developers start iterating with Desktops or their mobile devices and can seamlessly transition to on-prem or public cloud deployments. At every point in this transition, the same set of APIs and the same developer experience is available.
+## Key Features
 
-> ⚠️ **Note**
-> The Stack APIs are rapidly improving, but still very much work in progress and we invite feedback as well as direct contributions.
+- **Unified API Layer** for:
+  - Inference: Run LLM models efficiently
+  - Safety: Apply content filtering and safety policies
+  - DatasetIO: Store and retrieve knowledge for RAG
+  - Agents: Build multi-step agentic workflows
+  - Evaluation: Test and improve model and agent quality
+  - Telemetry: Collect and analyze usage data and complex agentic traces
+  - Post Training ( Coming Soon ): Fine tune models for specific use cases
 
+- **Rich Provider Ecosystem**
+  - Local Development: Ollama, vLLM, TGI
+  - Self-hosted: Chroma, pgvector, Nvidia NIM
+  - Cloud: Fireworks, Together, Nvidia, AWS Bedrock
+  - On-device: iOS and Android support
 
-## APIs
-
-We have working implementations of the following APIs today:
-- Inference
-- Safety
-- Memory
-- Agents
-- Eval
-- Telemetry
-
-Alongside these APIs, we also related APIs for operating with associated resources (see [Concepts](https://llama-stack.readthedocs.io/en/latest/concepts/index.html#resources)):
-
-- Models
-- Shields
-- Memory Banks
-- Eval Tasks
-- Datasets
-- Scoring Functions
-
-We are also working on the following APIs which will be released soon:
-
-- Post Training
-- Synthetic Data Generation
-- Reward Scoring
-
-Each of the APIs themselves is a collection of REST endpoints.
-
-## Philosophy
-
-### Service-oriented design
-
-Unlike other frameworks, Llama Stack is built with a service-oriented, REST API-first approach. Such a design not only allows for seamless transitions from a local to remote deployments, but also forces the design to be more declarative. We believe this restriction can result in a much simpler, robust developer experience. This will necessarily trade-off against expressivity however if we get the APIs right, it can lead to a very powerful platform.
-
-### Composability
-
-We expect the set of APIs we design to be composable. An Agent abstractly depends on { Inference, Memory, Safety } APIs but does not care about the actual implementation details. Safety itself may require model inference and hence can depend on the Inference API.
-
-### Turnkey one-stop solutions
-
-We expect to provide turnkey solutions for popular deployment scenarios. It should be easy to deploy a Llama Stack server on AWS or on a private data center. Either of these should allow a developer to get started with powerful agentic apps, model evaluations or fine-tuning services in a matter of minutes. They should all result in the same uniform observability and developer experience.
-
-### Focus on Llama models
-
-As a Meta initiated project, we have started by explicitly focusing on Meta's Llama series of models. Supporting the broad set of open models is no easy task and we want to start with models we understand best.
-
-### Supporting the Ecosystem
-
-There is a vibrant ecosystem of Providers which provide efficient inference or scalable vector stores or powerful observability solutions. We want to make sure it is easy for developers to pick and choose the best implementations for their use cases. We also want to make sure it is easy for new Providers to onboard and participate in the ecosystem.
-
-Additionally, we have designed every element of the Stack such that APIs as well as Resources (like Models) can be federated.
+- **Built for Production**
+  - Pre-packaged distributions for common deployment scenarios
+  - Comprehensive evaluation capabilities
+  - Full observability and monitoring
+  - Provider federation and fallback
 
 
 ## Supported Llama Stack Implementations
@@ -87,11 +54,11 @@ Additionally, we have designed every element of the Stack such that APIs as well
 |                                            Groq                                            |         Hosted         |                    | :heavy_check_mark: |                    |                    |                    |
 |                                           Ollama                                           |      Single Node       |                    | :heavy_check_mark: |                    |                    |                    |
 |                                            TGI                                             | Hosted and Single Node |                    | :heavy_check_mark: |                    |                    |                    |
-| [NVIDIA NIM](https://build.nvidia.com/nim?filters=nimType%3Anim_type_run_anywhere&q=llama) | Hosted and Single Node |                    | :heavy_check_mark: |                    |                    |                    |
+| NVIDIA NIM | Hosted and Single Node |                    | :heavy_check_mark: |                    |                    |                    |
 |                                           Chroma                                           |      Single Node       |                    |                    | :heavy_check_mark: |                    |                    |
 |                                         PG Vector                                          |      Single Node       |                    |                    | :heavy_check_mark: |                    |                    |
 |                                     PyTorch ExecuTorch                                     |     On-device iOS      | :heavy_check_mark: | :heavy_check_mark: |                    |                    |                    |
-|                        [vLLM](https://github.com/vllm-project/vllm)                        | Hosted and Single Node |                    | :heavy_check_mark: |                    |                    |                    |
+|                        vLLM                        | Hosted and Single Node |                    | :heavy_check_mark: |                    |                    |                    |
 
 ### Distributions
 
