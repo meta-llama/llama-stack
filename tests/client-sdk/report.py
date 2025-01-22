@@ -104,7 +104,7 @@ class Report:
     def pytest_sessionfinish(self, session):
         report = []
         report.append(f"# Report for {self.image_name} distribution")
-        report.append("\n## Supported Models: ")
+        report.append("\n## Supported Models:")
 
         header = f"| Model Descriptor | {self.image_name} |"
         dividor = "|:---|:---|"
@@ -129,7 +129,7 @@ class Report:
             rows.append(row)
         report.extend(rows)
 
-        report.append("\n## Inference: ")
+        report.append("\n## Inference:")
         test_table = [
             "| Model | API | Capability | Test | Status |",
             "|:----- |:-----|:-----|:-----|:-----|",
@@ -151,7 +151,7 @@ class Report:
 
         for api_group in ["memory", "agents"]:
             api_capitalized = api_group.capitalize()
-            report.append(f"\n## {api_capitalized}: ")
+            report.append(f"\n## {api_capitalized}:")
             test_table = [
                 "| API | Capability | Test | Status |",
                 "|:-----|:-----|:-----|:-----|",
@@ -167,7 +167,8 @@ class Report:
             report.extend(test_table)
 
         output_file = self.output_path
-        output_file.write_text("\n".join(report))
+        text = "\n".join(report) + "\n"
+        output_file.write_text(text)
         cprint(f"\nReport generated: {output_file.absolute()}", "green")
 
     def pytest_runtest_makereport(self, item, call):
