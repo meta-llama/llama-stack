@@ -396,7 +396,7 @@ class ChatAgent(ShieldRunnerMixin):
                 session_id, documents, input_messages, tool_defs
             )
 
-        if "builtin::memory" in toolgroups and len(input_messages) > 0:
+        if MEMORY_GROUP in toolgroups and len(input_messages) > 0:
             with tracing.span(MEMORY_QUERY_TOOL) as span:
                 step_id = str(uuid.uuid4())
                 yield AgentTurnResponseStreamChunk(
@@ -408,7 +408,7 @@ class ChatAgent(ShieldRunnerMixin):
                     )
                 )
 
-                args = toolgroup_args.get("builtin::memory", {})
+                args = toolgroup_args.get(MEMORY_GROUP, {})
                 vector_db_ids = args.get("vector_db_ids", [])
                 session_info = await self.storage.get_session_info(session_id)
 
@@ -475,7 +475,7 @@ class ChatAgent(ShieldRunnerMixin):
                     "input", [m.model_dump_json() for m in input_messages]
                 )
                 span.set_attribute("output", retrieved_context)
-                span.set_attribute("tool_name", "builtin::memory")
+                span.set_attribute("tool_name", MEMORY_QUERY_TOOL)
                 if retrieved_context:
                     last_message = input_messages[-1]
                     last_message.context = retrieved_context
