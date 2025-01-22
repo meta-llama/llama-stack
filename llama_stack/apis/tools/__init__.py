@@ -5,3 +5,4 @@
 # the root directory of this source tree.
 
 from .tools import *  # noqa: F401 F403
+from .rag_tool import *  # noqa: F401 F403

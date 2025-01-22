@@ -15,6 +15,8 @@ from llama_stack.apis.common.content_types import InterleavedContent, URL
 from llama_stack.apis.resource import Resource, ResourceType
 from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
 
+from .rag_tool import RAGToolRuntime
+
 
 @json_schema_type
 class ToolParameter(BaseModel):
@@ -130,10 +132,16 @@ class ToolGroups(Protocol):
         ...
 
 
+class SpecialToolGroup(Enum):
+    rag_tool = "rag_tool"
+
+
 @runtime_checkable
 @trace_protocol
 class ToolRuntime(Protocol):
     tool_store: ToolStore
+
+    rag_tool: RAGToolRuntime
 
     # TODO: This needs to be renamed once OPEN API generator name conflict issue is fixed.
     @webmethod(route="/tool-runtime/list-tools", method="GET")
@@ -143,7 +151,7 @@ class ToolRuntime(Protocol):
 
     @webmethod(route="/tool-runtime/invoke", method="POST")
     async def invoke_tool(
-        self, tool_name: str, args: Dict[str, Any]
+        self, tool_name: str, kwargs: Dict[str, Any]
     ) -> ToolInvocationResult:
         """Run a tool with the given arguments"""
         ...

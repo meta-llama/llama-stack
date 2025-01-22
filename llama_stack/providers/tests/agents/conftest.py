@@ -12,10 +12,10 @@ from ..conftest import (
     get_test_config_for_api,
 )
 from ..inference.fixtures import INFERENCE_FIXTURES
-from ..memory.fixtures import MEMORY_FIXTURES
 from ..safety.fixtures import SAFETY_FIXTURES, safety_model_from_shield
 
 from ..tools.fixtures import TOOL_RUNTIME_FIXTURES
+from ..vector_io.fixtures import VECTOR_IO_FIXTURES
 from .fixtures import AGENTS_FIXTURES
 
 DEFAULT_PROVIDER_COMBINATIONS = [
@@ -23,7 +23,7 @@ DEFAULT_PROVIDER_COMBINATIONS = [
         {
             "inference": "meta_reference",
             "safety": "llama_guard",
-            "memory": "faiss",
+            "vector_io": "faiss",
             "agents": "meta_reference",
             "tool_runtime": "memory_and_search",
         },
@@ -34,7 +34,7 @@ DEFAULT_PROVIDER_COMBINATIONS = [
         {
             "inference": "ollama",
             "safety": "llama_guard",
-            "memory": "faiss",
+            "vector_io": "faiss",
             "agents": "meta_reference",
             "tool_runtime": "memory_and_search",
         },
@@ -46,7 +46,7 @@ DEFAULT_PROVIDER_COMBINATIONS = [
             "inference": "together",
             "safety": "llama_guard",
             # make this work with Weaviate which is what the together distro supports
-            "memory": "faiss",
+            "vector_io": "faiss",
             "agents": "meta_reference",
             "tool_runtime": "memory_and_search",
         },
@@ -57,7 +57,7 @@ DEFAULT_PROVIDER_COMBINATIONS = [
         {
             "inference": "fireworks",
             "safety": "llama_guard",
-            "memory": "faiss",
+            "vector_io": "faiss",
             "agents": "meta_reference",
             "tool_runtime": "memory_and_search",
         },
@@ -68,7 +68,7 @@ DEFAULT_PROVIDER_COMBINATIONS = [
         {
             "inference": "remote",
             "safety": "remote",
-            "memory": "remote",
+            "vector_io": "remote",
             "agents": "remote",
             "tool_runtime": "memory_and_search",
         },
@@ -115,7 +115,7 @@ def pytest_generate_tests(metafunc):
         available_fixtures = {
             "inference": INFERENCE_FIXTURES,
             "safety": SAFETY_FIXTURES,
-            "memory": MEMORY_FIXTURES,
+            "vector_io": VECTOR_IO_FIXTURES,
             "agents": AGENTS_FIXTURES,
             "tool_runtime": TOOL_RUNTIME_FIXTURES,
         }

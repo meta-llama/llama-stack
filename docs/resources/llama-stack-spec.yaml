@@ -761,6 +761,20 @@ components:
       - instruct
       - dialog
       type: string
+    DefaultRAGQueryGeneratorConfig:
+      additionalProperties: false
+      properties:
+        separator:
+          default: ' '
+          type: string
+        type:
+          const: default
+          default: default
+          type: string
+      required:
+      - type
+      - separator
+      type: object
     EfficiencyConfig:
       additionalProperties: false
       properties:
@@ -891,40 +905,6 @@ components:
       - scoring_functions
       - task_config
       type: object
-    GraphMemoryBank:
-      additionalProperties: false
-      properties:
-        identifier:
-          type: string
-        memory_bank_type:
-          const: graph
-          default: graph
-          type: string
-        provider_id:
-          type: string
-        provider_resource_id:
-          type: string
-        type:
-          const: memory_bank
-          default: memory_bank
-          type: string
-      required:
-      - identifier
-      - provider_resource_id
-      - provider_id
-      - type
-      - memory_bank_type
-      type: object
-    GraphMemoryBankParams:
-      additionalProperties: false
-      properties:
-        memory_bank_type:
-          const: graph
-          default: graph
-          type: string
-      required:
-      - memory_bank_type
-      type: object
     GreedySamplingStrategy:
       additionalProperties: false
       properties:
@@ -997,20 +977,53 @@ components:
       - step_type
       - model_response
       type: object
-    InsertDocumentsRequest:
+    InsertChunksRequest:
       additionalProperties: false
       properties:
-        bank_id:
-          type: string
-        documents:
+        chunks:
           items:
-            $ref: '#/components/schemas/MemoryBankDocument'
+            additionalProperties: false
+            properties:
+              content:
+                $ref: '#/components/schemas/InterleavedContent'
+              metadata:
+                additionalProperties:
+                  oneOf:
+                  - type: 'null'
+                  - type: boolean
+                  - type: number
+                  - type: string
+                  - type: array
+                  - type: object
+                type: object
+            required:
+            - content
+            - metadata
+            type: object
           type: array
         ttl_seconds:
           type: integer
+        vector_db_id:
+          type: string
       required:
-      - bank_id
+      - vector_db_id
+      - chunks
+      type: object
+    InsertDocumentsRequest:
+      additionalProperties: false
+      properties:
+        chunk_size_in_tokens:
+          type: integer
+        documents:
+          items:
+            $ref: '#/components/schemas/RAGDocument'
+          type: array
+        vector_db_id:
+          type: string
+      required:
       - documents
+      - vector_db_id
+      - chunk_size_in_tokens
       type: object
     InterleavedContent:
       oneOf:
@@ -1026,7 +1039,7 @@ components:
     InvokeToolRequest:
       additionalProperties: false
       properties:
-        args:
+        kwargs:
           additionalProperties:
             oneOf:
             - type: 'null'
@@ -1040,7 +1053,7 @@ components:
           type: string
       required:
       - tool_name
-      - args
+      - kwargs
       type: object
     Job:
       additionalProperties: false
@@ -1067,74 +1080,6 @@ components:
       required:
       - type
       type: object
-    KeyValueMemoryBank:
-      additionalProperties: false
-      properties:
-        identifier:
-          type: string
-        memory_bank_type:
-          const: keyvalue
-          default: keyvalue
-          type: string
-        provider_id:
-          type: string
-        provider_resource_id:
-          type: string
-        type:
-          const: memory_bank
-          default: memory_bank
-          type: string
-      required:
-      - identifier
-      - provider_resource_id
-      - provider_id
-      - type
-      - memory_bank_type
-      type: object
-    KeyValueMemoryBankParams:
-      additionalProperties: false
-      properties:
-        memory_bank_type:
-          const: keyvalue
-          default: keyvalue
-          type: string
-      required:
-      - memory_bank_type
-      type: object
-    KeywordMemoryBank:
-      additionalProperties: false
-      properties:
-        identifier:
-          type: string
-        memory_bank_type:
-          const: keyword
-          default: keyword
-          type: string
-        provider_id:
-          type: string
-        provider_resource_id:
-          type: string
-        type:
-          const: memory_bank
-          default: memory_bank
-          type: string
-      required:
-      - identifier
-      - provider_resource_id
-      - provider_id
-      - type
-      - memory_bank_type
-      type: object
-    KeywordMemoryBankParams:
-      additionalProperties: false
-      properties:
-        memory_bank_type:
-          const: keyword
-          default: keyword
-          type: string
-      required:
-      - memory_bank_type
-      type: object
     LLMAsJudgeScoringFnParams:
       additionalProperties: false
       properties:
@@ -1158,6 +1103,22 @@ components:
       - type
       - judge_model
       type: object
+    LLMRAGQueryGeneratorConfig:
+      additionalProperties: false
+      properties:
+        model:
+          type: string
+        template:
+          type: string
+        type:
+          const: llm
+          default: llm
+          type: string
+      required:
+      - type
+      - model
+      - template
+      type: object
     ListDatasetsResponse:
       additionalProperties: false
       properties:
@@ -1174,16 +1135,6 @@ components:
         data:
           items:
             $ref: '#/components/schemas/EvalTask'
-          type: array
-      required:
-      - data
-      type: object
-    ListMemoryBanksResponse:
-      additionalProperties: false
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/MemoryBank'
           type: array
       required:
       - data
@@ -1274,6 +1225,16 @@ components:
       required:
       - data
       type: object
+    ListVectorDBsResponse:
+      additionalProperties: false
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/VectorDB'
+          type: array
+      required:
+      - data
+      type: object
     LogEventRequest:
       additionalProperties: false
       properties:
@@ -1329,42 +1290,6 @@ components:
       - apply_lora_to_output
       - rank
       - alpha
-      type: object
-    MemoryBank:
-      oneOf:
-      - $ref: '#/components/schemas/VectorMemoryBank'
-      - $ref: '#/components/schemas/KeyValueMemoryBank'
-      - $ref: '#/components/schemas/KeywordMemoryBank'
-      - $ref: '#/components/schemas/GraphMemoryBank'
-    MemoryBankDocument:
-      additionalProperties: false
-      properties:
-        content:
-          oneOf:
-          - type: string
-          - $ref: '#/components/schemas/InterleavedContentItem'
-          - items:
-              $ref: '#/components/schemas/InterleavedContentItem'
-            type: array
-          - $ref: '#/components/schemas/URL'
-        document_id:
-          type: string
-        metadata:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
-        mime_type:
-          type: string
-      required:
-      - document_id
-      - content
-      - metadata
       type: object
     MemoryRetrievalStep:
       additionalProperties: false
@@ -1705,6 +1630,59 @@ components:
       - quantizer_name
       - group_size
       type: object
+    QueryChunksRequest:
+      additionalProperties: false
+      properties:
+        params:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        query:
+          $ref: '#/components/schemas/InterleavedContent'
+        vector_db_id:
+          type: string
+      required:
+      - vector_db_id
+      - query
+      type: object
+    QueryChunksResponse:
+      additionalProperties: false
+      properties:
+        chunks:
+          items:
+            additionalProperties: false
+            properties:
+              content:
+                $ref: '#/components/schemas/InterleavedContent'
+              metadata:
+                additionalProperties:
+                  oneOf:
+                  - type: 'null'
+                  - type: boolean
+                  - type: number
+                  - type: string
+                  - type: array
+                  - type: object
+                type: object
+            required:
+            - content
+            - metadata
+            type: object
+          type: array
+        scores:
+          items:
+            type: number
+          type: array
+      required:
+      - chunks
+      - scores
+      type: object
     QueryCondition:
       additionalProperties: false
       properties:
@@ -1732,53 +1710,21 @@ components:
       - gt
       - lt
       type: string
-    QueryDocumentsRequest:
+    QueryContextRequest:
       additionalProperties: false
       properties:
-        bank_id:
-          type: string
-        params:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
-        query:
+        content:
           $ref: '#/components/schemas/InterleavedContent'
-      required:
-      - bank_id
-      - query
-      type: object
-    QueryDocumentsResponse:
-      additionalProperties: false
-      properties:
-        chunks:
+        query_config:
+          $ref: '#/components/schemas/RAGQueryConfig'
+        vector_db_ids:
           items:
-            additionalProperties: false
-            properties:
-              content:
-                $ref: '#/components/schemas/InterleavedContent'
-              document_id:
-                type: string
-              token_count:
-                type: integer
-            required:
-            - content
-            - token_count
-            - document_id
-            type: object
-          type: array
-        scores:
-          items:
-            type: number
+            type: string
           type: array
       required:
-      - chunks
-      - scores
+      - content
+      - query_config
+      - vector_db_ids
       type: object
     QuerySpanTreeResponse:
       additionalProperties: false
@@ -1809,6 +1755,62 @@ components:
           type: array
       required:
       - data
+      type: object
+    RAGDocument:
+      additionalProperties: false
+      properties:
+        content:
+          oneOf:
+          - type: string
+          - $ref: '#/components/schemas/InterleavedContentItem'
+          - items:
+              $ref: '#/components/schemas/InterleavedContentItem'
+            type: array
+          - $ref: '#/components/schemas/URL'
+        document_id:
+          type: string
+        metadata:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        mime_type:
+          type: string
+      required:
+      - document_id
+      - content
+      - metadata
+      type: object
+    RAGQueryConfig:
+      additionalProperties: false
+      properties:
+        max_chunks:
+          default: 5
+          type: integer
+        max_tokens_in_context:
+          default: 4096
+          type: integer
+        query_generator_config:
+          $ref: '#/components/schemas/RAGQueryGeneratorConfig'
+      required:
+      - query_generator_config
+      - max_tokens_in_context
+      - max_chunks
+      type: object
+    RAGQueryGeneratorConfig:
+      oneOf:
+      - $ref: '#/components/schemas/DefaultRAGQueryGeneratorConfig'
+      - $ref: '#/components/schemas/LLMRAGQueryGeneratorConfig'
+    RAGQueryResult:
+      additionalProperties: false
+      properties:
+        content:
+          $ref: '#/components/schemas/InterleavedContent'
       type: object
     RegexParserScoringFnParams:
       additionalProperties: false
@@ -1887,25 +1889,6 @@ components:
       - eval_task_id
       - dataset_id
       - scoring_functions
-      type: object
-    RegisterMemoryBankRequest:
-      additionalProperties: false
-      properties:
-        memory_bank_id:
-          type: string
-        params:
-          oneOf:
-          - $ref: '#/components/schemas/VectorMemoryBankParams'
-          - $ref: '#/components/schemas/KeyValueMemoryBankParams'
-          - $ref: '#/components/schemas/KeywordMemoryBankParams'
-          - $ref: '#/components/schemas/GraphMemoryBankParams'
-        provider_id:
-          type: string
-        provider_memory_bank_id:
-          type: string
-      required:
-      - memory_bank_id
-      - params
       type: object
     RegisterModelRequest:
       additionalProperties: false
@@ -1998,6 +1981,23 @@ components:
       required:
       - toolgroup_id
       - provider_id
+      type: object
+    RegisterVectorDbRequest:
+      additionalProperties: false
+      properties:
+        embedding_dimension:
+          type: integer
+        embedding_model:
+          type: string
+        provider_id:
+          type: string
+        provider_vector_db_id:
+          type: string
+        vector_db_id:
+          type: string
+      required:
+      - vector_db_id
+      - embedding_model
       type: object
     ResponseFormat:
       oneOf:
@@ -2298,8 +2298,6 @@ components:
     Session:
       additionalProperties: false
       properties:
-        memory_bank:
-          $ref: '#/components/schemas/MemoryBank'
         session_id:
           type: string
         session_name:
@@ -3202,58 +3200,30 @@ components:
       - role
       - content
       type: object
-    VectorMemoryBank:
+    VectorDB:
       additionalProperties: false
       properties:
-        chunk_size_in_tokens:
-          type: integer
         embedding_dimension:
-          default: 384
           type: integer
         embedding_model:
           type: string
         identifier:
           type: string
-        memory_bank_type:
-          const: vector
-          default: vector
-          type: string
-        overlap_size_in_tokens:
-          type: integer
         provider_id:
           type: string
         provider_resource_id:
           type: string
         type:
-          const: memory_bank
-          default: memory_bank
+          const: vector_db
+          default: vector_db
           type: string
       required:
       - identifier
       - provider_resource_id
       - provider_id
       - type
-      - memory_bank_type
       - embedding_model
-      - chunk_size_in_tokens
-      type: object
-    VectorMemoryBankParams:
-      additionalProperties: false
-      properties:
-        chunk_size_in_tokens:
-          type: integer
-        embedding_model:
-          type: string
-        memory_bank_type:
-          const: vector
-          default: vector
-          type: string
-        overlap_size_in_tokens:
-          type: integer
-      required:
-      - memory_bank_type
-      - embedding_model
-      - chunk_size_in_tokens
+      - embedding_dimension
       type: object
     VersionInfo:
       additionalProperties: false
@@ -4272,186 +4242,6 @@ paths:
           description: OK
       tags:
       - Inspect
-  /v1/memory-banks:
-    get:
-      parameters:
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-Provider-Data
-        required: false
-        schema:
-          type: string
-      - description: Version of the client making the request. This is used to ensure
-          that the client and server are compatible.
-        in: header
-        name: X-LlamaStack-Client-Version
-        required: false
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ListMemoryBanksResponse'
-          description: OK
-      tags:
-      - MemoryBanks
-    post:
-      parameters:
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-Provider-Data
-        required: false
-        schema:
-          type: string
-      - description: Version of the client making the request. This is used to ensure
-          that the client and server are compatible.
-        in: header
-        name: X-LlamaStack-Client-Version
-        required: false
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RegisterMemoryBankRequest'
-        required: true
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                oneOf:
-                - $ref: '#/components/schemas/VectorMemoryBank'
-                - $ref: '#/components/schemas/KeyValueMemoryBank'
-                - $ref: '#/components/schemas/KeywordMemoryBank'
-                - $ref: '#/components/schemas/GraphMemoryBank'
-          description: ''
-      tags:
-      - MemoryBanks
-  /v1/memory-banks/{memory_bank_id}:
-    delete:
-      parameters:
-      - in: path
-        name: memory_bank_id
-        required: true
-        schema:
-          type: string
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-Provider-Data
-        required: false
-        schema:
-          type: string
-      - description: Version of the client making the request. This is used to ensure
-          that the client and server are compatible.
-        in: header
-        name: X-LlamaStack-Client-Version
-        required: false
-        schema:
-          type: string
-      responses:
-        '200':
-          description: OK
-      tags:
-      - MemoryBanks
-    get:
-      parameters:
-      - in: path
-        name: memory_bank_id
-        required: true
-        schema:
-          type: string
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-Provider-Data
-        required: false
-        schema:
-          type: string
-      - description: Version of the client making the request. This is used to ensure
-          that the client and server are compatible.
-        in: header
-        name: X-LlamaStack-Client-Version
-        required: false
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                oneOf:
-                - $ref: '#/components/schemas/MemoryBank'
-                - type: 'null'
-          description: OK
-      tags:
-      - MemoryBanks
-  /v1/memory/insert:
-    post:
-      parameters:
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-Provider-Data
-        required: false
-        schema:
-          type: string
-      - description: Version of the client making the request. This is used to ensure
-          that the client and server are compatible.
-        in: header
-        name: X-LlamaStack-Client-Version
-        required: false
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/InsertDocumentsRequest'
-        required: true
-      responses:
-        '200':
-          description: OK
-      tags:
-      - Memory
-  /v1/memory/query:
-    post:
-      parameters:
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-Provider-Data
-        required: false
-        schema:
-          type: string
-      - description: Version of the client making the request. This is used to ensure
-          that the client and server are compatible.
-        in: header
-        name: X-LlamaStack-Client-Version
-        required: false
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/QueryDocumentsRequest'
-        required: true
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/QueryDocumentsResponse'
-          description: OK
-      tags:
-      - Memory
   /v1/models:
     get:
       parameters:
@@ -5386,6 +5176,68 @@ paths:
           description: OK
       tags:
       - ToolRuntime
+  /v1/tool-runtime/rag-tool/insert-documents:
+    post:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-Provider-Data
+        required: false
+        schema:
+          type: string
+      - description: Version of the client making the request. This is used to ensure
+          that the client and server are compatible.
+        in: header
+        name: X-LlamaStack-Client-Version
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InsertDocumentsRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+      summary: Index documents so they can be used by the RAG system
+      tags:
+      - ToolRuntime
+  /v1/tool-runtime/rag-tool/query-context:
+    post:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-Provider-Data
+        required: false
+        schema:
+          type: string
+      - description: Version of the client making the request. This is used to ensure
+          that the client and server are compatible.
+        in: header
+        name: X-LlamaStack-Client-Version
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryContextRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RAGQueryResult'
+          description: OK
+      summary: Query the RAG system for context; typically invoked by the agent
+      tags:
+      - ToolRuntime
   /v1/toolgroups:
     get:
       parameters:
@@ -5562,6 +5414,182 @@ paths:
           description: OK
       tags:
       - ToolGroups
+  /v1/vector-dbs:
+    get:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-Provider-Data
+        required: false
+        schema:
+          type: string
+      - description: Version of the client making the request. This is used to ensure
+          that the client and server are compatible.
+        in: header
+        name: X-LlamaStack-Client-Version
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListVectorDBsResponse'
+          description: OK
+      tags:
+      - VectorDBs
+    post:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-Provider-Data
+        required: false
+        schema:
+          type: string
+      - description: Version of the client making the request. This is used to ensure
+          that the client and server are compatible.
+        in: header
+        name: X-LlamaStack-Client-Version
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterVectorDbRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VectorDB'
+          description: OK
+      tags:
+      - VectorDBs
+  /v1/vector-dbs/{vector_db_id}:
+    delete:
+      parameters:
+      - in: path
+        name: vector_db_id
+        required: true
+        schema:
+          type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-Provider-Data
+        required: false
+        schema:
+          type: string
+      - description: Version of the client making the request. This is used to ensure
+          that the client and server are compatible.
+        in: header
+        name: X-LlamaStack-Client-Version
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+      tags:
+      - VectorDBs
+    get:
+      parameters:
+      - in: path
+        name: vector_db_id
+        required: true
+        schema:
+          type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-Provider-Data
+        required: false
+        schema:
+          type: string
+      - description: Version of the client making the request. This is used to ensure
+          that the client and server are compatible.
+        in: header
+        name: X-LlamaStack-Client-Version
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/VectorDB'
+                - type: 'null'
+          description: OK
+      tags:
+      - VectorDBs
+  /v1/vector-io/insert:
+    post:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-Provider-Data
+        required: false
+        schema:
+          type: string
+      - description: Version of the client making the request. This is used to ensure
+          that the client and server are compatible.
+        in: header
+        name: X-LlamaStack-Client-Version
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InsertChunksRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+      tags:
+      - VectorIO
+  /v1/vector-io/query:
+    post:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-Provider-Data
+        required: false
+        schema:
+          type: string
+      - description: Version of the client making the request. This is used to ensure
+          that the client and server are compatible.
+        in: header
+        name: X-LlamaStack-Client-Version
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryChunksRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryChunksResponse'
+          description: OK
+      tags:
+      - VectorIO
   /v1/version:
     get:
       parameters:
@@ -5748,6 +5776,9 @@ tags:
   name: DatasetFormat
 - name: DatasetIO
 - name: Datasets
+- description: <SchemaDefinition schemaRef="#/components/schemas/DefaultRAGQueryGeneratorConfig"
+    />
+  name: DefaultRAGQueryGeneratorConfig
 - description: <SchemaDefinition schemaRef="#/components/schemas/EfficiencyConfig"
     />
   name: EfficiencyConfig
@@ -5767,12 +5798,6 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/EvaluateRowsRequest"
     />
   name: EvaluateRowsRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/GraphMemoryBank"
-    />
-  name: GraphMemoryBank
-- description: <SchemaDefinition schemaRef="#/components/schemas/GraphMemoryBankParams"
-    />
-  name: GraphMemoryBankParams
 - description: <SchemaDefinition schemaRef="#/components/schemas/GreedySamplingStrategy"
     />
   name: GreedySamplingStrategy
@@ -5786,6 +5811,9 @@ tags:
 - name: Inference
 - description: <SchemaDefinition schemaRef="#/components/schemas/InferenceStep" />
   name: InferenceStep
+- description: <SchemaDefinition schemaRef="#/components/schemas/InsertChunksRequest"
+    />
+  name: InsertChunksRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/InsertDocumentsRequest"
     />
   name: InsertDocumentsRequest
@@ -5805,30 +5833,18 @@ tags:
   name: JobStatus
 - description: <SchemaDefinition schemaRef="#/components/schemas/JsonType" />
   name: JsonType
-- description: <SchemaDefinition schemaRef="#/components/schemas/KeyValueMemoryBank"
-    />
-  name: KeyValueMemoryBank
-- description: <SchemaDefinition schemaRef="#/components/schemas/KeyValueMemoryBankParams"
-    />
-  name: KeyValueMemoryBankParams
-- description: <SchemaDefinition schemaRef="#/components/schemas/KeywordMemoryBank"
-    />
-  name: KeywordMemoryBank
-- description: <SchemaDefinition schemaRef="#/components/schemas/KeywordMemoryBankParams"
-    />
-  name: KeywordMemoryBankParams
 - description: <SchemaDefinition schemaRef="#/components/schemas/LLMAsJudgeScoringFnParams"
     />
   name: LLMAsJudgeScoringFnParams
+- description: <SchemaDefinition schemaRef="#/components/schemas/LLMRAGQueryGeneratorConfig"
+    />
+  name: LLMRAGQueryGeneratorConfig
 - description: <SchemaDefinition schemaRef="#/components/schemas/ListDatasetsResponse"
     />
   name: ListDatasetsResponse
 - description: <SchemaDefinition schemaRef="#/components/schemas/ListEvalTasksResponse"
     />
   name: ListEvalTasksResponse
-- description: <SchemaDefinition schemaRef="#/components/schemas/ListMemoryBanksResponse"
-    />
-  name: ListMemoryBanksResponse
 - description: <SchemaDefinition schemaRef="#/components/schemas/ListModelsResponse"
     />
   name: ListModelsResponse
@@ -5853,6 +5869,9 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/ListToolsResponse"
     />
   name: ListToolsResponse
+- description: <SchemaDefinition schemaRef="#/components/schemas/ListVectorDBsResponse"
+    />
+  name: ListVectorDBsResponse
 - description: <SchemaDefinition schemaRef="#/components/schemas/LogEventRequest"
     />
   name: LogEventRequest
@@ -5861,13 +5880,6 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/LoraFinetuningConfig"
     />
   name: LoraFinetuningConfig
-- name: Memory
-- description: <SchemaDefinition schemaRef="#/components/schemas/MemoryBank" />
-  name: MemoryBank
-- description: <SchemaDefinition schemaRef="#/components/schemas/MemoryBankDocument"
-    />
-  name: MemoryBankDocument
-- name: MemoryBanks
 - description: <SchemaDefinition schemaRef="#/components/schemas/MemoryRetrievalStep"
     />
   name: MemoryRetrievalStep
@@ -5920,17 +5932,20 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/QATFinetuningConfig"
     />
   name: QATFinetuningConfig
+- description: <SchemaDefinition schemaRef="#/components/schemas/QueryChunksRequest"
+    />
+  name: QueryChunksRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/QueryChunksResponse"
+    />
+  name: QueryChunksResponse
 - description: <SchemaDefinition schemaRef="#/components/schemas/QueryCondition" />
   name: QueryCondition
 - description: <SchemaDefinition schemaRef="#/components/schemas/QueryConditionOp"
     />
   name: QueryConditionOp
-- description: <SchemaDefinition schemaRef="#/components/schemas/QueryDocumentsRequest"
+- description: <SchemaDefinition schemaRef="#/components/schemas/QueryContextRequest"
     />
-  name: QueryDocumentsRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/QueryDocumentsResponse"
-    />
-  name: QueryDocumentsResponse
+  name: QueryContextRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/QuerySpanTreeResponse"
     />
   name: QuerySpanTreeResponse
@@ -5940,6 +5955,15 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/QueryTracesResponse"
     />
   name: QueryTracesResponse
+- description: <SchemaDefinition schemaRef="#/components/schemas/RAGDocument" />
+  name: RAGDocument
+- description: <SchemaDefinition schemaRef="#/components/schemas/RAGQueryConfig" />
+  name: RAGQueryConfig
+- description: <SchemaDefinition schemaRef="#/components/schemas/RAGQueryGeneratorConfig"
+    />
+  name: RAGQueryGeneratorConfig
+- description: <SchemaDefinition schemaRef="#/components/schemas/RAGQueryResult" />
+  name: RAGQueryResult
 - description: <SchemaDefinition schemaRef="#/components/schemas/RegexParserScoringFnParams"
     />
   name: RegexParserScoringFnParams
@@ -5949,9 +5973,6 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/RegisterEvalTaskRequest"
     />
   name: RegisterEvalTaskRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/RegisterMemoryBankRequest"
-    />
-  name: RegisterMemoryBankRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/RegisterModelRequest"
     />
   name: RegisterModelRequest
@@ -5964,6 +5985,9 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/RegisterToolGroupRequest"
     />
   name: RegisterToolGroupRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/RegisterVectorDbRequest"
+    />
+  name: RegisterVectorDbRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/ResponseFormat" />
   name: ResponseFormat
 - description: <SchemaDefinition schemaRef="#/components/schemas/RouteInfo" />
@@ -6128,12 +6152,10 @@ tags:
   name: UnstructuredLogEvent
 - description: <SchemaDefinition schemaRef="#/components/schemas/UserMessage" />
   name: UserMessage
-- description: <SchemaDefinition schemaRef="#/components/schemas/VectorMemoryBank"
-    />
-  name: VectorMemoryBank
-- description: <SchemaDefinition schemaRef="#/components/schemas/VectorMemoryBankParams"
-    />
-  name: VectorMemoryBankParams
+- description: <SchemaDefinition schemaRef="#/components/schemas/VectorDB" />
+  name: VectorDB
+- name: VectorDBs
+- name: VectorIO
 - description: <SchemaDefinition schemaRef="#/components/schemas/VersionInfo" />
   name: VersionInfo
 - description: <SchemaDefinition schemaRef="#/components/schemas/ViolationLevel" />
@@ -6149,8 +6171,6 @@ x-tagGroups:
   - EvalTasks
   - Inference
   - Inspect
-  - Memory
-  - MemoryBanks
   - Models
   - PostTraining (Coming Soon)
   - Safety
@@ -6161,6 +6181,8 @@ x-tagGroups:
   - Telemetry
   - ToolGroups
   - ToolRuntime
+  - VectorDBs
+  - VectorIO
 - name: Types
   tags:
   - AgentCandidate
@@ -6210,19 +6232,19 @@ x-tagGroups:
   - DataConfig
   - Dataset
   - DatasetFormat
+  - DefaultRAGQueryGeneratorConfig
   - EfficiencyConfig
   - EmbeddingsRequest
   - EmbeddingsResponse
   - EvalTask
   - EvaluateResponse
   - EvaluateRowsRequest
-  - GraphMemoryBank
-  - GraphMemoryBankParams
   - GreedySamplingStrategy
   - HealthInfo
   - ImageContentItem
   - ImageDelta
   - InferenceStep
+  - InsertChunksRequest
   - InsertDocumentsRequest
   - InterleavedContent
   - InterleavedContentItem
@@ -6230,14 +6252,10 @@ x-tagGroups:
   - Job
   - JobStatus
   - JsonType
-  - KeyValueMemoryBank
-  - KeyValueMemoryBankParams
-  - KeywordMemoryBank
-  - KeywordMemoryBankParams
   - LLMAsJudgeScoringFnParams
+  - LLMRAGQueryGeneratorConfig
   - ListDatasetsResponse
   - ListEvalTasksResponse
-  - ListMemoryBanksResponse
   - ListModelsResponse
   - ListPostTrainingJobsResponse
   - ListProvidersResponse
@@ -6246,11 +6264,10 @@ x-tagGroups:
   - ListShieldsResponse
   - ListToolGroupsResponse
   - ListToolsResponse
+  - ListVectorDBsResponse
   - LogEventRequest
   - LogSeverity
   - LoraFinetuningConfig
-  - MemoryBank
-  - MemoryBankDocument
   - MemoryRetrievalStep
   - Message
   - MetricEvent
@@ -6269,21 +6286,26 @@ x-tagGroups:
   - PreferenceOptimizeRequest
   - ProviderInfo
   - QATFinetuningConfig
+  - QueryChunksRequest
+  - QueryChunksResponse
   - QueryCondition
   - QueryConditionOp
-  - QueryDocumentsRequest
-  - QueryDocumentsResponse
+  - QueryContextRequest
   - QuerySpanTreeResponse
   - QuerySpansResponse
   - QueryTracesResponse
+  - RAGDocument
+  - RAGQueryConfig
+  - RAGQueryGeneratorConfig
+  - RAGQueryResult
   - RegexParserScoringFnParams
   - RegisterDatasetRequest
   - RegisterEvalTaskRequest
-  - RegisterMemoryBankRequest
   - RegisterModelRequest
   - RegisterScoringFunctionRequest
   - RegisterShieldRequest
   - RegisterToolGroupRequest
+  - RegisterVectorDbRequest
   - ResponseFormat
   - RouteInfo
   - RunEvalRequest
@@ -6341,7 +6363,6 @@ x-tagGroups:
   - UnionType
   - UnstructuredLogEvent
   - UserMessage
-  - VectorMemoryBank
-  - VectorMemoryBankParams
+  - VectorDB
   - VersionInfo
   - ViolationLevel

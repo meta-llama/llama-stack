@@ -5,68 +5,64 @@
 # the root directory of this source tree.
 
 
-from typing import List
-
 from jinja2 import Template
-from pydantic import BaseModel
 
 from llama_stack.apis.common.content_types import InterleavedContent
 from llama_stack.apis.inference import UserMessage
+
+from llama_stack.apis.tools.rag_tool import (
+    DefaultRAGQueryGeneratorConfig,
+    LLMRAGQueryGeneratorConfig,
+    RAGQueryGenerator,
+    RAGQueryGeneratorConfig,
+)
 from llama_stack.providers.utils.inference.prompt_adapter import (
     interleaved_content_as_str,
 )
 
-from .config import (
-    DefaultMemoryQueryGeneratorConfig,
-    LLMMemoryQueryGeneratorConfig,
-    MemoryQueryGenerator,
-    MemoryQueryGeneratorConfig,
-)
-
 
 async def generate_rag_query(
-    config: MemoryQueryGeneratorConfig,
-    messages: List[InterleavedContent],
+    config: RAGQueryGeneratorConfig,
+    content: InterleavedContent,
     **kwargs,
 ):
     """
     Generates a query that will be used for
     retrieving relevant information from the memory bank.
     """
-    if config.type == MemoryQueryGenerator.default.value:
-        query = await default_rag_query_generator(config, messages, **kwargs)
-    elif config.type == MemoryQueryGenerator.llm.value:
-        query = await llm_rag_query_generator(config, messages, **kwargs)
+    if config.type == RAGQueryGenerator.default.value:
+        query = await default_rag_query_generator(config, content, **kwargs)
+    elif config.type == RAGQueryGenerator.llm.value:
+        query = await llm_rag_query_generator(config, content, **kwargs)
     else:
         raise NotImplementedError(f"Unsupported memory query generator {config.type}")
     return query
 
 
 async def default_rag_query_generator(
-    config: DefaultMemoryQueryGeneratorConfig,
-    messages: List[InterleavedContent],
+    config: DefaultRAGQueryGeneratorConfig,
+    content: InterleavedContent,
     **kwargs,
 ):
-    return config.sep.join(interleaved_content_as_str(m) for m in messages)
+    return interleaved_content_as_str(content, sep=config.separator)
 
 
 async def llm_rag_query_generator(
-    config: LLMMemoryQueryGeneratorConfig,
-    messages: List[InterleavedContent],
+    config: LLMRAGQueryGeneratorConfig,
+    content: InterleavedContent,
     **kwargs,
 ):
     assert "inference_api" in kwargs, "LLMRAGQueryGenerator needs inference_api"
     inference_api = kwargs["inference_api"]
 
-    m_dict = {
-        "messages": [
-            message.model_dump() if isinstance(message, BaseModel) else message
-            for message in messages
-        ]
-    }
+    messages = []
+    if isinstance(content, list):
+        messages = [interleaved_content_as_str(m) for m in content]
+    else:
+        messages = [interleaved_content_as_str(content)]
 
     template = Template(config.template)
-    content = template.render(m_dict)
+    content = template.render({"messages": messages})
 
     model = config.model
     message = UserMessage(content=content)

@@ -65,7 +65,7 @@ class ModelContextProtocolToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime):
         return tools
 
     async def invoke_tool(
-        self, tool_name: str, args: Dict[str, Any]
+        self, tool_name: str, kwargs: Dict[str, Any]
     ) -> ToolInvocationResult:
         tool = await self.tool_store.get_tool(tool_name)
         if tool.metadata is None or tool.metadata.get("endpoint") is None:
@@ -77,7 +77,7 @@ class ModelContextProtocolToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime):
         async with sse_client(endpoint) as streams:
             async with ClientSession(*streams) as session:
                 await session.initialize()
-                result = await session.call_tool(tool.identifier, args)
+                result = await session.call_tool(tool.identifier, kwargs)
 
         return ToolInvocationResult(
             content="\n".join([result.model_dump_json() for result in result.content]),

@@ -67,12 +67,12 @@ class TavilySearchToolRuntimeImpl(
         ]
 
     async def invoke_tool(
-        self, tool_name: str, args: Dict[str, Any]
+        self, tool_name: str, kwargs: Dict[str, Any]
     ) -> ToolInvocationResult:
         api_key = self._get_api_key()
         response = requests.post(
             "https://api.tavily.com/search",
-            json={"api_key": api_key, "query": args["query"]},
+            json={"api_key": api_key, "query": kwargs["query"]},
         )
 
         return ToolInvocationResult(
