@@ -32,13 +32,15 @@ class TestVisionModelInference:
         "image, expected_strings",
         [
             (
-                ImageContentItem(data=PASTA_IMAGE),
+                ImageContentItem(image=dict(data=PASTA_IMAGE)),
                 ["spaghetti"],
             ),
             (
                 ImageContentItem(
-                    url=URL(
-                        uri="https://www.healthypawspetinsurance.com/Images/V3/DogAndPuppyInsurance/Dog_CTA_Desktop_HeroImage.jpg"
+                    image=dict(
+                        url=URL(
+                            uri="https://www.healthypawspetinsurance.com/Images/V3/DogAndPuppyInsurance/Dog_CTA_Desktop_HeroImage.jpg"
+                        )
                     )
                 ),
                 ["puppy"],
@@ -103,8 +105,10 @@ class TestVisionModelInference:
 
         images = [
             ImageContentItem(
-                url=URL(
-                    uri="https://www.healthypawspetinsurance.com/Images/V3/DogAndPuppyInsurance/Dog_CTA_Desktop_HeroImage.jpg"
+                image=dict(
+                    url=URL(
+                        uri="https://www.healthypawspetinsurance.com/Images/V3/DogAndPuppyInsurance/Dog_CTA_Desktop_HeroImage.jpg"
+                    )
                 )
             ),
         ]

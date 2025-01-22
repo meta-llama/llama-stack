@@ -470,16 +470,16 @@ class TestInference:
             )
             first = grouped[ChatCompletionResponseEventType.progress][0]
             if not isinstance(
-                first.event.delta.content, ToolCall
+                first.event.delta.tool_call, ToolCall
             ):  # first chunk may contain entire call
                 assert first.event.delta.parse_status == ToolCallParseStatus.started
 
         last = grouped[ChatCompletionResponseEventType.progress][-1]
         # assert last.event.stop_reason == expected_stop_reason
         assert last.event.delta.parse_status == ToolCallParseStatus.succeeded
-        assert isinstance(last.event.delta.content, ToolCall)
+        assert isinstance(last.event.delta.tool_call, ToolCall)
 
-        call = last.event.delta.content
+        call = last.event.delta.tool_call
         assert call.tool_name == "get_weather"
         assert "location" in call.arguments
         assert "San Francisco" in call.arguments["location"]

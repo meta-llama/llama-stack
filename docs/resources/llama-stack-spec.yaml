@@ -926,22 +926,27 @@ components:
     ImageContentItem:
       additionalProperties: false
       properties:
-        data:
-          contentEncoding: base64
-          type: string
+        image:
+          additionalProperties: false
+          properties:
+            data:
+              contentEncoding: base64
+              type: string
+            url:
+              $ref: '#/components/schemas/URL'
+          type: object
         type:
           const: image
           default: image
           type: string
-        url:
-          $ref: '#/components/schemas/URL'
       required:
       - type
+      - image
       type: object
     ImageDelta:
       additionalProperties: false
       properties:
-        data:
+        image:
           contentEncoding: base64
           type: string
         type:
@@ -950,7 +955,7 @@ components:
           type: string
       required:
       - type
-      - data
+      - image
       type: object
     InferenceStep:
       additionalProperties: false
@@ -2748,19 +2753,19 @@ components:
     ToolCallDelta:
       additionalProperties: false
       properties:
-        content:
+        parse_status:
+          $ref: '#/components/schemas/ToolCallParseStatus'
+        tool_call:
           oneOf:
           - type: string
           - $ref: '#/components/schemas/ToolCall'
-        parse_status:
-          $ref: '#/components/schemas/ToolCallParseStatus'
         type:
           const: tool_call
           default: tool_call
           type: string
       required:
       - type
-      - content
+      - tool_call
       - parse_status
       type: object
     ToolCallParseStatus:
