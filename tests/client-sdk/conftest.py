@@ -32,7 +32,6 @@ def pytest_addoption(parser):
 TEXT_MODEL = "meta-llama/Llama-3.1-8B-Instruct"
 INFERENCE_MODEL = "meta-llama/Llama-3.2-11B-Vision-Instruct"
 
-
 @pytest.fixture(scope="session")
 def provider_data():
     # check env for tavily secret, brave secret and inject all into provider data

@@ -22,9 +22,9 @@
 | Model | API | Capability | Test | Status |
 |:----- |:-----|:-----|:-----|:-----|
 | Text | /chat_completion | streaming | test_text_chat_completion_streaming | ✅ |
-| Vision | /chat_completion | streaming | test_image_chat_completion_streaming | Passed |
+| Vision | /chat_completion | streaming | test_image_chat_completion_streaming | ✅ |
+| Vision | /chat_completion | non_streaming | test_image_chat_completion_non_streaming | ✅ |
 | Text | /chat_completion | non_streaming | test_text_chat_completion_non_streaming | ✅ |
-| Vision | /chat_completion | non_streaming | test_image_chat_completion_non_streaming | Passed |
 | Text | /chat_completion | tool_calling | test_text_chat_completion_with_tool_calling_and_streaming | ✅ |
 | Text | /chat_completion | tool_calling | test_text_chat_completion_with_tool_calling_and_non_streaming | ✅ |
 | Text | /completion | streaming | test_text_completion_streaming | ✅ |

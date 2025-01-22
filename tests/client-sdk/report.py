@@ -135,24 +135,15 @@ class Report:
         ]
         for api, capa_map in API_MAPS["inference"].items():
             for capa, tests in capa_map.items():
-                vision_tests = filter(lambda test_name: "image" in test_name, tests)
-                text_tests = filter(lambda test_name: "text" in test_name, tests)
-
-                for test_name in text_tests:
+                for test_name in tests:
+                    model_type = "Text" if "text" in test_name else "Vision"
                     test_nodeids = self.test_name_to_nodeid[test_name]
                     assert len(test_nodeids) > 0
                     # There might be more than one parametrizations for the same test function. We take
                     # the result of the first one for now. Ideally we should mark the test as failed if
                     # any of the parametrizations failed.
                     test_table.append(
-                        f"| Text | /{api} | {capa} | {test_name} | {self._print_result_icon(self.test_data[test_nodeids[0]])} |"
-                    )
-
-                for test_name in vision_tests:
-                    test_nodeids = self.test_name_to_nodeid[test_name]
-                    assert len(test_nodeids) > 0
-                    test_table.append(
-                        f"| Vision | /{api} | {capa} | {test_name} | {self.test_data[test_nodeids[0]]} |"
+                        f"| {model_type} | /{api} | {capa} | {test_name} | {self._print_result_icon(self.test_data[test_nodeids[0]])} |"
                     )
 
         report.extend(test_table)
