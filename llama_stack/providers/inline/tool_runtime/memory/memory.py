@@ -61,7 +61,7 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
     async def shutdown(self):
         pass
 
-    async def insert_documents(
+    async def insert(
         self,
         documents: List[RAGDocument],
         vector_db_id: str,
@@ -87,15 +87,16 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
             vector_db_id=vector_db_id,
         )
 
-    async def query_context(
+    async def query(
         self,
         content: InterleavedContent,
-        query_config: RAGQueryConfig,
         vector_db_ids: List[str],
+        query_config: Optional[RAGQueryConfig] = None,
     ) -> RAGQueryResult:
         if not vector_db_ids:
             return RAGQueryResult(content=None)
 
+        query_config = query_config or RAGQueryConfig()
         query = await generate_rag_query(
             query_config.query_generator_config,
             content,
@@ -159,11 +160,11 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
         # encountering fatals.
         return [
             ToolDef(
-                name="rag_tool.query_context",
+                name="query_from_memory",
                 description="Retrieve context from memory",
             ),
             ToolDef(
-                name="rag_tool.insert_documents",
+                name="insert_into_memory",
                 description="Insert documents into memory",
             ),
         ]

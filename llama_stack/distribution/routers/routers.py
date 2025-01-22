@@ -414,25 +414,25 @@ class ToolRuntimeRouter(ToolRuntime):
         ) -> None:
             self.routing_table = routing_table
 
-        async def query_context(
+        async def query(
             self,
             content: InterleavedContent,
-            query_config: RAGQueryConfig,
             vector_db_ids: List[str],
+            query_config: Optional[RAGQueryConfig] = None,
         ) -> RAGQueryResult:
             return await self.routing_table.get_provider_impl(
-                "rag_tool.query_context"
-            ).query_context(content, query_config, vector_db_ids)
+                "query_from_memory"
+            ).query(content, vector_db_ids, query_config)
 
-        async def insert_documents(
+        async def insert(
             self,
             documents: List[RAGDocument],
             vector_db_id: str,
             chunk_size_in_tokens: int = 512,
         ) -> None:
             return await self.routing_table.get_provider_impl(
-                "rag_tool.insert_documents"
-            ).insert_documents(documents, vector_db_id, chunk_size_in_tokens)
+                "insert_into_memory"
+            ).insert(documents, vector_db_id, chunk_size_in_tokens)
 
     def __init__(
         self,
@@ -441,10 +441,9 @@ class ToolRuntimeRouter(ToolRuntime):
         self.routing_table = routing_table
 
         # HACK ALERT this should be in sync with "get_all_api_endpoints()"
-        # TODO: make sure rag_tool vs builtin::memory is correct everywhere
         self.rag_tool = self.RagToolImpl(routing_table)
-        setattr(self, "rag_tool.query_context", self.rag_tool.query_context)
-        setattr(self, "rag_tool.insert_documents", self.rag_tool.insert_documents)
+        for method in ("query", "insert"):
+            setattr(self, f"rag_tool.{method}", getattr(self.rag_tool, method))
 
     async def initialize(self) -> None:
         pass

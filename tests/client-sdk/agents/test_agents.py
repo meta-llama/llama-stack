@@ -292,7 +292,7 @@ def test_rag_agent(llama_stack_client, agent_config):
         embedding_model="all-MiniLM-L6-v2",
         embedding_dimension=384,
     )
-    llama_stack_client.tool_runtime.rag_tool.insert_documents(
+    llama_stack_client.tool_runtime.rag_tool.insert(
         documents=documents,
         vector_db_id=vector_db_id,
         chunk_size_in_tokens=512,
@@ -321,4 +321,4 @@ def test_rag_agent(llama_stack_client, agent_config):
         )
         logs = [str(log) for log in EventLogger().log(response) if log is not None]
         logs_str = "".join(logs)
-        assert "Tool:rag_tool.query_context" in logs_str
+        assert "Tool:query_from_memory" in logs_str

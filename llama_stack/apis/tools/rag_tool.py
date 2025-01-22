@@ -74,8 +74,8 @@ class RAGQueryConfig(BaseModel):
 @runtime_checkable
 @trace_protocol
 class RAGToolRuntime(Protocol):
-    @webmethod(route="/tool-runtime/rag-tool/insert-documents", method="POST")
-    async def insert_documents(
+    @webmethod(route="/tool-runtime/rag-tool/insert", method="POST")
+    async def insert(
         self,
         documents: List[RAGDocument],
         vector_db_id: str,
@@ -84,12 +84,12 @@ class RAGToolRuntime(Protocol):
         """Index documents so they can be used by the RAG system"""
         ...
 
-    @webmethod(route="/tool-runtime/rag-tool/query-context", method="POST")
-    async def query_context(
+    @webmethod(route="/tool-runtime/rag-tool/query", method="POST")
+    async def query(
         self,
         content: InterleavedContent,
-        query_config: RAGQueryConfig,
         vector_db_ids: List[str],
+        query_config: Optional[RAGQueryConfig] = None,
     ) -> RAGQueryResult:
         """Query the RAG system for context; typically invoked by the agent"""
         ...

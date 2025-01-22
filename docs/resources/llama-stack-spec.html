@@ -1887,6 +1887,49 @@
                 ]
             }
         },
+        "/v1/tool-runtime/rag-tool/insert": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "ToolRuntime"
+                ],
+                "summary": "Index documents so they can be used by the RAG system",
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-Provider-Data",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-Client-Version",
+                        "in": "header",
+                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/InsertRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/v1/vector-io/insert": {
             "post": {
                 "responses": {
@@ -1922,49 +1965,6 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/InsertChunksRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/v1/tool-runtime/rag-tool/insert-documents": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                },
-                "tags": [
-                    "ToolRuntime"
-                ],
-                "summary": "Index documents so they can be used by the RAG system",
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/InsertDocumentsRequest"
                             }
                         }
                     },
@@ -3033,6 +3033,56 @@
                 }
             }
         },
+        "/v1/tool-runtime/rag-tool/query": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RAGQueryResult"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "ToolRuntime"
+                ],
+                "summary": "Query the RAG system for context; typically invoked by the agent",
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-Provider-Data",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-Client-Version",
+                        "in": "header",
+                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/QueryRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/v1/vector-io/query": {
             "post": {
                 "responses": {
@@ -3075,56 +3125,6 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/QueryChunksRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/v1/tool-runtime/rag-tool/query-context": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/RAGQueryResult"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "ToolRuntime"
-                ],
-                "summary": "Query the RAG system for context; typically invoked by the agent",
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/QueryContextRequest"
                             }
                         }
                     },
@@ -5256,11 +5256,8 @@
                         "const": "memory_retrieval",
                         "default": "memory_retrieval"
                     },
-                    "memory_bank_ids": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
+                    "vector_db_ids": {
+                        "type": "string"
                     },
                     "inserted_context": {
                         "$ref": "#/components/schemas/InterleavedContent"
@@ -5271,7 +5268,7 @@
                     "turn_id",
                     "step_id",
                     "step_type",
-                    "memory_bank_ids",
+                    "vector_db_ids",
                     "inserted_context"
                 ]
             },
@@ -6976,63 +6973,6 @@
                     "status"
                 ]
             },
-            "InsertChunksRequest": {
-                "type": "object",
-                "properties": {
-                    "vector_db_id": {
-                        "type": "string"
-                    },
-                    "chunks": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "content": {
-                                    "$ref": "#/components/schemas/InterleavedContent"
-                                },
-                                "metadata": {
-                                    "type": "object",
-                                    "additionalProperties": {
-                                        "oneOf": [
-                                            {
-                                                "type": "null"
-                                            },
-                                            {
-                                                "type": "boolean"
-                                            },
-                                            {
-                                                "type": "number"
-                                            },
-                                            {
-                                                "type": "string"
-                                            },
-                                            {
-                                                "type": "array"
-                                            },
-                                            {
-                                                "type": "object"
-                                            }
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "content",
-                                "metadata"
-                            ]
-                        }
-                    },
-                    "ttl_seconds": {
-                        "type": "integer"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "vector_db_id",
-                    "chunks"
-                ]
-            },
             "RAGDocument": {
                 "type": "object",
                 "properties": {
@@ -7094,7 +7034,7 @@
                     "metadata"
                 ]
             },
-            "InsertDocumentsRequest": {
+            "InsertRequest": {
                 "type": "object",
                 "properties": {
                     "documents": {
@@ -7115,6 +7055,63 @@
                     "documents",
                     "vector_db_id",
                     "chunk_size_in_tokens"
+                ]
+            },
+            "InsertChunksRequest": {
+                "type": "object",
+                "properties": {
+                    "vector_db_id": {
+                        "type": "string"
+                    },
+                    "chunks": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "content": {
+                                    "$ref": "#/components/schemas/InterleavedContent"
+                                },
+                                "metadata": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "oneOf": [
+                                            {
+                                                "type": "null"
+                                            },
+                                            {
+                                                "type": "boolean"
+                                            },
+                                            {
+                                                "type": "number"
+                                            },
+                                            {
+                                                "type": "string"
+                                            },
+                                            {
+                                                "type": "array"
+                                            },
+                                            {
+                                                "type": "object"
+                                            }
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "content",
+                                "metadata"
+                            ]
+                        }
+                    },
+                    "ttl_seconds": {
+                        "type": "integer"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "vector_db_id",
+                    "chunks"
                 ]
             },
             "InvokeToolRequest": {
@@ -7883,6 +7880,110 @@
                     "job_uuid"
                 ]
             },
+            "DefaultRAGQueryGeneratorConfig": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "default",
+                        "default": "default"
+                    },
+                    "separator": {
+                        "type": "string",
+                        "default": " "
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "separator"
+                ]
+            },
+            "LLMRAGQueryGeneratorConfig": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "llm",
+                        "default": "llm"
+                    },
+                    "model": {
+                        "type": "string"
+                    },
+                    "template": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "model",
+                    "template"
+                ]
+            },
+            "RAGQueryConfig": {
+                "type": "object",
+                "properties": {
+                    "query_generator_config": {
+                        "$ref": "#/components/schemas/RAGQueryGeneratorConfig"
+                    },
+                    "max_tokens_in_context": {
+                        "type": "integer",
+                        "default": 4096
+                    },
+                    "max_chunks": {
+                        "type": "integer",
+                        "default": 5
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "query_generator_config",
+                    "max_tokens_in_context",
+                    "max_chunks"
+                ]
+            },
+            "RAGQueryGeneratorConfig": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/DefaultRAGQueryGeneratorConfig"
+                    },
+                    {
+                        "$ref": "#/components/schemas/LLMRAGQueryGeneratorConfig"
+                    }
+                ]
+            },
+            "QueryRequest": {
+                "type": "object",
+                "properties": {
+                    "content": {
+                        "$ref": "#/components/schemas/InterleavedContent"
+                    },
+                    "vector_db_ids": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "query_config": {
+                        "$ref": "#/components/schemas/RAGQueryConfig"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "content",
+                    "vector_db_ids"
+                ]
+            },
+            "RAGQueryResult": {
+                "type": "object",
+                "properties": {
+                    "content": {
+                        "$ref": "#/components/schemas/InterleavedContent"
+                    }
+                },
+                "additionalProperties": false
+            },
             "QueryChunksRequest": {
                 "type": "object",
                 "properties": {
@@ -7980,111 +8081,6 @@
                     "chunks",
                     "scores"
                 ]
-            },
-            "DefaultRAGQueryGeneratorConfig": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "default",
-                        "default": "default"
-                    },
-                    "separator": {
-                        "type": "string",
-                        "default": " "
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type",
-                    "separator"
-                ]
-            },
-            "LLMRAGQueryGeneratorConfig": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "llm",
-                        "default": "llm"
-                    },
-                    "model": {
-                        "type": "string"
-                    },
-                    "template": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type",
-                    "model",
-                    "template"
-                ]
-            },
-            "RAGQueryConfig": {
-                "type": "object",
-                "properties": {
-                    "query_generator_config": {
-                        "$ref": "#/components/schemas/RAGQueryGeneratorConfig"
-                    },
-                    "max_tokens_in_context": {
-                        "type": "integer",
-                        "default": 4096
-                    },
-                    "max_chunks": {
-                        "type": "integer",
-                        "default": 5
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "query_generator_config",
-                    "max_tokens_in_context",
-                    "max_chunks"
-                ]
-            },
-            "RAGQueryGeneratorConfig": {
-                "oneOf": [
-                    {
-                        "$ref": "#/components/schemas/DefaultRAGQueryGeneratorConfig"
-                    },
-                    {
-                        "$ref": "#/components/schemas/LLMRAGQueryGeneratorConfig"
-                    }
-                ]
-            },
-            "QueryContextRequest": {
-                "type": "object",
-                "properties": {
-                    "content": {
-                        "$ref": "#/components/schemas/InterleavedContent"
-                    },
-                    "query_config": {
-                        "$ref": "#/components/schemas/RAGQueryConfig"
-                    },
-                    "vector_db_ids": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "content",
-                    "query_config",
-                    "vector_db_ids"
-                ]
-            },
-            "RAGQueryResult": {
-                "type": "object",
-                "properties": {
-                    "content": {
-                        "$ref": "#/components/schemas/InterleavedContent"
-                    }
-                },
-                "additionalProperties": false
             },
             "QueryCondition": {
                 "type": "object",
@@ -9246,8 +9242,8 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/InsertChunksRequest\" />"
         },
         {
-            "name": "InsertDocumentsRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/InsertDocumentsRequest\" />"
+            "name": "InsertRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/InsertRequest\" />"
         },
         {
             "name": "Inspect"
@@ -9435,8 +9431,8 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QueryConditionOp\" />"
         },
         {
-            "name": "QueryContextRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QueryContextRequest\" />"
+            "name": "QueryRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QueryRequest\" />"
         },
         {
             "name": "QuerySpanTreeResponse",
@@ -9858,7 +9854,7 @@
                 "ImageDelta",
                 "InferenceStep",
                 "InsertChunksRequest",
-                "InsertDocumentsRequest",
+                "InsertRequest",
                 "InterleavedContent",
                 "InterleavedContentItem",
                 "InvokeToolRequest",
@@ -9903,7 +9899,7 @@
                 "QueryChunksResponse",
                 "QueryCondition",
                 "QueryConditionOp",
-                "QueryContextRequest",
+                "QueryRequest",
                 "QuerySpanTreeResponse",
                 "QuerySpansResponse",
                 "QueryTracesResponse",
