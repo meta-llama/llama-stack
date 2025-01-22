@@ -22,7 +22,7 @@ distribution_spec:
     - inline::meta-reference
     safety:
     - inline::llama-guard
-    memory:
+    vector_io:
     - inline::faiss
     tool_runtime:
     - remote::brave-search

@@ -7,7 +7,7 @@ apis:
 - datasetio
 - eval
 - inference
-- memory
+- vector_io
 - safety
 - scoring
 - telemetry
