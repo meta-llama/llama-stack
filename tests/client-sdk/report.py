@@ -5,88 +5,87 @@
 # the root directory of this source tree.
 
 
+import importlib
 import os
 from collections import defaultdict
 from pathlib import Path
+from urllib.parse import urlparse
 
 import pytest
-from llama_models.datatypes import CoreModelId
-from llama_models.sku_list import all_registered_models
+
+from llama_models.sku_list import (
+    llama3_1_instruct_models,
+    llama3_2_instruct_models,
+    llama3_3_instruct_models,
+    llama3_instruct_models,
+    safety_models,
+)
 
 from llama_stack.distribution.library_client import LlamaStackAsLibraryClient
+from llama_stack.providers.tests.env import get_env_or_fail
+
+from llama_stack_client import LlamaStackClient
 from metadata import API_MAPS
 
 from pytest import CollectReport
+from termcolor import cprint
 
 
-SUPPORTED_MODELS = {
-    "ollama": set(
-        [
-            CoreModelId.llama3_1_8b_instruct.value,
-            CoreModelId.llama3_1_8b_instruct.value,
-            CoreModelId.llama3_1_70b_instruct.value,
-            CoreModelId.llama3_1_70b_instruct.value,
-            CoreModelId.llama3_1_405b_instruct.value,
-            CoreModelId.llama3_1_405b_instruct.value,
-            CoreModelId.llama3_2_1b_instruct.value,
-            CoreModelId.llama3_2_1b_instruct.value,
-            CoreModelId.llama3_2_3b_instruct.value,
-            CoreModelId.llama3_2_3b_instruct.value,
-            CoreModelId.llama3_2_11b_vision_instruct.value,
-            CoreModelId.llama3_2_11b_vision_instruct.value,
-            CoreModelId.llama3_2_90b_vision_instruct.value,
-            CoreModelId.llama3_2_90b_vision_instruct.value,
-            CoreModelId.llama3_3_70b_instruct.value,
-            CoreModelId.llama_guard_3_8b.value,
-            CoreModelId.llama_guard_3_1b.value,
-        ]
-    ),
-    "fireworks": set(
-        [
-            CoreModelId.llama3_1_8b_instruct.value,
-            CoreModelId.llama3_1_70b_instruct.value,
-            CoreModelId.llama3_1_405b_instruct.value,
-            CoreModelId.llama3_2_1b_instruct.value,
-            CoreModelId.llama3_2_3b_instruct.value,
-            CoreModelId.llama3_2_11b_vision_instruct.value,
-            CoreModelId.llama3_2_90b_vision_instruct.value,
-            CoreModelId.llama3_3_70b_instruct.value,
-            CoreModelId.llama_guard_3_8b.value,
-            CoreModelId.llama_guard_3_11b_vision.value,
-        ]
-    ),
-    "together": set(
-        [
-            CoreModelId.llama3_1_8b_instruct.value,
-            CoreModelId.llama3_1_70b_instruct.value,
-            CoreModelId.llama3_1_405b_instruct.value,
-            CoreModelId.llama3_2_3b_instruct.value,
-            CoreModelId.llama3_2_11b_vision_instruct.value,
-            CoreModelId.llama3_2_90b_vision_instruct.value,
-            CoreModelId.llama3_3_70b_instruct.value,
-            CoreModelId.llama_guard_3_8b.value,
-            CoreModelId.llama_guard_3_11b_vision.value,
-        ]
-    ),
-}
+def featured_models_repo_names():
+    models = [
+        *llama3_instruct_models(),
+        *llama3_1_instruct_models(),
+        *llama3_2_instruct_models(),
+        *llama3_3_instruct_models(),
+        *safety_models(),
+    ]
+    return [model.huggingface_repo for model in models if not model.variant]
 
 
 class Report:
 
     def __init__(self):
-        config_file = os.environ.get("LLAMA_STACK_CONFIG")
-        if not config_file:
-            raise ValueError(
-                "Currently we only support generating report for LlamaStackClientLibrary distributions"
+        if os.environ.get("LLAMA_STACK_CONFIG"):
+            config_path_or_template_name = get_env_or_fail("LLAMA_STACK_CONFIG")
+            if config_path_or_template_name.endswith(".yaml"):
+                config_path = Path(config_path_or_template_name)
+            else:
+                config_path = Path(
+                    importlib.resources.files("llama_stack")
+                    / f"templates/{config_path_or_template_name}/run.yaml"
+                )
+            if not config_path.exists():
+                raise ValueError(f"Config file {config_path} does not exist")
+            self.output_path = Path(config_path.parent / "report.md")
+            self.client = LlamaStackAsLibraryClient(
+                config_path_or_template_name,
+                provider_data=None,
+                skip_logger_removal=True,
             )
-        config_path = Path(config_file)
-        self.output_path = Path(config_path.parent / "report.md")
-        self.client = LlamaStackAsLibraryClient(
-            config_file,
-            provider_data=None,
-            skip_logger_removal=True,
-        )
-        self.image_name = self.client.async_client.config.image_name
+            self.client.initialize()
+            self.image_name = self.client.async_client.config.image_name
+        elif os.environ.get("LLAMA_STACK_BASE_URL"):
+            url = get_env_or_fail("LLAMA_STACK_BASE_URL")
+            hostname = urlparse(url).netloc
+            domain = hostname.split(".")[-2]
+            self.image_name = domain
+
+            self.client = LlamaStackClient(
+                base_url=url,
+                provider_data=None,
+            )
+            # We assume that the domain maps to a template
+            # i.e. https://llamastack-preview.fireworks.ai --> "fireworks" template
+            # and add report in that directory
+            output_dir = Path(
+                importlib.resources.files("llama_stack") / f"templates/{domain}/"
+            )
+            if not output_dir.exists():
+                raise ValueError(f"Output dir {output_dir} does not exist")
+            self.output_path = Path(output_dir / "remote-hosted-report.md")
+        else:
+            raise ValueError("LLAMA_STACK_CONFIG or LLAMA_STACK_BASE_URL must be set")
+
         self.report_data = defaultdict(dict)
         # test function -> test nodeid
         self.test_data = dict()
@@ -105,7 +104,7 @@ class Report:
     def pytest_sessionfinish(self, session):
         report = []
         report.append(f"# Report for {self.image_name} distribution")
-        report.append("\n## Supported Models: ")
+        report.append("\n## Supported Models:")
 
         header = f"| Model Descriptor | {self.image_name} |"
         dividor = "|:---|:---|"
@@ -114,21 +113,23 @@ class Report:
         report.append(dividor)
 
         rows = []
-        for model in all_registered_models():
-            if (
-                "Instruct" not in model.core_model_id.value
-                and "Guard" not in model.core_model_id.value
-            ) or (model.variant):
-                continue
-            row = f"| {model.core_model_id.value} |"
-            if model.core_model_id.value in SUPPORTED_MODELS[self.image_name]:
+
+        try:
+            supported_models = {m.identifier for m in self.client.models.list()}
+        except Exception as e:
+            cprint(f"Error getting models: {e}", "red")
+            supported_models = set()
+
+        for m_name in featured_models_repo_names():
+            row = f"| {m_name} |"
+            if m_name in supported_models:
                 row += " ✅ |"
             else:
                 row += " ❌ |"
             rows.append(row)
         report.extend(rows)
 
-        report.append("\n## Inference: ")
+        report.append("\n## Inference:")
         test_table = [
             "| Model | API | Capability | Test | Status |",
             "|:----- |:-----|:-----|:-----|:-----|",
@@ -150,7 +151,7 @@ class Report:
 
         for api_group in ["memory", "agents"]:
             api_capitalized = api_group.capitalize()
-            report.append(f"\n## {api_capitalized}: ")
+            report.append(f"\n## {api_capitalized}:")
             test_table = [
                 "| API | Capability | Test | Status |",
                 "|:-----|:-----|:-----|:-----|",
@@ -164,9 +165,11 @@ class Report:
                             f"| {api} | {capa} | {test_name} | {self._print_result_icon(self.test_data[test_nodeids[0]])} |"
                         )
             report.extend(test_table)
+
         output_file = self.output_path
-        output_file.write_text("\n".join(report))
-        print(f"\nReport generated: {output_file.absolute()}")
+        text = "\n".join(report) + "\n"
+        output_file.write_text(text)
+        cprint(f"\nReport generated: {output_file.absolute()}", "green")
 
     def pytest_runtest_makereport(self, item, call):
         func_name = getattr(item, "originalname", item.name)
