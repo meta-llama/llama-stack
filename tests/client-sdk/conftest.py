@@ -10,11 +10,27 @@ import pytest
 from llama_stack import LlamaStackAsLibraryClient
 from llama_stack.providers.tests.env import get_env_or_fail
 from llama_stack_client import LlamaStackClient
+from report import Report
 
 
 def pytest_configure(config):
     config.option.tbstyle = "short"
     config.option.disable_warnings = True
+    if config.getoption("--report"):
+        config.pluginmanager.register(Report())
+
+
+def pytest_addoption(parser):
+    parser.addoption(
+        "--report",
+        default=False,
+        action="store_true",
+        help="Knob to determine if we should generate report, e.g. --output=True",
+    )
+
+
+TEXT_MODEL = "meta-llama/Llama-3.1-8B-Instruct"
+INFERENCE_MODEL = "meta-llama/Llama-3.2-11B-Vision-Instruct"
 
 
 @pytest.fixture(scope="session")

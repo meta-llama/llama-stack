@@ -82,7 +82,7 @@ def base64_image_url():
         return base64_url
 
 
-def test_completion_non_streaming(llama_stack_client, text_model_id):
+def test_text_completion_non_streaming(llama_stack_client, text_model_id):
     response = llama_stack_client.inference.completion(
         content="Complete the sentence using one word: Roses are red, violets are ",
         stream=False,
@@ -94,7 +94,7 @@ def test_completion_non_streaming(llama_stack_client, text_model_id):
     assert "blue" in response.content.lower().strip()
 
 
-def test_completion_streaming(llama_stack_client, text_model_id):
+def test_text_completion_streaming(llama_stack_client, text_model_id):
     response = llama_stack_client.inference.completion(
         content="Complete the sentence using one word: Roses are red, violets are ",
         stream=True,
@@ -147,7 +147,7 @@ def test_completion_log_probs_streaming(llama_stack_client, text_model_id):
             assert not chunk.logprobs, "Logprobs should be empty"
 
 
-def test_completion_structured_output(
+def test_text_completion_structured_output(
     llama_stack_client, text_model_id, inference_provider_type
 ):
     user_input = """

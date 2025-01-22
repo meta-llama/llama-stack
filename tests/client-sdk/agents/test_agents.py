@@ -80,7 +80,7 @@ class TestClientTool(ClientTool):
 
 
 @pytest.fixture(scope="session")
-def model_id(llama_stack_client):
+def text_model_id(llama_stack_client):
     available_models = [
         model.identifier
         for model in llama_stack_client.models.list()
@@ -92,14 +92,14 @@ def model_id(llama_stack_client):
 
 
 @pytest.fixture(scope="session")
-def agent_config(llama_stack_client, model_id):
+def agent_config(llama_stack_client, text_model_id):
     available_shields = [
         shield.identifier for shield in llama_stack_client.shields.list()
     ]
     available_shields = available_shields[:1]
     print(f"Using shield: {available_shields}")
     agent_config = AgentConfig(
-        model=model_id,
+        model=text_model_id,
         instructions="You are a helpful assistant",
         sampling_params={
             "strategy": {
