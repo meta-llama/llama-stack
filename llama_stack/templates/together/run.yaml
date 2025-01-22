@@ -5,11 +5,11 @@ apis:
 - datasetio
 - eval
 - inference
-- vector_io
 - safety
 - scoring
 - telemetry
 - tool_runtime
+- vector_io
 providers:
   inference:
   - provider_id: together
@@ -145,6 +145,7 @@ models:
   model_type: embedding
 shields:
 - shield_id: meta-llama/Llama-Guard-3-8B
+vector_dbs: []
 datasets: []
 scoring_fns: []
 eval_tasks: []

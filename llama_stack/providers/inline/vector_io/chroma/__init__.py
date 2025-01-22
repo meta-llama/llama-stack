@@ -14,8 +14,10 @@ from .config import ChromaInlineImplConfig
 async def get_provider_impl(
     config: ChromaInlineImplConfig, deps: Dict[Api, ProviderSpec]
 ):
-    from llama_stack.providers.remote.memory.chroma.chroma import ChromaMemoryAdapter
+    from llama_stack.providers.remote.vector_io.chroma.chroma import (
+        ChromaVectorIOAdapter,
+    )
 
-    impl = ChromaMemoryAdapter(config, deps[Api.inference])
+    impl = ChromaVectorIOAdapter(config, deps[Api.inference])
     await impl.initialize()
     return impl

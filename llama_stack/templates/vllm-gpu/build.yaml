@@ -4,7 +4,7 @@ distribution_spec:
   providers:
     inference:
     - inline::vllm
-    memory:
+    vector_io:
     - inline::faiss
     - remote::chromadb
     - remote::pgvector

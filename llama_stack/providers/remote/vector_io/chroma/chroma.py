@@ -86,13 +86,13 @@ class ChromaIndex(EmbeddingIndex):
         await maybe_await(self.client.delete_collection(self.collection.name))
 
 
-class ChromaMemoryAdapter(VectorIO, VectorDBsProtocolPrivate):
+class ChromaVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
     def __init__(
         self,
         config: Union[ChromaRemoteImplConfig, ChromaInlineImplConfig],
         inference_api: Api.inference,
     ) -> None:
-        log.info(f"Initializing ChromaMemoryAdapter with url: {config}")
+        log.info(f"Initializing ChromaVectorIOAdapter with url: {config}")
         self.config = config
         self.inference_api = inference_api
 

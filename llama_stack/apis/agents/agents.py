@@ -88,7 +88,7 @@ class MemoryRetrievalStep(StepCommon):
     step_type: Literal[StepType.memory_retrieval.value] = (
         StepType.memory_retrieval.value
     )
-    memory_bank_ids: List[str]
+    vector_db_ids: str
     inserted_context: InterleavedContent
 
 

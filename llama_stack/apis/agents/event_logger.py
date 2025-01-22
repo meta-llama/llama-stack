@@ -208,7 +208,7 @@ class EventLogger:
             ):
                 details = event.payload.step_details
                 inserted_context = interleaved_content_as_str(details.inserted_context)
-                content = f"fetched {len(inserted_context)} bytes from {details.memory_bank_ids}"
+                content = f"fetched {len(inserted_context)} bytes from {details.vector_db_ids}"
 
                 yield (
                     event,
