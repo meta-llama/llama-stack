@@ -27,14 +27,14 @@ INFERENCE_API_CAPA_TEST_MAP = {
     },
 }
 
-MEMORY_API_CAPA_TEST_MAP = {
+MEMORY_API_TEST_MAP = {
     "/insert, /query": {
         "inline": ["test_memory_bank_insert_inline_and_query"],
         "url": ["test_memory_bank_insert_from_url_and_query"],
     }
 }
 
-AGENTS_API_CAPA_TEST_MAP = {
+AGENTS_API_TEST_MAP = {
     "create_agent_turn": {
         "rag": ["test_rag_agent"],
         "custom_tool": ["test_custom_tool"],
@@ -43,8 +43,8 @@ AGENTS_API_CAPA_TEST_MAP = {
 }
 
 
-API_CAPA_MAPS = {
+API_MAPS = {
     "inference": INFERENCE_API_CAPA_TEST_MAP,
-    "memory": MEMORY_API_CAPA_TEST_MAP,
-    "agents": AGENTS_API_CAPA_TEST_MAP,
+    "memory": MEMORY_API_TEST_MAP,
+    "agents": AGENTS_API_TEST_MAP,
 }

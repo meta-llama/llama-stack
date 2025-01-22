@@ -14,7 +14,7 @@ from llama_models.datatypes import CoreModelId
 from llama_models.sku_list import all_registered_models
 
 from llama_stack.distribution.library_client import LlamaStackAsLibraryClient
-from metadata import API_CAPA_MAPS
+from metadata import API_MAPS
 
 from pytest import CollectReport
 
@@ -118,7 +118,7 @@ class Report:
             if (
                 "Instruct" not in model.core_model_id.value
                 and "Guard" not in model.core_model_id.value
-            ):
+            ) or (model.variant):
                 continue
             row = f"| {model.core_model_id.value} |"
             if model.core_model_id.value in SUPPORTED_MODELS[self.image_name]:
@@ -133,7 +133,7 @@ class Report:
             "| Model | API | Capability | Test | Status |",
             "|:----- |:-----|:-----|:-----|:-----|",
         ]
-        for api, capa_map in API_CAPA_MAPS["inference"].items():
+        for api, capa_map in API_MAPS["inference"].items():
             for capa, tests in capa_map.items():
                 vision_tests = filter(lambda test_name: "image" in test_name, tests)
                 text_tests = filter(lambda test_name: "text" in test_name, tests)
@@ -145,7 +145,7 @@ class Report:
                     # the result of the first one for now. Ideally we should mark the test as failed if
                     # any of the parametrizations failed.
                     test_table.append(
-                        f"| Text | /{api} | {capa} | {test_name} | {self.test_data[test_nodeids[0]]} |"
+                        f"| Text | /{api} | {capa} | {test_name} | {self._print_result_icon(self.test_data[test_nodeids[0]])} |"
                     )
 
                 for test_name in vision_tests:
@@ -157,34 +157,22 @@ class Report:
 
         report.extend(test_table)
 
-        report.append("\n## Memory: ")
-        test_table = [
-            "| API | Capability | Test | Status |",
-            "|:-----|:-----|:-----|:-----|",
-        ]
-        for api, capa_map in API_CAPA_MAPS["memory"].items():
-            for capa, tests in capa_map.items():
-                for test_name in tests:
-                    test_nodeids = self.test_name_to_nodeid[test_name]
-                    assert len(test_nodeids) > 0
-                    test_table.append(
-                        f"| {api} | {capa} | {test_name} | {self.test_data[test_nodeids[0]]} |"
-                    )
-        report.extend(test_table)
-        report.append("\n## Agent: ")
-        test_table = [
-            "| API | Capability | Test | Status |",
-            "|:-----|:-----|:-----|:-----|",
-        ]
-        for api, capa_map in API_CAPA_MAPS["agents"].items():
-            for capa, tests in capa_map.items():
-                for test_name in tests:
-                    test_nodeids = self.test_name_to_nodeid[test_name]
-                    assert len(test_nodeids) > 0
-                    test_table.append(
-                        f"| /{api} | {capa} | {test_name} | {self.test_data[test_nodeids[0]]} |"
-                    )
-        report.extend(test_table)
+        for api_group in ["memory", "agents"]:
+            api_capitalized = api_group.capitalize()
+            report.append(f"\n## {api_capitalized}: ")
+            test_table = [
+                "| API | Capability | Test | Status |",
+                "|:-----|:-----|:-----|:-----|",
+            ]
+            for api, capa_map in API_MAPS[api_group].items():
+                for capa, tests in capa_map.items():
+                    for test_name in tests:
+                        test_nodeids = self.test_name_to_nodeid[test_name]
+                        assert len(test_nodeids) > 0
+                        test_table.append(
+                            f"| {api} | {capa} | {test_name} | {self._print_result_icon(self.test_data[test_nodeids[0]])} |"
+                        )
+            report.extend(test_table)
         output_file = self.output_path
         output_file.write_text("\n".join(report))
         print(f"\nReport generated: {output_file.absolute()}")
@@ -195,10 +183,12 @@ class Report:
 
     def _print_result_icon(self, result):
         if result == "Passed":
-            return "&#x2705;"
+            return "✅"
+        elif result == "Failed" or result == "Error":
+            return "❌"
         else:
-            #  result == "Failed" or result == "Error":
-            return "&#x274C;"
+            #  result == "Skipped":
+            return "⏭️"
 
     def _process_outcome(self, report: CollectReport):
         if self._is_error(report):
