@@ -96,14 +96,14 @@ class TestTools:
         )
 
         # Insert documents into memory
-        await tools_impl.rag_tool.insert_documents(
+        await tools_impl.rag_tool.insert(
             documents=sample_documents,
             vector_db_id="test_bank",
             chunk_size_in_tokens=512,
         )
 
         # Execute the memory tool
-        response = await tools_impl.rag_tool.query_context(
+        response = await tools_impl.rag_tool.query(
             content="What are the main topics covered in the documentation?",
             vector_db_ids=["test_bank"],
         )

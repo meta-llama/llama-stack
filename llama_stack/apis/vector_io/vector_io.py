@@ -38,7 +38,7 @@ class VectorDBStore(Protocol):
 class VectorIO(Protocol):
     vector_db_store: VectorDBStore
 
-    # this will just block now until documents are inserted, but it should
+    # this will just block now until chunks are inserted, but it should
     # probably return a Job instance which can be polled for completion
     @webmethod(route="/vector-io/insert", method="POST")
     async def insert_chunks(

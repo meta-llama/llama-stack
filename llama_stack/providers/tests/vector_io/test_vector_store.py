@@ -11,11 +11,9 @@ from pathlib import Path
 
 import pytest
 
-from llama_stack.providers.utils.memory.vector_store import (
-    content_from_doc,
-    MemoryBankDocument,
-    URL,
-)
+from llama_stack.apis.tools import RAGDocument
+
+from llama_stack.providers.utils.memory.vector_store import content_from_doc, URL
 
 DUMMY_PDF_PATH = Path(os.path.abspath(__file__)).parent / "fixtures" / "dummy.pdf"
 
@@ -41,33 +39,33 @@ class TestVectorStore:
     @pytest.mark.asyncio
     async def test_returns_content_from_pdf_data_uri(self):
         data_uri = data_url_from_file(DUMMY_PDF_PATH)
-        doc = MemoryBankDocument(
+        doc = RAGDocument(
             document_id="dummy",
             content=data_uri,
             mime_type="application/pdf",
             metadata={},
         )
         content = await content_from_doc(doc)
-        assert content == "Dummy PDF file"
+        assert content == "Dumm y PDF file"
 
     @pytest.mark.asyncio
     async def test_downloads_pdf_and_returns_content(self):
         # Using GitHub to host the PDF file
         url = "https://raw.githubusercontent.com/meta-llama/llama-stack/da035d69cfca915318eaf485770a467ca3c2a238/llama_stack/providers/tests/memory/fixtures/dummy.pdf"
-        doc = MemoryBankDocument(
+        doc = RAGDocument(
             document_id="dummy",
             content=url,
             mime_type="application/pdf",
             metadata={},
         )
         content = await content_from_doc(doc)
-        assert content == "Dummy PDF file"
+        assert content == "Dumm y PDF file"
 
     @pytest.mark.asyncio
     async def test_downloads_pdf_and_returns_content_with_url_object(self):
         # Using GitHub to host the PDF file
         url = "https://raw.githubusercontent.com/meta-llama/llama-stack/da035d69cfca915318eaf485770a467ca3c2a238/llama_stack/providers/tests/memory/fixtures/dummy.pdf"
-        doc = MemoryBankDocument(
+        doc = RAGDocument(
             document_id="dummy",
             content=URL(
                 uri=url,
@@ -76,4 +74,4 @@ class TestVectorStore:
             metadata={},
         )
         content = await content_from_doc(doc)
-        assert content == "Dummy PDF file"
+        assert content == "Dumm y PDF file"

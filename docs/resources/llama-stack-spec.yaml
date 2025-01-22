@@ -1009,7 +1009,7 @@ components:
       - vector_db_id
       - chunks
       type: object
-    InsertDocumentsRequest:
+    InsertRequest:
       additionalProperties: false
       properties:
         chunk_size_in_tokens:
@@ -1299,10 +1299,6 @@ components:
           type: string
         inserted_context:
           $ref: '#/components/schemas/InterleavedContent'
-        memory_bank_ids:
-          items:
-            type: string
-          type: array
         started_at:
           format: date-time
           type: string
@@ -1314,11 +1310,13 @@ components:
           type: string
         turn_id:
           type: string
+        vector_db_ids:
+          type: string
       required:
       - turn_id
       - step_id
       - step_type
-      - memory_bank_ids
+      - vector_db_ids
       - inserted_context
       type: object
     Message:
@@ -1710,7 +1708,7 @@ components:
       - gt
       - lt
       type: string
-    QueryContextRequest:
+    QueryRequest:
       additionalProperties: false
       properties:
         content:
@@ -1723,7 +1721,6 @@ components:
           type: array
       required:
       - content
-      - query_config
       - vector_db_ids
       type: object
     QuerySpanTreeResponse:
@@ -5176,7 +5173,7 @@ paths:
           description: OK
       tags:
       - ToolRuntime
-  /v1/tool-runtime/rag-tool/insert-documents:
+  /v1/tool-runtime/rag-tool/insert:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -5197,7 +5194,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/InsertDocumentsRequest'
+              $ref: '#/components/schemas/InsertRequest'
         required: true
       responses:
         '200':
@@ -5205,7 +5202,7 @@ paths:
       summary: Index documents so they can be used by the RAG system
       tags:
       - ToolRuntime
-  /v1/tool-runtime/rag-tool/query-context:
+  /v1/tool-runtime/rag-tool/query:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -5226,7 +5223,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/QueryContextRequest'
+              $ref: '#/components/schemas/QueryRequest'
         required: true
       responses:
         '200':
@@ -5814,9 +5811,8 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/InsertChunksRequest"
     />
   name: InsertChunksRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/InsertDocumentsRequest"
-    />
-  name: InsertDocumentsRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/InsertRequest" />
+  name: InsertRequest
 - name: Inspect
 - description: <SchemaDefinition schemaRef="#/components/schemas/InterleavedContent"
     />
@@ -5943,9 +5939,8 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/QueryConditionOp"
     />
   name: QueryConditionOp
-- description: <SchemaDefinition schemaRef="#/components/schemas/QueryContextRequest"
-    />
-  name: QueryContextRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/QueryRequest" />
+  name: QueryRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/QuerySpanTreeResponse"
     />
   name: QuerySpanTreeResponse
@@ -6245,7 +6240,7 @@ x-tagGroups:
   - ImageDelta
   - InferenceStep
   - InsertChunksRequest
-  - InsertDocumentsRequest
+  - InsertRequest
   - InterleavedContent
   - InterleavedContentItem
   - InvokeToolRequest
@@ -6290,7 +6285,7 @@ x-tagGroups:
   - QueryChunksResponse
   - QueryCondition
   - QueryConditionOp
-  - QueryContextRequest
+  - QueryRequest
   - QuerySpanTreeResponse
   - QuerySpansResponse
   - QueryTracesResponse

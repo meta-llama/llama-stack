@@ -84,7 +84,7 @@ def make_random_string(length: int = 8):
 
 
 TOOLS_ATTACHMENT_KEY_REGEX = re.compile(r"__tools_attachment__=(\{.*?\})")
-MEMORY_QUERY_TOOL = "rag_tool.query_context"
+MEMORY_QUERY_TOOL = "query_from_memory"
 WEB_SEARCH_TOOL = "web_search"
 MEMORY_GROUP = "builtin::memory"
 
@@ -432,16 +432,16 @@ class ChatAgent(ShieldRunnerMixin):
                         )
                     )
                 )
-                result = await self.tool_runtime_api.rag_tool.query_context(
+                result = await self.tool_runtime_api.rag_tool.query(
                     content=concat_interleaved_content(
                         [msg.content for msg in input_messages]
                     ),
+                    vector_db_ids=vector_db_ids,
                     query_config=RAGQueryConfig(
                         query_generator_config=DefaultRAGQueryGeneratorConfig(),
                         max_tokens_in_context=4096,
                         max_chunks=5,
                     ),
-                    vector_db_ids=vector_db_ids,
                 )
                 retrieved_context = result.content
 
@@ -882,7 +882,7 @@ class ChatAgent(ShieldRunnerMixin):
             )
             for a in data
         ]
-        await self.tool_runtime_api.rag_tool.insert_documents(
+        await self.tool_runtime_api.rag_tool.insert(
             documents=documents,
             vector_db_id=vector_db_id,
             chunk_size_in_tokens=512,

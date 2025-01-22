@@ -73,7 +73,7 @@ def test_vector_db_insert_inline_and_query(
     llama_stack_client, single_entry_vector_db_registry, sample_documents
 ):
     vector_db_id = single_entry_vector_db_registry[0]
-    llama_stack_client.tool_runtime.rag_tool.insert_documents(
+    llama_stack_client.tool_runtime.rag_tool.insert(
         documents=sample_documents,
         chunk_size_in_tokens=512,
         vector_db_id=vector_db_id,
@@ -157,7 +157,7 @@ def test_vector_db_insert_from_url_and_query(
         for i, url in enumerate(urls)
     ]
 
-    llama_stack_client.tool_runtime.rag_tool.insert_documents(
+    llama_stack_client.tool_runtime.rag_tool.insert(
         documents=documents,
         vector_db_id=vector_db_id,
         chunk_size_in_tokens=512,
