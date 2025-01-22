@@ -258,7 +258,7 @@ def extract_tool_invocation_content(response):
     for chunk in response:
         delta = chunk.event.delta
         if delta.type == "tool_call" and delta.parse_status == "succeeded":
-            call = delta.content
+            call = delta.tool_call
             tool_invocation_content += f"[{call.tool_name}, {call.arguments}]"
     return tool_invocation_content
 
@@ -321,9 +321,11 @@ def test_image_chat_completion_non_streaming(llama_stack_client, vision_model_id
         "content": [
             {
                 "type": "image",
-                "url": {
-                    # TODO: Replace with Github based URI to resources/sample1.jpg
-                    "uri": "https://www.healthypawspetinsurance.com/Images/V3/DogAndPuppyInsurance/Dog_CTA_Desktop_HeroImage.jpg"
+                "image": {
+                    "url": {
+                        # TODO: Replace with Github based URI to resources/sample1.jpg
+                        "uri": "https://www.healthypawspetinsurance.com/Images/V3/DogAndPuppyInsurance/Dog_CTA_Desktop_HeroImage.jpg"
+                    },
                 },
             },
             {
@@ -348,9 +350,11 @@ def test_image_chat_completion_streaming(llama_stack_client, vision_model_id):
         "content": [
             {
                 "type": "image",
-                "url": {
-                    # TODO: Replace with Github based URI to resources/sample1.jpg
-                    "uri": "https://www.healthypawspetinsurance.com/Images/V3/DogAndPuppyInsurance/Dog_CTA_Desktop_HeroImage.jpg"
+                "image": {
+                    "url": {
+                        # TODO: Replace with Github based URI to resources/sample1.jpg
+                        "uri": "https://www.healthypawspetinsurance.com/Images/V3/DogAndPuppyInsurance/Dog_CTA_Desktop_HeroImage.jpg"
+                    },
                 },
             },
             {
@@ -374,14 +378,15 @@ def test_image_chat_completion_streaming(llama_stack_client, vision_model_id):
 def test_image_chat_completion_base64_url(
     llama_stack_client, vision_model_id, base64_image_url
 ):
-
     message = {
         "role": "user",
         "content": [
             {
                 "type": "image",
-                "url": {
-                    "uri": base64_image_url,
+                "image": {
+                    "url": {
+                        "uri": base64_image_url,
+                    },
                 },
             },
             {

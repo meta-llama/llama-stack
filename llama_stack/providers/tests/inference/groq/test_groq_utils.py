@@ -472,7 +472,7 @@ class TestConvertStreamChatCompletionResponse:
         iter = converted.__aiter__()
         chunk = await iter.__anext__()
         assert chunk.event.event_type == ChatCompletionResponseEventType.start
-        assert chunk.event.delta.content == ToolCall(
+        assert chunk.event.delta.tool_call == ToolCall(
             call_id="tool_call_id",
             tool_name="get_flight_info",
             arguments={"origin": "AU", "destination": "LAX"},

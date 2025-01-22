@@ -137,7 +137,7 @@ class EventLogger:
                                     event,
                                     LogEvent(
                                         role=None,
-                                        content=delta.content,
+                                        content=delta.tool_call,
                                         end="",
                                         color="cyan",
                                     ),

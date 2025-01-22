@@ -38,8 +38,9 @@ class _URLOrData(BaseModel):
 
 
 @json_schema_type
-class ImageContentItem(_URLOrData):
+class ImageContentItem(BaseModel):
     type: Literal["image"] = "image"
+    image: _URLOrData
 
 
 @json_schema_type
@@ -73,7 +74,7 @@ class TextDelta(BaseModel):
 @json_schema_type
 class ImageDelta(BaseModel):
     type: Literal["image"] = "image"
-    data: bytes
+    image: bytes
 
 
 @json_schema_type
@@ -91,7 +92,7 @@ class ToolCallDelta(BaseModel):
     # you either send an in-progress tool call so the client can stream a long
     # code generation or you send the final parsed tool call at the end of the
     # stream
-    content: Union[str, ToolCall]
+    tool_call: Union[str, ToolCall]
     parse_status: ToolCallParseStatus
 
 

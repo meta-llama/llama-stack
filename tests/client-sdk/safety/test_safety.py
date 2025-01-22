@@ -141,7 +141,7 @@ def test_safety_with_image(llama_stack_client, model_providers):
                 },
                 {
                     "type": "image",
-                    "url": {"uri": data_url_from_image(file_path)},
+                    "image": {"url": {"uri": data_url_from_image(file_path)}},
                 },
             ],
         }
