@@ -3,20 +3,20 @@
 ## Supported Models:
 | Model Descriptor | fireworks |
 |:---|:---|
-| Llama-3-8B-Instruct | ❌ |
-| Llama-3-70B-Instruct | ❌ |
-| Llama3.1-8B-Instruct | ✅ |
-| Llama3.1-70B-Instruct | ✅ |
-| Llama3.1-405B-Instruct | ✅ |
-| Llama3.2-1B-Instruct | ✅ |
-| Llama3.2-3B-Instruct | ✅ |
-| Llama3.2-11B-Vision-Instruct | ✅ |
-| Llama3.2-90B-Vision-Instruct | ✅ |
-| Llama3.3-70B-Instruct | ✅ |
-| Llama-Guard-3-11B-Vision | ✅ |
-| Llama-Guard-3-1B | ❌ |
-| Llama-Guard-3-8B | ✅ |
-| Llama-Guard-2-8B | ❌ |
+| meta-llama/Llama-3-8B-Instruct | ❌ |
+| meta-llama/Llama-3-70B-Instruct | ❌ |
+| meta-llama/Llama-3.1-8B-Instruct | ✅ |
+| meta-llama/Llama-3.1-70B-Instruct | ✅ |
+| meta-llama/Llama-3.1-405B-Instruct-FP8 | ✅ |
+| meta-llama/Llama-3.2-1B-Instruct | ✅ |
+| meta-llama/Llama-3.2-3B-Instruct | ✅ |
+| meta-llama/Llama-3.2-11B-Vision-Instruct | ✅ |
+| meta-llama/Llama-3.2-90B-Vision-Instruct | ✅ |
+| meta-llama/Llama-3.3-70B-Instruct | ✅ |
+| meta-llama/Llama-Guard-3-11B-Vision | ✅ |
+| meta-llama/Llama-Guard-3-1B | ❌ |
+| meta-llama/Llama-Guard-3-8B | ✅ |
+| meta-llama/Llama-Guard-2-8B | ❌ |
 
 ## Inference:
 | Model | API | Capability | Test | Status |
@@ -34,12 +34,12 @@
 ## Memory:
 | API | Capability | Test | Status |
 |:-----|:-----|:-----|:-----|
-| /insert, /query | inline | test_memory_bank_insert_inline_and_query | ❌ |
-| /insert, /query | url | test_memory_bank_insert_from_url_and_query | ❌ |
+| /insert, /query | inline | test_memory_bank_insert_inline_and_query | ✅ |
+| /insert, /query | url | test_memory_bank_insert_from_url_and_query | ✅ |
 
 ## Agents:
 | API | Capability | Test | Status |
 |:-----|:-----|:-----|:-----|
-| create_agent_turn | rag | test_rag_agent | ❌ |
+| create_agent_turn | rag | test_rag_agent | ✅ |
 | create_agent_turn | custom_tool | test_custom_tool | ✅ |
 | create_agent_turn | code_execution | test_code_execution | ❌ |
