@@ -4,10 +4,11 @@
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/llama-stack)](https://pypi.org/project/llama-stack/)
 [![Discord](https://img.shields.io/discord/1257833999603335178)](https://discord.gg/llama-stack)
 
-[**Quick Start**](https://llama-stack.readthedocs.io/en/latest/getting_started/index.html) | [**Documentation**](https://llama-stack.readthedocs.io/en/latest/index.html) | [**Zero-to-Hero Guide**](https://github.com/meta-llama/llama-stack/tree/main/docs/zero_to_hero_guide)
+[**Quick Start**](https://llama-stack.readthedocs.io/en/latest/getting_started/index.html) | [**Documentation**](https://llama-stack.readthedocs.io/en/latest/index.html) | [**Colab Notebook**](./docs/notebooks/Llama_Stack_Building_AI_Applications.ipynb)
 
 Llama Stack defines and standardizes the core building blocks needed to bring generative AI applications to market. It provides a unified set of APIs with implementations from leading service providers, enabling seamless transitions between development and production environments.
 
+We focus on making it easy to build production applications with the Llama model family - from the latest Llama 3.3 to specialized models like Llama Guard for safety.
 
 <div style="text-align: center;">
   <img
@@ -30,9 +31,9 @@ Llama Stack defines and standardizes the core building blocks needed to bring ge
   - Post Training ( Coming Soon ): Fine tune models for specific use cases
 
 - **Rich Provider Ecosystem**
-  - Local Development: Ollama, vLLM, TGI
+  - Local Development: Meta's Reference,Ollama, vLLM, TGI
   - Self-hosted: Chroma, pgvector, Nvidia NIM
-  - Cloud: Fireworks, Together, Nvidia, AWS Bedrock
+  - Cloud: Fireworks, Together, Nvidia, AWS Bedrock, Groq, Cerebras
   - On-device: iOS and Android support
 
 - **Built for Production**
@@ -71,7 +72,7 @@ Llama Stack defines and standardizes the core building blocks needed to bring ge
 |                      TGI                      |                          [llamastack/distribution-tgi](https://hub.docker.com/repository/docker/llamastack/distribution-tgi/general)                          |             [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/tgi.html)              |
 |                   Together                    |                     [llamastack/distribution-together](https://hub.docker.com/repository/docker/llamastack/distribution-together/general)                     |           [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/together.html)           |
 |                   Fireworks                   |                    [llamastack/distribution-fireworks](https://hub.docker.com/repository/docker/llamastack/distribution-fireworks/general)                    |          [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/fireworks.html)           |
-| [vLLM](https://github.com/vllm-project/vllm)  |                  [llamastack/distribution-remote-vllm](https://hub.docker.com/repository/docker/llamastack/distribution-remote-vllm/general)                  |         [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/remote-vllm.html)          |
+| vLLM |                  [llamastack/distribution-remote-vllm](https://hub.docker.com/repository/docker/llamastack/distribution-remote-vllm/general)                  |         [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/remote-vllm.html)          |
 
 ## Installation
 
