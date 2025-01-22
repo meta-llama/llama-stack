@@ -53,7 +53,7 @@ async def eval_stack(
         "inference",
         "agents",
         "safety",
-        "memory",
+        "vector_io",
         "tool_runtime",
     ]:
         fixture = request.getfixturevalue(f"{key}_{fixture_dict[key]}")
@@ -69,7 +69,7 @@ async def eval_stack(
             Api.scoring,
             Api.agents,
             Api.safety,
-            Api.memory,
+            Api.vector_io,
             Api.tool_runtime,
         ],
         providers,

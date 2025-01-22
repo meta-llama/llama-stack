@@ -13,19 +13,14 @@ from qdrant_client import AsyncQdrantClient, models
 from qdrant_client.models import PointStruct
 
 from llama_stack.apis.inference import InterleavedContent
-from llama_stack.apis.memory import (
-    Chunk,
-    Memory,
-    MemoryBankDocument,
-    QueryDocumentsResponse,
-)
-from llama_stack.apis.memory_banks import MemoryBank, MemoryBankType
-from llama_stack.providers.datatypes import Api, MemoryBanksProtocolPrivate
-from llama_stack.providers.remote.memory.qdrant.config import QdrantConfig
+from llama_stack.apis.vector_dbs import VectorDB
+from llama_stack.apis.vector_io import Chunk, QueryChunksResponse, VectorIO
+from llama_stack.providers.datatypes import Api, VectorDBsProtocolPrivate
 from llama_stack.providers.utils.memory.vector_store import (
-    BankWithIndex,
     EmbeddingIndex,
+    VectorDBWithIndex,
 )
+from .config import QdrantConfig
 
 log = logging.getLogger(__name__)
 CHUNK_ID_KEY = "_chunk_id"
@@ -76,7 +71,7 @@ class QdrantIndex(EmbeddingIndex):
 
     async def query(
         self, embedding: NDArray, k: int, score_threshold: float
-    ) -> QueryDocumentsResponse:
+    ) -> QueryChunksResponse:
         results = (
             await self.client.query_points(
                 collection_name=self.collection_name,
@@ -101,10 +96,10 @@ class QdrantIndex(EmbeddingIndex):
             chunks.append(chunk)
             scores.append(point.score)
 
-        return QueryDocumentsResponse(chunks=chunks, scores=scores)
+        return QueryChunksResponse(chunks=chunks, scores=scores)
 
 
-class QdrantVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
+class QdrantVectorDBAdapter(VectorIO, VectorDBsProtocolPrivate):
     def __init__(self, config: QdrantConfig, inference_api: Api.inference) -> None:
         self.config = config
         self.client = AsyncQdrantClient(**self.config.model_dump(exclude_none=True))
@@ -117,58 +112,56 @@ class QdrantVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
     async def shutdown(self) -> None:
         self.client.close()
 
-    async def register_memory_bank(
+    async def register_vector_db(
         self,
-        memory_bank: MemoryBank,
+        vector_db: VectorDB,
     ) -> None:
-        assert (
-            memory_bank.memory_bank_type == MemoryBankType.vector
-        ), f"Only vector banks are supported {memory_bank.memory_bank_type}"
-
-        index = BankWithIndex(
-            bank=memory_bank,
-            index=QdrantIndex(self.client, memory_bank.identifier),
+        index = VectorDBWithIndex(
+            vector_db=vector_db,
+            index=QdrantIndex(self.client, vector_db.identifier),
             inference_api=self.inference_api,
         )
 
-        self.cache[memory_bank.identifier] = index
+        self.cache[vector_db.identifier] = index
 
-    async def _get_and_cache_bank_index(self, bank_id: str) -> Optional[BankWithIndex]:
-        if bank_id in self.cache:
-            return self.cache[bank_id]
+    async def _get_and_cache_vector_db_index(
+        self, vector_db_id: str
+    ) -> Optional[VectorDBWithIndex]:
+        if vector_db_id in self.cache:
+            return self.cache[vector_db_id]
 
-        bank = await self.memory_bank_store.get_memory_bank(bank_id)
-        if not bank:
-            raise ValueError(f"Bank {bank_id} not found")
+        vector_db = await self.vector_db_store.get_vector_db(vector_db_id)
+        if not vector_db:
+            raise ValueError(f"Vector DB {vector_db_id} not found")
 
-        index = BankWithIndex(
-            bank=bank,
-            index=QdrantIndex(client=self.client, collection_name=bank_id),
+        index = VectorDBWithIndex(
+            vector_db=vector_db,
+            index=QdrantIndex(client=self.client, collection_name=vector_db.identifier),
             inference_api=self.inference_api,
         )
-        self.cache[bank_id] = index
+        self.cache[vector_db_id] = index
         return index
 
-    async def insert_documents(
+    async def insert_chunks(
         self,
-        bank_id: str,
-        documents: List[MemoryBankDocument],
+        vector_db_id: str,
+        chunks: List[Chunk],
         ttl_seconds: Optional[int] = None,
     ) -> None:
-        index = await self._get_and_cache_bank_index(bank_id)
+        index = await self._get_and_cache_vector_db_index(vector_db_id)
         if not index:
-            raise ValueError(f"Bank {bank_id} not found")
+            raise ValueError(f"Vector DB {vector_db_id} not found")
 
-        await index.insert_documents(documents)
+        await index.insert_chunks(chunks)
 
-    async def query_documents(
+    async def query_chunks(
         self,
-        bank_id: str,
+        vector_db_id: str,
         query: InterleavedContent,
         params: Optional[Dict[str, Any]] = None,
-    ) -> QueryDocumentsResponse:
-        index = await self._get_and_cache_bank_index(bank_id)
+    ) -> QueryChunksResponse:
+        index = await self._get_and_cache_vector_db_index(vector_db_id)
         if not index:
-            raise ValueError(f"Bank {bank_id} not found")
+            raise ValueError(f"Vector DB {vector_db_id} not found")
 
-        return await index.query_documents(query, params)
+        return await index.query_chunks(query, params)

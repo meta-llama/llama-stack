@@ -4,19 +4,22 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from llama_stack.apis.memory import Memory
-from llama_stack.apis.memory_banks import MemoryBank
+from llama_stack.apis.vector_dbs import VectorDB
+from llama_stack.apis.vector_io import VectorIO
 from .config import SampleConfig
 
 
-class SampleMemoryImpl(Memory):
+class SampleMemoryImpl(VectorIO):
     def __init__(self, config: SampleConfig):
         self.config = config
 
-    async def register_memory_bank(self, memory_bank: MemoryBank) -> None:
-        # these are the memory banks the Llama Stack will use to route requests to this provider
+    async def register_vector_db(self, vector_db: VectorDB) -> None:
+        # these are the vector dbs the Llama Stack will use to route requests to this provider
         # perform validation here if necessary
         pass
 
     async def initialize(self):
+        pass
+
+    async def shutdown(self):
         pass
