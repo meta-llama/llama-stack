@@ -1,6 +1,6 @@
 # Report for fireworks distribution
 
-## Supported Models: 
+## Supported Models:
 | Model Descriptor | fireworks |
 |:---|:---|
 | Llama-3-8B-Instruct | ❌ |
@@ -26,7 +26,7 @@
 | Llama-Guard-3-8B | ✅ |
 | Llama-Guard-2-8B | ❌ |
 
-## Inference: 
+## Inference:
 | Model | API | Capability | Test | Status |
 |:----- |:-----|:-----|:-----|:-----|
 | Text | /chat_completion | streaming | test_text_chat_completion_streaming | Passed |
@@ -39,13 +39,13 @@
 | Text | /completion | non_streaming | test_text_completion_non_streaming | Passed |
 | Text | /completion | structured_output | test_text_completion_structured_output | Passed |
 
-## Memory: 
+## Memory:
 | API | Capability | Test | Status |
 |:-----|:-----|:-----|:-----|
 | insert and query | inline | test_memory_bank_insert_inline_and_query | Error |
 | insert and query | url | test_memory_bank_insert_from_url_and_query | Failed |
 
-## Agent: 
+## Agent:
 | API | Capability | Test | Status |
 |:-----|:-----|:-----|:-----|
 | create_agent_turn | rag | test_rag_agent | Failed |

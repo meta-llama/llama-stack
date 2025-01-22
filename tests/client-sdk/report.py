@@ -182,7 +182,7 @@ class Report:
                     test_nodeids = self.test_name_to_nodeid[test_name]
                     assert len(test_nodeids) > 0
                     test_table.append(
-                        f"| {api} | {capa} | {test_name} | {self.test_data[test_nodeids[0]]} |"
+                        f"| /{api} | {capa} | {test_name} | {self.test_data[test_nodeids[0]]} |"
                     )
         report.extend(test_table)
         output_file = self.output_path

@@ -28,7 +28,7 @@ INFERENCE_API_CAPA_TEST_MAP = {
 }
 
 MEMORY_API_CAPA_TEST_MAP = {
-    "insert and query": {
+    "/insert, /query": {
         "inline": ["test_memory_bank_insert_inline_and_query"],
         "url": ["test_memory_bank_insert_from_url_and_query"],
     }
