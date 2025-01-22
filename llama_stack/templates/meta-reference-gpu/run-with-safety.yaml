@@ -5,11 +5,11 @@ apis:
 - datasetio
 - eval
 - inference
-- memory
 - safety
 - scoring
 - telemetry
 - tool_runtime
+- vector_io
 providers:
   inference:
   - provider_id: meta-reference-inference
@@ -27,7 +27,7 @@ providers:
       model: ${env.SAFETY_MODEL}
       max_seq_len: 4096
       checkpoint_dir: ${env.SAFETY_CHECKPOINT_DIR:null}
-  memory:
+  vector_io:
   - provider_id: faiss
     provider_type: inline::faiss
     config:
@@ -115,7 +115,7 @@ models:
   model_type: embedding
 shields:
 - shield_id: ${env.SAFETY_MODEL}
-memory_banks: []
+vector_dbs: []
 datasets: []
 scoring_fns: []
 eval_tasks: []

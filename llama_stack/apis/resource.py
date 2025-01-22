@@ -37,5 +37,5 @@ class Resource(BaseModel):
     provider_id: str = Field(description="ID of the provider that owns this resource")
 
     type: ResourceType = Field(
-        description="Type of resource (e.g. 'model', 'shield', 'memory_bank', etc.)"
+        description="Type of resource (e.g. 'model', 'shield', 'vector_db', etc.)"
     )

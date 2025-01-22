@@ -10,7 +10,7 @@ from llama_models.sku_list import all_registered_models
 
 from llama_stack.apis.models import ModelInput
 from llama_stack.distribution.datatypes import Provider, ToolGroupInput
-from llama_stack.providers.inline.memory.faiss.config import FaissImplConfig
+from llama_stack.providers.inline.vector_io.faiss.config import FaissImplConfig
 from llama_stack.providers.remote.inference.bedrock.bedrock import MODEL_ALIASES
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
@@ -18,7 +18,7 @@ from llama_stack.templates.template import DistributionTemplate, RunConfigSettin
 def get_distribution_template() -> DistributionTemplate:
     providers = {
         "inference": ["remote::bedrock"],
-        "memory": ["inline::faiss", "remote::chromadb", "remote::pgvector"],
+        "vector_io": ["inline::faiss", "remote::chromadb", "remote::pgvector"],
         "safety": ["remote::bedrock"],
         "agents": ["inline::meta-reference"],
         "telemetry": ["inline::meta-reference"],
@@ -34,7 +34,7 @@ def get_distribution_template() -> DistributionTemplate:
         ],
     }
     name = "bedrock"
-    memory_provider = Provider(
+    vector_io_provider = Provider(
         provider_id="faiss",
         provider_type="inline::faiss",
         config=FaissImplConfig.sample_run_config(f"distributions/{name}"),
@@ -78,7 +78,7 @@ def get_distribution_template() -> DistributionTemplate:
         run_configs={
             "run.yaml": RunConfigSettings(
                 provider_overrides={
-                    "memory": [memory_provider],
+                    "vector_io": [vector_io_provider],
                 },
                 default_models=default_models,
                 default_tool_groups=default_tool_groups,

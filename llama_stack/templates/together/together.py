@@ -18,7 +18,7 @@ from llama_stack.distribution.datatypes import (
 from llama_stack.providers.inline.inference.sentence_transformers import (
     SentenceTransformersInferenceConfig,
 )
-from llama_stack.providers.inline.memory.faiss.config import FaissImplConfig
+from llama_stack.providers.inline.vector_io.faiss.config import FaissImplConfig
 from llama_stack.providers.remote.inference.together import TogetherImplConfig
 from llama_stack.providers.remote.inference.together.together import MODEL_ALIASES
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
@@ -27,7 +27,7 @@ from llama_stack.templates.template import DistributionTemplate, RunConfigSettin
 def get_distribution_template() -> DistributionTemplate:
     providers = {
         "inference": ["remote::together"],
-        "memory": ["inline::faiss", "remote::chromadb", "remote::pgvector"],
+        "vector_io": ["inline::faiss", "remote::chromadb", "remote::pgvector"],
         "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],
         "telemetry": ["inline::meta-reference"],
@@ -48,7 +48,7 @@ def get_distribution_template() -> DistributionTemplate:
         provider_type="remote::together",
         config=TogetherImplConfig.sample_run_config(),
     )
-    memory_provider = Provider(
+    vector_io_provider = Provider(
         provider_id="faiss",
         provider_type="inline::faiss",
         config=FaissImplConfig.sample_run_config(f"distributions/{name}"),
@@ -105,7 +105,7 @@ def get_distribution_template() -> DistributionTemplate:
             "run.yaml": RunConfigSettings(
                 provider_overrides={
                     "inference": [inference_provider, embedding_provider],
-                    "memory": [memory_provider],
+                    "vector_io": [vector_io_provider],
                 },
                 default_models=default_models + [embedding_model],
                 default_tool_groups=default_tool_groups,
@@ -117,7 +117,7 @@ def get_distribution_template() -> DistributionTemplate:
                         inference_provider,
                         embedding_provider,
                     ],
-                    "memory": [memory_provider],
+                    "vector_io": [vector_io_provider],
                     "safety": [
                         Provider(
                             provider_id="llama-guard",

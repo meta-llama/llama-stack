@@ -5,11 +5,11 @@ apis:
 - datasetio
 - eval
 - inference
-- memory
 - safety
 - scoring
 - telemetry
 - tool_runtime
+- vector_io
 providers:
   inference:
   - provider_id: together
@@ -20,7 +20,7 @@ providers:
   - provider_id: sentence-transformers
     provider_type: inline::sentence-transformers
     config: {}
-  memory:
+  vector_io:
   - provider_id: faiss
     provider_type: inline::faiss
     config:
@@ -156,7 +156,7 @@ shields:
   provider_id: llama-guard-vision
 - shield_id: CodeScanner
   provider_id: code-scanner
-memory_banks: []
+vector_dbs: []
 datasets: []
 scoring_fns: []
 eval_tasks: []

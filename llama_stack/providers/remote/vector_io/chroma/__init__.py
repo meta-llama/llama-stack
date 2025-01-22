@@ -14,8 +14,8 @@ from .config import ChromaRemoteImplConfig
 async def get_adapter_impl(
     config: ChromaRemoteImplConfig, deps: Dict[Api, ProviderSpec]
 ):
-    from .chroma import ChromaMemoryAdapter
+    from .chroma import ChromaVectorIOAdapter
 
-    impl = ChromaMemoryAdapter(config, deps[Api.inference])
+    impl = ChromaVectorIOAdapter(config, deps[Api.inference])
     await impl.initialize()
     return impl

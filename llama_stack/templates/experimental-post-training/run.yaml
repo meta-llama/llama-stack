@@ -60,7 +60,7 @@ providers:
   - provider_id: llama-guard
     provider_type: inline::llama-guard
     config: {}
-  memory:
+  vector_io:
   - provider_id: faiss
     provider_type: inline::faiss
     config:
@@ -82,7 +82,7 @@ metadata_store:
   db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/meta-reference-gpu}/registry.db
 models: []
 shields: []
-memory_banks: []
+vector_dbs: []
 datasets: []
 scoring_fns: []
 eval_tasks: []
