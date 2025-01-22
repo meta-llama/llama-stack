@@ -761,6 +761,20 @@ components:
       - instruct
       - dialog
       type: string
+    DefaultRAGQueryGeneratorConfig:
+      additionalProperties: false
+      properties:
+        separator:
+          default: ' '
+          type: string
+        type:
+          const: default
+          default: default
+          type: string
+      required:
+      - type
+      - separator
+      type: object
     EfficiencyConfig:
       additionalProperties: false
       properties:
@@ -995,6 +1009,22 @@ components:
       - vector_db_id
       - chunks
       type: object
+    InsertDocumentsRequest:
+      additionalProperties: false
+      properties:
+        chunk_size_in_tokens:
+          type: integer
+        documents:
+          items:
+            $ref: '#/components/schemas/RAGDocument'
+          type: array
+        vector_db_id:
+          type: string
+      required:
+      - documents
+      - vector_db_id
+      - chunk_size_in_tokens
+      type: object
     InterleavedContent:
       oneOf:
       - type: string
@@ -1072,6 +1102,22 @@ components:
       required:
       - type
       - judge_model
+      type: object
+    LLMRAGQueryGeneratorConfig:
+      additionalProperties: false
+      properties:
+        model:
+          type: string
+        template:
+          type: string
+        type:
+          const: llm
+          default: llm
+          type: string
+      required:
+      - type
+      - model
+      - template
       type: object
     ListDatasetsResponse:
       additionalProperties: false
@@ -1664,6 +1710,22 @@ components:
       - gt
       - lt
       type: string
+    QueryContextRequest:
+      additionalProperties: false
+      properties:
+        content:
+          $ref: '#/components/schemas/InterleavedContent'
+        query_config:
+          $ref: '#/components/schemas/RAGQueryConfig'
+        vector_db_ids:
+          items:
+            type: string
+          type: array
+      required:
+      - content
+      - query_config
+      - vector_db_ids
+      type: object
     QuerySpanTreeResponse:
       additionalProperties: false
       properties:
@@ -1693,6 +1755,62 @@ components:
           type: array
       required:
       - data
+      type: object
+    RAGDocument:
+      additionalProperties: false
+      properties:
+        content:
+          oneOf:
+          - type: string
+          - $ref: '#/components/schemas/InterleavedContentItem'
+          - items:
+              $ref: '#/components/schemas/InterleavedContentItem'
+            type: array
+          - $ref: '#/components/schemas/URL'
+        document_id:
+          type: string
+        metadata:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        mime_type:
+          type: string
+      required:
+      - document_id
+      - content
+      - metadata
+      type: object
+    RAGQueryConfig:
+      additionalProperties: false
+      properties:
+        max_chunks:
+          default: 5
+          type: integer
+        max_tokens_in_context:
+          default: 4096
+          type: integer
+        query_generator_config:
+          $ref: '#/components/schemas/RAGQueryGeneratorConfig'
+      required:
+      - query_generator_config
+      - max_tokens_in_context
+      - max_chunks
+      type: object
+    RAGQueryGeneratorConfig:
+      oneOf:
+      - $ref: '#/components/schemas/DefaultRAGQueryGeneratorConfig'
+      - $ref: '#/components/schemas/LLMRAGQueryGeneratorConfig'
+    RAGQueryResult:
+      additionalProperties: false
+      properties:
+        content:
+          $ref: '#/components/schemas/InterleavedContent'
       type: object
     RegexParserScoringFnParams:
       additionalProperties: false
@@ -5058,6 +5176,68 @@ paths:
           description: OK
       tags:
       - ToolRuntime
+  /v1/tool-runtime/rag-tool/insert-documents:
+    post:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-Provider-Data
+        required: false
+        schema:
+          type: string
+      - description: Version of the client making the request. This is used to ensure
+          that the client and server are compatible.
+        in: header
+        name: X-LlamaStack-Client-Version
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InsertDocumentsRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+      summary: Index documents so they can be used by the RAG system
+      tags:
+      - ToolRuntime
+  /v1/tool-runtime/rag-tool/query-context:
+    post:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-Provider-Data
+        required: false
+        schema:
+          type: string
+      - description: Version of the client making the request. This is used to ensure
+          that the client and server are compatible.
+        in: header
+        name: X-LlamaStack-Client-Version
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryContextRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RAGQueryResult'
+          description: OK
+      summary: Query the RAG system for context; typically invoked by the agent
+      tags:
+      - ToolRuntime
   /v1/toolgroups:
     get:
       parameters:
@@ -5596,6 +5776,9 @@ tags:
   name: DatasetFormat
 - name: DatasetIO
 - name: Datasets
+- description: <SchemaDefinition schemaRef="#/components/schemas/DefaultRAGQueryGeneratorConfig"
+    />
+  name: DefaultRAGQueryGeneratorConfig
 - description: <SchemaDefinition schemaRef="#/components/schemas/EfficiencyConfig"
     />
   name: EfficiencyConfig
@@ -5631,6 +5814,9 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/InsertChunksRequest"
     />
   name: InsertChunksRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/InsertDocumentsRequest"
+    />
+  name: InsertDocumentsRequest
 - name: Inspect
 - description: <SchemaDefinition schemaRef="#/components/schemas/InterleavedContent"
     />
@@ -5650,6 +5836,9 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/LLMAsJudgeScoringFnParams"
     />
   name: LLMAsJudgeScoringFnParams
+- description: <SchemaDefinition schemaRef="#/components/schemas/LLMRAGQueryGeneratorConfig"
+    />
+  name: LLMRAGQueryGeneratorConfig
 - description: <SchemaDefinition schemaRef="#/components/schemas/ListDatasetsResponse"
     />
   name: ListDatasetsResponse
@@ -5754,6 +5943,9 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/QueryConditionOp"
     />
   name: QueryConditionOp
+- description: <SchemaDefinition schemaRef="#/components/schemas/QueryContextRequest"
+    />
+  name: QueryContextRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/QuerySpanTreeResponse"
     />
   name: QuerySpanTreeResponse
@@ -5763,6 +5955,15 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/QueryTracesResponse"
     />
   name: QueryTracesResponse
+- description: <SchemaDefinition schemaRef="#/components/schemas/RAGDocument" />
+  name: RAGDocument
+- description: <SchemaDefinition schemaRef="#/components/schemas/RAGQueryConfig" />
+  name: RAGQueryConfig
+- description: <SchemaDefinition schemaRef="#/components/schemas/RAGQueryGeneratorConfig"
+    />
+  name: RAGQueryGeneratorConfig
+- description: <SchemaDefinition schemaRef="#/components/schemas/RAGQueryResult" />
+  name: RAGQueryResult
 - description: <SchemaDefinition schemaRef="#/components/schemas/RegexParserScoringFnParams"
     />
   name: RegexParserScoringFnParams
@@ -6031,6 +6232,7 @@ x-tagGroups:
   - DataConfig
   - Dataset
   - DatasetFormat
+  - DefaultRAGQueryGeneratorConfig
   - EfficiencyConfig
   - EmbeddingsRequest
   - EmbeddingsResponse
@@ -6043,6 +6245,7 @@ x-tagGroups:
   - ImageDelta
   - InferenceStep
   - InsertChunksRequest
+  - InsertDocumentsRequest
   - InterleavedContent
   - InterleavedContentItem
   - InvokeToolRequest
@@ -6050,6 +6253,7 @@ x-tagGroups:
   - JobStatus
   - JsonType
   - LLMAsJudgeScoringFnParams
+  - LLMRAGQueryGeneratorConfig
   - ListDatasetsResponse
   - ListEvalTasksResponse
   - ListModelsResponse
@@ -6086,9 +6290,14 @@ x-tagGroups:
   - QueryChunksResponse
   - QueryCondition
   - QueryConditionOp
+  - QueryContextRequest
   - QuerySpanTreeResponse
   - QuerySpansResponse
   - QueryTracesResponse
+  - RAGDocument
+  - RAGQueryConfig
+  - RAGQueryGeneratorConfig
+  - RAGQueryResult
   - RegexParserScoringFnParams
   - RegisterDatasetRequest
   - RegisterEvalTaskRequest
