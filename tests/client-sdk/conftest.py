@@ -16,15 +16,15 @@ from report import Report
 def pytest_configure(config):
     config.option.tbstyle = "short"
     config.option.disable_warnings = True
-
-    if config.getoption("--output"):
+    if config.getoption("--report"):
         config.pluginmanager.register(Report())
 
 
 def pytest_addoption(parser):
     parser.addoption(
-        "--output",
-        action="store_false",
+        "--report",
+        default=False,
+        action="store_true",
         help="Knob to determine if we should generate report, e.g. --output=True",
     )
 

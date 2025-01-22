@@ -108,7 +108,7 @@ class Report:
         report.append("\n## Supported Models: ")
 
         header = f"| Model Descriptor | {self.image_name} |"
-        dividor = "|:---|"
+        dividor = "|:---|:---|"
 
         report.append(header)
         report.append(dividor)
