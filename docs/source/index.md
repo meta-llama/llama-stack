@@ -37,23 +37,40 @@ We have a number of client-side SDKs available for different languages.
 
 ## Supported Llama Stack Implementations
 
-A number of "adapters" are available for some popular Inference and Memory (Vector Store) providers. For other APIs (particularly Safety and Agents), we provide *reference implementations* you can use to get started. We expect this list to grow over time. We are slowly onboarding more providers to the ecosystem as we get more confidence in the APIs.
+A number of "adapters" are available for some popular Inference and Vector Store providers. For other APIs (particularly Safety and Agents), we provide *reference implementations* you can use to get started. We expect this list to grow over time. We are slowly onboarding more providers to the ecosystem as we get more confidence in the APIs.
 
-|  **API Provider** |  **Environments** | **Agents** | **Inference** | **Memory** | **Safety** | **Telemetry** |
-| :----: | :----: | :----: | :----: | :----: | :----: | :----: |
-|  Meta Reference  |  Single Node | Y  |  Y  |  Y  |  Y  |  Y  |
-|  Cerebras  |  Single Node  |   | Y  |    |    |   |
-|  Fireworks  |  Hosted  | Y  | Y  |  Y  |    |   |
-|  AWS Bedrock  |  Hosted  |    |  Y  |    | Y  | |
-|  Together  |  Hosted  |  Y  |  Y  |   | Y  |  |
-|  SambaNova  |  Hosted  |    |  Y  |   |   |  |
-|  Ollama  | Single Node   |    |  Y  |    |   |
-|  TGI  |  Hosted and Single Node  |    |  Y  |    |   |
-|  NVIDIA NIM  |  Hosted and Single Node  |    |  Y  |    |   |
-| Chroma | Single Node |  |  | Y |  |  |
-| Postgres | Single Node |  |  | Y |  |  |
-| PyTorch ExecuTorch | On-device iOS | Y  | Y  |  |  |
-| PyTorch ExecuTorch | On-device Android |  | Y  |  |  |
+**Inference API**
+|  **Provider** |  **Environments** |
+| :----: | :----: |
+|  Meta Reference  |  Single Node |
+|  Ollama  | Single Node   |
+|  Fireworks  |  Hosted  |
+|  Together  |  Hosted  |
+|  NVIDIA NIM  |  Hosted and Single Node  |
+|  vLLM  | Hosted and Single Node |
+|  TGI  |  Hosted and Single Node  |
+|  AWS Bedrock  |  Hosted  |
+|  Cerebras  |  Hosted  |
+|  Groq  |  Hosted  |
+|  SambaNova  |  Hosted  |
+| PyTorch ExecuTorch | On-device iOS, Android |
+
+**Vector IO API**
+|  **Provider** |  **Environments** |
+| :----: | :----: |
+|  FAISS | Single Node |
+|  Chroma | Hosted and Single Node |
+|  Postgres (PGVector) | Hosted and Single Node |
+|  Weaviate | Hosted |
+
+**Safety API**
+|  **Provider** |  **Environments** |
+| :----: | :----: |
+|  Llama Guard | Depends on Inference Provider |
+|  Prompt Guard | Single Node |
+|  Code Scanner | Single Node |
+|  AWS Bedrock | Hosted |
+
 
 ```{toctree}
 :hidden:

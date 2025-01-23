@@ -2,7 +2,7 @@
 
 In this guide, we'll walk through how you can use the Llama Stack (server and client SDK ) to test a simple RAG agent.
 
-A Llama Stack agent is a simple autonomous system that can perform tasks by combining a Llama model for reasoning with tools (e.g., RAG, web search, code execution, etc.) for taking actions.
+A Llama Stack agent is a simple integrated system that can perform tasks by combining a Llama model for reasoning with tools (e.g., RAG, web search, code execution, etc.) for taking actions.
 
 In Llama Stack, we provide a server exposing multiple APIs. These APIs are backed by implementations from different providers. For this guide, we will use [Ollama](https://ollama.com/) as the inference provider.
 
@@ -18,9 +18,22 @@ By default, Ollama keeps the model loaded in memory for 5 minutes which can be t
 NOTE: If you do not have ollama, you can install it from [here](https://ollama.ai/docs/installation).
 
 
-### 2. Start the Llama Stack server
 
-Llama Stack is based on a client-server architecture. It consists of a server which can be configured very flexibly so you can mix-and-match various providers for its individual API components -- beyond Inference, these include Memory, Agents, Telemetry, Evals and so forth.
+### 2. Pick a client environment
+
+Llama Stack has a service-oriented architecture, so every interaction with the Stack happens through an REST interface. You can interact with the Stack in two ways:
+
+* Install the `llama-stack-client` PyPI package and point `LlamaStackClient` to a local or remote Llama Stack server.
+* Or, install the `llama-stack` PyPI package and use the Stack as a library using `LlamaStackAsLibraryClient`.
+
+```{admonition} Note
+:class: tip
+
+The API is **exactly identical** for both clients.
+```
+
+:::{dropdown} Starting up the Llama Stack server
+The Llama Stack server can be configured flexibly so you can mix-and-match various providers for its individual API components -- beyond Inference, these include Vector IO, Agents, Telemetry, Evals, Post Training, etc.
 
 To get started quickly, we provide various Docker images for the server component that work with different inference providers out of the box. For this guide, we will use `llamastack/distribution-ollama` as the Docker image.
 
@@ -40,11 +53,12 @@ docker run -it \
   --env INFERENCE_MODEL=$INFERENCE_MODEL \
   --env OLLAMA_URL=http://host.docker.internal:11434
 ```
-
 Configuration for this is available at `distributions/ollama/run.yaml`.
 
+:::
 
-### 3. Use the Llama Stack client SDK
+
+:::{dropdown} Installing the Llama Stack client CLI and SDK
 
 You can interact with the Llama Stack server using various client SDKs. We will use the Python SDK which you can install using the following command. Note that you must be using Python 3.10 or newer:
 ```bash
@@ -72,13 +86,28 @@ llama-stack-client \
   inference chat-completion \
   --message "hello, what model are you?"
 ```
+:::
 
-Here is a simple example to perform chat completions using Python instead of the CLI.
+&nbsp;
+
+### 3. Run inference with Python SDK
+
+Here is a simple example to perform chat completions using the SDK.
 ```python
 import os
-from llama_stack_client import LlamaStackClient
 
-client = LlamaStackClient(base_url=f"http://localhost:{os.environ['LLAMA_STACK_PORT']}")
+def create_http_client():
+    from llama_stack_client import LlamaStackClient
+    return LlamaStackClient(base_url=f"http://localhost:{os.environ['LLAMA_STACK_PORT']}")
+
+def create_library_client(template="ollama"):
+    from llama_stack import LlamaStackAsLibraryClient
+    client = LlamaStackAsLibraryClient(template)
+    client.initialize()
+    return client
+
+
+client = create_library_client()  # or create_http_client() depending on the environment you picked
 
 # List available models
 models = client.models.list()
@@ -99,7 +128,7 @@ print(response.completion_message.content)
 
 ### 4. Your first RAG agent
 
-Here is an example of a simple RAG agent that uses the Llama Stack client SDK.
+Here is an example of a simple RAG (Retrieval Augmented Generation) chatbot agent which can answer questions about TorchTune documentation.
 
 ```python
 import os
@@ -108,14 +137,11 @@ from termcolor import cprint
 from llama_stack_client.lib.agents.agent import Agent
 from llama_stack_client.lib.agents.event_logger import EventLogger
 from llama_stack_client.types.agent_create_params import AgentConfig
-from llama_stack_client.types.tool_runtime import DocumentParam as Document
+from llama_stack_client.types import Document
 
-from llama_stack_client import LlamaStackClient
+client = create_library_client()  # or create_http_client() depending on the environment you picked
 
-# Define the client and point it to the server URL
-client = LlamaStackClient(base_url=f"http://localhost:{os.environ['LLAMA_STACK_PORT']}")
-
-# Define the documents to be used for RAG
+# Documents to be used for RAG
 urls = ["chat.rst", "llama3.rst", "datasets.rst", "lora_finetune.rst"]
 documents = [
     Document(
@@ -142,13 +168,10 @@ client.tool_runtime.rag_tool.insert(
     chunk_size_in_tokens=512,
 )
 
-# Create an agent
 agent_config = AgentConfig(
-    # Define the inference model to use
     model=os.environ["INFERENCE_MODEL"],
     # Define instructions for the agent ( aka system prompt)
     instructions="You are a helpful assistant",
-    # Enable session persistence
     enable_session_persistence=False,
     # Define tools available to the agent
     toolgroups = [
@@ -161,11 +184,9 @@ agent_config = AgentConfig(
     ],
 )
 
-# Create an agent session
 rag_agent = Agent(client, agent_config)
 session_id = rag_agent.create_session("test-session")
 
-# Define a user prompts
 user_prompts = [
     "What are the top 5 topics that were explained? Only list succinct bullet points.",
 ]
