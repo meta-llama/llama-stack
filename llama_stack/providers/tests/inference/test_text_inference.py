@@ -118,6 +118,7 @@ class TestInference:
             "remote::fireworks",
             "remote::nvidia",
             "remote::cerebras",
+            "remote::vllm",
         ):
             pytest.skip("Other inference providers don't support completion() yet")
 
