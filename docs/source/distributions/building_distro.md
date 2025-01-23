@@ -4,7 +4,7 @@
 This guide will walk you through the steps to get started with building a Llama Stack distribution from scratch with your choice of API providers.
 
 
-## Llama Stack Build
+### Llama Stack Build
 
 In order to build your own distribution, we recommend you clone the `llama-stack` repository.
 
@@ -373,7 +373,7 @@ After this step is successful, you should be able to find the built container im
 ::::
 
 
-## Running your Stack server
+### Running your Stack server
 Now, let's start the Llama Stack Distribution Server. You will need the YAML configuration file which was written out at the end by the `llama stack build` step.
 
 ```

@@ -57,6 +57,7 @@ introduction/index
 getting_started/index
 concepts/index
 distributions/index
+distributions/selection
 building_applications/index
 benchmark_evaluations/index
 playground/index

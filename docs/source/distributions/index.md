@@ -1,41 +1,27 @@
-# Starting a Llama Stack
+# Starting a Llama Stack Server
+
+You can run a Llama Stack server in one of the following ways:
+
+**As a Library**:
+
+This is the simplest way to get started. Using Llama Stack as a library means you do not need to start a server. This is especially useful when you are not running inference locally and relying on an external inference service (eg. fireworks, together, groq, etc.) See [Using Llama Stack as a Library](importing_as_library)
+
+
+**Docker**:
+
+Another simple way to start interacting with Llama Stack is to just spin up docker which is pre-built with all the providers you need. We provide a number of pre-built Docker containers so you can start a Llama Stack server instantly. You can also build your own custom Docker container. Which distribution to choose depends on the hardware you have. See [Selection of a Distribution](distributions/selection) for more details.
+
+
+**Conda**:
+
+Lastly, if you have a custom or an advanced setup or you are developing on Llama Stackyou can also build a custom Llama Stack server. Using `llama stack build` and `llama stack run` you can build/run a custom Llama Stack server containing the exact combination of providers you wish. We have also provided various templates to make getting started easier. See [Building a Custom Distribution](building_distro) for more details.
+
+
 ```{toctree}
-:maxdepth: 3
+:maxdepth: 1
 :hidden:
 
 importing_as_library
 building_distro
 configuration
 ```
-
-You can instantiate a Llama Stack in one of the following ways:
-- **As a Library**: this is the simplest, especially if you are using an external inference service. See [Using Llama Stack as a Library](importing_as_library)
-- **Docker**: we provide a number of pre-built Docker containers so you can start a Llama Stack server instantly. You can also build your own custom Docker container.
-- **Conda**: finally, you can build a custom Llama Stack server using `llama stack build` containing the exact combination of providers you wish. We have provided various templates to make getting started easier.
-
-Which templates / distributions to choose depends on the hardware you have for running LLM inference.
-
-- **Do you have access to a machine with powerful GPUs?**
-If so, we suggest:
-  - {dockerhub}`distribution-remote-vllm` ([Guide](self_hosted_distro/remote-vllm))
-  - {dockerhub}`distribution-meta-reference-gpu` ([Guide](self_hosted_distro/meta-reference-gpu))
-  - {dockerhub}`distribution-tgi` ([Guide](self_hosted_distro/tgi))
-  - {dockerhub} `distribution-nvidia` ([Guide](self_hosted_distro/nvidia))
-
-- **Are you running on a "regular" desktop machine?**
-If so, we suggest:
-  - {dockerhub}`distribution-ollama` ([Guide](self_hosted_distro/ollama))
-
-- **Do you have an API key for a remote inference provider like Fireworks, Together, etc.?** If so, we suggest:
-  - {dockerhub}`distribution-together` ([Guide](self_hosted_distro/together))
-  - {dockerhub}`distribution-fireworks` ([Guide](self_hosted_distro/fireworks))
-
-- **Do you want to run Llama Stack inference on your iOS / Android device** If so, we suggest:
-  - [iOS SDK](ondevice_distro/ios_sdk)
-  - [Android](ondevice_distro/android_sdk)
-
-- **Do you want a hosted Llama Stack endpoint?** If so, we suggest:
-  - [Remote-Hosted Llama Stack Endpoints](remote_hosted_distro/index)
-
-
-You can also build your own [custom distribution](building_distro).
