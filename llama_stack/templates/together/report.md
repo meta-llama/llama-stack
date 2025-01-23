@@ -1,6 +1,6 @@
 # Report for together distribution
 
-## Supported Models:
+## Supported Models
 | Model Descriptor | together |
 |:---|:---|
 | Llama-3-8B-Instruct | ❌ |
@@ -18,7 +18,7 @@
 | Llama-Guard-3-8B | ✅ |
 | Llama-Guard-2-8B | ❌ |
 
-## Inference:
+## Inference
 | Model | API | Capability | Test | Status |
 |:----- |:-----|:-----|:-----|:-----|
 | Llama-3.1-8B-Instruct | /chat_completion | streaming | test_text_chat_completion_streaming | ✅ |
@@ -31,12 +31,12 @@
 | Llama-3.1-8B-Instruct | /completion | non_streaming | test_text_completion_non_streaming | ✅ |
 | Llama-3.1-8B-Instruct | /completion | structured_output | test_text_completion_structured_output | ✅ |
 
-## Vector_io:
+## Vector IO
 | API | Capability | Test | Status |
 |:-----|:-----|:-----|:-----|
 | /retrieve |  | test_vector_db_retrieve | ✅ |
 
-## Agents:
+## Agents
 | API | Capability | Test | Status |
 |:-----|:-----|:-----|:-----|
 | /create_agent_turn | rag | test_rag_agent | ✅ |
