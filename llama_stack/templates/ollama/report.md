@@ -1,7 +1,7 @@
-# Report for fireworks distribution
+# Report for ollama distribution
 
 ## Supported Models:
-| Model Descriptor | fireworks |
+| Model Descriptor | ollama |
 |:---|:---|
 | Llama-3-8B-Instruct | ❌ |
 | Llama-3-70B-Instruct | ❌ |
@@ -13,8 +13,8 @@
 | Llama3.2-11B-Vision-Instruct | ✅ |
 | Llama3.2-90B-Vision-Instruct | ✅ |
 | Llama3.3-70B-Instruct | ✅ |
-| Llama-Guard-3-11B-Vision | ✅ |
-| Llama-Guard-3-1B | ❌ |
+| Llama-Guard-3-11B-Vision | ❌ |
+| Llama-Guard-3-1B | ✅ |
 | Llama-Guard-3-8B | ✅ |
 | Llama-Guard-2-8B | ❌ |
 
@@ -22,8 +22,8 @@
 | Model | API | Capability | Test | Status |
 |:----- |:-----|:-----|:-----|:-----|
 | Llama-3.1-8B-Instruct | /chat_completion | streaming | test_text_chat_completion_streaming | ✅ |
-| Llama-3.2-11B-Vision-Instruct | /chat_completion | streaming | test_image_chat_completion_streaming | ✅ |
-| Llama-3.2-11B-Vision-Instruct | /chat_completion | non_streaming | test_image_chat_completion_non_streaming | ✅ |
+| Llama-3.2-11B-Vision-Instruct | /chat_completion | streaming | test_image_chat_completion_streaming | ❌ |
+| Llama-3.2-11B-Vision-Instruct | /chat_completion | non_streaming | test_image_chat_completion_non_streaming | ❌ |
 | Llama-3.1-8B-Instruct | /chat_completion | non_streaming | test_text_chat_completion_non_streaming | ✅ |
 | Llama-3.1-8B-Instruct | /chat_completion | tool_calling | test_text_chat_completion_with_tool_calling_and_streaming | ✅ |
 | Llama-3.1-8B-Instruct | /chat_completion | tool_calling | test_text_chat_completion_with_tool_calling_and_non_streaming | ✅ |

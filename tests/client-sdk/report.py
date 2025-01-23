@@ -12,8 +12,9 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 import pytest
-
+from llama_models.datatypes import CoreModelId
 from llama_models.sku_list import (
+    all_registered_models,
     llama3_1_instruct_models,
     llama3_2_instruct_models,
     llama3_3_instruct_models,
@@ -22,6 +23,7 @@ from llama_models.sku_list import (
 )
 
 from llama_stack.distribution.library_client import LlamaStackAsLibraryClient
+from llama_stack.providers.datatypes import Api
 from llama_stack.providers.tests.env import get_env_or_fail
 
 from llama_stack_client import LlamaStackClient
@@ -40,6 +42,45 @@ def featured_models_repo_names():
         *safety_models(),
     ]
     return [model.huggingface_repo for model in models if not model.variant]
+
+
+SUPPORTED_MODELS = {
+    "ollama": set(
+        [
+            CoreModelId.llama3_1_8b_instruct.value,
+            CoreModelId.llama3_1_8b_instruct.value,
+            CoreModelId.llama3_1_70b_instruct.value,
+            CoreModelId.llama3_1_70b_instruct.value,
+            CoreModelId.llama3_1_405b_instruct.value,
+            CoreModelId.llama3_1_405b_instruct.value,
+            CoreModelId.llama3_2_1b_instruct.value,
+            CoreModelId.llama3_2_1b_instruct.value,
+            CoreModelId.llama3_2_3b_instruct.value,
+            CoreModelId.llama3_2_3b_instruct.value,
+            CoreModelId.llama3_2_11b_vision_instruct.value,
+            CoreModelId.llama3_2_11b_vision_instruct.value,
+            CoreModelId.llama3_2_90b_vision_instruct.value,
+            CoreModelId.llama3_2_90b_vision_instruct.value,
+            CoreModelId.llama3_3_70b_instruct.value,
+            CoreModelId.llama_guard_3_8b.value,
+            CoreModelId.llama_guard_3_1b.value,
+        ]
+    ),
+    "tgi": set(
+        [
+            model.core_model_id.value
+            for model in all_registered_models()
+            if model.huggingface_repo
+        ]
+    ),
+    "vllm": set(
+        [
+            model.core_model_id.value
+            for model in all_registered_models()
+            if model.huggingface_repo
+        ]
+    ),
+}
 
 
 class Report:
@@ -90,6 +131,8 @@ class Report:
         # test function -> test nodeid
         self.test_data = dict()
         self.test_name_to_nodeid = defaultdict(list)
+        self.vision_model_id = None
+        self.text_model_id = None
 
     @pytest.hookimpl(tryfirst=True)
     def pytest_runtest_logreport(self, report):
@@ -113,20 +156,28 @@ class Report:
         report.append(dividor)
 
         rows = []
-
-        try:
+        if self.image_name in SUPPORTED_MODELS:
+            for model in all_registered_models():
+                if (
+                    "Instruct" not in model.core_model_id.value
+                    and "Guard" not in model.core_model_id.value
+                ) or (model.variant):
+                    continue
+                row = f"| {model.core_model_id.value} |"
+                if model.core_model_id.value in SUPPORTED_MODELS[self.image_name]:
+                    row += " ✅ |"
+                else:
+                    row += " ❌ |"
+                rows.append(row)
+        else:
             supported_models = {m.identifier for m in self.client.models.list()}
-        except Exception as e:
-            cprint(f"Error getting models: {e}", "red")
-            supported_models = set()
-
-        for m_name in featured_models_repo_names():
-            row = f"| {m_name} |"
-            if m_name in supported_models:
-                row += " ✅ |"
-            else:
-                row += " ❌ |"
-            rows.append(row)
+            for model in featured_models_repo_names():
+                row = f"| {model} |"
+                if model in supported_models:
+                    row += " ✅ |"
+                else:
+                    row += " ❌ |"
+                rows.append(row)
         report.extend(rows)
 
         report.append("\n## Inference:")
@@ -134,23 +185,28 @@ class Report:
             "| Model | API | Capability | Test | Status |",
             "|:----- |:-----|:-----|:-----|:-----|",
         ]
-        for api, capa_map in API_MAPS["inference"].items():
+        for api, capa_map in API_MAPS[Api.inference].items():
             for capa, tests in capa_map.items():
                 for test_name in tests:
-                    model_type = "Text" if "text" in test_name else "Vision"
+                    model_id = (
+                        self.text_model_id
+                        if "text" in test_name
+                        else self.vision_model_id
+                    )
                     test_nodeids = self.test_name_to_nodeid[test_name]
                     assert len(test_nodeids) > 0
+
                     # There might be more than one parametrizations for the same test function. We take
                     # the result of the first one for now. Ideally we should mark the test as failed if
                     # any of the parametrizations failed.
                     test_table.append(
-                        f"| {model_type} | /{api} | {capa} | {test_name} | {self._print_result_icon(self.test_data[test_nodeids[0]])} |"
+                        f"| {model_id} | /{api} | {capa} | {test_name} | {self._print_result_icon(self.test_data[test_nodeids[0]])} |"
                     )
 
         report.extend(test_table)
 
-        for api_group in ["memory", "agents"]:
-            api_capitalized = api_group.capitalize()
+        for api_group in [Api.vector_io, Api.agents]:
+            api_capitalized = api_group.name.capitalize()
             report.append(f"\n## {api_capitalized}:")
             test_table = [
                 "| API | Capability | Test | Status |",
@@ -162,7 +218,7 @@ class Report:
                         test_nodeids = self.test_name_to_nodeid[test_name]
                         assert len(test_nodeids) > 0
                         test_table.append(
-                            f"| {api} | {capa} | {test_name} | {self._print_result_icon(self.test_data[test_nodeids[0]])} |"
+                            f"| /{api} | {capa} | {test_name} | {self._print_result_icon(self.test_data[test_nodeids[0]])} |"
                         )
             report.extend(test_table)
 
@@ -173,6 +229,13 @@ class Report:
 
     def pytest_runtest_makereport(self, item, call):
         func_name = getattr(item, "originalname", item.name)
+        if "text_model_id" in item.funcargs:
+            text_model = item.funcargs["text_model_id"].split("/")[1]
+            self.text_model_id = self.text_model_id or text_model
+        elif "vision_model_id" in item.funcargs:
+            vision_model = item.funcargs["vision_model_id"].split("/")[1]
+            self.vision_model_id = self.vision_model_id or vision_model
+
         self.test_name_to_nodeid[func_name].append(item.nodeid)
 
     def _print_result_icon(self, result):
