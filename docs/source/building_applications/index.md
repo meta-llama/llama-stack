@@ -262,36 +262,57 @@ response = agent.create_turn(
 ```
 
 ### Adding Tools to Agents
+```{toctree}
+:hidden:
+:maxdepth: 3
 
-Agents can be enhanced with various tools:
+tools
+```
 
-1. **Search**: Web search capabilities through providers like Brave
-2. **Code Interpreter**: Execute code snippets
-3. **RAG**: Memory and document retrieval
-4. **Function Calling**: Custom function execution
-5. **WolframAlpha**: Mathematical computations
-6. **Photogen**: Image generation
+Agents can be enhanced with various tools. For detailed information about available tools, their configuration, and providers, see the [Tools](tools.md) documentation.
 
-Example of configuring an agent with tools:
+Tools are configured through the `toolgroups` parameter in the agent configuration. Each tool group can be specified either as a string or with additional arguments:
 
 ```python
+from llama_stack_client.lib.agents.agent import Agent
+from llama_stack_client.types.agent_create_params import AgentConfig
+
 agent_config = AgentConfig(
     model="Llama3.2-3B-Instruct",
-    tools=[
+    instructions="You are a helpful assistant",
+    # Configure tool groups
+    toolgroups=[
+        # Simple string format
+        "builtin::code_interpreter",
+        # With arguments format
         {
-            "type": "brave_search",
-            "api_key": "YOUR_API_KEY",
-            "engine": "brave"
-        },
-        {
-            "type": "code_interpreter",
-            "enable_inline_code_execution": True
+            "name": "builtin::websearch",
+            "args": {
+                "max_results": 5
+            }
         }
     ],
     tool_choice="auto",
-    tool_prompt_format="json"
+    tool_prompt_format="json",
+    # Optional safety configuration
+    input_shields=["content_safety"],
+    output_shields=["content_safety"],
+    # Control the inference loop
+    max_infer_iters=10,
+    sampling_params={
+        "strategy": {
+            "type": "top_p",
+            "temperature": 0.7,
+            "top_p": 0.95
+        },
+        "max_tokens": 2048
+    }
 )
+
+agent = Agent(client, agent_config)
 ```
+
+For details on available tool groups, providers, and their configuration options, refer to the [Tools](tools.md) documentation.
 
 ## Building RAG-Enhanced Agents
 
