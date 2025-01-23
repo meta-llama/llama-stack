@@ -1,11 +1,10 @@
-# Telemetry
-
+## Telemetry
 
 The Llama Stack telemetry system provides comprehensive tracing, metrics, and logging capabilities. It supports multiple sink types including OpenTelemetry, SQLite, and Console output.
 
-## Key Concepts
+#### Key Concepts
 
-### Events
+#### Events
 The telemetry system supports three main types of events:
 
 - **Unstructured Log Events**: Free-form log messages with severity levels
@@ -31,24 +30,24 @@ structured_log_event = SpanStartPayload(
 )
 ```
 
-### Spans and Traces
+#### Spans and Traces
 - **Spans**: Represent operations with timing and hierarchical relationships
 - **Traces**: Collection of related spans forming a complete request flow
 
-### Sinks
+#### Sinks
 - **OpenTelemetry**: Send events to an OpenTelemetry Collector. This is useful for visualizing traces in a tool like Jaeger.
 - **SQLite**: Store events in a local SQLite database. This is needed if you want to query the events later through the Llama Stack API.
 - **Console**: Print events to the console.
 
-## Providers
+#### Providers
 
-### Meta-Reference Provider
+#### Meta-Reference Provider
 Currently, only the meta-reference provider is implemented. It can be configured to send events to three sink types:
 1) OpenTelemetry Collector
 2) SQLite
 3) Console
 
-## Configuration
+#### Configuration
 
 Here's an example that sends telemetry signals to all three sink types. Your configuration might use only one.
 ```yaml
@@ -61,7 +60,7 @@ Here's an example that sends telemetry signals to all three sink types. Your con
       sqlite_db_path: "/path/to/telemetry.db"
 ```
 
-## Jaeger to visualize traces
+#### Jaeger to visualize traces
 
 The `otel` sink works with any service compatible with the OpenTelemetry collector. Let's use Jaeger to visualize this data.
 
@@ -75,6 +74,6 @@ $ docker run --rm --name jaeger \
 
 Once the Jaeger instance is running, you can visualize traces by navigating to http://localhost:16686/.
 
-## Querying Traces Stored in SQLIte
+#### Querying Traces Stored in SQLIte
 
 The `sqlite` sink allows you to query traces without an external system. Here are some example queries. Refer to the notebook at [Llama Stack Building AI Applications](https://github.com/meta-llama/llama-stack/blob/main/docs/getting_started.ipynb) for more examples on how to query traces and spaces.
