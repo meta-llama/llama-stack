@@ -12,8 +12,9 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 import pytest
-
+from llama_models.datatypes import CoreModelId
 from llama_models.sku_list import (
+    all_registered_models,
     llama3_1_instruct_models,
     llama3_2_instruct_models,
     llama3_3_instruct_models,
@@ -40,7 +41,79 @@ def featured_models_repo_names():
         *llama3_3_instruct_models(),
         *safety_models(),
     ]
-    return [model.huggingface_repo for model in models if not model.variant]
+    return [model for model in models if not model.variant]
+
+
+SUPPORTED_MODELS = {
+    "ollama": set(
+        [
+            CoreModelId.llama3_1_8b_instruct.value,
+            CoreModelId.llama3_1_8b_instruct.value,
+            CoreModelId.llama3_1_70b_instruct.value,
+            CoreModelId.llama3_1_70b_instruct.value,
+            CoreModelId.llama3_1_405b_instruct.value,
+            CoreModelId.llama3_1_405b_instruct.value,
+            CoreModelId.llama3_2_1b_instruct.value,
+            CoreModelId.llama3_2_1b_instruct.value,
+            CoreModelId.llama3_2_3b_instruct.value,
+            CoreModelId.llama3_2_3b_instruct.value,
+            CoreModelId.llama3_2_11b_vision_instruct.value,
+            CoreModelId.llama3_2_11b_vision_instruct.value,
+            CoreModelId.llama3_2_90b_vision_instruct.value,
+            CoreModelId.llama3_2_90b_vision_instruct.value,
+            CoreModelId.llama3_3_70b_instruct.value,
+            CoreModelId.llama_guard_3_8b.value,
+            CoreModelId.llama_guard_3_1b.value,
+        ]
+    ),
+    "fireworks": set(
+        [
+            CoreModelId.llama3_1_8b_instruct.value,
+            CoreModelId.llama3_1_70b_instruct.value,
+            CoreModelId.llama3_1_405b_instruct.value,
+            CoreModelId.llama3_2_1b_instruct.value,
+            CoreModelId.llama3_2_3b_instruct.value,
+            CoreModelId.llama3_2_11b_vision_instruct.value,
+            CoreModelId.llama3_2_90b_vision_instruct.value,
+            CoreModelId.llama3_3_70b_instruct.value,
+            CoreModelId.llama_guard_3_8b.value,
+            CoreModelId.llama_guard_3_11b_vision.value,
+        ]
+    ),
+    "together": set(
+        [
+            CoreModelId.llama3_1_8b_instruct.value,
+            CoreModelId.llama3_1_70b_instruct.value,
+            CoreModelId.llama3_1_405b_instruct.value,
+            CoreModelId.llama3_2_3b_instruct.value,
+            CoreModelId.llama3_2_11b_vision_instruct.value,
+            CoreModelId.llama3_2_90b_vision_instruct.value,
+            CoreModelId.llama3_3_70b_instruct.value,
+            CoreModelId.llama_guard_3_8b.value,
+            CoreModelId.llama_guard_3_11b_vision.value,
+        ]
+    ),
+    "tgi": set(
+        [
+            model.core_model_id.value
+            for model in all_registered_models()
+            if model.huggingface_repo
+        ]
+    ),
+    "vllm": set(
+        [
+            model.core_model_id.value
+            for model in all_registered_models()
+            if model.huggingface_repo
+        ]
+    ),
+    "cerebras": set(
+        [
+            CoreModelId.llama3_1_8b_instruct.value,
+            CoreModelId.llama3_3_70b_instruct.value,
+        ]
+    ),
+}
 
 
 class Report:
@@ -119,16 +192,14 @@ class Report:
         report.append(dividor)
 
         rows = []
-
-        try:
-            supported_models = {m.identifier for m in self.client.models.list()}
-        except Exception as e:
-            cprint(f"Error getting models: {e}", "red")
-            supported_models = set()
-
-        for m_name in featured_models_repo_names():
-            row = f"| {m_name} |"
-            if m_name in supported_models:
+        for model in all_registered_models():
+            if (
+                "Instruct" not in model.core_model_id.value
+                and "Guard" not in model.core_model_id.value
+            ) or (model.variant):
+                continue
+            row = f"| {model.core_model_id.value} |"
+            if model.core_model_id.value in SUPPORTED_MODELS[self.image_name]:
                 row += " ✅ |"
             else:
                 row += " ❌ |"
