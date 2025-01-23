@@ -173,7 +173,7 @@ class Report:
                         test_nodeids = self.test_name_to_nodeid[test_name]
                         assert len(test_nodeids) > 0
                         test_table.append(
-                            f"| {api} | {capa} | {test_name} | {self._print_result_icon(self.test_data[test_nodeids[0]])} |"
+                            f"| /{api} | {capa} | {test_name} | {self._print_result_icon(self.test_data[test_nodeids[0]])} |"
                         )
             report.extend(test_table)
 
@@ -189,7 +189,7 @@ class Report:
             self.text_model_id = self.text_model_id or text_model
         elif "vision_model_id" in item.funcargs:
             vision_model = item.funcargs["vision_model_id"].split("/")[1]
-            self.vision_model_id = self.text_model_id or vision_model
+            self.vision_model_id = self.vision_model_id or vision_model
 
         self.test_name_to_nodeid[func_name].append(item.nodeid)
 
