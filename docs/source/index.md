@@ -1,6 +1,12 @@
 # Llama Stack
 
-Llama Stack defines and standardizes the core building blocks needed to bring generative AI applications to market. It provides a unified set of APIs with implementations from leading service providers, enabling seamless transitions between development and production environments.
+Llama Stack defines and standardizes the core building blocks needed to bring generative AI applications to market. It provides a unified set of APIs with implementations from leading service providers, enabling seamless transitions between development and production environments. More specifically, it provides
+
+- **Unified API layer** for Inference, RAG, Agents, Tools, Safety, Evals, and Telemetry.
+- **Plugin architecture** to support the rich ecosystem of implementations of the different APIs in different environments like local development, on-premises, cloud, and mobile.
+- **Prepackaged verified distributions** which offer a one-stop solution for developers to get started quickly and reliably in any environment
+- **Multiple developer interfaces** like CLI and SDKs for Python, Node, iOS, and Android
+- **Standalone applications** as examples for how to build production-grade AI applications with Llama Stack
 
 We focus on making it easy to build production applications with the Llama model family - from the latest Llama 3.3 to specialized models like Llama Guard for safety.
 
