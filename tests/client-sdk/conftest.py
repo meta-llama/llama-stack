@@ -64,7 +64,9 @@ def llama_stack_client(provider_data):
             provider_data=provider_data,
             skip_logger_removal=True,
         )
-        client.initialize()
+        if not client.initialize():
+            raise RuntimeError("Initialization failed")
+
     elif os.environ.get("LLAMA_STACK_BASE_URL"):
         client = LlamaStackClient(
             base_url=get_env_or_fail("LLAMA_STACK_BASE_URL"),
