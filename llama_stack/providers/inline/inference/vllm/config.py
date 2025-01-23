@@ -26,12 +26,22 @@ class VLLMConfig(BaseModel):
         default=4096,
         description="Maximum number of tokens to generate.",
     )
+    max_model_len: int = Field(
+        default=4096, description="Maximum context length to use during serving."
+    )
+    max_num_seqs: int = Field(
+        default=4, description="Maximum parallel batch size for generation"
+    )
     enforce_eager: bool = Field(
         default=False,
         description="Whether to use eager mode for inference (otherwise cuda graphs are used).",
     )
     gpu_memory_utilization: float = Field(
         default=0.3,
+        description=(
+            "How much GPU memory will be allocated when this provider has finished "
+            "loading, including memory that was already allocated before loading."
+        ),
     )
 
     @classmethod
@@ -40,8 +50,10 @@ class VLLMConfig(BaseModel):
             "model": "${env.INFERENCE_MODEL:Llama3.2-3B-Instruct}",
             "tensor_parallel_size": "${env.TENSOR_PARALLEL_SIZE:1}",
             "max_tokens": "${env.MAX_TOKENS:4096}",
+            "max_model_len": "${env.MAX_MODEL_LEN:4096}",
+            "max_num_seqs": "${env.MAX_NUM_SEQS:4}",
             "enforce_eager": "${env.ENFORCE_EAGER:False}",
-            "gpu_memory_utilization": "${env.GPU_MEMORY_UTILIZATION:0.7}",
+            "gpu_memory_utilization": "${env.GPU_MEMORY_UTILIZATION:0.3}",
         }
 
     @field_validator("model")
