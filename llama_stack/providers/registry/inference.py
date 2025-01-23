@@ -198,6 +198,15 @@ def available_providers() -> List[ProviderSpec]:
         remote_provider_spec(
             api=Api.inference,
             adapter=AdapterSpec(
+                adapter_type="runpod",
+                pip_packages=["openai"],
+                module="llama_stack.providers.adapters.inference.runpod",
+                config_class="llama_stack.providers.adapters.inference.runpod.RunpodImplConfig",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
                 adapter_type="sambanova",
                 pip_packages=[
                     "openai",
