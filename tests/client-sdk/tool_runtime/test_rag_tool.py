@@ -8,7 +8,7 @@ import random
 
 import pytest
 
-from llama_stack_client.types.tool_runtime import DocumentParam
+from llama_stack_client.types import Document
 
 
 @pytest.fixture(scope="function")
@@ -38,22 +38,22 @@ def single_entry_vector_db_registry(llama_stack_client, empty_vector_db_registry
 @pytest.fixture(scope="session")
 def sample_documents():
     return [
-        DocumentParam(
+        Document(
             document_id="test-doc-1",
             content="Python is a high-level programming language.",
             metadata={"category": "programming", "difficulty": "beginner"},
         ),
-        DocumentParam(
+        Document(
             document_id="test-doc-2",
             content="Machine learning is a subset of artificial intelligence.",
             metadata={"category": "AI", "difficulty": "advanced"},
         ),
-        DocumentParam(
+        Document(
             document_id="test-doc-3",
             content="Data structures are fundamental to computer science.",
             metadata={"category": "computer science", "difficulty": "intermediate"},
         ),
-        DocumentParam(
+        Document(
             document_id="test-doc-4",
             content="Neural networks are inspired by biological neural networks.",
             metadata={"category": "AI", "difficulty": "advanced"},
@@ -148,7 +148,7 @@ def test_vector_db_insert_from_url_and_query(
         "llama3.rst",
     ]
     documents = [
-        DocumentParam(
+        Document(
             document_id=f"num-{i}",
             content=f"https://raw.githubusercontent.com/pytorch/torchtune/main/docs/source/tutorials/{url}",
             mime_type="text/plain",
