@@ -1,16 +1,16 @@
 # Tools
 
-Tools are functions that can be invoked by an agent to perform tasks. They are organized into tool groups and registered with specific providers. Each tool group represents a collection of related tools from a single provider.
+Tools are functions that can be invoked by an agent to perform tasks. They are organized into tool groups and registered with specific providers. Each tool group represents a collection of related tools from a single provider. They are organized into groups so that state can be externalized -- the collection operates on the same state typically.
 
-Tools are treated as any other resource in llama stack like models. you can register them, have providers for them etc.
+Tools are treated as any other resource in llama stack like models. You can register them, have providers for them etc.
 
-When instatiating an agent, you can provide it a list of tool groups that it has access to. Agent gets the corresponding tool definitions for the specified tool gropus and pass along to the model
+When instatiating an agent, you can provide it a list of tool groups that it has access to. Agent gets the corresponding tool definitions for the specified tool groups and passes them along to the model.
 
 Refer to the [Building AI Applications](https://github.com/meta-llama/llama-stack/blob/main/docs/notebooks/Llama_Stack_Building_AI_Applications.ipynb) notebook for more examples on how to use tools.
 
 ## Types of Tool Group providers
 
-There are three types of providers for tool groups that are supported by llama stack.
+There are three types of providers for tool groups that are supported by Llama Stack.
 
 1. Built-in providers
 2. Model Context Protocol (MCP) providers
@@ -18,10 +18,10 @@ There are three types of providers for tool groups that are supported by llama s
 
 ### Built-in providers
 
-Built-in providers come packaged with LlamaStack. These providers provide common functionalities like web search, code interpretation, and computational capabilities.
+Built-in providers come packaged with Llama Stack. These providers provide common functionalities like web search, code interpretation, and computational capabilities.
 
 #### Web Search providers
-There are three web search providers that are supported by llama stack.
+There are three web search providers that are supported by Llama Stack.
 
 1. Brave Search
 2. Bing Search
@@ -38,14 +38,13 @@ client.toolgroups.register(
 )
 ```
 
-The tool requires an API key which can be provided either in the configuration or through the request header `X-LlamaStack-Provider-Data`.
-The api key is required to be passed in the header as `X-LlamaStack-Provider-Data` as `{"brave_search_api_key": <your api key>}` for brave search.
+The tool requires an API key which can be provided either in the configuration or through the request header `X-LlamaStack-Provider-Data`. The format of the header is `{"<provider_name>_api_key": <your api key>}`.
 
 
 
 #### Code Interpreter
 
-The Code Interpreter tool allows execution of Python code within a controlled environment. It includes safety measures to prevent potentially dangerous operations.
+The Code Interpreter allows execution of Python code within a controlled environment.
 
 ```python
 # Register Code Interpreter tool group
@@ -75,7 +74,7 @@ client.toolgroups.register(
 
 Example usage:
 ```python
-result = client.tools.invoke_tool(
+result = client.tool_runtime.invoke_tool(
     tool_name="wolfram_alpha",
     args={"query": "solve x^2 + 2x + 1 = 0"}
 )
@@ -157,7 +156,7 @@ Example tool definition:
 Tools can be invoked using the `invoke_tool` method:
 
 ```python
-result = client.tools.invoke_tool(
+result = client.tool_runtime.invoke_tool(
     tool_name="web_search",
     kwargs={"query": "What is the capital of France?"}
 )
