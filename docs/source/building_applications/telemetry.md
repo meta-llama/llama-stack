@@ -77,4 +77,4 @@ Once the Jaeger instance is running, you can visualize traces by navigating to h
 
 ## Querying Traces Stored in SQLIte
 
-The `sqlite` sink allows you to query traces without an external system. Here are some example queries. Refer to the notebook at [Llama Stack Building AI Applications](https://github.com/meta-llama/llama-stack/blob/main/docs/notebooks/Llama_Stack_Building_AI_Applications.ipynb) for more examples on how to query traces and spaces.
+The `sqlite` sink allows you to query traces without an external system. Here are some example queries. Refer to the notebook at [Llama Stack Building AI Applications](https://github.com/meta-llama/llama-stack/blob/main/docs/getting_started.ipynb) for more examples on how to query traces and spaces.

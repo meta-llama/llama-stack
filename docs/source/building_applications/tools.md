@@ -7,7 +7,7 @@ Tools are treated as any other resource in llama stack like models. You can regi
 
 When instatiating an agent, you can provide it a list of tool groups that it has access to. Agent gets the corresponding tool definitions for the specified tool groups and passes them along to the model.
 
-Refer to the [Building AI Applications](https://github.com/meta-llama/llama-stack/blob/main/docs/notebooks/Llama_Stack_Building_AI_Applications.ipynb) notebook for more examples on how to use tools.
+Refer to the [Building AI Applications](https://github.com/meta-llama/llama-stack/blob/main/docs/getting_started.ipynb) notebook for more examples on how to use tools.
 
 ## Types of Tool Group providers
 
