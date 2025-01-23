@@ -17,19 +17,11 @@ from torchtune.models import convert_weights
 from torchtune.training.checkpointing._utils import (
     ADAPTER_CONFIG_FNAME,
     ADAPTER_MODEL_FNAME,
-    check_outdir_not_in_ckptdir,
     copy_files,
-    get_adapter_checkpoint_path,
-    get_model_checkpoint_path,
-    get_recipe_checkpoint_path,
     ModelType,
-    RECIPE_STATE_DIRNAME,
     REPO_ID_FNAME,
     safe_torch_load,
-    SAFETENSOR_INDEX_FNAME,
-    SHARD_FNAME,
     SUFFIXES_TO_NOT_COPY,
-    TORCH_INDEX_FNAME,
 )
 from torchtune.utils._logging import get_logger
 
@@ -176,8 +168,6 @@ class TorchtuneCheckpointer:
                 raise ValueError(
                     "Adapter checkpoint not found in state_dict. Please ensure that the state_dict contains adapter weights."
                 )
-
-            print("model_file_path", str(model_file_path))
         elif checkpoint_format == "hf":
             # Note: for saving hugging face format checkpoints, we only suppport saving adapter weights now
 
@@ -238,7 +228,7 @@ class TorchtuneCheckpointer:
                     f"{os.path.getsize(output_path) / 1024**3:.2f} GiB "
                     f"saved to {output_path}"
                 )
-            elif adapter_only:
+            else:
                 raise ValueError(
                     "Adapter checkpoint not found in state_dict. Please ensure that the state_dict contains adapter weights."
                 )
@@ -269,18 +259,6 @@ class TorchtuneCheckpointer:
                 model_file_path,
                 ignore_suffixes=SUFFIXES_TO_NOT_COPY,
             )
-            logger.info("Saving final epoch checkpoint.")
-            if adapter_only:
-                logger.info(
-                    "Please note that you have set adapter_only=True, so only adapter weights will be saved."
-                    "You need to merge the adapter weights into your base model for further use. "
-                    f"See {self.__class__.__name__}.save_checkpoint for more details."
-                )
-            else:
-                logger.info(
-                    "The full model checkpoint, including all weights and configurations, has been saved successfully."
-                    "You can now use this checkpoint for further training or inference."
-                )
         else:
             raise ValueError(f"Unsupported checkpoint format: {format}")
 

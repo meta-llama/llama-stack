@@ -15,6 +15,24 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import torch
 from llama_models.sku_list import resolve_model
+from torch import nn
+from torch.optim import Optimizer
+from torch.utils.data import DataLoader, DistributedSampler
+from torchtune import modules, training, utils as torchtune_utils
+from torchtune.data import padded_collate_sft
+
+from torchtune.modules.loss import CEWithChunkedOutputLoss
+from torchtune.modules.peft import (
+    get_adapter_params,
+    get_adapter_state_dict,
+    get_lora_module_names,
+    get_merged_lora_ckpt,
+    set_trainable_params,
+    validate_missing_and_unexpected_for_lora,
+)
+from torchtune.training.lr_schedulers import get_cosine_schedule_with_warmup
+from torchtune.training.metric_logging import DiskLogger
+from tqdm import tqdm
 
 from llama_stack.apis.common.training_types import PostTrainingMetric
 from llama_stack.apis.datasetio import DatasetIO
@@ -42,24 +60,6 @@ from llama_stack.providers.inline.post_training.torchtune.config import (
     TorchtunePostTrainingConfig,
 )
 from llama_stack.providers.inline.post_training.torchtune.datasets.sft import SFTDataset
-from torch import nn
-from torch.optim import Optimizer
-from torch.utils.data import DataLoader, DistributedSampler
-from torchtune import modules, training, utils as torchtune_utils
-from torchtune.data import padded_collate_sft
-
-from torchtune.modules.loss import CEWithChunkedOutputLoss
-from torchtune.modules.peft import (
-    get_adapter_params,
-    get_adapter_state_dict,
-    get_lora_module_names,
-    get_merged_lora_ckpt,
-    set_trainable_params,
-    validate_missing_and_unexpected_for_lora,
-)
-from torchtune.training.lr_schedulers import get_cosine_schedule_with_warmup
-from torchtune.training.metric_logging import DiskLogger
-from tqdm import tqdm
 
 log = logging.getLogger(__name__)
 
@@ -490,7 +490,7 @@ class LoraFinetuningSingleDevice:
             # Update the sampler to ensure data is correctly shuffled across epochs
             # in case shuffle is True
             metric_logger = DiskLogger(
-                log_dir=self._output_dir + f"/{self.model_id}-sft-{curr_epoch}"
+                log_dir=self._output_dir + f"/{self.model_id}-sft-{curr_epoch}/log"
             )
             self._training_sampler.set_epoch(curr_epoch)
             loss_to_log = 0.0
