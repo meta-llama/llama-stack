@@ -4,8 +4,6 @@ In this guide, we'll walk through how you can use the Llama Stack (server and cl
 
 A Llama Stack agent is a simple autonomous system that can perform tasks by combining a Llama model for reasoning with tools (e.g., RAG, web search, code execution, etc.) for taking actions.
 
-At minimum, an agent requires a Llama model for inference and at least one tool that it can use.
-
 In Llama Stack, we provide a server exposing multiple APIs. These APIs are backed by implementations from different providers. For this guide, we will use [Ollama](https://ollama.com/) as the inference provider.
 
 
