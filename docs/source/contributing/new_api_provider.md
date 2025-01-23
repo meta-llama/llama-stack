@@ -19,6 +19,7 @@ This guide will walk you through the process of adding a new API provider to Lla
    Example PRs:
    - [Grok Inference Implementation](https://github.com/meta-llama/llama-stack/pull/609)
    - [Nvidia Inference Implementation](https://github.com/meta-llama/llama-stack/pull/355)
+   - [Model context protocol Tool Runtime](https://github.com/meta-llama/llama-stack/pull/665)
 
 3. **Register Your Provider**
    - Add your provider to the appropriate {repopath}`Registry::llama_stack/providers/registry/`
@@ -26,7 +27,9 @@ This guide will walk you through the process of adding a new API provider to Lla
 
 4. **Integration**
    - Update the run.yaml file to include your provider
-   - To make your provider a default option or create a new distribution, open an issue to discuss with the Llama Stack team
+   - To make your provider a default option or create a new distribution, look at the teamplates in {repopath}`llama_stack/templates/` and run {repopath}`llama_stack/scripts/distro_codegen.py`
+   - Example PRs:
+     - [Adding Model Context Protocol Tool Runtime](https://github.com/meta-llama/llama-stack/pull/816)
 
 ## Testing Guidelines
 
