@@ -152,7 +152,7 @@ class MockToolGroupsAPI:
                     toolgroup_id=MEMORY_TOOLGROUP,
                     tool_host=ToolHost.client,
                     description="Mock tool",
-                    provider_id="builtin::memory",
+                    provider_id="builtin::rag",
                     parameters=[],
                 )
             ]
@@ -260,7 +260,7 @@ async def get_chat_agent(get_agents_impl):
     return await impl.get_agent(response.agent_id)
 
 
-MEMORY_TOOLGROUP = "builtin::memory"
+MEMORY_TOOLGROUP = "builtin::rag"
 CODE_INTERPRETER_TOOLGROUP = "builtin::code_interpreter"
 
 

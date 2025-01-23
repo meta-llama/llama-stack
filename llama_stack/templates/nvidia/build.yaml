@@ -25,6 +25,6 @@ distribution_spec:
     - remote::brave-search
     - remote::tavily-search
     - inline::code-interpreter
-    - inline::memory-runtime
+    - inline::rag-runtime
     - remote::model-context-protocol
 image_type: conda

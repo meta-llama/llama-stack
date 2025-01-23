@@ -292,7 +292,7 @@ def test_rag_agent(llama_stack_client, agent_config):
         **agent_config,
         "toolgroups": [
             dict(
-                name="builtin::memory",
+                name="builtin::rag",
                 args={
                     "vector_db_ids": [vector_db_id],
                 },

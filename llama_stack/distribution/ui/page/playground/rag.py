@@ -135,7 +135,7 @@ def rag_chat_page():
         },
         toolgroups=[
             dict(
-                name="builtin::memory",
+                name="builtin::rag",
                 args={
                     "vector_db_ids": [
                         vector_db_id for vector_db_id in selected_vector_dbs

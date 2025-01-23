@@ -81,7 +81,7 @@ def make_random_string(length: int = 8):
 TOOLS_ATTACHMENT_KEY_REGEX = re.compile(r"__tools_attachment__=(\{.*?\})")
 MEMORY_QUERY_TOOL = "query_from_memory"
 WEB_SEARCH_TOOL = "web_search"
-MEMORY_GROUP = "builtin::memory"
+RAG_TOOL_GROUP = "builtin::rag"
 
 
 class ChatAgent(ShieldRunnerMixin):
@@ -391,7 +391,7 @@ class ChatAgent(ShieldRunnerMixin):
                 session_id, documents, input_messages, tool_defs
             )
 
-        if MEMORY_GROUP in toolgroups and len(input_messages) > 0:
+        if RAG_TOOL_GROUP in toolgroups and len(input_messages) > 0:
             with tracing.span(MEMORY_QUERY_TOOL) as span:
                 step_id = str(uuid.uuid4())
                 yield AgentTurnResponseStreamChunk(
@@ -403,7 +403,7 @@ class ChatAgent(ShieldRunnerMixin):
                     )
                 )
 
-                args = toolgroup_args.get(MEMORY_GROUP, {})
+                args = toolgroup_args.get(RAG_TOOL_GROUP, {})
                 vector_db_ids = args.get("vector_db_ids", [])
                 query_config = args.get("query_config")
                 if query_config:
@@ -509,7 +509,7 @@ class ChatAgent(ShieldRunnerMixin):
                     tools=[
                         tool
                         for tool in tool_defs.values()
-                        if tool_to_group.get(tool.tool_name, None) != MEMORY_GROUP
+                        if tool_to_group.get(tool.tool_name, None) != RAG_TOOL_GROUP
                     ],
                     tool_prompt_format=self.agent_config.tool_prompt_format,
                     stream=True,
@@ -756,7 +756,7 @@ class ChatAgent(ShieldRunnerMixin):
             for tool_def in tools.data:
                 if (
                     toolgroup_name.startswith("builtin")
-                    and toolgroup_name != MEMORY_GROUP
+                    and toolgroup_name != RAG_TOOL_GROUP
                 ):
                     tool_name = tool_def.identifier
                     built_in_type = BuiltinTool.brave_search

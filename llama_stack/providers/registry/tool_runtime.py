@@ -19,7 +19,7 @@ def available_providers() -> List[ProviderSpec]:
     return [
         InlineProviderSpec(
             api=Api.tool_runtime,
-            provider_type="inline::memory-runtime",
+            provider_type="inline::rag-runtime",
             pip_packages=[],
             module="llama_stack.providers.inline.tool_runtime.memory",
             config_class="llama_stack.providers.inline.tool_runtime.memory.config.MemoryToolRuntimeConfig",

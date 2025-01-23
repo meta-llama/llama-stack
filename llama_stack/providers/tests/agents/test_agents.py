@@ -184,7 +184,7 @@ class TestAgents:
         agent_config = AgentConfig(
             **{
                 **common_params,
-                "toolgroups": ["builtin::memory"],
+                "toolgroups": ["builtin::rag"],
                 "tool_choice": ToolChoice.auto,
             }
         )
