@@ -153,7 +153,7 @@ agent_config = AgentConfig(
     # Define tools available to the agent
     toolgroups = [
         {
-          "name": "builtin::memory",
+          "name": "builtin::rag",
           "args" : {
             "vector_db_ids": [vector_db_id],
           }
