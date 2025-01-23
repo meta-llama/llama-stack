@@ -3810,7 +3810,10 @@
                     {
                         "$ref": "#/components/schemas/TextContentItem"
                     }
-                ]
+                ],
+                "discriminator": {
+                    "propertyName": "type"
+                }
             },
             "Message": {
                 "oneOf": [
@@ -3826,7 +3829,10 @@
                     {
                         "$ref": "#/components/schemas/CompletionMessage"
                     }
-                ]
+                ],
+                "discriminator": {
+                    "propertyName": "role"
+                }
             },
             "SamplingParams": {
                 "type": "object",
@@ -3842,7 +3848,10 @@
                             {
                                 "$ref": "#/components/schemas/TopKSamplingStrategy"
                             }
-                        ]
+                        ],
+                        "discriminator": {
+                            "propertyName": "type"
+                        }
                     },
                     "max_tokens": {
                         "type": "integer",
@@ -4386,7 +4395,10 @@
                             "bnf"
                         ]
                     }
-                ]
+                ],
+                "discriminator": {
+                    "propertyName": "type"
+                }
             },
             "ChatCompletionRequest": {
                 "type": "object",
@@ -4515,7 +4527,10 @@
                     {
                         "$ref": "#/components/schemas/ToolCallDelta"
                     }
-                ]
+                ],
+                "discriminator": {
+                    "propertyName": "type"
+                }
             },
             "ImageDelta": {
                 "type": "object",
@@ -5019,7 +5034,10 @@
                             {
                                 "$ref": "#/components/schemas/AgentTurnResponseTurnCompletePayload"
                             }
-                        ]
+                        ],
+                        "discriminator": {
+                            "propertyName": "event_type"
+                        }
                     }
                 },
                 "additionalProperties": false,
@@ -5062,7 +5080,10 @@
                             {
                                 "$ref": "#/components/schemas/MemoryRetrievalStep"
                             }
-                        ]
+                        ],
+                        "discriminator": {
+                            "propertyName": "step_type"
+                        }
                     }
                 },
                 "additionalProperties": false,
@@ -5462,7 +5483,10 @@
                                 {
                                     "$ref": "#/components/schemas/MemoryRetrievalStep"
                                 }
-                            ]
+                            ],
+                            "discriminator": {
+                                "propertyName": "step_type"
+                            }
                         }
                     },
                     "output_message": {
@@ -5612,7 +5636,10 @@
                             {
                                 "$ref": "#/components/schemas/AgentCandidate"
                             }
-                        ]
+                        ],
+                        "discriminator": {
+                            "propertyName": "type"
+                        }
                     },
                     "scoring_params": {
                         "type": "object",
@@ -5627,7 +5654,10 @@
                                 {
                                     "$ref": "#/components/schemas/BasicScoringFnParams"
                                 }
-                            ]
+                            ],
+                            "discriminator": {
+                                "propertyName": "type"
+                            }
                         }
                     },
                     "num_examples": {
@@ -5677,7 +5707,10 @@
                             {
                                 "$ref": "#/components/schemas/AgentCandidate"
                             }
-                        ]
+                        ],
+                        "discriminator": {
+                            "propertyName": "type"
+                        }
                     },
                     "num_examples": {
                         "type": "integer"
@@ -5818,7 +5851,10 @@
                             {
                                 "$ref": "#/components/schemas/AppEvalTaskConfig"
                             }
-                        ]
+                        ],
+                        "discriminator": {
+                            "propertyName": "type"
+                        }
                     }
                 },
                 "additionalProperties": false,
@@ -5981,7 +6017,10 @@
                             {
                                 "$ref": "#/components/schemas/MemoryRetrievalStep"
                             }
-                        ]
+                        ],
+                        "discriminator": {
+                            "propertyName": "step_type"
+                        }
                     }
                 },
                 "additionalProperties": false,
@@ -6196,7 +6235,10 @@
                     {
                         "$ref": "#/components/schemas/AgentTurnInputType"
                     }
-                ]
+                ],
+                "discriminator": {
+                    "propertyName": "type"
+                }
             },
             "StringType": {
                 "type": "object",
@@ -6456,7 +6498,10 @@
                             {
                                 "$ref": "#/components/schemas/BasicScoringFnParams"
                             }
-                        ]
+                        ],
+                        "discriminator": {
+                            "propertyName": "type"
+                        }
                     }
                 },
                 "additionalProperties": false,
@@ -7542,7 +7587,10 @@
                             {
                                 "$ref": "#/components/schemas/SpanEndPayload"
                             }
-                        ]
+                        ],
+                        "discriminator": {
+                            "propertyName": "type"
+                        }
                     }
                 },
                 "additionalProperties": false,
@@ -7628,7 +7676,10 @@
                             {
                                 "$ref": "#/components/schemas/StructuredLogEvent"
                             }
-                        ]
+                        ],
+                        "discriminator": {
+                            "propertyName": "type"
+                        }
                     },
                     "ttl_seconds": {
                         "type": "integer"
@@ -7958,7 +8009,10 @@
                     {
                         "$ref": "#/components/schemas/LLMRAGQueryGeneratorConfig"
                     }
-                ]
+                ],
+                "discriminator": {
+                    "propertyName": "type"
+                }
             },
             "QueryRequest": {
                 "type": "object",
@@ -8350,7 +8404,10 @@
                             {
                                 "$ref": "#/components/schemas/BasicScoringFnParams"
                             }
-                        ]
+                        ],
+                        "discriminator": {
+                            "propertyName": "type"
+                        }
                     }
                 },
                 "additionalProperties": false,
@@ -8483,7 +8540,10 @@
                             {
                                 "$ref": "#/components/schemas/AppEvalTaskConfig"
                             }
-                        ]
+                        ],
+                        "discriminator": {
+                            "propertyName": "type"
+                        }
                     }
                 },
                 "additionalProperties": false,
@@ -8632,7 +8692,10 @@
                                         {
                                             "$ref": "#/components/schemas/BasicScoringFnParams"
                                         }
-                                    ]
+                                    ],
+                                    "discriminator": {
+                                        "propertyName": "type"
+                                    }
                                 },
                                 {
                                     "type": "null"
@@ -8683,7 +8746,10 @@
                                         {
                                             "$ref": "#/components/schemas/BasicScoringFnParams"
                                         }
-                                    ]
+                                    ],
+                                    "discriminator": {
+                                        "propertyName": "type"
+                                    }
                                 },
                                 {
                                     "type": "null"
@@ -8860,7 +8926,10 @@
                             {
                                 "$ref": "#/components/schemas/QATFinetuningConfig"
                             }
-                        ]
+                        ],
+                        "discriminator": {
+                            "propertyName": "type"
+                        }
                     }
                 },
                 "additionalProperties": false,

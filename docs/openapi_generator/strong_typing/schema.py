@@ -36,6 +36,7 @@ from typing import (
 )
 
 import jsonschema
+from typing_extensions import Annotated
 
 from . import docstring
 from .auxiliary import (
@@ -329,7 +330,6 @@ class JsonSchemaGenerator:
         if metadata is not None:
             # type is Annotated[T, ...]
             typ = typing.get_args(data_type)[0]
-
             schema = self._simple_type_to_schema(typ)
             if schema is not None:
                 # recognize well-known auxiliary types
@@ -446,12 +446,20 @@ class JsonSchemaGenerator:
                 ],
             }
         elif origin_type is Union:
-            return {
+            discriminator = None
+            if typing.get_origin(data_type) is Annotated:
+                discriminator = typing.get_args(data_type)[1].discriminator
+            ret = {
                 "oneOf": [
                     self.type_to_schema(union_type)
                     for union_type in typing.get_args(typ)
                 ]
             }
+            if discriminator:
+                ret["discriminator"] = {
+                    "propertyName": discriminator,
+                }
+            return ret
         elif origin_type is Literal:
             (literal_value,) = typing.get_args(typ)  # unpack value of literal type
             schema = self.type_to_schema(type(literal_value))
