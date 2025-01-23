@@ -47,7 +47,7 @@ A number of "adapters" are available for some popular Inference and Memory (Vect
 | Postgres | Single Node |  |  | Y |  |  |
 | PyTorch ExecuTorch | On-device iOS | Y  | Y  |  |  |
 | PyTorch ExecuTorch | On-device Android |  | Y  |  |  |
-
+|  vLLM  |  Single Node  |    |  Y  |    | Y  |
 ```{toctree}
 :hidden:
 :maxdepth: 3
