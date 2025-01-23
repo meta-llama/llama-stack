@@ -1,25 +1,18 @@
----
-orphan: true
----
 # Cerebras Distribution
-
-```{toctree}
-:maxdepth: 2
-:hidden:
-
-self
-```
 
 The `llamastack/distribution-cerebras` distribution consists of the following provider configurations.
 
 | API | Provider(s) |
 |-----|-------------|
 | agents | `inline::meta-reference` |
+| datasetio | `remote::huggingface`, `inline::localfs` |
+| eval | `inline::meta-reference` |
 | inference | `remote::cerebras` |
-| memory | `inline::meta-reference` |
 | safety | `inline::llama-guard` |
+| scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |
 | telemetry | `inline::meta-reference` |
-| tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::code-interpreter`, `inline::memory-runtime` |
+| tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::code-interpreter`, `inline::rag-runtime` |
+| vector_io | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
 
 
 ### Environment Variables

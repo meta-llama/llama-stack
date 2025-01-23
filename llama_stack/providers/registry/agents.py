@@ -33,8 +33,8 @@ def available_providers() -> List[ProviderSpec]:
             api_dependencies=[
                 Api.inference,
                 Api.safety,
-                Api.memory,
-                Api.memory_banks,
+                Api.vector_io,
+                Api.vector_dbs,
                 Api.tool_runtime,
                 Api.tool_groups,
             ],

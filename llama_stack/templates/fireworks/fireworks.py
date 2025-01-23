@@ -18,7 +18,7 @@ from llama_stack.distribution.datatypes import (
 from llama_stack.providers.inline.inference.sentence_transformers import (
     SentenceTransformersInferenceConfig,
 )
-from llama_stack.providers.inline.memory.faiss.config import FaissImplConfig
+from llama_stack.providers.inline.vector_io.faiss.config import FaissImplConfig
 from llama_stack.providers.remote.inference.fireworks import FireworksImplConfig
 from llama_stack.providers.remote.inference.fireworks.fireworks import MODEL_ALIASES
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
@@ -27,7 +27,7 @@ from llama_stack.templates.template import DistributionTemplate, RunConfigSettin
 def get_distribution_template() -> DistributionTemplate:
     providers = {
         "inference": ["remote::fireworks"],
-        "memory": ["inline::faiss", "remote::chromadb", "remote::pgvector"],
+        "vector_io": ["inline::faiss", "remote::chromadb", "remote::pgvector"],
         "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],
         "telemetry": ["inline::meta-reference"],
@@ -38,7 +38,8 @@ def get_distribution_template() -> DistributionTemplate:
             "remote::brave-search",
             "remote::tavily-search",
             "inline::code-interpreter",
-            "inline::memory-runtime",
+            "inline::rag-runtime",
+            "remote::model-context-protocol",
         ],
     }
 
@@ -54,7 +55,7 @@ def get_distribution_template() -> DistributionTemplate:
         provider_type="inline::sentence-transformers",
         config=SentenceTransformersInferenceConfig.sample_run_config(),
     )
-    memory_provider = Provider(
+    vector_io_provider = Provider(
         provider_id="faiss",
         provider_type="inline::faiss",
         config=FaissImplConfig.sample_run_config(f"distributions/{name}"),
@@ -71,14 +72,6 @@ def get_distribution_template() -> DistributionTemplate:
         )
         for m in MODEL_ALIASES
     ]
-    inference_model = ModelInput(
-        model_id="${env.INFERENCE_MODEL}",
-        provider_id="fireworks",
-    )
-    safety_model = ModelInput(
-        model_id="${env.SAFETY_MODEL}",
-        provider_id="fireworks",
-    )
     embedding_model = ModelInput(
         model_id="all-MiniLM-L6-v2",
         provider_id="sentence-transformers",
@@ -93,8 +86,8 @@ def get_distribution_template() -> DistributionTemplate:
             provider_id="tavily-search",
         ),
         ToolGroupInput(
-            toolgroup_id="builtin::memory",
-            provider_id="memory-runtime",
+            toolgroup_id="builtin::rag",
+            provider_id="rag-runtime",
         ),
         ToolGroupInput(
             toolgroup_id="builtin::code_interpreter",
@@ -106,7 +99,7 @@ def get_distribution_template() -> DistributionTemplate:
         name=name,
         distro_type="self_hosted",
         description="Use Fireworks.AI for running LLM inference",
-        docker_image=None,
+        container_image=None,
         template_path=Path(__file__).parent / "doc_template.md",
         providers=providers,
         default_models=default_models,
@@ -114,7 +107,7 @@ def get_distribution_template() -> DistributionTemplate:
             "run.yaml": RunConfigSettings(
                 provider_overrides={
                     "inference": [inference_provider, embedding_provider],
-                    "memory": [memory_provider],
+                    "vector_io": [vector_io_provider],
                 },
                 default_models=default_models + [embedding_model],
                 default_shields=[ShieldInput(shield_id="meta-llama/Llama-Guard-3-8B")],
@@ -126,10 +119,15 @@ def get_distribution_template() -> DistributionTemplate:
                         inference_provider,
                         embedding_provider,
                     ],
-                    "memory": [memory_provider],
+                    "vector_io": [vector_io_provider],
                     "safety": [
                         Provider(
                             provider_id="llama-guard",
+                            provider_type="inline::llama-guard",
+                            config={},
+                        ),
+                        Provider(
+                            provider_id="llama-guard-vision",
                             provider_type="inline::llama-guard",
                             config={},
                         ),
@@ -141,14 +139,17 @@ def get_distribution_template() -> DistributionTemplate:
                     ],
                 },
                 default_models=[
-                    inference_model,
-                    safety_model,
+                    *default_models,
                     embedding_model,
                 ],
                 default_shields=[
                     ShieldInput(
-                        shield_id="${env.SAFETY_MODEL}",
+                        shield_id="meta-llama/Llama-Guard-3-8B",
                         provider_id="llama-guard",
+                    ),
+                    ShieldInput(
+                        shield_id="meta-llama/Llama-Guard-3-11B-Vision",
+                        provider_id="llama-guard-vision",
                     ),
                     ShieldInput(
                         shield_id="CodeScanner",

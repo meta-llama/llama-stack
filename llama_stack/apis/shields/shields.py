@@ -38,16 +38,20 @@ class ShieldInput(CommonShieldFields):
     provider_shield_id: Optional[str] = None
 
 
+class ListShieldsResponse(BaseModel):
+    data: List[Shield]
+
+
 @runtime_checkable
 @trace_protocol
 class Shields(Protocol):
-    @webmethod(route="/shields/list", method="GET")
-    async def list_shields(self) -> List[Shield]: ...
+    @webmethod(route="/shields", method="GET")
+    async def list_shields(self) -> ListShieldsResponse: ...
 
-    @webmethod(route="/shields/get", method="GET")
+    @webmethod(route="/shields/{identifier}", method="GET")
     async def get_shield(self, identifier: str) -> Optional[Shield]: ...
 
-    @webmethod(route="/shields/register", method="POST")
+    @webmethod(route="/shields", method="POST")
     async def register_shield(
         self,
         shield_id: str,

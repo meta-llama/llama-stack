@@ -18,6 +18,7 @@ import numpy as np
 
 from llama_models.llama3.api.tokenizer import Tokenizer
 from numpy.typing import NDArray
+
 from pypdf import PdfReader
 
 from llama_stack.apis.common.content_types import (
@@ -25,8 +26,9 @@ from llama_stack.apis.common.content_types import (
     TextContentItem,
     URL,
 )
-from llama_stack.apis.memory import Chunk, MemoryBankDocument, QueryDocumentsResponse
-from llama_stack.apis.memory_banks import VectorMemoryBank
+from llama_stack.apis.tools import RAGDocument
+from llama_stack.apis.vector_dbs import VectorDB
+from llama_stack.apis.vector_io import Chunk, QueryChunksResponse
 from llama_stack.providers.datatypes import Api
 from llama_stack.providers.utils.inference.prompt_adapter import (
     interleaved_content_as_str,
@@ -112,7 +114,7 @@ def concat_interleaved_content(content: List[InterleavedContent]) -> Interleaved
     return ret
 
 
-async def content_from_doc(doc: MemoryBankDocument) -> str:
+async def content_from_doc(doc: RAGDocument) -> str:
     if isinstance(doc.content, URL):
         if doc.content.uri.startswith("data:"):
             return content_from_data(doc.content.uri)
@@ -151,7 +153,13 @@ def make_overlapped_chunks(
         chunk = tokenizer.decode(toks)
         # chunk is a string
         chunks.append(
-            Chunk(content=chunk, token_count=len(toks), document_id=document_id)
+            Chunk(
+                content=chunk,
+                metadata={
+                    "token_count": len(toks),
+                    "document_id": document_id,
+                },
+            )
         )
 
     return chunks
@@ -165,7 +173,7 @@ class EmbeddingIndex(ABC):
     @abstractmethod
     async def query(
         self, embedding: NDArray, k: int, score_threshold: float
-    ) -> QueryDocumentsResponse:
+    ) -> QueryChunksResponse:
         raise NotImplementedError()
 
     @abstractmethod
@@ -174,56 +182,35 @@ class EmbeddingIndex(ABC):
 
 
 @dataclass
-class BankWithIndex:
-    bank: VectorMemoryBank
+class VectorDBWithIndex:
+    vector_db: VectorDB
     index: EmbeddingIndex
     inference_api: Api.inference
 
-    async def insert_documents(
+    async def insert_chunks(
         self,
-        documents: List[MemoryBankDocument],
+        chunks: List[Chunk],
     ) -> None:
-        for doc in documents:
-            content = await content_from_doc(doc)
-            chunks = make_overlapped_chunks(
-                doc.document_id,
-                content,
-                self.bank.chunk_size_in_tokens,
-                self.bank.overlap_size_in_tokens
-                or (self.bank.chunk_size_in_tokens // 4),
-            )
-            if not chunks:
-                continue
-            embeddings_response = await self.inference_api.embeddings(
-                self.bank.embedding_model, [x.content for x in chunks]
-            )
-            embeddings = np.array(embeddings_response.embeddings)
+        embeddings_response = await self.inference_api.embeddings(
+            self.vector_db.embedding_model, [x.content for x in chunks]
+        )
+        embeddings = np.array(embeddings_response.embeddings)
 
-            await self.index.add_chunks(chunks, embeddings)
+        await self.index.add_chunks(chunks, embeddings)
 
-    async def query_documents(
+    async def query_chunks(
         self,
         query: InterleavedContent,
         params: Optional[Dict[str, Any]] = None,
-    ) -> QueryDocumentsResponse:
+    ) -> QueryChunksResponse:
         if params is None:
             params = {}
         k = params.get("max_chunks", 3)
         score_threshold = params.get("score_threshold", 0.0)
 
-        def _process(c) -> str:
-            if isinstance(c, str):
-                return c
-            else:
-                return "<media>"
-
-        if isinstance(query, list):
-            query_str = " ".join([_process(c) for c in query])
-        else:
-            query_str = _process(query)
-
+        query_str = interleaved_content_as_str(query)
         embeddings_response = await self.inference_api.embeddings(
-            self.bank.embedding_model, [query_str]
+            self.vector_db.embedding_model, [query_str]
         )
         query_vector = np.array(embeddings_response.embeddings[0], dtype=np.float32)
         return await self.index.query(query_vector, k, score_threshold)

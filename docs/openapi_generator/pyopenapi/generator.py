@@ -537,7 +537,6 @@ class Generator:
             success_type_descriptions = {
                 item: doc_string.short_description
                 for item, doc_string in success_type_docstring.items()
-                if doc_string.short_description
             }
         else:
             # use return type as a single response type
@@ -596,6 +595,7 @@ class Generator:
             )
             responses.update(response_builder.build_response(response_options))
 
+        assert len(responses.keys()) > 0, f"No responses found for {op.name}"
         if op.event_type is not None:
             builder = ContentBuilder(self.schema_builder)
             callbacks = {

@@ -8,8 +8,8 @@ import pytest
 
 from ..conftest import get_provider_fixture_overrides
 from ..inference.fixtures import INFERENCE_FIXTURES
-from ..memory.fixtures import MEMORY_FIXTURES
 from ..safety.fixtures import SAFETY_FIXTURES
+from ..vector_io.fixtures import VECTOR_IO_FIXTURES
 from .fixtures import TOOL_RUNTIME_FIXTURES
 
 DEFAULT_PROVIDER_COMBINATIONS = [
@@ -17,7 +17,7 @@ DEFAULT_PROVIDER_COMBINATIONS = [
         {
             "inference": "together",
             "safety": "llama_guard",
-            "memory": "faiss",
+            "vector_io": "faiss",
             "tool_runtime": "memory_and_search",
         },
         id="together",
@@ -34,32 +34,16 @@ def pytest_configure(config):
         )
 
 
-def pytest_addoption(parser):
-    parser.addoption(
-        "--inference-model",
-        action="store",
-        default="meta-llama/Llama-3.2-3B-Instruct",
-        help="Specify the inference model to use for testing",
-    )
-    parser.addoption(
-        "--safety-shield",
-        action="store",
-        default="meta-llama/Llama-Guard-3-1B",
-        help="Specify the safety shield to use for testing",
-    )
-
-
 def pytest_generate_tests(metafunc):
     if "tools_stack" in metafunc.fixturenames:
         available_fixtures = {
             "inference": INFERENCE_FIXTURES,
             "safety": SAFETY_FIXTURES,
-            "memory": MEMORY_FIXTURES,
+            "vector_io": VECTOR_IO_FIXTURES,
             "tool_runtime": TOOL_RUNTIME_FIXTURES,
         }
         combinations = (
             get_provider_fixture_overrides(metafunc.config, available_fixtures)
             or DEFAULT_PROVIDER_COMBINATIONS
         )
-        print(combinations)
         metafunc.parametrize("tools_stack", combinations, indirect=True)

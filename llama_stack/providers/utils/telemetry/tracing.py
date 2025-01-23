@@ -127,7 +127,8 @@ class TraceContext:
 def setup_logger(api: Telemetry, level: int = logging.INFO):
     global BACKGROUND_LOGGER
 
-    BACKGROUND_LOGGER = BackgroundLogger(api)
+    if BACKGROUND_LOGGER is None:
+        BACKGROUND_LOGGER = BackgroundLogger(api)
     logger = logging.getLogger()
     logger.setLevel(level)
     logger.addHandler(TelemetryHandler())

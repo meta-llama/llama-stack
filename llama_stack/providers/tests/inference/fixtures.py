@@ -320,6 +320,7 @@ async def inference_stack(request, inference_model):
         inference_fixture.provider_data,
         models=[
             ModelInput(
+                provider_id=inference_fixture.providers[0].provider_id,
                 model_id=inference_model,
                 model_type=model_type,
                 metadata=metadata,

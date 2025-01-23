@@ -23,8 +23,8 @@ subcommands:
 ```bash
 $ llama-stack-client configure
 > Enter the host name of the Llama Stack distribution server: localhost
-> Enter the port number of the Llama Stack distribution server: 5000
-Done! You can now use the Llama Stack Client CLI with endpoint http://localhost:5000
+> Enter the port number of the Llama Stack distribution server: 8321
+Done! You can now use the Llama Stack Client CLI with endpoint http://localhost:8321
 ```
 
 ### `llama-stack-client providers list`
@@ -200,10 +200,9 @@ Example eval_task_config.json:
         "type": "model",
         "model": "Llama3.1-405B-Instruct",
         "sampling_params": {
-            "strategy": "greedy",
-            "temperature": 0,
-            "top_p": 0.95,
-            "top_k": 0,
+            "strategy": {
+              "type": "greedy"
+            },
             "max_tokens": 0,
             "repetition_penalty": 1.0
         }

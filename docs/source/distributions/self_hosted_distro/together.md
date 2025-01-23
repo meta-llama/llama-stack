@@ -1,6 +1,3 @@
----
-orphan: true
----
 # Together Distribution
 
 ```{toctree}
@@ -18,11 +15,11 @@ The `llamastack/distribution-together` distribution consists of the following pr
 | datasetio | `remote::huggingface`, `inline::localfs` |
 | eval | `inline::meta-reference` |
 | inference | `remote::together` |
-| memory | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
 | safety | `inline::llama-guard` |
 | scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |
 | telemetry | `inline::meta-reference` |
-| tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::code-interpreter`, `inline::memory-runtime` |
+| tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::code-interpreter`, `inline::rag-runtime`, `remote::model-context-protocol` |
+| vector_io | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
 
 
 ### Environment Variables

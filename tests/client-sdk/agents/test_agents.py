@@ -80,26 +80,21 @@ class TestClientTool(ClientTool):
 
 
 @pytest.fixture(scope="session")
-def agent_config(llama_stack_client):
-    available_models = [
-        model.identifier
-        for model in llama_stack_client.models.list()
-        if model.identifier.startswith("meta-llama") and "405" not in model.identifier
-    ]
-    model_id = available_models[0]
-    print(f"Using model: {model_id}")
+def agent_config(llama_stack_client, text_model_id):
     available_shields = [
         shield.identifier for shield in llama_stack_client.shields.list()
     ]
     available_shields = available_shields[:1]
     print(f"Using shield: {available_shields}")
     agent_config = AgentConfig(
-        model=model_id,
+        model=text_model_id,
         instructions="You are a helpful assistant",
         sampling_params={
-            "strategy": "greedy",
-            "temperature": 1.0,
-            "top_p": 0.9,
+            "strategy": {
+                "type": "top_p",
+                "temperature": 1.0,
+                "top_p": 0.9,
+            },
         },
         toolgroups=[],
         tool_choice="auto",
@@ -175,7 +170,8 @@ def test_builtin_tool_web_search(llama_stack_client, agent_config):
     assert "tool_execution>" in logs_str
     assert "Tool:brave_search Response:" in logs_str
     assert "mark zuckerberg" in logs_str.lower()
-    assert "No Violation" in logs_str
+    if len(agent_config["output_shields"]) > 0:
+        assert "No Violation" in logs_str
 
 
 def test_builtin_tool_code_execution(llama_stack_client, agent_config):
@@ -204,18 +200,16 @@ def test_builtin_tool_code_execution(llama_stack_client, agent_config):
     assert "Tool:code_interpreter Response" in logs_str
 
 
-def test_code_execution(llama_stack_client):
-    agent_config = AgentConfig(
-        model="meta-llama/Llama-3.1-8B-Instruct",
-        instructions="You are a helpful assistant",
-        toolgroups=[
+# This test must be run in an environment where `bwrap` is available. If you are running against a
+# server, this means the _server_ must have `bwrap` available. If you are using library client, then
+# you must have `bwrap` available in test's environment.
+def test_code_interpreter_for_attachments(llama_stack_client, agent_config):
+    agent_config = {
+        **agent_config,
+        "toolgroups": [
             "builtin::code_interpreter",
         ],
-        tool_choice="required",
-        input_shields=[],
-        output_shields=[],
-        enable_session_persistence=False,
-    )
+    }
 
     codex_agent = Agent(llama_stack_client, agent_config)
     session_id = codex_agent.create_session("test-session")
@@ -249,10 +243,8 @@ def test_custom_tool(llama_stack_client, agent_config):
     client_tool = TestClientTool()
     agent_config = {
         **agent_config,
-        "model": "meta-llama/Llama-3.2-3B-Instruct",
         "toolgroups": ["builtin::websearch"],
         "client_tools": [client_tool.get_tool_definition()],
-        "tool_prompt_format": "python_list",
     }
 
     agent = Agent(llama_stack_client, agent_config, client_tools=(client_tool,))
@@ -285,27 +277,24 @@ def test_rag_agent(llama_stack_client, agent_config):
         )
         for i, url in enumerate(urls)
     ]
-    memory_bank_id = "test-memory-bank"
-    llama_stack_client.memory_banks.register(
-        memory_bank_id=memory_bank_id,
-        params={
-            "memory_bank_type": "vector",
-            "embedding_model": "all-MiniLM-L6-v2",
-            "chunk_size_in_tokens": 512,
-            "overlap_size_in_tokens": 64,
-        },
+    vector_db_id = "test-vector-db"
+    llama_stack_client.vector_dbs.register(
+        vector_db_id=vector_db_id,
+        embedding_model="all-MiniLM-L6-v2",
+        embedding_dimension=384,
     )
-    llama_stack_client.memory.insert(
-        bank_id=memory_bank_id,
+    llama_stack_client.tool_runtime.rag_tool.insert(
         documents=documents,
+        vector_db_id=vector_db_id,
+        chunk_size_in_tokens=512,
     )
     agent_config = {
         **agent_config,
         "toolgroups": [
             dict(
-                name="builtin::memory",
+                name="builtin::rag",
                 args={
-                    "memory_bank_ids": [memory_bank_id],
+                    "vector_db_ids": [vector_db_id],
                 },
             )
         ],
@@ -323,4 +312,4 @@ def test_rag_agent(llama_stack_client, agent_config):
         )
         logs = [str(log) for log in EventLogger().log(response) if log is not None]
         logs_str = "".join(logs)
-        assert "Tool:query_memory" in logs_str
+        assert "Tool:query_from_memory" in logs_str

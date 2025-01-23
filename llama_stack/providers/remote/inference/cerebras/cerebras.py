@@ -9,6 +9,7 @@ from typing import AsyncGenerator, List, Optional, Union
 from cerebras.cloud.sdk import AsyncCerebras
 from llama_models.datatypes import CoreModelId
 from llama_models.llama3.api.chat_format import ChatFormat
+from llama_models.llama3.api.datatypes import TopKSamplingStrategy
 from llama_models.llama3.api.tokenizer import Tokenizer
 
 from llama_stack.apis.common.content_types import InterleavedContent
@@ -172,7 +173,9 @@ class CerebrasInferenceAdapter(ModelRegistryHelper, Inference):
     async def _get_params(
         self, request: Union[ChatCompletionRequest, CompletionRequest]
     ) -> dict:
-        if request.sampling_params and request.sampling_params.top_k:
+        if request.sampling_params and isinstance(
+            request.sampling_params.strategy, TopKSamplingStrategy
+        ):
             raise ValueError("`top_k` not supported by Cerebras")
 
         prompt = ""

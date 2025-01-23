@@ -10,7 +10,6 @@ A Llama Stack API is described as a collection of REST endpoints. We currently s
 - **Inference**: run inference with a LLM
 - **Safety**: apply safety policies to the output at a Systems (not only model) level
 - **Agents**: run multi-step agentic workflows with LLMs with tool usage, memory (RAG), etc.
-- **Memory**: store and retrieve data for RAG, chat history, etc.
 - **DatasetIO**: interface with datasets and data loaders
 - **Scoring**: evaluate outputs of the system
 - **Eval**: generate outputs (via Inference or Agents) and perform scoring
@@ -39,7 +38,6 @@ Some of these APIs are associated with a set of **Resources**. Here is the mappi
 
 - **Inference**, **Eval** and **Post Training** are associated with `Model` resources.
 - **Safety** is associated with `Shield` resources.
-- **Memory** is associated with `Memory Bank` resources.
 - **DatasetIO** is associated with `Dataset` resources.
 - **Scoring** is associated with `ScoringFunction` resources.
 - **Eval** is associated with `Model` and `EvalTask` resources.
@@ -63,12 +61,9 @@ While there is a lot of flexibility to mix-and-match providers, often users will
 
 **On-device Distro**: Finally, you may want to run Llama Stack directly on an edge device (mobile phone or a tablet.) We provide Distros for iOS and Android (coming soon.)
 
-## More Concepts
-- [Evaluation Concepts](evaluation_concepts.md)
-
 ```{toctree}
 :maxdepth: 1
 :hidden:
 
-evaluation_concepts
+distributions/index
 ```

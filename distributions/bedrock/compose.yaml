@@ -5,7 +5,7 @@ services:
       - ~/.llama:/root/.llama
       - ./run.yaml:/root/llamastack-run-bedrock.yaml
     ports:
-      - "5000:5000"
+      - "8321:8321"
     entrypoint: bash -c "python -m llama_stack.distribution.server.server --yaml_config /root/llamastack-run-bedrock.yaml"
     deploy:
       restart_policy:

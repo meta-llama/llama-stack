@@ -29,12 +29,12 @@ def rag_chat_page():
         if uploaded_files:
             st.success(f"Successfully uploaded {len(uploaded_files)} files")
             # Add memory bank name input field
-            memory_bank_name = st.text_input(
-                "Memory Bank Name",
-                value="rag_bank",
-                help="Enter a unique identifier for this memory bank",
+            vector_db_name = st.text_input(
+                "Vector Database Name",
+                value="rag_vector_db",
+                help="Enter a unique identifier for this vector database",
             )
-            if st.button("Create Memory Bank"):
+            if st.button("Create Vector Database"):
                 documents = [
                     Document(
                         document_id=uploaded_file.name,
@@ -44,34 +44,34 @@ def rag_chat_page():
                 ]
 
                 providers = llama_stack_api.client.providers.list()
-                llama_stack_api.client.memory_banks.register(
-                    memory_bank_id=memory_bank_name,  # Use the user-provided name
-                    params={
-                        "embedding_model": "all-MiniLM-L6-v2",
-                        "chunk_size_in_tokens": 512,
-                        "overlap_size_in_tokens": 64,
-                    },
-                    provider_id=providers["memory"][0].provider_id,
+                vector_io_provider = None
+
+                for x in providers:
+                    if x.api == "vector_io":
+                        vector_io_provider = x.provider_id
+
+                llama_stack_api.client.vector_dbs.register(
+                    vector_db_id=vector_db_name,  # Use the user-provided name
+                    embedding_dimension=384,
+                    embedding_model="all-MiniLM-L6-v2",
+                    provider_id=vector_io_provider,
                 )
 
-                # insert documents using the custom bank name
-                llama_stack_api.client.memory.insert(
-                    bank_id=memory_bank_name,  # Use the user-provided name
+                # insert documents using the custom vector db name
+                llama_stack_api.client.tool_runtime.rag_tool.insert(
+                    vector_db_id=vector_db_name,  # Use the user-provided name
                     documents=documents,
                 )
-                st.success("Memory bank created successfully!")
+                st.success("Vector database created successfully!")
 
         st.subheader("Configure Agent")
         # select memory banks
-        memory_banks = llama_stack_api.client.memory_banks.list()
-        memory_banks = [bank.identifier for bank in memory_banks]
-        selected_memory_banks = st.multiselect(
-            "Select Memory Banks",
-            memory_banks,
+        vector_dbs = llama_stack_api.client.vector_dbs.list()
+        vector_dbs = [vector_db.identifier for vector_db in vector_dbs]
+        selected_vector_dbs = st.multiselect(
+            "Select Vector Databases",
+            vector_dbs,
         )
-        memory_bank_configs = [
-            {"bank_id": bank_id, "type": "vector"} for bank_id in selected_memory_banks
-        ]
 
         available_models = llama_stack_api.client.models.list()
         available_models = [
@@ -118,27 +118,33 @@ def rag_chat_page():
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
+    if temperature > 0.0:
+        strategy = {
+            "type": "top_p",
+            "temperature": temperature,
+            "top_p": top_p,
+        }
+    else:
+        strategy = {"type": "greedy"}
+
     agent_config = AgentConfig(
         model=selected_model,
         instructions=system_prompt,
         sampling_params={
-            "strategy": "greedy",
-            "temperature": temperature,
-            "top_p": top_p,
+            "strategy": strategy,
         },
-        tools=[
-            {
-                "type": "memory",
-                "memory_bank_configs": memory_bank_configs,
-                "query_generator_config": {"type": "default", "sep": " "},
-                "max_tokens_in_context": 4096,
-                "max_chunks": 10,
-            }
+        toolgroups=[
+            dict(
+                name="builtin::rag",
+                args={
+                    "vector_db_ids": [
+                        vector_db_id for vector_db_id in selected_vector_dbs
+                    ],
+                },
+            )
         ],
         tool_choice="auto",
         tool_prompt_format="json",
-        input_shields=[],
-        output_shields=[],
         enable_session_persistence=False,
     )
 
@@ -172,7 +178,7 @@ def rag_chat_page():
             retrieval_response = ""
             for log in EventLogger().log(response):
                 log.print()
-                if log.role == "memory_retrieval":
+                if log.role == "tool_execution":
                     retrieval_response += log.content.replace("====", "").strip()
                     retrieval_message_placeholder.info(retrieval_response)
                 else:

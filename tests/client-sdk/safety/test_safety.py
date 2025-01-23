@@ -11,7 +11,6 @@ import pytest
 
 from llama_stack.apis.safety import ViolationLevel
 
-
 VISION_SHIELD_ENABLED_PROVIDERS = {"together"}
 CODE_SCANNER_ENABLED_PROVIDERS = {"ollama", "together", "fireworks"}
 
@@ -34,16 +33,6 @@ def available_shields(llama_stack_client):
 
 
 @pytest.fixture(scope="session")
-def llama_guard_text_shield_id(available_shields):
-    if "meta-llama/Llama-Guard-3-1B" in available_shields:
-        return "meta-llama/Llama-Guard-3-1B"
-    elif "meta-llama/Llama-Guard-3-8B" in available_shields:
-        return "meta-llama/Llama-Guard-3-8B"
-    else:
-        pytest.skip("Llama-Guard shield is not available. Skipping.")
-
-
-@pytest.fixture(scope="session")
 def code_scanner_shield_id(available_shields):
     if "CodeScanner" in available_shields:
         return "CodeScanner"
@@ -54,7 +43,11 @@ def code_scanner_shield_id(available_shields):
 @pytest.fixture(scope="session")
 def model_providers(llama_stack_client):
     return set(
-        [x.provider_id for x in llama_stack_client.providers.list()["inference"]]
+        [
+            x.provider_id
+            for x in llama_stack_client.providers.list()
+            if x.api == "inference"
+        ]
     )
 
 
@@ -138,7 +131,7 @@ def test_safety_with_image(llama_stack_client, model_providers):
                 },
                 {
                     "type": "image",
-                    "url": {"uri": data_url_from_image(file_path)},
+                    "image": {"url": {"uri": data_url_from_image(file_path)}},
                 },
             ],
         }

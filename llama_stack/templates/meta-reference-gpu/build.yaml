@@ -1,11 +1,10 @@
 version: '2'
-name: meta-reference-gpu
 distribution_spec:
   description: Use Meta Reference for running LLM inference
   providers:
     inference:
     - inline::meta-reference
-    memory:
+    vector_io:
     - inline::faiss
     - remote::chromadb
     - remote::pgvector
@@ -28,5 +27,6 @@ distribution_spec:
     - remote::brave-search
     - remote::tavily-search
     - inline::code-interpreter
-    - inline::memory-runtime
+    - inline::rag-runtime
+    - remote::model-context-protocol
 image_type: conda

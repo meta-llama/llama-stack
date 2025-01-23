@@ -7,6 +7,7 @@
 import os
 
 import pytest
+from llama_models.datatypes import SamplingParams, TopPSamplingStrategy
 from llama_models.llama3.api.datatypes import BuiltinTool
 
 from llama_stack.apis.agents import (
@@ -22,7 +23,8 @@ from llama_stack.apis.agents import (
     ToolExecutionStep,
     Turn,
 )
-from llama_stack.apis.inference import CompletionMessage, SamplingParams, UserMessage
+
+from llama_stack.apis.inference import CompletionMessage, UserMessage
 from llama_stack.apis.safety import ViolationLevel
 from llama_stack.providers.datatypes import Api
 
@@ -42,7 +44,9 @@ def common_params(inference_model):
         model=inference_model,
         instructions="You are a helpful assistant.",
         enable_session_persistence=True,
-        sampling_params=SamplingParams(temperature=0.7, top_p=0.95),
+        sampling_params=SamplingParams(
+            strategy=TopPSamplingStrategy(temperature=0.7, top_p=0.95)
+        ),
         input_shields=[],
         output_shields=[],
         toolgroups=[],
@@ -180,7 +184,7 @@ class TestAgents:
         agent_config = AgentConfig(
             **{
                 **common_params,
-                "toolgroups": ["builtin::memory"],
+                "toolgroups": ["builtin::rag"],
                 "tool_choice": ToolChoice.auto,
             }
         )
@@ -210,8 +214,10 @@ class TestAgents:
         turn_response = [
             chunk async for chunk in await agents_impl.create_agent_turn(**turn_request)
         ]
-
         assert len(turn_response) > 0
+
+        # FIXME: we need to check the content of the turn response and ensure
+        # RAG actually worked
 
     @pytest.mark.asyncio
     async def test_create_agent_turn_with_tavily_search(

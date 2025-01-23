@@ -14,7 +14,7 @@ from llama_stack_client import LlamaStackClient
 class LlamaStackApi:
     def __init__(self):
         self.client = LlamaStackClient(
-            base_url=os.environ.get("LLAMA_STACK_ENDPOINT", "http://localhost:5000"),
+            base_url=os.environ.get("LLAMA_STACK_ENDPOINT", "http://localhost:8321"),
             provider_data={
                 "fireworks_api_key": os.environ.get("FIREWORKS_API_KEY", ""),
                 "together_api_key": os.environ.get("TOGETHER_API_KEY", ""),

@@ -31,7 +31,8 @@ from llama_stack.apis.inference import (
     ToolChoice,
     UserMessage,
 )
-from llama_stack.apis.models import Model
+from llama_stack.apis.models import ListModelsResponse, Model
+
 from .utils import group_chunks
 
 
@@ -91,12 +92,13 @@ class TestInference:
     async def test_model_list(self, inference_model, inference_stack):
         _, models_impl = inference_stack
         response = await models_impl.list_models()
-        assert isinstance(response, list)
-        assert len(response) >= 1
-        assert all(isinstance(model, Model) for model in response)
+        assert isinstance(response, ListModelsResponse)
+        assert isinstance(response.data, list)
+        assert len(response.data) >= 1
+        assert all(isinstance(model, Model) for model in response.data)
 
         model_def = None
-        for model in response:
+        for model in response.data:
             if model.identifier == inference_model:
                 model_def = model
                 break
@@ -116,6 +118,7 @@ class TestInference:
             "remote::fireworks",
             "remote::nvidia",
             "remote::cerebras",
+            "remote::vllm",
         ):
             pytest.skip("Other inference providers don't support completion() yet")
 
@@ -206,7 +209,6 @@ class TestInference:
                 assert not chunk.logprobs, "Logprobs should be empty"
 
     @pytest.mark.asyncio(loop_scope="session")
-    @pytest.mark.skip("This test is not quite robust")
     async def test_completion_structured_output(self, inference_model, inference_stack):
         inference_impl, _ = inference_stack
 
@@ -478,16 +480,16 @@ class TestInference:
             )
             first = grouped[ChatCompletionResponseEventType.progress][0]
             if not isinstance(
-                first.event.delta.content, ToolCall
+                first.event.delta.tool_call, ToolCall
             ):  # first chunk may contain entire call
                 assert first.event.delta.parse_status == ToolCallParseStatus.started
 
         last = grouped[ChatCompletionResponseEventType.progress][-1]
         # assert last.event.stop_reason == expected_stop_reason
         assert last.event.delta.parse_status == ToolCallParseStatus.succeeded
-        assert last.event.delta.content.type == "tool_call"
+        assert isinstance(last.event.delta.tool_call, ToolCall)
 
-        call = last.event.delta.content
+        call = last.event.delta.tool_call
         assert call.tool_name == "get_weather"
         assert "location" in call.arguments
         assert "San Francisco" in call.arguments["location"]

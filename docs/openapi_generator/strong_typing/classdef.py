@@ -125,6 +125,7 @@ class JsonSchemaAnyOf(JsonSchemaNode):
 @dataclass
 class JsonSchemaOneOf(JsonSchemaNode):
     oneOf: List["JsonSchemaAny"]
+    discriminator: Optional[str]
 
 
 JsonSchemaAny = Union[

@@ -291,7 +291,7 @@ class ModelStore(Protocol):
 class Inference(Protocol):
     model_store: ModelStore
 
-    @webmethod(route="/inference/completion")
+    @webmethod(route="/inference/completion", method="POST")
     async def completion(
         self,
         model_id: str,
@@ -302,7 +302,7 @@ class Inference(Protocol):
         logprobs: Optional[LogProbConfig] = None,
     ) -> Union[CompletionResponse, AsyncIterator[CompletionResponseStreamChunk]]: ...
 
-    @webmethod(route="/inference/chat-completion")
+    @webmethod(route="/inference/chat-completion", method="POST")
     async def chat_completion(
         self,
         model_id: str,
@@ -319,7 +319,7 @@ class Inference(Protocol):
         ChatCompletionResponse, AsyncIterator[ChatCompletionResponseStreamChunk]
     ]: ...
 
-    @webmethod(route="/inference/embeddings")
+    @webmethod(route="/inference/embeddings", method="POST")
     async def embeddings(
         self,
         model_id: str,

@@ -35,7 +35,13 @@ EVAL_FIXTURES = ["meta_reference", "remote"]
 
 
 @pytest_asyncio.fixture(scope="session")
-async def eval_stack(request, inference_model, judge_model):
+async def eval_stack(
+    request,
+    inference_model,
+    judge_model,
+    tool_group_input_memory,
+    tool_group_input_tavily_search,
+):
     fixture_dict = request.param
 
     providers = {}
@@ -47,7 +53,8 @@ async def eval_stack(request, inference_model, judge_model):
         "inference",
         "agents",
         "safety",
-        "memory",
+        "vector_io",
+        "tool_runtime",
     ]:
         fixture = request.getfixturevalue(f"{key}_{fixture_dict[key]}")
         providers[key] = fixture.providers
@@ -62,7 +69,8 @@ async def eval_stack(request, inference_model, judge_model):
             Api.scoring,
             Api.agents,
             Api.safety,
-            Api.memory,
+            Api.vector_io,
+            Api.tool_runtime,
         ],
         providers,
         provider_data,
@@ -73,6 +81,7 @@ async def eval_stack(request, inference_model, judge_model):
                 judge_model,
             ]
         ],
+        tool_groups=[tool_group_input_memory, tool_group_input_tavily_search],
     )
 
     return test_stack.impls

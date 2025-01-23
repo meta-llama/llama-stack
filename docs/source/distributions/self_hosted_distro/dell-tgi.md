@@ -41,7 +41,7 @@ The script will first start up TGI server, then start up Llama Stack distributio
 INFO:     Started server process [1]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
-INFO:     Uvicorn running on http://[::]:5000 (Press CTRL+C to quit)
+INFO:     Uvicorn running on http://[::]:8321 (Press CTRL+C to quit)
 ```
 
 To kill the server
@@ -65,7 +65,7 @@ registry.dell.huggingface.co/enterprise-dell-inference-meta-llama-meta-llama-3.1
 #### Start Llama Stack server pointing to TGI server
 
 ```
-docker run --network host -it -p 5000:5000 -v ./run.yaml:/root/my-run.yaml --gpus=all llamastack/distribution-tgi --yaml_config /root/my-run.yaml
+docker run --network host -it -p 8321:8321 -v ./run.yaml:/root/my-run.yaml --gpus=all llamastack/distribution-tgi --yaml_config /root/my-run.yaml
 ```
 
 Make sure in you `run.yaml` file, you inference provider is pointing to the correct TGI server endpoint. E.g.

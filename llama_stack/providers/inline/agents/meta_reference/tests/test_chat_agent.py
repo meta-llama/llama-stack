@@ -29,10 +29,9 @@ from llama_stack.apis.inference import (
     SamplingParams,
     ToolChoice,
     ToolDefinition,
+    ToolPromptFormat,
     UserMessage,
 )
-from llama_stack.apis.memory import MemoryBank
-from llama_stack.apis.memory_banks import BankParams, VectorMemoryBank
 from llama_stack.apis.safety import RunShieldResponse
 from llama_stack.apis.tools import (
     Tool,
@@ -40,8 +39,9 @@ from llama_stack.apis.tools import (
     ToolGroup,
     ToolHost,
     ToolInvocationResult,
-    ToolPromptFormat,
 )
+from llama_stack.apis.vector_io import QueryChunksResponse
+
 from llama_stack.providers.inline.agents.meta_reference.agent_instance import (
     MEMORY_QUERY_TOOL,
 )
@@ -110,68 +110,22 @@ class MockSafetyAPI:
         return RunShieldResponse(violation=None)
 
 
-class MockMemoryAPI:
+class MockVectorIOAPI:
     def __init__(self):
-        self.memory_banks = {}
-        self.documents = {}
+        self.chunks = {}
 
-    async def create_memory_bank(self, name, config, url=None):
-        bank_id = f"bank_{len(self.memory_banks)}"
-        bank = MemoryBank(bank_id, name, config, url)
-        self.memory_banks[bank_id] = bank
-        self.documents[bank_id] = {}
-        return bank
+    async def insert_chunks(self, vector_db_id, chunks, ttl_seconds=None):
+        for chunk in chunks:
+            metadata = chunk.metadata
+            self.chunks[vector_db_id][metadata["document_id"]] = chunk
 
-    async def list_memory_banks(self):
-        return list(self.memory_banks.values())
+    async def query_chunks(self, vector_db_id, query, params=None):
+        if vector_db_id not in self.chunks:
+            raise ValueError(f"Bank {vector_db_id} not found")
 
-    async def get_memory_bank(self, bank_id):
-        return self.memory_banks.get(bank_id)
-
-    async def drop_memory_bank(self, bank_id):
-        if bank_id in self.memory_banks:
-            del self.memory_banks[bank_id]
-            del self.documents[bank_id]
-        return bank_id
-
-    async def insert_documents(self, bank_id, documents, ttl_seconds=None):
-        if bank_id not in self.documents:
-            raise ValueError(f"Bank {bank_id} not found")
-        for doc in documents:
-            self.documents[bank_id][doc.document_id] = doc
-
-    async def update_documents(self, bank_id, documents):
-        if bank_id not in self.documents:
-            raise ValueError(f"Bank {bank_id} not found")
-        for doc in documents:
-            if doc.document_id in self.documents[bank_id]:
-                self.documents[bank_id][doc.document_id] = doc
-
-    async def query_documents(self, bank_id, query, params=None):
-        if bank_id not in self.documents:
-            raise ValueError(f"Bank {bank_id} not found")
-        # Simple mock implementation: return all documents
-        chunks = [
-            {"content": doc.content, "token_count": 10, "document_id": doc.document_id}
-            for doc in self.documents[bank_id].values()
-        ]
+        chunks = list(self.chunks[vector_db_id].values())
         scores = [1.0] * len(chunks)
-        return {"chunks": chunks, "scores": scores}
-
-    async def get_documents(self, bank_id, document_ids):
-        if bank_id not in self.documents:
-            raise ValueError(f"Bank {bank_id} not found")
-        return [
-            self.documents[bank_id][doc_id]
-            for doc_id in document_ids
-            if doc_id in self.documents[bank_id]
-        ]
-
-    async def delete_documents(self, bank_id, document_ids):
-        if bank_id not in self.documents:
-            raise ValueError(f"Bank {bank_id} not found")
-        for doc_id in document_ids:
-            self.documents[bank_id].pop(doc_id, None)
+        return QueryChunksResponse(chunks=chunks, scores=scores)
 
 
 class MockToolGroupsAPI:
@@ -198,7 +152,7 @@ class MockToolGroupsAPI:
                     toolgroup_id=MEMORY_TOOLGROUP,
                     tool_host=ToolHost.client,
                     description="Mock tool",
-                    provider_id="builtin::memory",
+                    provider_id="builtin::rag",
                     parameters=[],
                 )
             ]
@@ -241,31 +195,6 @@ class MockToolRuntimeAPI:
         return ToolInvocationResult(content={"result": "Mock tool result"})
 
 
-class MockMemoryBanksAPI:
-    async def list_memory_banks(self) -> List[MemoryBank]:
-        return []
-
-    async def get_memory_bank(self, memory_bank_id: str) -> Optional[MemoryBank]:
-        return None
-
-    async def register_memory_bank(
-        self,
-        memory_bank_id: str,
-        params: BankParams,
-        provider_id: Optional[str] = None,
-        provider_memory_bank_id: Optional[str] = None,
-    ) -> MemoryBank:
-        return VectorMemoryBank(
-            identifier=memory_bank_id,
-            provider_resource_id=provider_memory_bank_id or memory_bank_id,
-            embedding_model="mock_model",
-            chunk_size_in_tokens=512,
-        )
-
-    async def unregister_memory_bank(self, memory_bank_id: str) -> None:
-        pass
-
-
 @pytest.fixture
 def mock_inference_api():
     return MockInferenceAPI()
@@ -277,8 +206,8 @@ def mock_safety_api():
 
 
 @pytest.fixture
-def mock_memory_api():
-    return MockMemoryAPI()
+def mock_vector_io_api():
+    return MockVectorIOAPI()
 
 
 @pytest.fixture
@@ -292,16 +221,10 @@ def mock_tool_runtime_api():
 
 
 @pytest.fixture
-def mock_memory_banks_api():
-    return MockMemoryBanksAPI()
-
-
-@pytest.fixture
 async def get_agents_impl(
     mock_inference_api,
     mock_safety_api,
-    mock_memory_api,
-    mock_memory_banks_api,
+    mock_vector_io_api,
     mock_tool_runtime_api,
     mock_tool_groups_api,
 ):
@@ -314,8 +237,7 @@ async def get_agents_impl(
         ),
         inference_api=mock_inference_api,
         safety_api=mock_safety_api,
-        memory_api=mock_memory_api,
-        memory_banks_api=mock_memory_banks_api,
+        vector_io_api=mock_vector_io_api,
         tool_runtime_api=mock_tool_runtime_api,
         tool_groups_api=mock_tool_groups_api,
     )
@@ -338,7 +260,7 @@ async def get_chat_agent(get_agents_impl):
     return await impl.get_agent(response.agent_id)
 
 
-MEMORY_TOOLGROUP = "builtin::memory"
+MEMORY_TOOLGROUP = "builtin::rag"
 CODE_INTERPRETER_TOOLGROUP = "builtin::code_interpreter"
 
 
@@ -484,7 +406,7 @@ async def test_chat_agent_tools(
             toolgroups_for_turn=[
                 AgentToolGroupWithArgs(
                     name=MEMORY_TOOLGROUP,
-                    args={"memory_banks": ["test_memory_bank"]},
+                    args={"vector_dbs": ["test_vector_db"]},
                 )
             ]
         )

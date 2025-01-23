@@ -23,8 +23,7 @@ if [ $# -lt 3 ]; then
   exit 1
 fi
 
-build_name="$1"
-env_name="llamastack-$build_name"
+env_name="$1"
 shift
 
 yaml_config="$1"

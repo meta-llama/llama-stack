@@ -4,13 +4,14 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import pytest
+import base64
+import os
 
+import pytest
 from pydantic import BaseModel
 
-
 PROVIDER_TOOL_PROMPT_FORMAT = {
-    "remote::ollama": "python_list",
+    "remote::ollama": "json",
     "remote::together": "json",
     "remote::fireworks": "json",
 }
@@ -28,34 +29,9 @@ def provider_tool_format(inference_provider_type):
 @pytest.fixture(scope="session")
 def inference_provider_type(llama_stack_client):
     providers = llama_stack_client.providers.list()
-    if "inference" not in providers:
-        pytest.fail("No inference providers available")
-    assert len(providers["inference"]) > 0
-    return providers["inference"][0].provider_type
-
-
-@pytest.fixture(scope="session")
-def text_model_id(llama_stack_client):
-    available_models = [
-        model.identifier
-        for model in llama_stack_client.models.list()
-        if model.identifier.startswith("meta-llama") and "405" not in model.identifier
-    ]
-    assert len(available_models) > 0
-    return available_models[0]
-
-
-@pytest.fixture(scope="session")
-def vision_model_id(llama_stack_client):
-    available_models = [
-        model.identifier
-        for model in llama_stack_client.models.list()
-        if "vision" in model.identifier.lower()
-    ]
-    if len(available_models) == 0:
-        pytest.skip("No vision models available")
-
-    return available_models[0]
+    inference_providers = [p for p in providers if p.api == "inference"]
+    assert len(inference_providers) > 0, "No inference providers found"
+    return inference_providers[0].provider_type
 
 
 @pytest.fixture
@@ -72,7 +48,17 @@ def get_weather_tool_definition():
     }
 
 
-def test_completion_non_streaming(llama_stack_client, text_model_id):
+@pytest.fixture
+def base64_image_url():
+    image_path = os.path.join(os.path.dirname(__file__), "dog.png")
+    with open(image_path, "rb") as image_file:
+        # Convert the image to base64
+        base64_string = base64.b64encode(image_file.read()).decode("utf-8")
+        base64_url = f"data:image/png;base64,{base64_string}"
+        return base64_url
+
+
+def test_text_completion_non_streaming(llama_stack_client, text_model_id):
     response = llama_stack_client.inference.completion(
         content="Complete the sentence using one word: Roses are red, violets are ",
         stream=False,
@@ -84,7 +70,7 @@ def test_completion_non_streaming(llama_stack_client, text_model_id):
     assert "blue" in response.content.lower().strip()
 
 
-def test_completion_streaming(llama_stack_client, text_model_id):
+def test_text_completion_streaming(llama_stack_client, text_model_id):
     response = llama_stack_client.inference.completion(
         content="Complete the sentence using one word: Roses are red, violets are ",
         stream=True,
@@ -97,6 +83,7 @@ def test_completion_streaming(llama_stack_client, text_model_id):
     assert "blue" in "".join(streamed_content).lower().strip()
 
 
+@pytest.mark.skip("Most inference providers don't support log probs yet")
 def test_completion_log_probs_non_streaming(llama_stack_client, text_model_id):
     response = llama_stack_client.inference.completion(
         content="Complete the sentence: Micheael Jordan is born in ",
@@ -114,6 +101,7 @@ def test_completion_log_probs_non_streaming(llama_stack_client, text_model_id):
     assert all(len(logprob.logprobs_by_token) == 3 for logprob in response.logprobs)
 
 
+@pytest.mark.skip("Most inference providers don't support log probs yet")
 def test_completion_log_probs_streaming(llama_stack_client, text_model_id):
     response = llama_stack_client.inference.completion(
         content="Complete the sentence: Micheael Jordan is born in ",
@@ -137,7 +125,7 @@ def test_completion_log_probs_streaming(llama_stack_client, text_model_id):
             assert not chunk.logprobs, "Logprobs should be empty"
 
 
-def test_completion_structured_output(
+def test_text_completion_structured_output(
     llama_stack_client, text_model_id, inference_provider_type
 ):
     user_input = """
@@ -232,7 +220,6 @@ def test_text_chat_completion_with_tool_calling_and_non_streaming(
     # response to be a tool call
     assert response.completion_message.content == ""
     assert response.completion_message.role == "assistant"
-    assert response.completion_message.stop_reason == "end_of_turn"
 
     assert len(response.completion_message.tool_calls) == 1
     assert response.completion_message.tool_calls[0].tool_name == "get_weather"
@@ -245,19 +232,13 @@ def test_text_chat_completion_with_tool_calling_and_non_streaming(
 # The returned tool inovcation content will be a string so it's easy to comapare with expected value
 # e.g. "[get_weather, {'location': 'San Francisco, CA'}]"
 def extract_tool_invocation_content(response):
-    text_content: str = ""
     tool_invocation_content: str = ""
     for chunk in response:
         delta = chunk.event.delta
-        if delta.type == "text":
-            text_content += delta.text
-        elif delta.type == "tool_call":
-            if isinstance(delta.content, str):
-                tool_invocation_content += delta.content
-            else:
-                call = delta.content
-                tool_invocation_content += f"[{call.tool_name}, {call.arguments}]"
-    return text_content, tool_invocation_content
+        if delta.type == "tool_call" and delta.parse_status == "succeeded":
+            call = delta.tool_call
+            tool_invocation_content += f"[{call.tool_name}, {call.arguments}]"
+    return tool_invocation_content
 
 
 def test_text_chat_completion_with_tool_calling_and_streaming(
@@ -274,8 +255,7 @@ def test_text_chat_completion_with_tool_calling_and_streaming(
         tool_prompt_format=provider_tool_format,
         stream=True,
     )
-    text_content, tool_invocation_content = extract_tool_invocation_content(response)
-
+    tool_invocation_content = extract_tool_invocation_content(response)
     assert tool_invocation_content == "[get_weather, {'location': 'San Francisco, CA'}]"
 
 
@@ -319,9 +299,11 @@ def test_image_chat_completion_non_streaming(llama_stack_client, vision_model_id
         "content": [
             {
                 "type": "image",
-                "url": {
-                    # TODO: Replace with Github based URI to resources/sample1.jpg
-                    "uri": "https://www.healthypawspetinsurance.com/Images/V3/DogAndPuppyInsurance/Dog_CTA_Desktop_HeroImage.jpg"
+                "image": {
+                    "url": {
+                        # TODO: Replace with Github based URI to resources/sample1.jpg
+                        "uri": "https://www.healthypawspetinsurance.com/Images/V3/DogAndPuppyInsurance/Dog_CTA_Desktop_HeroImage.jpg"
+                    },
                 },
             },
             {
@@ -346,9 +328,11 @@ def test_image_chat_completion_streaming(llama_stack_client, vision_model_id):
         "content": [
             {
                 "type": "image",
-                "url": {
-                    # TODO: Replace with Github based URI to resources/sample1.jpg
-                    "uri": "https://www.healthypawspetinsurance.com/Images/V3/DogAndPuppyInsurance/Dog_CTA_Desktop_HeroImage.jpg"
+                "image": {
+                    "url": {
+                        # TODO: Replace with Github based URI to resources/sample1.jpg
+                        "uri": "https://www.healthypawspetinsurance.com/Images/V3/DogAndPuppyInsurance/Dog_CTA_Desktop_HeroImage.jpg"
+                    },
                 },
             },
             {
@@ -362,8 +346,37 @@ def test_image_chat_completion_streaming(llama_stack_client, vision_model_id):
         messages=[message],
         stream=True,
     )
-    streamed_content = [
-        str(chunk.event.delta.text.lower().strip()) for chunk in response
-    ]
+    streamed_content = ""
+    for chunk in response:
+        streamed_content += chunk.event.delta.text.lower()
     assert len(streamed_content) > 0
     assert any(expected in streamed_content for expected in {"dog", "puppy", "pup"})
+
+
+def test_image_chat_completion_base64_url(
+    llama_stack_client, vision_model_id, base64_image_url
+):
+    message = {
+        "role": "user",
+        "content": [
+            {
+                "type": "image",
+                "image": {
+                    "url": {
+                        "uri": base64_image_url,
+                    },
+                },
+            },
+            {
+                "type": "text",
+                "text": "Describe what is in this image.",
+            },
+        ],
+    }
+    response = llama_stack_client.inference.chat_completion(
+        model_id=vision_model_id,
+        messages=[message],
+        stream=False,
+    )
+    message_content = response.completion_message.content.lower().strip()
+    assert len(message_content) > 0
