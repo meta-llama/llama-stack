@@ -109,19 +109,6 @@ class TestInference:
     async def test_completion(self, inference_model, inference_stack):
         inference_impl, _ = inference_stack
 
-        provider = inference_impl.routing_table.get_provider_impl(inference_model)
-        if provider.__provider_spec__.provider_type not in (
-            "inline::meta-reference",
-            "remote::ollama",
-            "remote::tgi",
-            "remote::together",
-            "remote::fireworks",
-            "remote::nvidia",
-            "remote::cerebras",
-            "remote::vllm",
-        ):
-            pytest.skip("Other inference providers don't support completion() yet")
-
         response = await inference_impl.completion(
             content="Micheael Jordan is born in ",
             stream=False,
@@ -154,12 +141,6 @@ class TestInference:
     @pytest.mark.asyncio(loop_scope="session")
     async def test_completion_logprobs(self, inference_model, inference_stack):
         inference_impl, _ = inference_stack
-
-        provider = inference_impl.routing_table.get_provider_impl(inference_model)
-        if provider.__provider_spec__.provider_type not in (
-            # "remote::nvidia", -- provider doesn't provide all logprobs
-        ):
-            pytest.skip("Other inference providers don't support completion() yet")
 
         response = await inference_impl.completion(
             content="Micheael Jordan is born in ",
@@ -212,21 +193,6 @@ class TestInference:
     async def test_completion_structured_output(self, inference_model, inference_stack):
         inference_impl, _ = inference_stack
 
-        provider = inference_impl.routing_table.get_provider_impl(inference_model)
-        if provider.__provider_spec__.provider_type not in (
-            "inline::meta-reference",
-            "remote::ollama",
-            "remote::tgi",
-            "remote::together",
-            "remote::fireworks",
-            "remote::nvidia",
-            "remote::vllm",
-            "remote::cerebras",
-        ):
-            pytest.skip(
-                "Other inference providers don't support structured output in completions yet"
-            )
-
         class Output(BaseModel):
             name: str
             year_born: str
@@ -274,18 +240,6 @@ class TestInference:
         self, inference_model, inference_stack, common_params
     ):
         inference_impl, _ = inference_stack
-
-        provider = inference_impl.routing_table.get_provider_impl(inference_model)
-        if provider.__provider_spec__.provider_type not in (
-            "inline::meta-reference",
-            "remote::ollama",
-            "remote::fireworks",
-            "remote::tgi",
-            "remote::together",
-            "remote::vllm",
-            "remote::nvidia",
-        ):
-            pytest.skip("Other inference providers don't support structured output yet")
 
         class AnswerFormat(BaseModel):
             first_name: str
@@ -377,20 +331,6 @@ class TestInference:
         sample_tool_definition,
     ):
         inference_impl, _ = inference_stack
-        provider = inference_impl.routing_table.get_provider_impl(inference_model)
-        if (
-            provider.__provider_spec__.provider_type == "remote::groq"
-            and "Llama-3.2" in inference_model
-        ):
-            # TODO(aidand): Remove this skip once Groq's tool calling for Llama3.2 works better
-            pytest.skip("Groq's tool calling for Llama3.2 doesn't work very well")
-
-        if provider.__provider_spec__.provider_type == "remote::sambanova" and (
-            "-1B-" in inference_model or "-3B-" in inference_model
-        ):
-            # TODO(snova-edawrdm): Remove this skip once SambaNova's tool calling for 1B/ 3B
-            pytest.skip("Sambanova's tool calling for lightweight models don't work")
-
         messages = sample_messages + [
             UserMessage(
                 content="What's the weather like in San Francisco?",
@@ -430,17 +370,6 @@ class TestInference:
         sample_tool_definition,
     ):
         inference_impl, _ = inference_stack
-        provider = inference_impl.routing_table.get_provider_impl(inference_model)
-        if (
-            provider.__provider_spec__.provider_type == "remote::groq"
-            and "Llama-3.2" in inference_model
-        ):
-            # TODO(aidand): Remove this skip once Groq's tool calling for Llama3.2 works better
-            pytest.skip("Groq's tool calling for Llama3.2 doesn't work very well")
-        if provider.__provider_spec__.provider_type == "remote::sambanova":
-            # TODO(snova-edawrdm): Remove this skip once SambaNova's tool calling under streaming is supported (we are working on it)
-            pytest.skip("Sambanova's tool calling for streaming doesn't work")
-
         messages = sample_messages + [
             UserMessage(
                 content="What's the weather like in San Francisco?",

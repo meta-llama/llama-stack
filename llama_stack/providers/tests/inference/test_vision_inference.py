@@ -51,20 +51,6 @@ class TestVisionModelInference:
         self, inference_model, inference_stack, image, expected_strings
     ):
         inference_impl, _ = inference_stack
-
-        provider = inference_impl.routing_table.get_provider_impl(inference_model)
-        if provider.__provider_spec__.provider_type not in (
-            "inline::meta-reference",
-            "remote::together",
-            "remote::fireworks",
-            "remote::ollama",
-            "remote::vllm",
-            "remote::sambanova",
-        ):
-            pytest.skip(
-                "Other inference providers don't support vision chat completion() yet"
-            )
-
         response = await inference_impl.chat_completion(
             model_id=inference_model,
             messages=[
@@ -91,19 +77,6 @@ class TestVisionModelInference:
         self, inference_model, inference_stack
     ):
         inference_impl, _ = inference_stack
-
-        provider = inference_impl.routing_table.get_provider_impl(inference_model)
-        if provider.__provider_spec__.provider_type not in (
-            "inline::meta-reference",
-            "remote::together",
-            "remote::fireworks",
-            "remote::ollama",
-            "remote::vllm",
-            "remote::sambanova",
-        ):
-            pytest.skip(
-                "Other inference providers don't support vision chat completion() yet"
-            )
 
         images = [
             ImageContentItem(

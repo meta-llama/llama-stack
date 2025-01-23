@@ -12,6 +12,7 @@ from llama_models.llama3.api.tokenizer import Tokenizer
 from openai import OpenAI
 
 from llama_stack.apis.inference import *  # noqa: F403
+
 # from llama_stack.providers.datatypes import ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
 
@@ -40,6 +41,8 @@ RUNPOD_SUPPORTED_MODELS = {
     "Llama3.2-1B": "meta-llama/Llama-3.2-1B",
     "Llama3.2-3B": "meta-llama/Llama-3.2-3B",
 }
+
+
 class RunpodInferenceAdapter(ModelRegistryHelper, Inference):
     def __init__(self, config: RunpodImplConfig) -> None:
         ModelRegistryHelper.__init__(
