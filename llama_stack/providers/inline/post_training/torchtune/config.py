@@ -11,4 +11,4 @@ from pydantic import BaseModel
 
 class TorchtunePostTrainingConfig(BaseModel):
     torch_seed: Optional[int] = None
-    checkpoint_format: Optional[str] = "hf"
+    checkpoint_format: Optional[str] = "meta"
