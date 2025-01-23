@@ -15,7 +15,7 @@ Our goal is to provide pre-packaged implementations (aka "distributions") which 
 
 - New to Llama Stack? Start with the [Introduction](introduction/index) to understand our motivation and vision.
 - Ready to build? Check out the [Quick Start](getting_started/index) to get started.
-- Need specific providers? Browse [Distributions](distributions/index) to see all the options available.
+- Need specific providers? Browse [Distributions](distributions/selection) to see all the options available.
 - Want to contribute? See the [Contributing](contributing/index) guide.
 
 ## Available SDKs
@@ -60,7 +60,6 @@ concepts/index
 distributions/index
 distributions/selection
 building_applications/index
-benchmark_evaluations/index
 playground/index
 contributing/index
 references/index
