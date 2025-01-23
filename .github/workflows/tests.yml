@@ -12,6 +12,9 @@ jobs:
       TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
       FIREWORKS_API_KEY: ${{ secrets.FIREWORKS_API_KEY }}
       TAVILY_SEARCH_API_KEY: ${{ secrets.TAVILY_SEARCH_API_KEY }}
+    strategy:
+      matrix:
+        provider: [fireworks, ollama]
     steps:
       - uses: actions/checkout@v4
       - name: Echo branch name
@@ -23,9 +26,8 @@ jobs:
           pip install -e .
       - name: Build providers
         run: |
-          llama stack build --template fireworks --image-type venv
-          llama stack build --template together --image-type venv
-      - name: Run Together test
+          llama stack build --template ${{ matrix.provider }} --image-type venv
+      - name: Run client-sdk test
         working-directory: "${{ github.workspace }}"
         run:
-          LLAMA_STACK_CONFIG=./llama_stack/templates/together/run.yaml pytest ./tests/client-sdk/inference/test_inference.py
+          LLAMA_STACK_CONFIG=./llama_stack/templates/${{ matrix.provider }}/run.yaml pytest ./tests/client-sdk/inference/test_inference.py
