@@ -21,8 +21,8 @@ def available_providers() -> List[ProviderSpec]:
             api=Api.tool_runtime,
             provider_type="inline::rag-runtime",
             pip_packages=[],
-            module="llama_stack.providers.inline.tool_runtime.memory",
-            config_class="llama_stack.providers.inline.tool_runtime.memory.config.MemoryToolRuntimeConfig",
+            module="llama_stack.providers.inline.tool_runtime.rag",
+            config_class="llama_stack.providers.inline.tool_runtime.rag.config.RagToolRuntimeConfig",
             api_dependencies=[Api.vector_io, Api.inference],
         ),
         InlineProviderSpec(

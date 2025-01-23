@@ -7,5 +7,5 @@
 from pydantic import BaseModel
 
 
-class MemoryToolRuntimeConfig(BaseModel):
+class RagToolRuntimeConfig(BaseModel):
     pass

@@ -32,7 +32,7 @@ from llama_stack.providers.utils.memory.vector_store import (
     make_overlapped_chunks,
 )
 
-from .config import MemoryToolRuntimeConfig
+from .config import RagToolRuntimeConfig
 from .context_retriever import generate_rag_query
 
 log = logging.getLogger(__name__)
@@ -47,7 +47,7 @@ def make_random_string(length: int = 8):
 class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
     def __init__(
         self,
-        config: MemoryToolRuntimeConfig,
+        config: RagToolRuntimeConfig,
         vector_io_api: VectorIO,
         inference_api: Inference,
     ):
