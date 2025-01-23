@@ -147,7 +147,7 @@ class Report:
     def pytest_sessionfinish(self, session):
         report = []
         report.append(f"# Report for {self.image_name} distribution")
-        report.append("\n## Supported Models:")
+        report.append("\n## Supported Models")
 
         header = f"| Model Descriptor | {self.image_name} |"
         dividor = "|:---|:---|"
@@ -180,7 +180,7 @@ class Report:
                 rows.append(row)
         report.extend(rows)
 
-        report.append("\n## Inference:")
+        report.append("\n## Inference")
         test_table = [
             "| Model | API | Capability | Test | Status |",
             "|:----- |:-----|:-----|:-----|:-----|",
@@ -205,9 +205,10 @@ class Report:
 
         report.extend(test_table)
 
+        name_map = {Api.vector_io: "Vector IO", Api.agents: "Agents"}
         for api_group in [Api.vector_io, Api.agents]:
-            api_capitalized = api_group.name.capitalize()
-            report.append(f"\n## {api_capitalized}:")
+            api_capitalized = name_map[api_group]
+            report.append(f"\n## {api_capitalized}")
             test_table = [
                 "| API | Capability | Test | Status |",
                 "|:-----|:-----|:-----|:-----|",
