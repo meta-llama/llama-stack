@@ -357,8 +357,8 @@ class ModelParallelProcessGroup:
         assert not self.running, "inference already running"
 
         self.running = True
-        self.request_socket.send(encode_msg(TaskRequest(task=req)))
         try:
+            self.request_socket.send(encode_msg(TaskRequest(task=req)))
             while True:
                 obj_json = self.request_socket.recv()
                 obj = parse_message(obj_json)
