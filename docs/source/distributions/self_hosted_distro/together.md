@@ -1,6 +1,3 @@
----
-orphan: true
----
 # Together Distribution
 
 ```{toctree}

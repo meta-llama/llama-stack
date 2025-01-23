@@ -1,6 +1,3 @@
----
-orphan: true
----
 # Ollama Distribution
 
 ```{toctree}
