@@ -59,7 +59,7 @@ class TestModelRegistration:
             },
         )
 
-        with pytest.raises(AssertionError) as exc_info:
+        with pytest.raises(ValueError) as exc_info:
             await models_impl.register_model(
                 model_id="custom-model-2",
                 metadata={

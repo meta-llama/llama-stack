@@ -23,6 +23,7 @@ from llama_stack.providers.remote.inference.fireworks import FireworksImplConfig
 from llama_stack.providers.remote.inference.groq import GroqConfig
 from llama_stack.providers.remote.inference.nvidia import NVIDIAConfig
 from llama_stack.providers.remote.inference.ollama import OllamaImplConfig
+from llama_stack.providers.remote.inference.sambanova import SambaNovaImplConfig
 from llama_stack.providers.remote.inference.tgi import TGIImplConfig
 from llama_stack.providers.remote.inference.together import TogetherImplConfig
 from llama_stack.providers.remote.inference.vllm import VLLMInferenceAdapterConfig
@@ -232,6 +233,23 @@ def inference_tgi() -> ProviderFixture:
 
 
 @pytest.fixture(scope="session")
+def inference_sambanova() -> ProviderFixture:
+    return ProviderFixture(
+        providers=[
+            Provider(
+                provider_id="sambanova",
+                provider_type="remote::sambanova",
+                config=SambaNovaImplConfig(
+                    api_key=get_env_or_fail("SAMBANOVA_API_KEY"),
+                ).model_dump(),
+            )
+        ],
+        provider_data=dict(
+            sambanova_api_key=get_env_or_fail("SAMBANOVA_API_KEY"),
+        ),
+    )
+
+
 def inference_sentence_transformers() -> ProviderFixture:
     return ProviderFixture(
         providers=[
@@ -282,6 +300,7 @@ INFERENCE_FIXTURES = [
     "cerebras",
     "nvidia",
     "tgi",
+    "sambanova",
 ]
 
 
