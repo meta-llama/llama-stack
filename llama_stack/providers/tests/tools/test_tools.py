@@ -88,7 +88,7 @@ class TestTools:
         tools_impl = tools_stack.impls[Api.tool_runtime]
 
         # Register memory bank
-        await vector_dbs_impl.register(
+        await vector_dbs_impl.register_vector_db(
             vector_db_id="test_bank",
             embedding_model="all-MiniLM-L6-v2",
             embedding_dimension=384,
