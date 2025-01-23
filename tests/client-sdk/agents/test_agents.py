@@ -98,7 +98,6 @@ def agent_config(llama_stack_client, text_model_id):
         },
         toolgroups=[],
         tool_choice="auto",
-        tool_prompt_format="json",
         input_shields=available_shields,
         output_shields=available_shields,
         enable_session_persistence=False,
