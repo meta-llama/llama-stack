@@ -1,8 +1,13 @@
 name: auto-tests
 
 on:
-  pull_request:
+  # pull_request:
   workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: 'Specific Commit SHA to trigger on'
+        required: false
+        default: $GITHUB_SHA # default to the last commit of $GITHUB_REF branch
 
 jobs:
   test-llama-stack-as-library:
@@ -16,9 +21,13 @@ jobs:
         provider: [fireworks, together]
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.commit_sha }}
 
-      - name: Echo branch name
-        run: echo "Running on branch ${{ github.ref }}"
+      - name: Echo commit SHA
+        run: |
+          echo "Triggered on commit SHA: ${{ github.event.inputs.commit_sha }}"
+          git rev-parse HEAD
 
       - name: Install dependencies
         run: |
