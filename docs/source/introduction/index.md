@@ -46,6 +46,10 @@ Llama Stack addresses these challenges through a service-oriented, API-first app
 - Federation and fallback support
 - No vendor lock-in
 
+**Robust Ecosystem**
+-Llama Stack is already integrated with distribution partners (cloud providers, hardware vendors, and AI-focused companies).
+-Ecosystem offers tailored infrastructure, software, and services for deploying Llama models.
+
 
 ### Our Philosophy
 
