@@ -6,12 +6,14 @@ The best way to get started is to look at this notebook which walks through the 
 
 **Notebook**: [Building AI Applications](docs/notebooks/Llama_Stack_Building_AI_Applications.ipynb)
 
-## Agentic Concepts
+Here are some key topics that will help you build effective agents:
+
 - **[Agent Execution Loop](agent_execution_loop)**
 - **[RAG](rag)**
 - **[Safety](safety)**
 - **[Tools](tools)**
 - **[Telemetry](telemetry)**
+- **[Evals](evals)**
 
 
 ```{toctree}
@@ -23,4 +25,5 @@ rag
 safety
 tools
 telemetry
+evals
 ```

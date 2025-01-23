@@ -59,7 +59,6 @@ concepts/index
 distributions/index
 distributions/selection
 building_applications/index
-benchmark_evaluations/index
 playground/index
 contributing/index
 references/index
