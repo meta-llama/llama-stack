@@ -1,14 +1,14 @@
-# Report for fireworks distribution
+# Report for together distribution
 
 ## Supported Models:
-| Model Descriptor | fireworks |
+| Model Descriptor | together |
 |:---|:---|
 | meta-llama/Llama-3-8B-Instruct | ❌ |
 | meta-llama/Llama-3-70B-Instruct | ❌ |
 | meta-llama/Llama-3.1-8B-Instruct | ✅ |
 | meta-llama/Llama-3.1-70B-Instruct | ✅ |
 | meta-llama/Llama-3.1-405B-Instruct-FP8 | ✅ |
-| meta-llama/Llama-3.2-1B-Instruct | ✅ |
+| meta-llama/Llama-3.2-1B-Instruct | ❌ |
 | meta-llama/Llama-3.2-3B-Instruct | ✅ |
 | meta-llama/Llama-3.2-11B-Vision-Instruct | ✅ |
 | meta-llama/Llama-3.2-90B-Vision-Instruct | ✅ |

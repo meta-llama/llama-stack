@@ -22,6 +22,7 @@ from llama_models.sku_list import (
 )
 
 from llama_stack.distribution.library_client import LlamaStackAsLibraryClient
+from llama_stack.providers.datatypes import Api
 from llama_stack.providers.tests.env import get_env_or_fail
 
 from llama_stack_client import LlamaStackClient
@@ -90,6 +91,8 @@ class Report:
         # test function -> test nodeid
         self.test_data = dict()
         self.test_name_to_nodeid = defaultdict(list)
+        self.vision_model_id = None
+        self.text_model_id = None
 
     @pytest.hookimpl(tryfirst=True)
     def pytest_runtest_logreport(self, report):
@@ -102,6 +105,9 @@ class Report:
             self.test_data[report.nodeid] = outcome
 
     def pytest_sessionfinish(self, session):
+        if len(self.test_name_to_nodeid) == 0:
+            return
+
         report = []
         report.append(f"# Report for {self.image_name} distribution")
         report.append("\n## Supported Models:")
@@ -134,23 +140,28 @@ class Report:
             "| Model | API | Capability | Test | Status |",
             "|:----- |:-----|:-----|:-----|:-----|",
         ]
-        for api, capa_map in API_MAPS["inference"].items():
+        for api, capa_map in API_MAPS[Api.inference].items():
             for capa, tests in capa_map.items():
                 for test_name in tests:
-                    model_type = "Text" if "text" in test_name else "Vision"
+                    model_id = (
+                        self.text_model_id
+                        if "text" in test_name
+                        else self.vision_model_id
+                    )
                     test_nodeids = self.test_name_to_nodeid[test_name]
                     assert len(test_nodeids) > 0
+
                     # There might be more than one parametrizations for the same test function. We take
                     # the result of the first one for now. Ideally we should mark the test as failed if
                     # any of the parametrizations failed.
                     test_table.append(
-                        f"| {model_type} | /{api} | {capa} | {test_name} | {self._print_result_icon(self.test_data[test_nodeids[0]])} |"
+                        f"| {model_id} | /{api} | {capa} | {test_name} | {self._print_result_icon(self.test_data[test_nodeids[0]])} |"
                     )
 
         report.extend(test_table)
 
-        for api_group in ["memory", "agents"]:
-            api_capitalized = api_group.capitalize()
+        for api_group in [Api.vector_io, Api.agents]:
+            api_capitalized = api_group.name.capitalize()
             report.append(f"\n## {api_capitalized}:")
             test_table = [
                 "| API | Capability | Test | Status |",
@@ -173,6 +184,13 @@ class Report:
 
     def pytest_runtest_makereport(self, item, call):
         func_name = getattr(item, "originalname", item.name)
+        if "text_model_id" in item.funcargs:
+            text_model = item.funcargs["text_model_id"].split("/")[1]
+            self.text_model_id = self.text_model_id or text_model
+        elif "vision_model_id" in item.funcargs:
+            vision_model = item.funcargs["vision_model_id"].split("/")[1]
+            self.vision_model_id = self.text_model_id or vision_model
+
         self.test_name_to_nodeid[func_name].append(item.nodeid)
 
     def _print_result_icon(self, result):
