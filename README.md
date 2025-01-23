@@ -109,7 +109,7 @@ Please checkout our [Documentation](https://llama-stack.readthedocs.io/en/latest
     * Guide using `llama` CLI to work with Llama models (download, study prompts), and building/starting a Llama Stack distribution.
 * [Getting Started](https://llama-stack.readthedocs.io/en/latest/getting_started/index.html)
     * Quick guide to start a Llama Stack server.
-    * [Jupyter notebook](./docs/notebooks/Llama_Stack_Building_AI_Applications.ipynb) to walk-through how to use simple text and vision inference llama_stack_client APIs
+    * [Jupyter notebook](./docs/notebooks/Llama_Stack_Building_AI_Applications.ipynb) to walk-through how to use simple text and vision inference llama_stack_client APIs.
 * [Contributing](CONTRIBUTING.md)
     * [Adding a new API Provider](https://llama-stack.readthedocs.io/en/latest/contributing/new_api_provider.html) to walk-through how to add a new API provider.
 
