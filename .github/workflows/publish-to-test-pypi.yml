@@ -238,7 +238,7 @@ jobs:
       run: |
         pip install pytest nbval
         llama stack build --template together --image-type venv
-        pytest -v -s --nbval-lax ./docs/notebooks/Llama_Stack_Building_AI_Applications.ipynb
+        pytest -v -s --nbval-lax ./docs/getting_started.ipynb
         pytest -v -s --nbval-lax ./docs/notebooks/Llama_Stack_Benchmark_Evals.ipynb
 
     # TODO: add trigger for integration test workflow & docker builds
