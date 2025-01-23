@@ -6,7 +6,7 @@ Tools are treated as any other resource in llama stack like models. you can regi
 
 When instatiating an agent, you can provide it a list of tool groups that it has access to. Agent gets the corresponding tool definitions for the specified tool gropus and pass along to the model
 
-Refer to the [Building AI Applications](../notebooks/Llama_Stack_Building_AI_Applications.ipynb) notebook for more examples on how to use tools.
+Refer to the [Building AI Applications](../../notebooks/Llama_Stack_Building_AI_Applications.ipynb) notebook for more examples on how to use tools.
 
 ## Types of Tool Group providers
 
@@ -81,7 +81,7 @@ result = client.tools.invoke_tool(
 )
 ```
 
-### Memory Tool
+#### Memory
 
 The Memory tool enables retrieval of context from various types of memory banks (vector, key-value, keyword, and graph).
 
