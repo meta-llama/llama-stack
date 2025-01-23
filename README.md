@@ -6,9 +6,13 @@
 
 [**Quick Start**](https://llama-stack.readthedocs.io/en/latest/getting_started/index.html) | [**Documentation**](https://llama-stack.readthedocs.io/en/latest/index.html) | [**Colab Notebook**](./docs/notebooks/Llama_Stack_Building_AI_Applications.ipynb)
 
-Llama Stack defines and standardizes the core building blocks needed to bring generative AI applications to market. It provides a unified set of APIs with implementations from leading service providers, enabling seamless transitions between development and production environments.
+Llama Stack defines and standardizes the core building blocks that simplify AI application development. It codified best practices across the Llama ecosystem. More specifically, it provides
 
-We focus on making it easy to build production applications with the Llama model family - from the latest Llama 3.3 to specialized models like Llama Guard for safety.
+- **Unified API layer** for Inference, RAG, Agents, Tools, Safety, Evals, and Telemetry.
+- **Plugin architecture** to support the rich ecosystem of implementations of the different APIs in different environments like local development, on-premises, cloud, and mobile.
+- **Prepackaged verified distributions** which offer a one-stop solution for developers to get started quickly and reliably in any environment
+- **Multiple developer interfaces** like CLI and SDKs for Python, Node, iOS, and Android
+- **Standalone applications** as examples for how to build production-grade AI applications with Llama Stack
 
 <div style="text-align: center;">
   <img
@@ -19,32 +23,16 @@ We focus on making it easy to build production applications with the Llama model
   />
 </div>
 
-## Key Features
+### Llama Stack Benefits
+- **Flexible Options**: Developers can choose their preferred infrastructure without changing APIs and enjoy flexible deployment choice.
+- **Consistent Experience**: With its unified APIs Llama Stack makes it easier to build, test, and deploy AI applications with consistent application behavior.
+- **Robust Ecosystem**: Llama Stack is already integrated with distribution partners (cloud providers, hardware vendors, and AI-focused companies) that offer tailored infrastructure, software, and services for deploying Llama models.
 
-- **Unified API Layer** for:
-  - Inference: Run LLM models efficiently
-  - Safety: Apply content filtering and safety policies
-  - DatasetIO: Store and retrieve knowledge for RAG
-  - Agents: Build multi-step agentic workflows
-  - Evaluation: Test and improve model and agent quality
-  - Telemetry: Collect and analyze usage data and complex agentic traces
-  - Post Training ( Coming Soon ): Fine tune models for specific use cases
+By reducing friction and complexity, Llama Stack empowers developers to focus on what they do best: building transformative generative AI applications.
 
-- **Rich Provider Ecosystem**
-  - Local Development: Meta's Reference,Ollama, vLLM, TGI
-  - Self-hosted: Chroma, pgvector, Nvidia NIM
-  - Cloud: Fireworks, Together, Nvidia, AWS Bedrock, Groq, Cerebras
-  - On-device: iOS and Android support
-
-- **Built for Production**
-  - Pre-packaged distributions for common deployment scenarios
-  - Comprehensive evaluation capabilities
-  - Full observability and monitoring
-  - Provider federation and fallback
-
-
-## Supported Llama Stack Implementations
 ### API Providers
+Here is a list of the various API providers and available distributions to developers started easily,
+
 |                                  **API Provider Builder**                                  |    **Environments**    |     **Agents**     |   **Inference**    |     **Memory**     |     **Safety**     |   **Telemetry**    |
 |:------------------------------------------------------------------------------------------:|:----------------------:|:------------------:|:------------------:|:------------------:|:------------------:|:------------------:|
 |                                       Meta Reference                                       |      Single Node       | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
@@ -76,7 +64,7 @@ A Llama Stack Distribution (or "distro") is a pre-configured bundle of provider 
 |                   Fireworks                   |                    [llamastack/distribution-fireworks](https://hub.docker.com/repository/docker/llamastack/distribution-fireworks/general)                    |          [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/fireworks.html)           |
 | vLLM |                  [llamastack/distribution-remote-vllm](https://hub.docker.com/repository/docker/llamastack/distribution-remote-vllm/general)                  |         [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/remote-vllm.html)          |
 
-## Installation
+### Installation
 
 You have two ways to install this repository:
 
@@ -101,7 +89,7 @@ You have two ways to install this repository:
     pip install -e .
    ```
 
-## Documentation
+### Documentation
 
 Please checkout our [Documentation](https://llama-stack.readthedocs.io/en/latest/index.html) page for more details.
 
@@ -115,7 +103,7 @@ Please checkout our [Documentation](https://llama-stack.readthedocs.io/en/latest
 * [Contributing](CONTRIBUTING.md)
     * [Adding a new API Provider](https://llama-stack.readthedocs.io/en/latest/contributing/new_api_provider.html) to walk-through how to add a new API provider.
 
-## Llama Stack Client SDKs
+### Llama Stack Client SDKs
 
 |  **Language** |  **Client SDK** | **Package** |
 | :----: | :----: | :----: |
