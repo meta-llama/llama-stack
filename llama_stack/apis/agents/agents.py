@@ -155,9 +155,7 @@ class AgentConfigCommon(BaseModel):
     toolgroups: Optional[List[AgentToolGroup]] = Field(default_factory=list)
     client_tools: Optional[List[ToolDef]] = Field(default_factory=list)
     tool_choice: Optional[ToolChoice] = Field(default=ToolChoice.auto)
-    tool_prompt_format: Optional[ToolPromptFormat] = Field(
-        default=ToolPromptFormat.json
-    )
+    tool_prompt_format: Optional[ToolPromptFormat] = Field(default=None)
 
     max_infer_iters: int = 10
 
