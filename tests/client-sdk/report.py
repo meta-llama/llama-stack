@@ -41,7 +41,7 @@ def featured_models_repo_names():
         *llama3_3_instruct_models(),
         *safety_models(),
     ]
-    return [model for model in models if not model.variant]
+    return [model.huggingface_repo for model in models if not model.variant]
 
 
 SUPPORTED_MODELS = {
@@ -66,33 +66,6 @@ SUPPORTED_MODELS = {
             CoreModelId.llama_guard_3_1b.value,
         ]
     ),
-    "fireworks": set(
-        [
-            CoreModelId.llama3_1_8b_instruct.value,
-            CoreModelId.llama3_1_70b_instruct.value,
-            CoreModelId.llama3_1_405b_instruct.value,
-            CoreModelId.llama3_2_1b_instruct.value,
-            CoreModelId.llama3_2_3b_instruct.value,
-            CoreModelId.llama3_2_11b_vision_instruct.value,
-            CoreModelId.llama3_2_90b_vision_instruct.value,
-            CoreModelId.llama3_3_70b_instruct.value,
-            CoreModelId.llama_guard_3_8b.value,
-            CoreModelId.llama_guard_3_11b_vision.value,
-        ]
-    ),
-    "together": set(
-        [
-            CoreModelId.llama3_1_8b_instruct.value,
-            CoreModelId.llama3_1_70b_instruct.value,
-            CoreModelId.llama3_1_405b_instruct.value,
-            CoreModelId.llama3_2_3b_instruct.value,
-            CoreModelId.llama3_2_11b_vision_instruct.value,
-            CoreModelId.llama3_2_90b_vision_instruct.value,
-            CoreModelId.llama3_3_70b_instruct.value,
-            CoreModelId.llama_guard_3_8b.value,
-            CoreModelId.llama_guard_3_11b_vision.value,
-        ]
-    ),
     "tgi": set(
         [
             model.core_model_id.value
@@ -105,12 +78,6 @@ SUPPORTED_MODELS = {
             model.core_model_id.value
             for model in all_registered_models()
             if model.huggingface_repo
-        ]
-    ),
-    "cerebras": set(
-        [
-            CoreModelId.llama3_1_8b_instruct.value,
-            CoreModelId.llama3_3_70b_instruct.value,
         ]
     ),
 }
@@ -178,9 +145,6 @@ class Report:
             self.test_data[report.nodeid] = outcome
 
     def pytest_sessionfinish(self, session):
-        if len(self.test_name_to_nodeid) == 0:
-            return
-
         report = []
         report.append(f"# Report for {self.image_name} distribution")
         report.append("\n## Supported Models:")
@@ -192,18 +156,28 @@ class Report:
         report.append(dividor)
 
         rows = []
-        for model in all_registered_models():
-            if (
-                "Instruct" not in model.core_model_id.value
-                and "Guard" not in model.core_model_id.value
-            ) or (model.variant):
-                continue
-            row = f"| {model.core_model_id.value} |"
-            if model.core_model_id.value in SUPPORTED_MODELS[self.image_name]:
-                row += " ✅ |"
-            else:
-                row += " ❌ |"
-            rows.append(row)
+        if self.image_name in SUPPORTED_MODELS:
+            for model in all_registered_models():
+                if (
+                    "Instruct" not in model.core_model_id.value
+                    and "Guard" not in model.core_model_id.value
+                ) or (model.variant):
+                    continue
+                row = f"| {model.core_model_id.value} |"
+                if model.core_model_id.value in SUPPORTED_MODELS[self.image_name]:
+                    row += " ✅ |"
+                else:
+                    row += " ❌ |"
+                rows.append(row)
+        else:
+            supported_models = {m.identifier for m in self.client.models.list()}
+            for model in featured_models_repo_names():
+                row = f"| {model} |"
+                if model in supported_models:
+                    row += " ✅ |"
+                else:
+                    row += " ❌ |"
+                rows.append(row)
         report.extend(rows)
 
         report.append("\n## Inference:")
