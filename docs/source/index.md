@@ -1,17 +1,15 @@
 # Llama Stack
 
-Llama Stack defines and standardizes the set of core building blocks needed to bring generative AI applications to market. These building blocks are presented in the form of interoperable APIs with a broad set of Service Providers providing their implementations.
+Llama Stack defines and standardizes the core building blocks needed to bring generative AI applications to market. It provides a unified set of APIs with implementations from leading service providers, enabling seamless transitions between development and production environments.
+
+We focus on making it easy to build production applications with the Llama model family - from the latest Llama 3.3 to specialized models like Llama Guard for safety.
 
 ```{image} ../_static/llama-stack.png
 :alt: Llama Stack
 :width: 400px
 ```
 
-Our goal is to provide pre-packaged implementations which can be operated in a variety of deployment environments: developers start iterating with Desktops or their mobile devices and can seamlessly transition to on-prem or public cloud deployments. At every point in this transition, the same set of APIs and the same developer experience is available.
-
-```{note}
-The Stack APIs are rapidly improving but still a work-in-progress. We invite feedback as well as direct contributions.
-```
+Our goal is to provide pre-packaged implementations (aka "distributions") which can be run in a variety of deployment environments. LlamaStack can assist you in your entire app development lifecycle - start iterating on local, mobile or desktop and seamlessly transition to on-prem or public cloud deployments. At every point in this transition, the same set of APIs and the same developer experience is available.
 
 ## Quick Links
 
@@ -44,7 +42,7 @@ A number of "adapters" are available for some popular Inference and Memory (Vect
 |  Together  |  Hosted  |  Y  |  Y  |   | Y  |  |
 |  Ollama  | Single Node   |    |  Y  |    |   |
 |  TGI  |  Hosted and Single Node  |    |  Y  |    |   |
-|  [NVIDIA NIM](https://build.nvidia.com/nim?filters=nimType%3Anim_type_run_anywhere&q=llama)  |  Hosted and Single Node  |    |  Y  |    |   |
+|  NVIDIA NIM  |  Hosted and Single Node  |    |  Y  |    |   |
 | Chroma | Single Node |  |  | Y |  |  |
 | Postgres | Single Node |  |  | Y |  |  |
 | PyTorch ExecuTorch | On-device iOS | Y  | Y  |  |  |
@@ -54,6 +52,7 @@ A number of "adapters" are available for some popular Inference and Memory (Vect
 :hidden:
 :maxdepth: 3
 
+self
 introduction/index
 getting_started/index
 concepts/index
