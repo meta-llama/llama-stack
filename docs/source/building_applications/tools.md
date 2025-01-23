@@ -1,6 +1,7 @@
 # Tools
 
-Tools are functions that can be invoked by an agent to perform tasks. They are organized into tool groups and registered with specific providers. Each tool group represents a collection of related tools from a single provider. They are organized into groups so that state can be externalized -- the collection operates on the same state typically.
+Tools are functions that can be invoked by an agent to perform tasks. They are organized into tool groups and registered with specific providers. Each tool group represents a collection of related tools from a single provider. They are organized into groups so that state can be externalized: the collection operates on the same state typically.
+An example of this would be a "db_access" tool group that contains tools for interacting with a database. "list_tables", "query_table", "insert_row" could be examples of tools in this group.
 
 Tools are treated as any other resource in llama stack like models. You can register them, have providers for them etc.
 
@@ -14,7 +15,7 @@ There are three types of providers for tool groups that are supported by Llama S
 
 1. Built-in providers
 2. Model Context Protocol (MCP) providers
-3. Tools provided by the client
+3. Client provided tools
 
 ### Built-in providers
 
@@ -108,6 +109,8 @@ Features:
 
 MCP tools are special tools that can interact with llama stack over model context protocol. These tools are dynamically discovered from an MCP endpoint and can be used to extend the agent's capabilities.
 
+Refer to https://github.com/modelcontextprotocol/server for available MCP servers.
+
 ```python
 # Register MCP tools
 client.toolgroups.register(
@@ -121,6 +124,25 @@ MCP tools require:
 - A valid MCP endpoint URL
 - The endpoint must implement the Model Context Protocol
 - Tools are discovered dynamically from the endpoint
+
+
+## Tools provided by the client
+
+These tools are registered along with the agent config and are specific to the agent for which they are registered. The main difference between these tools and the tools provided by the built-in providers is that the execution of these tools is handled by the client and the agent transfers the tool call to the client and waits for the result from the client.
+
+```python
+# Example agent config with client provided tools
+config = AgentConfig(
+    toolgroups=[
+        "builtin::websearch",
+    ],
+    client_tools=[
+        ToolDef(name="client_tool", description="Client provided tool")
+    ]
+)
+```
+
+Refer to [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/blob/main/examples/agents/e2e_loop_with_custom_tools.py) for an example of how to use client provided tools.
 
 ## Tool Structure
 
