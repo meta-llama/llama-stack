@@ -1,0 +1,31 @@
+name: auto-tests
+
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
+      FIREWORKS_API_KEY: ${{ secrets.FIREWORKS_API_KEY }}
+      TAVILY_SEARCH_API_KEY: ${{ secrets.TAVILY_SEARCH_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Echo branch name
+        run: echo "Running on branch ${{ github.ref }}"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pytest
+          pip install -e .
+      - name: Build providers
+        run: |
+          llama stack build --template fireworks --image-type venv
+          llama stack build --template together --image-type venv
+      - name: Run Together test
+        working-directory: "${{ github.workspace }}"
+        run:
+          LLAMA_STACK_CONFIG=./llama_stack/templates/together/run.yaml pytest ./tests/client-sdk/inference/test_inference.py
