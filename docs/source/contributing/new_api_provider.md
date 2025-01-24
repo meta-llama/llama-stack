@@ -2,41 +2,25 @@
 
 This guide will walk you through the process of adding a new API provider to Llama Stack.
 
-## Getting Started
 
-1. **Choose Your API Category**
-   - Determine which API category your provider belongs to (Inference, Safety, Agents, VectorIO)
-   - Review the core concepts of Llama Stack in the [concepts guide](../concepts/index.md)
+- Begin by reviewing the [core concepts](../concepts/) of Llama Stack and choose the API your provider belongs to (Inference, Safety, VectorIO, etc.)
+- Determine the provider type ({repopath}`Remote::llama_stack/providers/remote` or {repopath}`Inline::llama_stack/providers/inline`). Remote providers make requests to external services, while inline providers execute implementation locally.
+- Add your provider to the appropriate {repopath}`Registry::llama_stack/providers/registry/`. Specify pip dependencies necessary.
+- Update any distribution {repopath}`Templates::llama_stack/templates/` build.yaml and run.yaml files if they should include your provider by default. Run {repopath}`llama_stack/scripts/distro_codegen.py` if necessary.
 
-2. **Determine Provider Type**
-   - **Remote Provider**: Makes requests to external services
-   - **Inline Provider**: Executes implementation locally
 
-   Reference existing implementations:
-   - {repopath}`Remote Providers::llama_stack/providers/remote`
-   - {repopath}`Inline Providers::llama_stack/providers/inline`
-
-   Example PRs:
+Here are some example PRs to help you get started:
    - [Grok Inference Implementation](https://github.com/meta-llama/llama-stack/pull/609)
    - [Nvidia Inference Implementation](https://github.com/meta-llama/llama-stack/pull/355)
    - [Model context protocol Tool Runtime](https://github.com/meta-llama/llama-stack/pull/665)
 
-3. **Register Your Provider**
-   - Add your provider to the appropriate {repopath}`Registry::llama_stack/providers/registry/`
-   - Specify any required pip dependencies
 
-4. **Integration**
-   - Update the run.yaml file to include your provider
-   - To make your provider a default option or create a new distribution, look at the teamplates in {repopath}`llama_stack/templates/` and run {repopath}`llama_stack/scripts/distro_codegen.py`
-   - Example PRs:
-     - [Adding Model Context Protocol Tool Runtime](https://github.com/meta-llama/llama-stack/pull/816)
-
-## Testing Guidelines
+## Testing the Provider
 
 ### 1. Integration Testing
 - Create integration tests that use real provider instances and configurations
 - For remote services, test actual API interactions
-- Avoid mocking at the provider level
+- Avoid mocking at the provider level since adapter layers tend to be thin
 - Reference examples in {repopath}`tests/client-sdk`
 
 ### 2. Unit Testing (Optional)
