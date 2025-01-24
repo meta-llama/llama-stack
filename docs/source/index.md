@@ -1,40 +1,89 @@
-# llama-stack documentation
+# Llama Stack
 
-Llama Stack defines and standardizes the building blocks needed to bring generative AI applications to market. It empowers developers building agentic applications by giving them options to operate in various environments (on-prem, cloud, single-node, on-device) while relying on a standard API interface and the same DevEx that is certified by Meta.
+Llama Stack defines and standardizes the core building blocks needed to bring generative AI applications to market. It provides a unified set of APIs with implementations from leading service providers, enabling seamless transitions between development and production environments. More specifically, it provides
 
-The Llama Stack defines and standardizes the building blocks needed to bring generative AI applications to market. These blocks span the entire development lifecycle: from model training and fine-tuning, through product evaluation, to building and running AI agents in production. Beyond definition, we are building providers for the Llama Stack APIs. These were developing open-source versions and partnering with providers, ensuring developers can assemble AI solutions using consistent, interlocking pieces across platforms. The ultimate goal is to accelerate innovation in the AI space.
+- **Unified API layer** for Inference, RAG, Agents, Tools, Safety, Evals, and Telemetry.
+- **Plugin architecture** to support the rich ecosystem of implementations of the different APIs in different environments like local development, on-premises, cloud, and mobile.
+- **Prepackaged verified distributions** which offer a one-stop solution for developers to get started quickly and reliably in any environment
+- **Multiple developer interfaces** like CLI and SDKs for Python, Node, iOS, and Android
+- **Standalone applications** as examples for how to build production-grade AI applications with Llama Stack
 
-The Stack APIs are rapidly improving, but still very much work in progress and we invite feedback as well as direct contributions.
+We focus on making it easy to build production applications with the Llama model family - from the latest Llama 3.3 to specialized models like Llama Guard for safety.
 
-![Llama Stack](../_static/llama-stack.png)
+```{image} ../_static/llama-stack.png
+:alt: Llama Stack
+:width: 400px
+```
 
-## APIs
+Our goal is to provide pre-packaged implementations (aka "distributions") which can be run in a variety of deployment environments. LlamaStack can assist you in your entire app development lifecycle - start iterating on local, mobile or desktop and seamlessly transition to on-prem or public cloud deployments. At every point in this transition, the same set of APIs and the same developer experience is available.
 
-The Llama Stack consists of the following set of APIs:
+## Quick Links
 
-- Inference
-- Safety
-- Memory
-- Agentic System
-- Evaluation
-- Post Training
-- Synthetic Data Generation
-- Reward Scoring
-Each of the APIs themselves is a collection of REST endpoints.
+- New to Llama Stack? Start with the [Introduction](introduction/index) to understand our motivation and vision.
+- Ready to build? Check out the [Quick Start](getting_started/index) to get started.
+- Need specific providers? Browse [Distributions](distributions/selection) to see all the options available.
+- Want to contribute? See the [Contributing](contributing/index) guide.
 
-## API Providers
+## Available SDKs
 
-A Provider is what makes the API real -- they provide the actual implementation backing the API.
+We have a number of client-side SDKs available for different languages.
 
-As an example, for Inference, we could have the implementation be backed by open source libraries like [ torch | vLLM | TensorRT ] as possible options.
+|  **Language** |  **Client SDK** | **Package** |
+| :----: | :----: | :----: |
+| Python |  [llama-stack-client-python](https://github.com/meta-llama/llama-stack-client-python) | [![PyPI version](https://img.shields.io/pypi/v/llama_stack_client.svg)](https://pypi.org/project/llama_stack_client/)
+| Swift  | [llama-stack-client-swift](https://github.com/meta-llama/llama-stack-client-swift) | [![Swift Package Index](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fmeta-llama%2Fllama-stack-client-swift%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/meta-llama/llama-stack-client-swift)
+| Node   | [llama-stack-client-node](https://github.com/meta-llama/llama-stack-client-node) | [![NPM version](https://img.shields.io/npm/v/llama-stack-client.svg)](https://npmjs.org/package/llama-stack-client)
+| Kotlin | [llama-stack-client-kotlin](https://github.com/meta-llama/llama-stack-client-kotlin) | [![Maven version](https://img.shields.io/maven-central/v/com.llama.llamastack/llama-stack-client-kotlin)](https://central.sonatype.com/artifact/com.llama.llamastack/llama-stack-client-kotlin)
 
-A provider can also be just a pointer to a remote REST service -- for example, cloud providers or dedicated inference providers could serve these APIs.
+## Supported Llama Stack Implementations
 
-## Distribution
+A number of "adapters" are available for some popular Inference and Vector Store providers. For other APIs (particularly Safety and Agents), we provide *reference implementations* you can use to get started. We expect this list to grow over time. We are slowly onboarding more providers to the ecosystem as we get more confidence in the APIs.
 
-A Distribution is where APIs and Providers are assembled together to provide a consistent whole to the end application developer. You can mix-and-match providers -- some could be backed by local code and some could be remote. As a hobbyist, you can serve a small model locally, but can choose a cloud provider for a large model. Regardless, the higher level APIs your app needs to work with don't need to change at all. You can even imagine moving across the server / mobile-device boundary as well always using the same uniform set of APIs for developing Generative AI applications.
+**Inference API**
+|  **Provider** |  **Environments** |
+| :----: | :----: |
+|  Meta Reference  |  Single Node |
+|  Ollama  | Single Node   |
+|  Fireworks  |  Hosted  |
+|  Together  |  Hosted  |
+|  NVIDIA NIM  |  Hosted and Single Node  |
+|  vLLM  | Hosted and Single Node |
+|  TGI  |  Hosted and Single Node  |
+|  AWS Bedrock  |  Hosted  |
+|  Cerebras  |  Hosted  |
+|  Groq  |  Hosted  |
+|  SambaNova  |  Hosted  |
+| PyTorch ExecuTorch | On-device iOS, Android |
+
+**Vector IO API**
+|  **Provider** |  **Environments** |
+| :----: | :----: |
+|  FAISS | Single Node |
+|  Chroma | Hosted and Single Node |
+|  Postgres (PGVector) | Hosted and Single Node |
+|  Weaviate | Hosted |
+
+**Safety API**
+|  **Provider** |  **Environments** |
+| :----: | :----: |
+|  Llama Guard | Depends on Inference Provider |
+|  Prompt Guard | Single Node |
+|  Code Scanner | Single Node |
+|  AWS Bedrock | Hosted |
+
 
 ```{toctree}
-cli_reference.md
-getting_started.md
+:hidden:
+:maxdepth: 3
+
+self
+introduction/index
+getting_started/index
+concepts/index
+distributions/index
+distributions/selection
+building_applications/index
+playground/index
+contributing/index
+references/index
 ```

@@ -4,48 +4,58 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from enum import Enum
-from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
+from typing import Any, Dict, List, Literal, Optional, Protocol, runtime_checkable
 
 from llama_models.schema_utils import json_schema_type, webmethod
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
+
+from llama_stack.apis.resource import Resource, ResourceType
+from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
+
+
+class CommonShieldFields(BaseModel):
+    params: Optional[Dict[str, Any]] = None
 
 
 @json_schema_type
-class ShieldType(Enum):
-    generic_content_shield = "generic_content_shield"
-    llama_guard = "llama_guard"
-    code_scanner = "code_scanner"
-    prompt_guard = "prompt_guard"
+class Shield(CommonShieldFields, Resource):
+    """A safety shield resource that can be used to check content"""
+
+    type: Literal[ResourceType.shield.value] = ResourceType.shield.value
+
+    @property
+    def shield_id(self) -> str:
+        return self.identifier
+
+    @property
+    def provider_shield_id(self) -> str:
+        return self.provider_resource_id
 
 
-class ShieldDef(BaseModel):
-    identifier: str = Field(
-        description="A unique identifier for the shield type",
-    )
-    type: str = Field(
-        description="The type of shield this is; the value is one of the ShieldType enum"
-    )
-    params: Dict[str, Any] = Field(
-        default_factory=dict,
-        description="Any additional parameters needed for this shield",
-    )
+class ShieldInput(CommonShieldFields):
+    shield_id: str
+    provider_id: Optional[str] = None
+    provider_shield_id: Optional[str] = None
 
 
-@json_schema_type
-class ShieldDefWithProvider(ShieldDef):
-    provider_id: str = Field(
-        description="The provider ID for this shield type",
-    )
+class ListShieldsResponse(BaseModel):
+    data: List[Shield]
 
 
 @runtime_checkable
+@trace_protocol
 class Shields(Protocol):
-    @webmethod(route="/shields/list", method="GET")
-    async def list_shields(self) -> List[ShieldDefWithProvider]: ...
+    @webmethod(route="/shields", method="GET")
+    async def list_shields(self) -> ListShieldsResponse: ...
 
-    @webmethod(route="/shields/get", method="GET")
-    async def get_shield(self, shield_type: str) -> Optional[ShieldDefWithProvider]: ...
+    @webmethod(route="/shields/{identifier}", method="GET")
+    async def get_shield(self, identifier: str) -> Optional[Shield]: ...
 
-    @webmethod(route="/shields/register", method="POST")
-    async def register_shield(self, shield: ShieldDefWithProvider) -> None: ...
+    @webmethod(route="/shields", method="POST")
+    async def register_shield(
+        self,
+        shield_id: str,
+        provider_shield_id: Optional[str] = None,
+        provider_id: Optional[str] = None,
+        params: Optional[Dict[str, Any]] = None,
+    ) -> Shield: ...

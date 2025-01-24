@@ -6,22 +6,23 @@
 
 from typing import List
 
-from llama_stack.distribution.datatypes import *  # noqa: F403
+from llama_stack.providers.datatypes import Api, InlineProviderSpec, ProviderSpec
 
 
 def available_providers() -> List[ProviderSpec]:
     return [
         InlineProviderSpec(
             api=Api.eval,
-            provider_type="meta-reference",
+            provider_type="inline::meta-reference",
             pip_packages=[],
-            module="llama_stack.providers.impls.meta_reference.eval",
-            config_class="llama_stack.providers.impls.meta_reference.eval.MetaReferenceEvalConfig",
+            module="llama_stack.providers.inline.eval.meta_reference",
+            config_class="llama_stack.providers.inline.eval.meta_reference.MetaReferenceEvalConfig",
             api_dependencies=[
                 Api.datasetio,
                 Api.datasets,
                 Api.scoring,
                 Api.inference,
+                Api.agents,
             ],
         ),
     ]

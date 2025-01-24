@@ -6,6 +6,7 @@
 
 import inspect
 import json
+import logging
 from enum import Enum
 
 from typing import Any, get_args, get_origin, List, Literal, Optional, Type, Union
@@ -15,6 +16,8 @@ from pydantic.fields import FieldInfo
 from pydantic_core import PydanticUndefinedType
 
 from typing_extensions import Annotated
+
+log = logging.getLogger(__name__)
 
 
 def is_list_of_primitives(field_type):
@@ -111,7 +114,7 @@ def prompt_for_discriminated_union(
 
         if discriminator_value in type_map:
             chosen_type = type_map[discriminator_value]
-            print(f"\nConfiguring {chosen_type.__name__}:")
+            log.info(f"\nConfiguring {chosen_type.__name__}:")
 
             if existing_value and (
                 getattr(existing_value, discriminator) != discriminator_value
@@ -123,7 +126,7 @@ def prompt_for_discriminated_union(
             setattr(sub_config, discriminator, discriminator_value)
             return sub_config
         else:
-            print(f"Invalid {discriminator}. Please try again.")
+            log.error(f"Invalid {discriminator}. Please try again.")
 
 
 # This is somewhat elaborate, but does not purport to be comprehensive in any way.
@@ -180,7 +183,7 @@ def prompt_for_config(
                     config_data[field_name] = validated_value
                     break
                 except KeyError:
-                    print(
+                    log.error(
                         f"Invalid choice. Please choose from: {', '.join(e.name for e in field_type)}"
                     )
             continue
@@ -197,7 +200,7 @@ def prompt_for_config(
                 config_data[field_name] = None
                 continue
             nested_type = get_non_none_type(field_type)
-            print(f"Entering sub-configuration for {field_name}:")
+            log.info(f"Entering sub-configuration for {field_name}:")
             config_data[field_name] = prompt_for_config(nested_type, existing_value)
         elif is_optional(field_type) and is_discriminated_union(
             get_non_none_type(field_type)
@@ -213,7 +216,7 @@ def prompt_for_config(
                 existing_value,
             )
         elif can_recurse(field_type):
-            print(f"\nEntering sub-configuration for {field_name}:")
+            log.info(f"\nEntering sub-configuration for {field_name}:")
             config_data[field_name] = prompt_for_config(
                 field_type,
                 existing_value,
@@ -240,7 +243,7 @@ def prompt_for_config(
                         config_data[field_name] = None
                         break
                     else:
-                        print("This field is required. Please provide a value.")
+                        log.error("This field is required. Please provide a value.")
                         continue
                 else:
                     try:
@@ -264,12 +267,12 @@ def prompt_for_config(
                                 value = [element_type(item) for item in value]
 
                             except json.JSONDecodeError:
-                                print(
+                                log.error(
                                     'Invalid JSON. Please enter a valid JSON-encoded list e.g., ["foo","bar"]'
                                 )
                                 continue
                             except ValueError as e:
-                                print(f"{str(e)}")
+                                log.error(f"{str(e)}")
                                 continue
 
                         elif get_origin(field_type) is dict:
@@ -281,7 +284,7 @@ def prompt_for_config(
                                     )
 
                             except json.JSONDecodeError:
-                                print(
+                                log.error(
                                     "Invalid JSON. Please enter a valid JSON-encoded dict."
                                 )
                                 continue
@@ -298,7 +301,7 @@ def prompt_for_config(
                             value = field_type(user_input)
 
                     except ValueError:
-                        print(
+                        log.error(
                             f"Invalid input. Expected type: {getattr(field_type, '__name__', str(field_type))}"
                         )
                         continue
@@ -311,6 +314,6 @@ def prompt_for_config(
                     config_data[field_name] = validated_value
                     break
                 except ValueError as e:
-                    print(f"Validation error: {str(e)}")
+                    log.error(f"Validation error: {str(e)}")
 
     return config_type(**config_data)

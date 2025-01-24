@@ -6,7 +6,7 @@ services:
       - ~/.llama:/root/.llama
       - ./run.yaml:/root/my-run.yaml
     ports:
-      - "5000:5000"
+      - "8321:8321"
     devices:
       - nvidia.com/gpu=all
     environment:
@@ -25,11 +25,10 @@ services:
             # satisfy all the requested capabilities for a successful
             # reservation.
             capabilities: [gpu]
-    runtime: nvidia
-    entrypoint: bash -c "python -m llama_stack.distribution.server.server --yaml_config /root/my-run.yaml"
-    deploy:
       restart_policy:
         condition: on-failure
         delay: 3s
         max_attempts: 5
         window: 60s
+    runtime: nvidia
+    entrypoint: bash -c "python -m llama_stack.distribution.server.server --yaml_config /root/my-run.yaml"

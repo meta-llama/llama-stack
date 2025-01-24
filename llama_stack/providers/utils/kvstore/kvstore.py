@@ -4,8 +4,10 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from .api import *  # noqa: F403
-from .config import *  # noqa: F403
+from typing import List, Optional
+
+from .api import KVStore
+from .config import KVStoreConfig, KVStoreType
 
 
 def kvstore_dependencies():
@@ -43,7 +45,9 @@ async def kvstore_impl(config: KVStoreConfig) -> KVStore:
 
         impl = SqliteKVStoreImpl(config)
     elif config.type == KVStoreType.postgres.value:
-        raise NotImplementedError()
+        from .postgres import PostgresKVStoreImpl
+
+        impl = PostgresKVStoreImpl(config)
     else:
         raise ValueError(f"Unknown kvstore type {config.type}")
 

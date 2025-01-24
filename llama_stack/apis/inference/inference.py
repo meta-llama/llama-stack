@@ -5,16 +5,33 @@
 # the root directory of this source tree.
 
 from enum import Enum
+from typing import (
+    Any,
+    AsyncIterator,
+    Dict,
+    List,
+    Literal,
+    Optional,
+    Protocol,
+    runtime_checkable,
+    Union,
+)
 
-from typing import List, Literal, Optional, Protocol, runtime_checkable, Union
-
-from llama_models.schema_utils import json_schema_type, webmethod
-
-from pydantic import BaseModel, Field
+from llama_models.llama3.api.datatypes import (
+    BuiltinTool,
+    SamplingParams,
+    StopReason,
+    ToolCall,
+    ToolDefinition,
+    ToolPromptFormat,
+)
+from llama_models.schema_utils import json_schema_type, register_schema, webmethod
+from pydantic import BaseModel, Field, field_validator
 from typing_extensions import Annotated
 
-from llama_models.llama3.api.datatypes import *  # noqa: F403
-from llama_stack.apis.models import *  # noqa: F403
+from llama_stack.apis.common.content_types import ContentDelta, InterleavedContent
+from llama_stack.apis.models import Model
+from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
 
 
 class LogProbConfig(BaseModel):
@@ -30,17 +47,17 @@ class QuantizationType(Enum):
 
 @json_schema_type
 class Fp8QuantizationConfig(BaseModel):
-    type: Literal[QuantizationType.fp8.value] = QuantizationType.fp8.value
+    type: Literal["fp8"] = "fp8"
 
 
 @json_schema_type
 class Bf16QuantizationConfig(BaseModel):
-    type: Literal[QuantizationType.bf16.value] = QuantizationType.bf16.value
+    type: Literal["bf16"] = "bf16"
 
 
 @json_schema_type
 class Int4QuantizationConfig(BaseModel):
-    type: Literal[QuantizationType.int4.value] = QuantizationType.int4.value
+    type: Literal["int4"] = "int4"
     scheme: Optional[str] = "int4_weight_int8_dynamic_activation"
 
 
@@ -51,6 +68,79 @@ QuantizationConfig = Annotated[
 
 
 @json_schema_type
+class UserMessage(BaseModel):
+    role: Literal["user"] = "user"
+    content: InterleavedContent
+    context: Optional[InterleavedContent] = None
+
+
+@json_schema_type
+class SystemMessage(BaseModel):
+    role: Literal["system"] = "system"
+    content: InterleavedContent
+
+
+@json_schema_type
+class ToolResponseMessage(BaseModel):
+    role: Literal["tool"] = "tool"
+    # it was nice to re-use the ToolResponse type, but having all messages
+    # have a `content` type makes things nicer too
+    call_id: str
+    tool_name: Union[BuiltinTool, str]
+    content: InterleavedContent
+
+
+@json_schema_type
+class CompletionMessage(BaseModel):
+    role: Literal["assistant"] = "assistant"
+    content: InterleavedContent
+    stop_reason: StopReason
+    tool_calls: List[ToolCall] = Field(default_factory=list)
+
+
+Message = register_schema(
+    Annotated[
+        Union[
+            UserMessage,
+            SystemMessage,
+            ToolResponseMessage,
+            CompletionMessage,
+        ],
+        Field(discriminator="role"),
+    ],
+    name="Message",
+)
+
+
+@json_schema_type
+class ToolResponse(BaseModel):
+    call_id: str
+    tool_name: Union[BuiltinTool, str]
+    content: InterleavedContent
+
+    @field_validator("tool_name", mode="before")
+    @classmethod
+    def validate_field(cls, v):
+        if isinstance(v, str):
+            try:
+                return BuiltinTool(v)
+            except ValueError:
+                return v
+        return v
+
+
+@json_schema_type
+class ToolChoice(Enum):
+    auto = "auto"
+    required = "required"
+
+
+@json_schema_type
+class TokenLogProbs(BaseModel):
+    logprobs_by_token: Dict[str, float]
+
+
+@json_schema_type
 class ChatCompletionResponseEventType(Enum):
     start = "start"
     complete = "complete"
@@ -58,25 +148,11 @@ class ChatCompletionResponseEventType(Enum):
 
 
 @json_schema_type
-class ToolCallParseStatus(Enum):
-    started = "started"
-    in_progress = "in_progress"
-    failure = "failure"
-    success = "success"
-
-
-@json_schema_type
-class ToolCallDelta(BaseModel):
-    content: Union[str, ToolCall]
-    parse_status: ToolCallParseStatus
-
-
-@json_schema_type
 class ChatCompletionResponseEvent(BaseModel):
     """Chat completion response event."""
 
     event_type: ChatCompletionResponseEventType
-    delta: Union[str, ToolCallDelta]
+    delta: ContentDelta
     logprobs: Optional[List[TokenLogProbs]] = None
     stop_reason: Optional[StopReason] = None
 
@@ -98,16 +174,19 @@ class GrammarResponseFormat(BaseModel):
     bnf: Dict[str, Any]
 
 
-ResponseFormat = Annotated[
-    Union[JsonSchemaResponseFormat, GrammarResponseFormat],
-    Field(discriminator="type"),
-]
+ResponseFormat = register_schema(
+    Annotated[
+        Union[JsonSchemaResponseFormat, GrammarResponseFormat],
+        Field(discriminator="type"),
+    ],
+    name="ResponseFormat",
+)
 
 
 @json_schema_type
 class CompletionRequest(BaseModel):
     model: str
-    content: InterleavedTextMedia
+    content: InterleavedContent
     sampling_params: Optional[SamplingParams] = SamplingParams()
     response_format: Optional[ResponseFormat] = None
 
@@ -136,7 +215,7 @@ class CompletionResponseStreamChunk(BaseModel):
 @json_schema_type
 class BatchCompletionRequest(BaseModel):
     model: str
-    content_batch: List[InterleavedTextMedia]
+    content_batch: List[InterleavedContent]
     sampling_params: Optional[SamplingParams] = SamplingParams()
     response_format: Optional[ResponseFormat] = None
     logprobs: Optional[LogProbConfig] = None
@@ -158,9 +237,7 @@ class ChatCompletionRequest(BaseModel):
     # zero-shot tool definitions as input to the model
     tools: Optional[List[ToolDefinition]] = Field(default_factory=list)
     tool_choice: Optional[ToolChoice] = Field(default=ToolChoice.auto)
-    tool_prompt_format: Optional[ToolPromptFormat] = Field(
-        default=ToolPromptFormat.json
-    )
+    tool_prompt_format: Optional[ToolPromptFormat] = Field(default=None)
     response_format: Optional[ResponseFormat] = None
 
     stream: Optional[bool] = False
@@ -191,9 +268,7 @@ class BatchChatCompletionRequest(BaseModel):
     # zero-shot tool definitions as input to the model
     tools: Optional[List[ToolDefinition]] = Field(default_factory=list)
     tool_choice: Optional[ToolChoice] = Field(default=ToolChoice.auto)
-    tool_prompt_format: Optional[ToolPromptFormat] = Field(
-        default=ToolPromptFormat.json
-    )
+    tool_prompt_format: Optional[ToolPromptFormat] = Field(default=None)
     logprobs: Optional[LogProbConfig] = None
 
 
@@ -208,42 +283,45 @@ class EmbeddingsResponse(BaseModel):
 
 
 class ModelStore(Protocol):
-    def get_model(self, identifier: str) -> ModelDef: ...
+    def get_model(self, identifier: str) -> Model: ...
 
 
 @runtime_checkable
+@trace_protocol
 class Inference(Protocol):
     model_store: ModelStore
 
-    @webmethod(route="/inference/completion")
+    @webmethod(route="/inference/completion", method="POST")
     async def completion(
         self,
-        model: str,
-        content: InterleavedTextMedia,
+        model_id: str,
+        content: InterleavedContent,
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
-    ) -> Union[CompletionResponse, CompletionResponseStreamChunk]: ...
+    ) -> Union[CompletionResponse, AsyncIterator[CompletionResponseStreamChunk]]: ...
 
-    @webmethod(route="/inference/chat_completion")
+    @webmethod(route="/inference/chat-completion", method="POST")
     async def chat_completion(
         self,
-        model: str,
+        model_id: str,
         messages: List[Message],
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         # zero-shot tool definitions as input to the model
         tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
-        tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.json,
+        tool_prompt_format: Optional[ToolPromptFormat] = None,
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
-    ) -> Union[ChatCompletionResponse, ChatCompletionResponseStreamChunk]: ...
+    ) -> Union[
+        ChatCompletionResponse, AsyncIterator[ChatCompletionResponseStreamChunk]
+    ]: ...
 
-    @webmethod(route="/inference/embeddings")
+    @webmethod(route="/inference/embeddings", method="POST")
     async def embeddings(
         self,
-        model: str,
-        contents: List[InterleavedTextMedia],
+        model_id: str,
+        contents: List[InterleavedContent],
     ) -> EmbeddingsResponse: ...

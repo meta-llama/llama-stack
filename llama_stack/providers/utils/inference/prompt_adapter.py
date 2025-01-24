@@ -3,15 +3,27 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
+
+import asyncio
+import base64
+import io
 import json
-from typing import Tuple
+import logging
+import re
+from typing import List, Optional, Tuple, Union
 
+import httpx
+from llama_models.datatypes import is_multimodal, ModelFamily
 from llama_models.llama3.api.chat_format import ChatFormat
-from termcolor import cprint
-
-from llama_models.llama3.api.datatypes import *  # noqa: F403
-from llama_stack.apis.inference import *  # noqa: F403
-from llama_models.datatypes import ModelFamily
+from llama_models.llama3.api.datatypes import (
+    RawContent,
+    RawContentItem,
+    RawMediaItem,
+    RawMessage,
+    RawTextItem,
+    Role,
+    ToolPromptFormat,
+)
 from llama_models.llama3.prompt_templates import (
     BuiltinToolGenerator,
     FunctionTagCustomToolGenerator,
@@ -20,53 +32,231 @@ from llama_models.llama3.prompt_templates import (
     SystemDefaultGenerator,
 )
 from llama_models.sku_list import resolve_model
+from PIL import Image as PIL_Image
 
+from llama_stack.apis.common.content_types import (
+    ImageContentItem,
+    InterleavedContent,
+    InterleavedContentItem,
+    TextContentItem,
+)
+from llama_stack.apis.inference import (
+    ChatCompletionRequest,
+    CompletionRequest,
+    Message,
+    ResponseFormat,
+    ResponseFormatType,
+    SystemMessage,
+    ToolChoice,
+    UserMessage,
+)
 from llama_stack.providers.utils.inference import supported_inference_models
 
+log = logging.getLogger(__name__)
 
-def completion_request_to_prompt(
+
+class ChatCompletionRequestWithRawContent(ChatCompletionRequest):
+    messages: List[RawMessage]
+
+
+class CompletionRequestWithRawContent(CompletionRequest):
+    content: RawContent
+
+
+def interleaved_content_as_str(content: InterleavedContent, sep: str = " ") -> str:
+    def _process(c) -> str:
+        if isinstance(c, str):
+            return c
+        elif isinstance(c, ImageContentItem):
+            return "<image>"
+        elif isinstance(c, TextContentItem):
+            return c.text
+        else:
+            raise ValueError(f"Unsupported content type: {type(c)}")
+
+    if isinstance(content, list):
+        return sep.join(_process(c) for c in content)
+    else:
+        return _process(content)
+
+
+async def convert_request_to_raw(
+    request: Union[ChatCompletionRequest, CompletionRequest],
+) -> Union[ChatCompletionRequestWithRawContent, CompletionRequestWithRawContent]:
+    if isinstance(request, ChatCompletionRequest):
+        messages = []
+        for m in request.messages:
+            content = await interleaved_content_convert_to_raw(m.content)
+            d = m.model_dump()
+            d["content"] = content
+            messages.append(RawMessage(**d))
+
+        d = request.model_dump()
+        d["messages"] = messages
+        request = ChatCompletionRequestWithRawContent(**d)
+    else:
+        d = request.model_dump()
+        d["content"] = await interleaved_content_convert_to_raw(request.content)
+        request = CompletionRequestWithRawContent(**d)
+
+    return request
+
+
+async def interleaved_content_convert_to_raw(
+    content: InterleavedContent,
+) -> RawContent:
+    """Download content from URLs / files etc. so plain bytes can be sent to the model"""
+
+    async def _localize_single(c: str | InterleavedContentItem) -> str | RawContentItem:
+        if isinstance(c, str):
+            return RawTextItem(text=c)
+        elif isinstance(c, TextContentItem):
+            return RawTextItem(text=c.text)
+        elif isinstance(c, ImageContentItem):
+            image = c.image
+            if image.url:
+                # Load image bytes from URL
+                if image.url.uri.startswith("data"):
+                    match = re.match(r"data:image/(\w+);base64,(.+)", image.url.uri)
+                    if not match:
+                        raise ValueError(
+                            f"Invalid data URL format, {image.url.uri[:40]}..."
+                        )
+                    _, image_data = match.groups()
+                    data = base64.b64decode(image_data)
+                elif image.url.uri.startswith("file://"):
+                    path = image.url.uri[len("file://") :]
+                    with open(path, "rb") as f:
+                        data = f.read()  # type: ignore
+                elif image.url.uri.startswith("http"):
+                    async with httpx.AsyncClient() as client:
+                        response = await client.get(image.url.uri)
+                        data = response.content
+                else:
+                    raise ValueError("Unsupported URL type")
+            elif image.data:
+                data = image.data
+            else:
+                raise ValueError("No data or URL provided")
+
+            return RawMediaItem(data=data)
+        else:
+            raise ValueError(f"Unsupported content type: {type(c)}")
+
+    if isinstance(content, list):
+        return await asyncio.gather(*(_localize_single(c) for c in content))
+    else:
+        return await _localize_single(content)
+
+
+def content_has_media(content: InterleavedContent):
+    def _has_media_content(c):
+        return isinstance(c, ImageContentItem)
+
+    if isinstance(content, list):
+        return any(_has_media_content(c) for c in content)
+    else:
+        return _has_media_content(content)
+
+
+def messages_have_media(messages: List[Message]):
+    return any(content_has_media(m.content) for m in messages)
+
+
+def request_has_media(request: Union[ChatCompletionRequest, CompletionRequest]):
+    if isinstance(request, ChatCompletionRequest):
+        return messages_have_media(request.messages)
+    else:
+        return content_has_media(request.content)
+
+
+async def localize_image_content(media: ImageContentItem) -> Tuple[bytes, str]:
+    image = media.image
+    if image.url and image.url.uri.startswith("http"):
+        async with httpx.AsyncClient() as client:
+            r = await client.get(image.url.uri)
+            content = r.content
+            content_type = r.headers.get("content-type")
+            if content_type:
+                format = content_type.split("/")[-1]
+            else:
+                format = "png"
+
+        return content, format
+    else:
+        pil_image = PIL_Image.open(io.BytesIO(image.data))
+        return image.data, pil_image.format
+
+
+async def convert_image_content_to_url(
+    media: ImageContentItem, download: bool = False, include_format: bool = True
+) -> str:
+    image = media.image
+    if image.url and (not download or image.url.uri.startswith("data")):
+        return image.url.uri
+
+    content, format = await localize_image_content(media)
+    if include_format:
+        return f"data:image/{format};base64," + base64.b64encode(content).decode(
+            "utf-8"
+        )
+    else:
+        return base64.b64encode(content).decode("utf-8")
+
+
+async def completion_request_to_prompt(
     request: CompletionRequest, formatter: ChatFormat
 ) -> str:
     content = augment_content_with_response_format_prompt(
         request.response_format, request.content
     )
-    model_input = formatter.encode_content(content)
+    request.content = content
+    request = await convert_request_to_raw(request)
+    model_input = formatter.encode_content(request.content)
     return formatter.tokenizer.decode(model_input.tokens)
 
 
-def completion_request_to_prompt_model_input_info(
+async def completion_request_to_prompt_model_input_info(
     request: CompletionRequest, formatter: ChatFormat
 ) -> Tuple[str, int]:
     content = augment_content_with_response_format_prompt(
         request.response_format, request.content
     )
-    model_input = formatter.encode_content(content)
+    request.content = content
+    request = await convert_request_to_raw(request)
+    model_input = formatter.encode_content(request.content)
     return (formatter.tokenizer.decode(model_input.tokens), len(model_input.tokens))
 
 
 def augment_content_with_response_format_prompt(response_format, content):
     if fmt_prompt := response_format_prompt(response_format):
         if isinstance(content, list):
-            return content + [fmt_prompt]
+            return content + [TextContentItem(text=fmt_prompt)]
+        elif isinstance(content, str):
+            return [TextContentItem(text=content), TextContentItem(text=fmt_prompt)]
         else:
-            return [content, fmt_prompt]
+            return [content, TextContentItem(text=fmt_prompt)]
 
     return content
 
 
-def chat_completion_request_to_prompt(
-    request: ChatCompletionRequest, formatter: ChatFormat
+async def chat_completion_request_to_prompt(
+    request: ChatCompletionRequest, llama_model: str, formatter: ChatFormat
 ) -> str:
-    messages = chat_completion_request_to_messages(request)
-    model_input = formatter.encode_dialog_prompt(messages)
+    messages = chat_completion_request_to_messages(request, llama_model)
+    request.messages = messages
+    request = await convert_request_to_raw(request)
+    model_input = formatter.encode_dialog_prompt(request.messages)
     return formatter.tokenizer.decode(model_input.tokens)
 
 
-def chat_completion_request_to_model_input_info(
-    request: ChatCompletionRequest, formatter: ChatFormat
+async def chat_completion_request_to_model_input_info(
+    request: ChatCompletionRequest, llama_model: str, formatter: ChatFormat
 ) -> Tuple[str, int]:
-    messages = chat_completion_request_to_messages(request)
-    model_input = formatter.encode_dialog_prompt(messages)
+    messages = chat_completion_request_to_messages(request, llama_model)
+    request.messages = messages
+    request = await convert_request_to_raw(request)
+    model_input = formatter.encode_dialog_prompt(request.messages)
     return (
         formatter.tokenizer.decode(model_input.tokens),
         len(model_input.tokens),
@@ -75,18 +265,22 @@ def chat_completion_request_to_model_input_info(
 
 def chat_completion_request_to_messages(
     request: ChatCompletionRequest,
+    llama_model: str,
 ) -> List[Message]:
     """Reads chat completion request and augments the messages to handle tools.
     For eg. for llama_3_1, add system message with the appropriate tools or
     add user messsage for custom tools, etc.
     """
-    model = resolve_model(request.model)
+    assert llama_model is not None, "llama_model is required"
+    model = resolve_model(llama_model)
     if model is None:
-        cprint(f"Could not resolve model {request.model}", color="red")
+        log.error(f"Could not resolve model {llama_model}")
         return request.messages
 
-    if model.descriptor() not in supported_inference_models():
-        cprint(f"Unsupported inference model? {model.descriptor()}", color="red")
+    allowed_models = supported_inference_models()
+    descriptors = [m.descriptor() for m in allowed_models]
+    if model.descriptor() not in descriptors:
+        log.error(f"Unsupported inference model? {model.descriptor()}")
         return request.messages
 
     if model.model_family == ModelFamily.llama3_1 or (
@@ -95,7 +289,8 @@ def chat_completion_request_to_messages(
     ):
         # llama3.1 and llama3.2 multimodal models follow the same tool prompt format
         messages = augment_messages_for_tools_llama_3_1(request)
-    elif model.model_family == ModelFamily.llama3_2:
+    elif model.model_family in (ModelFamily.llama3_2, ModelFamily.llama3_3):
+        # llama3.2 and llama3.3 models follow the same tool prompt format
         messages = augment_messages_for_tools_llama_3_2(request)
     else:
         messages = request.messages
@@ -170,14 +365,13 @@ def augment_messages_for_tools_llama_3_1(
 
     has_custom_tools = any(isinstance(dfn.tool_name, str) for dfn in request.tools)
     if has_custom_tools:
-        if request.tool_prompt_format == ToolPromptFormat.json:
+        fmt = request.tool_prompt_format or ToolPromptFormat.json
+        if fmt == ToolPromptFormat.json:
             tool_gen = JsonCustomToolGenerator()
-        elif request.tool_prompt_format == ToolPromptFormat.function_tag:
+        elif fmt == ToolPromptFormat.function_tag:
             tool_gen = FunctionTagCustomToolGenerator()
         else:
-            raise ValueError(
-                f"Non supported ToolPromptFormat {request.tool_prompt_format}"
-            )
+            raise ValueError(f"Non supported ToolPromptFormat {fmt}")
 
         custom_tools = [t for t in request.tools if isinstance(t.tool_name, str)]
         custom_template = tool_gen.gen(custom_tools)
@@ -222,7 +416,8 @@ def augment_messages_for_tools_llama_3_2(
 
     custom_tools = [dfn for dfn in request.tools if isinstance(dfn.tool_name, str)]
     if custom_tools:
-        if request.tool_prompt_format != ToolPromptFormat.python_list:
+        fmt = request.tool_prompt_format or ToolPromptFormat.python_list
+        if fmt != ToolPromptFormat.python_list:
             raise ValueError(
                 f"Non supported ToolPromptFormat {request.tool_prompt_format}"
             )
@@ -234,7 +429,7 @@ def augment_messages_for_tools_llama_3_2(
         sys_content += "\n"
 
     if existing_system_message:
-        sys_content += interleaved_text_media_as_str(
+        sys_content += interleaved_content_as_str(
             existing_system_message.content, sep="\n"
         )
 

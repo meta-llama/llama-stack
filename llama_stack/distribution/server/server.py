@@ -4,50 +4,68 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import argparse
 import asyncio
 import functools
 import inspect
 import json
+import os
 import signal
+import sys
 import traceback
-
+import warnings
 from contextlib import asynccontextmanager
-from ssl import SSLError
-from typing import Any, Dict, Optional
+from importlib.metadata import version as parse_version
+from pathlib import Path
+from typing import Any, List, Union
 
-import fire
-import httpx
 import yaml
-
-from fastapi import Body, FastAPI, HTTPException, Request, Response
+from fastapi import Body, FastAPI, HTTPException, Path as FastapiPath, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, ValidationError
 from termcolor import cprint
 from typing_extensions import Annotated
 
-from llama_stack.distribution.distribution import (
-    builtin_automatically_routed_apis,
-    get_provider_registry,
+from llama_stack.distribution.datatypes import StackRunConfig
+from llama_stack.distribution.distribution import builtin_automatically_routed_apis
+from llama_stack.distribution.request_headers import set_request_provider_data
+from llama_stack.distribution.resolver import InvalidProviderError
+from llama_stack.distribution.stack import (
+    construct_stack,
+    redact_sensitive_fields,
+    replace_env_vars,
+    validate_env_pair,
 )
-
+from llama_stack.providers.datatypes import Api
+from llama_stack.providers.inline.telemetry.meta_reference.config import TelemetryConfig
+from llama_stack.providers.inline.telemetry.meta_reference.telemetry import (
+    TelemetryAdapter,
+)
 from llama_stack.providers.utils.telemetry.tracing import (
     end_trace,
     setup_logger,
-    SpanStatus,
     start_trace,
 )
-from llama_stack.distribution.datatypes import *  # noqa: F403
-
-from llama_stack.distribution.request_headers import set_request_provider_data
-from llama_stack.distribution.resolver import resolve_impls
 
 from .endpoints import get_all_api_endpoints
+
+REPO_ROOT = Path(__file__).parent.parent.parent.parent
+
+
+def warn_with_traceback(message, category, filename, lineno, file=None, line=None):
+    log = file if hasattr(file, "write") else sys.stderr
+    traceback.print_stack(file=log)
+    log.write(warnings.formatwarning(message, category, filename, lineno, line))
+
+
+if os.environ.get("LLAMA_STACK_TRACE_WARNINGS"):
+    warnings.showwarning = warn_with_traceback
 
 
 def create_sse_event(data: Any) -> str:
     if isinstance(data, BaseModel):
-        data = data.json()
+        data = data.model_dump_json()
     else:
         data = json.dumps(data)
 
@@ -96,67 +114,6 @@ def translate_exception(exc: Exception) -> Union[HTTPException, RequestValidatio
         )
 
 
-async def passthrough(
-    request: Request,
-    downstream_url: str,
-    downstream_headers: Optional[Dict[str, str]] = None,
-):
-    await start_trace(request.path, {"downstream_url": downstream_url})
-
-    headers = dict(request.headers)
-    headers.pop("host", None)
-    headers.update(downstream_headers or {})
-
-    content = await request.body()
-
-    client = httpx.AsyncClient()
-    erred = False
-    try:
-        req = client.build_request(
-            method=request.method,
-            url=downstream_url,
-            headers=headers,
-            content=content,
-            params=request.query_params,
-        )
-        response = await client.send(req, stream=True)
-
-        async def stream_response():
-            async for chunk in response.aiter_raw(chunk_size=64):
-                yield chunk
-
-            await response.aclose()
-            await client.aclose()
-
-        return StreamingResponse(
-            stream_response(),
-            status_code=response.status_code,
-            headers=dict(response.headers),
-            media_type=response.headers.get("content-type"),
-        )
-
-    except httpx.ReadTimeout:
-        erred = True
-        return Response(content="Downstream server timed out", status_code=504)
-    except httpx.NetworkError as e:
-        erred = True
-        return Response(content=f"Network error: {str(e)}", status_code=502)
-    except httpx.TooManyRedirects:
-        erred = True
-        return Response(content="Too many redirects", status_code=502)
-    except SSLError as e:
-        erred = True
-        return Response(content=f"SSL error: {str(e)}", status_code=502)
-    except httpx.HTTPStatusError as e:
-        erred = True
-        return Response(content=str(e), status_code=e.response.status_code)
-    except Exception as e:
-        erred = True
-        return Response(content=f"Unexpected error: {str(e)}", status_code=500)
-    finally:
-        await end_trace(SpanStatus.OK if not erred else SpanStatus.ERROR)
-
-
 def handle_sigint(app, *args, **kwargs):
     print("SIGINT or CTRL-C detected. Exiting gracefully...")
 
@@ -178,19 +135,9 @@ def handle_sigint(app, *args, **kwargs):
 async def lifespan(app: FastAPI):
     print("Starting up")
     yield
-
     print("Shutting down")
     for impl in app.__llama_stack_impls__.values():
         await impl.shutdown()
-
-
-def create_dynamic_passthrough(
-    downstream_url: str, downstream_headers: Optional[Dict[str, str]] = None
-):
-    async def endpoint(request: Request):
-        return await passthrough(request, downstream_url, downstream_headers)
-
-    return endpoint
 
 
 def is_streaming_request(func_name: str, request: Request, **kwargs):
@@ -206,7 +153,8 @@ async def maybe_await(value):
 
 async def sse_generator(event_gen):
     try:
-        async for item in await event_gen:
+        event_gen = await event_gen
+        async for item in event_gen:
             yield create_sse_event(item)
             await asyncio.sleep(0.01)
     except asyncio.CancelledError:
@@ -221,15 +169,10 @@ async def sse_generator(event_gen):
                 },
             }
         )
-    finally:
-        await end_trace()
 
 
-def create_dynamic_typed_route(func: Any, method: str):
-
+def create_dynamic_typed_route(func: Any, method: str, route: str):
     async def endpoint(request: Request, **kwargs):
-        await start_trace(func.__name__)
-
         set_request_provider_data(request.headers)
 
         is_streaming = is_streaming_request(func.__name__, request, **kwargs)
@@ -244,10 +187,9 @@ def create_dynamic_typed_route(func: Any, method: str):
         except Exception as e:
             traceback.print_exception(e)
             raise translate_exception(e) from e
-        finally:
-            await end_trace()
 
     sig = inspect.signature(func)
+
     new_params = [
         inspect.Parameter(
             "request", inspect.Parameter.POSITIONAL_OR_KEYWORD, annotation=Request
@@ -255,12 +197,21 @@ def create_dynamic_typed_route(func: Any, method: str):
     ]
     new_params.extend(sig.parameters.values())
 
+    path_params = extract_path_params(route)
     if method == "post":
-        # make sure every parameter is annotated with Body() so FASTAPI doesn't
-        # do anything too intelligent and ask for some parameters in the query
-        # and some in the body
+        # Annotate parameters that are in the path with Path(...) and others with Body(...)
         new_params = [new_params[0]] + [
-            param.replace(annotation=Annotated[param.annotation, Body(..., embed=True)])
+            (
+                param.replace(
+                    annotation=Annotated[
+                        param.annotation, FastapiPath(..., title=param.name)
+                    ]
+                )
+                if param.name in path_params
+                else param.replace(
+                    annotation=Annotated[param.annotation, Body(..., embed=True)]
+                )
+            )
             for param in new_params[1:]
         ]
 
@@ -269,19 +220,140 @@ def create_dynamic_typed_route(func: Any, method: str):
     return endpoint
 
 
-def main(
-    yaml_config: str = "llamastack-run.yaml",
-    port: int = 5000,
-    disable_ipv6: bool = False,
-):
-    with open(yaml_config, "r") as fp:
-        config = StackRunConfig(**yaml.safe_load(fp))
+class TracingMiddleware:
+    def __init__(self, app):
+        self.app = app
 
-    app = FastAPI()
+    async def __call__(self, scope, receive, send):
+        path = scope["path"]
+        await start_trace(path, {"__location__": "server"})
+        try:
+            return await self.app(scope, receive, send)
+        finally:
+            await end_trace()
 
-    impls = asyncio.run(resolve_impls(config, get_provider_registry()))
+
+class ClientVersionMiddleware:
+    def __init__(self, app):
+        self.app = app
+        self.server_version = parse_version("llama-stack")
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] == "http":
+            headers = dict(scope.get("headers", []))
+            client_version = headers.get(b"x-llamastack-client-version", b"").decode()
+            if client_version:
+                try:
+                    client_version_parts = tuple(
+                        map(int, client_version.split(".")[:2])
+                    )
+                    server_version_parts = tuple(
+                        map(int, self.server_version.split(".")[:2])
+                    )
+                    if client_version_parts != server_version_parts:
+
+                        async def send_version_error(send):
+                            await send(
+                                {
+                                    "type": "http.response.start",
+                                    "status": 426,
+                                    "headers": [[b"content-type", b"application/json"]],
+                                }
+                            )
+                            error_msg = json.dumps(
+                                {
+                                    "error": {
+                                        "message": f"Client version {client_version} is not compatible with server version {self.server_version}. Please update your client."
+                                    }
+                                }
+                            ).encode()
+                            await send(
+                                {"type": "http.response.body", "body": error_msg}
+                            )
+
+                        return await send_version_error(send)
+                except (ValueError, IndexError):
+                    # If version parsing fails, let the request through
+                    pass
+
+        return await self.app(scope, receive, send)
+
+
+def main():
+    """Start the LlamaStack server."""
+    parser = argparse.ArgumentParser(description="Start the LlamaStack server.")
+    parser.add_argument(
+        "--yaml-config",
+        help="Path to YAML configuration file",
+    )
+    parser.add_argument(
+        "--template",
+        help="One of the template names in llama_stack/templates (e.g., tgi, fireworks, remote-vllm, etc.)",
+    )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=int(os.getenv("LLAMA_STACK_PORT", 8321)),
+        help="Port to listen on",
+    )
+    parser.add_argument(
+        "--disable-ipv6", action="store_true", help="Whether to disable IPv6 support"
+    )
+    parser.add_argument(
+        "--env",
+        action="append",
+        help="Environment variables in KEY=value format. Can be specified multiple times.",
+    )
+
+    args = parser.parse_args()
+    if args.env:
+        for env_pair in args.env:
+            try:
+                key, value = validate_env_pair(env_pair)
+                print(f"Setting CLI environment variable {key} => {value}")
+                os.environ[key] = value
+            except ValueError as e:
+                print(f"Error: {str(e)}")
+                sys.exit(1)
+
+    if args.yaml_config:
+        # if the user provided a config file, use it, even if template was specified
+        config_file = Path(args.yaml_config)
+        if not config_file.exists():
+            raise ValueError(f"Config file {config_file} does not exist")
+        print(f"Using config file: {config_file}")
+    elif args.template:
+        config_file = (
+            Path(REPO_ROOT) / "llama_stack" / "templates" / args.template / "run.yaml"
+        )
+        if not config_file.exists():
+            raise ValueError(f"Template {args.template} does not exist")
+        print(f"Using template {args.template} config file: {config_file}")
+    else:
+        raise ValueError("Either --yaml-config or --template must be provided")
+
+    with open(config_file, "r") as fp:
+        config = replace_env_vars(yaml.safe_load(fp))
+        config = StackRunConfig(**config)
+
+    print("Run configuration:")
+    safe_config = redact_sensitive_fields(config.model_dump())
+    print(yaml.dump(safe_config, indent=2))
+
+    app = FastAPI(lifespan=lifespan)
+    app.add_middleware(TracingMiddleware)
+    if not os.environ.get("LLAMA_STACK_DISABLE_VERSION_CHECK"):
+        app.add_middleware(ClientVersionMiddleware)
+
+    try:
+        impls = asyncio.run(construct_stack(config))
+    except InvalidProviderError:
+        sys.exit(1)
+
     if Api.telemetry in impls:
         setup_logger(impls[Api.telemetry])
+    else:
+        setup_logger(TelemetryAdapter(TelemetryConfig()))
 
     all_endpoints = get_all_api_endpoints()
 
@@ -303,26 +375,22 @@ def main(
         endpoints = all_endpoints[api]
         impl = impls[api]
 
-        if is_passthrough(impl.__provider_spec__):
-            for endpoint in endpoints:
-                url = impl.__provider_config__.url.rstrip("/") + endpoint.route
-                getattr(app, endpoint.method)(endpoint.route)(
-                    create_dynamic_passthrough(url)
+        for endpoint in endpoints:
+            if not hasattr(impl, endpoint.name):
+                # ideally this should be a typing violation already
+                raise ValueError(f"Could not find method {endpoint.name} on {impl}!!")
+
+            impl_method = getattr(impl, endpoint.name)
+
+            with warnings.catch_warnings():
+                warnings.filterwarnings(
+                    "ignore", category=UserWarning, module="pydantic._internal._fields"
                 )
-        else:
-            for endpoint in endpoints:
-                if not hasattr(impl, endpoint.name):
-                    # ideally this should be a typing violation already
-                    raise ValueError(
-                        f"Could not find method {endpoint.name} on {impl}!!"
-                    )
-
-                impl_method = getattr(impl, endpoint.name)
-
                 getattr(app, endpoint.method)(endpoint.route, response_model=None)(
                     create_dynamic_typed_route(
                         impl_method,
                         endpoint.method,
+                        endpoint.route,
                     )
                 )
 
@@ -341,10 +409,18 @@ def main(
 
     # FYI this does not do hot-reloads
 
-    listen_host = ["::", "0.0.0.0"] if not disable_ipv6 else "0.0.0.0"
-    print(f"Listening on {listen_host}:{port}")
-    uvicorn.run(app, host=listen_host, port=port)
+    listen_host = ["::", "0.0.0.0"] if not args.disable_ipv6 else "0.0.0.0"
+    print(f"Listening on {listen_host}:{args.port}")
+    uvicorn.run(app, host=listen_host, port=args.port)
+
+
+def extract_path_params(route: str) -> List[str]:
+    segments = route.split("/")
+    params = [
+        seg[1:-1] for seg in segments if seg.startswith("{") and seg.endswith("}")
+    ]
+    return params
 
 
 if __name__ == "__main__":
-    fire.Fire(main)
+    main()

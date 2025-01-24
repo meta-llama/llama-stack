@@ -5,28 +5,56 @@
 # the root directory of this source tree.
 import importlib
 import inspect
-
+import logging
 from typing import Any, Dict, List, Set
-
-from llama_stack.providers.datatypes import *  # noqa: F403
-from llama_stack.distribution.datatypes import *  # noqa: F403
 
 from llama_stack.apis.agents import Agents
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
 from llama_stack.apis.eval import Eval
+from llama_stack.apis.eval_tasks import EvalTasks
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.inspect import Inspect
-from llama_stack.apis.memory import Memory
-from llama_stack.apis.memory_banks import MemoryBanks
 from llama_stack.apis.models import Models
+from llama_stack.apis.post_training import PostTraining
 from llama_stack.apis.safety import Safety
 from llama_stack.apis.scoring import Scoring
 from llama_stack.apis.scoring_functions import ScoringFunctions
 from llama_stack.apis.shields import Shields
 from llama_stack.apis.telemetry import Telemetry
+from llama_stack.apis.tools import ToolGroups, ToolRuntime
+from llama_stack.apis.vector_dbs import VectorDBs
+from llama_stack.apis.vector_io import VectorIO
+from llama_stack.distribution.client import get_client_impl
+from llama_stack.distribution.datatypes import (
+    AutoRoutedProviderSpec,
+    Provider,
+    RoutingTableProviderSpec,
+    StackRunConfig,
+)
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
+from llama_stack.distribution.store import DistributionRegistry
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
+from llama_stack.providers.datatypes import (
+    Api,
+    DatasetsProtocolPrivate,
+    EvalTasksProtocolPrivate,
+    InlineProviderSpec,
+    ModelsProtocolPrivate,
+    ProviderSpec,
+    RemoteProviderConfig,
+    RemoteProviderSpec,
+    ScoringFunctionsProtocolPrivate,
+    ShieldsProtocolPrivate,
+    ToolsProtocolPrivate,
+    VectorDBsProtocolPrivate,
+)
+
+log = logging.getLogger(__name__)
+
+
+class InvalidProviderError(Exception):
+    pass
 
 
 def api_protocol_map() -> Dict[Api, Any]:
@@ -34,25 +62,37 @@ def api_protocol_map() -> Dict[Api, Any]:
         Api.agents: Agents,
         Api.inference: Inference,
         Api.inspect: Inspect,
-        Api.memory: Memory,
-        Api.memory_banks: MemoryBanks,
+        Api.vector_io: VectorIO,
+        Api.vector_dbs: VectorDBs,
         Api.models: Models,
         Api.safety: Safety,
         Api.shields: Shields,
         Api.telemetry: Telemetry,
-        Api.datasets: Datasets,
         Api.datasetio: DatasetIO,
-        Api.scoring_functions: ScoringFunctions,
+        Api.datasets: Datasets,
         Api.scoring: Scoring,
+        Api.scoring_functions: ScoringFunctions,
         Api.eval: Eval,
+        Api.eval_tasks: EvalTasks,
+        Api.post_training: PostTraining,
+        Api.tool_groups: ToolGroups,
+        Api.tool_runtime: ToolRuntime,
     }
 
 
 def additional_protocols_map() -> Dict[Api, Any]:
     return {
-        Api.inference: ModelsProtocolPrivate,
-        Api.memory: MemoryBanksProtocolPrivate,
-        Api.safety: ShieldsProtocolPrivate,
+        Api.inference: (ModelsProtocolPrivate, Models, Api.models),
+        Api.tool_groups: (ToolsProtocolPrivate, ToolGroups, Api.tool_groups),
+        Api.vector_io: (VectorDBsProtocolPrivate, VectorDBs, Api.vector_dbs),
+        Api.safety: (ShieldsProtocolPrivate, Shields, Api.shields),
+        Api.datasetio: (DatasetsProtocolPrivate, Datasets, Api.datasets),
+        Api.scoring: (
+            ScoringFunctionsProtocolPrivate,
+            ScoringFunctions,
+            Api.scoring_functions,
+        ),
+        Api.eval: (EvalTasksProtocolPrivate, EvalTasks, Api.eval_tasks),
     }
 
 
@@ -61,9 +101,14 @@ class ProviderWithSpec(Provider):
     spec: ProviderSpec
 
 
+ProviderRegistry = Dict[Api, Dict[str, ProviderSpec]]
+
+
 # TODO: this code is not very straightforward to follow and needs one more round of refactoring
 async def resolve_impls(
-    run_config: StackRunConfig, provider_registry: Dict[Api, Dict[str, ProviderSpec]]
+    run_config: StackRunConfig,
+    provider_registry: ProviderRegistry,
+    dist_registry: DistributionRegistry,
 ) -> Dict[Api, Any]:
     """
     Does two things:
@@ -92,10 +137,20 @@ async def resolve_impls(
                 )
 
             p = provider_registry[api][provider.provider_type]
-            p.deps__ = [a.value for a in p.api_dependencies]
+            if p.deprecation_error:
+                log.error(p.deprecation_error, "red", attrs=["bold"])
+                raise InvalidProviderError(p.deprecation_error)
+
+            elif p.deprecation_warning:
+                log.warning(
+                    f"Provider `{provider.provider_type}` for API `{api}` is deprecated and will be removed in a future release: {p.deprecation_warning}",
+                )
+            p.deps__ = [a.value for a in p.api_dependencies] + [
+                a.value for a in p.optional_api_dependencies
+            ]
             spec = ProviderWithSpec(
                 spec=p,
-                **(provider.dict()),
+                **(provider.model_dump()),
             )
             specs[provider.provider_id] = spec
 
@@ -111,8 +166,6 @@ async def resolve_impls(
     for info in builtin_automatically_routed_apis():
         if info.router_api.value not in apis_to_serve:
             continue
-
-        available_providers = providers_with_specs[f"inner-{info.router_api.value}"]
 
         providers_with_specs[info.routing_table_api.value] = {
             "__builtin__": ProviderWithSpec(
@@ -169,15 +222,18 @@ async def resolve_impls(
         )
     )
 
-    print(f"Resolved {len(sorted_providers)} providers")
+    log.info(f"Resolved {len(sorted_providers)} providers")
     for api_str, provider in sorted_providers:
-        print(f" {api_str} => {provider.provider_id}")
-    print("")
+        log.info(f" {api_str} => {provider.provider_id}")
+    log.info("")
 
     impls = {}
     inner_impls_by_provider_id = {f"inner-{x.value}": {} for x in router_apis}
     for api_str, provider in sorted_providers:
         deps = {a: impls[a] for a in provider.spec.api_dependencies}
+        for a in provider.spec.optional_api_dependencies:
+            if a in impls:
+                deps[a] = impls[a]
 
         inner_impls = {}
         if isinstance(provider.spec, RoutingTableProviderSpec):
@@ -189,6 +245,7 @@ async def resolve_impls(
             provider,
             deps,
             inner_impls,
+            dist_registry,
         )
         # TODO: ugh slightly redesign this shady looking code
         if "inner-" in api_str:
@@ -213,7 +270,7 @@ def topological_sort(
                 deps.append(dep)
 
         for dep in deps:
-            if dep not in visited:
+            if dep not in visited and dep in providers_with_specs:
                 dfs((dep, providers_with_specs[dep]), visited, stack)
 
         stack.append(api_str)
@@ -237,6 +294,7 @@ async def instantiate_provider(
     provider: ProviderWithSpec,
     deps: Dict[str, Any],
     inner_impls: Dict[str, Any],
+    dist_registry: DistributionRegistry,
 ):
     protocols = api_protocol_map()
     additional_protocols = additional_protocols_map()
@@ -246,14 +304,12 @@ async def instantiate_provider(
 
     args = []
     if isinstance(provider_spec, RemoteProviderSpec):
-        if provider_spec.adapter:
-            method = "get_adapter_impl"
-        else:
-            method = "get_client_impl"
-
         config_type = instantiate_class_type(provider_spec.config_class)
         config = config_type(**provider.config)
+
+        method = "get_adapter_impl"
         args = [config, deps]
+
     elif isinstance(provider_spec, AutoRoutedProviderSpec):
         method = "get_auto_router_impl"
 
@@ -263,7 +319,7 @@ async def instantiate_provider(
         method = "get_routing_table_impl"
 
         config = None
-        args = [provider_spec.api, inner_impls, deps]
+        args = [provider_spec.api, inner_impls, deps, dist_registry]
     else:
         method = "get_provider_impl"
 
@@ -277,12 +333,14 @@ async def instantiate_provider(
     impl.__provider_spec__ = provider_spec
     impl.__provider_config__ = config
 
+    # TODO: check compliance for special tool groups
+    # the impl should be for Api.tool_runtime, the name should be the special tool group, the protocol should be the special tool group protocol
     check_protocol_compliance(impl, protocols[provider_spec.api])
     if (
         not isinstance(provider_spec, AutoRoutedProviderSpec)
         and provider_spec.api in additional_protocols
     ):
-        additional_api = additional_protocols[provider_spec.api]
+        additional_api, _, _ = additional_protocols[provider_spec.api]
         check_protocol_compliance(impl, additional_api)
 
     return impl
@@ -309,7 +367,7 @@ def check_protocol_compliance(obj: Any, protocol: Any) -> None:
                 obj_params = set(obj_sig.parameters)
                 obj_params.discard("self")
                 if not (proto_params <= obj_params):
-                    print(
+                    log.error(
                         f"Method {name} incompatible proto: {proto_params} vs. obj: {obj_params}"
                     )
                     missing_methods.append((name, "signature_mismatch"))
@@ -328,3 +386,29 @@ def check_protocol_compliance(obj: Any, protocol: Any) -> None:
         raise ValueError(
             f"Provider `{obj.__provider_id__} ({obj.__provider_spec__.api})` does not implement the following methods:\n{missing_methods}"
         )
+
+
+async def resolve_remote_stack_impls(
+    config: RemoteProviderConfig,
+    apis: List[str],
+) -> Dict[Api, Any]:
+    protocols = api_protocol_map()
+    additional_protocols = additional_protocols_map()
+
+    impls = {}
+    for api_str in apis:
+        api = Api(api_str)
+        impls[api] = await get_client_impl(
+            protocols[api],
+            config,
+            {},
+        )
+        if api in additional_protocols:
+            _, additional_protocol, additional_api = additional_protocols[api]
+            impls[additional_api] = await get_client_impl(
+                additional_protocol,
+                config,
+                {},
+            )
+
+    return impls

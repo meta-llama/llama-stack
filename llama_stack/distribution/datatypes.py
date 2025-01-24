@@ -4,23 +4,25 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from datetime import datetime
-
-from typing import Dict, List, Optional, Union
+from typing import Annotated, Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field
 
-from llama_stack.providers.datatypes import *  # noqa: F403
-from llama_stack.apis.models import *  # noqa: F403
-from llama_stack.apis.shields import *  # noqa: F403
-from llama_stack.apis.memory_banks import *  # noqa: F403
-from llama_stack.apis.datasets import *  # noqa: F403
-from llama_stack.apis.scoring_functions import *  # noqa: F403
 from llama_stack.apis.datasetio import DatasetIO
+from llama_stack.apis.datasets import Dataset, DatasetInput
+from llama_stack.apis.eval import Eval
+from llama_stack.apis.eval_tasks import EvalTask, EvalTaskInput
 from llama_stack.apis.inference import Inference
-from llama_stack.apis.memory import Memory
+from llama_stack.apis.models import Model, ModelInput
 from llama_stack.apis.safety import Safety
 from llama_stack.apis.scoring import Scoring
+from llama_stack.apis.scoring_functions import ScoringFn, ScoringFnInput
+from llama_stack.apis.shields import Shield, ShieldInput
+from llama_stack.apis.tools import Tool, ToolGroup, ToolGroupInput, ToolRuntime
+from llama_stack.apis.vector_dbs import VectorDB, VectorDBInput
+from llama_stack.apis.vector_io import VectorIO
+from llama_stack.providers.datatypes import Api, ProviderSpec
+from llama_stack.providers.utils.kvstore.config import KVStoreConfig
 
 LLAMA_STACK_BUILD_CONFIG_VERSION = "2"
 LLAMA_STACK_RUN_CONFIG_VERSION = "2"
@@ -30,27 +32,39 @@ RoutingKey = Union[str, List[str]]
 
 
 RoutableObject = Union[
-    ModelDef,
-    ShieldDef,
-    MemoryBankDef,
-    DatasetDef,
-    ScoringFnDef,
+    Model,
+    Shield,
+    VectorDB,
+    Dataset,
+    ScoringFn,
+    EvalTask,
+    Tool,
+    ToolGroup,
 ]
 
-RoutableObjectWithProvider = Union[
-    ModelDefWithProvider,
-    ShieldDefWithProvider,
-    MemoryBankDefWithProvider,
-    DatasetDefWithProvider,
-    ScoringFnDefWithProvider,
+
+RoutableObjectWithProvider = Annotated[
+    Union[
+        Model,
+        Shield,
+        VectorDB,
+        Dataset,
+        ScoringFn,
+        EvalTask,
+        Tool,
+        ToolGroup,
+    ],
+    Field(discriminator="type"),
 ]
 
 RoutedProtocol = Union[
     Inference,
     Safety,
-    Memory,
+    VectorIO,
     DatasetIO,
     Scoring,
+    Eval,
+    ToolRuntime,
 ]
 
 
@@ -59,7 +73,7 @@ class AutoRoutedProviderSpec(ProviderSpec):
     provider_type: str = "router"
     config_class: str = ""
 
-    docker_image: Optional[str] = None
+    container_image: Optional[str] = None
     routing_table_api: Api
     module: str
     provider_data_validator: Optional[str] = Field(
@@ -75,7 +89,7 @@ class AutoRoutedProviderSpec(ProviderSpec):
 class RoutingTableProviderSpec(ProviderSpec):
     provider_type: str = "routing_table"
     config_class: str = ""
-    docker_image: Optional[str] = None
+    container_image: Optional[str] = None
 
     router_api: Api
     module: str
@@ -87,7 +101,7 @@ class DistributionSpec(BaseModel):
         default="",
         description="Description of the distribution",
     )
-    docker_image: Optional[str] = None
+    container_image: Optional[str] = None
     providers: Dict[str, Union[str, List[str]]] = Field(
         default_factory=dict,
         description="""
@@ -105,7 +119,6 @@ class Provider(BaseModel):
 
 class StackRunConfig(BaseModel):
     version: str = LLAMA_STACK_RUN_CONFIG_VERSION
-    built_at: datetime
 
     image_name: str = Field(
         ...,
@@ -114,13 +127,9 @@ Reference to the distribution this package refers to. For unregistered (adhoc) p
 this could be just a hash
 """,
     )
-    docker_image: Optional[str] = Field(
+    container_image: Optional[str] = Field(
         default=None,
-        description="Reference to the docker image if this package refers to a container",
-    )
-    conda_env: Optional[str] = Field(
-        default=None,
-        description="Reference to the conda environment if this package refers to a conda environment",
+        description="Reference to the container image if this package refers to a container",
     )
     apis: List[str] = Field(
         default_factory=list,
@@ -134,15 +143,30 @@ One or more providers to use for each API. The same provider_type (e.g., meta-re
 can be instantiated multiple times (with different configs) if necessary.
 """,
     )
+    metadata_store: Optional[KVStoreConfig] = Field(
+        default=None,
+        description="""
+Configuration for the persistence store used by the distribution registry. If not specified,
+a default SQLite store will be used.""",
+    )
+
+    # registry of "resources" in the distribution
+    models: List[ModelInput] = Field(default_factory=list)
+    shields: List[ShieldInput] = Field(default_factory=list)
+    vector_dbs: List[VectorDBInput] = Field(default_factory=list)
+    datasets: List[DatasetInput] = Field(default_factory=list)
+    scoring_fns: List[ScoringFnInput] = Field(default_factory=list)
+    eval_tasks: List[EvalTaskInput] = Field(default_factory=list)
+    tool_groups: List[ToolGroupInput] = Field(default_factory=list)
 
 
 class BuildConfig(BaseModel):
     version: str = LLAMA_STACK_BUILD_CONFIG_VERSION
-    name: str
+
     distribution_spec: DistributionSpec = Field(
         description="The distribution spec to build including API providers. "
     )
     image_type: str = Field(
         default="conda",
-        description="Type of package to build (conda | container)",
+        description="Type of package to build (conda | container | venv)",
     )

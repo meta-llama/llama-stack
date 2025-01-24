@@ -7,17 +7,24 @@
 from typing import List, Optional, Protocol, runtime_checkable
 
 from llama_models.schema_utils import json_schema_type, webmethod
-
 from pydantic import BaseModel, Field
 
-from llama_models.llama3.api.datatypes import *  # noqa: F403
-from llama_stack.apis.inference import *  # noqa: F403
+from llama_stack.apis.inference import (
+    CompletionMessage,
+    InterleavedContent,
+    LogProbConfig,
+    Message,
+    SamplingParams,
+    ToolChoice,
+    ToolDefinition,
+    ToolPromptFormat,
+)
 
 
 @json_schema_type
 class BatchCompletionRequest(BaseModel):
     model: str
-    content_batch: List[InterleavedTextMedia]
+    content_batch: List[InterleavedContent]
     sampling_params: Optional[SamplingParams] = SamplingParams()
     logprobs: Optional[LogProbConfig] = None
 
@@ -36,9 +43,7 @@ class BatchChatCompletionRequest(BaseModel):
     # zero-shot tool definitions as input to the model
     tools: Optional[List[ToolDefinition]] = Field(default_factory=list)
     tool_choice: Optional[ToolChoice] = Field(default=ToolChoice.auto)
-    tool_prompt_format: Optional[ToolPromptFormat] = Field(
-        default=ToolPromptFormat.json
-    )
+    tool_prompt_format: Optional[ToolPromptFormat] = Field(default=None)
     logprobs: Optional[LogProbConfig] = None
 
 
@@ -49,16 +54,16 @@ class BatchChatCompletionResponse(BaseModel):
 
 @runtime_checkable
 class BatchInference(Protocol):
-    @webmethod(route="/batch_inference/completion")
+    @webmethod(route="/batch-inference/completion", method="POST")
     async def batch_completion(
         self,
         model: str,
-        content_batch: List[InterleavedTextMedia],
+        content_batch: List[InterleavedContent],
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         logprobs: Optional[LogProbConfig] = None,
     ) -> BatchCompletionResponse: ...
 
-    @webmethod(route="/batch_inference/chat_completion")
+    @webmethod(route="/batch-inference/chat-completion", method="POST")
     async def batch_chat_completion(
         self,
         model: str,
@@ -67,6 +72,6 @@ class BatchInference(Protocol):
         # zero-shot tool definitions as input to the model
         tools: Optional[List[ToolDefinition]] = list,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
-        tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.json,
+        tool_prompt_format: Optional[ToolPromptFormat] = None,
         logprobs: Optional[LogProbConfig] = None,
     ) -> BatchChatCompletionResponse: ...

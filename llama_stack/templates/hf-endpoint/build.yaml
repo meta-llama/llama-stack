@@ -1,9 +1,32 @@
-name: hf-endpoint
+version: '2'
 distribution_spec:
-  description: "Like local, but use Hugging Face Inference Endpoints for running LLM inference.\nSee https://hf.co/docs/api-endpoints."
+  description: Use (an external) Hugging Face Inference Endpoint for running LLM inference
   providers:
-    inference: remote::hf::endpoint
-    memory: meta-reference
-    safety: meta-reference
-    agents: meta-reference
-    telemetry: meta-reference
+    inference:
+    - remote::hf::endpoint
+    vector_io:
+    - inline::faiss
+    - remote::chromadb
+    - remote::pgvector
+    safety:
+    - inline::llama-guard
+    agents:
+    - inline::meta-reference
+    telemetry:
+    - inline::meta-reference
+    eval:
+    - inline::meta-reference
+    datasetio:
+    - remote::huggingface
+    - inline::localfs
+    scoring:
+    - inline::basic
+    - inline::llm-as-judge
+    - inline::braintrust
+    tool_runtime:
+    - remote::brave-search
+    - remote::tavily-search
+    - inline::code-interpreter
+    - inline::rag-runtime
+    - remote::model-context-protocol
+image_type: conda

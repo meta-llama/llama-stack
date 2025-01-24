@@ -13,7 +13,6 @@ from termcolor import colored
 
 from llama_stack.cli.subcommand import Subcommand
 from llama_stack.cli.table import print_table
-from llama_stack.distribution.utils.serialize import EnumEncoder
 
 
 class ModelDescribe(Subcommand):
@@ -72,7 +71,7 @@ class ModelDescribe(Subcommand):
             rows.append(
                 (
                     "Recommended sampling params",
-                    json.dumps(sampling_params, cls=EnumEncoder, indent=4),
+                    json.dumps(sampling_params, indent=4),
                 )
             )
 

@@ -4,69 +4,59 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from enum import Enum
 from typing import Any, List, Optional, Protocol
+from urllib.parse import urlparse
 
 from llama_models.schema_utils import json_schema_type
 from pydantic import BaseModel, Field
 
-from llama_stack.apis.datasets import DatasetDef
-from llama_stack.apis.memory_banks import MemoryBankDef
-from llama_stack.apis.models import ModelDef
-from llama_stack.apis.scoring_functions import ScoringFnDef
-from llama_stack.apis.shields import ShieldDef
+from llama_stack.apis.datasets import Dataset
 
-
-@json_schema_type
-class Api(Enum):
-    inference = "inference"
-    safety = "safety"
-    agents = "agents"
-    memory = "memory"
-    datasetio = "datasetio"
-    scoring = "scoring"
-    eval = "eval"
-
-    telemetry = "telemetry"
-
-    models = "models"
-    shields = "shields"
-    memory_banks = "memory_banks"
-    datasets = "datasets"
-    scoring_functions = "scoring_functions"
-
-    # built-in API
-    inspect = "inspect"
+from llama_stack.apis.datatypes import Api
+from llama_stack.apis.eval_tasks import EvalTask
+from llama_stack.apis.models import Model
+from llama_stack.apis.scoring_functions import ScoringFn
+from llama_stack.apis.shields import Shield
+from llama_stack.apis.tools import Tool
+from llama_stack.apis.vector_dbs import VectorDB
 
 
 class ModelsProtocolPrivate(Protocol):
-    async def list_models(self) -> List[ModelDef]: ...
+    async def register_model(self, model: Model) -> None: ...
 
-    async def register_model(self, model: ModelDef) -> None: ...
+    async def unregister_model(self, model_id: str) -> None: ...
 
 
 class ShieldsProtocolPrivate(Protocol):
-    async def list_shields(self) -> List[ShieldDef]: ...
-
-    async def register_shield(self, shield: ShieldDef) -> None: ...
+    async def register_shield(self, shield: Shield) -> None: ...
 
 
-class MemoryBanksProtocolPrivate(Protocol):
-    async def list_memory_banks(self) -> List[MemoryBankDef]: ...
+class VectorDBsProtocolPrivate(Protocol):
+    async def register_vector_db(self, vector_db: VectorDB) -> None: ...
 
-    async def register_memory_bank(self, memory_bank: MemoryBankDef) -> None: ...
+    async def unregister_vector_db(self, vector_db_id: str) -> None: ...
 
 
 class DatasetsProtocolPrivate(Protocol):
-    async def list_datasets(self) -> List[DatasetDef]: ...
+    async def register_dataset(self, dataset: Dataset) -> None: ...
 
-    async def register_datasets(self, dataset_def: DatasetDef) -> None: ...
+    async def unregister_dataset(self, dataset_id: str) -> None: ...
 
 
 class ScoringFunctionsProtocolPrivate(Protocol):
-    async def list_scoring_functions(self) -> List[ScoringFnDef]: ...
+    async def list_scoring_functions(self) -> List[ScoringFn]: ...
 
-    async def register_scoring_function(self, function_def: ScoringFnDef) -> None: ...
+    async def register_scoring_function(self, scoring_fn: ScoringFn) -> None: ...
+
+
+class EvalTasksProtocolPrivate(Protocol):
+    async def register_eval_task(self, eval_task: EvalTask) -> None: ...
+
+
+class ToolsProtocolPrivate(Protocol):
+    async def register_tool(self, tool: Tool) -> None: ...
+
+    async def unregister_tool(self, tool_id: str) -> None: ...
 
 
 @json_schema_type
@@ -81,6 +71,17 @@ class ProviderSpec(BaseModel):
         default_factory=list,
         description="Higher-level API surfaces may depend on other providers to provide their functionality",
     )
+    optional_api_dependencies: List[Api] = Field(
+        default_factory=list,
+    )
+    deprecation_warning: Optional[str] = Field(
+        default=None,
+        description="If this provider is deprecated, specify the warning message here",
+    )
+    deprecation_error: Optional[str] = Field(
+        default=None,
+        description="If this provider is deprecated and does NOT work, specify the error message here",
+    )
 
     # used internally by the resolver; this is a hack for now
     deps__: List[str] = Field(default_factory=list)
@@ -90,6 +91,7 @@ class RoutingTable(Protocol):
     def get_provider_impl(self, routing_key: str) -> Any: ...
 
 
+# TODO: this can now be inlined into RemoteProviderSpec
 @json_schema_type
 class AdapterSpec(BaseModel):
     adapter_type: str = Field(
@@ -123,11 +125,11 @@ class InlineProviderSpec(ProviderSpec):
         default_factory=list,
         description="The pip dependencies needed for this implementation",
     )
-    docker_image: Optional[str] = Field(
+    container_image: Optional[str] = Field(
         default=None,
         description="""
-The docker image to use for this implementation. If one is provided, pip_packages will be ignored.
-If a provider depends on other providers, the dependencies MUST NOT specify a docker image.
+The container image to use for this implementation. If one is provided, pip_packages will be ignored.
+If a provider depends on other providers, the dependencies MUST NOT specify a container image.
 """,
     )
     module: str = Field(
@@ -145,62 +147,54 @@ Fully-qualified name of the module to import. The module is expected to have:
 
 class RemoteProviderConfig(BaseModel):
     host: str = "localhost"
-    port: int
+    port: Optional[int] = None
+    protocol: str = "http"
 
     @property
     def url(self) -> str:
-        return f"http://{self.host}:{self.port}"
+        if self.port is None:
+            return f"{self.protocol}://{self.host}"
+        return f"{self.protocol}://{self.host}:{self.port}"
+
+    @classmethod
+    def from_url(cls, url: str) -> "RemoteProviderConfig":
+        parsed = urlparse(url)
+        return cls(host=parsed.hostname, port=parsed.port, protocol=parsed.scheme)
 
 
 @json_schema_type
 class RemoteProviderSpec(ProviderSpec):
-    adapter: Optional[AdapterSpec] = Field(
-        default=None,
+    adapter: AdapterSpec = Field(
         description="""
 If some code is needed to convert the remote responses into Llama Stack compatible
-API responses, specify the adapter here. If not specified, it indicates the remote
-as being "Llama Stack compatible"
+API responses, specify the adapter here.
 """,
     )
 
     @property
-    def docker_image(self) -> Optional[str]:
+    def container_image(self) -> Optional[str]:
         return None
 
     @property
     def module(self) -> str:
-        if self.adapter:
-            return self.adapter.module
-        return f"llama_stack.apis.{self.api.value}.client"
+        return self.adapter.module
 
     @property
     def pip_packages(self) -> List[str]:
-        if self.adapter:
-            return self.adapter.pip_packages
-        return []
+        return self.adapter.pip_packages
 
     @property
     def provider_data_validator(self) -> Optional[str]:
-        if self.adapter:
-            return self.adapter.provider_data_validator
-        return None
+        return self.adapter.provider_data_validator
 
 
-def is_passthrough(spec: ProviderSpec) -> bool:
-    return isinstance(spec, RemoteProviderSpec) and spec.adapter is None
-
-
-# Can avoid this by using Pydantic computed_field
 def remote_provider_spec(
-    api: Api, adapter: Optional[AdapterSpec] = None
+    api: Api, adapter: AdapterSpec, api_dependencies: Optional[List[Api]] = None
 ) -> RemoteProviderSpec:
-    config_class = (
-        adapter.config_class
-        if adapter and adapter.config_class
-        else "llama_stack.distribution.datatypes.RemoteProviderConfig"
-    )
-    provider_type = f"remote::{adapter.adapter_type}" if adapter else "remote"
-
     return RemoteProviderSpec(
-        api=api, provider_type=provider_type, config_class=config_class, adapter=adapter
+        api=api,
+        provider_type=f"remote::{adapter.adapter_type}",
+        config_class=adapter.config_class,
+        adapter=adapter,
+        api_dependencies=api_dependencies or [],
     )

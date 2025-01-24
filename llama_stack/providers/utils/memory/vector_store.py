@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 import base64
 import io
+import logging
 import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
@@ -14,33 +15,33 @@ from urllib.parse import unquote
 import chardet
 import httpx
 import numpy as np
-from numpy.typing import NDArray
-from pypdf import PdfReader
-from termcolor import cprint
 
-from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_models.llama3.api.tokenizer import Tokenizer
+from numpy.typing import NDArray
 
-from llama_stack.apis.memory import *  # noqa: F403
+from pypdf import PdfReader
 
-ALL_MINILM_L6_V2_DIMENSION = 384
+from llama_stack.apis.common.content_types import (
+    InterleavedContent,
+    TextContentItem,
+    URL,
+)
+from llama_stack.apis.tools import RAGDocument
+from llama_stack.apis.vector_dbs import VectorDB
+from llama_stack.apis.vector_io import Chunk, QueryChunksResponse
+from llama_stack.providers.datatypes import Api
+from llama_stack.providers.utils.inference.prompt_adapter import (
+    interleaved_content_as_str,
+)
 
-EMBEDDING_MODELS = {}
+log = logging.getLogger(__name__)
 
 
-def get_embedding_model(model: str) -> "SentenceTransformer":
-    global EMBEDDING_MODELS
-
-    loaded_model = EMBEDDING_MODELS.get(model)
-    if loaded_model is not None:
-        return loaded_model
-
-    print(f"Loading sentence transformer for {model}...")
-    from sentence_transformers import SentenceTransformer
-
-    loaded_model = SentenceTransformer(model)
-    EMBEDDING_MODELS[model] = loaded_model
-    return loaded_model
+def parse_pdf(data: bytes) -> str:
+    # For PDF and DOC/DOCX files, we can't reliably convert to string
+    pdf_bytes = io.BytesIO(data)
+    pdf_reader = PdfReader(pdf_bytes)
+    return "\n".join([page.extract_text() for page in pdf_reader.pages])
 
 
 def parse_data_url(data_url: str):
@@ -86,23 +87,43 @@ def content_from_data(data_url: str) -> str:
         return data.decode(encoding)
 
     elif mime_type == "application/pdf":
-        # For PDF and DOC/DOCX files, we can't reliably convert to string)
-        pdf_bytes = io.BytesIO(data)
-        pdf_reader = PdfReader(pdf_bytes)
-        return "\n".join([page.extract_text() for page in pdf_reader.pages])
+        return parse_pdf(data)
 
     else:
-        cprint("Could not extract content from data_url properly.", color="red")
+        log.error("Could not extract content from data_url properly.")
         return ""
 
 
-async def content_from_doc(doc: MemoryBankDocument) -> str:
+def concat_interleaved_content(content: List[InterleavedContent]) -> InterleavedContent:
+    """concatenate interleaved content into a single list. ensure that 'str's are converted to TextContentItem when in a list"""
+
+    ret = []
+
+    def _process(c):
+        if isinstance(c, str):
+            ret.append(TextContentItem(text=c))
+        elif isinstance(c, list):
+            for item in c:
+                _process(item)
+        else:
+            ret.append(c)
+
+    for c in content:
+        _process(c)
+
+    return ret
+
+
+async def content_from_doc(doc: RAGDocument) -> str:
     if isinstance(doc.content, URL):
         if doc.content.uri.startswith("data:"):
             return content_from_data(doc.content.uri)
         else:
             async with httpx.AsyncClient() as client:
                 r = await client.get(doc.content.uri)
+            if doc.mime_type == "application/pdf":
+                return parse_pdf(r.content)
+            else:
                 return r.text
 
     pattern = re.compile("^(https?://|file://|data:)")
@@ -112,9 +133,12 @@ async def content_from_doc(doc: MemoryBankDocument) -> str:
         else:
             async with httpx.AsyncClient() as client:
                 r = await client.get(doc.content)
+            if doc.mime_type == "application/pdf":
+                return parse_pdf(r.content)
+            else:
                 return r.text
 
-    return interleaved_text_media_as_str(doc.content)
+    return interleaved_content_as_str(doc.content)
 
 
 def make_overlapped_chunks(
@@ -127,8 +151,15 @@ def make_overlapped_chunks(
     for i in range(0, len(tokens), window_len - overlap_len):
         toks = tokens[i : i + window_len]
         chunk = tokenizer.decode(toks)
+        # chunk is a string
         chunks.append(
-            Chunk(content=chunk, token_count=len(toks), document_id=document_id)
+            Chunk(
+                content=chunk,
+                metadata={
+                    "token_count": len(toks),
+                    "document_id": document_id,
+                },
+            )
         )
 
     return chunks
@@ -142,56 +173,44 @@ class EmbeddingIndex(ABC):
     @abstractmethod
     async def query(
         self, embedding: NDArray, k: int, score_threshold: float
-    ) -> QueryDocumentsResponse:
+    ) -> QueryChunksResponse:
+        raise NotImplementedError()
+
+    @abstractmethod
+    async def delete(self):
         raise NotImplementedError()
 
 
 @dataclass
-class BankWithIndex:
-    bank: MemoryBankDef
+class VectorDBWithIndex:
+    vector_db: VectorDB
     index: EmbeddingIndex
+    inference_api: Api.inference
 
-    async def insert_documents(
+    async def insert_chunks(
         self,
-        documents: List[MemoryBankDocument],
+        chunks: List[Chunk],
     ) -> None:
-        model = get_embedding_model(self.bank.embedding_model)
-        for doc in documents:
-            content = await content_from_doc(doc)
-            chunks = make_overlapped_chunks(
-                doc.document_id,
-                content,
-                self.bank.chunk_size_in_tokens,
-                self.bank.overlap_size_in_tokens
-                or (self.bank.chunk_size_in_tokens // 4),
-            )
-            if not chunks:
-                continue
-            embeddings = model.encode([x.content for x in chunks]).astype(np.float32)
+        embeddings_response = await self.inference_api.embeddings(
+            self.vector_db.embedding_model, [x.content for x in chunks]
+        )
+        embeddings = np.array(embeddings_response.embeddings)
 
-            await self.index.add_chunks(chunks, embeddings)
+        await self.index.add_chunks(chunks, embeddings)
 
-    async def query_documents(
+    async def query_chunks(
         self,
-        query: InterleavedTextMedia,
+        query: InterleavedContent,
         params: Optional[Dict[str, Any]] = None,
-    ) -> QueryDocumentsResponse:
+    ) -> QueryChunksResponse:
         if params is None:
             params = {}
         k = params.get("max_chunks", 3)
         score_threshold = params.get("score_threshold", 0.0)
 
-        def _process(c) -> str:
-            if isinstance(c, str):
-                return c
-            else:
-                return "<media>"
-
-        if isinstance(query, list):
-            query_str = " ".join([_process(c) for c in query])
-        else:
-            query_str = _process(query)
-
-        model = get_embedding_model(self.bank.embedding_model)
-        query_vector = model.encode([query_str])[0].astype(np.float32)
+        query_str = interleaved_content_as_str(query)
+        embeddings_response = await self.inference_api.embeddings(
+            self.vector_db.embedding_model, [query_str]
+        )
+        query_vector = np.array(embeddings_response.embeddings[0], dtype=np.float32)
         return await self.index.query(query_vector, k, score_threshold)

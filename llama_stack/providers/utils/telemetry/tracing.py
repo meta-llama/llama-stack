@@ -12,13 +12,24 @@ import threading
 import uuid
 from datetime import datetime
 from functools import wraps
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Optional
+
+from llama_stack.apis.telemetry import (
+    LogSeverity,
+    Span,
+    SpanEndPayload,
+    SpanStartPayload,
+    SpanStatus,
+    StructuredLogEvent,
+    Telemetry,
+    UnstructuredLogEvent,
+)
+from llama_stack.providers.utils.telemetry.trace_protocol import serialize_value
+
+log = logging.getLogger(__name__)
 
 
-from llama_stack.apis.telemetry import *  # noqa: F403
-
-
-def generate_short_uuid(len: int = 12):
+def generate_short_uuid(len: int = 8):
     full_uuid = uuid.uuid4()
     uuid_bytes = full_uuid.bytes
     encoded = base64.urlsafe_b64encode(uuid_bytes)
@@ -40,7 +51,7 @@ class BackgroundLogger:
         try:
             self.log_queue.put_nowait(event)
         except queue.Full:
-            print("Log queue is full, dropping event")
+            log.error("Log queue is full, dropping event")
 
     def _process_logs(self):
         while True:
@@ -67,7 +78,7 @@ class TraceContext:
         self.logger = logger
         self.trace_id = trace_id
 
-    def push_span(self, name: str, attributes: Dict[str, Any] = None):
+    def push_span(self, name: str, attributes: Dict[str, Any] = None) -> Span:
         current_span = self.get_current_span()
         span = Span(
             span_id=generate_short_uuid(),
@@ -92,6 +103,7 @@ class TraceContext:
         )
 
         self.spans.append(span)
+        return span
 
     def pop_span(self, status: SpanStatus = SpanStatus.OK):
         span = self.spans.pop()
@@ -115,24 +127,26 @@ class TraceContext:
 def setup_logger(api: Telemetry, level: int = logging.INFO):
     global BACKGROUND_LOGGER
 
-    BACKGROUND_LOGGER = BackgroundLogger(api)
+    if BACKGROUND_LOGGER is None:
+        BACKGROUND_LOGGER = BackgroundLogger(api)
     logger = logging.getLogger()
     logger.setLevel(level)
     logger.addHandler(TelemetryHandler())
 
 
-async def start_trace(name: str, attributes: Dict[str, Any] = None):
+async def start_trace(name: str, attributes: Dict[str, Any] = None) -> TraceContext:
     global CURRENT_TRACE_CONTEXT, BACKGROUND_LOGGER
 
     if BACKGROUND_LOGGER is None:
-        print("No Telemetry implementation set. Skipping trace initialization...")
+        log.info("No Telemetry implementation set. Skipping trace initialization...")
         return
 
-    trace_id = generate_short_uuid()
+    trace_id = generate_short_uuid(16)
     context = TraceContext(BACKGROUND_LOGGER, trace_id)
     context.push_span(name, {"__root__": True, **(attributes or {})})
 
     CURRENT_TRACE_CONTEXT = context
+    return context
 
 
 async def end_trace(status: SpanStatus = SpanStatus.OK):
@@ -200,12 +214,13 @@ class SpanContextManager:
     def __init__(self, name: str, attributes: Dict[str, Any] = None):
         self.name = name
         self.attributes = attributes
+        self.span = None
 
     def __enter__(self):
         global CURRENT_TRACE_CONTEXT
         context = CURRENT_TRACE_CONTEXT
         if context:
-            context.push_span(self.name, self.attributes)
+            self.span = context.push_span(self.name, self.attributes)
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -214,11 +229,24 @@ class SpanContextManager:
         if context:
             context.pop_span()
 
+    def set_attribute(self, key: str, value: Any):
+        if self.span:
+            if self.span.attributes is None:
+                self.span.attributes = {}
+            self.span.attributes[key] = serialize_value(value)
+
     async def __aenter__(self):
-        return self.__enter__()
+        global CURRENT_TRACE_CONTEXT
+        context = CURRENT_TRACE_CONTEXT
+        if context:
+            self.span = context.push_span(self.name, self.attributes)
+        return self
 
     async def __aexit__(self, exc_type, exc_value, traceback):
-        self.__exit__(exc_type, exc_value, traceback)
+        global CURRENT_TRACE_CONTEXT
+        context = CURRENT_TRACE_CONTEXT
+        if context:
+            context.pop_span()
 
     def __call__(self, func: Callable):
         @wraps(func)
@@ -243,3 +271,11 @@ class SpanContextManager:
 
 def span(name: str, attributes: Dict[str, Any] = None):
     return SpanContextManager(name, attributes)
+
+
+def get_current_span() -> Optional[Span]:
+    global CURRENT_TRACE_CONTEXT
+    context = CURRENT_TRACE_CONTEXT
+    if context:
+        return context.get_current_span()
+    return None

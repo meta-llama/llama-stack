@@ -1,7 +1,6 @@
 version: '2'
-built_at: '2024-10-08T17:40:45.325529'
 image_name: local
-docker_image: null
+container_image: null
 conda_env: local
 apis:
 - shields
@@ -19,22 +18,21 @@ providers:
       url: http://127.0.0.1:80
   safety:
   - provider_id: meta0
-    provider_type: meta-reference
+    provider_type: inline::llama-guard
     config:
-      llama_guard_shield:
-        model: Llama-Guard-3-1B
-        excluded_categories: []
-        disable_input_check: false
-        disable_output_check: false
-      prompt_guard_shield:
-        model: Prompt-Guard-86M
+      model: Llama-Guard-3-1B
+      excluded_categories: []
+  - provider_id: meta1
+    provider_type: inline::prompt-guard
+    config:
+      model: Prompt-Guard-86M
   memory:
   - provider_id: meta0
-    provider_type: meta-reference
+    provider_type: inline::faiss
     config: {}
   agents:
   - provider_id: meta0
-    provider_type: meta-reference
+    provider_type: inline::meta-reference
     config:
       persistence_store:
         namespace: null
@@ -42,5 +40,5 @@ providers:
         db_path: ~/.llama/runtime/kvstore.db
   telemetry:
   - provider_id: meta0
-    provider_type: meta-reference
+    provider_type: inline::meta-reference
     config: {}

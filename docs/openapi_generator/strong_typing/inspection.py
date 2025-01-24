@@ -342,7 +342,6 @@ def is_type_union(typ: object) -> bool:
     "True if the type annotation corresponds to a union type (e.g. `Union[T1,T2,T3]`)."
 
     typ = unwrap_annotated_type(typ)
-
     if _is_union_like(typ):
         args = typing.get_args(typ)
         return len(args) > 2 or type(None) not in args
@@ -358,6 +357,7 @@ def unwrap_union_types(typ: object) -> Tuple[object, ...]:
     :returns: The inner types `T1`, `T2`, etc.
     """
 
+    typ = unwrap_annotated_type(typ)
     return _unwrap_union_types(typ)
 
 

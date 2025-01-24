@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
 from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel
 
-from llama_stack.apis.datasets import *  # noqa: F403
+from llama_stack.apis.datasets import Dataset
 
 
 @json_schema_type
@@ -21,7 +21,7 @@ class PaginatedRowsResult(BaseModel):
 
 
 class DatasetStore(Protocol):
-    def get_dataset(self, identifier: str) -> DatasetDefWithProvider: ...
+    def get_dataset(self, dataset_id: str) -> Dataset: ...
 
 
 @runtime_checkable
@@ -29,7 +29,7 @@ class DatasetIO(Protocol):
     # keeping for aligning with inference/safety, but this is not used
     dataset_store: DatasetStore
 
-    @webmethod(route="/datasetio/get_rows_paginated", method="GET")
+    @webmethod(route="/datasetio/rows", method="GET")
     async def get_rows_paginated(
         self,
         dataset_id: str,
@@ -37,3 +37,8 @@ class DatasetIO(Protocol):
         page_token: Optional[str] = None,
         filter_condition: Optional[str] = None,
     ) -> PaginatedRowsResult: ...
+
+    @webmethod(route="/datasetio/rows", method="POST")
+    async def append_rows(
+        self, dataset_id: str, rows: List[Dict[str, Any]]
+    ) -> None: ...

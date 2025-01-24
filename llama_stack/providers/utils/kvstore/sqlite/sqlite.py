@@ -11,7 +11,7 @@ from typing import List, Optional
 
 import aiosqlite
 
-from ..api import *  # noqa: F403
+from ..api import KVStore
 from ..config import SqliteKVStoreConfig
 
 

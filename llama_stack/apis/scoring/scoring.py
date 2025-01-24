@@ -4,14 +4,12 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, List, Protocol, runtime_checkable
+from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
 
 from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel
 
-from llama_models.llama3.api.datatypes import *  # noqa: F403
-from llama_stack.apis.scoring_functions import *  # noqa: F403
-
+from llama_stack.apis.scoring_functions import ScoringFn, ScoringFnParams
 
 # mapping of metric to value
 ScoringResultRow = Dict[str, Any]
@@ -37,22 +35,24 @@ class ScoreResponse(BaseModel):
 
 
 class ScoringFunctionStore(Protocol):
-    def get_scoring_function(self, name: str) -> ScoringFnDefWithProvider: ...
+    def get_scoring_function(self, scoring_fn_id: str) -> ScoringFn: ...
 
 
 @runtime_checkable
 class Scoring(Protocol):
     scoring_function_store: ScoringFunctionStore
 
-    @webmethod(route="/scoring/score_batch")
+    @webmethod(route="/scoring/score-batch", method="POST")
     async def score_batch(
         self,
         dataset_id: str,
-        scoring_functions: List[str],
+        scoring_functions: Dict[str, Optional[ScoringFnParams]],
         save_results_dataset: bool = False,
     ) -> ScoreBatchResponse: ...
 
-    @webmethod(route="/scoring/score")
+    @webmethod(route="/scoring/score", method="POST")
     async def score(
-        self, input_rows: List[Dict[str, Any]], scoring_functions: List[str]
+        self,
+        input_rows: List[Dict[str, Any]],
+        scoring_functions: Dict[str, Optional[ScoringFnParams]],
     ) -> ScoreResponse: ...

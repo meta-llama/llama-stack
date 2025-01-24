@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import collections
 import hashlib
 import ipaddress
 import typing
@@ -176,9 +177,20 @@ class ContentBuilder:
     ) -> Dict[str, MediaType]:
         "Creates the content subtree for a request or response."
 
+        def has_iterator_type(t):
+            if typing.get_origin(t) is typing.Union:
+                return any(has_iterator_type(a) for a in typing.get_args(t))
+            else:
+                # TODO: needs a proper fix where we let all types correctly flow upwards
+                # and then test against AsyncIterator
+                return "StreamChunk" in str(t)
+
         if is_generic_list(payload_type):
             media_type = "application/jsonl"
             item_type = unwrap_generic_list(payload_type)
+        elif has_iterator_type(payload_type):
+            item_type = payload_type
+            media_type = "text/event-stream"
         else:
             media_type = "application/json"
             item_type = payload_type
@@ -190,7 +202,9 @@ class ContentBuilder:
     ) -> MediaType:
         schema = self.schema_builder.classdef_to_ref(item_type)
         if self.schema_transformer:
-            schema_transformer: Callable[[SchemaOrRef], SchemaOrRef] = self.schema_transformer  # type: ignore
+            schema_transformer: Callable[[SchemaOrRef], SchemaOrRef] = (
+                self.schema_transformer
+            )
             schema = schema_transformer(schema)
 
         if not examples:
@@ -424,6 +438,14 @@ class Generator:
         return extra_tags
 
     def _build_operation(self, op: EndpointOperation) -> Operation:
+        if op.defining_class.__name__ in [
+            "SyntheticDataGeneration",
+            "PostTraining",
+            "BatchInference",
+        ]:
+            op.defining_class.__name__ = f"{op.defining_class.__name__} (Coming Soon)"
+            print(op.defining_class.__name__)
+
         doc_string = parse_type(op.func_ref)
         doc_params = dict(
             (param.name, param.description) for param in doc_string.params.values()
@@ -464,9 +486,18 @@ class Generator:
         parameters = path_parameters + query_parameters
         parameters += [
             Parameter(
-                name="X-LlamaStack-ProviderData",
+                name="X-LlamaStack-Provider-Data",
                 in_=ParameterLocation.Header,
                 description="JSON-encoded provider data which will be made available to the adapter servicing the API",
+                required=False,
+                schema=self.schema_builder.classdef_to_ref(str),
+            )
+        ]
+        parameters += [
+            Parameter(
+                name="X-LlamaStack-Client-Version",
+                in_=ParameterLocation.Header,
+                description="Version of the client making the request. This is used to ensure that the client and server are compatible.",
                 required=False,
                 schema=self.schema_builder.classdef_to_ref(str),
             )
@@ -506,7 +537,6 @@ class Generator:
             success_type_descriptions = {
                 item: doc_string.short_description
                 for item, doc_string in success_type_docstring.items()
-                if doc_string.short_description
             }
         else:
             # use return type as a single response type
@@ -565,6 +595,7 @@ class Generator:
             )
             responses.update(response_builder.build_response(response_options))
 
+        assert len(responses.keys()) > 0, f"No responses found for {op.name}"
         if op.event_type is not None:
             builder = ContentBuilder(self.schema_builder)
             callbacks = {
@@ -618,6 +649,7 @@ class Generator:
                 raise NotImplementedError(f"unknown HTTP method: {op.http_method}")
 
             route = op.get_route()
+            print(f"route: {route}")
             if route in paths:
                 paths[route].update(pathItem)
             else:
@@ -670,6 +702,8 @@ class Generator:
         tags.extend(event_tags)
         for extra_tag_group in extra_tag_groups.values():
             tags.extend(extra_tag_group)
+
+        tags = sorted(tags, key=lambda t: t.name)
 
         tag_groups = []
         if operation_tags:

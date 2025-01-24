@@ -6,7 +6,7 @@ services:
       - ~/.llama:/root/.llama
       - ./run.yaml:/root/my-run.yaml
     ports:
-      - "5000:5000"
+      - "8321:8321"
     devices:
       - nvidia.com/gpu=all
     environment:

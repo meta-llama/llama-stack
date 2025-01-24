@@ -6,17 +6,34 @@
 
 from typing import List
 
-from llama_stack.distribution.datatypes import *  # noqa: F403
+from llama_stack.providers.datatypes import (
+    AdapterSpec,
+    Api,
+    InlineProviderSpec,
+    ProviderSpec,
+    remote_provider_spec,
+)
 
 
 def available_providers() -> List[ProviderSpec]:
     return [
         InlineProviderSpec(
             api=Api.datasetio,
-            provider_type="meta-reference",
+            provider_type="inline::localfs",
             pip_packages=["pandas"],
-            module="llama_stack.providers.impls.meta_reference.datasetio",
-            config_class="llama_stack.providers.impls.meta_reference.datasetio.MetaReferenceDatasetIOConfig",
+            module="llama_stack.providers.inline.datasetio.localfs",
+            config_class="llama_stack.providers.inline.datasetio.localfs.LocalFSDatasetIOConfig",
             api_dependencies=[],
+        ),
+        remote_provider_spec(
+            api=Api.datasetio,
+            adapter=AdapterSpec(
+                adapter_type="huggingface",
+                pip_packages=[
+                    "datasets",
+                ],
+                module="llama_stack.providers.remote.datasetio.huggingface",
+                config_class="llama_stack.providers.remote.datasetio.huggingface.HuggingfaceDatasetIOConfig",
+            ),
         ),
     ]

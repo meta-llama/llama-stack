@@ -7,7 +7,9 @@
 from datetime import datetime
 from enum import Enum
 from typing import (
+    Annotated,
     Any,
+    AsyncIterator,
     Dict,
     List,
     Literal,
@@ -17,173 +19,33 @@ from typing import (
     Union,
 )
 
-from llama_models.schema_utils import json_schema_type, webmethod
-
+from llama_models.schema_utils import json_schema_type, register_schema, webmethod
 from pydantic import BaseModel, ConfigDict, Field
-from typing_extensions import Annotated
 
-from llama_models.llama3.api.datatypes import *  # noqa: F403
-from llama_stack.apis.common.deployment_types import *  # noqa: F403
-from llama_stack.apis.inference import *  # noqa: F403
-from llama_stack.apis.safety import *  # noqa: F403
-from llama_stack.apis.memory import *  # noqa: F403
+from llama_stack.apis.common.content_types import ContentDelta, InterleavedContent, URL
+from llama_stack.apis.inference import (
+    CompletionMessage,
+    SamplingParams,
+    ToolCall,
+    ToolChoice,
+    ToolPromptFormat,
+    ToolResponse,
+    ToolResponseMessage,
+    UserMessage,
+)
+from llama_stack.apis.safety import SafetyViolation
+from llama_stack.apis.tools import ToolDef
+from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
 
 
-@json_schema_type
 class Attachment(BaseModel):
-    content: InterleavedTextMedia | URL
+    content: InterleavedContent | URL
     mime_type: str
 
 
-class AgentTool(Enum):
-    brave_search = "brave_search"
-    wolfram_alpha = "wolfram_alpha"
-    photogen = "photogen"
-    code_interpreter = "code_interpreter"
-
-    function_call = "function_call"
-    memory = "memory"
-
-
-class ToolDefinitionCommon(BaseModel):
-    input_shields: Optional[List[str]] = Field(default_factory=list)
-    output_shields: Optional[List[str]] = Field(default_factory=list)
-
-
-class SearchEngineType(Enum):
-    bing = "bing"
-    brave = "brave"
-
-
-@json_schema_type
-class SearchToolDefinition(ToolDefinitionCommon):
-    # NOTE: brave_search is just a placeholder since model always uses
-    # brave_search as tool call name
-    type: Literal[AgentTool.brave_search.value] = AgentTool.brave_search.value
-    api_key: str
-    engine: SearchEngineType = SearchEngineType.brave
-    remote_execution: Optional[RestAPIExecutionConfig] = None
-
-
-@json_schema_type
-class WolframAlphaToolDefinition(ToolDefinitionCommon):
-    type: Literal[AgentTool.wolfram_alpha.value] = AgentTool.wolfram_alpha.value
-    api_key: str
-    remote_execution: Optional[RestAPIExecutionConfig] = None
-
-
-@json_schema_type
-class PhotogenToolDefinition(ToolDefinitionCommon):
-    type: Literal[AgentTool.photogen.value] = AgentTool.photogen.value
-    remote_execution: Optional[RestAPIExecutionConfig] = None
-
-
-@json_schema_type
-class CodeInterpreterToolDefinition(ToolDefinitionCommon):
-    type: Literal[AgentTool.code_interpreter.value] = AgentTool.code_interpreter.value
-    enable_inline_code_execution: bool = True
-    remote_execution: Optional[RestAPIExecutionConfig] = None
-
-
-@json_schema_type
-class FunctionCallToolDefinition(ToolDefinitionCommon):
-    type: Literal[AgentTool.function_call.value] = AgentTool.function_call.value
-    function_name: str
-    description: str
-    parameters: Dict[str, ToolParamDefinition]
-    remote_execution: Optional[RestAPIExecutionConfig] = None
-
-
-class _MemoryBankConfigCommon(BaseModel):
-    bank_id: str
-
-
-class AgentVectorMemoryBankConfig(_MemoryBankConfigCommon):
-    type: Literal[MemoryBankType.vector.value] = MemoryBankType.vector.value
-
-
-class AgentKeyValueMemoryBankConfig(_MemoryBankConfigCommon):
-    type: Literal[MemoryBankType.keyvalue.value] = MemoryBankType.keyvalue.value
-    keys: List[str]  # what keys to focus on
-
-
-class AgentKeywordMemoryBankConfig(_MemoryBankConfigCommon):
-    type: Literal[MemoryBankType.keyword.value] = MemoryBankType.keyword.value
-
-
-class AgentGraphMemoryBankConfig(_MemoryBankConfigCommon):
-    type: Literal[MemoryBankType.graph.value] = MemoryBankType.graph.value
-    entities: List[str]  # what entities to focus on
-
-
-MemoryBankConfig = Annotated[
-    Union[
-        AgentVectorMemoryBankConfig,
-        AgentKeyValueMemoryBankConfig,
-        AgentKeywordMemoryBankConfig,
-        AgentGraphMemoryBankConfig,
-    ],
-    Field(discriminator="type"),
-]
-
-
-class MemoryQueryGenerator(Enum):
-    default = "default"
-    llm = "llm"
-    custom = "custom"
-
-
-class DefaultMemoryQueryGeneratorConfig(BaseModel):
-    type: Literal[MemoryQueryGenerator.default.value] = (
-        MemoryQueryGenerator.default.value
-    )
-    sep: str = " "
-
-
-class LLMMemoryQueryGeneratorConfig(BaseModel):
-    type: Literal[MemoryQueryGenerator.llm.value] = MemoryQueryGenerator.llm.value
-    model: str
-    template: str
-
-
-class CustomMemoryQueryGeneratorConfig(BaseModel):
-    type: Literal[MemoryQueryGenerator.custom.value] = MemoryQueryGenerator.custom.value
-
-
-MemoryQueryGeneratorConfig = Annotated[
-    Union[
-        DefaultMemoryQueryGeneratorConfig,
-        LLMMemoryQueryGeneratorConfig,
-        CustomMemoryQueryGeneratorConfig,
-    ],
-    Field(discriminator="type"),
-]
-
-
-@json_schema_type
-class MemoryToolDefinition(ToolDefinitionCommon):
-    type: Literal[AgentTool.memory.value] = AgentTool.memory.value
-    memory_bank_configs: List[MemoryBankConfig] = Field(default_factory=list)
-    # This config defines how a query is generated using the messages
-    # for memory bank retrieval.
-    query_generator_config: MemoryQueryGeneratorConfig = Field(
-        default=DefaultMemoryQueryGeneratorConfig()
-    )
-    max_tokens_in_context: int = 4096
-    max_chunks: int = 10
-
-
-AgentToolDefinition = Annotated[
-    Union[
-        SearchToolDefinition,
-        WolframAlphaToolDefinition,
-        PhotogenToolDefinition,
-        CodeInterpreterToolDefinition,
-        FunctionCallToolDefinition,
-        MemoryToolDefinition,
-    ],
-    Field(discriminator="type"),
-]
+class Document(BaseModel):
+    content: InterleavedContent | URL
+    mime_type: str
 
 
 class StepCommon(BaseModel):
@@ -226,8 +88,8 @@ class MemoryRetrievalStep(StepCommon):
     step_type: Literal[StepType.memory_retrieval.value] = (
         StepType.memory_retrieval.value
     )
-    memory_bank_ids: List[str]
-    inserted_context: InterleavedTextMedia
+    vector_db_ids: str
+    inserted_context: InterleavedContent
 
 
 Step = Annotated[
@@ -270,7 +132,19 @@ class Session(BaseModel):
     turns: List[Turn]
     started_at: datetime
 
-    memory_bank: Optional[MemoryBankDef] = None
+
+class AgentToolGroupWithArgs(BaseModel):
+    name: str
+    args: Dict[str, Any]
+
+
+AgentToolGroup = register_schema(
+    Union[
+        str,
+        AgentToolGroupWithArgs,
+    ],
+    name="AgentTool",
+)
 
 
 class AgentConfigCommon(BaseModel):
@@ -278,12 +152,10 @@ class AgentConfigCommon(BaseModel):
 
     input_shields: Optional[List[str]] = Field(default_factory=list)
     output_shields: Optional[List[str]] = Field(default_factory=list)
-
-    tools: Optional[List[AgentToolDefinition]] = Field(default_factory=list)
+    toolgroups: Optional[List[AgentToolGroup]] = Field(default_factory=list)
+    client_tools: Optional[List[ToolDef]] = Field(default_factory=list)
     tool_choice: Optional[ToolChoice] = Field(default=ToolChoice.auto)
-    tool_prompt_format: Optional[ToolPromptFormat] = Field(
-        default=ToolPromptFormat.json
-    )
+    tool_prompt_format: Optional[ToolPromptFormat] = Field(default=None)
 
     max_infer_iters: int = 10
 
@@ -324,6 +196,7 @@ class AgentTurnResponseStepCompletePayload(BaseModel):
         AgentTurnResponseEventType.step_complete.value
     )
     step_type: StepType
+    step_id: str
     step_details: Step
 
 
@@ -337,9 +210,7 @@ class AgentTurnResponseStepProgressPayload(BaseModel):
     step_type: StepType
     step_id: str
 
-    model_response_text_delta: Optional[str] = None
-    tool_call_delta: Optional[ToolCallDelta] = None
-    tool_response_text_delta: Optional[str] = None
+    delta: ContentDelta
 
 
 @json_schema_type
@@ -398,13 +269,17 @@ class AgentTurnCreateRequest(AgentConfigOverridablePerTurn):
             ToolResponseMessage,
         ]
     ]
-    attachments: Optional[List[Attachment]] = None
+
+    documents: Optional[List[Document]] = None
+    toolgroups: Optional[List[AgentToolGroup]] = None
 
     stream: Optional[bool] = False
 
 
 @json_schema_type
 class AgentTurnResponseStreamChunk(BaseModel):
+    """streamed agent turn completion response."""
+
     event: AgentTurnResponseEvent
 
 
@@ -414,14 +289,15 @@ class AgentStepResponse(BaseModel):
 
 
 @runtime_checkable
+@trace_protocol
 class Agents(Protocol):
-    @webmethod(route="/agents/create")
+    @webmethod(route="/agents", method="POST")
     async def create_agent(
         self,
         agent_config: AgentConfig,
     ) -> AgentCreateResponse: ...
 
-    @webmethod(route="/agents/turn/create")
+    @webmethod(route="/agents/{agent_id}/session/{session_id}/turn", method="POST")
     async def create_agent_turn(
         self,
         agent_id: str,
@@ -432,40 +308,57 @@ class Agents(Protocol):
                 ToolResponseMessage,
             ]
         ],
-        attachments: Optional[List[Attachment]] = None,
         stream: Optional[bool] = False,
-    ) -> AgentTurnResponseStreamChunk: ...
+        documents: Optional[List[Document]] = None,
+        toolgroups: Optional[List[AgentToolGroup]] = None,
+    ) -> Union[Turn, AsyncIterator[AgentTurnResponseStreamChunk]]: ...
 
-    @webmethod(route="/agents/turn/get")
+    @webmethod(
+        route="/agents/{agent_id}/session/{session_id}/turn/{turn_id}", method="GET"
+    )
     async def get_agents_turn(
-        self, agent_id: str, session_id: str, turn_id: str
+        self,
+        agent_id: str,
+        session_id: str,
+        turn_id: str,
     ) -> Turn: ...
 
-    @webmethod(route="/agents/step/get")
+    @webmethod(
+        route="/agents/{agent_id}/session/{session_id}/turn/{turn_id}/step/{step_id}",
+        method="GET",
+    )
     async def get_agents_step(
-        self, agent_id: str, session_id: str, turn_id: str, step_id: str
+        self,
+        agent_id: str,
+        session_id: str,
+        turn_id: str,
+        step_id: str,
     ) -> AgentStepResponse: ...
 
-    @webmethod(route="/agents/session/create")
+    @webmethod(route="/agents/{agent_id}/session", method="POST")
     async def create_agent_session(
         self,
         agent_id: str,
         session_name: str,
     ) -> AgentSessionCreateResponse: ...
 
-    @webmethod(route="/agents/session/get")
+    @webmethod(route="/agents/{agent_id}/session/{session_id}", method="GET")
     async def get_agents_session(
         self,
-        agent_id: str,
         session_id: str,
+        agent_id: str,
         turn_ids: Optional[List[str]] = None,
     ) -> Session: ...
 
-    @webmethod(route="/agents/session/delete")
-    async def delete_agents_session(self, agent_id: str, session_id: str) -> None: ...
+    @webmethod(route="/agents/{agent_id}/session/{session_id}", method="DELETE")
+    async def delete_agents_session(
+        self,
+        session_id: str,
+        agent_id: str,
+    ) -> None: ...
 
-    @webmethod(route="/agents/delete")
-    async def delete_agents(
+    @webmethod(route="/agents/{agent_id}", method="DELETE")
+    async def delete_agent(
         self,
         agent_id: str,
     ) -> None: ...

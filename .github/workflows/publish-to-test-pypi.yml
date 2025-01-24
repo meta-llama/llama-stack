@@ -1,0 +1,244 @@
+name: Publish Python 🐍 distribution 📦 to TestPyPI
+
+on:
+  workflow_dispatch:  # Keep manual trigger
+    inputs:
+      version:
+        description: 'Version number (e.g. 0.0.63.dev20250111)'
+        required: true
+        type: string
+  schedule:
+    - cron: "0 0 * * *"  # Run every day at midnight
+
+jobs:
+  trigger-client-and-models-build:
+    name: Trigger llama-stack-client and llama-models build
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      client_run_id: ${{ steps.trigger-client.outputs.workflow_id }}
+      model_run_id: ${{ steps.trigger-models.outputs.workflow_id }}
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        persist-credentials: false
+    - name: Get date
+      id: date
+      run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
+    - name: Compute version based on dispatch event
+      id: version
+      run: |
+        # Read base version from pyproject.toml
+        version=$(sed -n 's/.*version="\([^"]*\)".*/\1/p' setup.py)
+        if [ "${{ github.event_name }}" = "schedule" ]; then
+          echo "version=${version}.dev${{ steps.date.outputs.date }}" >> $GITHUB_OUTPUT
+        elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
+        else
+          echo "version=${version}.dev$(shuf -i 10000000-99999999 -n 1)" >> $GITHUB_OUTPUT
+        fi
+    - name: Trigger llama-stack-client workflow
+      id: trigger-client
+      run: |
+        response=$(curl -X POST https://api.github.com/repos/meta-llama/llama-stack-client-python/dispatches \
+        -H 'Accept: application/vnd.github.everest-preview+json' \
+        -H "authorization: Bearer ${{ secrets.PAT_TOKEN }}" \
+        --data "{\"event_type\": \"build-client-package\", \"client_payload\": {\"source\": \"llama-stack-nightly\", \"version\": \"${{ steps.version.outputs.version }}\"}}" \
+        -w "\n%{http_code}")
+
+        http_code=$(echo "$response" | tail -n1)
+        if [ "$http_code" != "204" ]; then
+          echo "Failed to trigger client workflow"
+          exit 1
+        fi
+
+        # Get the run ID of the triggered workflow
+        sleep 5  # Wait for workflow to be created
+        run_id=$(curl -s -H "authorization: Bearer ${{ secrets.PAT_TOKEN }}" \
+                 "https://api.github.com/repos/meta-llama/llama-stack-client-python/actions/runs?event=repository_dispatch" \
+                 | jq '.workflow_runs[0].id')
+        echo "workflow_id=$run_id" >> $GITHUB_OUTPUT
+
+    - name: Trigger llama-models workflow
+      id: trigger-models
+      run: |
+        response=$(curl -X POST https://api.github.com/repos/meta-llama/llama-models/dispatches \
+        -H 'Accept: application/vnd.github.everest-preview+json' \
+        -H "authorization: Bearer ${{ secrets.PAT_TOKEN }}" \
+        --data "{\"event_type\": \"build-models-package\", \"client_payload\": {\"source\": \"llama-stack-nightly\", \"version\": \"${{ steps.version.outputs.version }}\"}}" \
+        -w "\n%{http_code}")
+
+        http_code=$(echo "$response" | tail -n1)
+        if [ "$http_code" != "204" ]; then
+          echo "Failed to trigger models workflow"
+          exit 1
+        fi
+
+        # Get the run ID of the triggered workflow
+        sleep 5  # Wait for workflow to be created
+        run_id=$(curl -s -H "authorization: Bearer ${{ secrets.PAT_TOKEN }}" \
+                 "https://api.github.com/repos/meta-llama/llama-models/actions/runs?event=repository_dispatch" \
+                 | jq '.workflow_runs[0].id')
+        echo "workflow_id=$run_id" >> $GITHUB_OUTPUT
+
+  wait-for-workflows:
+    name: Wait for triggered workflows
+    needs: trigger-client-and-models-build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Wait for client workflow
+      run: |
+        while true; do
+          status=$(curl -s -H "authorization: Bearer ${{ secrets.PAT_TOKEN }}" \
+                   "https://api.github.com/repos/meta-llama/llama-stack-client-python/actions/runs/${{ needs.trigger-client-and-models-build.outputs.client_run_id }}" \
+                   | jq -r '.status')
+          conclusion=$(curl -s -H "authorization: Bearer ${{ secrets.PAT_TOKEN }}" \
+                      "https://api.github.com/repos/meta-llama/llama-stack-client-python/actions/runs/${{ needs.trigger-client-and-models-build.outputs.client_run_id }}" \
+                      | jq -r '.conclusion')
+
+          echo "llama-stack-client-python workflow status: $status, conclusion: $conclusion"
+
+          if [ "$status" = "completed" ]; then
+            if [ "$conclusion" != "success" ]; then
+              echo "llama-stack-client-python workflow failed"
+              exit 1
+            fi
+            break
+          fi
+
+          sleep 10
+        done
+
+    - name: Wait for models workflow
+      run: |
+        while true; do
+          status=$(curl -s -H "authorization: Bearer ${{ secrets.PAT_TOKEN }}" \
+                   "https://api.github.com/repos/meta-llama/llama-models/actions/runs/${{ needs.trigger-client-and-models-build.outputs.model_run_id }}" \
+                   | jq -r '.status')
+          conclusion=$(curl -s -H "authorization: Bearer ${{ secrets.PAT_TOKEN }}" \
+                      "https://api.github.com/repos/meta-llama/llama-models/actions/runs/${{ needs.trigger-client-and-models-build.outputs.model_run_id }}" \
+                      | jq -r '.conclusion')
+
+          echo "llama-models workflow status: $status, conclusion: $conclusion"
+
+          if [ "$status" = "completed" ]; then
+            if [ "$conclusion" != "success" ]; then
+              echo "llama-models workflow failed"
+              exit 1
+            fi
+            break
+          fi
+
+          sleep 10
+        done
+
+  build:
+    name: Build distribution 📦
+    needs:
+      - wait-for-workflows
+      - trigger-client-and-models-build
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        persist-credentials: false
+    - name: Get date
+      id: date
+      run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
+    - name: Update version for nightly
+      run: |
+        sed -i 's/version="\([^"]*\)"/version="${{ needs.trigger-client-and-models-build.outputs.version }}"/' setup.py
+        sed -i 's/llama-stack-client>=\([^"]*\)/llama-stack-client==${{ needs.trigger-client-and-models-build.outputs.version }}/' requirements.txt
+        sed -i 's/llama-models>=\([^"]*\)/llama-models==${{ needs.trigger-client-and-models-build.outputs.version }}/' requirements.txt
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+    - name: Install pypa/build
+      run: >-
+        python3 -m
+        pip install
+        build
+        --user
+    - name: Build a binary wheel and a source tarball
+      run: python3 -m build
+    - name: Store the distribution packages
+      uses: actions/upload-artifact@v4
+      with:
+        name: python-package-distributions
+        path: dist/
+
+  publish-to-testpypi:
+    name: Publish Python 🐍 distribution 📦 to TestPyPI
+    needs:
+    - build
+    runs-on: ubuntu-latest
+
+    environment:
+      name: testrelease
+      url: https://test.pypi.org/p/llama-stack
+
+    permissions:
+      id-token: write  # IMPORTANT: mandatory for trusted publishing
+
+    steps:
+    - name: Download all the dists
+      uses: actions/download-artifact@v4
+      with:
+        name: python-package-distributions
+        path: dist/
+    - name: Publish distribution 📦 to TestPyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        repository-url: https://test.pypi.org/legacy/
+
+  test-published-package:
+    name: Test published package
+    needs:
+      - publish-to-testpypi
+      - trigger-client-and-models-build
+    runs-on: ubuntu-latest
+    env:
+      TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
+      TAVILY_SEARCH_API_KEY: ${{ secrets.TAVILY_SEARCH_API_KEY }}
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        persist-credentials: false
+    - name: Install the package
+      run: |
+        max_attempts=6
+        attempt=1
+        while [ $attempt -le $max_attempts ]; do
+          echo "Attempt $attempt of $max_attempts to install package..."
+          if pip install --no-cache --index-url https://pypi.org/simple/ --extra-index-url https://test.pypi.org/simple/ llama-stack==${{ needs.trigger-client-and-models-build.outputs.version }}; then
+            echo "Package installed successfully"
+            break
+          fi
+          if [ $attempt -ge $max_attempts ]; then
+            echo "Failed to install package after $max_attempts attempts"
+            exit 1
+          fi
+          attempt=$((attempt + 1))
+          sleep 10
+        done
+    - name: Test the package versions
+      run: |
+        pip list | grep llama_
+    - name: Test CLI commands
+      run: |
+        llama model list
+        llama stack build --list-templates
+        llama model prompt-format -m Llama3.2-11B-Vision-Instruct
+        llama stack list-apis
+        llama stack list-providers inference
+        llama stack list-providers telemetry
+    - name: Test Notebook
+      run: |
+        pip install pytest nbval
+        llama stack build --template together --image-type venv
+        pytest -v -s --nbval-lax ./docs/getting_started.ipynb
+        pytest -v -s --nbval-lax ./docs/notebooks/Llama_Stack_Benchmark_Evals.ipynb
+
+    # TODO: add trigger for integration test workflow & docker builds
