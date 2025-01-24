@@ -1,4 +1,11 @@
+```{admonition} News
+:class: tip
+
+Llama Stack 0.1.0 is now available! See the [release notes](https://github.com/meta-llama/llama-stack/releases/tag/v0.1.0) for more details.
+```
+
 # Llama Stack
+
 
 Llama Stack defines and standardizes the core building blocks needed to bring generative AI applications to market. It provides a unified set of APIs with implementations from leading service providers, enabling seamless transitions between development and production environments. More specifically, it provides
 
