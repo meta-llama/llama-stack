@@ -30,8 +30,9 @@ from .config import FaissImplConfig
 
 logger = logging.getLogger(__name__)
 
-VECTOR_DBS_PREFIX = "vector_dbs:v2::"
-FAISS_INDEX_PREFIX = "faiss_index:v2::"
+VERSION = "v3"
+VECTOR_DBS_PREFIX = f"vector_dbs:{VERSION}::"
+FAISS_INDEX_PREFIX = f"faiss_index:{VERSION}::"
 
 
 class FaissIndex(EmbeddingIndex):
