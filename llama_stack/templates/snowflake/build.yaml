@@ -1,0 +1,9 @@
+name: snowflake
+distribution_spec:
+  description: Use Snowflake for running LLM inference
+  providers:
+    inference: remote::snowflake
+    memory: meta-reference
+    safety: meta-reference
+    agents: meta-reference
+    telemetry: meta-reference
