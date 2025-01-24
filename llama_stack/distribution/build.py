@@ -119,15 +119,12 @@ def build_image(
     normal_deps += SERVER_DEPENDENCIES
 
     if build_config.image_type == ImageType.container.value:
-        if not template_name:
-            raise ValueError("template_name is required for container builds")
-
         script = str(
             importlib.resources.files("llama_stack") / "distribution/build_container.sh"
         )
         args = [
             script,
-            template_name,
+            image_name,
             container_image,
             str(build_file_path),
             str(BUILDS_BASE_DIR / ImageType.container.value),

@@ -12,10 +12,9 @@ TEST_PYPI_VERSION=${TEST_PYPI_VERSION:-}
 PYPI_VERSION=${PYPI_VERSION:-}
 BUILD_PLATFORM=${BUILD_PLATFORM:-}
 
-if [ "$#" -lt 5 ]; then
-  # This only works for templates
-  echo "Usage: $0 <template_name> <container_base> <pip_dependencies> <host_build_dir> [<special_pip_deps>]" >&2
-  echo "Example: $0 fireworks python:3.9-slim 'fastapi uvicorn' /path/to/build/dir" >&2
+if [ "$#" -lt 4 ]; then
+  echo "Usage: $0 <build_name> <container_base> <pip_dependencies> [<special_pip_deps>]" >&2
+  echo "Example: $0 my-fastapi-app python:3.9-slim 'fastapi uvicorn' " >&2
   exit 1
 fi
 
@@ -23,7 +22,7 @@ special_pip_deps="$6"
 
 set -euo pipefail
 
-template_name="$1"
+build_name="$1"
 container_base=$2
 build_file_path=$3
 host_build_dir=$4
@@ -152,7 +151,7 @@ add_to_container << EOF
 # This would be good in production but for debugging flexibility lets not add it right now
 # We need a more solid production ready entrypoint.sh anyway
 #
-ENTRYPOINT ["python", "-m", "llama_stack.distribution.server.server", "--template", "$template_name"]
+ENTRYPOINT ["python", "-m", "llama_stack.distribution.server.server", "--template", "$build_name"]
 
 EOF
 
@@ -184,7 +183,6 @@ else
 fi
 
 # Add version tag to image name
-build_name="distribution-$template_name"
 image_tag="$build_name:$version_tag"
 
 # Detect platform architecture
