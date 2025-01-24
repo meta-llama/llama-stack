@@ -16,8 +16,15 @@ from report import Report
 def pytest_configure(config):
     config.option.tbstyle = "short"
     config.option.disable_warnings = True
-    if config.getoption("--report"):
-        config.pluginmanager.register(Report())
+    # Note:
+    # if report_path is not provided (aka no option --report in the pytest command),
+    # it will be set to False
+    # if --report will give None ( in this case we infer report_path)
+    # if --report /a/b is provided, it will be set to the path provided
+    # We want to handle all these cases and hence explicitly check for False
+    report_path = config.getoption("--report")
+    if report_path is not False:
+        config.pluginmanager.register(Report(report_path))
 
 
 TEXT_MODEL = "meta-llama/Llama-3.1-8B-Instruct"
@@ -27,9 +34,11 @@ VISION_MODEL = "meta-llama/Llama-3.2-11B-Vision-Instruct"
 def pytest_addoption(parser):
     parser.addoption(
         "--report",
+        action="store",
         default=False,
-        action="store_true",
-        help="Knob to determine if we should generate report, e.g. --output=True",
+        nargs="?",
+        type=str,
+        help="Path where the test report should be written, e.g. --report=/path/to/report.md",
     )
     parser.addoption(
         "--inference-model",

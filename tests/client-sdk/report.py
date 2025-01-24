@@ -9,6 +9,7 @@ import importlib
 import os
 from collections import defaultdict
 from pathlib import Path
+from typing import Optional
 from urllib.parse import urlparse
 
 import pytest
@@ -85,7 +86,7 @@ SUPPORTED_MODELS = {
 
 class Report:
 
-    def __init__(self):
+    def __init__(self, report_path: Optional[str] = None):
         if os.environ.get("LLAMA_STACK_CONFIG"):
             config_path_or_template_name = get_env_or_fail("LLAMA_STACK_CONFIG")
             if config_path_or_template_name.endswith(".yaml"):
@@ -107,23 +108,16 @@ class Report:
             self.image_name = self.client.async_client.config.image_name
         elif os.environ.get("LLAMA_STACK_BASE_URL"):
             url = get_env_or_fail("LLAMA_STACK_BASE_URL")
-            hostname = urlparse(url).netloc
-            domain = hostname.split(".")[-2]
-            self.image_name = domain
-
+            self.image_name = urlparse(url).netloc
+            if report_path is None:
+                raise ValueError(
+                    "Report path must be provided when LLAMA_STACK_BASE_URL is set"
+                )
+            self.output_path = Path(report_path)
             self.client = LlamaStackClient(
                 base_url=url,
                 provider_data=None,
             )
-            # We assume that the domain maps to a template
-            # i.e. https://llamastack-preview.fireworks.ai --> "fireworks" template
-            # and add report in that directory
-            output_dir = Path(
-                importlib.resources.files("llama_stack") / f"templates/{domain}/"
-            )
-            if not output_dir.exists():
-                raise ValueError(f"Output dir {output_dir} does not exist")
-            self.output_path = Path(output_dir / "remote-hosted-report.md")
         else:
             raise ValueError("LLAMA_STACK_CONFIG or LLAMA_STACK_BASE_URL must be set")
 
