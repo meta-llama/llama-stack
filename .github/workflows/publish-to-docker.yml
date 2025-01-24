@@ -46,8 +46,11 @@ jobs:
             # Function to check if version exists in a repository
             check_version() {
                 local repo=$1
-                local status_code=$(curl -s -o /dev/null -w "%{http_code}" "https://$repo.org/project/llama-stack/${{ steps.version.outputs.version }}")
-                return $([ "$status_code" -eq 200 ])
+                local VERSION_TO_CHECK=${{ steps.version.outputs.version }}
+                echo "Checking version $VERSION_TO_CHECK in $repo"
+                result=$(curl -s "https://$repo.org/pypi/llama-stack/json" | jq --arg v "$VERSION_TO_CHECK" '.releases | has($v)')
+                echo "Result: $result"
+                return $([ "$result" = "true" ])
             }
 
             # Check TestPyPI first, then PyPI
@@ -64,6 +67,7 @@ jobs:
 
       - name: Install llama-stack
         run: |
+            echo "PYPI_SOURCE=${PYPI_SOURCE}"
             if [ "${{ github.event_name }}" = "push" ]; then
                 pip install -e .
             else
@@ -76,6 +80,8 @@ jobs:
 
       - name: Build docker image
         run: |
+          echo "PYPI_SOURCE=${PYPI_SOURCE}"
+          echo "VERSION=${{ steps.version.outputs.version }}"
           TEMPLATES=("ollama" "bedrock" "remote-vllm" "fireworks" "together" "tgi" "meta-reference-gpu")
           for template in "${TEMPLATES[@]}"; do
             if [ "$PYPI_SOURCE" = "testpypi" ]; then
@@ -126,6 +132,8 @@ jobs:
 
       - name: Push to dockerhub
         run: |
+          echo "PYPI_SOURCE=${PYPI_SOURCE}"
+          echo "VERSION=${{ steps.version.outputs.version }}"
           TEMPLATES=("ollama" "bedrock" "remote-vllm" "fireworks" "together" "tgi" "meta-reference-gpu")
           for template in "${TEMPLATES[@]}"; do
             if [ "$PYPI_SOURCE" = "testpypi" ]; then
@@ -133,6 +141,8 @@ jobs:
                 docker push llamastack/distribution-$template:test-${{ steps.version.outputs.version }}
             else
                 docker tag distribution-$template:${{ steps.version.outputs.version }} llamastack/distribution-$template:${{ steps.version.outputs.version }}
+                docker tag distribution-$template:${{ steps.version.outputs.version }} llamastack/distribution-$template:latest
                 docker push llamastack/distribution-$template:${{ steps.version.outputs.version }}
+                docker push llamastack/distribution-$template:latest
             fi
           done
