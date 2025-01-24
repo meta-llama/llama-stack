@@ -12,22 +12,22 @@ TEST_PYPI_VERSION=${TEST_PYPI_VERSION:-}
 PYPI_VERSION=${PYPI_VERSION:-}
 BUILD_PLATFORM=${BUILD_PLATFORM:-}
 
-if [ "$#" -lt 5 ]; then
+if [ "$#" -lt 6 ]; then
   # This only works for templates
-  echo "Usage: $0 <template_name> <container_base> <pip_dependencies> <host_build_dir> [<special_pip_deps>]" >&2
-  echo "Example: $0 fireworks python:3.9-slim 'fastapi uvicorn' /path/to/build/dir" >&2
+  echo "Usage: $0 <template_or_config> <image_name> <container_base> <build_file_path> <host_build_dir> <pip_dependencies> [<special_pip_deps>]" >&2
   exit 1
 fi
 
-special_pip_deps="$6"
-
 set -euo pipefail
 
-template_name="$1"
-container_base=$2
-build_file_path=$3
-host_build_dir=$4
-pip_dependencies=$5
+template_or_config="$1"
+image_name="$2"
+container_base="$3"
+build_file_path="$4"
+host_build_dir="$5"
+pip_dependencies="$6"
+special_pip_deps="$7"
+
 
 # Define color codes
 RED='\033[0;31m'
@@ -147,14 +147,16 @@ RUN pip install --no-cache $models_mount
 EOF
 fi
 
-add_to_container << EOF
-
-# This would be good in production but for debugging flexibility lets not add it right now
-# We need a more solid production ready entrypoint.sh anyway
-#
-ENTRYPOINT ["python", "-m", "llama_stack.distribution.server.server", "--template", "$template_name"]
-
+# if template_or_config ends with .yaml, it is not a template and we should not use the --template flag
+if [[ "$template_or_config" != *.yaml ]]; then
+  add_to_container << EOF
+ENTRYPOINT ["python", "-m", "llama_stack.distribution.server.server", "--template", "$template_or_config"]
 EOF
+else
+  add_to_container << EOF
+ENTRYPOINT ["python", "-m", "llama_stack.distribution.server.server"]
+EOF
+fi
 
 printf "Containerfile created successfully in $TEMP_DIR/Containerfile\n\n"
 cat $TEMP_DIR/Containerfile
@@ -174,7 +176,9 @@ if command -v selinuxenabled &>/dev/null && selinuxenabled; then
 fi
 
 # Set version tag based on PyPI version
-if [ -n "$TEST_PYPI_VERSION" ]; then
+if [ -n "$PYPI_VERSION" ]; then
+  version_tag="$PYPI_VERSION"
+elif [ -n "$TEST_PYPI_VERSION" ]; then
   version_tag="test-$TEST_PYPI_VERSION"
 elif [[ -n "$LLAMA_STACK_DIR" || -n "$LLAMA_MODELS_DIR" ]]; then
   version_tag="dev"
@@ -184,8 +188,7 @@ else
 fi
 
 # Add version tag to image name
-build_name="distribution-$template_name"
-image_tag="$build_name:$version_tag"
+image_tag="$image_name:$version_tag"
 
 # Detect platform architecture
 ARCH=$(uname -m)

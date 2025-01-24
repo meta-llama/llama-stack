@@ -10,7 +10,7 @@ import sys
 from enum import Enum
 
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from pydantic import BaseModel
 from termcolor import cprint
@@ -107,9 +107,9 @@ def build_image(
     build_config: BuildConfig,
     build_file_path: Path,
     image_name: str,
-    template_name: Optional[str] = None,
+    template_or_config: str,
 ):
-    container_image = (
+    container_base = (
         build_config.distribution_spec.container_image or "python:3.10-slim"
     )
 
@@ -119,16 +119,14 @@ def build_image(
     normal_deps += SERVER_DEPENDENCIES
 
     if build_config.image_type == ImageType.container.value:
-        if not template_name:
-            raise ValueError("template_name is required for container builds")
-
         script = str(
             importlib.resources.files("llama_stack") / "distribution/build_container.sh"
         )
         args = [
             script,
-            template_name,
-            container_image,
+            template_or_config,
+            image_name,
+            container_base,
             str(build_file_path),
             str(BUILDS_BASE_DIR / ImageType.container.value),
             " ".join(normal_deps),
