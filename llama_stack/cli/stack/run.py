@@ -78,12 +78,15 @@ class StackRun(Subcommand):
 
         config_file = Path(args.config)
         has_yaml_suffix = args.config.endswith(".yaml")
+        template_name = None
 
         if not config_file.exists() and not has_yaml_suffix:
             # check if this is a template
             config_file = (
                 Path(REPO_ROOT) / "llama_stack" / "templates" / args.config / "run.yaml"
             )
+            if config_file.exists():
+                template_name = args.config
 
         if not config_file.exists() and not has_yaml_suffix:
             # check if it's a build config saved to conda dir
@@ -120,7 +123,12 @@ class StackRun(Subcommand):
                 importlib.resources.files("llama_stack")
                 / "distribution/start_container.sh"
             )
-            run_args = [script, config.container_image]
+            image_name = (
+                f"distribution-{template_name}"
+                if template_name
+                else config.container_image
+            )
+            run_args = [script, image_name]
         else:
             current_conda_env = os.environ.get("CONDA_DEFAULT_ENV")
             image_name = args.image_name or current_conda_env
