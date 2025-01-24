@@ -76,23 +76,13 @@ agent_config = AgentConfig(
     model="Llama3.2-3B-Instruct",
     instructions="You are a helpful assistant",
     # Enable both RAG and tool usage
-    tools=[
-        {
-            "type": "memory",
-            "memory_bank_configs": [{
-                "type": "vector",
-                "bank_id": "my_docs"
-            }],
-            "max_tokens_in_context": 4096
-        },
-        {
-            "type": "code_interpreter",
-            "enable_inline_code_execution": True
-        }
+    toolgroups=[
+        {"name": "builtin::rag", "args": {"vector_db_ids": ["my_docs"]}}.
+        "builtin::code_interpreter",
     ],
     # Configure safety
-    input_shields=["content_safety"],
-    output_shields=["content_safety"],
+    input_shields=["llama_guard"],
+    output_shields=["llama_guard"],
     # Control the inference loop
     max_infer_iters=5,
     sampling_params={
