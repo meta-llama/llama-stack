@@ -142,7 +142,7 @@ config = AgentConfig(
 )
 ```
 
-Refer to [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/blob/main/examples/agents/e2e_loop_with_custom_tools.py) for an example of how to use client provided tools.
+Refer to [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/blob/main/examples/agents/e2e_loop_with_client_tools.py) for an example of how to use client provided tools.
 
 ## Tool Structure
 
