@@ -16,9 +16,10 @@ The `llamastack/distribution-sambanova` distribution consists of the following p
 |-----|-------------|
 | agents | `inline::meta-reference` |
 | inference | `remote::sambanova` |
-| memory | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
 | safety | `inline::llama-guard` |
 | telemetry | `inline::meta-reference` |
+| tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::code-interpreter`, `inline::rag-runtime` |
+| vector_io | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
 
 
 ### Environment Variables
@@ -32,13 +33,13 @@ The following environment variables can be configured:
 
 The following models are available by default:
 
-- `meta-llama/Llama-3.1-8B-Instruct`
-- `meta-llama/Llama-3.1-70B-Instruct`
-- `meta-llama/Llama-3.1-405B-Instruct`
-- `meta-llama/Llama-3.2-1B-Instruct`
-- `meta-llama/Llama-3.2-3B-Instruct`
-- `meta-llama/Llama-3.2-11B-Vision-Instruct`
-- `meta-llama/Llama-3.2-90B-Vision-Instruct`
+- `meta-llama/Llama-3.1-8B-Instruct (Meta-Llama-3.1-8B-Instruct)`
+- `meta-llama/Llama-3.1-70B-Instruct (Meta-Llama-3.1-70B-Instruct)`
+- `meta-llama/Llama-3.1-405B-Instruct-FP8 (Meta-Llama-3.1-405B-Instruct)`
+- `meta-llama/Llama-3.2-1B-Instruct (Meta-Llama-3.2-1B-Instruct)`
+- `meta-llama/Llama-3.2-3B-Instruct (Meta-Llama-3.2-3B-Instruct)`
+- `meta-llama/Llama-3.2-11B-Vision-Instruct (Llama-3.2-11B-Vision-Instruct)`
+- `meta-llama/Llama-3.2-90B-Vision-Instruct (Llama-3.2-90B-Vision-Instruct)`
 
 
 ### Prerequisite: API Keys
