@@ -23,9 +23,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.inputs.commit_sha }}
-      - name: Read CODEOWNERS file
-        run: |
-          cat .github/CODEOWNERS
 
       - name: Echo commit SHA
         run: |
