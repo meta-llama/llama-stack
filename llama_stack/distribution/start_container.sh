@@ -30,8 +30,8 @@ if [ $# -lt 3 ]; then
   exit 1
 fi
 
-build_name="$1"
-container_image="localhost/distribution-$build_name"
+image_name="$1"
+container_image="localhost/$image_name"
 shift
 
 yaml_config="$1"
@@ -76,13 +76,15 @@ if [ -n "$LLAMA_CHECKPOINT_DIR" ]; then
   CONTAINER_OPTS="$CONTAINER_OPTS --gpus=all"
 fi
 
-version_tag="latest"
 if [ -n "$PYPI_VERSION" ]; then
   version_tag="$PYPI_VERSION"
 elif [ -n "$LLAMA_STACK_DIR" ]; then
   version_tag="dev"
 elif [ -n "$TEST_PYPI_VERSION" ]; then
   version_tag="test-$TEST_PYPI_VERSION"
+else
+  URL="https://pypi.org/pypi/llama-stack/json"
+  version_tag=$(curl -s $URL | jq -r '.info.version')
 fi
 
 $CONTAINER_BINARY run $CONTAINER_OPTS -it \
