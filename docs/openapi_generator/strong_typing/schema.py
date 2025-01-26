@@ -456,8 +456,19 @@ class JsonSchemaGenerator:
                 ]
             }
             if discriminator:
+                # for each union type, we need to read the value of the discriminator
+                mapping = {}
+                for union_type in typing.get_args(typ):
+                    props = self.type_to_schema(union_type, force_expand=True)[
+                        "properties"
+                    ]
+                    mapping[props[discriminator]["default"]] = self.type_to_schema(
+                        union_type
+                    )["$ref"]
+
                 ret["discriminator"] = {
                     "propertyName": discriminator,
+                    "mapping": mapping,
                 }
             return ret
         elif origin_type is Literal:

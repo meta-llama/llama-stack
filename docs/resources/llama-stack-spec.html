@@ -3812,7 +3812,11 @@
                     }
                 ],
                 "discriminator": {
-                    "propertyName": "type"
+                    "propertyName": "type",
+                    "mapping": {
+                        "image": "#/components/schemas/ImageContentItem",
+                        "text": "#/components/schemas/TextContentItem"
+                    }
                 }
             },
             "Message": {
@@ -3831,7 +3835,13 @@
                     }
                 ],
                 "discriminator": {
-                    "propertyName": "role"
+                    "propertyName": "role",
+                    "mapping": {
+                        "user": "#/components/schemas/UserMessage",
+                        "system": "#/components/schemas/SystemMessage",
+                        "tool": "#/components/schemas/ToolResponseMessage",
+                        "assistant": "#/components/schemas/CompletionMessage"
+                    }
                 }
             },
             "SamplingParams": {
@@ -3850,7 +3860,12 @@
                             }
                         ],
                         "discriminator": {
-                            "propertyName": "type"
+                            "propertyName": "type",
+                            "mapping": {
+                                "greedy": "#/components/schemas/GreedySamplingStrategy",
+                                "top_p": "#/components/schemas/TopPSamplingStrategy",
+                                "top_k": "#/components/schemas/TopKSamplingStrategy"
+                            }
                         }
                     },
                     "max_tokens": {
@@ -4313,91 +4328,101 @@
                     "job_uuid"
                 ]
             },
+            "GrammarResponseFormat": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "grammar",
+                        "default": "grammar"
+                    },
+                    "bnf": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "bnf"
+                ]
+            },
+            "JsonSchemaResponseFormat": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "json_schema",
+                        "default": "json_schema"
+                    },
+                    "json_schema": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "json_schema"
+                ]
+            },
             "ResponseFormat": {
                 "oneOf": [
                     {
-                        "type": "object",
-                        "properties": {
-                            "type": {
-                                "type": "string",
-                                "const": "json_schema",
-                                "default": "json_schema"
-                            },
-                            "json_schema": {
-                                "type": "object",
-                                "additionalProperties": {
-                                    "oneOf": [
-                                        {
-                                            "type": "null"
-                                        },
-                                        {
-                                            "type": "boolean"
-                                        },
-                                        {
-                                            "type": "number"
-                                        },
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "type": "array"
-                                        },
-                                        {
-                                            "type": "object"
-                                        }
-                                    ]
-                                }
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "type",
-                            "json_schema"
-                        ]
+                        "$ref": "#/components/schemas/JsonSchemaResponseFormat"
                     },
                     {
-                        "type": "object",
-                        "properties": {
-                            "type": {
-                                "type": "string",
-                                "const": "grammar",
-                                "default": "grammar"
-                            },
-                            "bnf": {
-                                "type": "object",
-                                "additionalProperties": {
-                                    "oneOf": [
-                                        {
-                                            "type": "null"
-                                        },
-                                        {
-                                            "type": "boolean"
-                                        },
-                                        {
-                                            "type": "number"
-                                        },
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "type": "array"
-                                        },
-                                        {
-                                            "type": "object"
-                                        }
-                                    ]
-                                }
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "type",
-                            "bnf"
-                        ]
+                        "$ref": "#/components/schemas/GrammarResponseFormat"
                     }
                 ],
                 "discriminator": {
-                    "propertyName": "type"
+                    "propertyName": "type",
+                    "mapping": {
+                        "json_schema": "#/components/schemas/JsonSchemaResponseFormat",
+                        "grammar": "#/components/schemas/GrammarResponseFormat"
+                    }
                 }
             },
             "ChatCompletionRequest": {
@@ -4529,7 +4554,12 @@
                     }
                 ],
                 "discriminator": {
-                    "propertyName": "type"
+                    "propertyName": "type",
+                    "mapping": {
+                        "text": "#/components/schemas/TextDelta",
+                        "image": "#/components/schemas/ImageDelta",
+                        "tool_call": "#/components/schemas/ToolCallDelta"
+                    }
                 }
             },
             "ImageDelta": {
@@ -4737,8 +4767,7 @@
                         "default": "auto"
                     },
                     "tool_prompt_format": {
-                        "$ref": "#/components/schemas/ToolPromptFormat",
-                        "default": "json"
+                        "$ref": "#/components/schemas/ToolPromptFormat"
                     },
                     "max_infer_iters": {
                         "type": "integer",
@@ -5036,7 +5065,14 @@
                             }
                         ],
                         "discriminator": {
-                            "propertyName": "event_type"
+                            "propertyName": "event_type",
+                            "mapping": {
+                                "step_start": "#/components/schemas/AgentTurnResponseStepStartPayload",
+                                "step_progress": "#/components/schemas/AgentTurnResponseStepProgressPayload",
+                                "step_complete": "#/components/schemas/AgentTurnResponseStepCompletePayload",
+                                "turn_start": "#/components/schemas/AgentTurnResponseTurnStartPayload",
+                                "turn_complete": "#/components/schemas/AgentTurnResponseTurnCompletePayload"
+                            }
                         }
                     }
                 },
@@ -5082,7 +5118,13 @@
                             }
                         ],
                         "discriminator": {
-                            "propertyName": "step_type"
+                            "propertyName": "step_type",
+                            "mapping": {
+                                "inference": "#/components/schemas/InferenceStep",
+                                "tool_execution": "#/components/schemas/ToolExecutionStep",
+                                "shield_call": "#/components/schemas/ShieldCallStep",
+                                "memory_retrieval": "#/components/schemas/MemoryRetrievalStep"
+                            }
                         }
                     }
                 },
@@ -5485,7 +5527,13 @@
                                 }
                             ],
                             "discriminator": {
-                                "propertyName": "step_type"
+                                "propertyName": "step_type",
+                                "mapping": {
+                                    "inference": "#/components/schemas/InferenceStep",
+                                    "tool_execution": "#/components/schemas/ToolExecutionStep",
+                                    "shield_call": "#/components/schemas/ShieldCallStep",
+                                    "memory_retrieval": "#/components/schemas/MemoryRetrievalStep"
+                                }
                             }
                         }
                     },
@@ -5638,7 +5686,11 @@
                             }
                         ],
                         "discriminator": {
-                            "propertyName": "type"
+                            "propertyName": "type",
+                            "mapping": {
+                                "model": "#/components/schemas/ModelCandidate",
+                                "agent": "#/components/schemas/AgentCandidate"
+                            }
                         }
                     },
                     "scoring_params": {
@@ -5656,7 +5708,12 @@
                                 }
                             ],
                             "discriminator": {
-                                "propertyName": "type"
+                                "propertyName": "type",
+                                "mapping": {
+                                    "llm_as_judge": "#/components/schemas/LLMAsJudgeScoringFnParams",
+                                    "regex_parser": "#/components/schemas/RegexParserScoringFnParams",
+                                    "basic": "#/components/schemas/BasicScoringFnParams"
+                                }
                             }
                         }
                     },
@@ -5709,7 +5766,11 @@
                             }
                         ],
                         "discriminator": {
-                            "propertyName": "type"
+                            "propertyName": "type",
+                            "mapping": {
+                                "model": "#/components/schemas/ModelCandidate",
+                                "agent": "#/components/schemas/AgentCandidate"
+                            }
                         }
                     },
                     "num_examples": {
@@ -5853,7 +5914,11 @@
                             }
                         ],
                         "discriminator": {
-                            "propertyName": "type"
+                            "propertyName": "type",
+                            "mapping": {
+                                "benchmark": "#/components/schemas/BenchmarkEvalTaskConfig",
+                                "app": "#/components/schemas/AppEvalTaskConfig"
+                            }
                         }
                     }
                 },
@@ -6019,7 +6084,13 @@
                             }
                         ],
                         "discriminator": {
-                            "propertyName": "step_type"
+                            "propertyName": "step_type",
+                            "mapping": {
+                                "inference": "#/components/schemas/InferenceStep",
+                                "tool_execution": "#/components/schemas/ToolExecutionStep",
+                                "shield_call": "#/components/schemas/ShieldCallStep",
+                                "memory_retrieval": "#/components/schemas/MemoryRetrievalStep"
+                            }
                         }
                     }
                 },
@@ -6237,7 +6308,19 @@
                     }
                 ],
                 "discriminator": {
-                    "propertyName": "type"
+                    "propertyName": "type",
+                    "mapping": {
+                        "string": "#/components/schemas/StringType",
+                        "number": "#/components/schemas/NumberType",
+                        "boolean": "#/components/schemas/BooleanType",
+                        "array": "#/components/schemas/ArrayType",
+                        "object": "#/components/schemas/ObjectType",
+                        "json": "#/components/schemas/JsonType",
+                        "union": "#/components/schemas/UnionType",
+                        "chat_completion_input": "#/components/schemas/ChatCompletionInputType",
+                        "completion_input": "#/components/schemas/CompletionInputType",
+                        "agent_turn_input": "#/components/schemas/AgentTurnInputType"
+                    }
                 }
             },
             "StringType": {
@@ -6500,7 +6583,12 @@
                             }
                         ],
                         "discriminator": {
-                            "propertyName": "type"
+                            "propertyName": "type",
+                            "mapping": {
+                                "llm_as_judge": "#/components/schemas/LLMAsJudgeScoringFnParams",
+                                "regex_parser": "#/components/schemas/RegexParserScoringFnParams",
+                                "basic": "#/components/schemas/BasicScoringFnParams"
+                            }
                         }
                     }
                 },
@@ -7589,7 +7677,11 @@
                             }
                         ],
                         "discriminator": {
-                            "propertyName": "type"
+                            "propertyName": "type",
+                            "mapping": {
+                                "span_start": "#/components/schemas/SpanStartPayload",
+                                "span_end": "#/components/schemas/SpanEndPayload"
+                            }
                         }
                     }
                 },
@@ -7678,7 +7770,12 @@
                             }
                         ],
                         "discriminator": {
-                            "propertyName": "type"
+                            "propertyName": "type",
+                            "mapping": {
+                                "unstructured_log": "#/components/schemas/UnstructuredLogEvent",
+                                "metric": "#/components/schemas/MetricEvent",
+                                "structured_log": "#/components/schemas/StructuredLogEvent"
+                            }
                         }
                     },
                     "ttl_seconds": {
@@ -8011,7 +8108,11 @@
                     }
                 ],
                 "discriminator": {
-                    "propertyName": "type"
+                    "propertyName": "type",
+                    "mapping": {
+                        "default": "#/components/schemas/DefaultRAGQueryGeneratorConfig",
+                        "llm": "#/components/schemas/LLMRAGQueryGeneratorConfig"
+                    }
                 }
             },
             "QueryRequest": {
@@ -8406,7 +8507,12 @@
                             }
                         ],
                         "discriminator": {
-                            "propertyName": "type"
+                            "propertyName": "type",
+                            "mapping": {
+                                "llm_as_judge": "#/components/schemas/LLMAsJudgeScoringFnParams",
+                                "regex_parser": "#/components/schemas/RegexParserScoringFnParams",
+                                "basic": "#/components/schemas/BasicScoringFnParams"
+                            }
                         }
                     }
                 },
@@ -8542,7 +8648,11 @@
                             }
                         ],
                         "discriminator": {
-                            "propertyName": "type"
+                            "propertyName": "type",
+                            "mapping": {
+                                "benchmark": "#/components/schemas/BenchmarkEvalTaskConfig",
+                                "app": "#/components/schemas/AppEvalTaskConfig"
+                            }
                         }
                     }
                 },
@@ -8694,7 +8804,12 @@
                                         }
                                     ],
                                     "discriminator": {
-                                        "propertyName": "type"
+                                        "propertyName": "type",
+                                        "mapping": {
+                                            "llm_as_judge": "#/components/schemas/LLMAsJudgeScoringFnParams",
+                                            "regex_parser": "#/components/schemas/RegexParserScoringFnParams",
+                                            "basic": "#/components/schemas/BasicScoringFnParams"
+                                        }
                                     }
                                 },
                                 {
@@ -8748,7 +8863,12 @@
                                         }
                                     ],
                                     "discriminator": {
-                                        "propertyName": "type"
+                                        "propertyName": "type",
+                                        "mapping": {
+                                            "llm_as_judge": "#/components/schemas/LLMAsJudgeScoringFnParams",
+                                            "regex_parser": "#/components/schemas/RegexParserScoringFnParams",
+                                            "basic": "#/components/schemas/BasicScoringFnParams"
+                                        }
                                     }
                                 },
                                 {
@@ -8928,7 +9048,11 @@
                             }
                         ],
                         "discriminator": {
-                            "propertyName": "type"
+                            "propertyName": "type",
+                            "mapping": {
+                                "LoRA": "#/components/schemas/LoraFinetuningConfig",
+                                "QAT": "#/components/schemas/QATFinetuningConfig"
+                            }
                         }
                     }
                 },
@@ -9291,6 +9415,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateRowsRequest\" />"
         },
         {
+            "name": "GrammarResponseFormat",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/GrammarResponseFormat\" />"
+        },
+        {
             "name": "GreedySamplingStrategy",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/GreedySamplingStrategy\" />"
         },
@@ -9343,6 +9471,10 @@
         {
             "name": "JobStatus",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/JobStatus\" />"
+        },
+        {
+            "name": "JsonSchemaResponseFormat",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/JsonSchemaResponseFormat\" />"
         },
         {
             "name": "JsonType",
@@ -9924,6 +10056,7 @@
                 "EvalTask",
                 "EvaluateResponse",
                 "EvaluateRowsRequest",
+                "GrammarResponseFormat",
                 "GreedySamplingStrategy",
                 "HealthInfo",
                 "ImageContentItem",
@@ -9936,6 +10069,7 @@
                 "InvokeToolRequest",
                 "Job",
                 "JobStatus",
+                "JsonSchemaResponseFormat",
                 "JsonType",
                 "LLMAsJudgeScoringFnParams",
                 "LLMRAGQueryGeneratorConfig",
