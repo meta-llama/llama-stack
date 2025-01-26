@@ -104,11 +104,27 @@ logger = logging.getLogger(__name__)
 ############################################################################
 # Local functions go here
 
+# For debugging stuff when the Llama Stack logger isn't cooperating
+_BYPASS_LOGGING = False
+
+
+def _log(msg: str, level: str):
+    if _BYPASS_LOGGING:
+        time_str = datetime.datetime.now().strftime("%H:%M:%S")
+        print(f"{time_str}: {msg}")
+    match level:
+        case "info":
+            logger.info(msg)
+        case "debug":
+            logger.debug(msg)
+
 
 def _info(msg: str):
-    time_str = datetime.datetime.now().strftime("%H:%M:%S")
-    print(f"{time_str}: {msg}")
-    # logger.info(msg)
+    _log(msg, "info")
+
+
+def _debug(msg: str):
+    _log(msg, "debug")
 
 
 def _random_uuid_str() -> str:
@@ -265,7 +281,7 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         :returns: The input ``Model`` object. It may or may not be permissible
          to change fields before returning this object.
         """
-        _info(f"In register_model({model})")
+        _debug(f"In register_model({model})")
 
         # First attempt to interpret the model coordinates as a Llama model name
         resolved_llama_model = resolve_model(model.provider_model_id)
@@ -276,7 +292,7 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
             # Not a Llama model name. Pass the model id through to vLLM's loader
             resolved_model_id = model.provider_model_id
 
-        _info(f"Resolved model id: {resolved_model_id}")
+        _info(f"Model id {model} resolved to {resolved_model_id}")
 
         if self.resolved_model_id is not None:
             if resolved_model_id != self.resolved_model_id:
@@ -290,6 +306,8 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
             else:
                 # Model already loaded
                 return model
+
+        _info(f"Preloading model: {resolved_model_id}")
 
         # If we get here, this is the first time registering a model.
         # Preload so that the first inference request won't time out.
@@ -317,8 +335,8 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
             # No info -- choose a default so we can at least attempt tool
             # use.
             tool_parser = DEFAULT_TOOL_PARSER
-        _info(f"{hf_config_class_name=}")
-        _info(f"{tool_parser=}")
+        _debug(f"{hf_config_class_name=}")
+        _debug(f"{tool_parser=}")
 
         # Wrap the lower-level engine in an OpenAI-compatible chat API
         model_config = await self.engine.get_model_config()
@@ -382,7 +400,7 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
 
         converted_sampling_params = _convert_sampling_params(sampling_params, response_format, logprobs)
 
-        _info(f"{converted_sampling_params=}")
+        _debug(f"{converted_sampling_params=}")
 
         if stream:
             return self._streaming_completion(content, converted_sampling_params)
@@ -452,10 +470,6 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
             else:
                 raise ValueError(f"Unrecognized stop reason '{stop_reason_str}'")
 
-            # _info(f"completion string: {completion_string}")
-            # _info(f"stop reason: {stop_reason_str}")
-            # _info(f"completion tokens: {completion_tokens}")
-
             # vLLM's protocol outputs the stop token, then sets end of message
             # on the next step for some reason.
             if request_output.outputs[-1].token_ids[-1] == eos_token_id:
@@ -515,10 +529,10 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         )
         chat_completion_request = vllm.entrypoints.openai.protocol.ChatCompletionRequest(**request_options)
 
-        _info(f"Converted request: {chat_completion_request}")
+        _debug(f"Converted request: {chat_completion_request}")
 
         vllm_result = await self.chat.create_chat_completion(chat_completion_request)
-        _info(f"Result from vLLM: {vllm_result}")
+        _debug(f"Result from vLLM: {vllm_result}")
         if isinstance(vllm_result, vllm.entrypoints.openai.protocol.ErrorResponse):
             raise ValueError(f"Error from vLLM layer: {vllm_result}")
 
@@ -575,7 +589,7 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
 
         # TODO: Convert logprobs
 
-        _info(f"Converted message: {converted_message}")
+        _debug(f"Converted message: {converted_message}")
 
         return ChatCompletionResponse(
             completion_message=converted_message,
@@ -629,7 +643,7 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
             # Anything that is not "[DONE]" should be a JSON record
             parsed_chunk = json.loads(data_str)
 
-            print(f"Parsed JSON event to:\n{json.dumps(parsed_chunk, indent=2)}")
+            _debug(f"Parsed JSON event to:\n{json.dumps(parsed_chunk, indent=2)}")
 
             # The result may contain multiple completions, but Llama Stack APIs
             # only support returning one.
