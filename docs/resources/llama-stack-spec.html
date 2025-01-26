@@ -5047,40 +5047,42 @@
                 "type": "object",
                 "properties": {
                     "payload": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/AgentTurnResponseStepStartPayload"
-                            },
-                            {
-                                "$ref": "#/components/schemas/AgentTurnResponseStepProgressPayload"
-                            },
-                            {
-                                "$ref": "#/components/schemas/AgentTurnResponseStepCompletePayload"
-                            },
-                            {
-                                "$ref": "#/components/schemas/AgentTurnResponseTurnStartPayload"
-                            },
-                            {
-                                "$ref": "#/components/schemas/AgentTurnResponseTurnCompletePayload"
-                            }
-                        ],
-                        "discriminator": {
-                            "propertyName": "event_type",
-                            "mapping": {
-                                "step_start": "#/components/schemas/AgentTurnResponseStepStartPayload",
-                                "step_progress": "#/components/schemas/AgentTurnResponseStepProgressPayload",
-                                "step_complete": "#/components/schemas/AgentTurnResponseStepCompletePayload",
-                                "turn_start": "#/components/schemas/AgentTurnResponseTurnStartPayload",
-                                "turn_complete": "#/components/schemas/AgentTurnResponseTurnCompletePayload"
-                            }
-                        }
+                        "$ref": "#/components/schemas/AgentTurnResponseEventPayload"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "payload"
+                ]
+            },
+            "AgentTurnResponseEventPayload": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/AgentTurnResponseStepStartPayload"
+                    },
+                    {
+                        "$ref": "#/components/schemas/AgentTurnResponseStepProgressPayload"
+                    },
+                    {
+                        "$ref": "#/components/schemas/AgentTurnResponseStepCompletePayload"
+                    },
+                    {
+                        "$ref": "#/components/schemas/AgentTurnResponseTurnStartPayload"
+                    },
+                    {
+                        "$ref": "#/components/schemas/AgentTurnResponseTurnCompletePayload"
+                    }
                 ],
-                "title": "Streamed agent execution response."
+                "discriminator": {
+                    "propertyName": "event_type",
+                    "mapping": {
+                        "step_start": "#/components/schemas/AgentTurnResponseStepStartPayload",
+                        "step_progress": "#/components/schemas/AgentTurnResponseStepProgressPayload",
+                        "step_complete": "#/components/schemas/AgentTurnResponseStepCompletePayload",
+                        "turn_start": "#/components/schemas/AgentTurnResponseTurnStartPayload",
+                        "turn_complete": "#/components/schemas/AgentTurnResponseTurnCompletePayload"
+                    }
+                }
             },
             "AgentTurnResponseStepCompletePayload": {
                 "type": "object",
@@ -5677,44 +5679,12 @@
                         "default": "app"
                     },
                     "eval_candidate": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/ModelCandidate"
-                            },
-                            {
-                                "$ref": "#/components/schemas/AgentCandidate"
-                            }
-                        ],
-                        "discriminator": {
-                            "propertyName": "type",
-                            "mapping": {
-                                "model": "#/components/schemas/ModelCandidate",
-                                "agent": "#/components/schemas/AgentCandidate"
-                            }
-                        }
+                        "$ref": "#/components/schemas/EvalCandidate"
                     },
                     "scoring_params": {
                         "type": "object",
                         "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "$ref": "#/components/schemas/LLMAsJudgeScoringFnParams"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/RegexParserScoringFnParams"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/BasicScoringFnParams"
-                                }
-                            ],
-                            "discriminator": {
-                                "propertyName": "type",
-                                "mapping": {
-                                    "llm_as_judge": "#/components/schemas/LLMAsJudgeScoringFnParams",
-                                    "regex_parser": "#/components/schemas/RegexParserScoringFnParams",
-                                    "basic": "#/components/schemas/BasicScoringFnParams"
-                                }
-                            }
+                            "$ref": "#/components/schemas/ScoringFnParams"
                         }
                     },
                     "num_examples": {
@@ -5757,21 +5727,7 @@
                         "default": "benchmark"
                     },
                     "eval_candidate": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/ModelCandidate"
-                            },
-                            {
-                                "$ref": "#/components/schemas/AgentCandidate"
-                            }
-                        ],
-                        "discriminator": {
-                            "propertyName": "type",
-                            "mapping": {
-                                "model": "#/components/schemas/ModelCandidate",
-                                "agent": "#/components/schemas/AgentCandidate"
-                            }
-                        }
+                        "$ref": "#/components/schemas/EvalCandidate"
                     },
                     "num_examples": {
                         "type": "integer"
@@ -5782,6 +5738,40 @@
                     "type",
                     "eval_candidate"
                 ]
+            },
+            "EvalCandidate": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/ModelCandidate"
+                    },
+                    {
+                        "$ref": "#/components/schemas/AgentCandidate"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "model": "#/components/schemas/ModelCandidate",
+                        "agent": "#/components/schemas/AgentCandidate"
+                    }
+                }
+            },
+            "EvalTaskConfig": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/BenchmarkEvalTaskConfig"
+                    },
+                    {
+                        "$ref": "#/components/schemas/AppEvalTaskConfig"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "benchmark": "#/components/schemas/BenchmarkEvalTaskConfig",
+                        "app": "#/components/schemas/AppEvalTaskConfig"
+                    }
+                }
             },
             "LLMAsJudgeScoringFnParams": {
                 "type": "object",
@@ -5867,6 +5857,27 @@
                     "type"
                 ]
             },
+            "ScoringFnParams": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/LLMAsJudgeScoringFnParams"
+                    },
+                    {
+                        "$ref": "#/components/schemas/RegexParserScoringFnParams"
+                    },
+                    {
+                        "$ref": "#/components/schemas/BasicScoringFnParams"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "llm_as_judge": "#/components/schemas/LLMAsJudgeScoringFnParams",
+                        "regex_parser": "#/components/schemas/RegexParserScoringFnParams",
+                        "basic": "#/components/schemas/BasicScoringFnParams"
+                    }
+                }
+            },
             "EvaluateRowsRequest": {
                 "type": "object",
                 "properties": {
@@ -5905,21 +5916,7 @@
                         }
                     },
                     "task_config": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/BenchmarkEvalTaskConfig"
-                            },
-                            {
-                                "$ref": "#/components/schemas/AppEvalTaskConfig"
-                            }
-                        ],
-                        "discriminator": {
-                            "propertyName": "type",
-                            "mapping": {
-                                "benchmark": "#/components/schemas/BenchmarkEvalTaskConfig",
-                                "app": "#/components/schemas/AppEvalTaskConfig"
-                            }
-                        }
+                        "$ref": "#/components/schemas/EvalTaskConfig"
                     }
                 },
                 "additionalProperties": false,
@@ -6571,25 +6568,7 @@
                         "$ref": "#/components/schemas/ParamType"
                     },
                     "params": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/LLMAsJudgeScoringFnParams"
-                            },
-                            {
-                                "$ref": "#/components/schemas/RegexParserScoringFnParams"
-                            },
-                            {
-                                "$ref": "#/components/schemas/BasicScoringFnParams"
-                            }
-                        ],
-                        "discriminator": {
-                            "propertyName": "type",
-                            "mapping": {
-                                "llm_as_judge": "#/components/schemas/LLMAsJudgeScoringFnParams",
-                                "regex_parser": "#/components/schemas/RegexParserScoringFnParams",
-                                "basic": "#/components/schemas/BasicScoringFnParams"
-                            }
-                        }
+                        "$ref": "#/components/schemas/ScoringFnParams"
                     }
                 },
                 "additionalProperties": false,
@@ -7503,6 +7482,27 @@
                     "data"
                 ]
             },
+            "Event": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/UnstructuredLogEvent"
+                    },
+                    {
+                        "$ref": "#/components/schemas/MetricEvent"
+                    },
+                    {
+                        "$ref": "#/components/schemas/StructuredLogEvent"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "unstructured_log": "#/components/schemas/UnstructuredLogEvent",
+                        "metric": "#/components/schemas/MetricEvent",
+                        "structured_log": "#/components/schemas/StructuredLogEvent"
+                    }
+                }
+            },
             "LogSeverity": {
                 "type": "string",
                 "enum": [
@@ -7668,21 +7668,7 @@
                         "default": "structured_log"
                     },
                     "payload": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/SpanStartPayload"
-                            },
-                            {
-                                "$ref": "#/components/schemas/SpanEndPayload"
-                            }
-                        ],
-                        "discriminator": {
-                            "propertyName": "type",
-                            "mapping": {
-                                "span_start": "#/components/schemas/SpanStartPayload",
-                                "span_end": "#/components/schemas/SpanEndPayload"
-                            }
-                        }
+                        "$ref": "#/components/schemas/StructuredLogPayload"
                     }
                 },
                 "additionalProperties": false,
@@ -7693,6 +7679,23 @@
                     "type",
                     "payload"
                 ]
+            },
+            "StructuredLogPayload": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/SpanStartPayload"
+                    },
+                    {
+                        "$ref": "#/components/schemas/SpanEndPayload"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "span_start": "#/components/schemas/SpanStartPayload",
+                        "span_end": "#/components/schemas/SpanEndPayload"
+                    }
+                }
             },
             "UnstructuredLogEvent": {
                 "type": "object",
@@ -7758,25 +7761,7 @@
                 "type": "object",
                 "properties": {
                     "event": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/UnstructuredLogEvent"
-                            },
-                            {
-                                "$ref": "#/components/schemas/MetricEvent"
-                            },
-                            {
-                                "$ref": "#/components/schemas/StructuredLogEvent"
-                            }
-                        ],
-                        "discriminator": {
-                            "propertyName": "type",
-                            "mapping": {
-                                "unstructured_log": "#/components/schemas/UnstructuredLogEvent",
-                                "metric": "#/components/schemas/MetricEvent",
-                                "structured_log": "#/components/schemas/StructuredLogEvent"
-                            }
-                        }
+                        "$ref": "#/components/schemas/Event"
                     },
                     "ttl_seconds": {
                         "type": "integer"
@@ -8495,25 +8480,7 @@
                         "type": "string"
                     },
                     "params": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/LLMAsJudgeScoringFnParams"
-                            },
-                            {
-                                "$ref": "#/components/schemas/RegexParserScoringFnParams"
-                            },
-                            {
-                                "$ref": "#/components/schemas/BasicScoringFnParams"
-                            }
-                        ],
-                        "discriminator": {
-                            "propertyName": "type",
-                            "mapping": {
-                                "llm_as_judge": "#/components/schemas/LLMAsJudgeScoringFnParams",
-                                "regex_parser": "#/components/schemas/RegexParserScoringFnParams",
-                                "basic": "#/components/schemas/BasicScoringFnParams"
-                            }
-                        }
+                        "$ref": "#/components/schemas/ScoringFnParams"
                     }
                 },
                 "additionalProperties": false,
@@ -8639,21 +8606,7 @@
                 "type": "object",
                 "properties": {
                     "task_config": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/BenchmarkEvalTaskConfig"
-                            },
-                            {
-                                "$ref": "#/components/schemas/AppEvalTaskConfig"
-                            }
-                        ],
-                        "discriminator": {
-                            "propertyName": "type",
-                            "mapping": {
-                                "benchmark": "#/components/schemas/BenchmarkEvalTaskConfig",
-                                "app": "#/components/schemas/AppEvalTaskConfig"
-                            }
-                        }
+                        "$ref": "#/components/schemas/EvalTaskConfig"
                     }
                 },
                 "additionalProperties": false,
@@ -8792,25 +8745,7 @@
                         "additionalProperties": {
                             "oneOf": [
                                 {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/LLMAsJudgeScoringFnParams"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/RegexParserScoringFnParams"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/BasicScoringFnParams"
-                                        }
-                                    ],
-                                    "discriminator": {
-                                        "propertyName": "type",
-                                        "mapping": {
-                                            "llm_as_judge": "#/components/schemas/LLMAsJudgeScoringFnParams",
-                                            "regex_parser": "#/components/schemas/RegexParserScoringFnParams",
-                                            "basic": "#/components/schemas/BasicScoringFnParams"
-                                        }
-                                    }
+                                    "$ref": "#/components/schemas/ScoringFnParams"
                                 },
                                 {
                                     "type": "null"
@@ -8851,25 +8786,7 @@
                         "additionalProperties": {
                             "oneOf": [
                                 {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/LLMAsJudgeScoringFnParams"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/RegexParserScoringFnParams"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/BasicScoringFnParams"
-                                        }
-                                    ],
-                                    "discriminator": {
-                                        "propertyName": "type",
-                                        "mapping": {
-                                            "llm_as_judge": "#/components/schemas/LLMAsJudgeScoringFnParams",
-                                            "regex_parser": "#/components/schemas/RegexParserScoringFnParams",
-                                            "basic": "#/components/schemas/BasicScoringFnParams"
-                                        }
-                                    }
+                                    "$ref": "#/components/schemas/ScoringFnParams"
                                 },
                                 {
                                     "type": "null"
@@ -8905,6 +8822,23 @@
                 "required": [
                     "results"
                 ]
+            },
+            "AlgorithmConfig": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/LoraFinetuningConfig"
+                    },
+                    {
+                        "$ref": "#/components/schemas/QATFinetuningConfig"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "LoRA": "#/components/schemas/LoraFinetuningConfig",
+                        "QAT": "#/components/schemas/QATFinetuningConfig"
+                    }
+                }
             },
             "LoraFinetuningConfig": {
                 "type": "object",
@@ -9039,21 +8973,7 @@
                         "type": "string"
                     },
                     "algorithm_config": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/LoraFinetuningConfig"
-                            },
-                            {
-                                "$ref": "#/components/schemas/QATFinetuningConfig"
-                            }
-                        ],
-                        "discriminator": {
-                            "propertyName": "type",
-                            "mapping": {
-                                "LoRA": "#/components/schemas/LoraFinetuningConfig",
-                                "QAT": "#/components/schemas/QATFinetuningConfig"
-                            }
-                        }
+                        "$ref": "#/components/schemas/AlgorithmConfig"
                     }
                 },
                 "additionalProperties": false,
@@ -9210,7 +9130,11 @@
         },
         {
             "name": "AgentTurnResponseEvent",
-            "description": "Streamed agent execution response.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/AgentTurnResponseEvent\" />"
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgentTurnResponseEvent\" />"
+        },
+        {
+            "name": "AgentTurnResponseEventPayload",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgentTurnResponseEventPayload\" />"
         },
         {
             "name": "AgentTurnResponseStepCompletePayload",
@@ -9242,6 +9166,10 @@
         {
             "name": "AggregationFunctionType",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AggregationFunctionType\" />"
+        },
+        {
+            "name": "AlgorithmConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AlgorithmConfig\" />"
         },
         {
             "name": "AppEvalTaskConfig",
@@ -9400,8 +9328,16 @@
             "name": "Eval"
         },
         {
+            "name": "EvalCandidate",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvalCandidate\" />"
+        },
+        {
             "name": "EvalTask",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvalTask\" />"
+        },
+        {
+            "name": "EvalTaskConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvalTaskConfig\" />"
         },
         {
             "name": "EvalTasks"
@@ -9413,6 +9349,10 @@
         {
             "name": "EvaluateRowsRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateRowsRequest\" />"
+        },
+        {
+            "name": "Event",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Event\" />"
         },
         {
             "name": "GrammarResponseFormat",
@@ -9761,6 +9701,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ScoringFn\" />"
         },
         {
+            "name": "ScoringFnParams",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ScoringFnParams\" />"
+        },
+        {
             "name": "ScoringFunctions"
         },
         {
@@ -9813,6 +9757,10 @@
         {
             "name": "StructuredLogEvent",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/StructuredLogEvent\" />"
+        },
+        {
+            "name": "StructuredLogPayload",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/StructuredLogPayload\" />"
         },
         {
             "name": "SupervisedFineTuneRequest",
@@ -10010,6 +9958,7 @@
                 "AgentTool",
                 "AgentTurnInputType",
                 "AgentTurnResponseEvent",
+                "AgentTurnResponseEventPayload",
                 "AgentTurnResponseStepCompletePayload",
                 "AgentTurnResponseStepProgressPayload",
                 "AgentTurnResponseStepStartPayload",
@@ -10017,6 +9966,7 @@
                 "AgentTurnResponseTurnCompletePayload",
                 "AgentTurnResponseTurnStartPayload",
                 "AggregationFunctionType",
+                "AlgorithmConfig",
                 "AppEvalTaskConfig",
                 "AppendRowsRequest",
                 "ArrayType",
@@ -10053,9 +10003,12 @@
                 "EfficiencyConfig",
                 "EmbeddingsRequest",
                 "EmbeddingsResponse",
+                "EvalCandidate",
                 "EvalTask",
+                "EvalTaskConfig",
                 "EvaluateResponse",
                 "EvaluateRowsRequest",
+                "Event",
                 "GrammarResponseFormat",
                 "GreedySamplingStrategy",
                 "HealthInfo",
@@ -10138,6 +10091,7 @@
                 "ScoreRequest",
                 "ScoreResponse",
                 "ScoringFn",
+                "ScoringFnParams",
                 "ScoringResult",
                 "Session",
                 "Shield",
@@ -10150,6 +10104,7 @@
                 "StopReason",
                 "StringType",
                 "StructuredLogEvent",
+                "StructuredLogPayload",
                 "SupervisedFineTuneRequest",
                 "SyntheticDataGenerateRequest",
                 "SyntheticDataGenerationResponse",
