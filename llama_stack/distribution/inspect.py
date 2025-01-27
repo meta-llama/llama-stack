@@ -5,13 +5,14 @@
 # the root directory of this source tree.
 
 from importlib.metadata import version
-from typing import Dict, List
 
 from pydantic import BaseModel
 
 from llama_stack.apis.inspect import (
     HealthInfo,
     Inspect,
+    ListProvidersResponse,
+    ListRoutesResponse,
     ProviderInfo,
     RouteInfo,
     VersionInfo,
@@ -38,37 +39,43 @@ class DistributionInspectImpl(Inspect):
     async def initialize(self) -> None:
         pass
 
-    async def list_providers(self) -> Dict[str, List[ProviderInfo]]:
+    async def list_providers(self) -> ListProvidersResponse:
         run_config = self.config.run_config
 
-        ret = {}
+        ret = []
         for api, providers in run_config.providers.items():
-            ret[api] = [
-                ProviderInfo(
-                    provider_id=p.provider_id,
-                    provider_type=p.provider_type,
-                )
-                for p in providers
-            ]
+            ret.extend(
+                [
+                    ProviderInfo(
+                        api=api,
+                        provider_id=p.provider_id,
+                        provider_type=p.provider_type,
+                    )
+                    for p in providers
+                ]
+            )
 
-        return ret
+        return ListProvidersResponse(data=ret)
 
-    async def list_routes(self) -> Dict[str, List[RouteInfo]]:
+    async def list_routes(self) -> ListRoutesResponse:
         run_config = self.config.run_config
 
-        ret = {}
+        ret = []
         all_endpoints = get_all_api_endpoints()
         for api, endpoints in all_endpoints.items():
             providers = run_config.providers.get(api.value, [])
-            ret[api.value] = [
-                RouteInfo(
-                    route=e.route,
-                    method=e.method,
-                    provider_types=[p.provider_type for p in providers],
-                )
-                for e in endpoints
-            ]
-        return ret
+            ret.extend(
+                [
+                    RouteInfo(
+                        route=e.route,
+                        method=e.method,
+                        provider_types=[p.provider_type for p in providers],
+                    )
+                    for e in endpoints
+                ]
+            )
+
+        return ListRoutesResponse(data=ret)
 
     async def health(self) -> HealthInfo:
         return HealthInfo(status="OK")

@@ -7,6 +7,7 @@
 from datetime import datetime
 from enum import Enum
 from typing import (
+    Annotated,
     Any,
     AsyncIterator,
     Dict,
@@ -20,21 +21,18 @@ from typing import (
 
 from llama_models.schema_utils import json_schema_type, register_schema, webmethod
 from pydantic import BaseModel, ConfigDict, Field
-from typing_extensions import Annotated
 
-from llama_stack.apis.common.content_types import InterleavedContent, URL
+from llama_stack.apis.common.content_types import ContentDelta, InterleavedContent, URL
 from llama_stack.apis.inference import (
     CompletionMessage,
     SamplingParams,
     ToolCall,
-    ToolCallDelta,
     ToolChoice,
     ToolPromptFormat,
     ToolResponse,
     ToolResponseMessage,
     UserMessage,
 )
-from llama_stack.apis.memory import MemoryBank
 from llama_stack.apis.safety import SafetyViolation
 from llama_stack.apis.tools import ToolDef
 from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
@@ -90,7 +88,7 @@ class MemoryRetrievalStep(StepCommon):
     step_type: Literal[StepType.memory_retrieval.value] = (
         StepType.memory_retrieval.value
     )
-    memory_bank_ids: List[str]
+    vector_db_ids: str
     inserted_context: InterleavedContent
 
 
@@ -134,8 +132,6 @@ class Session(BaseModel):
     turns: List[Turn]
     started_at: datetime
 
-    memory_bank: Optional[MemoryBank] = None
-
 
 class AgentToolGroupWithArgs(BaseModel):
     name: str
@@ -159,9 +155,7 @@ class AgentConfigCommon(BaseModel):
     toolgroups: Optional[List[AgentToolGroup]] = Field(default_factory=list)
     client_tools: Optional[List[ToolDef]] = Field(default_factory=list)
     tool_choice: Optional[ToolChoice] = Field(default=ToolChoice.auto)
-    tool_prompt_format: Optional[ToolPromptFormat] = Field(
-        default=ToolPromptFormat.json
-    )
+    tool_prompt_format: Optional[ToolPromptFormat] = Field(default=None)
 
     max_infer_iters: int = 10
 
@@ -216,8 +210,7 @@ class AgentTurnResponseStepProgressPayload(BaseModel):
     step_type: StepType
     step_id: str
 
-    text_delta: Optional[str] = None
-    tool_call_delta: Optional[ToolCallDelta] = None
+    delta: ContentDelta
 
 
 @json_schema_type
@@ -236,11 +229,8 @@ class AgentTurnResponseTurnCompletePayload(BaseModel):
     turn: Turn
 
 
-@json_schema_type
-class AgentTurnResponseEvent(BaseModel):
-    """Streamed agent execution response."""
-
-    payload: Annotated[
+AgentTurnResponseEventPayload = register_schema(
+    Annotated[
         Union[
             AgentTurnResponseStepStartPayload,
             AgentTurnResponseStepProgressPayload,
@@ -249,7 +239,14 @@ class AgentTurnResponseEvent(BaseModel):
             AgentTurnResponseTurnCompletePayload,
         ],
         Field(discriminator="event_type"),
-    ]
+    ],
+    name="AgentTurnResponseEventPayload",
+)
+
+
+@json_schema_type
+class AgentTurnResponseEvent(BaseModel):
+    payload: AgentTurnResponseEventPayload
 
 
 @json_schema_type
@@ -298,13 +295,13 @@ class AgentStepResponse(BaseModel):
 @runtime_checkable
 @trace_protocol
 class Agents(Protocol):
-    @webmethod(route="/agents/create")
+    @webmethod(route="/agents", method="POST")
     async def create_agent(
         self,
         agent_config: AgentConfig,
     ) -> AgentCreateResponse: ...
 
-    @webmethod(route="/agents/turn/create")
+    @webmethod(route="/agents/{agent_id}/session/{session_id}/turn", method="POST")
     async def create_agent_turn(
         self,
         agent_id: str,
@@ -320,36 +317,52 @@ class Agents(Protocol):
         toolgroups: Optional[List[AgentToolGroup]] = None,
     ) -> Union[Turn, AsyncIterator[AgentTurnResponseStreamChunk]]: ...
 
-    @webmethod(route="/agents/turn/get")
+    @webmethod(
+        route="/agents/{agent_id}/session/{session_id}/turn/{turn_id}", method="GET"
+    )
     async def get_agents_turn(
-        self, agent_id: str, session_id: str, turn_id: str
+        self,
+        agent_id: str,
+        session_id: str,
+        turn_id: str,
     ) -> Turn: ...
 
-    @webmethod(route="/agents/step/get")
+    @webmethod(
+        route="/agents/{agent_id}/session/{session_id}/turn/{turn_id}/step/{step_id}",
+        method="GET",
+    )
     async def get_agents_step(
-        self, agent_id: str, session_id: str, turn_id: str, step_id: str
+        self,
+        agent_id: str,
+        session_id: str,
+        turn_id: str,
+        step_id: str,
     ) -> AgentStepResponse: ...
 
-    @webmethod(route="/agents/session/create")
+    @webmethod(route="/agents/{agent_id}/session", method="POST")
     async def create_agent_session(
         self,
         agent_id: str,
         session_name: str,
     ) -> AgentSessionCreateResponse: ...
 
-    @webmethod(route="/agents/session/get")
+    @webmethod(route="/agents/{agent_id}/session/{session_id}", method="GET")
     async def get_agents_session(
         self,
-        agent_id: str,
         session_id: str,
+        agent_id: str,
         turn_ids: Optional[List[str]] = None,
     ) -> Session: ...
 
-    @webmethod(route="/agents/session/delete")
-    async def delete_agents_session(self, agent_id: str, session_id: str) -> None: ...
+    @webmethod(route="/agents/{agent_id}/session/{session_id}", method="DELETE")
+    async def delete_agents_session(
+        self,
+        session_id: str,
+        agent_id: str,
+    ) -> None: ...
 
-    @webmethod(route="/agents/delete")
-    async def delete_agents(
+    @webmethod(route="/agents/{agent_id}", method="DELETE")
+    async def delete_agent(
         self,
         agent_id: str,
     ) -> None: ...

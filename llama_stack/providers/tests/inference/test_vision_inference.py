@@ -32,13 +32,15 @@ class TestVisionModelInference:
         "image, expected_strings",
         [
             (
-                ImageContentItem(data=PASTA_IMAGE),
+                ImageContentItem(image=dict(data=PASTA_IMAGE)),
                 ["spaghetti"],
             ),
             (
                 ImageContentItem(
-                    url=URL(
-                        uri="https://www.healthypawspetinsurance.com/Images/V3/DogAndPuppyInsurance/Dog_CTA_Desktop_HeroImage.jpg"
+                    image=dict(
+                        url=URL(
+                            uri="https://www.healthypawspetinsurance.com/Images/V3/DogAndPuppyInsurance/Dog_CTA_Desktop_HeroImage.jpg"
+                        )
                     )
                 ),
                 ["puppy"],
@@ -49,19 +51,6 @@ class TestVisionModelInference:
         self, inference_model, inference_stack, image, expected_strings
     ):
         inference_impl, _ = inference_stack
-
-        provider = inference_impl.routing_table.get_provider_impl(inference_model)
-        if provider.__provider_spec__.provider_type not in (
-            "inline::meta-reference",
-            "remote::together",
-            "remote::fireworks",
-            "remote::ollama",
-            "remote::vllm",
-        ):
-            pytest.skip(
-                "Other inference providers don't support vision chat completion() yet"
-            )
-
         response = await inference_impl.chat_completion(
             model_id=inference_model,
             messages=[
@@ -89,22 +78,12 @@ class TestVisionModelInference:
     ):
         inference_impl, _ = inference_stack
 
-        provider = inference_impl.routing_table.get_provider_impl(inference_model)
-        if provider.__provider_spec__.provider_type not in (
-            "inline::meta-reference",
-            "remote::together",
-            "remote::fireworks",
-            "remote::ollama",
-            "remote::vllm",
-        ):
-            pytest.skip(
-                "Other inference providers don't support vision chat completion() yet"
-            )
-
         images = [
             ImageContentItem(
-                url=URL(
-                    uri="https://www.healthypawspetinsurance.com/Images/V3/DogAndPuppyInsurance/Dog_CTA_Desktop_HeroImage.jpg"
+                image=dict(
+                    url=URL(
+                        uri="https://www.healthypawspetinsurance.com/Images/V3/DogAndPuppyInsurance/Dog_CTA_Desktop_HeroImage.jpg"
+                    )
                 )
             ),
         ]
@@ -143,7 +122,7 @@ class TestVisionModelInference:
             assert len(grouped[ChatCompletionResponseEventType.complete]) == 1
 
             content = "".join(
-                chunk.event.delta
+                chunk.event.delta.text
                 for chunk in grouped[ChatCompletionResponseEventType.progress]
             )
             for expected_string in expected_strings:

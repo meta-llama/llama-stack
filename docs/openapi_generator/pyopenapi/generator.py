@@ -486,9 +486,18 @@ class Generator:
         parameters = path_parameters + query_parameters
         parameters += [
             Parameter(
-                name="X-LlamaStack-ProviderData",
+                name="X-LlamaStack-Provider-Data",
                 in_=ParameterLocation.Header,
                 description="JSON-encoded provider data which will be made available to the adapter servicing the API",
+                required=False,
+                schema=self.schema_builder.classdef_to_ref(str),
+            )
+        ]
+        parameters += [
+            Parameter(
+                name="X-LlamaStack-Client-Version",
+                in_=ParameterLocation.Header,
+                description="Version of the client making the request. This is used to ensure that the client and server are compatible.",
                 required=False,
                 schema=self.schema_builder.classdef_to_ref(str),
             )
@@ -528,7 +537,6 @@ class Generator:
             success_type_descriptions = {
                 item: doc_string.short_description
                 for item, doc_string in success_type_docstring.items()
-                if doc_string.short_description
             }
         else:
             # use return type as a single response type
@@ -587,6 +595,7 @@ class Generator:
             )
             responses.update(response_builder.build_response(response_options))
 
+        assert len(responses.keys()) > 0, f"No responses found for {op.name}"
         if op.event_type is not None:
             builder = ContentBuilder(self.schema_builder)
             callbacks = {

@@ -4,13 +4,14 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import importlib.resources
 import logging
+import sys
 from enum import Enum
 
 from pathlib import Path
 from typing import Dict, List
 
-import pkg_resources
 from pydantic import BaseModel
 from termcolor import cprint
 
@@ -20,7 +21,7 @@ from llama_stack.distribution.distribution import get_provider_registry
 
 from llama_stack.distribution.utils.config_dirs import BUILDS_BASE_DIR
 
-from llama_stack.distribution.utils.exec import run_with_pty
+from llama_stack.distribution.utils.exec import run_command, run_with_pty
 from llama_stack.providers.datatypes import Api
 
 log = logging.getLogger(__name__)
@@ -37,7 +38,7 @@ SERVER_DEPENDENCIES = [
 
 
 class ImageType(Enum):
-    docker = "docker"
+    container = "container"
     conda = "conda"
     venv = "venv"
 
@@ -76,8 +77,8 @@ def get_provider_dependencies(
 
             provider_spec = providers_for_api[provider_type]
             deps.extend(provider_spec.pip_packages)
-            if provider_spec.docker_image:
-                raise ValueError("A stack's dependencies cannot have a docker image")
+            if provider_spec.container_image:
+                raise ValueError("A stack's dependencies cannot have a container image")
 
     normal_deps = []
     special_deps = []
@@ -102,43 +103,51 @@ def print_pip_install_help(providers: Dict[str, List[Provider]]):
     print()
 
 
-def build_image(build_config: BuildConfig, build_file_path: Path):
-    docker_image = build_config.distribution_spec.docker_image or "python:3.10-slim"
+def build_image(
+    build_config: BuildConfig,
+    build_file_path: Path,
+    image_name: str,
+    template_or_config: str,
+):
+    container_base = (
+        build_config.distribution_spec.container_image or "python:3.10-slim"
+    )
 
     normal_deps, special_deps = get_provider_dependencies(
         build_config.distribution_spec.providers
     )
     normal_deps += SERVER_DEPENDENCIES
 
-    if build_config.image_type == ImageType.docker.value:
-        script = pkg_resources.resource_filename(
-            "llama_stack", "distribution/build_container.sh"
+    if build_config.image_type == ImageType.container.value:
+        script = str(
+            importlib.resources.files("llama_stack") / "distribution/build_container.sh"
         )
         args = [
             script,
-            build_config.name,
-            docker_image,
+            template_or_config,
+            image_name,
+            container_base,
             str(build_file_path),
-            str(BUILDS_BASE_DIR / ImageType.docker.value),
+            str(BUILDS_BASE_DIR / ImageType.container.value),
             " ".join(normal_deps),
         ]
     elif build_config.image_type == ImageType.conda.value:
-        script = pkg_resources.resource_filename(
-            "llama_stack", "distribution/build_conda_env.sh"
+        script = str(
+            importlib.resources.files("llama_stack") / "distribution/build_conda_env.sh"
         )
         args = [
             script,
-            build_config.name,
+            str(image_name),
             str(build_file_path),
             " ".join(normal_deps),
         ]
     elif build_config.image_type == ImageType.venv.value:
-        script = pkg_resources.resource_filename(
-            "llama_stack", "distribution/build_venv.sh"
+        script = str(
+            importlib.resources.files("llama_stack") / "distribution/build_venv.sh"
         )
         args = [
             script,
-            build_config.name,
+            str(image_name),
             str(build_file_path),
             " ".join(normal_deps),
         ]
@@ -146,10 +155,15 @@ def build_image(build_config: BuildConfig, build_file_path: Path):
     if special_deps:
         args.append("#".join(special_deps))
 
-    return_code = run_with_pty(args)
+    is_terminal = sys.stdin.isatty()
+    if is_terminal:
+        return_code = run_with_pty(args)
+    else:
+        return_code = run_command(args)
+
     if return_code != 0:
         log.error(
-            f"Failed to build target {build_config.name} with return code {return_code}",
+            f"Failed to build target {image_name} with return code {return_code}",
         )
 
     return return_code

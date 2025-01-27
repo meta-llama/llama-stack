@@ -19,11 +19,11 @@ The `llamastack/distribution-tgi` distribution consists of the following provide
 | datasetio | `remote::huggingface`, `inline::localfs` |
 | eval | `inline::meta-reference` |
 | inference | `remote::tgi` |
-| memory | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
 | safety | `inline::llama-guard` |
 | scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |
 | telemetry | `inline::meta-reference` |
-| tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::code-interpreter`, `inline::memory-runtime` |
+| tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::code-interpreter`, `inline::rag-runtime`, `remote::model-context-protocol` |
+| vector_io | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
 
 
 You can use this distribution if you have GPUs and want to run an independent TGI server container for running inference.
@@ -32,7 +32,7 @@ You can use this distribution if you have GPUs and want to run an independent TG
 
 The following environment variables can be configured:
 
-- `LLAMASTACK_PORT`: Port for the Llama Stack distribution server (default: `5001`)
+- `LLAMA_STACK_PORT`: Port for the Llama Stack distribution server (default: `5001`)
 - `INFERENCE_MODEL`: Inference model loaded into the TGI server (default: `meta-llama/Llama-3.2-3B-Instruct`)
 - `TGI_URL`: URL of the TGI server with the main inference model (default: `http://127.0.0.1:8080}/v1`)
 - `TGI_SAFETY_URL`: URL of the TGI server with the safety model (default: `http://127.0.0.1:8081/v1`)
@@ -102,10 +102,15 @@ docker run \
 If you are using Llama Stack Safety / Shield APIs, use:
 
 ```bash
+# You need a local checkout of llama-stack to run this, get it using
+# git clone https://github.com/meta-llama/llama-stack.git
+cd /path/to/llama-stack
+
 docker run \
   -it \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
-  -v ./run-with-safety.yaml:/root/my-run.yaml \
+  -v ~/.llama:/root/.llama \
+  -v ./llama_stack/templates/tgi/run-with-safety.yaml:/root/my-run.yaml \
   llamastack/distribution-tgi \
   --yaml-config /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \

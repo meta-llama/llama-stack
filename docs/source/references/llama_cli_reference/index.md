@@ -214,7 +214,6 @@ llama model describe -m Llama3.2-3B-Instruct
 |                             | }                                |
 +-----------------------------+----------------------------------+
 | Recommended sampling params | {                                |
-|                             |     "strategy": "top_p",         |
 |                             |     "temperature": 1.0,          |
 |                             |     "top_p": 0.9,                |
 |                             |     "top_k": 0                   |

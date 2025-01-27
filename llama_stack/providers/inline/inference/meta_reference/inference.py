@@ -6,7 +6,6 @@
 
 import asyncio
 import logging
-
 from typing import AsyncGenerator, List, Optional, Union
 
 from llama_models.llama3.api.datatypes import (
@@ -17,6 +16,11 @@ from llama_models.llama3.api.datatypes import (
 )
 from llama_models.sku_list import resolve_model
 
+from llama_stack.apis.common.content_types import (
+    TextDelta,
+    ToolCallDelta,
+    ToolCallParseStatus,
+)
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
     ChatCompletionResponse,
@@ -33,11 +37,8 @@ from llama_stack.apis.inference import (
     Message,
     ResponseFormat,
     TokenLogProbs,
-    ToolCallDelta,
-    ToolCallParseStatus,
     ToolChoice,
 )
-
 from llama_stack.apis.models import Model, ModelType
 from llama_stack.providers.datatypes import ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.embedding_mixin import (
@@ -222,10 +223,10 @@ class MetaReferenceInferenceImpl(
             tokenizer = self.generator.formatter.tokenizer
             for token_result in self.generator.completion(request):
                 tokens.append(token_result.token)
-
-                if token_result.token in tokenizer.stop_tokens:
-                    # not quite right semantically
+                if token_result.text == "<|eot_id|>":
                     stop_reason = StopReason.end_of_turn
+                elif token_result.text == "<|eom_id|>":
+                    stop_reason = StopReason.end_of_message
 
                 if request.logprobs:
                     assert len(token_result.logprobs) == 1
@@ -242,6 +243,10 @@ class MetaReferenceInferenceImpl(
                 stop_reason = StopReason.out_of_tokens
 
             content = self.generator.formatter.tokenizer.decode(tokens)
+            if content.endswith("<|eot_id|>"):
+                content = content[: -len("<|eot_id|>")]
+            elif content.endswith("<|eom_id|>"):
+                content = content[: -len("<|eom_id|>")]
             return CompletionResponse(
                 content=content,
                 stop_reason=stop_reason,
@@ -262,7 +267,7 @@ class MetaReferenceInferenceImpl(
         response_format: Optional[ResponseFormat] = None,
         tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
-        tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.json,
+        tool_prompt_format: Optional[ToolPromptFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
@@ -354,7 +359,7 @@ class MetaReferenceInferenceImpl(
             yield ChatCompletionResponseStreamChunk(
                 event=ChatCompletionResponseEvent(
                     event_type=ChatCompletionResponseEventType.start,
-                    delta="",
+                    delta=TextDelta(text=""),
                 )
             )
 
@@ -372,7 +377,7 @@ class MetaReferenceInferenceImpl(
                         event=ChatCompletionResponseEvent(
                             event_type=ChatCompletionResponseEventType.progress,
                             delta=ToolCallDelta(
-                                content="",
+                                tool_call="",
                                 parse_status=ToolCallParseStatus.started,
                             ),
                         )
@@ -390,11 +395,11 @@ class MetaReferenceInferenceImpl(
 
                 if ipython:
                     delta = ToolCallDelta(
-                        content=text,
+                        tool_call=text,
                         parse_status=ToolCallParseStatus.in_progress,
                     )
                 else:
-                    delta = text
+                    delta = TextDelta(text=text)
 
                 if stop_reason is None:
                     if request.logprobs:
@@ -429,8 +434,8 @@ class MetaReferenceInferenceImpl(
                     event=ChatCompletionResponseEvent(
                         event_type=ChatCompletionResponseEventType.progress,
                         delta=ToolCallDelta(
-                            content="",
-                            parse_status=ToolCallParseStatus.failure,
+                            tool_call="",
+                            parse_status=ToolCallParseStatus.failed,
                         ),
                         stop_reason=stop_reason,
                     )
@@ -441,8 +446,8 @@ class MetaReferenceInferenceImpl(
                     event=ChatCompletionResponseEvent(
                         event_type=ChatCompletionResponseEventType.progress,
                         delta=ToolCallDelta(
-                            content=tool_call,
-                            parse_status=ToolCallParseStatus.success,
+                            tool_call=tool_call,
+                            parse_status=ToolCallParseStatus.succeeded,
                         ),
                         stop_reason=stop_reason,
                     )
@@ -451,7 +456,7 @@ class MetaReferenceInferenceImpl(
             yield ChatCompletionResponseStreamChunk(
                 event=ChatCompletionResponseEvent(
                     event_type=ChatCompletionResponseEventType.complete,
-                    delta="",
+                    delta=TextDelta(text=""),
                     stop_reason=stop_reason,
                 )
             )

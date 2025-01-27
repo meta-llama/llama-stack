@@ -1,17 +1,18 @@
 version: '2'
 image_name: experimental-post-training
-docker_image: null
+container_image: null
 conda_env: experimental-post-training
 apis:
 - agents
 - datasetio
 - eval
 - inference
-- memory
+- vector_io
 - safety
 - scoring
 - telemetry
 - post_training
+- tool_runtime
 providers:
   inference:
   - provider_id: meta-reference-inference
@@ -28,9 +29,16 @@ providers:
   - provider_id: basic
     provider_type: inline::basic
     config: {}
+  - provider_id: braintrust
+    provider_type: inline::braintrust
+    config:
+      openai_api_key: ${env.OPENAI_API_KEY:}
   datasetio:
   - provider_id: huggingface-0
     provider_type: remote::huggingface
+    config: {}
+  - provider_id: localfs
+    provider_type: inline::localfs
     config: {}
   telemetry:
   - provider_id: meta-reference
@@ -52,7 +60,7 @@ providers:
   - provider_id: llama-guard
     provider_type: inline::llama-guard
     config: {}
-  memory:
+  vector_io:
   - provider_id: faiss
     provider_type: inline::faiss
     config:
@@ -60,6 +68,13 @@ providers:
         type: sqlite
         namespace: null
         db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/meta-reference-gpu}/faiss_store.db
+  tool_runtime:
+  - provider_id: brave-search
+    provider_type: remote::brave-search
+    config:
+      api_key: ${env.BRAVE_SEARCH_API_KEY:}
+      max_results: 3
+
 
 metadata_store:
   namespace: null
@@ -67,24 +82,7 @@ metadata_store:
   db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/meta-reference-gpu}/registry.db
 models: []
 shields: []
-memory_banks: []
-datasets:
-  - dataset_id: alpaca
-    provider_id: huggingface-0
-    url:
-      uri: https://huggingface.co/datasets/tatsu-lab/alpaca
-    metadata:
-      path: tatsu-lab/alpaca
-      name:
-      split: train
-    dataset_schema:
-      instruction:
-        type: string
-      input:
-        type: string
-      output:
-        type: string
-      text:
-        type: string
+vector_dbs: []
+datasets: []
 scoring_fns: []
 eval_tasks: []

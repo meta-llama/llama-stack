@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import gc
 import logging
 import os
 import time
@@ -14,6 +15,24 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import torch
 from llama_models.sku_list import resolve_model
+from torch import nn
+from torch.optim import Optimizer
+from torch.utils.data import DataLoader, DistributedSampler
+from torchtune import modules, training, utils as torchtune_utils
+from torchtune.data import padded_collate_sft
+
+from torchtune.modules.loss import CEWithChunkedOutputLoss
+from torchtune.modules.peft import (
+    get_adapter_params,
+    get_adapter_state_dict,
+    get_lora_module_names,
+    get_merged_lora_ckpt,
+    set_trainable_params,
+    validate_missing_and_unexpected_for_lora,
+)
+from torchtune.training.lr_schedulers import get_cosine_schedule_with_warmup
+from torchtune.training.metric_logging import DiskLogger
+from tqdm import tqdm
 
 from llama_stack.apis.common.training_types import PostTrainingMetric
 from llama_stack.apis.datasetio import DatasetIO
@@ -29,6 +48,9 @@ from llama_stack.apis.post_training import (
 from llama_stack.distribution.utils.config_dirs import DEFAULT_CHECKPOINT_DIR
 
 from llama_stack.distribution.utils.model_utils import model_local_dir
+from llama_stack.providers.inline.post_training.common.validator import (
+    validate_input_dataset_schema,
+)
 
 from llama_stack.providers.inline.post_training.torchtune.common import utils
 from llama_stack.providers.inline.post_training.torchtune.common.checkpointer import (
@@ -38,24 +60,6 @@ from llama_stack.providers.inline.post_training.torchtune.config import (
     TorchtunePostTrainingConfig,
 )
 from llama_stack.providers.inline.post_training.torchtune.datasets.sft import SFTDataset
-from torch import nn
-from torch.optim import Optimizer
-from torch.utils.data import DataLoader, DistributedSampler
-from torchtune import modules, training, utils as torchtune_utils
-from torchtune.data import AlpacaToMessages, padded_collate_sft
-
-from torchtune.modules.loss import CEWithChunkedOutputLoss
-from torchtune.modules.peft import (
-    get_adapter_params,
-    get_adapter_state_dict,
-    get_lora_module_names,
-    get_merged_lora_ckpt,
-    set_trainable_params,
-    validate_missing_and_unexpected_for_lora,
-)
-from torchtune.training.lr_schedulers import get_cosine_schedule_with_warmup
-from torchtune.training.metric_logging import DiskLogger
-from tqdm import tqdm
 
 log = logging.getLogger(__name__)
 
@@ -129,8 +133,10 @@ class LoraFinetuningSingleDevice:
         self.seed = training.set_seed(seed=config.torch_seed)
         self.epochs_run = 0
         self.total_epochs = training_config.n_epochs
+        self._data_format = training_config.data_config.data_format
         self._shuffle = training_config.data_config.shuffle
         self._batch_size = training_config.data_config.batch_size
+        self._train_on_input = training_config.data_config.train_on_input
 
         # this is important for debugging purpose
         self.max_steps_per_epoch = training_config.max_steps_per_epoch
@@ -354,18 +360,17 @@ class LoraFinetuningSingleDevice:
         all_rows = await fetch_rows(dataset_id)
         rows = all_rows.rows
 
-        # Curretly only support alpaca instruct dataset
-        # TODO @SLR722 make the message_transform swappable and support more dataset types
-        # TODO @SLR722 make the input dataset schema more flexible by exposing column_map
-        await utils.validate_input_dataset_schema(
+        await validate_input_dataset_schema(
             datasets_api=self.datasets_api,
             dataset_id=dataset_id,
-            dataset_type="alpaca",
+            dataset_type=self._data_format.value,
         )
+        data_transform = await utils.get_data_transform(self._data_format)
         ds = SFTDataset(
             rows,
-            message_transform=AlpacaToMessages(train_on_input=False),
+            message_transform=data_transform(train_on_input=self._train_on_input),
             model_transform=tokenizer,
+            dataset_type=self._data_format.value,
         )
 
         sampler = DistributedSampler(
@@ -575,6 +580,12 @@ class LoraFinetuningSingleDevice:
                 )
                 checkpoint.training_metrics = training_metrics
             checkpoints.append(checkpoint)
+
+        # clean up the memory after training finishes
+        self._model.to("cpu")
+        del self._model
+        gc.collect()
+        torch.cuda.empty_cache()
 
         return (memory_stats, checkpoints)
 

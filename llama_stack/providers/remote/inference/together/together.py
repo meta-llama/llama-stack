@@ -135,7 +135,7 @@ class TogetherInferenceAdapter(
             provider_data = self.get_request_provider_data()
             if provider_data is None or not provider_data.together_api_key:
                 raise ValueError(
-                    'Pass Together API Key in the header X-LlamaStack-ProviderData as { "together_api_key": <your api key>}'
+                    'Pass Together API Key in the header X-LlamaStack-Provider-Data as { "together_api_key": <your api key>}'
                 )
             together_api_key = provider_data.together_api_key
         return Together(api_key=together_api_key)
@@ -184,7 +184,7 @@ class TogetherInferenceAdapter(
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
-        tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.json,
+        tool_prompt_format: Optional[ToolPromptFormat] = None,
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,

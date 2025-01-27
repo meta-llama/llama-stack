@@ -27,8 +27,6 @@ from llama_stack.apis.inference import (
     ToolDefinition,
     ToolPromptFormat,
 )
-from llama_stack.apis.memory import Memory, MemoryBankDocument, QueryDocumentsResponse
-from llama_stack.apis.memory_banks.memory_banks import BankParams
 from llama_stack.apis.models import ModelType
 from llama_stack.apis.safety import RunShieldResponse, Safety
 from llama_stack.apis.scoring import (
@@ -38,12 +36,20 @@ from llama_stack.apis.scoring import (
     ScoringFnParams,
 )
 from llama_stack.apis.shields import Shield
-from llama_stack.apis.tools import ToolDef, ToolRuntime
+from llama_stack.apis.tools import (
+    RAGDocument,
+    RAGQueryConfig,
+    RAGQueryResult,
+    RAGToolRuntime,
+    ToolDef,
+    ToolRuntime,
+)
+from llama_stack.apis.vector_io import Chunk, QueryChunksResponse, VectorIO
 from llama_stack.providers.datatypes import RoutingTable
 
 
-class MemoryRouter(Memory):
-    """Routes to an provider based on the memory bank identifier"""
+class VectorIORouter(VectorIO):
+    """Routes to an provider based on the vector db identifier"""
 
     def __init__(
         self,
@@ -57,38 +63,40 @@ class MemoryRouter(Memory):
     async def shutdown(self) -> None:
         pass
 
-    async def register_memory_bank(
+    async def register_vector_db(
         self,
-        memory_bank_id: str,
-        params: BankParams,
+        vector_db_id: str,
+        embedding_model: str,
+        embedding_dimension: Optional[int] = 384,
         provider_id: Optional[str] = None,
-        provider_memorybank_id: Optional[str] = None,
+        provider_vector_db_id: Optional[str] = None,
     ) -> None:
-        await self.routing_table.register_memory_bank(
-            memory_bank_id,
-            params,
+        await self.routing_table.register_vector_db(
+            vector_db_id,
+            embedding_model,
+            embedding_dimension,
             provider_id,
-            provider_memorybank_id,
+            provider_vector_db_id,
         )
 
-    async def insert_documents(
+    async def insert_chunks(
         self,
-        bank_id: str,
-        documents: List[MemoryBankDocument],
+        vector_db_id: str,
+        chunks: List[Chunk],
         ttl_seconds: Optional[int] = None,
     ) -> None:
-        return await self.routing_table.get_provider_impl(bank_id).insert_documents(
-            bank_id, documents, ttl_seconds
+        return await self.routing_table.get_provider_impl(vector_db_id).insert_chunks(
+            vector_db_id, chunks, ttl_seconds
         )
 
-    async def query_documents(
+    async def query_chunks(
         self,
-        bank_id: str,
+        vector_db_id: str,
         query: InterleavedContent,
         params: Optional[Dict[str, Any]] = None,
-    ) -> QueryDocumentsResponse:
-        return await self.routing_table.get_provider_impl(bank_id).query_documents(
-            bank_id, query, params
+    ) -> QueryChunksResponse:
+        return await self.routing_table.get_provider_impl(vector_db_id).query_chunks(
+            vector_db_id, query, params
         )
 
 
@@ -127,7 +135,7 @@ class InferenceRouter(Inference):
         response_format: Optional[ResponseFormat] = None,
         tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
-        tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.json,
+        tool_prompt_format: Optional[ToolPromptFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
@@ -399,11 +407,43 @@ class EvalRouter(Eval):
 
 
 class ToolRuntimeRouter(ToolRuntime):
+    class RagToolImpl(RAGToolRuntime):
+        def __init__(
+            self,
+            routing_table: RoutingTable,
+        ) -> None:
+            self.routing_table = routing_table
+
+        async def query(
+            self,
+            content: InterleavedContent,
+            vector_db_ids: List[str],
+            query_config: Optional[RAGQueryConfig] = None,
+        ) -> RAGQueryResult:
+            return await self.routing_table.get_provider_impl(
+                "query_from_memory"
+            ).query(content, vector_db_ids, query_config)
+
+        async def insert(
+            self,
+            documents: List[RAGDocument],
+            vector_db_id: str,
+            chunk_size_in_tokens: int = 512,
+        ) -> None:
+            return await self.routing_table.get_provider_impl(
+                "insert_into_memory"
+            ).insert(documents, vector_db_id, chunk_size_in_tokens)
+
     def __init__(
         self,
         routing_table: RoutingTable,
     ) -> None:
         self.routing_table = routing_table
+
+        # HACK ALERT this should be in sync with "get_all_api_endpoints()"
+        self.rag_tool = self.RagToolImpl(routing_table)
+        for method in ("query", "insert"):
+            setattr(self, f"rag_tool.{method}", getattr(self.rag_tool, method))
 
     async def initialize(self) -> None:
         pass
@@ -411,10 +451,10 @@ class ToolRuntimeRouter(ToolRuntime):
     async def shutdown(self) -> None:
         pass
 
-    async def invoke_tool(self, tool_name: str, args: Dict[str, Any]) -> Any:
+    async def invoke_tool(self, tool_name: str, kwargs: Dict[str, Any]) -> Any:
         return await self.routing_table.get_provider_impl(tool_name).invoke_tool(
             tool_name=tool_name,
-            args=args,
+            kwargs=kwargs,
         )
 
     async def list_runtime_tools(

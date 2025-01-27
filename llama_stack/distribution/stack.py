@@ -4,13 +4,12 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import importlib.resources
 import logging
 import os
 import re
-from pathlib import Path
 from typing import Any, Dict, Optional
 
-import pkg_resources
 import yaml
 from termcolor import colored
 
@@ -22,8 +21,6 @@ from llama_stack.apis.eval import Eval
 from llama_stack.apis.eval_tasks import EvalTasks
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.inspect import Inspect
-from llama_stack.apis.memory import Memory
-from llama_stack.apis.memory_banks import MemoryBanks
 from llama_stack.apis.models import Models
 from llama_stack.apis.post_training import PostTraining
 from llama_stack.apis.safety import Safety
@@ -32,7 +29,9 @@ from llama_stack.apis.scoring_functions import ScoringFunctions
 from llama_stack.apis.shields import Shields
 from llama_stack.apis.synthetic_data_generation import SyntheticDataGeneration
 from llama_stack.apis.telemetry import Telemetry
-from llama_stack.apis.tools import ToolGroups, ToolRuntime
+from llama_stack.apis.tools import RAGToolRuntime, ToolGroups, ToolRuntime
+from llama_stack.apis.vector_dbs import VectorDBs
+from llama_stack.apis.vector_io import VectorIO
 from llama_stack.distribution.datatypes import StackRunConfig
 from llama_stack.distribution.distribution import get_provider_registry
 from llama_stack.distribution.resolver import ProviderRegistry, resolve_impls
@@ -41,11 +40,9 @@ from llama_stack.providers.datatypes import Api
 
 log = logging.getLogger(__name__)
 
-LLAMA_STACK_API_VERSION = "alpha"
-
 
 class LlamaStack(
-    MemoryBanks,
+    VectorDBs,
     Inference,
     BatchInference,
     Agents,
@@ -54,7 +51,7 @@ class LlamaStack(
     Datasets,
     Telemetry,
     PostTraining,
-    Memory,
+    VectorIO,
     Eval,
     EvalTasks,
     Scoring,
@@ -65,6 +62,7 @@ class LlamaStack(
     Inspect,
     ToolGroups,
     ToolRuntime,
+    RAGToolRuntime,
 ):
     pass
 
@@ -72,7 +70,7 @@ class LlamaStack(
 RESOURCES = [
     ("models", Api.models, "register_model", "list_models"),
     ("shields", Api.shields, "register_shield", "list_shields"),
-    ("memory_banks", Api.memory_banks, "register_memory_bank", "list_memory_banks"),
+    ("vector_dbs", Api.vector_dbs, "register_vector_db", "list_vector_dbs"),
     ("datasets", Api.datasets, "register_dataset", "list_datasets"),
     (
         "scoring_fns",
@@ -96,7 +94,11 @@ async def register_resources(run_config: StackRunConfig, impls: Dict[Api, Any]):
             await method(**obj.model_dump())
 
         method = getattr(impls[api], list_method)
-        for obj in await method():
+        response = await method()
+
+        objects_to_process = response.data if hasattr(response, "data") else response
+
+        for obj in objects_to_process:
             log.info(
                 f"{rsrc.capitalize()}: {colored(obj.identifier, 'white', attrs=['bold'])} served by {colored(obj.provider_id, 'white', attrs=['bold'])}",
             )
@@ -211,14 +213,13 @@ async def construct_stack(
 
 
 def get_stack_run_config_from_template(template: str) -> StackRunConfig:
-    template_path = pkg_resources.resource_filename(
-        "llama_stack", f"templates/{template}/run.yaml"
+    template_path = (
+        importlib.resources.files("llama_stack") / f"templates/{template}/run.yaml"
     )
 
-    if not Path(template_path).exists():
-        raise ValueError(f"Template '{template}' not found at {template_path}")
-
-    with open(template_path) as f:
-        run_config = yaml.safe_load(f)
+    with importlib.resources.as_file(template_path) as path:
+        if not path.exists():
+            raise ValueError(f"Template '{template}' not found at {template_path}")
+        run_config = yaml.safe_load(path.open())
 
     return StackRunConfig(**replace_env_vars(run_config))

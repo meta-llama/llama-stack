@@ -10,7 +10,7 @@ from llama_stack.providers.inline.inference.sentence_transformers import (
     SentenceTransformersInferenceConfig,
 )
 from llama_stack.providers.inline.inference.vllm import VLLMConfig
-from llama_stack.providers.inline.memory.faiss.config import FaissImplConfig
+from llama_stack.providers.inline.vector_io.faiss.config import FaissImplConfig
 from llama_stack.templates.template import (
     DistributionTemplate,
     RunConfigSettings,
@@ -21,7 +21,7 @@ from llama_stack.templates.template import (
 def get_distribution_template() -> DistributionTemplate:
     providers = {
         "inference": ["inline::vllm"],
-        "memory": ["inline::faiss", "remote::chromadb", "remote::pgvector"],
+        "vector_io": ["inline::faiss", "remote::chromadb", "remote::pgvector"],
         "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],
         "telemetry": ["inline::meta-reference"],
@@ -32,7 +32,8 @@ def get_distribution_template() -> DistributionTemplate:
             "remote::brave-search",
             "remote::tavily-search",
             "inline::code-interpreter",
-            "inline::memory-runtime",
+            "inline::rag-runtime",
+            "remote::model-context-protocol",
         ],
     }
 
@@ -42,7 +43,7 @@ def get_distribution_template() -> DistributionTemplate:
         provider_type="inline::vllm",
         config=VLLMConfig.sample_run_config(),
     )
-    memory_provider = Provider(
+    vector_io_provider = Provider(
         provider_id="faiss",
         provider_type="inline::faiss",
         config=FaissImplConfig.sample_run_config(f"distributions/{name}"),
@@ -71,8 +72,8 @@ def get_distribution_template() -> DistributionTemplate:
             provider_id="tavily-search",
         ),
         ToolGroupInput(
-            toolgroup_id="builtin::memory",
-            provider_id="memory-runtime",
+            toolgroup_id="builtin::rag",
+            provider_id="rag-runtime",
         ),
         ToolGroupInput(
             toolgroup_id="builtin::code_interpreter",
@@ -84,7 +85,7 @@ def get_distribution_template() -> DistributionTemplate:
         name=name,
         distro_type="self_hosted",
         description="Use a built-in vLLM engine for running LLM inference",
-        docker_image=None,
+        container_image=None,
         template_path=None,
         providers=providers,
         default_models=[inference_model],
@@ -92,14 +93,14 @@ def get_distribution_template() -> DistributionTemplate:
             "run.yaml": RunConfigSettings(
                 provider_overrides={
                     "inference": [inference_provider, embedding_provider],
-                    "memory": [memory_provider],
+                    "vector_io": [vector_io_provider],
                 },
                 default_models=[inference_model, embedding_model],
                 default_tool_groups=default_tool_groups,
             ),
         },
         run_config_env_vars={
-            "LLAMASTACK_PORT": (
+            "LLAMA_STACK_PORT": (
                 "5001",
                 "Port for the Llama Stack distribution server",
             ),

@@ -4,14 +4,26 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import AsyncGenerator, List, Optional
+from typing import AsyncGenerator, Dict, List, Optional
+
+from llama_models.datatypes import (
+    GreedySamplingStrategy,
+    SamplingParams,
+    TopKSamplingStrategy,
+    TopPSamplingStrategy,
+)
 
 from llama_models.llama3.api.chat_format import ChatFormat
-
-from llama_models.llama3.api.datatypes import SamplingParams, StopReason
+from llama_models.llama3.api.datatypes import StopReason
 from pydantic import BaseModel
 
-from llama_stack.apis.common.content_types import ImageContentItem, TextContentItem
+from llama_stack.apis.common.content_types import (
+    ImageContentItem,
+    TextContentItem,
+    TextDelta,
+    ToolCallDelta,
+    ToolCallParseStatus,
+)
 
 from llama_stack.apis.inference import (
     ChatCompletionResponse,
@@ -22,8 +34,7 @@ from llama_stack.apis.inference import (
     CompletionResponse,
     CompletionResponseStreamChunk,
     Message,
-    ToolCallDelta,
-    ToolCallParseStatus,
+    TokenLogProbs,
 )
 
 from llama_stack.providers.utils.inference.prompt_adapter import (
@@ -35,22 +46,48 @@ class OpenAICompatCompletionChoiceDelta(BaseModel):
     content: str
 
 
+class OpenAICompatLogprobs(BaseModel):
+    text_offset: Optional[List[int]] = None
+
+    token_logprobs: Optional[List[float]] = None
+
+    tokens: Optional[List[str]] = None
+
+    top_logprobs: Optional[List[Dict[str, float]]] = None
+
+
 class OpenAICompatCompletionChoice(BaseModel):
     finish_reason: Optional[str] = None
     text: Optional[str] = None
     delta: Optional[OpenAICompatCompletionChoiceDelta] = None
+    logprobs: Optional[OpenAICompatLogprobs] = None
 
 
 class OpenAICompatCompletionResponse(BaseModel):
     choices: List[OpenAICompatCompletionChoice]
 
 
+def get_sampling_strategy_options(params: SamplingParams) -> dict:
+    options = {}
+    if isinstance(params.strategy, GreedySamplingStrategy):
+        options["temperature"] = 0.0
+    elif isinstance(params.strategy, TopPSamplingStrategy):
+        options["temperature"] = params.strategy.temperature
+        options["top_p"] = params.strategy.top_p
+    elif isinstance(params.strategy, TopKSamplingStrategy):
+        options["top_k"] = params.strategy.top_k
+    else:
+        raise ValueError(f"Unsupported sampling strategy: {params.strategy}")
+
+    return options
+
+
 def get_sampling_options(params: SamplingParams) -> dict:
     options = {}
     if params:
-        for attr in {"temperature", "top_p", "top_k", "max_tokens"}:
-            if getattr(params, attr):
-                options[attr] = getattr(params, attr)
+        options.update(get_sampling_strategy_options(params))
+        if params.max_tokens:
+            options["max_tokens"] = params.max_tokens
 
         if params.repetition_penalty is not None and params.repetition_penalty != 1.0:
             options["repeat_penalty"] = params.repetition_penalty
@@ -79,6 +116,14 @@ def get_stop_reason(finish_reason: str) -> StopReason:
     return StopReason.out_of_tokens
 
 
+def convert_openai_completion_logprobs(
+    logprobs: Optional[OpenAICompatLogprobs],
+) -> Optional[List[TokenLogProbs]]:
+    if not logprobs:
+        return None
+    return [TokenLogProbs(logprobs_by_token=x) for x in logprobs.top_logprobs]
+
+
 def process_completion_response(
     response: OpenAICompatCompletionResponse, formatter: ChatFormat
 ) -> CompletionResponse:
@@ -88,16 +133,19 @@ def process_completion_response(
         return CompletionResponse(
             stop_reason=StopReason.end_of_turn,
             content=choice.text[: -len("<|eot_id|>")],
+            logprobs=convert_openai_completion_logprobs(choice.logprobs),
         )
     # drop suffix <eom_id> if present and return stop reason as end of message
     if choice.text.endswith("<|eom_id|>"):
         return CompletionResponse(
             stop_reason=StopReason.end_of_message,
             content=choice.text[: -len("<|eom_id|>")],
+            logprobs=convert_openai_completion_logprobs(choice.logprobs),
         )
     return CompletionResponse(
         stop_reason=get_stop_reason(choice.finish_reason),
         content=choice.text,
+        logprobs=convert_openai_completion_logprobs(choice.logprobs),
     )
 
 
@@ -140,6 +188,7 @@ async def process_completion_stream_response(
         yield CompletionResponseStreamChunk(
             delta=text,
             stop_reason=stop_reason,
+            logprobs=convert_openai_completion_logprobs(choice.logprobs),
         )
         if finish_reason:
             if finish_reason in ["stop", "eos", "eos_token"]:
@@ -160,7 +209,7 @@ async def process_chat_completion_stream_response(
     yield ChatCompletionResponseStreamChunk(
         event=ChatCompletionResponseEvent(
             event_type=ChatCompletionResponseEventType.start,
-            delta="",
+            delta=TextDelta(text=""),
         )
     )
 
@@ -191,7 +240,7 @@ async def process_chat_completion_stream_response(
                 event=ChatCompletionResponseEvent(
                     event_type=ChatCompletionResponseEventType.progress,
                     delta=ToolCallDelta(
-                        content="",
+                        tool_call="",
                         parse_status=ToolCallParseStatus.started,
                     ),
                 )
@@ -211,7 +260,7 @@ async def process_chat_completion_stream_response(
         if ipython:
             buffer += text
             delta = ToolCallDelta(
-                content=text,
+                tool_call=text,
                 parse_status=ToolCallParseStatus.in_progress,
             )
 
@@ -227,7 +276,7 @@ async def process_chat_completion_stream_response(
             yield ChatCompletionResponseStreamChunk(
                 event=ChatCompletionResponseEvent(
                     event_type=ChatCompletionResponseEventType.progress,
-                    delta=text,
+                    delta=TextDelta(text=text),
                     stop_reason=stop_reason,
                 )
             )
@@ -240,8 +289,8 @@ async def process_chat_completion_stream_response(
             event=ChatCompletionResponseEvent(
                 event_type=ChatCompletionResponseEventType.progress,
                 delta=ToolCallDelta(
-                    content="",
-                    parse_status=ToolCallParseStatus.failure,
+                    tool_call="",
+                    parse_status=ToolCallParseStatus.failed,
                 ),
                 stop_reason=stop_reason,
             )
@@ -252,8 +301,8 @@ async def process_chat_completion_stream_response(
             event=ChatCompletionResponseEvent(
                 event_type=ChatCompletionResponseEventType.progress,
                 delta=ToolCallDelta(
-                    content=tool_call,
-                    parse_status=ToolCallParseStatus.success,
+                    tool_call=tool_call,
+                    parse_status=ToolCallParseStatus.succeeded,
                 ),
                 stop_reason=stop_reason,
             )
@@ -262,7 +311,7 @@ async def process_chat_completion_stream_response(
     yield ChatCompletionResponseStreamChunk(
         event=ChatCompletionResponseEvent(
             event_type=ChatCompletionResponseEventType.complete,
-            delta="",
+            delta=TextDelta(text=""),
             stop_reason=stop_reason,
         )
     )

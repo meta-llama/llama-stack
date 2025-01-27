@@ -18,7 +18,7 @@ from llama_stack.distribution.datatypes import (
 from llama_stack.providers.inline.inference.sentence_transformers import (
     SentenceTransformersInferenceConfig,
 )
-from llama_stack.providers.inline.memory.faiss.config import FaissImplConfig
+from llama_stack.providers.inline.vector_io.faiss.config import FaissImplConfig
 from llama_stack.providers.remote.inference.together import TogetherImplConfig
 from llama_stack.providers.remote.inference.together.together import MODEL_ALIASES
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
@@ -27,7 +27,7 @@ from llama_stack.templates.template import DistributionTemplate, RunConfigSettin
 def get_distribution_template() -> DistributionTemplate:
     providers = {
         "inference": ["remote::together"],
-        "memory": ["inline::faiss", "remote::chromadb", "remote::pgvector"],
+        "vector_io": ["inline::faiss", "remote::chromadb", "remote::pgvector"],
         "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],
         "telemetry": ["inline::meta-reference"],
@@ -38,7 +38,8 @@ def get_distribution_template() -> DistributionTemplate:
             "remote::brave-search",
             "remote::tavily-search",
             "inline::code-interpreter",
-            "inline::memory-runtime",
+            "inline::rag-runtime",
+            "remote::model-context-protocol",
         ],
     }
     name = "together"
@@ -47,7 +48,7 @@ def get_distribution_template() -> DistributionTemplate:
         provider_type="remote::together",
         config=TogetherImplConfig.sample_run_config(),
     )
-    memory_provider = Provider(
+    vector_io_provider = Provider(
         provider_id="faiss",
         provider_type="inline::faiss",
         config=FaissImplConfig.sample_run_config(f"distributions/{name}"),
@@ -75,8 +76,8 @@ def get_distribution_template() -> DistributionTemplate:
             provider_id="tavily-search",
         ),
         ToolGroupInput(
-            toolgroup_id="builtin::memory",
-            provider_id="memory-runtime",
+            toolgroup_id="builtin::rag",
+            provider_id="rag-runtime",
         ),
         ToolGroupInput(
             toolgroup_id="builtin::code_interpreter",
@@ -96,7 +97,7 @@ def get_distribution_template() -> DistributionTemplate:
         name=name,
         distro_type="self_hosted",
         description="Use Together.AI for running LLM inference",
-        docker_image=None,
+        container_image=None,
         template_path=Path(__file__).parent / "doc_template.md",
         providers=providers,
         default_models=default_models,
@@ -104,15 +105,60 @@ def get_distribution_template() -> DistributionTemplate:
             "run.yaml": RunConfigSettings(
                 provider_overrides={
                     "inference": [inference_provider, embedding_provider],
-                    "memory": [memory_provider],
+                    "vector_io": [vector_io_provider],
                 },
                 default_models=default_models + [embedding_model],
                 default_tool_groups=default_tool_groups,
                 default_shields=[ShieldInput(shield_id="meta-llama/Llama-Guard-3-8B")],
             ),
+            "run-with-safety.yaml": RunConfigSettings(
+                provider_overrides={
+                    "inference": [
+                        inference_provider,
+                        embedding_provider,
+                    ],
+                    "vector_io": [vector_io_provider],
+                    "safety": [
+                        Provider(
+                            provider_id="llama-guard",
+                            provider_type="inline::llama-guard",
+                            config={},
+                        ),
+                        Provider(
+                            provider_id="llama-guard-vision",
+                            provider_type="inline::llama-guard",
+                            config={},
+                        ),
+                        Provider(
+                            provider_id="code-scanner",
+                            provider_type="inline::code-scanner",
+                            config={},
+                        ),
+                    ],
+                },
+                default_models=[
+                    *default_models,
+                    embedding_model,
+                ],
+                default_shields=[
+                    ShieldInput(
+                        shield_id="meta-llama/Llama-Guard-3-8B",
+                        provider_id="llama-guard",
+                    ),
+                    ShieldInput(
+                        shield_id="meta-llama/Llama-Guard-3-11B-Vision",
+                        provider_id="llama-guard-vision",
+                    ),
+                    ShieldInput(
+                        shield_id="CodeScanner",
+                        provider_id="code-scanner",
+                    ),
+                ],
+                default_tool_groups=default_tool_groups,
+            ),
         },
         run_config_env_vars={
-            "LLAMASTACK_PORT": (
+            "LLAMA_STACK_PORT": (
                 "5001",
                 "Port for the Llama Stack distribution server",
             ),

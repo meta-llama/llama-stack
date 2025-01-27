@@ -44,11 +44,11 @@ class WolframAlphaToolRuntimeImpl(
             return self.config.api_key
 
         provider_data = self.get_request_provider_data()
-        if provider_data is None or not provider_data.api_key:
+        if provider_data is None or not provider_data.wolfram_alpha_api_key:
             raise ValueError(
-                'Pass WolframAlpha API Key in the header X-LlamaStack-ProviderData as { "api_key": <your api key>}'
+                'Pass WolframAlpha API Key in the header X-LlamaStack-Provider-Data as { "wolfram_alpha_api_key": <your api key>}'
             )
-        return provider_data.api_key
+        return provider_data.wolfram_alpha_api_key
 
     async def list_runtime_tools(
         self, tool_group_id: Optional[str] = None, mcp_endpoint: Optional[URL] = None
@@ -68,11 +68,11 @@ class WolframAlphaToolRuntimeImpl(
         ]
 
     async def invoke_tool(
-        self, tool_name: str, args: Dict[str, Any]
+        self, tool_name: str, kwargs: Dict[str, Any]
     ) -> ToolInvocationResult:
         api_key = self._get_api_key()
         params = {
-            "input": args["query"],
+            "input": kwargs["query"],
             "appid": api_key,
             "format": "plaintext",
             "output": "json",

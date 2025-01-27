@@ -12,11 +12,11 @@ from pydantic import BaseModel
 
 from llama_stack.apis.datasets import DatasetInput
 from llama_stack.apis.eval_tasks import EvalTaskInput
-from llama_stack.apis.memory_banks import MemoryBankInput
 from llama_stack.apis.models import ModelInput
 from llama_stack.apis.scoring_functions import ScoringFnInput
 from llama_stack.apis.shields import ShieldInput
 from llama_stack.apis.tools import ToolGroupInput
+from llama_stack.apis.vector_dbs import VectorDBInput
 from llama_stack.distribution.build import print_pip_install_help
 from llama_stack.distribution.configure import parse_and_maybe_upgrade_config
 from llama_stack.distribution.datatypes import Provider, StackRunConfig
@@ -39,7 +39,7 @@ async def construct_stack_for_test(
     provider_data: Optional[Dict[str, Any]] = None,
     models: Optional[List[ModelInput]] = None,
     shields: Optional[List[ShieldInput]] = None,
-    memory_banks: Optional[List[MemoryBankInput]] = None,
+    vector_dbs: Optional[List[VectorDBInput]] = None,
     datasets: Optional[List[DatasetInput]] = None,
     scoring_fns: Optional[List[ScoringFnInput]] = None,
     eval_tasks: Optional[List[EvalTaskInput]] = None,
@@ -53,7 +53,7 @@ async def construct_stack_for_test(
         metadata_store=SqliteKVStoreConfig(db_path=sqlite_file.name),
         models=models or [],
         shields=shields or [],
-        memory_banks=memory_banks or [],
+        vector_dbs=vector_dbs or [],
         datasets=datasets or [],
         scoring_fns=scoring_fns or [],
         eval_tasks=eval_tasks or [],
@@ -79,7 +79,7 @@ async def construct_stack_for_test(
 
     if provider_data:
         set_request_provider_data(
-            {"X-LlamaStack-ProviderData": json.dumps(provider_data)}
+            {"X-LlamaStack-Provider-Data": json.dumps(provider_data)}
         )
 
     return test_stack

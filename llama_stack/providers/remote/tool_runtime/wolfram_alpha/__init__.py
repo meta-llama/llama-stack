@@ -13,7 +13,7 @@ __all__ = ["WolframAlphaToolConfig", "WolframAlphaToolRuntimeImpl"]
 
 
 class WolframAlphaToolProviderDataValidator(BaseModel):
-    api_key: str
+    wolfram_alpha_api_key: str
 
 
 async def get_adapter_impl(config: WolframAlphaToolConfig, _deps):

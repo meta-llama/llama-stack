@@ -29,7 +29,7 @@ class DatasetIO(Protocol):
     # keeping for aligning with inference/safety, but this is not used
     dataset_store: DatasetStore
 
-    @webmethod(route="/datasetio/get-rows-paginated", method="GET")
+    @webmethod(route="/datasetio/rows", method="GET")
     async def get_rows_paginated(
         self,
         dataset_id: str,
@@ -38,7 +38,7 @@ class DatasetIO(Protocol):
         filter_condition: Optional[str] = None,
     ) -> PaginatedRowsResult: ...
 
-    @webmethod(route="/datasetio/append-rows", method="POST")
+    @webmethod(route="/datasetio/rows", method="POST")
     async def append_rows(
         self, dataset_id: str, rows: List[Dict[str, Any]]
     ) -> None: ...

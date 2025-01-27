@@ -43,11 +43,11 @@ class BraveSearchToolRuntimeImpl(
             return self.config.api_key
 
         provider_data = self.get_request_provider_data()
-        if provider_data is None or not provider_data.api_key:
+        if provider_data is None or not provider_data.brave_search_api_key:
             raise ValueError(
-                'Pass Search provider\'s API Key in the header X-LlamaStack-ProviderData as { "api_key": <your api key>}'
+                'Pass Search provider\'s API Key in the header X-LlamaStack-Provider-Data as { "brave_search_api_key": <your api key>}'
             )
-        return provider_data.api_key
+        return provider_data.brave_search_api_key
 
     async def list_runtime_tools(
         self, tool_group_id: Optional[str] = None, mcp_endpoint: Optional[URL] = None
@@ -68,7 +68,7 @@ class BraveSearchToolRuntimeImpl(
         ]
 
     async def invoke_tool(
-        self, tool_name: str, args: Dict[str, Any]
+        self, tool_name: str, kwargs: Dict[str, Any]
     ) -> ToolInvocationResult:
         api_key = self._get_api_key()
         url = "https://api.search.brave.com/res/v1/web/search"
@@ -77,7 +77,7 @@ class BraveSearchToolRuntimeImpl(
             "Accept-Encoding": "gzip",
             "Accept": "application/json",
         }
-        payload = {"q": args["query"]}
+        payload = {"q": kwargs["query"]}
         response = requests.get(url=url, params=payload, headers=headers)
         response.raise_for_status()
         results = self._clean_brave_response(response.json())

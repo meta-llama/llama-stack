@@ -9,12 +9,11 @@ import inspect
 import json
 import logging
 import os
-import queue
-import threading
+import re
 from concurrent.futures import ThreadPoolExecutor
 from enum import Enum
 from pathlib import Path
-from typing import Any, Generator, get_args, get_origin, Optional, TypeVar
+from typing import Any, get_args, get_origin, Optional, TypeVar
 
 import httpx
 import yaml
@@ -33,6 +32,7 @@ from termcolor import cprint
 from llama_stack.distribution.build import print_pip_install_help
 from llama_stack.distribution.configure import parse_and_maybe_upgrade_config
 from llama_stack.distribution.datatypes import Api
+from llama_stack.distribution.request_headers import set_request_provider_data
 from llama_stack.distribution.resolver import ProviderRegistry
 from llama_stack.distribution.server.endpoints import get_all_api_endpoints
 from llama_stack.distribution.stack import (
@@ -61,66 +61,6 @@ def in_notebook():
     except AttributeError:
         return False
     return True
-
-
-def stream_across_asyncio_run_boundary(
-    async_gen_maker,
-    pool_executor: ThreadPoolExecutor,
-    path: Optional[str] = None,
-) -> Generator[T, None, None]:
-    result_queue = queue.Queue()
-    stop_event = threading.Event()
-
-    async def consumer():
-        # make sure we make the generator in the event loop context
-        gen = await async_gen_maker()
-        await start_trace(path, {"__location__": "library_client"})
-        try:
-            async for item in await gen:
-                result_queue.put(item)
-        except Exception as e:
-            print(f"Error in generator {e}")
-            result_queue.put(e)
-        except asyncio.CancelledError:
-            return
-        finally:
-            result_queue.put(StopIteration)
-            stop_event.set()
-            await end_trace()
-
-    def run_async():
-        # Run our own loop to avoid double async generator cleanup which is done
-        # by asyncio.run()
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        try:
-            task = loop.create_task(consumer())
-            loop.run_until_complete(task)
-        finally:
-            # Handle pending tasks like a generator's athrow()
-            pending = asyncio.all_tasks(loop)
-            if pending:
-                loop.run_until_complete(
-                    asyncio.gather(*pending, return_exceptions=True)
-                )
-            loop.close()
-
-    future = pool_executor.submit(run_async)
-
-    try:
-        # yield results as they come in
-        while not stop_event.is_set() or not result_queue.empty():
-            try:
-                item = result_queue.get(timeout=0.1)
-                if item is StopIteration:
-                    break
-                if isinstance(item, Exception):
-                    raise item
-                yield item
-            except queue.Empty:
-                continue
-    finally:
-        future.result()
 
 
 def convert_pydantic_to_json_value(value: Any) -> Any:
@@ -174,21 +114,23 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
         config_path_or_template_name: str,
         skip_logger_removal: bool = False,
         custom_provider_registry: Optional[ProviderRegistry] = None,
+        provider_data: Optional[dict[str, Any]] = None,
     ):
         super().__init__()
         self.async_client = AsyncLlamaStackAsLibraryClient(
-            config_path_or_template_name, custom_provider_registry
+            config_path_or_template_name, custom_provider_registry, provider_data
         )
         self.pool_executor = ThreadPoolExecutor(max_workers=4)
         self.skip_logger_removal = skip_logger_removal
+        self.provider_data = provider_data
 
     def initialize(self):
         if in_notebook():
             import nest_asyncio
 
             nest_asyncio.apply()
-        if not self.skip_logger_removal:
-            self._remove_root_logger_handlers()
+            if not self.skip_logger_removal:
+                self._remove_root_logger_handlers()
 
         return asyncio.run(self.async_client.initialize())
 
@@ -202,34 +144,30 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
             root_logger.removeHandler(handler)
             print(f"Removed handler {handler.__class__.__name__} from root logger")
 
-    def _get_path(
-        self,
-        cast_to: Any,
-        options: Any,
-        *,
-        stream=False,
-        stream_cls=None,
-    ):
-        return options.url
-
     def request(self, *args, **kwargs):
-        path = self._get_path(*args, **kwargs)
         if kwargs.get("stream"):
-            return stream_across_asyncio_run_boundary(
-                lambda: self.async_client.request(*args, **kwargs),
-                self.pool_executor,
-                path=path,
-            )
-        else:
+            # NOTE: We are using AsyncLlamaStackClient under the hood
+            # A new event loop is needed to convert the AsyncStream
+            # from async client into SyncStream return type for streaming
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
 
-            async def _traced_request():
-                await start_trace(path, {"__location__": "library_client"})
+            def sync_generator():
                 try:
-                    return await self.async_client.request(*args, **kwargs)
+                    async_stream = loop.run_until_complete(
+                        self.async_client.request(*args, **kwargs)
+                    )
+                    while True:
+                        chunk = loop.run_until_complete(async_stream.__anext__())
+                        yield chunk
+                except StopAsyncIteration:
+                    pass
                 finally:
-                    await end_trace()
+                    loop.close()
 
-            return asyncio.run(_traced_request())
+            return sync_generator()
+        else:
+            return asyncio.run(self.async_client.request(*args, **kwargs))
 
 
 class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
@@ -237,9 +175,9 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         self,
         config_path_or_template_name: str,
         custom_provider_registry: Optional[ProviderRegistry] = None,
+        provider_data: Optional[dict[str, Any]] = None,
     ):
         super().__init__()
-
         # when using the library client, we should not log to console since many
         # of our logs are intended for server-side usage
         current_sinks = os.environ.get("TELEMETRY_SINKS", "sqlite").split(",")
@@ -260,6 +198,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         self.config_path_or_template_name = config_path_or_template_name
         self.config = config
         self.custom_provider_registry = custom_provider_registry
+        self.provider_data = provider_data
 
     async def initialize(self):
         try:
@@ -294,13 +233,23 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
 
         endpoints = get_all_api_endpoints()
         endpoint_impls = {}
+
+        def _convert_path_to_regex(path: str) -> str:
+            # Convert {param} to named capture groups
+            pattern = re.sub(r"{(\w+)}", r"(?P<\1>[^/]+)", path)
+            return f"^{pattern}$"
+
         for api, api_endpoints in endpoints.items():
             if api not in self.impls:
                 continue
             for endpoint in api_endpoints:
                 impl = self.impls[api]
                 func = getattr(impl, endpoint.name)
-                endpoint_impls[endpoint.route] = func
+                if endpoint.method not in endpoint_impls:
+                    endpoint_impls[endpoint.method] = {}
+                endpoint_impls[endpoint.method][
+                    _convert_path_to_regex(endpoint.route)
+                ] = func
 
         self.endpoint_impls = endpoint_impls
         return True
@@ -316,17 +265,49 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         if not self.endpoint_impls:
             raise ValueError("Client not initialized")
 
+        if self.provider_data:
+            set_request_provider_data(
+                {"X-LlamaStack-Provider-Data": json.dumps(self.provider_data)}
+            )
+
         if stream:
-            return self._call_streaming(
+            response = await self._call_streaming(
                 cast_to=cast_to,
                 options=options,
                 stream_cls=stream_cls,
             )
         else:
-            return await self._call_non_streaming(
+            response = await self._call_non_streaming(
                 cast_to=cast_to,
                 options=options,
             )
+        return response
+
+    def _find_matching_endpoint(self, method: str, path: str) -> tuple[Any, dict]:
+        """Find the matching endpoint implementation for a given method and path.
+
+        Args:
+            method: HTTP method (GET, POST, etc.)
+            path: URL path to match against
+
+        Returns:
+            A tuple of (endpoint_function, path_params)
+
+        Raises:
+            ValueError: If no matching endpoint is found
+        """
+        impls = self.endpoint_impls.get(method)
+        if not impls:
+            raise ValueError(f"No endpoint found for {path}")
+
+        for regex, func in impls.items():
+            match = re.match(regex, path)
+            if match:
+                # Extract named groups from the regex match
+                path_params = match.groupdict()
+                return func, path_params
+
+        raise ValueError(f"No endpoint found for {path}")
 
     async def _call_non_streaming(
         self,
@@ -335,15 +316,17 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         options: Any,
     ):
         path = options.url
-
         body = options.params or {}
         body |= options.json_data or {}
-        func = self.endpoint_impls.get(path)
-        if not func:
-            raise ValueError(f"No endpoint found for {path}")
 
-        body = self._convert_body(path, body)
-        result = await func(**body)
+        matched_func, path_params = self._find_matching_endpoint(options.method, path)
+        body |= path_params
+        body = self._convert_body(path, options.method, body)
+        await start_trace(options.url, {"__location__": "library_client"})
+        try:
+            result = await matched_func(**body)
+        finally:
+            await end_trace()
 
         json_content = json.dumps(convert_pydantic_to_json_value(result))
         mock_response = httpx.Response(
@@ -380,17 +363,20 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         path = options.url
         body = options.params or {}
         body |= options.json_data or {}
-        func = self.endpoint_impls.get(path)
-        if not func:
-            raise ValueError(f"No endpoint found for {path}")
+        func, path_params = self._find_matching_endpoint(options.method, path)
+        body |= path_params
 
-        body = self._convert_body(path, body)
+        body = self._convert_body(path, options.method, body)
 
         async def gen():
-            async for chunk in await func(**body):
-                data = json.dumps(convert_pydantic_to_json_value(chunk))
-                sse_event = f"data: {data}\n\n"
-                yield sse_event.encode("utf-8")
+            await start_trace(options.url, {"__location__": "library_client"})
+            try:
+                async for chunk in await func(**body):
+                    data = json.dumps(convert_pydantic_to_json_value(chunk))
+                    sse_event = f"data: {data}\n\n"
+                    yield sse_event.encode("utf-8")
+            finally:
+                await end_trace()
 
         mock_response = httpx.Response(
             status_code=httpx.codes.OK,
@@ -422,11 +408,13 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         )
         return await response.parse()
 
-    def _convert_body(self, path: str, body: Optional[dict] = None) -> dict:
+    def _convert_body(
+        self, path: str, method: str, body: Optional[dict] = None
+    ) -> dict:
         if not body:
             return {}
 
-        func = self.endpoint_impls[path]
+        func, _ = self._find_matching_endpoint(method, path)
         sig = inspect.signature(func)
 
         # Strip NOT_GIVENs to use the defaults in signature

@@ -10,7 +10,6 @@ from typing import AsyncGenerator, AsyncIterator, Dict, List, Optional, Union
 from botocore.client import BaseClient
 from llama_models.datatypes import CoreModelId
 from llama_models.llama3.api.chat_format import ChatFormat
-
 from llama_models.llama3.api.tokenizer import Tokenizer
 
 from llama_stack.apis.common.content_types import InterleavedContent
@@ -30,12 +29,12 @@ from llama_stack.apis.inference import (
 )
 from llama_stack.providers.remote.inference.bedrock.config import BedrockConfig
 from llama_stack.providers.utils.bedrock.client import create_bedrock_client
-
 from llama_stack.providers.utils.inference.model_registry import (
     build_model_alias,
     ModelRegistryHelper,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
+    get_sampling_strategy_options,
     OpenAICompatCompletionChoice,
     OpenAICompatCompletionResponse,
     process_chat_completion_response,
@@ -46,7 +45,6 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
     content_has_media,
     interleaved_content_as_str,
 )
-
 
 MODEL_ALIASES = [
     build_model_alias(
@@ -101,7 +99,7 @@ class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
         response_format: Optional[ResponseFormat] = None,
         tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
-        tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.json,
+        tool_prompt_format: Optional[ToolPromptFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> Union[
@@ -169,16 +167,13 @@ class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
     ) -> Dict:
         bedrock_model = request.model
 
-        inference_config = {}
-        param_mapping = {
-            "max_tokens": "max_gen_len",
-            "temperature": "temperature",
-            "top_p": "top_p",
-        }
+        sampling_params = request.sampling_params
+        options = get_sampling_strategy_options(sampling_params)
 
-        for k, v in param_mapping.items():
-            if getattr(request.sampling_params, k):
-                inference_config[v] = getattr(request.sampling_params, k)
+        if sampling_params.max_tokens:
+            options["max_gen_len"] = sampling_params.max_tokens
+        if sampling_params.repetition_penalty > 0:
+            options["repetition_penalty"] = sampling_params.repetition_penalty
 
         prompt = await chat_completion_request_to_prompt(
             request, self.get_llama_model(request.model), self.formatter
@@ -188,7 +183,7 @@ class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
             "body": json.dumps(
                 {
                     "prompt": prompt,
-                    **inference_config,
+                    **options,
                 }
             ),
         }

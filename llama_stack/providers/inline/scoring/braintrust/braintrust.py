@@ -156,7 +156,7 @@ class BraintrustScoringImpl(
             provider_data = self.get_request_provider_data()
             if provider_data is None or not provider_data.openai_api_key:
                 raise ValueError(
-                    'Pass OpenAI API Key in the header X-LlamaStack-ProviderData as { "openai_api_key": <your api key>}'
+                    'Pass OpenAI API Key in the header X-LlamaStack-Provider-Data as { "openai_api_key": <your api key>}'
                 )
             self.config.openai_api_key = provider_data.openai_api_key
 

@@ -17,7 +17,7 @@ from typing import (
     Union,
 )
 
-from llama_models.schema_utils import json_schema_type, webmethod
+from llama_models.schema_utils import json_schema_type, register_schema, webmethod
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
@@ -115,13 +115,16 @@ class SpanEndPayload(BaseModel):
     status: SpanStatus
 
 
-StructuredLogPayload = Annotated[
-    Union[
-        SpanStartPayload,
-        SpanEndPayload,
+StructuredLogPayload = register_schema(
+    Annotated[
+        Union[
+            SpanStartPayload,
+            SpanEndPayload,
+        ],
+        Field(discriminator="type"),
     ],
-    Field(discriminator="type"),
-]
+    name="StructuredLogPayload",
+)
 
 
 @json_schema_type
@@ -130,14 +133,17 @@ class StructuredLogEvent(EventCommon):
     payload: StructuredLogPayload
 
 
-Event = Annotated[
-    Union[
-        UnstructuredLogEvent,
-        MetricEvent,
-        StructuredLogEvent,
+Event = register_schema(
+    Annotated[
+        Union[
+            UnstructuredLogEvent,
+            MetricEvent,
+            StructuredLogEvent,
+        ],
+        Field(discriminator="type"),
     ],
-    Field(discriminator="type"),
-]
+    name="Event",
+)
 
 
 @json_schema_type
@@ -169,39 +175,57 @@ class QueryCondition(BaseModel):
     value: Any
 
 
+class QueryTracesResponse(BaseModel):
+    data: List[Trace]
+
+
+class QuerySpansResponse(BaseModel):
+    data: List[Span]
+
+
+class QuerySpanTreeResponse(BaseModel):
+    data: Dict[str, SpanWithStatus]
+
+
 @runtime_checkable
 class Telemetry(Protocol):
-    @webmethod(route="/telemetry/log-event")
+    @webmethod(route="/telemetry/events", method="POST")
     async def log_event(
         self, event: Event, ttl_seconds: int = DEFAULT_TTL_DAYS * 86400
     ) -> None: ...
 
-    @webmethod(route="/telemetry/query-traces", method="POST")
+    @webmethod(route="/telemetry/traces", method="GET")
     async def query_traces(
         self,
         attribute_filters: Optional[List[QueryCondition]] = None,
         limit: Optional[int] = 100,
         offset: Optional[int] = 0,
         order_by: Optional[List[str]] = None,
-    ) -> List[Trace]: ...
+    ) -> QueryTracesResponse: ...
 
-    @webmethod(route="/telemetry/get-span-tree", method="POST")
+    @webmethod(route="/telemetry/traces/{trace_id}", method="GET")
+    async def get_trace(self, trace_id: str) -> Trace: ...
+
+    @webmethod(route="/telemetry/traces/{trace_id}/spans/{span_id}", method="GET")
+    async def get_span(self, trace_id: str, span_id: str) -> Span: ...
+
+    @webmethod(route="/telemetry/spans/{span_id}/tree", method="GET")
     async def get_span_tree(
         self,
         span_id: str,
         attributes_to_return: Optional[List[str]] = None,
         max_depth: Optional[int] = None,
-    ) -> Dict[str, SpanWithStatus]: ...
+    ) -> QuerySpanTreeResponse: ...
 
-    @webmethod(route="/telemetry/query-spans", method="POST")
+    @webmethod(route="/telemetry/spans", method="GET")
     async def query_spans(
         self,
         attribute_filters: List[QueryCondition],
         attributes_to_return: List[str],
         max_depth: Optional[int] = None,
-    ) -> List[Span]: ...
+    ) -> QuerySpansResponse: ...
 
-    @webmethod(route="/telemetry/save-spans-to-dataset", method="POST")
+    @webmethod(route="/telemetry/spans/export", method="POST")
     async def save_spans_to_dataset(
         self,
         attribute_filters: List[QueryCondition],

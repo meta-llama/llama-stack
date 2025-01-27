@@ -1,0 +1,148 @@
+name: Docker Build and Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'TestPyPI or PyPI version to build (e.g., 0.0.63.dev20250114)'
+        required: true
+        type: string
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    env:
+      TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
+      FIREWORKS_API_KEY: ${{ secrets.FIREWORKS_API_KEY }}
+      TAVILY_SEARCH_API_KEY: ${{ secrets.TAVILY_SEARCH_API_KEY }}
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "VERSION=0.0.63.dev51206766" >> $GITHUB_OUTPUT
+          else
+            echo "VERSION=${{ inputs.version }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check package version availability
+        run: |
+            # Function to check if version exists in a repository
+            check_version() {
+                local repo=$1
+                local VERSION_TO_CHECK=${{ steps.version.outputs.version }}
+                echo "Checking version $VERSION_TO_CHECK in $repo"
+                result=$(curl -s "https://$repo.org/pypi/llama-stack/json" | jq --arg v "$VERSION_TO_CHECK" '.releases | has($v)')
+                echo "Result: $result"
+                return $([ "$result" = "true" ])
+            }
+
+            # Check TestPyPI first, then PyPI
+            if check_version "test.pypi"; then
+                echo "Version ${{ steps.version.outputs.version }} found in TestPyPI"
+                echo "PYPI_SOURCE=testpypi" >> $GITHUB_ENV
+            elif check_version "pypi"; then
+                echo "Version ${{ steps.version.outputs.version }} found in PyPI"
+                echo "PYPI_SOURCE=pypi" >> $GITHUB_ENV
+            else
+                echo "Error: Version ${{ steps.version.outputs.version }} not found in either TestPyPI or PyPI"
+                exit 1
+            fi
+
+      - name: Install llama-stack
+        run: |
+            echo "PYPI_SOURCE=${PYPI_SOURCE}"
+            if [ "${{ github.event_name }}" = "push" ]; then
+                pip install -e .
+            else
+                if [ "$PYPI_SOURCE" = "testpypi" ]; then
+                    pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple llama-stack==${{ steps.version.outputs.version }}
+                else
+                    pip install llama-stack==${{ steps.version.outputs.version }}
+                fi
+            fi
+
+      - name: Build docker image
+        run: |
+          echo "PYPI_SOURCE=${PYPI_SOURCE}"
+          echo "VERSION=${{ steps.version.outputs.version }}"
+          TEMPLATES=("ollama" "bedrock" "remote-vllm" "fireworks" "together" "tgi" "meta-reference-gpu")
+          for template in "${TEMPLATES[@]}"; do
+            if [ "$PYPI_SOURCE" = "testpypi" ]; then
+                TEST_PYPI_VERSION=${{ steps.version.outputs.version }} llama stack build --template $template --image-type container
+            else
+                PYPI_VERSION=${{ steps.version.outputs.version }} llama stack build --template $template --image-type container
+            fi
+          done
+
+      - name: List docker images
+        run: |
+          docker images
+
+      # TODO (xiyan): make the following 2 steps into a matrix and test all templates other than fireworks
+      - name: Start up built docker image
+        run: |
+          cd distributions/fireworks
+          if [ "$PYPI_SOURCE" = "testpypi" ]; then
+            sed -i 's|image: llamastack/distribution-fireworks|image: distribution-fireworks:test-${{ steps.version.outputs.version }}|' ./compose.yaml
+          else
+            sed -i 's|image: llamastack/distribution-fireworks|image: distribution-fireworks:${{ steps.version.outputs.version }}|' ./compose.yaml
+          fi
+          docker compose up -d
+          cd ..
+          # Wait for the container to start
+          timeout=300
+          while ! curl -s -f http://localhost:8321/v1/version > /dev/null && [ $timeout -gt 0 ]; do
+            echo "Waiting for endpoint to be available..."
+            sleep 5
+            timeout=$((timeout - 5))
+          done
+
+          if [ $timeout -le 0 ]; then
+            echo "Timeout waiting for endpoint to become available"
+            exit 1
+          fi
+
+      - name: Run simple models list test on docker server
+        run: |
+          curl http://localhost:8321/v1/models
+
+      # TODO (xiyan): figure out why client cannot find server but curl works
+      # - name: Run pytest on docker server
+      #   run: |
+      #     pip install pytest pytest-md-report
+      #     export LLAMA_STACK_BASE_URL="http://localhost:8321"
+      #     LLAMA_STACK_BASE_URL="http://localhost:8321" pytest -v tests/client-sdk/inference/test_inference.py --md-report --md-report-verbose=1
+
+      - name: Push to dockerhub
+        run: |
+          echo "PYPI_SOURCE=${PYPI_SOURCE}"
+          echo "VERSION=${{ steps.version.outputs.version }}"
+          TEMPLATES=("ollama" "bedrock" "remote-vllm" "fireworks" "together" "tgi" "meta-reference-gpu")
+          for template in "${TEMPLATES[@]}"; do
+            if [ "$PYPI_SOURCE" = "testpypi" ]; then
+                docker tag distribution-$template:test-${{ steps.version.outputs.version }} llamastack/distribution-$template:test-${{ steps.version.outputs.version }}
+                docker push llamastack/distribution-$template:test-${{ steps.version.outputs.version }}
+            else
+                docker tag distribution-$template:${{ steps.version.outputs.version }} llamastack/distribution-$template:${{ steps.version.outputs.version }}
+                docker tag distribution-$template:${{ steps.version.outputs.version }} llamastack/distribution-$template:latest
+                docker push llamastack/distribution-$template:${{ steps.version.outputs.version }}
+                docker push llamastack/distribution-$template:latest
+            fi
+          done

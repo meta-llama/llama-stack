@@ -32,8 +32,8 @@ def builtin_automatically_routed_apis() -> List[AutoRoutedApiInfo]:
             router_api=Api.safety,
         ),
         AutoRoutedApiInfo(
-            routing_table_api=Api.memory_banks,
-            router_api=Api.memory,
+            routing_table_api=Api.vector_dbs,
+            router_api=Api.vector_io,
         ),
         AutoRoutedApiInfo(
             routing_table_api=Api.datasets,

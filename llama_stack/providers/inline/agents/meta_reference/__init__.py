@@ -19,9 +19,8 @@ async def get_provider_impl(
     impl = MetaReferenceAgentsImpl(
         config,
         deps[Api.inference],
-        deps[Api.memory],
+        deps[Api.vector_io],
         deps[Api.safety],
-        deps[Api.memory_banks],
         deps[Api.tool_runtime],
         deps[Api.tool_groups],
     )

@@ -89,7 +89,7 @@ If you're looking for more specific topics, we have a [Zero to Hero Guide](#next
    ```
    ...
    Build Successful! Next steps:
-   1. Set the environment variables: LLAMASTACK_PORT, OLLAMA_URL, INFERENCE_MODEL, SAFETY_MODEL
+   1. Set the environment variables: LLAMA_STACK_PORT, OLLAMA_URL, INFERENCE_MODEL, SAFETY_MODEL
    2. `llama stack run /Users/<username>/.llama/distributions/llamastack-ollama/ollama-run.yaml
    ```
 
@@ -157,7 +157,15 @@ curl http://localhost:$LLAMA_STACK_PORT/alpha/inference/chat-completion
         {"role": "system", "content": "You are a helpful assistant."},
         {"role": "user", "content": "Write me a 2-sentence poem about the moon"}
     ],
-    "sampling_params": {"temperature": 0.7, "seed": 42, "max_tokens": 512}
+    "sampling_params": {
+      "strategy": {
+         "type": "top_p",
+         "temperatrue": 0.7,
+         "top_p": 0.95,
+      },
+      "seed": 42,
+      "max_tokens": 512
+   }
 }
 EOF
 ```

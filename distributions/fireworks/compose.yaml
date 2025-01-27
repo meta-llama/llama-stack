@@ -1,13 +1,11 @@
 services:
   llamastack:
     image: llamastack/distribution-fireworks
-    network_mode: "host"
-    volumes:
-      - ~/.llama:/root/.llama
-      - ./run.yaml:/root/llamastack-run-fireworks.yaml
     ports:
-      - "5000:5000"
-    entrypoint: bash -c "python -m llama_stack.distribution.server.server --yaml_config /root/llamastack-run-fireworks.yaml"
+      - "8321:8321"
+    environment:
+      - FIREWORKS_API_KEY=${FIREWORKS_API_KEY}
+    entrypoint: bash -c "python -m llama_stack.distribution.server.server --template fireworks"
     deploy:
       restart_policy:
         condition: on-failure

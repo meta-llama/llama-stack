@@ -14,7 +14,7 @@ from pydantic import BaseModel, Field
 class ResourceType(Enum):
     model = "model"
     shield = "shield"
-    memory_bank = "memory_bank"
+    vector_db = "vector_db"
     dataset = "dataset"
     scoring_function = "scoring_function"
     eval_task = "eval_task"
@@ -37,5 +37,5 @@ class Resource(BaseModel):
     provider_id: str = Field(description="ID of the provider that owns this resource")
 
     type: ResourceType = Field(
-        description="Type of resource (e.g. 'model', 'shield', 'memory_bank', etc.)"
+        description="Type of resource (e.g. 'model', 'shield', 'vector_db', etc.)"
     )

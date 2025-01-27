@@ -18,8 +18,8 @@ if [ -n "$LLAMA_MODELS_DIR" ]; then
 fi
 
 if [ "$#" -lt 3 ]; then
-  echo "Usage: $0 <distribution_type> <build_name> <build_file_path> <pip_dependencies> [<special_pip_deps>]" >&2
-  echo "Example: $0 <distribution_type> mybuild ./my-stack-build.yaml 'numpy pandas scipy'" >&2
+  echo "Usage: $0 <distribution_type> <conda_env_name> <build_file_path> <pip_dependencies> [<special_pip_deps>]" >&2
+  echo "Example: $0 <distribution_type> my-conda-env ./my-stack-build.yaml 'numpy pandas scipy'" >&2
   exit 1
 fi
 
@@ -27,8 +27,7 @@ special_pip_deps="$4"
 
 set -euo pipefail
 
-build_name="$1"
-env_name="llamastack-$build_name"
+env_name="$1"
 build_file_path="$2"
 pip_dependencies="$3"
 
@@ -105,7 +104,13 @@ ensure_conda_env_python310() {
       printf "Installing from LLAMA_STACK_DIR: $LLAMA_STACK_DIR\n"
       $CONDA_PREFIX/bin/pip install --no-cache-dir -e "$LLAMA_STACK_DIR"
     else
-      $CONDA_PREFIX/bin/pip install --no-cache-dir llama-stack
+      PYPI_VERSION="${PYPI_VERSION:-}"
+      if [ -n "$PYPI_VERSION" ]; then
+        SPEC_VERSION="llama-stack==${PYPI_VERSION} llama-models==${PYPI_VERSION} llama-stack-client==${PYPI_VERSION}"
+      else
+        SPEC_VERSION="llama-stack"
+      fi
+      $CONDA_PREFIX/bin/pip install --no-cache-dir $SPEC_VERSION
     fi
 
     if [ -n "$LLAMA_MODELS_DIR" ]; then
@@ -131,8 +136,8 @@ ensure_conda_env_python310() {
     fi
   fi
 
-  mv $build_file_path $CONDA_PREFIX/
-  echo "Build spec configuration saved at $CONDA_PREFIX/$build_name-build.yaml"
+  mv $build_file_path $CONDA_PREFIX/llamastack-build.yaml
+  echo "Build spec configuration saved at $CONDA_PREFIX/llamastack-build.yaml"
 }
 
 ensure_conda_env_python310 "$env_name" "$pip_dependencies" "$special_pip_deps"

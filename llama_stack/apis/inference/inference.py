@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 from enum import Enum
-
 from typing import (
     Any,
     AsyncIterator,
@@ -26,16 +25,12 @@ from llama_models.llama3.api.datatypes import (
     ToolDefinition,
     ToolPromptFormat,
 )
-
 from llama_models.schema_utils import json_schema_type, register_schema, webmethod
-
 from pydantic import BaseModel, Field, field_validator
 from typing_extensions import Annotated
 
-from llama_stack.apis.common.content_types import InterleavedContent
-
+from llama_stack.apis.common.content_types import ContentDelta, InterleavedContent
 from llama_stack.apis.models import Model
-
 from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
 
 
@@ -87,7 +82,7 @@ class SystemMessage(BaseModel):
 
 @json_schema_type
 class ToolResponseMessage(BaseModel):
-    role: Literal["ipython"] = "ipython"
+    role: Literal["tool"] = "tool"
     # it was nice to re-use the ToolResponse type, but having all messages
     # have a `content` type makes things nicer too
     call_id: str
@@ -153,34 +148,22 @@ class ChatCompletionResponseEventType(Enum):
 
 
 @json_schema_type
-class ToolCallParseStatus(Enum):
-    started = "started"
-    in_progress = "in_progress"
-    failure = "failure"
-    success = "success"
-
-
-@json_schema_type
-class ToolCallDelta(BaseModel):
-    content: Union[str, ToolCall]
-    parse_status: ToolCallParseStatus
-
-
-@json_schema_type
 class ChatCompletionResponseEvent(BaseModel):
     """Chat completion response event."""
 
     event_type: ChatCompletionResponseEventType
-    delta: Union[str, ToolCallDelta]
+    delta: ContentDelta
     logprobs: Optional[List[TokenLogProbs]] = None
     stop_reason: Optional[StopReason] = None
 
 
+@json_schema_type
 class ResponseFormatType(Enum):
     json_schema = "json_schema"
     grammar = "grammar"
 
 
+@json_schema_type
 class JsonSchemaResponseFormat(BaseModel):
     type: Literal[ResponseFormatType.json_schema.value] = (
         ResponseFormatType.json_schema.value
@@ -188,6 +171,7 @@ class JsonSchemaResponseFormat(BaseModel):
     json_schema: Dict[str, Any]
 
 
+@json_schema_type
 class GrammarResponseFormat(BaseModel):
     type: Literal[ResponseFormatType.grammar.value] = ResponseFormatType.grammar.value
     bnf: Dict[str, Any]
@@ -256,9 +240,7 @@ class ChatCompletionRequest(BaseModel):
     # zero-shot tool definitions as input to the model
     tools: Optional[List[ToolDefinition]] = Field(default_factory=list)
     tool_choice: Optional[ToolChoice] = Field(default=ToolChoice.auto)
-    tool_prompt_format: Optional[ToolPromptFormat] = Field(
-        default=ToolPromptFormat.json
-    )
+    tool_prompt_format: Optional[ToolPromptFormat] = Field(default=None)
     response_format: Optional[ResponseFormat] = None
 
     stream: Optional[bool] = False
@@ -289,9 +271,7 @@ class BatchChatCompletionRequest(BaseModel):
     # zero-shot tool definitions as input to the model
     tools: Optional[List[ToolDefinition]] = Field(default_factory=list)
     tool_choice: Optional[ToolChoice] = Field(default=ToolChoice.auto)
-    tool_prompt_format: Optional[ToolPromptFormat] = Field(
-        default=ToolPromptFormat.json
-    )
+    tool_prompt_format: Optional[ToolPromptFormat] = Field(default=None)
     logprobs: Optional[LogProbConfig] = None
 
 
@@ -314,7 +294,7 @@ class ModelStore(Protocol):
 class Inference(Protocol):
     model_store: ModelStore
 
-    @webmethod(route="/inference/completion")
+    @webmethod(route="/inference/completion", method="POST")
     async def completion(
         self,
         model_id: str,
@@ -325,7 +305,7 @@ class Inference(Protocol):
         logprobs: Optional[LogProbConfig] = None,
     ) -> Union[CompletionResponse, AsyncIterator[CompletionResponseStreamChunk]]: ...
 
-    @webmethod(route="/inference/chat-completion")
+    @webmethod(route="/inference/chat-completion", method="POST")
     async def chat_completion(
         self,
         model_id: str,
@@ -334,7 +314,7 @@ class Inference(Protocol):
         # zero-shot tool definitions as input to the model
         tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
-        tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.json,
+        tool_prompt_format: Optional[ToolPromptFormat] = None,
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
@@ -342,7 +322,7 @@ class Inference(Protocol):
         ChatCompletionResponse, AsyncIterator[ChatCompletionResponseStreamChunk]
     ]: ...
 
-    @webmethod(route="/inference/embeddings")
+    @webmethod(route="/inference/embeddings", method="POST")
     async def embeddings(
         self,
         model_id: str,

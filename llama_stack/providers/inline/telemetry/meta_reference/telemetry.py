@@ -21,22 +21,21 @@ from llama_stack.apis.telemetry import (
     Event,
     MetricEvent,
     QueryCondition,
+    QuerySpanTreeResponse,
+    QueryTracesResponse,
+    Span,
     SpanEndPayload,
     SpanStartPayload,
     SpanStatus,
-    SpanWithStatus,
     StructuredLogEvent,
     Telemetry,
     Trace,
     UnstructuredLogEvent,
 )
-
 from llama_stack.distribution.datatypes import Api
-
 from llama_stack.providers.inline.telemetry.meta_reference.console_span_processor import (
     ConsoleSpanProcessor,
 )
-
 from llama_stack.providers.inline.telemetry.meta_reference.sqlite_span_processor import (
     SQLiteSpanProcessor,
 )
@@ -52,6 +51,7 @@ _GLOBAL_STORAGE = {
     "up_down_counters": {},
 }
 _global_lock = threading.Lock()
+_TRACER_PROVIDER = None
 
 
 def string_to_trace_id(s: str) -> int:
@@ -72,7 +72,7 @@ def is_tracing_enabled(tracer):
 class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
     def __init__(self, config: TelemetryConfig, deps: Dict[str, Any]) -> None:
         self.config = config
-        self.datasetio_api = deps[Api.datasetio]
+        self.datasetio_api = deps.get(Api.datasetio)
 
         resource = Resource.create(
             {
@@ -80,31 +80,43 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
             }
         )
 
-        provider = TracerProvider(resource=resource)
-        trace.set_tracer_provider(provider)
-        if TelemetrySink.OTEL in self.config.sinks:
-            otlp_exporter = OTLPSpanExporter(
-                endpoint=self.config.otel_endpoint,
-            )
-            span_processor = BatchSpanProcessor(otlp_exporter)
-            trace.get_tracer_provider().add_span_processor(span_processor)
-            metric_reader = PeriodicExportingMetricReader(
-                OTLPMetricExporter(
+        global _TRACER_PROVIDER
+        # Initialize the correct span processor based on the provider state.
+        # This is needed since once the span processor is set, it cannot be unset.
+        # Recreating the telemetry adapter multiple times will result in duplicate span processors.
+        # Since the library client can be recreated multiple times in a notebook,
+        # the kernel will hold on to the span processor and cause duplicate spans to be written.
+        if _TRACER_PROVIDER is None:
+            provider = TracerProvider(resource=resource)
+            trace.set_tracer_provider(provider)
+            _TRACER_PROVIDER = provider
+            if TelemetrySink.OTEL in self.config.sinks:
+                otlp_exporter = OTLPSpanExporter(
                     endpoint=self.config.otel_endpoint,
                 )
-            )
-            metric_provider = MeterProvider(
-                resource=resource, metric_readers=[metric_reader]
-            )
-            metrics.set_meter_provider(metric_provider)
+                span_processor = BatchSpanProcessor(otlp_exporter)
+                trace.get_tracer_provider().add_span_processor(span_processor)
+                metric_reader = PeriodicExportingMetricReader(
+                    OTLPMetricExporter(
+                        endpoint=self.config.otel_endpoint,
+                    )
+                )
+                metric_provider = MeterProvider(
+                    resource=resource, metric_readers=[metric_reader]
+                )
+                metrics.set_meter_provider(metric_provider)
+            if TelemetrySink.SQLITE in self.config.sinks:
+                trace.get_tracer_provider().add_span_processor(
+                    SQLiteSpanProcessor(self.config.sqlite_db_path)
+                )
+            if TelemetrySink.CONSOLE in self.config.sinks:
+                trace.get_tracer_provider().add_span_processor(ConsoleSpanProcessor())
+
+        if TelemetrySink.OTEL in self.config.sinks:
             self.meter = metrics.get_meter(__name__)
         if TelemetrySink.SQLITE in self.config.sinks:
-            trace.get_tracer_provider().add_span_processor(
-                SQLiteSpanProcessor(self.config.sqlite_db_path)
-            )
             self.trace_store = SQLiteTraceStore(self.config.sqlite_db_path)
-        if TelemetrySink.CONSOLE in self.config.sinks:
-            trace.get_tracer_provider().add_span_processor(ConsoleSpanProcessor())
+
         self._lock = _global_lock
 
     async def initialize(self) -> None:
@@ -240,22 +252,32 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
         limit: Optional[int] = 100,
         offset: Optional[int] = 0,
         order_by: Optional[List[str]] = None,
-    ) -> List[Trace]:
-        return await self.trace_store.query_traces(
-            attribute_filters=attribute_filters,
-            limit=limit,
-            offset=offset,
-            order_by=order_by,
+    ) -> QueryTracesResponse:
+        return QueryTracesResponse(
+            data=await self.trace_store.query_traces(
+                attribute_filters=attribute_filters,
+                limit=limit,
+                offset=offset,
+                order_by=order_by,
+            )
         )
+
+    async def get_trace(self, trace_id: str) -> Trace:
+        return await self.trace_store.get_trace(trace_id)
+
+    async def get_span(self, trace_id: str, span_id: str) -> Span:
+        return await self.trace_store.get_span(trace_id, span_id)
 
     async def get_span_tree(
         self,
         span_id: str,
         attributes_to_return: Optional[List[str]] = None,
         max_depth: Optional[int] = None,
-    ) -> Dict[str, SpanWithStatus]:
-        return await self.trace_store.get_span_tree(
-            span_id=span_id,
-            attributes_to_return=attributes_to_return,
-            max_depth=max_depth,
+    ) -> QuerySpanTreeResponse:
+        return QuerySpanTreeResponse(
+            data=await self.trace_store.get_span_tree(
+                span_id=span_id,
+                attributes_to_return=attributes_to_return,
+                max_depth=max_depth,
+            )
         )

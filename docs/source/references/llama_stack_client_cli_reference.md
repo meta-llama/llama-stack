@@ -23,8 +23,8 @@ subcommands:
 ```bash
 $ llama-stack-client configure
 > Enter the host name of the Llama Stack distribution server: localhost
-> Enter the port number of the Llama Stack distribution server: 5000
-Done! You can now use the Llama Stack Client CLI with endpoint http://localhost:5000
+> Enter the port number of the Llama Stack distribution server: 8321
+Done! You can now use the Llama Stack Client CLI with endpoint http://localhost:8321
 ```
 
 ### `llama-stack-client providers list`
@@ -103,36 +103,35 @@ $ llama-stack-client models update <model_id> [--provider-id <provider_id>] [--p
 $ llama-stack-client models delete <model_id>
 ```
 
-## Memory Bank Management
+## Vector DB Management
 
-### `llama-stack-client memory_banks list`
+### `llama-stack-client vector_dbs list`
 ```bash
-$ llama-stack-client memory_banks list
+$ llama-stack-client vector_dbs list
 ```
 ```
-+--------------+----------------+--------+-------------------+------------------------+--------------------------+
-| identifier   | provider_id    | type   | embedding_model   |   chunk_size_in_tokens |   overlap_size_in_tokens |
-+==============+================+========+===================+========================+==========================+
-| test_bank    | meta-reference | vector | all-MiniLM-L6-v2  |                    512 |                       64 |
-+--------------+----------------+--------+-------------------+------------------------+--------------------------+
++--------------+----------------+---------------------+---------------+------------------------+
+| identifier   | provider_id    | provider_resource_id| vector_db_type| params                |
++==============+================+=====================+===============+========================+
+| test_bank    | meta-reference | test_bank          | vector        | embedding_model: all-MiniLM-L6-v2
+                                                                      embedding_dimension: 384|
++--------------+----------------+---------------------+---------------+------------------------+
 ```
 
-### `llama-stack-client memory_banks register`
+### `llama-stack-client vector_dbs register`
 ```bash
-$ llama-stack-client memory_banks register <memory-bank-id> --type <type> [--provider-id <provider-id>] [--provider-memory-bank-id <provider-memory-bank-id>] [--chunk-size <chunk-size>] [--embedding-model <embedding-model>] [--overlap-size <overlap-size>]
+$ llama-stack-client vector_dbs register <vector-db-id> [--provider-id <provider-id>] [--provider-vector-db-id <provider-vector-db-id>] [--embedding-model <embedding-model>] [--embedding-dimension <embedding-dimension>]
 ```
 
 Options:
-- `--type`: Required. Type of memory bank. Choices: "vector", "keyvalue", "keyword", "graph"
-- `--provider-id`: Optional. Provider ID for the memory bank
-- `--provider-memory-bank-id`: Optional. Provider's memory bank ID
-- `--chunk-size`: Optional. Chunk size in tokens (for vector type). Default: 512
-- `--embedding-model`: Optional. Embedding model (for vector type). Default: "all-MiniLM-L6-v2"
-- `--overlap-size`: Optional. Overlap size in tokens (for vector type). Default: 64
+- `--provider-id`: Optional. Provider ID for the vector db
+- `--provider-vector-db-id`: Optional. Provider's vector db ID
+- `--embedding-model`: Optional. Embedding model to use. Default: "all-MiniLM-L6-v2"
+- `--embedding-dimension`: Optional. Dimension of embeddings. Default: 384
 
-### `llama-stack-client memory_banks unregister`
+### `llama-stack-client vector_dbs unregister`
 ```bash
-$ llama-stack-client memory_banks unregister <memory-bank-id>
+$ llama-stack-client vector_dbs unregister <vector-db-id>
 ```
 
 ## Shield Management
@@ -201,11 +200,6 @@ Example eval_task_config.json:
         "model": "Llama3.1-405B-Instruct",
         "sampling_params": {
             "strategy": "greedy",
-            "temperature": 0,
-            "top_p": 0.95,
-            "top_k": 0,
-            "max_tokens": 0,
-            "repetition_penalty": 1.0
         }
     }
 }
@@ -221,3 +215,44 @@ Options:
 - `--output-dir`: Required. Path to the directory where scoring results will be saved
 - `--num-examples`: Optional. Number of examples to evaluate (useful for debugging)
 - `--visualize`: Optional flag. If set, visualizes scoring results after completion
+
+## Tool Group Management
+
+### `llama-stack-client toolgroups list`
+```bash
+$ llama-stack-client toolgroups list
+```
+```
++---------------------------+------------------+------+---------------+
+| identifier                | provider_id      | args | mcp_endpoint  |
++===========================+==================+======+===============+
+| builtin::code_interpreter | code-interpreter | None | None         |
++---------------------------+------------------+------+---------------+
+| builtin::rag             | rag-runtime      | None | None         |
++---------------------------+------------------+------+---------------+
+| builtin::websearch       | tavily-search    | None | None         |
++---------------------------+------------------+------+---------------+
+```
+
+### `llama-stack-client toolgroups get`
+```bash
+$ llama-stack-client toolgroups get <toolgroup_id>
+```
+
+Shows detailed information about a specific toolgroup. If the toolgroup is not found, displays an error message.
+
+### `llama-stack-client toolgroups register`
+```bash
+$ llama-stack-client toolgroups register <toolgroup_id> [--provider-id <provider-id>] [--provider-toolgroup-id <provider-toolgroup-id>] [--mcp-config <mcp-config>] [--args <args>]
+```
+
+Options:
+- `--provider-id`: Optional. Provider ID for the toolgroup
+- `--provider-toolgroup-id`: Optional. Provider's toolgroup ID
+- `--mcp-config`: Optional. JSON configuration for the MCP endpoint
+- `--args`: Optional. JSON arguments for the toolgroup
+
+### `llama-stack-client toolgroups unregister`
+```bash
+$ llama-stack-client toolgroups unregister <toolgroup_id>
+```

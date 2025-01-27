@@ -9,13 +9,14 @@ import os
 import pytest
 import pytest_asyncio
 from llama_stack.apis.inference import Model
-from llama_stack.apis.memory_banks import VectorMemoryBank
+from llama_stack.apis.vector_dbs import VectorDB
 
 from llama_stack.distribution.store.registry import (
     CachedDiskDistributionRegistry,
     DiskDistributionRegistry,
 )
-from llama_stack.providers.utils.kvstore import kvstore_impl, SqliteKVStoreConfig
+from llama_stack.providers.utils.kvstore import kvstore_impl
+from llama_stack.providers.utils.kvstore.config import SqliteKVStoreConfig
 
 
 @pytest.fixture
@@ -26,14 +27,14 @@ def config():
     return config
 
 
-@pytest_asyncio.fixture
+@pytest_asyncio.fixture(scope="function")
 async def registry(config):
     registry = DiskDistributionRegistry(await kvstore_impl(config))
     await registry.initialize()
     return registry
 
 
-@pytest_asyncio.fixture
+@pytest_asyncio.fixture(scope="function")
 async def cached_registry(config):
     registry = CachedDiskDistributionRegistry(await kvstore_impl(config))
     await registry.initialize()
@@ -41,13 +42,12 @@ async def cached_registry(config):
 
 
 @pytest.fixture
-def sample_bank():
-    return VectorMemoryBank(
-        identifier="test_bank",
+def sample_vector_db():
+    return VectorDB(
+        identifier="test_vector_db",
         embedding_model="all-MiniLM-L6-v2",
-        chunk_size_in_tokens=512,
-        overlap_size_in_tokens=64,
-        provider_resource_id="test_bank",
+        embedding_dimension=384,
+        provider_resource_id="test_vector_db",
         provider_id="test-provider",
     )
 
@@ -64,53 +64,47 @@ def sample_model():
 @pytest.mark.asyncio
 async def test_registry_initialization(registry):
     # Test empty registry
-    results = await registry.get("nonexistent", "nonexistent")
-    assert len(results) == 0
+    result = await registry.get("nonexistent", "nonexistent")
+    assert result is None
 
 
 @pytest.mark.asyncio
-async def test_basic_registration(registry, sample_bank, sample_model):
-    print(f"Registering {sample_bank}")
-    await registry.register(sample_bank)
+async def test_basic_registration(registry, sample_vector_db, sample_model):
+    print(f"Registering {sample_vector_db}")
+    await registry.register(sample_vector_db)
     print(f"Registering {sample_model}")
     await registry.register(sample_model)
-    print("Getting bank")
-    results = await registry.get("memory_bank", "test_bank")
-    assert len(results) == 1
-    result_bank = results[0]
-    assert result_bank.identifier == sample_bank.identifier
-    assert result_bank.embedding_model == sample_bank.embedding_model
-    assert result_bank.chunk_size_in_tokens == sample_bank.chunk_size_in_tokens
-    assert result_bank.overlap_size_in_tokens == sample_bank.overlap_size_in_tokens
-    assert result_bank.provider_id == sample_bank.provider_id
+    print("Getting vector_db")
+    result_vector_db = await registry.get("vector_db", "test_vector_db")
+    assert result_vector_db is not None
+    assert result_vector_db.identifier == sample_vector_db.identifier
+    assert result_vector_db.embedding_model == sample_vector_db.embedding_model
+    assert result_vector_db.provider_id == sample_vector_db.provider_id
 
-    results = await registry.get("model", "test_model")
-    assert len(results) == 1
-    result_model = results[0]
+    result_model = await registry.get("model", "test_model")
+    assert result_model is not None
     assert result_model.identifier == sample_model.identifier
     assert result_model.provider_id == sample_model.provider_id
 
 
 @pytest.mark.asyncio
-async def test_cached_registry_initialization(config, sample_bank, sample_model):
+async def test_cached_registry_initialization(config, sample_vector_db, sample_model):
     # First populate the disk registry
     disk_registry = DiskDistributionRegistry(await kvstore_impl(config))
     await disk_registry.initialize()
-    await disk_registry.register(sample_bank)
+    await disk_registry.register(sample_vector_db)
     await disk_registry.register(sample_model)
 
     # Test cached version loads from disk
     cached_registry = CachedDiskDistributionRegistry(await kvstore_impl(config))
     await cached_registry.initialize()
 
-    results = await cached_registry.get("memory_bank", "test_bank")
-    assert len(results) == 1
-    result_bank = results[0]
-    assert result_bank.identifier == sample_bank.identifier
-    assert result_bank.embedding_model == sample_bank.embedding_model
-    assert result_bank.chunk_size_in_tokens == sample_bank.chunk_size_in_tokens
-    assert result_bank.overlap_size_in_tokens == sample_bank.overlap_size_in_tokens
-    assert result_bank.provider_id == sample_bank.provider_id
+    result_vector_db = await cached_registry.get("vector_db", "test_vector_db")
+    assert result_vector_db is not None
+    assert result_vector_db.identifier == sample_vector_db.identifier
+    assert result_vector_db.embedding_model == sample_vector_db.embedding_model
+    assert result_vector_db.embedding_dimension == sample_vector_db.embedding_dimension
+    assert result_vector_db.provider_id == sample_vector_db.provider_id
 
 
 @pytest.mark.asyncio
@@ -118,31 +112,28 @@ async def test_cached_registry_updates(config):
     cached_registry = CachedDiskDistributionRegistry(await kvstore_impl(config))
     await cached_registry.initialize()
 
-    new_bank = VectorMemoryBank(
-        identifier="test_bank_2",
+    new_vector_db = VectorDB(
+        identifier="test_vector_db_2",
         embedding_model="all-MiniLM-L6-v2",
-        chunk_size_in_tokens=256,
-        overlap_size_in_tokens=32,
-        provider_resource_id="test_bank_2",
+        embedding_dimension=384,
+        provider_resource_id="test_vector_db_2",
         provider_id="baz",
     )
-    await cached_registry.register(new_bank)
+    await cached_registry.register(new_vector_db)
 
     # Verify in cache
-    results = await cached_registry.get("memory_bank", "test_bank_2")
-    assert len(results) == 1
-    result_bank = results[0]
-    assert result_bank.identifier == new_bank.identifier
-    assert result_bank.provider_id == new_bank.provider_id
+    result_vector_db = await cached_registry.get("vector_db", "test_vector_db_2")
+    assert result_vector_db is not None
+    assert result_vector_db.identifier == new_vector_db.identifier
+    assert result_vector_db.provider_id == new_vector_db.provider_id
 
     # Verify persisted to disk
     new_registry = DiskDistributionRegistry(await kvstore_impl(config))
     await new_registry.initialize()
-    results = await new_registry.get("memory_bank", "test_bank_2")
-    assert len(results) == 1
-    result_bank = results[0]
-    assert result_bank.identifier == new_bank.identifier
-    assert result_bank.provider_id == new_bank.provider_id
+    result_vector_db = await new_registry.get("vector_db", "test_vector_db_2")
+    assert result_vector_db is not None
+    assert result_vector_db.identifier == new_vector_db.identifier
+    assert result_vector_db.provider_id == new_vector_db.provider_id
 
 
 @pytest.mark.asyncio
@@ -150,30 +141,28 @@ async def test_duplicate_provider_registration(config):
     cached_registry = CachedDiskDistributionRegistry(await kvstore_impl(config))
     await cached_registry.initialize()
 
-    original_bank = VectorMemoryBank(
-        identifier="test_bank_2",
+    original_vector_db = VectorDB(
+        identifier="test_vector_db_2",
         embedding_model="all-MiniLM-L6-v2",
-        chunk_size_in_tokens=256,
-        overlap_size_in_tokens=32,
-        provider_resource_id="test_bank_2",
+        embedding_dimension=384,
+        provider_resource_id="test_vector_db_2",
         provider_id="baz",
     )
-    await cached_registry.register(original_bank)
+    await cached_registry.register(original_vector_db)
 
-    duplicate_bank = VectorMemoryBank(
-        identifier="test_bank_2",
+    duplicate_vector_db = VectorDB(
+        identifier="test_vector_db_2",
         embedding_model="different-model",
-        chunk_size_in_tokens=128,
-        overlap_size_in_tokens=16,
-        provider_resource_id="test_bank_2",
+        embedding_dimension=384,
+        provider_resource_id="test_vector_db_2",
         provider_id="baz",  # Same provider_id
     )
-    await cached_registry.register(duplicate_bank)
+    await cached_registry.register(duplicate_vector_db)
 
-    results = await cached_registry.get("memory_bank", "test_bank_2")
-    assert len(results) == 1  # Still only one result
+    result = await cached_registry.get("vector_db", "test_vector_db_2")
+    assert result is not None
     assert (
-        results[0].embedding_model == original_bank.embedding_model
+        result.embedding_model == original_vector_db.embedding_model
     )  # Original values preserved
 
 
@@ -183,36 +172,35 @@ async def test_get_all_objects(config):
     await cached_registry.initialize()
 
     # Create multiple test banks
-    test_banks = [
-        VectorMemoryBank(
-            identifier=f"test_bank_{i}",
+    test_vector_dbs = [
+        VectorDB(
+            identifier=f"test_vector_db_{i}",
             embedding_model="all-MiniLM-L6-v2",
-            chunk_size_in_tokens=256,
-            overlap_size_in_tokens=32,
-            provider_resource_id=f"test_bank_{i}",
+            embedding_dimension=384,
+            provider_resource_id=f"test_vector_db_{i}",
             provider_id=f"provider_{i}",
         )
         for i in range(3)
     ]
 
-    # Register all banks
-    for bank in test_banks:
-        await cached_registry.register(bank)
+    # Register all vector_dbs
+    for vector_db in test_vector_dbs:
+        await cached_registry.register(vector_db)
 
     # Test get_all retrieval
     all_results = await cached_registry.get_all()
     assert len(all_results) == 3
 
-    # Verify each bank was stored correctly
-    for original_bank in test_banks:
-        matching_banks = [
-            b for b in all_results if b.identifier == original_bank.identifier
+    # Verify each vector_db was stored correctly
+    for original_vector_db in test_vector_dbs:
+        matching_vector_dbs = [
+            v for v in all_results if v.identifier == original_vector_db.identifier
         ]
-        assert len(matching_banks) == 1
-        stored_bank = matching_banks[0]
-        assert stored_bank.embedding_model == original_bank.embedding_model
-        assert stored_bank.provider_id == original_bank.provider_id
-        assert stored_bank.chunk_size_in_tokens == original_bank.chunk_size_in_tokens
+        assert len(matching_vector_dbs) == 1
+        stored_vector_db = matching_vector_dbs[0]
+        assert stored_vector_db.embedding_model == original_vector_db.embedding_model
+        assert stored_vector_db.provider_id == original_vector_db.provider_id
         assert (
-            stored_bank.overlap_size_in_tokens == original_bank.overlap_size_in_tokens
+            stored_vector_db.embedding_dimension
+            == original_vector_db.embedding_dimension
         )

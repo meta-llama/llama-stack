@@ -1,0 +1,22 @@
+version: '2'
+distribution_spec:
+  description: Use SambaNova.AI for running LLM inference
+  providers:
+    inference:
+    - remote::sambanova
+    vector_io:
+    - inline::faiss
+    - remote::chromadb
+    - remote::pgvector
+    safety:
+    - inline::llama-guard
+    agents:
+    - inline::meta-reference
+    telemetry:
+    - inline::meta-reference
+    tool_runtime:
+    - remote::brave-search
+    - remote::tavily-search
+    - inline::code-interpreter
+    - inline::rag-runtime
+image_type: conda

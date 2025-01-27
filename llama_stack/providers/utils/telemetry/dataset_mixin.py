@@ -7,7 +7,7 @@
 from typing import List, Optional
 
 from llama_stack.apis.datasetio import DatasetIO
-from llama_stack.apis.telemetry import QueryCondition, Span
+from llama_stack.apis.telemetry import QueryCondition, QuerySpansResponse, Span
 
 
 class TelemetryDatasetMixin:
@@ -22,6 +22,9 @@ class TelemetryDatasetMixin:
         dataset_id: str,
         max_depth: Optional[int] = None,
     ) -> None:
+        if self.datasetio_api is None:
+            raise RuntimeError("DatasetIO API not available")
+
         spans = await self.query_spans(
             attribute_filters=attribute_filters,
             attributes_to_return=attributes_to_save,
@@ -48,18 +51,18 @@ class TelemetryDatasetMixin:
         attribute_filters: List[QueryCondition],
         attributes_to_return: List[str],
         max_depth: Optional[int] = None,
-    ) -> List[Span]:
+    ) -> QuerySpansResponse:
         traces = await self.query_traces(attribute_filters=attribute_filters)
         spans = []
 
-        for trace in traces:
-            spans_by_id = await self.get_span_tree(
+        for trace in traces.data:
+            spans_by_id_resp = await self.get_span_tree(
                 span_id=trace.root_span_id,
                 attributes_to_return=attributes_to_return,
                 max_depth=max_depth,
             )
 
-            for span in spans_by_id.values():
+            for span in spans_by_id_resp.data.values():
                 if span.attributes and all(
                     attr in span.attributes and span.attributes[attr] is not None
                     for attr in attributes_to_return
@@ -76,4 +79,4 @@ class TelemetryDatasetMixin:
                         )
                     )
 
-        return spans
+        return QuerySpansResponse(data=spans)

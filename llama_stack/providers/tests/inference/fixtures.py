@@ -15,6 +15,7 @@ from llama_stack.distribution.datatypes import Api, Provider
 from llama_stack.providers.inline.inference.meta_reference import (
     MetaReferenceInferenceConfig,
 )
+from llama_stack.providers.inline.inference.vllm import VLLMConfig
 from llama_stack.providers.remote.inference.bedrock import BedrockConfig
 
 from llama_stack.providers.remote.inference.cerebras import CerebrasImplConfig
@@ -22,6 +23,7 @@ from llama_stack.providers.remote.inference.fireworks import FireworksImplConfig
 from llama_stack.providers.remote.inference.groq import GroqConfig
 from llama_stack.providers.remote.inference.nvidia import NVIDIAConfig
 from llama_stack.providers.remote.inference.ollama import OllamaImplConfig
+from llama_stack.providers.remote.inference.sambanova import SambaNovaImplConfig
 from llama_stack.providers.remote.inference.tgi import TGIImplConfig
 from llama_stack.providers.remote.inference.together import TogetherImplConfig
 from llama_stack.providers.remote.inference.vllm import VLLMInferenceAdapterConfig
@@ -102,6 +104,26 @@ def inference_ollama(inference_model) -> ProviderFixture:
                 ).model_dump(),
             )
         ],
+    )
+
+
+@pytest_asyncio.fixture(scope="session")
+def inference_vllm(inference_model) -> ProviderFixture:
+    inference_model = (
+        [inference_model] if isinstance(inference_model, str) else inference_model
+    )
+    return ProviderFixture(
+        providers=[
+            Provider(
+                provider_id=f"vllm-{i}",
+                provider_type="inline::vllm",
+                config=VLLMConfig(
+                    model=m,
+                    enforce_eager=True,  # Make test run faster
+                ).model_dump(),
+            )
+            for i, m in enumerate(inference_model)
+        ]
     )
 
 
@@ -211,6 +233,23 @@ def inference_tgi() -> ProviderFixture:
 
 
 @pytest.fixture(scope="session")
+def inference_sambanova() -> ProviderFixture:
+    return ProviderFixture(
+        providers=[
+            Provider(
+                provider_id="sambanova",
+                provider_type="remote::sambanova",
+                config=SambaNovaImplConfig(
+                    api_key=get_env_or_fail("SAMBANOVA_API_KEY"),
+                ).model_dump(),
+            )
+        ],
+        provider_data=dict(
+            sambanova_api_key=get_env_or_fail("SAMBANOVA_API_KEY"),
+        ),
+    )
+
+
 def inference_sentence_transformers() -> ProviderFixture:
     return ProviderFixture(
         providers=[
@@ -253,6 +292,7 @@ INFERENCE_FIXTURES = [
     "ollama",
     "fireworks",
     "together",
+    "vllm",
     "groq",
     "vllm_remote",
     "remote",
@@ -260,6 +300,7 @@ INFERENCE_FIXTURES = [
     "cerebras",
     "nvidia",
     "tgi",
+    "sambanova",
 ]
 
 
@@ -279,6 +320,7 @@ async def inference_stack(request, inference_model):
         inference_fixture.provider_data,
         models=[
             ModelInput(
+                provider_id=inference_fixture.providers[0].provider_id,
                 model_id=inference_model,
                 model_type=model_type,
                 metadata=metadata,
@@ -286,4 +328,8 @@ async def inference_stack(request, inference_model):
         ],
     )
 
-    return test_stack.impls[Api.inference], test_stack.impls[Api.models]
+    # Pytest yield fixture; see https://docs.pytest.org/en/stable/how-to/fixtures.html#yield-fixtures-recommended
+    yield test_stack.impls[Api.inference], test_stack.impls[Api.models]
+
+    # Cleanup code that runs after test case completion
+    await test_stack.impls[Api.inference].shutdown()

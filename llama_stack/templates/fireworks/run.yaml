@@ -1,16 +1,15 @@
 version: '2'
 image_name: fireworks
-conda_env: fireworks
 apis:
 - agents
 - datasetio
 - eval
 - inference
-- memory
 - safety
 - scoring
 - telemetry
 - tool_runtime
+- vector_io
 providers:
   inference:
   - provider_id: fireworks
@@ -21,7 +20,7 @@ providers:
   - provider_id: sentence-transformers
     provider_type: inline::sentence-transformers
     config: {}
-  memory:
+  vector_io:
   - provider_id: faiss
     provider_type: inline::faiss
     config:
@@ -84,8 +83,11 @@ providers:
   - provider_id: code-interpreter
     provider_type: inline::code-interpreter
     config: {}
-  - provider_id: memory-runtime
-    provider_type: inline::memory-runtime
+  - provider_id: rag-runtime
+    provider_type: inline::rag-runtime
+    config: {}
+  - provider_id: model-context-protocol
+    provider_type: remote::model-context-protocol
     config: {}
 metadata_store:
   type: sqlite
@@ -94,52 +96,52 @@ models:
 - metadata: {}
   model_id: meta-llama/Llama-3.1-8B-Instruct
   provider_id: fireworks
-  provider_model_id: fireworks/llama-v3p1-8b-instruct
+  provider_model_id: accounts/fireworks/models/llama-v3p1-8b-instruct
   model_type: llm
 - metadata: {}
   model_id: meta-llama/Llama-3.1-70B-Instruct
   provider_id: fireworks
-  provider_model_id: fireworks/llama-v3p1-70b-instruct
+  provider_model_id: accounts/fireworks/models/llama-v3p1-70b-instruct
   model_type: llm
 - metadata: {}
   model_id: meta-llama/Llama-3.1-405B-Instruct-FP8
   provider_id: fireworks
-  provider_model_id: fireworks/llama-v3p1-405b-instruct
+  provider_model_id: accounts/fireworks/models/llama-v3p1-405b-instruct
   model_type: llm
 - metadata: {}
   model_id: meta-llama/Llama-3.2-1B-Instruct
   provider_id: fireworks
-  provider_model_id: fireworks/llama-v3p2-1b-instruct
+  provider_model_id: accounts/fireworks/models/llama-v3p2-1b-instruct
   model_type: llm
 - metadata: {}
   model_id: meta-llama/Llama-3.2-3B-Instruct
   provider_id: fireworks
-  provider_model_id: fireworks/llama-v3p2-3b-instruct
+  provider_model_id: accounts/fireworks/models/llama-v3p2-3b-instruct
   model_type: llm
 - metadata: {}
   model_id: meta-llama/Llama-3.2-11B-Vision-Instruct
   provider_id: fireworks
-  provider_model_id: fireworks/llama-v3p2-11b-vision-instruct
+  provider_model_id: accounts/fireworks/models/llama-v3p2-11b-vision-instruct
   model_type: llm
 - metadata: {}
   model_id: meta-llama/Llama-3.2-90B-Vision-Instruct
   provider_id: fireworks
-  provider_model_id: fireworks/llama-v3p2-90b-vision-instruct
+  provider_model_id: accounts/fireworks/models/llama-v3p2-90b-vision-instruct
   model_type: llm
 - metadata: {}
   model_id: meta-llama/Llama-3.3-70B-Instruct
   provider_id: fireworks
-  provider_model_id: fireworks/llama-v3p3-70b-instruct
+  provider_model_id: accounts/fireworks/models/llama-v3p3-70b-instruct
   model_type: llm
 - metadata: {}
   model_id: meta-llama/Llama-Guard-3-8B
   provider_id: fireworks
-  provider_model_id: fireworks/llama-guard-3-8b
+  provider_model_id: accounts/fireworks/models/llama-guard-3-8b
   model_type: llm
 - metadata: {}
   model_id: meta-llama/Llama-Guard-3-11B-Vision
   provider_id: fireworks
-  provider_model_id: fireworks/llama-guard-3-11b-vision
+  provider_model_id: accounts/fireworks/models/llama-guard-3-11b-vision
   model_type: llm
 - metadata:
     embedding_dimension: 384
@@ -148,14 +150,14 @@ models:
   model_type: embedding
 shields:
 - shield_id: meta-llama/Llama-Guard-3-8B
-memory_banks: []
+vector_dbs: []
 datasets: []
 scoring_fns: []
 eval_tasks: []
 tool_groups:
 - toolgroup_id: builtin::websearch
   provider_id: tavily-search
-- toolgroup_id: builtin::memory
-  provider_id: memory-runtime
+- toolgroup_id: builtin::rag
+  provider_id: rag-runtime
 - toolgroup_id: builtin::code_interpreter
   provider_id: code-interpreter

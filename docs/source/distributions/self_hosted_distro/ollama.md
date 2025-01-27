@@ -18,18 +18,18 @@ The `llamastack/distribution-ollama` distribution consists of the following prov
 | datasetio | `remote::huggingface`, `inline::localfs` |
 | eval | `inline::meta-reference` |
 | inference | `remote::ollama` |
-| memory | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
 | safety | `inline::llama-guard` |
 | scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |
 | telemetry | `inline::meta-reference` |
-| tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::code-interpreter`, `inline::memory-runtime` |
+| tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::code-interpreter`, `inline::rag-runtime` |
+| vector_io | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
 
 
 You should use this distribution if you have a regular desktop machine without very powerful GPUs. Of course, if you have powerful GPUs, you can still continue using this distribution since Ollama supports GPU acceleration.### Environment Variables
 
 The following environment variables can be configured:
 
-- `LLAMASTACK_PORT`: Port for the Llama Stack distribution server (default: `5001`)
+- `LLAMA_STACK_PORT`: Port for the Llama Stack distribution server (default: `5001`)
 - `OLLAMA_URL`: URL of the Ollama server (default: `http://127.0.0.1:11434`)
 - `INFERENCE_MODEL`: Inference model loaded into the Ollama server (default: `meta-llama/Llama-3.2-3B-Instruct`)
 - `SAFETY_MODEL`: Safety model loaded into the Ollama server (default: `meta-llama/Llama-Guard-3-1B`)
@@ -82,11 +82,15 @@ docker run \
 If you are using Llama Stack Safety / Shield APIs, use:
 
 ```bash
+# You need a local checkout of llama-stack to run this, get it using
+# git clone https://github.com/meta-llama/llama-stack.git
+cd /path/to/llama-stack
+
 docker run \
   -it \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ~/.llama:/root/.llama \
-  -v ./run-with-safety.yaml:/root/my-run.yaml \
+  -v ./llama_stack/templates/ollama/run-with-safety.yaml:/root/my-run.yaml \
   llamastack/distribution-ollama \
   --yaml-config /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \

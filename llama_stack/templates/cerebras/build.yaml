@@ -1,5 +1,4 @@
 version: '2'
-name: cerebras
 distribution_spec:
   description: Use Cerebras for running LLM inference
   providers:
@@ -7,15 +6,26 @@ distribution_spec:
     - remote::cerebras
     safety:
     - inline::llama-guard
-    memory:
-    - inline::meta-reference
+    vector_io:
+    - inline::faiss
+    - remote::chromadb
+    - remote::pgvector
     agents:
     - inline::meta-reference
+    eval:
+    - inline::meta-reference
+    datasetio:
+    - remote::huggingface
+    - inline::localfs
+    scoring:
+    - inline::basic
+    - inline::llm-as-judge
+    - inline::braintrust
     telemetry:
     - inline::meta-reference
     tool_runtime:
     - remote::brave-search
     - remote::tavily-search
     - inline::code-interpreter
-    - inline::memory-runtime
+    - inline::rag-runtime
 image_type: conda

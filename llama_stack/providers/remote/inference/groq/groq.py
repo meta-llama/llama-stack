@@ -7,6 +7,7 @@
 import warnings
 from typing import AsyncIterator, List, Optional, Union
 
+import groq
 from groq import Groq
 from llama_models.datatypes import SamplingParams
 from llama_models.llama3.api.datatypes import ToolDefinition, ToolPromptFormat
@@ -33,6 +34,7 @@ from llama_stack.providers.utils.inference.model_registry import (
     build_model_alias_with_just_provider_model_id,
     ModelRegistryHelper,
 )
+
 from .groq_utils import (
     convert_chat_completion_request,
     convert_chat_completion_response,
@@ -94,9 +96,7 @@ class GroqInferenceAdapter(Inference, ModelRegistryHelper, NeedsRequestProviderD
         response_format: Optional[ResponseFormat] = None,
         tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
-        tool_prompt_format: Optional[
-            ToolPromptFormat
-        ] = None,  # API default is ToolPromptFormat.json, we default to None to detect user input
+        tool_prompt_format: Optional[ToolPromptFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> Union[
@@ -124,7 +124,16 @@ class GroqInferenceAdapter(Inference, ModelRegistryHelper, NeedsRequestProviderD
             )
         )
 
-        response = self._get_client().chat.completions.create(**request)
+        try:
+            response = self._get_client().chat.completions.create(**request)
+        except groq.BadRequestError as e:
+            if e.body.get("error", {}).get("code") == "tool_use_failed":
+                # For smaller models, Groq may fail to call a tool even when the request is well formed
+                raise ValueError(
+                    "Groq failed to call a tool", e.body.get("error", {})
+                ) from e
+            else:
+                raise e
 
         if stream:
             return convert_chat_completion_response_stream(response)
@@ -145,6 +154,6 @@ class GroqInferenceAdapter(Inference, ModelRegistryHelper, NeedsRequestProviderD
             provider_data = self.get_request_provider_data()
             if provider_data is None or not provider_data.groq_api_key:
                 raise ValueError(
-                    'Pass Groq API Key in the header X-LlamaStack-ProviderData as { "groq_api_key": "<your api key>" }'
+                    'Pass Groq API Key in the header X-LlamaStack-Provider-Data as { "groq_api_key": "<your api key>" }'
                 )
             return Groq(api_key=provider_data.groq_api_key)

@@ -7,11 +7,9 @@
 from typing import AsyncGenerator, List, Optional, Union
 
 from cerebras.cloud.sdk import AsyncCerebras
-
 from llama_models.datatypes import CoreModelId
-
 from llama_models.llama3.api.chat_format import ChatFormat
-
+from llama_models.llama3.api.datatypes import TopKSamplingStrategy
 from llama_models.llama3.api.tokenizer import Tokenizer
 
 from llama_stack.apis.common.content_types import InterleavedContent
@@ -29,7 +27,6 @@ from llama_stack.apis.inference import (
     ToolDefinition,
     ToolPromptFormat,
 )
-
 from llama_stack.providers.utils.inference.model_registry import (
     build_model_alias,
     ModelRegistryHelper,
@@ -47,7 +44,6 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 )
 
 from .config import CerebrasImplConfig
-
 
 model_aliases = [
     build_model_alias(
@@ -130,7 +126,7 @@ class CerebrasInferenceAdapter(ModelRegistryHelper, Inference):
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
-        tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.json,
+        tool_prompt_format: Optional[ToolPromptFormat] = None,
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
@@ -177,7 +173,9 @@ class CerebrasInferenceAdapter(ModelRegistryHelper, Inference):
     async def _get_params(
         self, request: Union[ChatCompletionRequest, CompletionRequest]
     ) -> dict:
-        if request.sampling_params and request.sampling_params.top_k:
+        if request.sampling_params and isinstance(
+            request.sampling_params.strategy, TopKSamplingStrategy
+        ):
             raise ValueError("`top_k` not supported by Cerebras")
 
         prompt = ""

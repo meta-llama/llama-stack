@@ -10,38 +10,28 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from enum import Enum
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict
 
 import torch
 from llama_models.datatypes import Model
 from llama_models.sku_list import resolve_model
-from llama_stack.apis.common.type_system import ParamType, StringType
-from llama_stack.apis.datasets import Datasets
 
 from pydantic import BaseModel
+from torchtune.data._messages import InputOutputToMessages, ShareGPTToMessages
 
 from torchtune.models.llama3 import llama3_tokenizer
 from torchtune.models.llama3._tokenizer import Llama3Tokenizer
 from torchtune.models.llama3_1 import lora_llama3_1_8b
 from torchtune.models.llama3_2 import lora_llama3_2_3b
+from torchtune.modules.transforms import Transform
 
-
-class ColumnName(Enum):
-    instruction = "instruction"
-    input = "input"
-    output = "output"
-    text = "text"
+from llama_stack.apis.post_training import DatasetFormat
 
 
 class ModelConfig(BaseModel):
     model_definition: Any
     tokenizer_type: Any
     checkpoint_type: str
-
-
-class DatasetSchema(BaseModel):
-    alpaca: List[Dict[str, ParamType]]
 
 
 MODEL_CONFIGS: Dict[str, ModelConfig] = {
@@ -57,26 +47,11 @@ MODEL_CONFIGS: Dict[str, ModelConfig] = {
     ),
 }
 
+DATA_FORMATS: Dict[str, Transform] = {
+    "instruct": InputOutputToMessages,
+    "dialog": ShareGPTToMessages,
+}
 
-EXPECTED_DATASET_SCHEMA = DatasetSchema(
-    alpaca=[
-        {
-            ColumnName.instruction.value: StringType(),
-            ColumnName.input.value: StringType(),
-            ColumnName.output.value: StringType(),
-            ColumnName.text.value: StringType(),
-        },
-        {
-            ColumnName.instruction.value: StringType(),
-            ColumnName.input.value: StringType(),
-            ColumnName.output.value: StringType(),
-        },
-        {
-            ColumnName.instruction.value: StringType(),
-            ColumnName.output.value: StringType(),
-        },
-    ]
-)
 
 BuildLoraModelCallable = Callable[..., torch.nn.Module]
 BuildTokenizerCallable = Callable[..., Llama3Tokenizer]
@@ -123,19 +98,5 @@ async def get_checkpointer_model_type(
     return model_config.checkpoint_type
 
 
-async def validate_input_dataset_schema(
-    datasets_api: Datasets,
-    dataset_id: str,
-    dataset_type: str,
-) -> None:
-    dataset_def = await datasets_api.get_dataset(dataset_id=dataset_id)
-    if not dataset_def.dataset_schema or len(dataset_def.dataset_schema) == 0:
-        raise ValueError(f"Dataset {dataset_id} does not have a schema defined.")
-
-    if not hasattr(EXPECTED_DATASET_SCHEMA, dataset_type):
-        raise ValueError(f"Dataset type {dataset_type} is not supported.")
-
-    if dataset_def.dataset_schema not in getattr(EXPECTED_DATASET_SCHEMA, dataset_type):
-        raise ValueError(
-            f"Dataset {dataset_id} does not have a correct input schema in {getattr(EXPECTED_DATASET_SCHEMA, dataset_type)}"
-        )
+async def get_data_transform(data_format: DatasetFormat) -> Transform:
+    return DATA_FORMATS[data_format.value]

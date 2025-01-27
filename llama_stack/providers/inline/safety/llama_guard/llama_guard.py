@@ -263,9 +263,11 @@ class LlamaGuardShield:
             stream=True,
         ):
             event = chunk.event
-            if event.event_type == ChatCompletionResponseEventType.progress:
-                assert isinstance(event.delta, str)
-                content += event.delta
+            if (
+                event.event_type == ChatCompletionResponseEventType.progress
+                and event.delta.type == "text"
+            ):
+                content += event.delta.text
 
         content = content.strip()
         return self.get_shield_response(content)

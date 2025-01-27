@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from enum import Enum
 from typing import Any, List, Optional, Protocol
 from urllib.parse import urlparse
 
@@ -12,38 +11,14 @@ from llama_models.schema_utils import json_schema_type
 from pydantic import BaseModel, Field
 
 from llama_stack.apis.datasets import Dataset
+
+from llama_stack.apis.datatypes import Api
 from llama_stack.apis.eval_tasks import EvalTask
-from llama_stack.apis.memory_banks.memory_banks import MemoryBank
 from llama_stack.apis.models import Model
 from llama_stack.apis.scoring_functions import ScoringFn
 from llama_stack.apis.shields import Shield
 from llama_stack.apis.tools import Tool
-
-
-@json_schema_type
-class Api(Enum):
-    inference = "inference"
-    safety = "safety"
-    agents = "agents"
-    memory = "memory"
-    datasetio = "datasetio"
-    scoring = "scoring"
-    eval = "eval"
-    post_training = "post_training"
-    tool_runtime = "tool_runtime"
-
-    telemetry = "telemetry"
-
-    models = "models"
-    shields = "shields"
-    memory_banks = "memory_banks"
-    datasets = "datasets"
-    scoring_functions = "scoring_functions"
-    eval_tasks = "eval_tasks"
-    tool_groups = "tool_groups"
-
-    # built-in API
-    inspect = "inspect"
+from llama_stack.apis.vector_dbs import VectorDB
 
 
 class ModelsProtocolPrivate(Protocol):
@@ -56,10 +31,10 @@ class ShieldsProtocolPrivate(Protocol):
     async def register_shield(self, shield: Shield) -> None: ...
 
 
-class MemoryBanksProtocolPrivate(Protocol):
-    async def register_memory_bank(self, memory_bank: MemoryBank) -> None: ...
+class VectorDBsProtocolPrivate(Protocol):
+    async def register_vector_db(self, vector_db: VectorDB) -> None: ...
 
-    async def unregister_memory_bank(self, memory_bank_id: str) -> None: ...
+    async def unregister_vector_db(self, vector_db_id: str) -> None: ...
 
 
 class DatasetsProtocolPrivate(Protocol):
@@ -95,6 +70,9 @@ class ProviderSpec(BaseModel):
     api_dependencies: List[Api] = Field(
         default_factory=list,
         description="Higher-level API surfaces may depend on other providers to provide their functionality",
+    )
+    optional_api_dependencies: List[Api] = Field(
+        default_factory=list,
     )
     deprecation_warning: Optional[str] = Field(
         default=None,
@@ -147,11 +125,11 @@ class InlineProviderSpec(ProviderSpec):
         default_factory=list,
         description="The pip dependencies needed for this implementation",
     )
-    docker_image: Optional[str] = Field(
+    container_image: Optional[str] = Field(
         default=None,
         description="""
-The docker image to use for this implementation. If one is provided, pip_packages will be ignored.
-If a provider depends on other providers, the dependencies MUST NOT specify a docker image.
+The container image to use for this implementation. If one is provided, pip_packages will be ignored.
+If a provider depends on other providers, the dependencies MUST NOT specify a container image.
 """,
     )
     module: str = Field(
@@ -194,7 +172,7 @@ API responses, specify the adapter here.
     )
 
     @property
-    def docker_image(self) -> Optional[str]:
+    def container_image(self) -> Optional[str]:
         return None
 
     @property

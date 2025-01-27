@@ -30,13 +30,11 @@ from llama_stack.apis.inference import (
     ToolPromptFormat,
 )
 from llama_stack.apis.models import Model
-
 from llama_stack.providers.datatypes import ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.model_registry import (
     build_model_alias,
     ModelRegistryHelper,
 )
-
 from llama_stack.providers.utils.inference.openai_compat import (
     get_sampling_options,
     OpenAICompatCompletionChoice,
@@ -130,6 +128,12 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
         fmt: ResponseFormat = None,
     ):
         options = get_sampling_options(sampling_params)
+        # TGI does not support temperature=0 when using greedy sampling
+        # We set it to 1e-3 instead, anything lower outputs garbage from TGI
+        # We can use top_p sampling strategy to specify lower temperature
+        if abs(options["temperature"]) < 1e-10:
+            options["temperature"] = 1e-3
+
         # delete key "max_tokens" from options since its not supported by the API
         options.pop("max_tokens", None)
         if fmt:
@@ -205,7 +209,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
-        tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.json,
+        tool_prompt_format: Optional[ToolPromptFormat] = None,
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
@@ -291,7 +295,7 @@ class TGIAdapter(_HfAdapter):
     async def initialize(self, config: TGIImplConfig) -> None:
         log.info(f"Initializing TGI client with url={config.url}")
         self.client = AsyncInferenceClient(
-            model=config.url, token=config.api_token.get_secret_value()
+            model=config.url,
         )
         endpoint_info = await self.client.get_endpoint_info()
         self.max_tokens = endpoint_info["max_total_tokens"]
