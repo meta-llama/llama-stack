@@ -16,6 +16,12 @@ PROVIDER_TOOL_PROMPT_FORMAT = {
     "remote::fireworks": "json",
 }
 
+PROVIDER_LOGPROBS_TOP_K = {
+    "remote::together": 1,
+    "remote::fireworks": 3,
+    # "remote:vllm"
+}
+
 
 @pytest.fixture(scope="session")
 def provider_tool_format(inference_provider_type):
@@ -83,8 +89,13 @@ def test_text_completion_streaming(llama_stack_client, text_model_id):
     assert "blue" in "".join(streamed_content).lower().strip()
 
 
-@pytest.mark.skip("Most inference providers don't support log probs yet")
-def test_completion_log_probs_non_streaming(llama_stack_client, text_model_id):
+def test_completion_log_probs_non_streaming(
+    llama_stack_client, text_model_id, inference_provider_type
+):
+    if inference_provider_type not in PROVIDER_LOGPROBS_TOP_K:
+        pytest.xfail(f"{inference_provider_type} doesn't support log probs yet")
+
+    logprobs_top_k = PROVIDER_LOGPROBS_TOP_K[inference_provider_type]
     response = llama_stack_client.inference.completion(
         content="Complete the sentence: Micheael Jordan is born in ",
         stream=False,
@@ -93,16 +104,24 @@ def test_completion_log_probs_non_streaming(llama_stack_client, text_model_id):
             "max_tokens": 5,
         },
         logprobs={
-            "top_k": 3,
+            "top_k": logprobs_top_k,
         },
     )
     assert response.logprobs, "Logprobs should not be empty"
     assert 1 <= len(response.logprobs) <= 5
-    assert all(len(logprob.logprobs_by_token) == 3 for logprob in response.logprobs)
+    assert all(
+        len(logprob.logprobs_by_token) == logprobs_top_k
+        for logprob in response.logprobs
+    )
 
 
-@pytest.mark.skip("Most inference providers don't support log probs yet")
-def test_completion_log_probs_streaming(llama_stack_client, text_model_id):
+def test_completion_log_probs_streaming(
+    llama_stack_client, text_model_id, inference_provider_type
+):
+    if inference_provider_type not in PROVIDER_LOGPROBS_TOP_K:
+        pytest.xfail(f"{inference_provider_type} doesn't support log probs yet")
+
+    logprobs_top_k = PROVIDER_LOGPROBS_TOP_K[inference_provider_type]
     response = llama_stack_client.inference.completion(
         content="Complete the sentence: Micheael Jordan is born in ",
         stream=True,
@@ -111,7 +130,7 @@ def test_completion_log_probs_streaming(llama_stack_client, text_model_id):
             "max_tokens": 5,
         },
         logprobs={
-            "top_k": 3,
+            "top_k": logprobs_top_k,
         },
     )
     streamed_content = [chunk for chunk in response]
@@ -119,7 +138,8 @@ def test_completion_log_probs_streaming(llama_stack_client, text_model_id):
         if chunk.delta:  # if there's a token, we expect logprobs
             assert chunk.logprobs, "Logprobs should not be empty"
             assert all(
-                len(logprob.logprobs_by_token) == 3 for logprob in chunk.logprobs
+                len(logprob.logprobs_by_token) == logprobs_top_k
+                for logprob in chunk.logprobs
             )
         else:  # no token, no logprobs
             assert not chunk.logprobs, "Logprobs should be empty"
