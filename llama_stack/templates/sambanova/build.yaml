@@ -30,4 +30,3 @@ distribution_spec:
     - inline::rag-runtime
     - remote::model-context-protocol
 image_type: conda
-
