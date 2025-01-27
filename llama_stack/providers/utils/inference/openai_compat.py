@@ -124,7 +124,9 @@ def convert_openai_completion_logprobs(
     if hasattr(logprobs, "top_logprobs"):
         return [TokenLogProbs(logprobs_by_token=x) for x in logprobs.top_logprobs]
 
-    # Together supports logprobs (top_k=1) but not top_logprobs (top_k>1).
+    # Together supports logprobs with top_k=1 only. This means for each token position,
+    # they return only the logprobs for the selected token (vs. the top n most likely tokens).
+    # Here we construct the response by matching the selected token with the logprobs.
     if logprobs.tokens and logprobs.token_logprobs:
         return [
             TokenLogProbs(logprobs_by_token={token: token_lp})
@@ -139,9 +141,9 @@ def convert_openai_completion_logprobs_stream(
     if logprobs is None:
         return None
     if isinstance(logprobs, float):
+        # Adapt response from Together CompletionChoicesChunk
         return [TokenLogProbs(logprobs_by_token={text: logprobs})]
     if hasattr(logprobs, "top_logprobs"):
-        # Adapt response from Together CompletionChoicesChunk
         return [TokenLogProbs(logprobs_by_token=x) for x in logprobs.top_logprobs]
     return None
 
