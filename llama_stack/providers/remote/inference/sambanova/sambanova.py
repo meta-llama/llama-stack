@@ -7,7 +7,7 @@
 import json
 from typing import AsyncGenerator
 
-from llama_models.datatypes import CoreModelId, SamplingStrategy
+from llama_models.datatypes import CoreModelId, TopPSamplingStrategy, TopKSamplingStrategy, GreedySamplingStrategy
 from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.tokenizer import Tokenizer
 from openai import OpenAI
@@ -59,6 +59,10 @@ MODEL_ALIASES = [
     build_model_alias(
         "Llama-3.2-90B-Vision-Instruct",
         CoreModelId.llama3_2_90b_vision_instruct.value,
+    ),
+    build_model_alias(
+        "Meta-Llama-Guard-3-8B",
+        CoreModelId.llama_guard_3_8b.value,
     ),
 ]
 
@@ -197,12 +201,12 @@ class SambaNovaInferenceAdapter(ModelRegistryHelper, Inference):
                 else:
                     params["max_completion_tokens"] = sampling_params.max_tokens
 
-            if sampling_params.strategy == SamplingStrategy.top_p:
-                params["top_p"] = sampling_params.top_p
-            elif sampling_params.strategy == "top_k":
-                params["extra_body"]["top_k"] = sampling_params.top_k
-            elif sampling_params.strategy == "greedy":
-                params["temperature"] = sampling_params.temperature
+            if isinstance(sampling_params.strategy, TopPSamplingStrategy):
+                params["top_p"] = sampling_params.strategy.top_p
+            if isinstance(sampling_params.strategy, TopKSamplingStrategy):
+                params["extra_body"]["top_k"] = sampling_params.strategy.top_k
+            if isinstance(sampling_params.strategy, GreedySamplingStrategy):
+                params["temperature"] = 0.0
 
         return params
 

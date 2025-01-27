@@ -22,7 +22,7 @@ class SambaNovaImplConfig(BaseModel):
     )
 
     @classmethod
-    def sample_run_config(cls) -> Dict[str, Any]:
+    def sample_run_config(cls, **kwargs) -> Dict[str, Any]:
         return {
             "url": "https://api.sambanova.ai/v1",
             "api_key": "${env.SAMBANOVA_API_KEY}",
