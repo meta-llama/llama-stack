@@ -23,18 +23,16 @@ from llama_models.sku_list import (
     safety_models,
 )
 
-from llama_stack.distribution.library_client import LlamaStackAsLibraryClient
 from llama_stack.providers.datatypes import Api
 from llama_stack.providers.tests.env import get_env_or_fail
 
-from llama_stack_client import LlamaStackClient
 from metadata import API_MAPS
 
 from pytest import CollectReport
 from termcolor import cprint
 
 
-def featured_models_repo_names():
+def featured_models():
     models = [
         *llama3_instruct_models(),
         *llama3_1_instruct_models(),
@@ -42,7 +40,7 @@ def featured_models_repo_names():
         *llama3_3_instruct_models(),
         *safety_models(),
     ]
-    return [model.huggingface_repo for model in models if not model.variant]
+    return {model.huggingface_repo: model for model in models if not model.variant}
 
 
 SUPPORTED_MODELS = {
@@ -99,25 +97,15 @@ class Report:
             if not config_path.exists():
                 raise ValueError(f"Config file {config_path} does not exist")
             self.output_path = Path(config_path.parent / "report.md")
-            self.client = LlamaStackAsLibraryClient(
-                config_path_or_template_name,
-                provider_data=None,
-                skip_logger_removal=True,
-            )
-            self.client.initialize()
-            self.image_name = self.client.async_client.config.image_name
+            self.distro_name = None
         elif os.environ.get("LLAMA_STACK_BASE_URL"):
             url = get_env_or_fail("LLAMA_STACK_BASE_URL")
-            self.image_name = urlparse(url).netloc
+            self.distro_name = urlparse(url).netloc
             if report_path is None:
                 raise ValueError(
                     "Report path must be provided when LLAMA_STACK_BASE_URL is set"
                 )
             self.output_path = Path(report_path)
-            self.client = LlamaStackClient(
-                base_url=url,
-                provider_data=None,
-            )
         else:
             raise ValueError("LLAMA_STACK_CONFIG or LLAMA_STACK_BASE_URL must be set")
 
@@ -127,6 +115,7 @@ class Report:
         self.test_name_to_nodeid = defaultdict(list)
         self.vision_model_id = None
         self.text_model_id = None
+        self.client = None
 
     @pytest.hookimpl(tryfirst=True)
     def pytest_runtest_logreport(self, report):
@@ -140,17 +129,17 @@ class Report:
 
     def pytest_sessionfinish(self, session):
         report = []
-        report.append(f"# Report for {self.image_name} distribution")
+        report.append(f"# Report for {self.distro_name} distribution")
         report.append("\n## Supported Models")
 
-        header = f"| Model Descriptor | {self.image_name} |"
+        header = f"| Model Descriptor | {self.distro_name} |"
         dividor = "|:---|:---|"
 
         report.append(header)
         report.append(dividor)
 
         rows = []
-        if self.image_name in SUPPORTED_MODELS:
+        if self.distro_name in SUPPORTED_MODELS:
             for model in all_registered_models():
                 if (
                     "Instruct" not in model.core_model_id.value
@@ -158,16 +147,16 @@ class Report:
                 ) or (model.variant):
                     continue
                 row = f"| {model.core_model_id.value} |"
-                if model.core_model_id.value in SUPPORTED_MODELS[self.image_name]:
+                if model.core_model_id.value in SUPPORTED_MODELS[self.distro_name]:
                     row += " ✅ |"
                 else:
                     row += " ❌ |"
                 rows.append(row)
         else:
             supported_models = {m.identifier for m in self.client.models.list()}
-            for model in featured_models_repo_names():
-                row = f"| {model} |"
-                if model in supported_models:
+            for hf_name, model in featured_models().items():
+                row = f"| {model.core_model_id.value} |"
+                if hf_name in supported_models:
                     row += " ✅ |"
                 else:
                     row += " ❌ |"
@@ -200,20 +189,23 @@ class Report:
         report.extend(test_table)
 
         name_map = {Api.vector_io: "Vector IO", Api.agents: "Agents"}
+        providers = self.client.providers.list()
         for api_group in [Api.vector_io, Api.agents]:
             api_capitalized = name_map[api_group]
             report.append(f"\n## {api_capitalized}")
             test_table = [
-                "| API | Capability | Test | Status |",
-                "|:-----|:-----|:-----|:-----|",
+                "| Provider | API | Capability | Test | Status |",
+                "|:-----|:-----|:-----|:-----|:-----|",
             ]
+            provider = [p for p in providers if p.api == str(api_group.name)]
+            provider_str = provider[0].provider_type if provider else ""
             for api, capa_map in API_MAPS[api_group].items():
                 for capa, tests in capa_map.items():
                     for test_name in tests:
                         test_nodeids = self.test_name_to_nodeid[test_name]
                         assert len(test_nodeids) > 0
                         test_table.append(
-                            f"| /{api} | {capa} | {test_name} | {self._print_result_icon(self.test_data[test_nodeids[0]])} |"
+                            f"| {provider_str} | /{api} | {capa} | {test_name} | {self._print_result_icon(self.test_data[test_nodeids[0]])} |"
                         )
             report.extend(test_table)
 
@@ -224,6 +216,9 @@ class Report:
 
     def pytest_runtest_makereport(self, item, call):
         func_name = getattr(item, "originalname", item.name)
+        self.test_name_to_nodeid[func_name].append(item.nodeid)
+
+        # Get values from fixtures for report output
         if "text_model_id" in item.funcargs:
             text_model = item.funcargs["text_model_id"].split("/")[1]
             self.text_model_id = self.text_model_id or text_model
@@ -231,7 +226,11 @@ class Report:
             vision_model = item.funcargs["vision_model_id"].split("/")[1]
             self.vision_model_id = self.vision_model_id or vision_model
 
-        self.test_name_to_nodeid[func_name].append(item.nodeid)
+        if self.client is None and "llama_stack_client" in item.funcargs:
+            self.client = item.funcargs["llama_stack_client"]
+            self.distro_name = (
+                self.distro_name or self.client.async_client.config.image_name
+            )
 
     def _print_result_icon(self, result):
         if result == "Passed":
