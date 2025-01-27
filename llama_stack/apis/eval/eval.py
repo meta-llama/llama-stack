@@ -6,7 +6,7 @@
 
 from typing import Any, Dict, List, Literal, Optional, Protocol, Union
 
-from llama_models.schema_utils import json_schema_type, webmethod
+from llama_models.schema_utils import json_schema_type, register_schema, webmethod
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
@@ -31,9 +31,10 @@ class AgentCandidate(BaseModel):
     config: AgentConfig
 
 
-EvalCandidate = Annotated[
-    Union[ModelCandidate, AgentCandidate], Field(discriminator="type")
-]
+EvalCandidate = register_schema(
+    Annotated[Union[ModelCandidate, AgentCandidate], Field(discriminator="type")],
+    name="EvalCandidate",
+)
 
 
 @json_schema_type
@@ -61,9 +62,12 @@ class AppEvalTaskConfig(BaseModel):
     # we could optinally add any specific dataset config here
 
 
-EvalTaskConfig = Annotated[
-    Union[BenchmarkEvalTaskConfig, AppEvalTaskConfig], Field(discriminator="type")
-]
+EvalTaskConfig = register_schema(
+    Annotated[
+        Union[BenchmarkEvalTaskConfig, AppEvalTaskConfig], Field(discriminator="type")
+    ],
+    name="EvalTaskConfig",
+)
 
 
 @json_schema_type

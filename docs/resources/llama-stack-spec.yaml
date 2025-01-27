@@ -45,7 +45,6 @@ components:
           default: auto
         tool_prompt_format:
           $ref: '#/components/schemas/ToolPromptFormat'
-          default: json
         toolgroups:
           items:
             $ref: '#/components/schemas/AgentTool'
@@ -77,6 +76,11 @@ components:
       properties:
         step:
           discriminator:
+            mapping:
+              inference: '#/components/schemas/InferenceStep'
+              memory_retrieval: '#/components/schemas/MemoryRetrievalStep'
+              shield_call: '#/components/schemas/ShieldCallStep'
+              tool_execution: '#/components/schemas/ToolExecutionStep'
             propertyName: step_type
           oneOf:
           - $ref: '#/components/schemas/InferenceStep'
@@ -121,18 +125,25 @@ components:
       additionalProperties: false
       properties:
         payload:
-          discriminator:
-            propertyName: event_type
-          oneOf:
-          - $ref: '#/components/schemas/AgentTurnResponseStepStartPayload'
-          - $ref: '#/components/schemas/AgentTurnResponseStepProgressPayload'
-          - $ref: '#/components/schemas/AgentTurnResponseStepCompletePayload'
-          - $ref: '#/components/schemas/AgentTurnResponseTurnStartPayload'
-          - $ref: '#/components/schemas/AgentTurnResponseTurnCompletePayload'
+          $ref: '#/components/schemas/AgentTurnResponseEventPayload'
       required:
       - payload
-      title: Streamed agent execution response.
       type: object
+    AgentTurnResponseEventPayload:
+      discriminator:
+        mapping:
+          step_complete: '#/components/schemas/AgentTurnResponseStepCompletePayload'
+          step_progress: '#/components/schemas/AgentTurnResponseStepProgressPayload'
+          step_start: '#/components/schemas/AgentTurnResponseStepStartPayload'
+          turn_complete: '#/components/schemas/AgentTurnResponseTurnCompletePayload'
+          turn_start: '#/components/schemas/AgentTurnResponseTurnStartPayload'
+        propertyName: event_type
+      oneOf:
+      - $ref: '#/components/schemas/AgentTurnResponseStepStartPayload'
+      - $ref: '#/components/schemas/AgentTurnResponseStepProgressPayload'
+      - $ref: '#/components/schemas/AgentTurnResponseStepCompletePayload'
+      - $ref: '#/components/schemas/AgentTurnResponseTurnStartPayload'
+      - $ref: '#/components/schemas/AgentTurnResponseTurnCompletePayload'
     AgentTurnResponseStepCompletePayload:
       additionalProperties: false
       properties:
@@ -142,6 +153,11 @@ components:
           type: string
         step_details:
           discriminator:
+            mapping:
+              inference: '#/components/schemas/InferenceStep'
+              memory_retrieval: '#/components/schemas/MemoryRetrievalStep'
+              shield_call: '#/components/schemas/ShieldCallStep'
+              tool_execution: '#/components/schemas/ToolExecutionStep'
             propertyName: step_type
           oneOf:
           - $ref: '#/components/schemas/InferenceStep'
@@ -260,25 +276,25 @@ components:
       - categorical_count
       - accuracy
       type: string
+    AlgorithmConfig:
+      discriminator:
+        mapping:
+          LoRA: '#/components/schemas/LoraFinetuningConfig'
+          QAT: '#/components/schemas/QATFinetuningConfig'
+        propertyName: type
+      oneOf:
+      - $ref: '#/components/schemas/LoraFinetuningConfig'
+      - $ref: '#/components/schemas/QATFinetuningConfig'
     AppEvalTaskConfig:
       additionalProperties: false
       properties:
         eval_candidate:
-          discriminator:
-            propertyName: type
-          oneOf:
-          - $ref: '#/components/schemas/ModelCandidate'
-          - $ref: '#/components/schemas/AgentCandidate'
+          $ref: '#/components/schemas/EvalCandidate'
         num_examples:
           type: integer
         scoring_params:
           additionalProperties:
-            discriminator:
-              propertyName: type
-            oneOf:
-            - $ref: '#/components/schemas/LLMAsJudgeScoringFnParams'
-            - $ref: '#/components/schemas/RegexParserScoringFnParams'
-            - $ref: '#/components/schemas/BasicScoringFnParams'
+            $ref: '#/components/schemas/ScoringFnParams'
           type: object
         type:
           const: app
@@ -412,11 +428,7 @@ components:
       additionalProperties: false
       properties:
         eval_candidate:
-          discriminator:
-            propertyName: type
-          oneOf:
-          - $ref: '#/components/schemas/ModelCandidate'
-          - $ref: '#/components/schemas/AgentCandidate'
+          $ref: '#/components/schemas/EvalCandidate'
         num_examples:
           type: integer
         type:
@@ -632,6 +644,10 @@ components:
       type: object
     ContentDelta:
       discriminator:
+        mapping:
+          image: '#/components/schemas/ImageDelta'
+          text: '#/components/schemas/TextDelta'
+          tool_call: '#/components/schemas/ToolCallDelta'
         propertyName: type
       oneOf:
       - $ref: '#/components/schemas/TextDelta'
@@ -830,6 +846,15 @@ components:
       required:
       - embeddings
       type: object
+    EvalCandidate:
+      discriminator:
+        mapping:
+          agent: '#/components/schemas/AgentCandidate'
+          model: '#/components/schemas/ModelCandidate'
+        propertyName: type
+      oneOf:
+      - $ref: '#/components/schemas/ModelCandidate'
+      - $ref: '#/components/schemas/AgentCandidate'
     EvalTask:
       additionalProperties: false
       properties:
@@ -868,6 +893,15 @@ components:
       - scoring_functions
       - metadata
       type: object
+    EvalTaskConfig:
+      discriminator:
+        mapping:
+          app: '#/components/schemas/AppEvalTaskConfig'
+          benchmark: '#/components/schemas/BenchmarkEvalTaskConfig'
+        propertyName: type
+      oneOf:
+      - $ref: '#/components/schemas/BenchmarkEvalTaskConfig'
+      - $ref: '#/components/schemas/AppEvalTaskConfig'
     EvaluateResponse:
       additionalProperties: false
       properties:
@@ -911,15 +945,43 @@ components:
             type: string
           type: array
         task_config:
-          discriminator:
-            propertyName: type
-          oneOf:
-          - $ref: '#/components/schemas/BenchmarkEvalTaskConfig'
-          - $ref: '#/components/schemas/AppEvalTaskConfig'
+          $ref: '#/components/schemas/EvalTaskConfig'
       required:
       - input_rows
       - scoring_functions
       - task_config
+      type: object
+    Event:
+      discriminator:
+        mapping:
+          metric: '#/components/schemas/MetricEvent'
+          structured_log: '#/components/schemas/StructuredLogEvent'
+          unstructured_log: '#/components/schemas/UnstructuredLogEvent'
+        propertyName: type
+      oneOf:
+      - $ref: '#/components/schemas/UnstructuredLogEvent'
+      - $ref: '#/components/schemas/MetricEvent'
+      - $ref: '#/components/schemas/StructuredLogEvent'
+    GrammarResponseFormat:
+      additionalProperties: false
+      properties:
+        bnf:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        type:
+          const: grammar
+          default: grammar
+          type: string
+      required:
+      - type
+      - bnf
       type: object
     GreedySamplingStrategy:
       additionalProperties: false
@@ -1055,6 +1117,9 @@ components:
         type: array
     InterleavedContentItem:
       discriminator:
+        mapping:
+          image: '#/components/schemas/ImageContentItem'
+          text: '#/components/schemas/TextContentItem'
         propertyName: type
       oneOf:
       - $ref: '#/components/schemas/ImageContentItem'
@@ -1093,6 +1158,27 @@ components:
       - failed
       - scheduled
       type: string
+    JsonSchemaResponseFormat:
+      additionalProperties: false
+      properties:
+        json_schema:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        type:
+          const: json_schema
+          default: json_schema
+          type: string
+      required:
+      - type
+      - json_schema
+      type: object
     JsonType:
       additionalProperties: false
       properties:
@@ -1262,12 +1348,7 @@ components:
       additionalProperties: false
       properties:
         event:
-          discriminator:
-            propertyName: type
-          oneOf:
-          - $ref: '#/components/schemas/UnstructuredLogEvent'
-          - $ref: '#/components/schemas/MetricEvent'
-          - $ref: '#/components/schemas/StructuredLogEvent'
+          $ref: '#/components/schemas/Event'
         ttl_seconds:
           type: integer
       required:
@@ -1346,6 +1427,11 @@ components:
       type: object
     Message:
       discriminator:
+        mapping:
+          assistant: '#/components/schemas/CompletionMessage'
+          system: '#/components/schemas/SystemMessage'
+          tool: '#/components/schemas/ToolResponseMessage'
+          user: '#/components/schemas/UserMessage'
         propertyName: role
       oneOf:
       - $ref: '#/components/schemas/UserMessage'
@@ -1518,6 +1604,17 @@ components:
       type: object
     ParamType:
       discriminator:
+        mapping:
+          agent_turn_input: '#/components/schemas/AgentTurnInputType'
+          array: '#/components/schemas/ArrayType'
+          boolean: '#/components/schemas/BooleanType'
+          chat_completion_input: '#/components/schemas/ChatCompletionInputType'
+          completion_input: '#/components/schemas/CompletionInputType'
+          json: '#/components/schemas/JsonType'
+          number: '#/components/schemas/NumberType'
+          object: '#/components/schemas/ObjectType'
+          string: '#/components/schemas/StringType'
+          union: '#/components/schemas/UnionType'
         propertyName: type
       oneOf:
       - $ref: '#/components/schemas/StringType'
@@ -1830,6 +1927,9 @@ components:
       type: object
     RAGQueryGeneratorConfig:
       discriminator:
+        mapping:
+          default: '#/components/schemas/DefaultRAGQueryGeneratorConfig'
+          llm: '#/components/schemas/LLMRAGQueryGeneratorConfig'
         propertyName: type
       oneOf:
       - $ref: '#/components/schemas/DefaultRAGQueryGeneratorConfig'
@@ -1948,12 +2048,7 @@ components:
         description:
           type: string
         params:
-          discriminator:
-            propertyName: type
-          oneOf:
-          - $ref: '#/components/schemas/LLMAsJudgeScoringFnParams'
-          - $ref: '#/components/schemas/RegexParserScoringFnParams'
-          - $ref: '#/components/schemas/BasicScoringFnParams'
+          $ref: '#/components/schemas/ScoringFnParams'
         provider_id:
           type: string
         provider_scoring_fn_id:
@@ -2031,48 +2126,13 @@ components:
       type: object
     ResponseFormat:
       discriminator:
+        mapping:
+          grammar: '#/components/schemas/GrammarResponseFormat'
+          json_schema: '#/components/schemas/JsonSchemaResponseFormat'
         propertyName: type
       oneOf:
-      - additionalProperties: false
-        properties:
-          json_schema:
-            additionalProperties:
-              oneOf:
-              - type: 'null'
-              - type: boolean
-              - type: number
-              - type: string
-              - type: array
-              - type: object
-            type: object
-          type:
-            const: json_schema
-            default: json_schema
-            type: string
-        required:
-        - type
-        - json_schema
-        type: object
-      - additionalProperties: false
-        properties:
-          bnf:
-            additionalProperties:
-              oneOf:
-              - type: 'null'
-              - type: boolean
-              - type: number
-              - type: string
-              - type: array
-              - type: object
-            type: object
-          type:
-            const: grammar
-            default: grammar
-            type: string
-        required:
-        - type
-        - bnf
-        type: object
+      - $ref: '#/components/schemas/JsonSchemaResponseFormat'
+      - $ref: '#/components/schemas/GrammarResponseFormat'
     RouteInfo:
       additionalProperties: false
       properties:
@@ -2093,11 +2153,7 @@ components:
       additionalProperties: false
       properties:
         task_config:
-          discriminator:
-            propertyName: type
-          oneOf:
-          - $ref: '#/components/schemas/BenchmarkEvalTaskConfig'
-          - $ref: '#/components/schemas/AppEvalTaskConfig'
+          $ref: '#/components/schemas/EvalTaskConfig'
       required:
       - task_config
       type: object
@@ -2163,6 +2219,10 @@ components:
           type: number
         strategy:
           discriminator:
+            mapping:
+              greedy: '#/components/schemas/GreedySamplingStrategy'
+              top_k: '#/components/schemas/TopKSamplingStrategy'
+              top_p: '#/components/schemas/TopPSamplingStrategy'
             propertyName: type
           oneOf:
           - $ref: '#/components/schemas/GreedySamplingStrategy'
@@ -2201,12 +2261,7 @@ components:
         scoring_functions:
           additionalProperties:
             oneOf:
-            - discriminator:
-                propertyName: type
-              oneOf:
-              - $ref: '#/components/schemas/LLMAsJudgeScoringFnParams'
-              - $ref: '#/components/schemas/RegexParserScoringFnParams'
-              - $ref: '#/components/schemas/BasicScoringFnParams'
+            - $ref: '#/components/schemas/ScoringFnParams'
             - type: 'null'
           type: object
       required:
@@ -2244,12 +2299,7 @@ components:
         scoring_functions:
           additionalProperties:
             oneOf:
-            - discriminator:
-                propertyName: type
-              oneOf:
-              - $ref: '#/components/schemas/LLMAsJudgeScoringFnParams'
-              - $ref: '#/components/schemas/RegexParserScoringFnParams'
-              - $ref: '#/components/schemas/BasicScoringFnParams'
+            - $ref: '#/components/schemas/ScoringFnParams'
             - type: 'null'
           type: object
       required:
@@ -2284,12 +2334,7 @@ components:
             - type: object
           type: object
         params:
-          discriminator:
-            propertyName: type
-          oneOf:
-          - $ref: '#/components/schemas/LLMAsJudgeScoringFnParams'
-          - $ref: '#/components/schemas/RegexParserScoringFnParams'
-          - $ref: '#/components/schemas/BasicScoringFnParams'
+          $ref: '#/components/schemas/ScoringFnParams'
         provider_id:
           type: string
         provider_resource_id:
@@ -2308,6 +2353,17 @@ components:
       - metadata
       - return_type
       type: object
+    ScoringFnParams:
+      discriminator:
+        mapping:
+          basic: '#/components/schemas/BasicScoringFnParams'
+          llm_as_judge: '#/components/schemas/LLMAsJudgeScoringFnParams'
+          regex_parser: '#/components/schemas/RegexParserScoringFnParams'
+        propertyName: type
+      oneOf:
+      - $ref: '#/components/schemas/LLMAsJudgeScoringFnParams'
+      - $ref: '#/components/schemas/RegexParserScoringFnParams'
+      - $ref: '#/components/schemas/BasicScoringFnParams'
     ScoringResult:
       additionalProperties: false
       properties:
@@ -2543,11 +2599,7 @@ components:
             - type: object
           type: object
         payload:
-          discriminator:
-            propertyName: type
-          oneOf:
-          - $ref: '#/components/schemas/SpanStartPayload'
-          - $ref: '#/components/schemas/SpanEndPayload'
+          $ref: '#/components/schemas/StructuredLogPayload'
         span_id:
           type: string
         timestamp:
@@ -2566,15 +2618,20 @@ components:
       - type
       - payload
       type: object
+    StructuredLogPayload:
+      discriminator:
+        mapping:
+          span_end: '#/components/schemas/SpanEndPayload'
+          span_start: '#/components/schemas/SpanStartPayload'
+        propertyName: type
+      oneOf:
+      - $ref: '#/components/schemas/SpanStartPayload'
+      - $ref: '#/components/schemas/SpanEndPayload'
     SupervisedFineTuneRequest:
       additionalProperties: false
       properties:
         algorithm_config:
-          discriminator:
-            propertyName: type
-          oneOf:
-          - $ref: '#/components/schemas/LoraFinetuningConfig'
-          - $ref: '#/components/schemas/QATFinetuningConfig'
+          $ref: '#/components/schemas/AlgorithmConfig'
         checkpoint_dir:
           type: string
         hyperparam_search_config:
@@ -3160,6 +3217,11 @@ components:
         steps:
           items:
             discriminator:
+              mapping:
+                inference: '#/components/schemas/InferenceStep'
+                memory_retrieval: '#/components/schemas/MemoryRetrievalStep'
+                shield_call: '#/components/schemas/ShieldCallStep'
+                tool_execution: '#/components/schemas/ToolExecutionStep'
               propertyName: step_type
             oneOf:
             - $ref: '#/components/schemas/InferenceStep'
@@ -5687,11 +5749,12 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgentTurnInputType"
     />
   name: AgentTurnInputType
-- description: 'Streamed agent execution response.
-
-
-    <SchemaDefinition schemaRef="#/components/schemas/AgentTurnResponseEvent" />'
+- description: <SchemaDefinition schemaRef="#/components/schemas/AgentTurnResponseEvent"
+    />
   name: AgentTurnResponseEvent
+- description: <SchemaDefinition schemaRef="#/components/schemas/AgentTurnResponseEventPayload"
+    />
+  name: AgentTurnResponseEventPayload
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgentTurnResponseStepCompletePayload"
     />
   name: AgentTurnResponseStepCompletePayload
@@ -5717,6 +5780,9 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/AggregationFunctionType"
     />
   name: AggregationFunctionType
+- description: <SchemaDefinition schemaRef="#/components/schemas/AlgorithmConfig"
+    />
+  name: AlgorithmConfig
 - description: <SchemaDefinition schemaRef="#/components/schemas/AppEvalTaskConfig"
     />
   name: AppEvalTaskConfig
@@ -5837,8 +5903,12 @@ tags:
     />
   name: EmbeddingsResponse
 - name: Eval
+- description: <SchemaDefinition schemaRef="#/components/schemas/EvalCandidate" />
+  name: EvalCandidate
 - description: <SchemaDefinition schemaRef="#/components/schemas/EvalTask" />
   name: EvalTask
+- description: <SchemaDefinition schemaRef="#/components/schemas/EvalTaskConfig" />
+  name: EvalTaskConfig
 - name: EvalTasks
 - description: <SchemaDefinition schemaRef="#/components/schemas/EvaluateResponse"
     />
@@ -5846,6 +5916,11 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/EvaluateRowsRequest"
     />
   name: EvaluateRowsRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/Event" />
+  name: Event
+- description: <SchemaDefinition schemaRef="#/components/schemas/GrammarResponseFormat"
+    />
+  name: GrammarResponseFormat
 - description: <SchemaDefinition schemaRef="#/components/schemas/GreedySamplingStrategy"
     />
   name: GreedySamplingStrategy
@@ -5878,6 +5953,9 @@ tags:
   name: Job
 - description: <SchemaDefinition schemaRef="#/components/schemas/JobStatus" />
   name: JobStatus
+- description: <SchemaDefinition schemaRef="#/components/schemas/JsonSchemaResponseFormat"
+    />
+  name: JsonSchemaResponseFormat
 - description: <SchemaDefinition schemaRef="#/components/schemas/JsonType" />
   name: JsonType
 - description: <SchemaDefinition schemaRef="#/components/schemas/LLMAsJudgeScoringFnParams"
@@ -6068,6 +6146,9 @@ tags:
 - name: Scoring
 - description: <SchemaDefinition schemaRef="#/components/schemas/ScoringFn" />
   name: ScoringFn
+- description: <SchemaDefinition schemaRef="#/components/schemas/ScoringFnParams"
+    />
+  name: ScoringFnParams
 - name: ScoringFunctions
 - description: <SchemaDefinition schemaRef="#/components/schemas/ScoringResult" />
   name: ScoringResult
@@ -6102,6 +6183,9 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/StructuredLogEvent"
     />
   name: StructuredLogEvent
+- description: <SchemaDefinition schemaRef="#/components/schemas/StructuredLogPayload"
+    />
+  name: StructuredLogPayload
 - description: <SchemaDefinition schemaRef="#/components/schemas/SupervisedFineTuneRequest"
     />
   name: SupervisedFineTuneRequest
@@ -6239,6 +6323,7 @@ x-tagGroups:
   - AgentTool
   - AgentTurnInputType
   - AgentTurnResponseEvent
+  - AgentTurnResponseEventPayload
   - AgentTurnResponseStepCompletePayload
   - AgentTurnResponseStepProgressPayload
   - AgentTurnResponseStepStartPayload
@@ -6246,6 +6331,7 @@ x-tagGroups:
   - AgentTurnResponseTurnCompletePayload
   - AgentTurnResponseTurnStartPayload
   - AggregationFunctionType
+  - AlgorithmConfig
   - AppEvalTaskConfig
   - AppendRowsRequest
   - ArrayType
@@ -6282,9 +6368,13 @@ x-tagGroups:
   - EfficiencyConfig
   - EmbeddingsRequest
   - EmbeddingsResponse
+  - EvalCandidate
   - EvalTask
+  - EvalTaskConfig
   - EvaluateResponse
   - EvaluateRowsRequest
+  - Event
+  - GrammarResponseFormat
   - GreedySamplingStrategy
   - HealthInfo
   - ImageContentItem
@@ -6297,6 +6387,7 @@ x-tagGroups:
   - InvokeToolRequest
   - Job
   - JobStatus
+  - JsonSchemaResponseFormat
   - JsonType
   - LLMAsJudgeScoringFnParams
   - LLMRAGQueryGeneratorConfig
@@ -6365,6 +6456,7 @@ x-tagGroups:
   - ScoreRequest
   - ScoreResponse
   - ScoringFn
+  - ScoringFnParams
   - ScoringResult
   - Session
   - Shield
@@ -6377,6 +6469,7 @@ x-tagGroups:
   - StopReason
   - StringType
   - StructuredLogEvent
+  - StructuredLogPayload
   - SupervisedFineTuneRequest
   - SyntheticDataGenerateRequest
   - SyntheticDataGenerationResponse

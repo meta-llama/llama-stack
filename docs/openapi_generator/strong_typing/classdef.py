@@ -123,9 +123,15 @@ class JsonSchemaAnyOf(JsonSchemaNode):
 
 
 @dataclass
+class Discriminator:
+    propertyName: str
+    mapping: Dict[str, str]
+
+
+@dataclass
 class JsonSchemaOneOf(JsonSchemaNode):
     oneOf: List["JsonSchemaAny"]
-    discriminator: Optional[str]
+    discriminator: Optional[Discriminator]
 
 
 JsonSchemaAny = Union[

@@ -229,11 +229,8 @@ class AgentTurnResponseTurnCompletePayload(BaseModel):
     turn: Turn
 
 
-@json_schema_type
-class AgentTurnResponseEvent(BaseModel):
-    """Streamed agent execution response."""
-
-    payload: Annotated[
+AgentTurnResponseEventPayload = register_schema(
+    Annotated[
         Union[
             AgentTurnResponseStepStartPayload,
             AgentTurnResponseStepProgressPayload,
@@ -242,7 +239,14 @@ class AgentTurnResponseEvent(BaseModel):
             AgentTurnResponseTurnCompletePayload,
         ],
         Field(discriminator="event_type"),
-    ]
+    ],
+    name="AgentTurnResponseEventPayload",
+)
+
+
+@json_schema_type
+class AgentTurnResponseEvent(BaseModel):
+    payload: AgentTurnResponseEventPayload
 
 
 @json_schema_type

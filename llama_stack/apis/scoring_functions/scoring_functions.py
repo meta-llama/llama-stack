@@ -16,7 +16,7 @@ from typing import (
     Union,
 )
 
-from llama_models.schema_utils import json_schema_type, webmethod
+from llama_models.schema_utils import json_schema_type, register_schema, webmethod
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
@@ -82,14 +82,17 @@ class BasicScoringFnParams(BaseModel):
     )
 
 
-ScoringFnParams = Annotated[
-    Union[
-        LLMAsJudgeScoringFnParams,
-        RegexParserScoringFnParams,
-        BasicScoringFnParams,
+ScoringFnParams = register_schema(
+    Annotated[
+        Union[
+            LLMAsJudgeScoringFnParams,
+            RegexParserScoringFnParams,
+            BasicScoringFnParams,
+        ],
+        Field(discriminator="type"),
     ],
-    Field(discriminator="type"),
-]
+    name="ScoringFnParams",
+)
 
 
 class CommonScoringFnFields(BaseModel):
