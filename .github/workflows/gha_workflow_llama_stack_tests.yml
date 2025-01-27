@@ -91,7 +91,7 @@ jobs:
     defaults:
       run:
         shell: bash
-    runs-on: ${{ inputs.runner != '' && inputs.runner || 'llama-stack-gha-runner-gpu' }}
+    runs-on: ${{ inputs.runner != '' && inputs.runner || github.repository_owner == 'meta-llama' && 'llama-stack-gha-runner-gpu' || 'llama-stack-fork-gha-runner-gpu' }}
     if: always()
     steps:
 
@@ -233,7 +233,7 @@ jobs:
           pip install -e .
           pip install -U \
             torch torchvision \
-            pytest pytest_asyncio \
+            pytest pytest_asyncio pytest_html \
             fairscale lm-format-enforcer \
             zmq chardet pypdf \
             pandas sentence_transformers together \
@@ -332,7 +332,7 @@ jobs:
       - name: "Manual - Run Tests: Prep"
         id: manual_run_tests
         working-directory: "${{ github.workspace }}"
-        if: github.event_name == 'workflow_dispatch'
+        if: contains(fromJSON('["workflow_dispatch", "schedule"]'), github.event_name)
         run: |
           echo "[STEP] Running PyTest tests at 'GITHUB_WORKSPACE' path: ${{ github.workspace }}"
 
@@ -344,11 +344,16 @@ jobs:
           # Merge test results with 'merged-test-results.xml' from above.
           # junit-merge <new-test-results> merged-test-results.xml
 
+
+      #####################
+      #### ALL TESTING ####
+      #####################
+
       #### Create test summary ####
 
       - name: "Manual - Test Summary"
         id: manual_test_summary
-        if: always() && github.event_name == 'workflow_dispatch'
+        if: always()
         uses: test-summary/action@v2
         with:
           paths: "${{ github.workspace }}/merged-test-results.xml"
