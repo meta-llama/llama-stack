@@ -81,6 +81,7 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
         )
 
         global _TRACER_PROVIDER
+        # Initialize the correct span processor based on the provider state
         if _TRACER_PROVIDER is None:
             provider = TracerProvider(resource=resource)
             trace.set_tracer_provider(provider)
@@ -100,14 +101,18 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
                     resource=resource, metric_readers=[metric_reader]
                 )
                 metrics.set_meter_provider(metric_provider)
-                self.meter = metrics.get_meter(__name__)
             if TelemetrySink.SQLITE in self.config.sinks:
                 trace.get_tracer_provider().add_span_processor(
                     SQLiteSpanProcessor(self.config.sqlite_db_path)
                 )
-                self.trace_store = SQLiteTraceStore(self.config.sqlite_db_path)
             if TelemetrySink.CONSOLE in self.config.sinks:
                 trace.get_tracer_provider().add_span_processor(ConsoleSpanProcessor())
+
+        if TelemetrySink.OTEL in self.config.sinks:
+            self.meter = metrics.get_meter(__name__)
+        if TelemetrySink.SQLITE in self.config.sinks:
+            self.trace_store = SQLiteTraceStore(self.config.sqlite_db_path)
+
         self._lock = _global_lock
 
     async def initialize(self) -> None:
