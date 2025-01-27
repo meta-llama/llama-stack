@@ -237,7 +237,8 @@ jobs:
             fairscale lm-format-enforcer \
             zmq chardet pypdf \
             pandas sentence_transformers together \
-            aiosqlite
+            aiosqlite \
+            openai
       - name: "Installing packages with conda"
         id: install_conda_generic
         run: |
