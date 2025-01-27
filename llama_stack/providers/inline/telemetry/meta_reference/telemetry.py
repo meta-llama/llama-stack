@@ -81,7 +81,9 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
         )
 
         global _TRACER_PROVIDER
-        # Initialize the correct span processor based on the provider state
+        # Initialize the correct span processor based on the provider state.
+        # This is needed since once the span processor is set, it cannot be unset.
+        # Recreating the telemetry adapter multiple times will result in duplicate span processors.
         if _TRACER_PROVIDER is None:
             provider = TracerProvider(resource=resource)
             trace.set_tracer_provider(provider)
