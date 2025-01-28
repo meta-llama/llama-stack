@@ -32,6 +32,7 @@ from llama_stack.apis.inference import (
     ToolResponse,
     ToolResponseMessage,
     UserMessage,
+    ResponseFormat
 )
 from llama_stack.apis.safety import SafetyViolation
 from llama_stack.apis.tools import ToolDef
