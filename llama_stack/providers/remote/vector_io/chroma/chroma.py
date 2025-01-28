@@ -46,11 +46,12 @@ class ChromaIndex(EmbeddingIndex):
             embeddings
         ), f"Chunk length {len(chunks)} does not match embedding length {len(embeddings)}"
 
+        ids = [f"{c.metadata['document_id']}:chunk-{i}" for i, c in enumerate(chunks)]
         await maybe_await(
             self.collection.add(
                 documents=[chunk.model_dump_json() for chunk in chunks],
                 embeddings=embeddings,
-                ids=[f"{c.document_id}:chunk-{i}" for i, c in enumerate(chunks)],
+                ids=ids,
             )
         )
 
@@ -140,11 +141,11 @@ class ChromaVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
         self,
         vector_db_id: str,
         chunks: List[Chunk],
-        embeddings: NDArray,
+        ttl_seconds: Optional[int] = None,
     ) -> None:
         index = await self._get_and_cache_vector_db_index(vector_db_id)
 
-        await index.insert_chunks(chunks, embeddings)
+        await index.insert_chunks(chunks)
 
     async def query_chunks(
         self,
