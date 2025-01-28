@@ -187,6 +187,13 @@ ResponseFormat = register_schema(
 
 
 @json_schema_type
+class UsageStatistics(BaseModel):
+    prompt_tokens: int
+    completion_tokens: int
+    total_tokens: int
+
+
+@json_schema_type
 class CompletionRequest(BaseModel):
     model: str
     content: InterleavedContent
@@ -204,6 +211,7 @@ class CompletionResponse(BaseModel):
     content: str
     stop_reason: StopReason
     logprobs: Optional[List[TokenLogProbs]] = None
+    usage: Optional[UsageStatistics] = None
 
 
 @json_schema_type
@@ -213,6 +221,7 @@ class CompletionResponseStreamChunk(BaseModel):
     delta: str
     stop_reason: Optional[StopReason] = None
     logprobs: Optional[List[TokenLogProbs]] = None
+    usage: Optional[UsageStatistics] = None
 
 
 @json_schema_type
@@ -252,6 +261,7 @@ class ChatCompletionResponseStreamChunk(BaseModel):
     """SSE-stream of these events."""
 
     event: ChatCompletionResponseEvent
+    usage: Optional[UsageStatistics] = None
 
 
 @json_schema_type
@@ -260,6 +270,7 @@ class ChatCompletionResponse(BaseModel):
 
     completion_message: CompletionMessage
     logprobs: Optional[List[TokenLogProbs]] = None
+    usage: Optional[UsageStatistics] = None
 
 
 @json_schema_type

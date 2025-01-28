@@ -38,6 +38,7 @@ from llama_stack.apis.inference import (
     ResponseFormat,
     TokenLogProbs,
     ToolChoice,
+    UsageStatistics,
 )
 from llama_stack.apis.models import Model, ModelType
 from llama_stack.providers.datatypes import ModelsProtocolPrivate
@@ -168,8 +169,14 @@ class MetaReferenceInferenceImpl(
     async def _stream_completion(self, request: CompletionRequest) -> AsyncGenerator:
         def impl():
             stop_reason = None
+            input_token_count = 0
+            output_token_count = 0
+            usage_statistics = None
 
             for token_result in self.generator.completion(request):
+                if input_token_count == 0:
+                    input_token_count = token_result.input_token_count
+                output_token_count += len(token_result.token)
                 if token_result.text == "<|eot_id|>":
                     stop_reason = StopReason.end_of_turn
                     text = ""
@@ -191,17 +198,29 @@ class MetaReferenceInferenceImpl(
                                 }
                             )
                         ]
+                else:
+                    usage_statistics = UsageStatistics(
+                        prompt_tokens=input_token_count,
+                        completion_tokens=output_token_count,
+                        total_tokens=input_token_count + output_token_count,
+                    )
 
                 yield CompletionResponseStreamChunk(
                     delta=text,
                     stop_reason=stop_reason,
                     logprobs=logprobs if request.logprobs else None,
+                    usage=usage_statistics,
                 )
 
             if stop_reason is None:
                 yield CompletionResponseStreamChunk(
                     delta="",
                     stop_reason=StopReason.out_of_tokens,
+                    usage=UsageStatistics(
+                        prompt_tokens=input_token_count,
+                        completion_tokens=output_token_count,
+                        total_tokens=input_token_count + output_token_count,
+                    ),
                 )
 
         if self.config.create_distributed_process_group:
@@ -221,7 +240,10 @@ class MetaReferenceInferenceImpl(
             stop_reason = None
 
             tokenizer = self.generator.formatter.tokenizer
+            input_token_count = 0
             for token_result in self.generator.completion(request):
+                if input_token_count == 0:
+                    input_token_count = token_result.input_token_count
                 tokens.append(token_result.token)
                 if token_result.text == "<|eot_id|>":
                     stop_reason = StopReason.end_of_turn
@@ -242,7 +264,7 @@ class MetaReferenceInferenceImpl(
             if stop_reason is None:
                 stop_reason = StopReason.out_of_tokens
 
-            content = self.generator.formatter.tokenizer.decode(tokens)
+            content = tokenizer.decode(tokens)
             if content.endswith("<|eot_id|>"):
                 content = content[: -len("<|eot_id|>")]
             elif content.endswith("<|eom_id|>"):
@@ -251,6 +273,11 @@ class MetaReferenceInferenceImpl(
                 content=content,
                 stop_reason=stop_reason,
                 logprobs=logprobs if request.logprobs else None,
+                usage_statistics=UsageStatistics(
+                    prompt_tokens=input_token_count,
+                    completion_tokens=len(tokens),
+                    total_tokens=input_token_count + len(tokens),
+                ),
             )
 
         if self.config.create_distributed_process_group:

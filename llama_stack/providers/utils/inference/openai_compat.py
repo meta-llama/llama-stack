@@ -12,7 +12,6 @@ from llama_models.datatypes import (
     TopKSamplingStrategy,
     TopPSamplingStrategy,
 )
-
 from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.datatypes import StopReason
 from pydantic import BaseModel
@@ -24,7 +23,6 @@ from llama_stack.apis.common.content_types import (
     ToolCallDelta,
     ToolCallParseStatus,
 )
-
 from llama_stack.apis.inference import (
     ChatCompletionResponse,
     ChatCompletionResponseEvent,
@@ -35,8 +33,8 @@ from llama_stack.apis.inference import (
     CompletionResponseStreamChunk,
     Message,
     TokenLogProbs,
+    UsageStatistics,
 )
-
 from llama_stack.providers.utils.inference.prompt_adapter import (
     convert_image_content_to_url,
 )
@@ -63,8 +61,15 @@ class OpenAICompatCompletionChoice(BaseModel):
     logprobs: Optional[OpenAICompatLogprobs] = None
 
 
+class OpenAICompatCompletionUsage(BaseModel):
+    prompt_tokens: int
+    completion_tokens: int
+    total_tokens: int
+
+
 class OpenAICompatCompletionResponse(BaseModel):
     choices: List[OpenAICompatCompletionChoice]
+    usage: Optional[OpenAICompatCompletionUsage] = None
 
 
 def get_sampling_strategy_options(params: SamplingParams) -> dict:
@@ -124,16 +129,31 @@ def convert_openai_completion_logprobs(
     return [TokenLogProbs(logprobs_by_token=x) for x in logprobs.top_logprobs]
 
 
+def get_usage_statistics(
+    response: OpenAICompatCompletionResponse,
+) -> Optional[UsageStatistics]:
+    if response.usage:
+        return UsageStatistics(
+            prompt_tokens=response.usage.prompt_tokens,
+            completion_tokens=response.usage.completion_tokens,
+            total_tokens=response.usage.total_tokens,
+        )
+    return None
+
+
 def process_completion_response(
     response: OpenAICompatCompletionResponse, formatter: ChatFormat
 ) -> CompletionResponse:
     choice = response.choices[0]
+    usage_statistics = get_usage_statistics(response)
+
     # drop suffix <eot_id> if present and return stop reason as end of turn
     if choice.text.endswith("<|eot_id|>"):
         return CompletionResponse(
             stop_reason=StopReason.end_of_turn,
             content=choice.text[: -len("<|eot_id|>")],
             logprobs=convert_openai_completion_logprobs(choice.logprobs),
+            usage=usage_statistics,
         )
     # drop suffix <eom_id> if present and return stop reason as end of message
     if choice.text.endswith("<|eom_id|>"):
@@ -141,11 +161,13 @@ def process_completion_response(
             stop_reason=StopReason.end_of_message,
             content=choice.text[: -len("<|eom_id|>")],
             logprobs=convert_openai_completion_logprobs(choice.logprobs),
+            usage=usage_statistics,
         )
     return CompletionResponse(
         stop_reason=get_stop_reason(choice.finish_reason),
         content=choice.text,
         logprobs=convert_openai_completion_logprobs(choice.logprobs),
+        usage=usage_statistics,
     )
 
 
@@ -164,6 +186,7 @@ def process_chat_completion_response(
             tool_calls=raw_message.tool_calls,
         ),
         logprobs=None,
+        usage=get_usage_statistics(response),
     )
 
 
@@ -171,10 +194,13 @@ async def process_completion_stream_response(
     stream: AsyncGenerator[OpenAICompatCompletionResponse, None], formatter: ChatFormat
 ) -> AsyncGenerator:
     stop_reason = None
+    usage_statistics = None
 
     async for chunk in stream:
         choice = chunk.choices[0]
         finish_reason = choice.finish_reason
+        # usage statistics are only available in the final chunk
+        usage_statistics = get_usage_statistics(chunk)
 
         text = text_from_choice(choice)
         if text == "<|eot_id|>":
@@ -200,6 +226,7 @@ async def process_completion_stream_response(
     yield CompletionResponseStreamChunk(
         delta="",
         stop_reason=stop_reason,
+        usage=usage_statistics,
     )
 
 
@@ -216,10 +243,11 @@ async def process_chat_completion_stream_response(
     buffer = ""
     ipython = False
     stop_reason = None
-
+    usage_statistics = None
     async for chunk in stream:
         choice = chunk.choices[0]
         finish_reason = choice.finish_reason
+        usage_statistics = get_usage_statistics(chunk)
 
         if finish_reason:
             if stop_reason is None and finish_reason in ["stop", "eos", "eos_token"]:
@@ -313,7 +341,8 @@ async def process_chat_completion_stream_response(
             event_type=ChatCompletionResponseEventType.complete,
             delta=TextDelta(text=""),
             stop_reason=stop_reason,
-        )
+        ),
+        usage=usage_statistics,
     )
 
 

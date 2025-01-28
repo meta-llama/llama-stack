@@ -37,7 +37,6 @@ from llama_models.llama3.reference_impl.multimodal.model import (
     CrossAttentionTransformer,
 )
 from llama_models.sku_list import resolve_model
-
 from lmformatenforcer import JsonSchemaParser, TokenEnforcer, TokenEnforcerTokenizerData
 from pydantic import BaseModel
 
@@ -47,7 +46,6 @@ from llama_stack.apis.inference import (
     ResponseFormat,
     ResponseFormatType,
 )
-
 from llama_stack.distribution.utils.model_utils import model_local_dir
 from llama_stack.providers.utils.inference.prompt_adapter import (
     ChatCompletionRequestWithRawContent,
@@ -78,6 +76,7 @@ class TokenResult(BaseModel):
     token: int
     text: str
     logprobs: Optional[List[float]] = None
+    input_token_count: Optional[int] = None
 
 
 class Llama:
@@ -348,6 +347,7 @@ class Llama:
                     if logprobs
                     else None
                 ),
+                input_token_count=len(model_input.tokens),
             )
 
             prev_pos = cur_pos
