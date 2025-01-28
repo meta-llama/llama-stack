@@ -15,9 +15,16 @@ import sys
 log = logging.getLogger(__name__)
 
 
+def run_with_pty(command):
+    if sys.platform.startswith("win"):
+        return _run_with_pty_win(command)
+    else:
+        return _run_with_pty_unix(command)
+
+
 # run a command in a pseudo-terminal, with interrupt handling,
 # useful when you want to run interactive things
-def run_with_pty(command):
+def _run_with_pty_unix(command):
     import pty
     import termios
 
@@ -99,9 +106,8 @@ def run_with_pty(command):
 
 
 # run a command in a pseudo-terminal in windows, with interrupt handling,
-def run_with_win(command):
+def _run_with_pty_win(command):
     """
-    Alternative to run_with_pty for Windows platforms.
     Runs a command with interactive support using subprocess directly.
     """
     try:
