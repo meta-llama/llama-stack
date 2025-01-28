@@ -78,24 +78,6 @@
                         "schema": {
                             "type": "string"
                         }
-                    },
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
                     }
                 ]
             },
@@ -108,26 +90,7 @@
                 "tags": [
                     "DatasetIO"
                 ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -157,26 +120,7 @@
                 "tags": [
                     "BatchInference (Coming Soon)"
                 ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -206,26 +150,7 @@
                 "tags": [
                     "BatchInference (Coming Soon)"
                 ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -248,26 +173,7 @@
                 "tags": [
                     "PostTraining (Coming Soon)"
                 ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -304,26 +210,7 @@
                 "tags": [
                     "Inference"
                 ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -360,26 +247,7 @@
                 "tags": [
                     "Inference"
                 ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -409,26 +277,7 @@
                 "tags": [
                     "Agents"
                 ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -463,24 +312,6 @@
                         "name": "agent_id",
                         "in": "path",
                         "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
                         "schema": {
                             "type": "string"
                         }
@@ -538,24 +369,6 @@
                         "schema": {
                             "type": "string"
                         }
-                    },
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
                     }
                 ],
                 "requestBody": {
@@ -585,24 +398,6 @@
                         "name": "agent_id",
                         "in": "path",
                         "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
                         "schema": {
                             "type": "string"
                         }
@@ -654,24 +449,6 @@
                                 "type": "string"
                             }
                         }
-                    },
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
                     }
                 ]
             },
@@ -700,24 +477,6 @@
                         "schema": {
                             "type": "string"
                         }
-                    },
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
                     }
                 ]
             }
@@ -739,26 +498,7 @@
                 "tags": [
                     "Inference"
                 ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -793,24 +533,6 @@
                         "name": "task_id",
                         "in": "path",
                         "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
                         "schema": {
                             "type": "string"
                         }
@@ -877,24 +599,6 @@
                         "schema": {
                             "type": "string"
                         }
-                    },
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
                     }
                 ]
             }
@@ -940,24 +644,6 @@
                         "schema": {
                             "type": "string"
                         }
-                    },
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
                     }
                 ]
             }
@@ -994,24 +680,6 @@
                         "schema": {
                             "type": "string"
                         }
-                    },
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
                     }
                 ]
             },
@@ -1029,24 +697,6 @@
                         "name": "dataset_id",
                         "in": "path",
                         "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
                         "schema": {
                             "type": "string"
                         }
@@ -1086,24 +736,6 @@
                         "schema": {
                             "type": "string"
                         }
-                    },
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
                     }
                 ]
             }
@@ -1140,24 +772,6 @@
                         "schema": {
                             "type": "string"
                         }
-                    },
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
                     }
                 ]
             },
@@ -1175,24 +789,6 @@
                         "name": "model_id",
                         "in": "path",
                         "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
                         "schema": {
                             "type": "string"
                         }
@@ -1232,24 +828,6 @@
                         "schema": {
                             "type": "string"
                         }
-                    },
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
                     }
                 ]
             }
@@ -1283,24 +861,6 @@
                         "name": "identifier",
                         "in": "path",
                         "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
                         "schema": {
                             "type": "string"
                         }
@@ -1338,24 +898,6 @@
                         "name": "span_id",
                         "in": "path",
                         "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
                         "schema": {
                             "type": "string"
                         }
@@ -1407,24 +949,6 @@
                         "schema": {
                             "type": "integer"
                         }
-                    },
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
                     }
                 ]
             }
@@ -1451,24 +975,6 @@
                         "name": "tool_name",
                         "in": "path",
                         "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
                         "schema": {
                             "type": "string"
                         }
@@ -1501,24 +1007,6 @@
                         "schema": {
                             "type": "string"
                         }
-                    },
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
                     }
                 ]
             },
@@ -1537,24 +1025,6 @@
                         "name": "toolgroup_id",
                         "in": "path",
                         "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
                         "schema": {
                             "type": "string"
                         }
@@ -1584,24 +1054,6 @@
                         "name": "trace_id",
                         "in": "path",
                         "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
                         "schema": {
                             "type": "string"
                         }
@@ -1641,24 +1093,6 @@
                         "schema": {
                             "type": "string"
                         }
-                    },
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
                     }
                 ]
             }
@@ -1695,24 +1129,6 @@
                         "schema": {
                             "type": "string"
                         }
-                    },
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
                     }
                 ]
             }
@@ -1734,26 +1150,7 @@
                 "tags": [
                     "PostTraining (Coming Soon)"
                 ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
+                "parameters": []
             }
         },
         "/v1/vector-dbs/{vector_db_id}": {
@@ -1788,24 +1185,6 @@
                         "schema": {
                             "type": "string"
                         }
-                    },
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
                     }
                 ]
             },
@@ -1823,24 +1202,6 @@
                         "name": "vector_db_id",
                         "in": "path",
                         "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
                         "schema": {
                             "type": "string"
                         }
@@ -1865,26 +1226,7 @@
                 "tags": [
                     "Inspect"
                 ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
+                "parameters": []
             }
         },
         "/v1/tool-runtime/rag-tool/insert": {
@@ -1898,26 +1240,7 @@
                     "ToolRuntime"
                 ],
                 "summary": "Index documents so they can be used by the RAG system",
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -1940,26 +1263,7 @@
                 "tags": [
                     "VectorIO"
                 ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -1990,26 +1294,7 @@
                     "ToolRuntime"
                 ],
                 "summary": "Run a tool with the given arguments",
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -2062,24 +1347,6 @@
                         "schema": {
                             "type": "string"
                         }
-                    },
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
                     }
                 ]
             },
@@ -2105,24 +1372,6 @@
                         "name": "job_id",
                         "in": "path",
                         "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
                         "schema": {
                             "type": "string"
                         }
@@ -2163,24 +1412,6 @@
                         "schema": {
                             "type": "string"
                         }
-                    },
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
                     }
                 ]
             }
@@ -2202,26 +1433,7 @@
                 "tags": [
                     "Datasets"
                 ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
+                "parameters": []
             },
             "post": {
                 "responses": {
@@ -2232,26 +1444,7 @@
                 "tags": [
                     "Datasets"
                 ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -2281,26 +1474,7 @@
                 "tags": [
                     "EvalTasks"
                 ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
+                "parameters": []
             },
             "post": {
                 "responses": {
@@ -2311,26 +1485,7 @@
                 "tags": [
                     "EvalTasks"
                 ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -2360,26 +1515,7 @@
                 "tags": [
                     "Models"
                 ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
+                "parameters": []
             },
             "post": {
                 "responses": {
@@ -2397,26 +1533,7 @@
                 "tags": [
                     "Models"
                 ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -2446,26 +1563,7 @@
                 "tags": [
                     "Inspect"
                 ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
+                "parameters": []
             }
         },
         "/v1/inspect/routes": {
@@ -2485,26 +1583,7 @@
                 "tags": [
                     "Inspect"
                 ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
+                "parameters": []
             }
         },
         "/v1/tool-runtime/list-tools": {
@@ -2540,24 +1619,6 @@
                         "schema": {
                             "$ref": "#/components/schemas/URL"
                         }
-                    },
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
                     }
                 ]
             }
@@ -2579,26 +1640,7 @@
                 "tags": [
                     "ScoringFunctions"
                 ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
+                "parameters": []
             },
             "post": {
                 "responses": {
@@ -2609,26 +1651,7 @@
                 "tags": [
                     "ScoringFunctions"
                 ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -2658,26 +1681,7 @@
                 "tags": [
                     "Shields"
                 ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
+                "parameters": []
             },
             "post": {
                 "responses": {
@@ -2695,26 +1699,7 @@
                 "tags": [
                     "Shields"
                 ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -2745,26 +1730,7 @@
                     "ToolGroups"
                 ],
                 "summary": "List tool groups with optional provider",
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
+                "parameters": []
             },
             "post": {
                 "responses": {
@@ -2776,26 +1742,7 @@
                     "ToolGroups"
                 ],
                 "summary": "Register a tool group",
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -2834,24 +1781,6 @@
                         "schema": {
                             "type": "string"
                         }
-                    },
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
                     }
                 ]
             }
@@ -2873,26 +1802,7 @@
                 "tags": [
                     "VectorDBs"
                 ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
+                "parameters": []
             },
             "post": {
                 "responses": {
@@ -2910,26 +1820,7 @@
                 "tags": [
                     "VectorDBs"
                 ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -2952,26 +1843,7 @@
                 "tags": [
                     "Telemetry"
                 ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -3001,26 +1873,7 @@
                 "tags": [
                     "PostTraining (Coming Soon)"
                 ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -3051,26 +1904,7 @@
                     "ToolRuntime"
                 ],
                 "summary": "Query the RAG system for context; typically invoked by the agent",
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -3100,26 +1934,7 @@
                 "tags": [
                     "VectorIO"
                 ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -3178,24 +1993,6 @@
                         "required": false,
                         "schema": {
                             "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
                         }
                     }
                 ]
@@ -3256,24 +2053,6 @@
                                 "type": "string"
                             }
                         }
-                    },
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
                     }
                 ]
             }
@@ -3300,24 +2079,6 @@
                         "name": "task_id",
                         "in": "path",
                         "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
                         "schema": {
                             "type": "string"
                         }
@@ -3352,26 +2113,7 @@
                 "tags": [
                     "Safety"
                 ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -3394,26 +2136,7 @@
                 "tags": [
                     "Telemetry"
                 ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -3443,26 +2166,7 @@
                 "tags": [
                     "Scoring"
                 ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -3492,26 +2196,7 @@
                 "tags": [
                     "Scoring"
                 ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -3541,26 +2226,7 @@
                 "tags": [
                     "PostTraining (Coming Soon)"
                 ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -3590,26 +2256,7 @@
                 "tags": [
                     "SyntheticDataGeneration (Coming Soon)"
                 ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -3639,26 +2286,7 @@
                 "tags": [
                     "Inspect"
                 ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
+                "parameters": []
             }
         }
     },
