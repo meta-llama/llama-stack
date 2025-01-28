@@ -7,12 +7,10 @@
 import errno
 import logging
 import os
-import pty
 import select
 import signal
 import subprocess
 import sys
-import termios
 
 log = logging.getLogger(__name__)
 
@@ -20,6 +18,9 @@ log = logging.getLogger(__name__)
 # run a command in a pseudo-terminal, with interrupt handling,
 # useful when you want to run interactive things
 def run_with_pty(command):
+    import pty
+    import termios
+
     master, slave = pty.openpty()
 
     old_settings = termios.tcgetattr(sys.stdin)
@@ -94,6 +95,40 @@ def run_with_pty(command):
             process.terminate()
             process.wait()
 
+    return process.returncode
+
+
+# run a command in a pseudo-terminal in windows, with interrupt handling,
+def run_with_win(command):
+    """
+    Alternative to run_with_pty for Windows platforms.
+    Runs a command with interactive support using subprocess directly.
+    """
+    try:
+        # For shell scripts on Windows, use appropriate shell
+        if isinstance(command, (list, tuple)):
+            if command[0].endswith(".sh"):
+                if os.path.exists("/usr/bin/bash"):  # WSL
+                    command = ["bash"] + command
+                else:
+                    # Use cmd.exe with bash while preserving all arguments
+                    command = ["cmd.exe", "/c", "bash"] + command
+
+        process = subprocess.Popen(
+            command,
+            shell=True,
+            universal_newlines=True,
+        )
+
+        process.wait()
+
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return 1
+    finally:
+        if process and process.poll() is None:
+            process.terminate()
+            process.wait()
     return process.returncode
 
 

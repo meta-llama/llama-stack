@@ -21,7 +21,7 @@ from llama_stack.distribution.distribution import get_provider_registry
 
 from llama_stack.distribution.utils.config_dirs import BUILDS_BASE_DIR
 
-from llama_stack.distribution.utils.exec import run_command, run_with_pty
+from llama_stack.distribution.utils.exec import run_command, run_with_pty, run_with_win
 from llama_stack.providers.datatypes import Api
 
 log = logging.getLogger(__name__)
@@ -157,7 +157,9 @@ def build_image(
 
     is_terminal = sys.stdin.isatty()
     if is_terminal:
-        return_code = run_with_pty(args)
+        return_code = (
+            run_with_win(args) if sys.platform.startswith("win") else run_with_pty(args)
+        )
     else:
         return_code = run_command(args)
 
