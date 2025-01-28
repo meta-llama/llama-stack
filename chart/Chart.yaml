@@ -1,0 +1,4 @@
+apiVersion: v2
+name: llama-stack
+version: 0.0.0 # Overriden during `helm package`
+description: A Helm chart for https://github.com/meta-llama/llama-stack

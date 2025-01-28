@@ -1,0 +1,45 @@
+{{- $variables := include "llamaStack" . | fromYaml -}}
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: {{ .Release.Name }}
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ .Release.Name }}
+          image: "{{ index $variables.images .Values.distribution "repository" }}:{{ index $variables.images .Values.distribution "tag" }}"
+          resources:
+            {{- toYaml .Values.llamaStack.resources | nindent 12 }}
+          env:
+            - name: INFERENCE_MODEL
+              value: {{ .Values.model }}
+            - name: OLLAMA_URL
+              value: http://ollama.{{ .Release.Namespace }}.svc.cluster.local
+            - name: LLAMA_STACK_PORT
+              value: "5000"
+          ports:
+            - containerPort: 5000
