@@ -14,7 +14,7 @@ from datetime import datetime
 from pathlib import Path
 
 import fire
-import yaml
+import ruamel.yaml as yaml
 
 from llama_models import schema_utils
 
@@ -61,7 +61,13 @@ def main(output_dir: str):
     )
 
     with open(output_dir / "llama-stack-spec.yaml", "w", encoding="utf-8") as fp:
-        yaml.dump(spec.get_json(), fp, allow_unicode=True)
+        y = yaml.YAML()
+        y.default_flow_style = False
+        y.block_seq_indent = 2
+        y.dump(
+            spec.get_json(),
+            fp,
+        )
 
     with open(output_dir / "llama-stack-spec.html", "w") as fp:
         spec.write_html(fp, pretty_print=True)
