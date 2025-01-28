@@ -20,6 +20,10 @@ INFERENCE_API_CAPA_TEST_MAP = {
             "test_text_chat_completion_with_tool_calling_and_streaming",
             "test_text_chat_completion_with_tool_calling_and_non_streaming",
         ],
+        "log_probs": [
+            "test_completion_log_probs_non_streaming",
+            "test_completion_log_probs_streaming",
+        ],
     },
     "completion": {
         "streaming": ["test_text_completion_streaming"],
