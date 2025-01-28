@@ -17,7 +17,7 @@ from typing import (
     Union,
 )
 
-from llama_models.schema_utils import json_schema_type, webmethod
+from llama_models.schema_utils import json_schema_type, register_schema, webmethod
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
@@ -115,13 +115,16 @@ class SpanEndPayload(BaseModel):
     status: SpanStatus
 
 
-StructuredLogPayload = Annotated[
-    Union[
-        SpanStartPayload,
-        SpanEndPayload,
+StructuredLogPayload = register_schema(
+    Annotated[
+        Union[
+            SpanStartPayload,
+            SpanEndPayload,
+        ],
+        Field(discriminator="type"),
     ],
-    Field(discriminator="type"),
-]
+    name="StructuredLogPayload",
+)
 
 
 @json_schema_type
@@ -130,14 +133,17 @@ class StructuredLogEvent(EventCommon):
     payload: StructuredLogPayload
 
 
-Event = Annotated[
-    Union[
-        UnstructuredLogEvent,
-        MetricEvent,
-        StructuredLogEvent,
+Event = register_schema(
+    Annotated[
+        Union[
+            UnstructuredLogEvent,
+            MetricEvent,
+            StructuredLogEvent,
+        ],
+        Field(discriminator="type"),
     ],
-    Field(discriminator="type"),
-]
+    name="Event",
+)
 
 
 @json_schema_type

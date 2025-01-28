@@ -157,11 +157,13 @@ class ChatCompletionResponseEvent(BaseModel):
     stop_reason: Optional[StopReason] = None
 
 
+@json_schema_type
 class ResponseFormatType(Enum):
     json_schema = "json_schema"
     grammar = "grammar"
 
 
+@json_schema_type
 class JsonSchemaResponseFormat(BaseModel):
     type: Literal[ResponseFormatType.json_schema.value] = (
         ResponseFormatType.json_schema.value
@@ -169,6 +171,7 @@ class JsonSchemaResponseFormat(BaseModel):
     json_schema: Dict[str, Any]
 
 
+@json_schema_type
 class GrammarResponseFormat(BaseModel):
     type: Literal[ResponseFormatType.grammar.value] = ResponseFormatType.grammar.value
     bnf: Dict[str, Any]

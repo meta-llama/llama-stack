@@ -4,7 +4,7 @@ distribution_spec:
   providers:
     inference:
     - remote::fireworks
-    memory:
+    vector_io:
     - inline::faiss
     - remote::chromadb
     - remote::pgvector
@@ -27,5 +27,6 @@ distribution_spec:
     - remote::brave-search
     - remote::tavily-search
     - inline::code-interpreter
-    - inline::memory-runtime
+    - inline::rag-runtime
+    - remote::model-context-protocol
 image_type: conda

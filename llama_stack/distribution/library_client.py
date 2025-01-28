@@ -129,8 +129,8 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
             import nest_asyncio
 
             nest_asyncio.apply()
-        if not self.skip_logger_removal:
-            self._remove_root_logger_handlers()
+            if not self.skip_logger_removal:
+                self._remove_root_logger_handlers()
 
         return asyncio.run(self.async_client.initialize())
 

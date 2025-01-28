@@ -33,7 +33,6 @@ from llama_stack.apis.inference import (
     ToolResponseMessage,
     UserMessage,
 )
-from llama_stack.apis.memory import MemoryBank
 from llama_stack.apis.safety import SafetyViolation
 from llama_stack.apis.tools import ToolDef
 from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
@@ -89,7 +88,7 @@ class MemoryRetrievalStep(StepCommon):
     step_type: Literal[StepType.memory_retrieval.value] = (
         StepType.memory_retrieval.value
     )
-    memory_bank_ids: List[str]
+    vector_db_ids: str
     inserted_context: InterleavedContent
 
 
@@ -133,8 +132,6 @@ class Session(BaseModel):
     turns: List[Turn]
     started_at: datetime
 
-    memory_bank: Optional[MemoryBank] = None
-
 
 class AgentToolGroupWithArgs(BaseModel):
     name: str
@@ -158,9 +155,7 @@ class AgentConfigCommon(BaseModel):
     toolgroups: Optional[List[AgentToolGroup]] = Field(default_factory=list)
     client_tools: Optional[List[ToolDef]] = Field(default_factory=list)
     tool_choice: Optional[ToolChoice] = Field(default=ToolChoice.auto)
-    tool_prompt_format: Optional[ToolPromptFormat] = Field(
-        default=ToolPromptFormat.json
-    )
+    tool_prompt_format: Optional[ToolPromptFormat] = Field(default=None)
 
     max_infer_iters: int = 10
 
@@ -234,11 +229,8 @@ class AgentTurnResponseTurnCompletePayload(BaseModel):
     turn: Turn
 
 
-@json_schema_type
-class AgentTurnResponseEvent(BaseModel):
-    """Streamed agent execution response."""
-
-    payload: Annotated[
+AgentTurnResponseEventPayload = register_schema(
+    Annotated[
         Union[
             AgentTurnResponseStepStartPayload,
             AgentTurnResponseStepProgressPayload,
@@ -247,7 +239,14 @@ class AgentTurnResponseEvent(BaseModel):
             AgentTurnResponseTurnCompletePayload,
         ],
         Field(discriminator="event_type"),
-    ]
+    ],
+    name="AgentTurnResponseEventPayload",
+)
+
+
+@json_schema_type
+class AgentTurnResponseEvent(BaseModel):
+    payload: AgentTurnResponseEventPayload
 
 
 @json_schema_type

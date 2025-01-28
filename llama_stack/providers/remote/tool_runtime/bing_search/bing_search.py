@@ -68,7 +68,7 @@ class BingSearchToolRuntimeImpl(
         ]
 
     async def invoke_tool(
-        self, tool_name: str, args: Dict[str, Any]
+        self, tool_name: str, kwargs: Dict[str, Any]
     ) -> ToolInvocationResult:
         api_key = self._get_api_key()
         headers = {
@@ -78,7 +78,7 @@ class BingSearchToolRuntimeImpl(
             "count": self.config.top_k,
             "textDecorations": True,
             "textFormat": "HTML",
-            "q": args["query"],
+            "q": kwargs["query"],
         }
 
         response = requests.get(

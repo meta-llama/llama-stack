@@ -2,7 +2,7 @@ version: '2'
 name: experimental-post-training
 distribution_spec:
   description: Experimental template for post training
-  docker_image: null
+  container_image: null
   providers:
     inference:
     - inline::meta-reference
@@ -22,7 +22,7 @@ distribution_spec:
     - inline::meta-reference
     safety:
     - inline::llama-guard
-    memory:
+    vector_io:
     - inline::faiss
     tool_runtime:
     - remote::brave-search

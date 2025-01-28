@@ -240,7 +240,7 @@ async def process_chat_completion_stream_response(
                 event=ChatCompletionResponseEvent(
                     event_type=ChatCompletionResponseEventType.progress,
                     delta=ToolCallDelta(
-                        content="",
+                        tool_call="",
                         parse_status=ToolCallParseStatus.started,
                     ),
                 )
@@ -260,7 +260,7 @@ async def process_chat_completion_stream_response(
         if ipython:
             buffer += text
             delta = ToolCallDelta(
-                content=text,
+                tool_call=text,
                 parse_status=ToolCallParseStatus.in_progress,
             )
 
@@ -289,7 +289,7 @@ async def process_chat_completion_stream_response(
             event=ChatCompletionResponseEvent(
                 event_type=ChatCompletionResponseEventType.progress,
                 delta=ToolCallDelta(
-                    content="",
+                    tool_call="",
                     parse_status=ToolCallParseStatus.failed,
                 ),
                 stop_reason=stop_reason,
@@ -301,7 +301,7 @@ async def process_chat_completion_stream_response(
             event=ChatCompletionResponseEvent(
                 event_type=ChatCompletionResponseEventType.progress,
                 delta=ToolCallDelta(
-                    content=tool_call,
+                    tool_call=tool_call,
                     parse_status=ToolCallParseStatus.succeeded,
                 ),
                 stop_reason=stop_reason,

@@ -6,7 +6,7 @@ distribution_spec:
     - remote::cerebras
     safety:
     - inline::llama-guard
-    memory:
+    vector_io:
     - inline::faiss
     - remote::chromadb
     - remote::pgvector
@@ -27,5 +27,5 @@ distribution_spec:
     - remote::brave-search
     - remote::tavily-search
     - inline::code-interpreter
-    - inline::memory-runtime
+    - inline::rag-runtime
 image_type: conda

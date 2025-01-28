@@ -74,11 +74,15 @@ docker run \
 If you are using Llama Stack Safety / Shield APIs, use:
 
 ```bash
+# You need a local checkout of llama-stack to run this, get it using
+# git clone https://github.com/meta-llama/llama-stack.git
+cd /path/to/llama-stack
+
 docker run \
   -it \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ~/.llama:/root/.llama \
-  -v ./run-with-safety.yaml:/root/my-run.yaml \
+  -v ./llama_stack/templates/ollama/run-with-safety.yaml:/root/my-run.yaml \
   llamastack/distribution-{{ name }} \
   --yaml-config /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \

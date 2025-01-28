@@ -232,7 +232,7 @@ async def convert_chat_completion_response_stream(
                     event=ChatCompletionResponseEvent(
                         event_type=event_type,
                         delta=ToolCallDelta(
-                            content=tool_call,
+                            tool_call=tool_call,
                             parse_status=ToolCallParseStatus.succeeded,
                         ),
                     )
@@ -243,7 +243,7 @@ async def convert_chat_completion_response_stream(
                     event=ChatCompletionResponseEvent(
                         event_type=event_type,
                         delta=ToolCallDelta(
-                            content=tool_call.model_dump_json(),
+                            tool_call=tool_call.model_dump_json(),
                             parse_status=ToolCallParseStatus.failed,
                         ),
                     )

@@ -37,7 +37,7 @@ class RunConfigSettings(BaseModel):
         self,
         name: str,
         providers: Dict[str, List[str]],
-        docker_image: Optional[str] = None,
+        container_image: Optional[str] = None,
     ) -> StackRunConfig:
         provider_registry = get_provider_registry()
 
@@ -83,8 +83,7 @@ class RunConfigSettings(BaseModel):
 
         return StackRunConfig(
             image_name=name,
-            docker_image=docker_image,
-            conda_env=name,
+            container_image=container_image,
             apis=apis,
             providers=provider_configs,
             metadata_store=SqliteKVStoreConfig.sample_run_config(
@@ -113,7 +112,7 @@ class DistributionTemplate(BaseModel):
 
     # Optional configuration
     run_config_env_vars: Optional[Dict[str, Tuple[str, str]]] = None
-    docker_image: Optional[str] = None
+    container_image: Optional[str] = None
 
     default_models: Optional[List[ModelInput]] = None
 
@@ -122,7 +121,7 @@ class DistributionTemplate(BaseModel):
             name=self.name,
             distribution_spec=DistributionSpec(
                 description=self.description,
-                docker_image=self.docker_image,
+                container_image=self.container_image,
                 providers=self.providers,
             ),
             image_type="conda",  # default to conda, can be overridden
@@ -170,7 +169,7 @@ class DistributionTemplate(BaseModel):
 
         for yaml_pth, settings in self.run_configs.items():
             run_config = settings.run_config(
-                self.name, self.providers, self.docker_image
+                self.name, self.providers, self.container_image
             )
             with open(yaml_output_dir / yaml_pth, "w") as f:
                 yaml.safe_dump(

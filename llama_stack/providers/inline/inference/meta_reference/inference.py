@@ -377,7 +377,7 @@ class MetaReferenceInferenceImpl(
                         event=ChatCompletionResponseEvent(
                             event_type=ChatCompletionResponseEventType.progress,
                             delta=ToolCallDelta(
-                                content="",
+                                tool_call="",
                                 parse_status=ToolCallParseStatus.started,
                             ),
                         )
@@ -395,7 +395,7 @@ class MetaReferenceInferenceImpl(
 
                 if ipython:
                     delta = ToolCallDelta(
-                        content=text,
+                        tool_call=text,
                         parse_status=ToolCallParseStatus.in_progress,
                     )
                 else:
@@ -434,7 +434,7 @@ class MetaReferenceInferenceImpl(
                     event=ChatCompletionResponseEvent(
                         event_type=ChatCompletionResponseEventType.progress,
                         delta=ToolCallDelta(
-                            content="",
+                            tool_call="",
                             parse_status=ToolCallParseStatus.failed,
                         ),
                         stop_reason=stop_reason,
@@ -446,7 +446,7 @@ class MetaReferenceInferenceImpl(
                     event=ChatCompletionResponseEvent(
                         event_type=ChatCompletionResponseEventType.progress,
                         delta=ToolCallDelta(
-                            content=tool_call,
+                            tool_call=tool_call,
                             parse_status=ToolCallParseStatus.succeeded,
                         ),
                         stop_reason=stop_reason,

@@ -69,7 +69,7 @@ async def agents_stack(
 
     providers = {}
     provider_data = {}
-    for key in ["inference", "safety", "memory", "agents", "tool_runtime"]:
+    for key in ["inference", "safety", "vector_io", "agents", "tool_runtime"]:
         fixture = request.getfixturevalue(f"{key}_{fixture_dict[key]}")
         providers[key] = fixture.providers
         if key == "inference":
@@ -118,7 +118,7 @@ async def agents_stack(
     )
 
     test_stack = await construct_stack_for_test(
-        [Api.agents, Api.inference, Api.safety, Api.memory, Api.tool_runtime],
+        [Api.agents, Api.inference, Api.safety, Api.vector_io, Api.tool_runtime],
         providers,
         provider_data,
         models=models,

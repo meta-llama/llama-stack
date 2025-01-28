@@ -80,26 +80,14 @@ class TestClientTool(ClientTool):
 
 
 @pytest.fixture(scope="session")
-def model_id(llama_stack_client):
-    available_models = [
-        model.identifier
-        for model in llama_stack_client.models.list()
-        if model.identifier.startswith("meta-llama") and "405" not in model.identifier
-    ]
-    model_id = available_models[0]
-    print(f"Using model: {model_id}")
-    return model_id
-
-
-@pytest.fixture(scope="session")
-def agent_config(llama_stack_client, model_id):
+def agent_config(llama_stack_client, text_model_id):
     available_shields = [
         shield.identifier for shield in llama_stack_client.shields.list()
     ]
     available_shields = available_shields[:1]
     print(f"Using shield: {available_shields}")
     agent_config = AgentConfig(
-        model=model_id,
+        model=text_model_id,
         instructions="You are a helpful assistant",
         sampling_params={
             "strategy": {
@@ -110,7 +98,6 @@ def agent_config(llama_stack_client, model_id):
         },
         toolgroups=[],
         tool_choice="auto",
-        tool_prompt_format="json",
         input_shields=available_shields,
         output_shields=available_shields,
         enable_session_persistence=False,
@@ -182,7 +169,8 @@ def test_builtin_tool_web_search(llama_stack_client, agent_config):
     assert "tool_execution>" in logs_str
     assert "Tool:brave_search Response:" in logs_str
     assert "mark zuckerberg" in logs_str.lower()
-    assert "No Violation" in logs_str
+    if len(agent_config["output_shields"]) > 0:
+        assert "No Violation" in logs_str
 
 
 def test_builtin_tool_code_execution(llama_stack_client, agent_config):
@@ -211,7 +199,10 @@ def test_builtin_tool_code_execution(llama_stack_client, agent_config):
     assert "Tool:code_interpreter Response" in logs_str
 
 
-def test_code_execution(llama_stack_client, agent_config):
+# This test must be run in an environment where `bwrap` is available. If you are running against a
+# server, this means the _server_ must have `bwrap` available. If you are using library client, then
+# you must have `bwrap` available in test's environment.
+def test_code_interpreter_for_attachments(llama_stack_client, agent_config):
     agent_config = {
         **agent_config,
         "toolgroups": [
@@ -285,27 +276,24 @@ def test_rag_agent(llama_stack_client, agent_config):
         )
         for i, url in enumerate(urls)
     ]
-    memory_bank_id = "test-memory-bank"
-    llama_stack_client.memory_banks.register(
-        memory_bank_id=memory_bank_id,
-        params={
-            "memory_bank_type": "vector",
-            "embedding_model": "all-MiniLM-L6-v2",
-            "chunk_size_in_tokens": 512,
-            "overlap_size_in_tokens": 64,
-        },
+    vector_db_id = "test-vector-db"
+    llama_stack_client.vector_dbs.register(
+        vector_db_id=vector_db_id,
+        embedding_model="all-MiniLM-L6-v2",
+        embedding_dimension=384,
     )
-    llama_stack_client.memory.insert(
-        bank_id=memory_bank_id,
+    llama_stack_client.tool_runtime.rag_tool.insert(
         documents=documents,
+        vector_db_id=vector_db_id,
+        chunk_size_in_tokens=512,
     )
     agent_config = {
         **agent_config,
         "toolgroups": [
             dict(
-                name="builtin::memory",
+                name="builtin::rag",
                 args={
-                    "memory_bank_ids": [memory_bank_id],
+                    "vector_db_ids": [vector_db_id],
                 },
             )
         ],
@@ -323,4 +311,4 @@ def test_rag_agent(llama_stack_client, agent_config):
         )
         logs = [str(log) for log in EventLogger().log(response) if log is not None]
         logs_str = "".join(logs)
-        assert "Tool:query_memory" in logs_str
+        assert "Tool:query_from_memory" in logs_str

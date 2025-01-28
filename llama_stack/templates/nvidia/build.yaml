@@ -4,7 +4,7 @@ distribution_spec:
   providers:
     inference:
     - remote::nvidia
-    memory:
+    vector_io:
     - inline::faiss
     safety:
     - inline::llama-guard
@@ -25,5 +25,6 @@ distribution_spec:
     - remote::brave-search
     - remote::tavily-search
     - inline::code-interpreter
-    - inline::memory-runtime
+    - inline::rag-runtime
+    - remote::model-context-protocol
 image_type: conda

@@ -1108,98 +1108,6 @@
                 ]
             }
         },
-        "/v1/memory-banks/{memory_bank_id}": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/MemoryBank"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "MemoryBanks"
-                ],
-                "parameters": [
-                    {
-                        "name": "memory_bank_id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
-            },
-            "delete": {
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                },
-                "tags": [
-                    "MemoryBanks"
-                ],
-                "parameters": [
-                    {
-                        "name": "memory_bank_id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
-            }
-        },
         "/v1/models/{model_id}": {
             "get": {
                 "responses": {
@@ -1848,6 +1756,98 @@
                 ]
             }
         },
+        "/v1/vector-dbs/{vector_db_id}": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/VectorDB"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "VectorDBs"
+                ],
+                "parameters": [
+                    {
+                        "name": "vector_db_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-Provider-Data",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-Client-Version",
+                        "in": "header",
+                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            },
+            "delete": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "VectorDBs"
+                ],
+                "parameters": [
+                    {
+                        "name": "vector_db_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-Provider-Data",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-Client-Version",
+                        "in": "header",
+                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
         "/v1/health": {
             "get": {
                 "responses": {
@@ -1887,7 +1887,7 @@
                 ]
             }
         },
-        "/v1/memory/insert": {
+        "/v1/tool-runtime/rag-tool/insert": {
             "post": {
                 "responses": {
                     "200": {
@@ -1895,7 +1895,50 @@
                     }
                 },
                 "tags": [
-                    "Memory"
+                    "ToolRuntime"
+                ],
+                "summary": "Index documents so they can be used by the RAG system",
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-Provider-Data",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-Client-Version",
+                        "in": "header",
+                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/InsertRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/v1/vector-io/insert": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "VectorIO"
                 ],
                 "parameters": [
                     {
@@ -1921,7 +1964,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/InsertDocumentsRequest"
+                                "$ref": "#/components/schemas/InsertChunksRequest"
                             }
                         }
                     },
@@ -2293,105 +2336,6 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/RegisterEvalTaskRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/v1/memory-banks": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ListMemoryBanksResponse"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "MemoryBanks"
-                ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
-            },
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/VectorMemoryBank"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/KeyValueMemoryBank"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/KeywordMemoryBank"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/GraphMemoryBank"
-                                        }
-                                    ]
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "MemoryBanks"
-                ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/RegisterMemoryBankRequest"
                             }
                         }
                     },
@@ -2912,6 +2856,92 @@
                 ]
             }
         },
+        "/v1/vector-dbs": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ListVectorDBsResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "VectorDBs"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-Provider-Data",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-Client-Version",
+                        "in": "header",
+                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            },
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/VectorDB"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "VectorDBs"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-Provider-Data",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-Client-Version",
+                        "in": "header",
+                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegisterVectorDbRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/v1/telemetry/events": {
             "post": {
                 "responses": {
@@ -3003,7 +3033,7 @@
                 }
             }
         },
-        "/v1/memory/query": {
+        "/v1/tool-runtime/rag-tool/query": {
             "post": {
                 "responses": {
                     "200": {
@@ -3011,14 +3041,64 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/QueryDocumentsResponse"
+                                    "$ref": "#/components/schemas/RAGQueryResult"
                                 }
                             }
                         }
                     }
                 },
                 "tags": [
-                    "Memory"
+                    "ToolRuntime"
+                ],
+                "summary": "Query the RAG system for context; typically invoked by the agent",
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-Provider-Data",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-Client-Version",
+                        "in": "header",
+                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/QueryRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/v1/vector-io/query": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/QueryChunksResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "VectorIO"
                 ],
                 "parameters": [
                     {
@@ -3044,7 +3124,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/QueryDocumentsRequest"
+                                "$ref": "#/components/schemas/QueryChunksRequest"
                             }
                         }
                     },
@@ -3681,22 +3761,29 @@
             "ImageContentItem": {
                 "type": "object",
                 "properties": {
-                    "url": {
-                        "$ref": "#/components/schemas/URL"
-                    },
-                    "data": {
-                        "type": "string",
-                        "contentEncoding": "base64"
-                    },
                     "type": {
                         "type": "string",
                         "const": "image",
                         "default": "image"
+                    },
+                    "image": {
+                        "type": "object",
+                        "properties": {
+                            "url": {
+                                "$ref": "#/components/schemas/URL"
+                            },
+                            "data": {
+                                "type": "string",
+                                "contentEncoding": "base64"
+                            }
+                        },
+                        "additionalProperties": false
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "type"
+                    "type",
+                    "image"
                 ]
             },
             "InterleavedContent": {
@@ -3723,7 +3810,14 @@
                     {
                         "$ref": "#/components/schemas/TextContentItem"
                     }
-                ]
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "image": "#/components/schemas/ImageContentItem",
+                        "text": "#/components/schemas/TextContentItem"
+                    }
+                }
             },
             "Message": {
                 "oneOf": [
@@ -3739,7 +3833,16 @@
                     {
                         "$ref": "#/components/schemas/CompletionMessage"
                     }
-                ]
+                ],
+                "discriminator": {
+                    "propertyName": "role",
+                    "mapping": {
+                        "user": "#/components/schemas/UserMessage",
+                        "system": "#/components/schemas/SystemMessage",
+                        "tool": "#/components/schemas/ToolResponseMessage",
+                        "assistant": "#/components/schemas/CompletionMessage"
+                    }
+                }
             },
             "SamplingParams": {
                 "type": "object",
@@ -3755,7 +3858,15 @@
                             {
                                 "$ref": "#/components/schemas/TopKSamplingStrategy"
                             }
-                        ]
+                        ],
+                        "discriminator": {
+                            "propertyName": "type",
+                            "mapping": {
+                                "greedy": "#/components/schemas/GreedySamplingStrategy",
+                                "top_p": "#/components/schemas/TopPSamplingStrategy",
+                                "top_k": "#/components/schemas/TopKSamplingStrategy"
+                            }
+                        }
                     },
                     "max_tokens": {
                         "type": "integer",
@@ -4217,89 +4328,102 @@
                     "job_uuid"
                 ]
             },
+            "GrammarResponseFormat": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "grammar",
+                        "default": "grammar"
+                    },
+                    "bnf": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "bnf"
+                ]
+            },
+            "JsonSchemaResponseFormat": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "json_schema",
+                        "default": "json_schema"
+                    },
+                    "json_schema": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "json_schema"
+                ]
+            },
             "ResponseFormat": {
                 "oneOf": [
                     {
-                        "type": "object",
-                        "properties": {
-                            "type": {
-                                "type": "string",
-                                "const": "json_schema",
-                                "default": "json_schema"
-                            },
-                            "json_schema": {
-                                "type": "object",
-                                "additionalProperties": {
-                                    "oneOf": [
-                                        {
-                                            "type": "null"
-                                        },
-                                        {
-                                            "type": "boolean"
-                                        },
-                                        {
-                                            "type": "number"
-                                        },
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "type": "array"
-                                        },
-                                        {
-                                            "type": "object"
-                                        }
-                                    ]
-                                }
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "type",
-                            "json_schema"
-                        ]
+                        "$ref": "#/components/schemas/JsonSchemaResponseFormat"
                     },
                     {
-                        "type": "object",
-                        "properties": {
-                            "type": {
-                                "type": "string",
-                                "const": "grammar",
-                                "default": "grammar"
-                            },
-                            "bnf": {
-                                "type": "object",
-                                "additionalProperties": {
-                                    "oneOf": [
-                                        {
-                                            "type": "null"
-                                        },
-                                        {
-                                            "type": "boolean"
-                                        },
-                                        {
-                                            "type": "number"
-                                        },
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "type": "array"
-                                        },
-                                        {
-                                            "type": "object"
-                                        }
-                                    ]
-                                }
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "type",
-                            "bnf"
-                        ]
+                        "$ref": "#/components/schemas/GrammarResponseFormat"
                     }
-                ]
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "json_schema": "#/components/schemas/JsonSchemaResponseFormat",
+                        "grammar": "#/components/schemas/GrammarResponseFormat"
+                    }
+                }
             },
             "ChatCompletionRequest": {
                 "type": "object",
@@ -4428,7 +4552,15 @@
                     {
                         "$ref": "#/components/schemas/ToolCallDelta"
                     }
-                ]
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "text": "#/components/schemas/TextDelta",
+                        "image": "#/components/schemas/ImageDelta",
+                        "tool_call": "#/components/schemas/ToolCallDelta"
+                    }
+                }
             },
             "ImageDelta": {
                 "type": "object",
@@ -4438,7 +4570,7 @@
                         "const": "image",
                         "default": "image"
                     },
-                    "data": {
+                    "image": {
                         "type": "string",
                         "contentEncoding": "base64"
                     }
@@ -4446,7 +4578,7 @@
                 "additionalProperties": false,
                 "required": [
                     "type",
-                    "data"
+                    "image"
                 ]
             },
             "TextDelta": {
@@ -4490,7 +4622,7 @@
                         "const": "tool_call",
                         "default": "tool_call"
                     },
-                    "content": {
+                    "tool_call": {
                         "oneOf": [
                             {
                                 "type": "string"
@@ -4507,7 +4639,7 @@
                 "additionalProperties": false,
                 "required": [
                     "type",
-                    "content",
+                    "tool_call",
                     "parse_status"
                 ]
             },
@@ -4635,8 +4767,7 @@
                         "default": "auto"
                     },
                     "tool_prompt_format": {
-                        "$ref": "#/components/schemas/ToolPromptFormat",
-                        "default": "json"
+                        "$ref": "#/components/schemas/ToolPromptFormat"
                     },
                     "max_infer_iters": {
                         "type": "integer",
@@ -4916,30 +5047,42 @@
                 "type": "object",
                 "properties": {
                     "payload": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/AgentTurnResponseStepStartPayload"
-                            },
-                            {
-                                "$ref": "#/components/schemas/AgentTurnResponseStepProgressPayload"
-                            },
-                            {
-                                "$ref": "#/components/schemas/AgentTurnResponseStepCompletePayload"
-                            },
-                            {
-                                "$ref": "#/components/schemas/AgentTurnResponseTurnStartPayload"
-                            },
-                            {
-                                "$ref": "#/components/schemas/AgentTurnResponseTurnCompletePayload"
-                            }
-                        ]
+                        "$ref": "#/components/schemas/AgentTurnResponseEventPayload"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "payload"
+                ]
+            },
+            "AgentTurnResponseEventPayload": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/AgentTurnResponseStepStartPayload"
+                    },
+                    {
+                        "$ref": "#/components/schemas/AgentTurnResponseStepProgressPayload"
+                    },
+                    {
+                        "$ref": "#/components/schemas/AgentTurnResponseStepCompletePayload"
+                    },
+                    {
+                        "$ref": "#/components/schemas/AgentTurnResponseTurnStartPayload"
+                    },
+                    {
+                        "$ref": "#/components/schemas/AgentTurnResponseTurnCompletePayload"
+                    }
                 ],
-                "title": "Streamed agent execution response."
+                "discriminator": {
+                    "propertyName": "event_type",
+                    "mapping": {
+                        "step_start": "#/components/schemas/AgentTurnResponseStepStartPayload",
+                        "step_progress": "#/components/schemas/AgentTurnResponseStepProgressPayload",
+                        "step_complete": "#/components/schemas/AgentTurnResponseStepCompletePayload",
+                        "turn_start": "#/components/schemas/AgentTurnResponseTurnStartPayload",
+                        "turn_complete": "#/components/schemas/AgentTurnResponseTurnCompletePayload"
+                    }
+                }
             },
             "AgentTurnResponseStepCompletePayload": {
                 "type": "object",
@@ -4975,7 +5118,16 @@
                             {
                                 "$ref": "#/components/schemas/MemoryRetrievalStep"
                             }
-                        ]
+                        ],
+                        "discriminator": {
+                            "propertyName": "step_type",
+                            "mapping": {
+                                "inference": "#/components/schemas/InferenceStep",
+                                "tool_execution": "#/components/schemas/ToolExecutionStep",
+                                "shield_call": "#/components/schemas/ShieldCallStep",
+                                "memory_retrieval": "#/components/schemas/MemoryRetrievalStep"
+                            }
+                        }
                     }
                 },
                 "additionalProperties": false,
@@ -5176,11 +5328,8 @@
                         "const": "memory_retrieval",
                         "default": "memory_retrieval"
                     },
-                    "memory_bank_ids": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
+                    "vector_db_ids": {
+                        "type": "string"
                     },
                     "inserted_context": {
                         "$ref": "#/components/schemas/InterleavedContent"
@@ -5191,7 +5340,7 @@
                     "turn_id",
                     "step_id",
                     "step_type",
-                    "memory_bank_ids",
+                    "vector_db_ids",
                     "inserted_context"
                 ]
             },
@@ -5378,7 +5527,16 @@
                                 {
                                     "$ref": "#/components/schemas/MemoryRetrievalStep"
                                 }
-                            ]
+                            ],
+                            "discriminator": {
+                                "propertyName": "step_type",
+                                "mapping": {
+                                    "inference": "#/components/schemas/InferenceStep",
+                                    "tool_execution": "#/components/schemas/ToolExecutionStep",
+                                    "shield_call": "#/components/schemas/ShieldCallStep",
+                                    "memory_retrieval": "#/components/schemas/MemoryRetrievalStep"
+                                }
+                            }
                         }
                     },
                     "output_message": {
@@ -5521,29 +5679,12 @@
                         "default": "app"
                     },
                     "eval_candidate": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/ModelCandidate"
-                            },
-                            {
-                                "$ref": "#/components/schemas/AgentCandidate"
-                            }
-                        ]
+                        "$ref": "#/components/schemas/EvalCandidate"
                     },
                     "scoring_params": {
                         "type": "object",
                         "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "$ref": "#/components/schemas/LLMAsJudgeScoringFnParams"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/RegexParserScoringFnParams"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/BasicScoringFnParams"
-                                }
-                            ]
+                            "$ref": "#/components/schemas/ScoringFnParams"
                         }
                     },
                     "num_examples": {
@@ -5586,14 +5727,7 @@
                         "default": "benchmark"
                     },
                     "eval_candidate": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/ModelCandidate"
-                            },
-                            {
-                                "$ref": "#/components/schemas/AgentCandidate"
-                            }
-                        ]
+                        "$ref": "#/components/schemas/EvalCandidate"
                     },
                     "num_examples": {
                         "type": "integer"
@@ -5604,6 +5738,40 @@
                     "type",
                     "eval_candidate"
                 ]
+            },
+            "EvalCandidate": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/ModelCandidate"
+                    },
+                    {
+                        "$ref": "#/components/schemas/AgentCandidate"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "model": "#/components/schemas/ModelCandidate",
+                        "agent": "#/components/schemas/AgentCandidate"
+                    }
+                }
+            },
+            "EvalTaskConfig": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/BenchmarkEvalTaskConfig"
+                    },
+                    {
+                        "$ref": "#/components/schemas/AppEvalTaskConfig"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "benchmark": "#/components/schemas/BenchmarkEvalTaskConfig",
+                        "app": "#/components/schemas/AppEvalTaskConfig"
+                    }
+                }
             },
             "LLMAsJudgeScoringFnParams": {
                 "type": "object",
@@ -5689,6 +5857,27 @@
                     "type"
                 ]
             },
+            "ScoringFnParams": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/LLMAsJudgeScoringFnParams"
+                    },
+                    {
+                        "$ref": "#/components/schemas/RegexParserScoringFnParams"
+                    },
+                    {
+                        "$ref": "#/components/schemas/BasicScoringFnParams"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "llm_as_judge": "#/components/schemas/LLMAsJudgeScoringFnParams",
+                        "regex_parser": "#/components/schemas/RegexParserScoringFnParams",
+                        "basic": "#/components/schemas/BasicScoringFnParams"
+                    }
+                }
+            },
             "EvaluateRowsRequest": {
                 "type": "object",
                 "properties": {
@@ -5727,14 +5916,7 @@
                         }
                     },
                     "task_config": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/BenchmarkEvalTaskConfig"
-                            },
-                            {
-                                "$ref": "#/components/schemas/AppEvalTaskConfig"
-                            }
-                        ]
+                        "$ref": "#/components/schemas/EvalTaskConfig"
                     }
                 },
                 "additionalProperties": false,
@@ -5851,118 +6033,6 @@
                     "aggregated_results"
                 ]
             },
-            "GraphMemoryBank": {
-                "type": "object",
-                "properties": {
-                    "identifier": {
-                        "type": "string"
-                    },
-                    "provider_resource_id": {
-                        "type": "string"
-                    },
-                    "provider_id": {
-                        "type": "string"
-                    },
-                    "type": {
-                        "type": "string",
-                        "const": "memory_bank",
-                        "default": "memory_bank"
-                    },
-                    "memory_bank_type": {
-                        "type": "string",
-                        "const": "graph",
-                        "default": "graph"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "identifier",
-                    "provider_resource_id",
-                    "provider_id",
-                    "type",
-                    "memory_bank_type"
-                ]
-            },
-            "KeyValueMemoryBank": {
-                "type": "object",
-                "properties": {
-                    "identifier": {
-                        "type": "string"
-                    },
-                    "provider_resource_id": {
-                        "type": "string"
-                    },
-                    "provider_id": {
-                        "type": "string"
-                    },
-                    "type": {
-                        "type": "string",
-                        "const": "memory_bank",
-                        "default": "memory_bank"
-                    },
-                    "memory_bank_type": {
-                        "type": "string",
-                        "const": "keyvalue",
-                        "default": "keyvalue"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "identifier",
-                    "provider_resource_id",
-                    "provider_id",
-                    "type",
-                    "memory_bank_type"
-                ]
-            },
-            "KeywordMemoryBank": {
-                "type": "object",
-                "properties": {
-                    "identifier": {
-                        "type": "string"
-                    },
-                    "provider_resource_id": {
-                        "type": "string"
-                    },
-                    "provider_id": {
-                        "type": "string"
-                    },
-                    "type": {
-                        "type": "string",
-                        "const": "memory_bank",
-                        "default": "memory_bank"
-                    },
-                    "memory_bank_type": {
-                        "type": "string",
-                        "const": "keyword",
-                        "default": "keyword"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "identifier",
-                    "provider_resource_id",
-                    "provider_id",
-                    "type",
-                    "memory_bank_type"
-                ]
-            },
-            "MemoryBank": {
-                "oneOf": [
-                    {
-                        "$ref": "#/components/schemas/VectorMemoryBank"
-                    },
-                    {
-                        "$ref": "#/components/schemas/KeyValueMemoryBank"
-                    },
-                    {
-                        "$ref": "#/components/schemas/KeywordMemoryBank"
-                    },
-                    {
-                        "$ref": "#/components/schemas/GraphMemoryBank"
-                    }
-                ]
-            },
             "Session": {
                 "type": "object",
                 "properties": {
@@ -5981,9 +6051,6 @@
                     "started_at": {
                         "type": "string",
                         "format": "date-time"
-                    },
-                    "memory_bank": {
-                        "$ref": "#/components/schemas/MemoryBank"
                     }
                 },
                 "additionalProperties": false,
@@ -5994,53 +6061,6 @@
                     "started_at"
                 ],
                 "title": "A single session of an interaction with an Agentic System."
-            },
-            "VectorMemoryBank": {
-                "type": "object",
-                "properties": {
-                    "identifier": {
-                        "type": "string"
-                    },
-                    "provider_resource_id": {
-                        "type": "string"
-                    },
-                    "provider_id": {
-                        "type": "string"
-                    },
-                    "type": {
-                        "type": "string",
-                        "const": "memory_bank",
-                        "default": "memory_bank"
-                    },
-                    "memory_bank_type": {
-                        "type": "string",
-                        "const": "vector",
-                        "default": "vector"
-                    },
-                    "embedding_model": {
-                        "type": "string"
-                    },
-                    "chunk_size_in_tokens": {
-                        "type": "integer"
-                    },
-                    "embedding_dimension": {
-                        "type": "integer",
-                        "default": 384
-                    },
-                    "overlap_size_in_tokens": {
-                        "type": "integer"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "identifier",
-                    "provider_resource_id",
-                    "provider_id",
-                    "type",
-                    "memory_bank_type",
-                    "embedding_model",
-                    "chunk_size_in_tokens"
-                ]
             },
             "AgentStepResponse": {
                 "type": "object",
@@ -6059,7 +6079,16 @@
                             {
                                 "$ref": "#/components/schemas/MemoryRetrievalStep"
                             }
-                        ]
+                        ],
+                        "discriminator": {
+                            "propertyName": "step_type",
+                            "mapping": {
+                                "inference": "#/components/schemas/InferenceStep",
+                                "tool_execution": "#/components/schemas/ToolExecutionStep",
+                                "shield_call": "#/components/schemas/ShieldCallStep",
+                                "memory_retrieval": "#/components/schemas/MemoryRetrievalStep"
+                            }
+                        }
                     }
                 },
                 "additionalProperties": false,
@@ -6274,7 +6303,22 @@
                     {
                         "$ref": "#/components/schemas/AgentTurnInputType"
                     }
-                ]
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "string": "#/components/schemas/StringType",
+                        "number": "#/components/schemas/NumberType",
+                        "boolean": "#/components/schemas/BooleanType",
+                        "array": "#/components/schemas/ArrayType",
+                        "object": "#/components/schemas/ObjectType",
+                        "json": "#/components/schemas/JsonType",
+                        "union": "#/components/schemas/UnionType",
+                        "chat_completion_input": "#/components/schemas/ChatCompletionInputType",
+                        "completion_input": "#/components/schemas/CompletionInputType",
+                        "agent_turn_input": "#/components/schemas/AgentTurnInputType"
+                    }
+                }
             },
             "StringType": {
                 "type": "object",
@@ -6524,17 +6568,7 @@
                         "$ref": "#/components/schemas/ParamType"
                     },
                     "params": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/LLMAsJudgeScoringFnParams"
-                            },
-                            {
-                                "$ref": "#/components/schemas/RegexParserScoringFnParams"
-                            },
-                            {
-                                "$ref": "#/components/schemas/BasicScoringFnParams"
-                            }
-                        ]
+                        "$ref": "#/components/schemas/ScoringFnParams"
                     }
                 },
                 "additionalProperties": false,
@@ -7012,6 +7046,40 @@
                     "data"
                 ]
             },
+            "VectorDB": {
+                "type": "object",
+                "properties": {
+                    "identifier": {
+                        "type": "string"
+                    },
+                    "provider_resource_id": {
+                        "type": "string"
+                    },
+                    "provider_id": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "vector_db",
+                        "default": "vector_db"
+                    },
+                    "embedding_model": {
+                        "type": "string"
+                    },
+                    "embedding_dimension": {
+                        "type": "integer"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "identifier",
+                    "provider_resource_id",
+                    "provider_id",
+                    "type",
+                    "embedding_model",
+                    "embedding_dimension"
+                ]
+            },
             "HealthInfo": {
                 "type": "object",
                 "properties": {
@@ -7024,7 +7092,7 @@
                     "status"
                 ]
             },
-            "MemoryBankDocument": {
+            "RAGDocument": {
                 "type": "object",
                 "properties": {
                     "document_id": {
@@ -7085,16 +7153,74 @@
                     "metadata"
                 ]
             },
-            "InsertDocumentsRequest": {
+            "InsertRequest": {
                 "type": "object",
                 "properties": {
-                    "bank_id": {
-                        "type": "string"
-                    },
                     "documents": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/MemoryBankDocument"
+                            "$ref": "#/components/schemas/RAGDocument"
+                        }
+                    },
+                    "vector_db_id": {
+                        "type": "string"
+                    },
+                    "chunk_size_in_tokens": {
+                        "type": "integer"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "documents",
+                    "vector_db_id",
+                    "chunk_size_in_tokens"
+                ]
+            },
+            "InsertChunksRequest": {
+                "type": "object",
+                "properties": {
+                    "vector_db_id": {
+                        "type": "string"
+                    },
+                    "chunks": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "content": {
+                                    "$ref": "#/components/schemas/InterleavedContent"
+                                },
+                                "metadata": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "oneOf": [
+                                            {
+                                                "type": "null"
+                                            },
+                                            {
+                                                "type": "boolean"
+                                            },
+                                            {
+                                                "type": "number"
+                                            },
+                                            {
+                                                "type": "string"
+                                            },
+                                            {
+                                                "type": "array"
+                                            },
+                                            {
+                                                "type": "object"
+                                            }
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "content",
+                                "metadata"
+                            ]
                         }
                     },
                     "ttl_seconds": {
@@ -7103,8 +7229,8 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "bank_id",
-                    "documents"
+                    "vector_db_id",
+                    "chunks"
                 ]
             },
             "InvokeToolRequest": {
@@ -7113,7 +7239,7 @@
                     "tool_name": {
                         "type": "string"
                     },
-                    "args": {
+                    "kwargs": {
                         "type": "object",
                         "additionalProperties": {
                             "oneOf": [
@@ -7142,7 +7268,7 @@
                 "additionalProperties": false,
                 "required": [
                     "tool_name",
-                    "args"
+                    "kwargs"
                 ]
             },
             "ToolInvocationResult": {
@@ -7185,21 +7311,6 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/EvalTask"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "data"
-                ]
-            },
-            "ListMemoryBanksResponse": {
-                "type": "object",
-                "properties": {
-                    "data": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/MemoryBank"
                         }
                     }
                 },
@@ -7355,6 +7466,42 @@
                 "required": [
                     "data"
                 ]
+            },
+            "ListVectorDBsResponse": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/VectorDB"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "data"
+                ]
+            },
+            "Event": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/UnstructuredLogEvent"
+                    },
+                    {
+                        "$ref": "#/components/schemas/MetricEvent"
+                    },
+                    {
+                        "$ref": "#/components/schemas/StructuredLogEvent"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "unstructured_log": "#/components/schemas/UnstructuredLogEvent",
+                        "metric": "#/components/schemas/MetricEvent",
+                        "structured_log": "#/components/schemas/StructuredLogEvent"
+                    }
+                }
             },
             "LogSeverity": {
                 "type": "string",
@@ -7521,14 +7668,7 @@
                         "default": "structured_log"
                     },
                     "payload": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/SpanStartPayload"
-                            },
-                            {
-                                "$ref": "#/components/schemas/SpanEndPayload"
-                            }
-                        ]
+                        "$ref": "#/components/schemas/StructuredLogPayload"
                     }
                 },
                 "additionalProperties": false,
@@ -7539,6 +7679,23 @@
                     "type",
                     "payload"
                 ]
+            },
+            "StructuredLogPayload": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/SpanStartPayload"
+                    },
+                    {
+                        "$ref": "#/components/schemas/SpanEndPayload"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "span_start": "#/components/schemas/SpanStartPayload",
+                        "span_end": "#/components/schemas/SpanEndPayload"
+                    }
+                }
             },
             "UnstructuredLogEvent": {
                 "type": "object",
@@ -7604,17 +7761,7 @@
                 "type": "object",
                 "properties": {
                     "event": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/UnstructuredLogEvent"
-                            },
-                            {
-                                "$ref": "#/components/schemas/MetricEvent"
-                            },
-                            {
-                                "$ref": "#/components/schemas/StructuredLogEvent"
-                            }
-                        ]
+                        "$ref": "#/components/schemas/Event"
                     },
                     "ttl_seconds": {
                         "type": "integer"
@@ -7873,10 +8020,121 @@
                     "job_uuid"
                 ]
             },
-            "QueryDocumentsRequest": {
+            "DefaultRAGQueryGeneratorConfig": {
                 "type": "object",
                 "properties": {
-                    "bank_id": {
+                    "type": {
+                        "type": "string",
+                        "const": "default",
+                        "default": "default"
+                    },
+                    "separator": {
+                        "type": "string",
+                        "default": " "
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "separator"
+                ]
+            },
+            "LLMRAGQueryGeneratorConfig": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "llm",
+                        "default": "llm"
+                    },
+                    "model": {
+                        "type": "string"
+                    },
+                    "template": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "model",
+                    "template"
+                ]
+            },
+            "RAGQueryConfig": {
+                "type": "object",
+                "properties": {
+                    "query_generator_config": {
+                        "$ref": "#/components/schemas/RAGQueryGeneratorConfig"
+                    },
+                    "max_tokens_in_context": {
+                        "type": "integer",
+                        "default": 4096
+                    },
+                    "max_chunks": {
+                        "type": "integer",
+                        "default": 5
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "query_generator_config",
+                    "max_tokens_in_context",
+                    "max_chunks"
+                ]
+            },
+            "RAGQueryGeneratorConfig": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/DefaultRAGQueryGeneratorConfig"
+                    },
+                    {
+                        "$ref": "#/components/schemas/LLMRAGQueryGeneratorConfig"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "default": "#/components/schemas/DefaultRAGQueryGeneratorConfig",
+                        "llm": "#/components/schemas/LLMRAGQueryGeneratorConfig"
+                    }
+                }
+            },
+            "QueryRequest": {
+                "type": "object",
+                "properties": {
+                    "content": {
+                        "$ref": "#/components/schemas/InterleavedContent"
+                    },
+                    "vector_db_ids": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "query_config": {
+                        "$ref": "#/components/schemas/RAGQueryConfig"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "content",
+                    "vector_db_ids"
+                ]
+            },
+            "RAGQueryResult": {
+                "type": "object",
+                "properties": {
+                    "content": {
+                        "$ref": "#/components/schemas/InterleavedContent"
+                    }
+                },
+                "additionalProperties": false
+            },
+            "QueryChunksRequest": {
+                "type": "object",
+                "properties": {
+                    "vector_db_id": {
                         "type": "string"
                     },
                     "query": {
@@ -7910,11 +8168,11 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "bank_id",
+                    "vector_db_id",
                     "query"
                 ]
             },
-            "QueryDocumentsResponse": {
+            "QueryChunksResponse": {
                 "type": "object",
                 "properties": {
                     "chunks": {
@@ -7925,18 +8183,36 @@
                                 "content": {
                                     "$ref": "#/components/schemas/InterleavedContent"
                                 },
-                                "token_count": {
-                                    "type": "integer"
-                                },
-                                "document_id": {
-                                    "type": "string"
+                                "metadata": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "oneOf": [
+                                            {
+                                                "type": "null"
+                                            },
+                                            {
+                                                "type": "boolean"
+                                            },
+                                            {
+                                                "type": "number"
+                                            },
+                                            {
+                                                "type": "string"
+                                            },
+                                            {
+                                                "type": "array"
+                                            },
+                                            {
+                                                "type": "object"
+                                            }
+                                        ]
+                                    }
                                 }
                             },
                             "additionalProperties": false,
                             "required": [
                                 "content",
-                                "token_count",
-                                "document_id"
+                                "metadata"
                             ]
                         }
                     },
@@ -8139,108 +8415,6 @@
                     "scoring_functions"
                 ]
             },
-            "GraphMemoryBankParams": {
-                "type": "object",
-                "properties": {
-                    "memory_bank_type": {
-                        "type": "string",
-                        "const": "graph",
-                        "default": "graph"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "memory_bank_type"
-                ]
-            },
-            "KeyValueMemoryBankParams": {
-                "type": "object",
-                "properties": {
-                    "memory_bank_type": {
-                        "type": "string",
-                        "const": "keyvalue",
-                        "default": "keyvalue"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "memory_bank_type"
-                ]
-            },
-            "KeywordMemoryBankParams": {
-                "type": "object",
-                "properties": {
-                    "memory_bank_type": {
-                        "type": "string",
-                        "const": "keyword",
-                        "default": "keyword"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "memory_bank_type"
-                ]
-            },
-            "VectorMemoryBankParams": {
-                "type": "object",
-                "properties": {
-                    "memory_bank_type": {
-                        "type": "string",
-                        "const": "vector",
-                        "default": "vector"
-                    },
-                    "embedding_model": {
-                        "type": "string"
-                    },
-                    "chunk_size_in_tokens": {
-                        "type": "integer"
-                    },
-                    "overlap_size_in_tokens": {
-                        "type": "integer"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "memory_bank_type",
-                    "embedding_model",
-                    "chunk_size_in_tokens"
-                ]
-            },
-            "RegisterMemoryBankRequest": {
-                "type": "object",
-                "properties": {
-                    "memory_bank_id": {
-                        "type": "string"
-                    },
-                    "params": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/VectorMemoryBankParams"
-                            },
-                            {
-                                "$ref": "#/components/schemas/KeyValueMemoryBankParams"
-                            },
-                            {
-                                "$ref": "#/components/schemas/KeywordMemoryBankParams"
-                            },
-                            {
-                                "$ref": "#/components/schemas/GraphMemoryBankParams"
-                            }
-                        ]
-                    },
-                    "provider_id": {
-                        "type": "string"
-                    },
-                    "provider_memory_bank_id": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "memory_bank_id",
-                    "params"
-                ]
-            },
             "RegisterModelRequest": {
                 "type": "object",
                 "properties": {
@@ -8306,17 +8480,7 @@
                         "type": "string"
                     },
                     "params": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/LLMAsJudgeScoringFnParams"
-                            },
-                            {
-                                "$ref": "#/components/schemas/RegexParserScoringFnParams"
-                            },
-                            {
-                                "$ref": "#/components/schemas/BasicScoringFnParams"
-                            }
-                        ]
+                        "$ref": "#/components/schemas/ScoringFnParams"
                     }
                 },
                 "additionalProperties": false,
@@ -8413,18 +8577,36 @@
                     "provider_id"
                 ]
             },
+            "RegisterVectorDbRequest": {
+                "type": "object",
+                "properties": {
+                    "vector_db_id": {
+                        "type": "string"
+                    },
+                    "embedding_model": {
+                        "type": "string"
+                    },
+                    "embedding_dimension": {
+                        "type": "integer"
+                    },
+                    "provider_id": {
+                        "type": "string"
+                    },
+                    "provider_vector_db_id": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "vector_db_id",
+                    "embedding_model"
+                ]
+            },
             "RunEvalRequest": {
                 "type": "object",
                 "properties": {
                     "task_config": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/BenchmarkEvalTaskConfig"
-                            },
-                            {
-                                "$ref": "#/components/schemas/AppEvalTaskConfig"
-                            }
-                        ]
+                        "$ref": "#/components/schemas/EvalTaskConfig"
                     }
                 },
                 "additionalProperties": false,
@@ -8563,17 +8745,7 @@
                         "additionalProperties": {
                             "oneOf": [
                                 {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/LLMAsJudgeScoringFnParams"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/RegexParserScoringFnParams"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/BasicScoringFnParams"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/ScoringFnParams"
                                 },
                                 {
                                     "type": "null"
@@ -8614,17 +8786,7 @@
                         "additionalProperties": {
                             "oneOf": [
                                 {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/LLMAsJudgeScoringFnParams"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/RegexParserScoringFnParams"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/BasicScoringFnParams"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/ScoringFnParams"
                                 },
                                 {
                                     "type": "null"
@@ -8660,6 +8822,23 @@
                 "required": [
                     "results"
                 ]
+            },
+            "AlgorithmConfig": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/LoraFinetuningConfig"
+                    },
+                    {
+                        "$ref": "#/components/schemas/QATFinetuningConfig"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "LoRA": "#/components/schemas/LoraFinetuningConfig",
+                        "QAT": "#/components/schemas/QATFinetuningConfig"
+                    }
+                }
             },
             "LoraFinetuningConfig": {
                 "type": "object",
@@ -8794,14 +8973,7 @@
                         "type": "string"
                     },
                     "algorithm_config": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/LoraFinetuningConfig"
-                            },
-                            {
-                                "$ref": "#/components/schemas/QATFinetuningConfig"
-                            }
-                        ]
+                        "$ref": "#/components/schemas/AlgorithmConfig"
                     }
                 },
                 "additionalProperties": false,
@@ -8958,7 +9130,11 @@
         },
         {
             "name": "AgentTurnResponseEvent",
-            "description": "Streamed agent execution response.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/AgentTurnResponseEvent\" />"
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgentTurnResponseEvent\" />"
+        },
+        {
+            "name": "AgentTurnResponseEventPayload",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgentTurnResponseEventPayload\" />"
         },
         {
             "name": "AgentTurnResponseStepCompletePayload",
@@ -8990,6 +9166,10 @@
         {
             "name": "AggregationFunctionType",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AggregationFunctionType\" />"
+        },
+        {
+            "name": "AlgorithmConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AlgorithmConfig\" />"
         },
         {
             "name": "AppEvalTaskConfig",
@@ -9129,6 +9309,10 @@
             "name": "Datasets"
         },
         {
+            "name": "DefaultRAGQueryGeneratorConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DefaultRAGQueryGeneratorConfig\" />"
+        },
+        {
             "name": "EfficiencyConfig",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EfficiencyConfig\" />"
         },
@@ -9144,8 +9328,16 @@
             "name": "Eval"
         },
         {
+            "name": "EvalCandidate",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvalCandidate\" />"
+        },
+        {
             "name": "EvalTask",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvalTask\" />"
+        },
+        {
+            "name": "EvalTaskConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvalTaskConfig\" />"
         },
         {
             "name": "EvalTasks"
@@ -9159,12 +9351,12 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateRowsRequest\" />"
         },
         {
-            "name": "GraphMemoryBank",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/GraphMemoryBank\" />"
+            "name": "Event",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Event\" />"
         },
         {
-            "name": "GraphMemoryBankParams",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/GraphMemoryBankParams\" />"
+            "name": "GrammarResponseFormat",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/GrammarResponseFormat\" />"
         },
         {
             "name": "GreedySamplingStrategy",
@@ -9190,8 +9382,12 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/InferenceStep\" />"
         },
         {
-            "name": "InsertDocumentsRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/InsertDocumentsRequest\" />"
+            "name": "InsertChunksRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/InsertChunksRequest\" />"
+        },
+        {
+            "name": "InsertRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/InsertRequest\" />"
         },
         {
             "name": "Inspect"
@@ -9217,28 +9413,20 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/JobStatus\" />"
         },
         {
+            "name": "JsonSchemaResponseFormat",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/JsonSchemaResponseFormat\" />"
+        },
+        {
             "name": "JsonType",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/JsonType\" />"
         },
         {
-            "name": "KeyValueMemoryBank",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/KeyValueMemoryBank\" />"
-        },
-        {
-            "name": "KeyValueMemoryBankParams",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/KeyValueMemoryBankParams\" />"
-        },
-        {
-            "name": "KeywordMemoryBank",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/KeywordMemoryBank\" />"
-        },
-        {
-            "name": "KeywordMemoryBankParams",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/KeywordMemoryBankParams\" />"
-        },
-        {
             "name": "LLMAsJudgeScoringFnParams",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/LLMAsJudgeScoringFnParams\" />"
+        },
+        {
+            "name": "LLMRAGQueryGeneratorConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/LLMRAGQueryGeneratorConfig\" />"
         },
         {
             "name": "ListDatasetsResponse",
@@ -9247,10 +9435,6 @@
         {
             "name": "ListEvalTasksResponse",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ListEvalTasksResponse\" />"
-        },
-        {
-            "name": "ListMemoryBanksResponse",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ListMemoryBanksResponse\" />"
         },
         {
             "name": "ListModelsResponse",
@@ -9285,6 +9469,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ListToolsResponse\" />"
         },
         {
+            "name": "ListVectorDBsResponse",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ListVectorDBsResponse\" />"
+        },
+        {
             "name": "LogEventRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/LogEventRequest\" />"
         },
@@ -9295,20 +9483,6 @@
         {
             "name": "LoraFinetuningConfig",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/LoraFinetuningConfig\" />"
-        },
-        {
-            "name": "Memory"
-        },
-        {
-            "name": "MemoryBank",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryBank\" />"
-        },
-        {
-            "name": "MemoryBankDocument",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryBankDocument\" />"
-        },
-        {
-            "name": "MemoryBanks"
         },
         {
             "name": "MemoryRetrievalStep",
@@ -9389,6 +9563,14 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QATFinetuningConfig\" />"
         },
         {
+            "name": "QueryChunksRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QueryChunksRequest\" />"
+        },
+        {
+            "name": "QueryChunksResponse",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QueryChunksResponse\" />"
+        },
+        {
             "name": "QueryCondition",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QueryCondition\" />"
         },
@@ -9397,12 +9579,8 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QueryConditionOp\" />"
         },
         {
-            "name": "QueryDocumentsRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QueryDocumentsRequest\" />"
-        },
-        {
-            "name": "QueryDocumentsResponse",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QueryDocumentsResponse\" />"
+            "name": "QueryRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QueryRequest\" />"
         },
         {
             "name": "QuerySpanTreeResponse",
@@ -9417,6 +9595,22 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QueryTracesResponse\" />"
         },
         {
+            "name": "RAGDocument",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RAGDocument\" />"
+        },
+        {
+            "name": "RAGQueryConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RAGQueryConfig\" />"
+        },
+        {
+            "name": "RAGQueryGeneratorConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RAGQueryGeneratorConfig\" />"
+        },
+        {
+            "name": "RAGQueryResult",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RAGQueryResult\" />"
+        },
+        {
             "name": "RegexParserScoringFnParams",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RegexParserScoringFnParams\" />"
         },
@@ -9427,10 +9621,6 @@
         {
             "name": "RegisterEvalTaskRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RegisterEvalTaskRequest\" />"
-        },
-        {
-            "name": "RegisterMemoryBankRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RegisterMemoryBankRequest\" />"
         },
         {
             "name": "RegisterModelRequest",
@@ -9447,6 +9637,10 @@
         {
             "name": "RegisterToolGroupRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RegisterToolGroupRequest\" />"
+        },
+        {
+            "name": "RegisterVectorDbRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RegisterVectorDbRequest\" />"
         },
         {
             "name": "ResponseFormat",
@@ -9507,6 +9701,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ScoringFn\" />"
         },
         {
+            "name": "ScoringFnParams",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ScoringFnParams\" />"
+        },
+        {
             "name": "ScoringFunctions"
         },
         {
@@ -9559,6 +9757,10 @@
         {
             "name": "StructuredLogEvent",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/StructuredLogEvent\" />"
+        },
+        {
+            "name": "StructuredLogPayload",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/StructuredLogPayload\" />"
         },
         {
             "name": "SupervisedFineTuneRequest",
@@ -9701,12 +9903,14 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UserMessage\" />"
         },
         {
-            "name": "VectorMemoryBank",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/VectorMemoryBank\" />"
+            "name": "VectorDB",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/VectorDB\" />"
         },
         {
-            "name": "VectorMemoryBankParams",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/VectorMemoryBankParams\" />"
+            "name": "VectorDBs"
+        },
+        {
+            "name": "VectorIO"
         },
         {
             "name": "VersionInfo",
@@ -9729,8 +9933,6 @@
                 "EvalTasks",
                 "Inference",
                 "Inspect",
-                "Memory",
-                "MemoryBanks",
                 "Models",
                 "PostTraining (Coming Soon)",
                 "Safety",
@@ -9740,7 +9942,9 @@
                 "SyntheticDataGeneration (Coming Soon)",
                 "Telemetry",
                 "ToolGroups",
-                "ToolRuntime"
+                "ToolRuntime",
+                "VectorDBs",
+                "VectorIO"
             ]
         },
         {
@@ -9754,6 +9958,7 @@
                 "AgentTool",
                 "AgentTurnInputType",
                 "AgentTurnResponseEvent",
+                "AgentTurnResponseEventPayload",
                 "AgentTurnResponseStepCompletePayload",
                 "AgentTurnResponseStepProgressPayload",
                 "AgentTurnResponseStepStartPayload",
@@ -9761,6 +9966,7 @@
                 "AgentTurnResponseTurnCompletePayload",
                 "AgentTurnResponseTurnStartPayload",
                 "AggregationFunctionType",
+                "AlgorithmConfig",
                 "AppEvalTaskConfig",
                 "AppendRowsRequest",
                 "ArrayType",
@@ -9793,34 +9999,35 @@
                 "DataConfig",
                 "Dataset",
                 "DatasetFormat",
+                "DefaultRAGQueryGeneratorConfig",
                 "EfficiencyConfig",
                 "EmbeddingsRequest",
                 "EmbeddingsResponse",
+                "EvalCandidate",
                 "EvalTask",
+                "EvalTaskConfig",
                 "EvaluateResponse",
                 "EvaluateRowsRequest",
-                "GraphMemoryBank",
-                "GraphMemoryBankParams",
+                "Event",
+                "GrammarResponseFormat",
                 "GreedySamplingStrategy",
                 "HealthInfo",
                 "ImageContentItem",
                 "ImageDelta",
                 "InferenceStep",
-                "InsertDocumentsRequest",
+                "InsertChunksRequest",
+                "InsertRequest",
                 "InterleavedContent",
                 "InterleavedContentItem",
                 "InvokeToolRequest",
                 "Job",
                 "JobStatus",
+                "JsonSchemaResponseFormat",
                 "JsonType",
-                "KeyValueMemoryBank",
-                "KeyValueMemoryBankParams",
-                "KeywordMemoryBank",
-                "KeywordMemoryBankParams",
                 "LLMAsJudgeScoringFnParams",
+                "LLMRAGQueryGeneratorConfig",
                 "ListDatasetsResponse",
                 "ListEvalTasksResponse",
-                "ListMemoryBanksResponse",
                 "ListModelsResponse",
                 "ListPostTrainingJobsResponse",
                 "ListProvidersResponse",
@@ -9829,11 +10036,10 @@
                 "ListShieldsResponse",
                 "ListToolGroupsResponse",
                 "ListToolsResponse",
+                "ListVectorDBsResponse",
                 "LogEventRequest",
                 "LogSeverity",
                 "LoraFinetuningConfig",
-                "MemoryBank",
-                "MemoryBankDocument",
                 "MemoryRetrievalStep",
                 "Message",
                 "MetricEvent",
@@ -9852,21 +10058,26 @@
                 "PreferenceOptimizeRequest",
                 "ProviderInfo",
                 "QATFinetuningConfig",
+                "QueryChunksRequest",
+                "QueryChunksResponse",
                 "QueryCondition",
                 "QueryConditionOp",
-                "QueryDocumentsRequest",
-                "QueryDocumentsResponse",
+                "QueryRequest",
                 "QuerySpanTreeResponse",
                 "QuerySpansResponse",
                 "QueryTracesResponse",
+                "RAGDocument",
+                "RAGQueryConfig",
+                "RAGQueryGeneratorConfig",
+                "RAGQueryResult",
                 "RegexParserScoringFnParams",
                 "RegisterDatasetRequest",
                 "RegisterEvalTaskRequest",
-                "RegisterMemoryBankRequest",
                 "RegisterModelRequest",
                 "RegisterScoringFunctionRequest",
                 "RegisterShieldRequest",
                 "RegisterToolGroupRequest",
+                "RegisterVectorDbRequest",
                 "ResponseFormat",
                 "RouteInfo",
                 "RunEvalRequest",
@@ -9880,6 +10091,7 @@
                 "ScoreRequest",
                 "ScoreResponse",
                 "ScoringFn",
+                "ScoringFnParams",
                 "ScoringResult",
                 "Session",
                 "Shield",
@@ -9892,6 +10104,7 @@
                 "StopReason",
                 "StringType",
                 "StructuredLogEvent",
+                "StructuredLogPayload",
                 "SupervisedFineTuneRequest",
                 "SyntheticDataGenerateRequest",
                 "SyntheticDataGenerationResponse",
@@ -9924,8 +10137,7 @@
                 "UnionType",
                 "UnstructuredLogEvent",
                 "UserMessage",
-                "VectorMemoryBank",
-                "VectorMemoryBankParams",
+                "VectorDB",
                 "VersionInfo",
                 "ViolationLevel"
             ]

@@ -12,22 +12,22 @@ TEST_PYPI_VERSION=${TEST_PYPI_VERSION:-}
 PYPI_VERSION=${PYPI_VERSION:-}
 BUILD_PLATFORM=${BUILD_PLATFORM:-}
 
-if [ "$#" -lt 4 ]; then
-  echo "Usage: $0 <build_name> <docker_base> <pip_dependencies> [<special_pip_deps>]" >&2
-  echo "Example: $0 my-fastapi-app python:3.9-slim 'fastapi uvicorn' " >&2
+if [ "$#" -lt 6 ]; then
+  # This only works for templates
+  echo "Usage: $0 <template_or_config> <image_name> <container_base> <build_file_path> <host_build_dir> <pip_dependencies> [<special_pip_deps>]" >&2
   exit 1
 fi
 
-special_pip_deps="$6"
-
 set -euo pipefail
 
-build_name="$1"
-image_name="distribution-$build_name"
-docker_base=$2
-build_file_path=$3
-host_build_dir=$4
-pip_dependencies=$5
+template_or_config="$1"
+image_name="$2"
+container_base="$3"
+build_file_path="$4"
+host_build_dir="$5"
+pip_dependencies="$6"
+special_pip_deps="$7"
+
 
 # Define color codes
 RED='\033[0;31m'
@@ -36,14 +36,14 @@ NC='\033[0m' # No Color
 
 SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 REPO_DIR=$(dirname $(dirname "$SCRIPT_DIR"))
-DOCKER_BINARY=${DOCKER_BINARY:-docker}
-DOCKER_OPTS=${DOCKER_OPTS:-}
+CONTAINER_BINARY=${CONTAINER_BINARY:-docker}
+CONTAINER_OPTS=${CONTAINER_OPTS:-}
 
 TEMP_DIR=$(mktemp -d)
 
-add_to_docker() {
+add_to_container() {
   local input
-  output_file="$TEMP_DIR/Dockerfile"
+  output_file="$TEMP_DIR/Containerfile"
   if [ -t 0 ]; then
     printf '%s\n' "$1" >>"$output_file"
   else
@@ -53,9 +53,9 @@ add_to_docker() {
 }
 
 # Update and install UBI9 components if UBI9 base image is used
-if [[ $docker_base == *"registry.access.redhat.com/ubi9"* ]]; then
-  add_to_docker << EOF
-FROM $docker_base
+if [[ $container_base == *"registry.access.redhat.com/ubi9"* ]]; then
+  add_to_container << EOF
+FROM $container_base
 WORKDIR /app
 
 RUN microdnf -y update && microdnf install -y iputils net-tools wget \
@@ -64,8 +64,8 @@ RUN microdnf -y update && microdnf install -y iputils net-tools wget \
 
 EOF
 else
-  add_to_docker << EOF
-FROM $docker_base
+  add_to_container << EOF
+FROM $container_base
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y \
@@ -82,7 +82,7 @@ fi
 # Add pip dependencies first since llama-stack is what will change most often
 # so we can reuse layers.
 if [ -n "$pip_dependencies" ]; then
-  add_to_docker << EOF
+  add_to_container << EOF
 RUN pip install --no-cache $pip_dependencies
 EOF
 fi
@@ -90,7 +90,7 @@ fi
 if [ -n "$special_pip_deps" ]; then
   IFS='#' read -ra parts <<<"$special_pip_deps"
   for part in "${parts[@]}"; do
-    add_to_docker <<EOF
+    add_to_container <<EOF
 RUN pip install --no-cache $part
 EOF
   done
@@ -108,16 +108,16 @@ if [ -n "$LLAMA_STACK_DIR" ]; then
   # Install in editable format. We will mount the source code into the container
   # so that changes will be reflected in the container without having to do a
   # rebuild. This is just for development convenience.
-  add_to_docker << EOF
+  add_to_container << EOF
 RUN pip install --no-cache -e $stack_mount
 EOF
 else
   if [ -n "$TEST_PYPI_VERSION" ]; then
     # these packages are damaged in test-pypi, so install them first
-    add_to_docker << EOF
+    add_to_container << EOF
 RUN pip install fastapi libcst
 EOF
-    add_to_docker << EOF
+    add_to_container << EOF
 RUN pip install --no-cache --extra-index-url https://test.pypi.org/simple/ \
   llama-models==$TEST_PYPI_VERSION llama-stack-client==$TEST_PYPI_VERSION llama-stack==$TEST_PYPI_VERSION
 
@@ -128,7 +128,7 @@ EOF
     else
       SPEC_VERSION="llama-stack"
     fi
-    add_to_docker << EOF
+    add_to_container << EOF
 RUN pip install --no-cache $SPEC_VERSION
 EOF
   fi
@@ -140,24 +140,26 @@ if [ -n "$LLAMA_MODELS_DIR" ]; then
     exit 1
   fi
 
-  add_to_docker << EOF
+  add_to_container << EOF
 RUN pip uninstall -y llama-models
 RUN pip install --no-cache $models_mount
 
 EOF
 fi
 
-add_to_docker << EOF
-
-# This would be good in production but for debugging flexibility lets not add it right now
-# We need a more solid production ready entrypoint.sh anyway
-#
-ENTRYPOINT ["python", "-m", "llama_stack.distribution.server.server", "--template", "$build_name"]
-
+# if template_or_config ends with .yaml, it is not a template and we should not use the --template flag
+if [[ "$template_or_config" != *.yaml ]]; then
+  add_to_container << EOF
+ENTRYPOINT ["python", "-m", "llama_stack.distribution.server.server", "--template", "$template_or_config"]
 EOF
+else
+  add_to_container << EOF
+ENTRYPOINT ["python", "-m", "llama_stack.distribution.server.server"]
+EOF
+fi
 
-printf "Dockerfile created successfully in $TEMP_DIR/Dockerfile\n\n"
-cat $TEMP_DIR/Dockerfile
+printf "Containerfile created successfully in $TEMP_DIR/Containerfile\n\n"
+cat $TEMP_DIR/Containerfile
 printf "\n"
 
 mounts=""
@@ -170,11 +172,13 @@ fi
 
 if command -v selinuxenabled &>/dev/null && selinuxenabled; then
   # Disable SELinux labels -- we don't want to relabel the llama-stack source dir
-  DOCKER_OPTS="$DOCKER_OPTS --security-opt label=disable"
+  CONTAINER_OPTS="$CONTAINER_OPTS --security-opt label=disable"
 fi
 
 # Set version tag based on PyPI version
-if [ -n "$TEST_PYPI_VERSION" ]; then
+if [ -n "$PYPI_VERSION" ]; then
+  version_tag="$PYPI_VERSION"
+elif [ -n "$TEST_PYPI_VERSION" ]; then
   version_tag="test-$TEST_PYPI_VERSION"
 elif [[ -n "$LLAMA_STACK_DIR" || -n "$LLAMA_MODELS_DIR" ]]; then
   version_tag="dev"
@@ -200,7 +204,7 @@ else
 fi
 
 set -x
-$DOCKER_BINARY build $DOCKER_OPTS $PLATFORM -t $image_tag -f "$TEMP_DIR/Dockerfile" "$REPO_DIR" $mounts
+$CONTAINER_BINARY build $CONTAINER_OPTS $PLATFORM -t $image_tag -f "$TEMP_DIR/Containerfile" "$REPO_DIR" $mounts
 
 # clean up tmp/configs
 set +x

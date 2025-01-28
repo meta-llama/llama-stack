@@ -8,7 +8,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Literal, Optional, Protocol, Union
 
-from llama_models.schema_utils import json_schema_type, webmethod
+from llama_models.schema_utils import json_schema_type, register_schema, webmethod
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
@@ -88,9 +88,12 @@ class QATFinetuningConfig(BaseModel):
     group_size: int
 
 
-AlgorithmConfig = Annotated[
-    Union[LoraFinetuningConfig, QATFinetuningConfig], Field(discriminator="type")
-]
+AlgorithmConfig = register_schema(
+    Annotated[
+        Union[LoraFinetuningConfig, QATFinetuningConfig], Field(discriminator="type")
+    ],
+    name="AlgorithmConfig",
+)
 
 
 @json_schema_type

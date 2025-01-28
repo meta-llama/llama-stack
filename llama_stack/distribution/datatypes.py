@@ -13,14 +13,14 @@ from llama_stack.apis.datasets import Dataset, DatasetInput
 from llama_stack.apis.eval import Eval
 from llama_stack.apis.eval_tasks import EvalTask, EvalTaskInput
 from llama_stack.apis.inference import Inference
-from llama_stack.apis.memory import Memory
-from llama_stack.apis.memory_banks import MemoryBank, MemoryBankInput
 from llama_stack.apis.models import Model, ModelInput
 from llama_stack.apis.safety import Safety
 from llama_stack.apis.scoring import Scoring
 from llama_stack.apis.scoring_functions import ScoringFn, ScoringFnInput
 from llama_stack.apis.shields import Shield, ShieldInput
 from llama_stack.apis.tools import Tool, ToolGroup, ToolGroupInput, ToolRuntime
+from llama_stack.apis.vector_dbs import VectorDB, VectorDBInput
+from llama_stack.apis.vector_io import VectorIO
 from llama_stack.providers.datatypes import Api, ProviderSpec
 from llama_stack.providers.utils.kvstore.config import KVStoreConfig
 
@@ -34,7 +34,7 @@ RoutingKey = Union[str, List[str]]
 RoutableObject = Union[
     Model,
     Shield,
-    MemoryBank,
+    VectorDB,
     Dataset,
     ScoringFn,
     EvalTask,
@@ -47,7 +47,7 @@ RoutableObjectWithProvider = Annotated[
     Union[
         Model,
         Shield,
-        MemoryBank,
+        VectorDB,
         Dataset,
         ScoringFn,
         EvalTask,
@@ -60,7 +60,7 @@ RoutableObjectWithProvider = Annotated[
 RoutedProtocol = Union[
     Inference,
     Safety,
-    Memory,
+    VectorIO,
     DatasetIO,
     Scoring,
     Eval,
@@ -73,7 +73,7 @@ class AutoRoutedProviderSpec(ProviderSpec):
     provider_type: str = "router"
     config_class: str = ""
 
-    docker_image: Optional[str] = None
+    container_image: Optional[str] = None
     routing_table_api: Api
     module: str
     provider_data_validator: Optional[str] = Field(
@@ -89,7 +89,7 @@ class AutoRoutedProviderSpec(ProviderSpec):
 class RoutingTableProviderSpec(ProviderSpec):
     provider_type: str = "routing_table"
     config_class: str = ""
-    docker_image: Optional[str] = None
+    container_image: Optional[str] = None
 
     router_api: Api
     module: str
@@ -101,7 +101,7 @@ class DistributionSpec(BaseModel):
         default="",
         description="Description of the distribution",
     )
-    docker_image: Optional[str] = None
+    container_image: Optional[str] = None
     providers: Dict[str, Union[str, List[str]]] = Field(
         default_factory=dict,
         description="""
@@ -127,9 +127,9 @@ Reference to the distribution this package refers to. For unregistered (adhoc) p
 this could be just a hash
 """,
     )
-    docker_image: Optional[str] = Field(
+    container_image: Optional[str] = Field(
         default=None,
-        description="Reference to the docker image if this package refers to a container",
+        description="Reference to the container image if this package refers to a container",
     )
     apis: List[str] = Field(
         default_factory=list,
@@ -153,7 +153,7 @@ a default SQLite store will be used.""",
     # registry of "resources" in the distribution
     models: List[ModelInput] = Field(default_factory=list)
     shields: List[ShieldInput] = Field(default_factory=list)
-    memory_banks: List[MemoryBankInput] = Field(default_factory=list)
+    vector_dbs: List[VectorDBInput] = Field(default_factory=list)
     datasets: List[DatasetInput] = Field(default_factory=list)
     scoring_fns: List[ScoringFnInput] = Field(default_factory=list)
     eval_tasks: List[EvalTaskInput] = Field(default_factory=list)
@@ -168,5 +168,5 @@ class BuildConfig(BaseModel):
     )
     image_type: str = Field(
         default="conda",
-        description="Type of package to build (conda | docker | venv)",
+        description="Type of package to build (conda | container | venv)",
     )

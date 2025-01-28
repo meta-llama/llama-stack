@@ -33,16 +33,6 @@ def available_shields(llama_stack_client):
 
 
 @pytest.fixture(scope="session")
-def llama_guard_text_shield_id(available_shields):
-    if "meta-llama/Llama-Guard-3-1B" in available_shields:
-        return "meta-llama/Llama-Guard-3-1B"
-    elif "meta-llama/Llama-Guard-3-8B" in available_shields:
-        return "meta-llama/Llama-Guard-3-8B"
-    else:
-        pytest.skip("Llama-Guard shield is not available. Skipping.")
-
-
-@pytest.fixture(scope="session")
 def code_scanner_shield_id(available_shields):
     if "CodeScanner" in available_shields:
         return "CodeScanner"
@@ -141,7 +131,7 @@ def test_safety_with_image(llama_stack_client, model_providers):
                 },
                 {
                     "type": "image",
-                    "url": {"uri": data_url_from_image(file_path)},
+                    "image": {"url": {"uri": data_url_from_image(file_path)}},
                 },
             ],
         }

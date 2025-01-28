@@ -109,18 +109,6 @@ class TestInference:
     async def test_completion(self, inference_model, inference_stack):
         inference_impl, _ = inference_stack
 
-        provider = inference_impl.routing_table.get_provider_impl(inference_model)
-        if provider.__provider_spec__.provider_type not in (
-            "inline::meta-reference",
-            "remote::ollama",
-            "remote::tgi",
-            "remote::together",
-            "remote::fireworks",
-            "remote::nvidia",
-            "remote::cerebras",
-        ):
-            pytest.skip("Other inference providers don't support completion() yet")
-
         response = await inference_impl.completion(
             content="Micheael Jordan is born in ",
             stream=False,
@@ -153,12 +141,6 @@ class TestInference:
     @pytest.mark.asyncio(loop_scope="session")
     async def test_completion_logprobs(self, inference_model, inference_stack):
         inference_impl, _ = inference_stack
-
-        provider = inference_impl.routing_table.get_provider_impl(inference_model)
-        if provider.__provider_spec__.provider_type not in (
-            # "remote::nvidia", -- provider doesn't provide all logprobs
-        ):
-            pytest.skip("Other inference providers don't support completion() yet")
 
         response = await inference_impl.completion(
             content="Micheael Jordan is born in ",
@@ -208,24 +190,8 @@ class TestInference:
                 assert not chunk.logprobs, "Logprobs should be empty"
 
     @pytest.mark.asyncio(loop_scope="session")
-    @pytest.mark.skip("This test is not quite robust")
     async def test_completion_structured_output(self, inference_model, inference_stack):
         inference_impl, _ = inference_stack
-
-        provider = inference_impl.routing_table.get_provider_impl(inference_model)
-        if provider.__provider_spec__.provider_type not in (
-            "inline::meta-reference",
-            "remote::ollama",
-            "remote::tgi",
-            "remote::together",
-            "remote::fireworks",
-            "remote::nvidia",
-            "remote::vllm",
-            "remote::cerebras",
-        ):
-            pytest.skip(
-                "Other inference providers don't support structured output in completions yet"
-            )
 
         class Output(BaseModel):
             name: str
@@ -274,18 +240,6 @@ class TestInference:
         self, inference_model, inference_stack, common_params
     ):
         inference_impl, _ = inference_stack
-
-        provider = inference_impl.routing_table.get_provider_impl(inference_model)
-        if provider.__provider_spec__.provider_type not in (
-            "inline::meta-reference",
-            "remote::ollama",
-            "remote::fireworks",
-            "remote::tgi",
-            "remote::together",
-            "remote::vllm",
-            "remote::nvidia",
-        ):
-            pytest.skip("Other inference providers don't support structured output yet")
 
         class AnswerFormat(BaseModel):
             first_name: str
@@ -377,7 +331,6 @@ class TestInference:
         sample_tool_definition,
     ):
         inference_impl, _ = inference_stack
-
         messages = sample_messages + [
             UserMessage(
                 content="What's the weather like in San Francisco?",
@@ -417,14 +370,6 @@ class TestInference:
         sample_tool_definition,
     ):
         inference_impl, _ = inference_stack
-        provider = inference_impl.routing_table.get_provider_impl(inference_model)
-        if (
-            provider.__provider_spec__.provider_type == "remote::groq"
-            and "Llama-3.2" in inference_model
-        ):
-            # TODO(aidand): Remove this skip once Groq's tool calling for Llama3.2 works better
-            pytest.skip("Groq's tool calling for Llama3.2 doesn't work very well")
-
         messages = sample_messages + [
             UserMessage(
                 content="What's the weather like in San Francisco?",
@@ -464,16 +409,16 @@ class TestInference:
             )
             first = grouped[ChatCompletionResponseEventType.progress][0]
             if not isinstance(
-                first.event.delta.content, ToolCall
+                first.event.delta.tool_call, ToolCall
             ):  # first chunk may contain entire call
                 assert first.event.delta.parse_status == ToolCallParseStatus.started
 
         last = grouped[ChatCompletionResponseEventType.progress][-1]
         # assert last.event.stop_reason == expected_stop_reason
         assert last.event.delta.parse_status == ToolCallParseStatus.succeeded
-        assert isinstance(last.event.delta.content, ToolCall)
+        assert isinstance(last.event.delta.tool_call, ToolCall)
 
-        call = last.event.delta.content
+        call = last.event.delta.tool_call
         assert call.tool_name == "get_weather"
         assert "location" in call.arguments
         assert "San Francisco" in call.arguments["location"]

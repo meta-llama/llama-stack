@@ -115,6 +115,8 @@ def run_stack_build_command(
                     f"Using conda environment {image_name}",
                     color="green",
                 )
+        else:
+            image_name = f"llamastack-{name}"
 
         cprint(
             textwrap.dedent(
@@ -171,19 +173,30 @@ def run_stack_build_command(
                 )
                 return
 
-    _run_stack_build_command_from_build_config(build_config, image_name=image_name)
+        if build_config.image_type == ImageType.container.value and not args.image_name:
+            cprint(
+                "Please specify --image-name when building a container from a config file",
+                color="red",
+            )
+            return
+
+    _run_stack_build_command_from_build_config(
+        build_config, image_name=image_name, config_path=args.config
+    )
 
 
 def _generate_run_config(
-    build_config: BuildConfig, build_dir: Path, image_name: str
+    build_config: BuildConfig,
+    build_dir: Path,
+    image_name: str,
 ) -> None:
     """
     Generate a run.yaml template file for user to edit from a build.yaml file
     """
     apis = list(build_config.distribution_spec.providers.keys())
     run_config = StackRunConfig(
-        docker_image=(
-            image_name if build_config.image_type == ImageType.docker.value else None
+        container_image=(
+            image_name if build_config.image_type == ImageType.container.value else None
         ),
         image_name=image_name,
         apis=apis,
@@ -227,8 +240,9 @@ def _generate_run_config(
         to_write = json.loads(run_config.model_dump_json())
         f.write(yaml.dump(to_write, sort_keys=False))
 
+    # this path is only invoked when no template is provided
     cprint(
-        f"You can now edit {run_config_file} and run `llama stack run {image_name}`",
+        f"You can now run your stack with `llama stack run {run_config_file}`",
         color="green",
     )
 
@@ -237,8 +251,9 @@ def _run_stack_build_command_from_build_config(
     build_config: BuildConfig,
     image_name: Optional[str] = None,
     template_name: Optional[str] = None,
+    config_path: Optional[str] = None,
 ) -> None:
-    if build_config.image_type == ImageType.docker.value:
+    if build_config.image_type == ImageType.container.value:
         if template_name:
             image_name = f"distribution-{template_name}"
         else:
@@ -263,7 +278,10 @@ def _run_stack_build_command_from_build_config(
         f.write(yaml.dump(to_write, sort_keys=False))
 
     return_code = build_image(
-        build_config, build_file_path, image_name, template_name=template_name
+        build_config,
+        build_file_path,
+        image_name,
+        template_or_config=template_name or config_path,
     )
     if return_code != 0:
         return
@@ -277,7 +295,7 @@ def _run_stack_build_command_from_build_config(
         with importlib.resources.as_file(template_path) as path:
             run_config_file = build_dir / f"{template_name}-run.yaml"
             shutil.copy(path, run_config_file)
-        # Find all ${env.VARIABLE} patterns
+
         cprint("Build Successful!", color="green")
     else:
         _generate_run_config(build_config, build_dir, image_name)

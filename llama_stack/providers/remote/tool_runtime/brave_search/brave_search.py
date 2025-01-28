@@ -68,7 +68,7 @@ class BraveSearchToolRuntimeImpl(
         ]
 
     async def invoke_tool(
-        self, tool_name: str, args: Dict[str, Any]
+        self, tool_name: str, kwargs: Dict[str, Any]
     ) -> ToolInvocationResult:
         api_key = self._get_api_key()
         url = "https://api.search.brave.com/res/v1/web/search"
@@ -77,7 +77,7 @@ class BraveSearchToolRuntimeImpl(
             "Accept-Encoding": "gzip",
             "Accept": "application/json",
         }
-        payload = {"q": args["query"]}
+        payload = {"q": kwargs["query"]}
         response = requests.get(url=url, params=payload, headers=headers)
         response.raise_for_status()
         results = self._clean_brave_response(response.json())

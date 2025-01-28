@@ -6,10 +6,10 @@
 
 from page.distribution.datasets import datasets
 from page.distribution.eval_tasks import eval_tasks
-from page.distribution.memory_banks import memory_banks
 from page.distribution.models import models
 from page.distribution.scoring_functions import scoring_functions
 from page.distribution.shields import shields
+from page.distribution.vector_dbs import vector_dbs
 
 from streamlit_option_menu import option_menu
 
@@ -17,7 +17,7 @@ from streamlit_option_menu import option_menu
 def resources_page():
     options = [
         "Models",
-        "Memory Banks",
+        "Vector Databases",
         "Shields",
         "Scoring Functions",
         "Datasets",
@@ -37,8 +37,8 @@ def resources_page():
     )
     if selected_resource == "Eval Tasks":
         eval_tasks()
-    elif selected_resource == "Memory Banks":
-        memory_banks()
+    elif selected_resource == "Vector Databases":
+        vector_dbs()
     elif selected_resource == "Datasets":
         datasets()
     elif selected_resource == "Models":

@@ -14,11 +14,14 @@ The `llamastack/distribution-remote-vllm` distribution consists of the following
 | API | Provider(s) |
 |-----|-------------|
 | agents | `inline::meta-reference` |
+| datasetio | `remote::huggingface`, `inline::localfs` |
+| eval | `inline::meta-reference` |
 | inference | `remote::vllm` |
-| memory | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
 | safety | `inline::llama-guard` |
+| scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |
 | telemetry | `inline::meta-reference` |
-| tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::code-interpreter`, `inline::memory-runtime` |
+| tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::code-interpreter`, `inline::rag-runtime`, `remote::model-context-protocol` |
+| vector_io | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
 
 
 You can use this distribution if you have GPUs and want to run an independent vLLM server container for running inference.
@@ -107,10 +110,15 @@ If you are using Llama Stack Safety / Shield APIs, use:
 export SAFETY_PORT=8081
 export SAFETY_MODEL=meta-llama/Llama-Guard-3-1B
 
+# You need a local checkout of llama-stack to run this, get it using
+# git clone https://github.com/meta-llama/llama-stack.git
+cd /path/to/llama-stack
+
 docker run \
   -it \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
-  -v ./run-with-safety.yaml:/root/my-run.yaml \
+  -v ~/.llama:/root/.llama \
+  -v ./llama_stack/templates/remote-vllm/run-with-safety.yaml:/root/my-run.yaml \
   llamastack/distribution-remote-vllm \
   --yaml-config /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
