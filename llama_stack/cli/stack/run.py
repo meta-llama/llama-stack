@@ -199,4 +199,8 @@ class StackRun(Subcommand):
                 return
             run_args.extend(["--env", f"{key}={value}"])
 
-        run_with_win(run_args) if sys.platform.startswith("win") else run_with_pty(run_args)
+        (
+            run_with_win(run_args)
+            if sys.platform.startswith("win")
+            else run_with_pty(run_args)
+        )
