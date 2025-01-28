@@ -190,7 +190,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "Chat completion response. **OR** SSE-stream of these events.",
+                        "description": "If stream=False, returns a ChatCompletionResponse with the full completion. If stream=True, returns an SSE event stream of ChatCompletionResponseStreamChunk",
                         "content": {
                             "text/event-stream": {
                                 "schema": {
@@ -210,6 +210,7 @@
                 "tags": [
                     "Inference"
                 ],
+                "summary": "Generate a chat completion for the given messages using the specified model.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -227,7 +228,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "Completion response. **OR** streamed completion response.",
+                        "description": "If stream=False, returns a CompletionResponse with the full completion. If stream=True, returns an SSE event stream of CompletionResponseStreamChunk",
                         "content": {
                             "text/event-stream": {
                                 "schema": {
@@ -247,6 +248,7 @@
                 "tags": [
                     "Inference"
                 ],
+                "summary": "Generate a completion for the given content using the specified model.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -485,7 +487,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "An array of embeddings, one for each content. Each embedding is a list of floats.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -498,6 +500,7 @@
                 "tags": [
                     "Inference"
                 ],
+                "summary": "Generate embeddings for content pieces using the specified model.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -2372,6 +2375,46 @@
                     "tool_calls"
                 ]
             },
+            "GrammarResponseFormat": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "grammar",
+                        "default": "grammar"
+                    },
+                    "bnf": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "bnf"
+                ]
+            },
             "GreedySamplingStrategy": {
                 "type": "object",
                 "properties": {
@@ -2447,6 +2490,46 @@
                     }
                 }
             },
+            "JsonSchemaResponseFormat": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "json_schema",
+                        "default": "json_schema"
+                    },
+                    "json_schema": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "json_schema"
+                ]
+            },
             "Message": {
                 "oneOf": [
                     {
@@ -2469,6 +2552,23 @@
                         "system": "#/components/schemas/SystemMessage",
                         "tool": "#/components/schemas/ToolResponseMessage",
                         "assistant": "#/components/schemas/CompletionMessage"
+                    }
+                }
+            },
+            "ResponseFormat": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/JsonSchemaResponseFormat"
+                    },
+                    {
+                        "$ref": "#/components/schemas/GrammarResponseFormat"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "json_schema": "#/components/schemas/JsonSchemaResponseFormat",
+                        "grammar": "#/components/schemas/GrammarResponseFormat"
                     }
                 }
             },
@@ -2865,6 +2965,9 @@
                     "tool_prompt_format": {
                         "$ref": "#/components/schemas/ToolPromptFormat"
                     },
+                    "response_format": {
+                        "$ref": "#/components/schemas/ResponseFormat"
+                    },
                     "logprobs": {
                         "type": "object",
                         "properties": {
@@ -2885,16 +2988,49 @@
             "BatchChatCompletionResponse": {
                 "type": "object",
                 "properties": {
-                    "completion_message_batch": {
+                    "batch": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/CompletionMessage"
+                            "$ref": "#/components/schemas/ChatCompletionResponse"
                         }
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "completion_message_batch"
+                    "batch"
+                ]
+            },
+            "ChatCompletionResponse": {
+                "type": "object",
+                "properties": {
+                    "completion_message": {
+                        "$ref": "#/components/schemas/CompletionMessage"
+                    },
+                    "logprobs": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TokenLogProbs"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "completion_message"
+                ]
+            },
+            "TokenLogProbs": {
+                "type": "object",
+                "properties": {
+                    "logprobs_by_token": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "number"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "logprobs_by_token"
                 ]
             },
             "BatchCompletionRequest": {
@@ -2911,6 +3047,9 @@
                     },
                     "sampling_params": {
                         "$ref": "#/components/schemas/SamplingParams"
+                    },
+                    "response_format": {
+                        "$ref": "#/components/schemas/ResponseFormat"
                     },
                     "logprobs": {
                         "type": "object",
@@ -2932,17 +3071,40 @@
             "BatchCompletionResponse": {
                 "type": "object",
                 "properties": {
-                    "completion_message_batch": {
+                    "batch": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/CompletionMessage"
+                            "$ref": "#/components/schemas/CompletionResponse"
                         }
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "completion_message_batch"
+                    "batch"
                 ]
+            },
+            "CompletionResponse": {
+                "type": "object",
+                "properties": {
+                    "content": {
+                        "type": "string"
+                    },
+                    "stop_reason": {
+                        "$ref": "#/components/schemas/StopReason"
+                    },
+                    "logprobs": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TokenLogProbs"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "content",
+                    "stop_reason"
+                ],
+                "title": "Completion response."
             },
             "CancelTrainingJobRequest": {
                 "type": "object",
@@ -2956,135 +3118,46 @@
                     "job_uuid"
                 ]
             },
-            "GrammarResponseFormat": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "grammar",
-                        "default": "grammar"
-                    },
-                    "bnf": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type",
-                    "bnf"
-                ]
-            },
-            "JsonSchemaResponseFormat": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "json_schema",
-                        "default": "json_schema"
-                    },
-                    "json_schema": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type",
-                    "json_schema"
-                ]
-            },
-            "ResponseFormat": {
-                "oneOf": [
-                    {
-                        "$ref": "#/components/schemas/JsonSchemaResponseFormat"
-                    },
-                    {
-                        "$ref": "#/components/schemas/GrammarResponseFormat"
-                    }
-                ],
-                "discriminator": {
-                    "propertyName": "type",
-                    "mapping": {
-                        "json_schema": "#/components/schemas/JsonSchemaResponseFormat",
-                        "grammar": "#/components/schemas/GrammarResponseFormat"
-                    }
-                }
-            },
             "ChatCompletionRequest": {
                 "type": "object",
                 "properties": {
                     "model_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The identifier of the model to use"
                     },
                     "messages": {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/Message"
-                        }
+                        },
+                        "description": "List of messages in the conversation"
                     },
                     "sampling_params": {
-                        "$ref": "#/components/schemas/SamplingParams"
+                        "$ref": "#/components/schemas/SamplingParams",
+                        "description": "Parameters to control the sampling strategy"
                     },
                     "tools": {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/ToolDefinition"
-                        }
+                        },
+                        "description": "(Optional) List of tool definitions available to the model"
                     },
                     "tool_choice": {
-                        "$ref": "#/components/schemas/ToolChoice"
+                        "$ref": "#/components/schemas/ToolChoice",
+                        "description": "(Optional) Whether tool use is required or automatic. Defaults to ToolChoice.auto."
                     },
                     "tool_prompt_format": {
-                        "$ref": "#/components/schemas/ToolPromptFormat"
+                        "$ref": "#/components/schemas/ToolPromptFormat",
+                        "description": "(Optional) Specifies how tool definitions are formatted when presenting to the model"
                     },
                     "response_format": {
-                        "$ref": "#/components/schemas/ResponseFormat"
+                        "$ref": "#/components/schemas/ResponseFormat",
+                        "description": "(Optional) Grammar specification for guided (structured) decoding"
                     },
                     "stream": {
-                        "type": "boolean"
+                        "type": "boolean",
+                        "description": "(Optional) If True, generate an SSE event stream of the response. Defaults to False."
                     },
                     "logprobs": {
                         "type": "object",
@@ -3094,7 +3167,8 @@
                                 "default": 0
                             }
                         },
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "(Optional) If specified, log probabilities for each token position will be returned."
                     }
                 },
                 "additionalProperties": false,
@@ -3102,25 +3176,6 @@
                     "model_id",
                     "messages"
                 ]
-            },
-            "ChatCompletionResponse": {
-                "type": "object",
-                "properties": {
-                    "completion_message": {
-                        "$ref": "#/components/schemas/CompletionMessage"
-                    },
-                    "logprobs": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/TokenLogProbs"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "completion_message"
-                ],
-                "title": "Chat completion response."
             },
             "ChatCompletionResponseEvent": {
                 "type": "object",
@@ -3166,8 +3221,7 @@
                 "additionalProperties": false,
                 "required": [
                     "event"
-                ],
-                "title": "SSE-stream of these events."
+                ]
             },
             "ContentDelta": {
                 "oneOf": [
@@ -3227,21 +3281,6 @@
                     "text"
                 ]
             },
-            "TokenLogProbs": {
-                "type": "object",
-                "properties": {
-                    "logprobs_by_token": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "type": "number"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "logprobs_by_token"
-                ]
-            },
             "ToolCallDelta": {
                 "type": "object",
                 "properties": {
@@ -3284,19 +3323,24 @@
                 "type": "object",
                 "properties": {
                     "model_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The identifier of the model to use"
                     },
                     "content": {
-                        "$ref": "#/components/schemas/InterleavedContent"
+                        "$ref": "#/components/schemas/InterleavedContent",
+                        "description": "The content to generate a completion for"
                     },
                     "sampling_params": {
-                        "$ref": "#/components/schemas/SamplingParams"
+                        "$ref": "#/components/schemas/SamplingParams",
+                        "description": "(Optional) Parameters to control the sampling strategy"
                     },
                     "response_format": {
-                        "$ref": "#/components/schemas/ResponseFormat"
+                        "$ref": "#/components/schemas/ResponseFormat",
+                        "description": "(Optional) Grammar specification for guided (structured) decoding"
                     },
                     "stream": {
-                        "type": "boolean"
+                        "type": "boolean",
+                        "description": "(Optional) If True, generate an SSE event stream of the response. Defaults to False."
                     },
                     "logprobs": {
                         "type": "object",
@@ -3306,7 +3350,8 @@
                                 "default": 0
                             }
                         },
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "(Optional) If specified, log probabilities for each token position will be returned."
                     }
                 },
                 "additionalProperties": false,
@@ -3314,29 +3359,6 @@
                     "model_id",
                     "content"
                 ]
-            },
-            "CompletionResponse": {
-                "type": "object",
-                "properties": {
-                    "content": {
-                        "type": "string"
-                    },
-                    "stop_reason": {
-                        "$ref": "#/components/schemas/StopReason"
-                    },
-                    "logprobs": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/TokenLogProbs"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "content",
-                    "stop_reason"
-                ],
-                "title": "Completion response."
             },
             "CompletionResponseStreamChunk": {
                 "type": "object",
@@ -4241,13 +4263,15 @@
                 "type": "object",
                 "properties": {
                     "model_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The identifier of the model to use"
                     },
                     "contents": {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/InterleavedContent"
-                        }
+                        },
+                        "description": "List of contents to generate embeddings for. Note that content can be multimodal."
                     }
                 },
                 "additionalProperties": false,
@@ -7863,7 +7887,7 @@
         },
         {
             "name": "ChatCompletionResponse",
-            "description": "Chat completion response."
+            "description": ""
         },
         {
             "name": "ChatCompletionResponseEvent",
@@ -7875,7 +7899,7 @@
         },
         {
             "name": "ChatCompletionResponseStreamChunk",
-            "description": "SSE-stream of these events."
+            "description": ""
         },
         {
             "name": "Checkpoint",

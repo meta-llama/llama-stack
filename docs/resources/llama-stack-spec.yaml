@@ -1,11 +1,12 @@
----
 openapi: 3.1.0
 info:
   title: Llama Stack Specification
   version: v1
-  description: "This is the specification of the Llama Stack that provides\n     \
-    \           a set of endpoints and their corresponding interfaces that are tailored
-    to\n                best leverage Llama Models."
+  description: >-
+    This is the specification of the Llama Stack that provides
+                    a set of endpoints and their corresponding interfaces that are
+    tailored to
+                    best leverage Llama Models.
 servers:
   - url: http://any-hosted-llama-stack.com
 paths:
@@ -108,7 +109,9 @@ paths:
     post:
       responses:
         '200':
-          description: Chat completion response. **OR** SSE-stream of these events.
+          description: >-
+            If stream=False, returns a ChatCompletionResponse with the full completion.
+            If stream=True, returns an SSE event stream of ChatCompletionResponseStreamChunk
           content:
             text/event-stream:
               schema:
@@ -117,6 +120,8 @@ paths:
                   - $ref: '#/components/schemas/ChatCompletionResponseStreamChunk'
       tags:
         - Inference
+      summary: >-
+        Generate a chat completion for the given messages using the specified model.
       parameters: []
       requestBody:
         content:
@@ -128,7 +133,9 @@ paths:
     post:
       responses:
         '200':
-          description: Completion response. **OR** streamed completion response.
+          description: >-
+            If stream=False, returns a CompletionResponse with the full completion.
+            If stream=True, returns an SSE event stream of CompletionResponseStreamChunk
           content:
             text/event-stream:
               schema:
@@ -137,6 +144,8 @@ paths:
                   - $ref: '#/components/schemas/CompletionResponseStreamChunk'
       tags:
         - Inference
+      summary: >-
+        Generate a completion for the given content using the specified model.
       parameters: []
       requestBody:
         content:
@@ -189,8 +198,9 @@ paths:
     post:
       responses:
         '200':
-          description: A single turn in an interaction with an Agentic System. **OR**
-            streamed agent turn completion response.
+          description: >-
+            A single turn in an interaction with an Agentic System. **OR** streamed
+            agent turn completion response.
           content:
             text/event-stream:
               schema:
@@ -279,13 +289,17 @@ paths:
     post:
       responses:
         '200':
-          description: OK
+          description: >-
+            An array of embeddings, one for each content. Each embedding is a list
+            of floats.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/EmbeddingsResponse'
       tags:
         - Inference
+      summary: >-
+        Generate embeddings for content pieces using the specified model.
       parameters: []
       requestBody:
         content:
@@ -709,7 +723,8 @@ paths:
           description: OK
       tags:
         - ToolRuntime
-      summary: Index documents so they can be used by the RAG system
+      summary: >-
+        Index documents so they can be used by the RAG system
       parameters: []
       requestBody:
         content:
@@ -1109,7 +1124,8 @@ paths:
                 $ref: '#/components/schemas/RAGQueryResult'
       tags:
         - ToolRuntime
-      summary: Query the RAG system for context; typically invoked by the agent
+      summary: >-
+        Query the RAG system for context; typically invoked by the agent
       parameters: []
       requestBody:
         content:
@@ -1341,7 +1357,8 @@ paths:
       tags:
         - Inspect
       parameters: []
-jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
+jsonSchemaDialect: >-
+  https://json-schema.org/draft/2020-12/schema
 components:
   schemas:
     AppendRowsRequest:
@@ -1393,6 +1410,27 @@ components:
         - content
         - stop_reason
         - tool_calls
+    GrammarResponseFormat:
+      type: object
+      properties:
+        type:
+          type: string
+          const: grammar
+          default: grammar
+        bnf:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+      additionalProperties: false
+      required:
+        - type
+        - bnf
     GreedySamplingStrategy:
       type: object
       properties:
@@ -1439,6 +1477,27 @@ components:
         mapping:
           image: '#/components/schemas/ImageContentItem'
           text: '#/components/schemas/TextContentItem'
+    JsonSchemaResponseFormat:
+      type: object
+      properties:
+        type:
+          type: string
+          const: json_schema
+          default: json_schema
+        json_schema:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+      additionalProperties: false
+      required:
+        - type
+        - json_schema
     Message:
       oneOf:
         - $ref: '#/components/schemas/UserMessage'
@@ -1452,6 +1511,15 @@ components:
           system: '#/components/schemas/SystemMessage'
           tool: '#/components/schemas/ToolResponseMessage'
           assistant: '#/components/schemas/CompletionMessage'
+    ResponseFormat:
+      oneOf:
+        - $ref: '#/components/schemas/JsonSchemaResponseFormat'
+        - $ref: '#/components/schemas/GrammarResponseFormat'
+      discriminator:
+        propertyName: type
+        mapping:
+          json_schema: '#/components/schemas/JsonSchemaResponseFormat'
+          grammar: '#/components/schemas/GrammarResponseFormat'
     SamplingParams:
       type: object
       properties:
@@ -1594,16 +1662,28 @@ components:
         - json
         - function_tag
         - python_list
-      title: This Enum refers to the prompt format for calling custom / zero shot
-        tools
-      description: "`json` --\n    Refers to the json format for calling tools.\n\
-        \    The json format takes the form like\n    {\n        \"type\": \"function\"\
-        ,\n        \"function\" : {\n            \"name\": \"function_name\",\n  \
-        \          \"description\": \"function_description\",\n            \"parameters\"\
-        : {...}\n        }\n    }\n\n`function_tag` --\n    This is an example of
-        how you could define\n    your own user defined format for making tool calls.\n\
-        \    The function_tag format looks like this,\n    <function=function_name>(parameters)</function>\n
-        \nThe detailed prompts for each of these formats are added to llama cli"
+      title: >-
+        This Enum refers to the prompt format for calling custom / zero shot tools
+      description: >-
+        `json` --
+            Refers to the json format for calling tools.
+            The json format takes the form like
+            {
+                "type": "function",
+                "function" : {
+                    "name": "function_name",
+                    "description": "function_description",
+                    "parameters": {...}
+                }
+            }
+
+        `function_tag` --
+            This is an example of how you could define
+            your own user defined format for making tool calls.
+            The function_tag format looks like this,
+            <function=function_name>(parameters)</function>
+
+        The detailed prompts for each of these formats are added to llama cli
     ToolResponseMessage:
       type: object
       properties:
@@ -1697,6 +1777,8 @@ components:
           $ref: '#/components/schemas/ToolChoice'
         tool_prompt_format:
           $ref: '#/components/schemas/ToolPromptFormat'
+        response_format:
+          $ref: '#/components/schemas/ResponseFormat'
         logprobs:
           type: object
           properties:
@@ -1711,13 +1793,35 @@ components:
     BatchChatCompletionResponse:
       type: object
       properties:
-        completion_message_batch:
+        batch:
           type: array
           items:
-            $ref: '#/components/schemas/CompletionMessage'
+            $ref: '#/components/schemas/ChatCompletionResponse'
       additionalProperties: false
       required:
-        - completion_message_batch
+        - batch
+    ChatCompletionResponse:
+      type: object
+      properties:
+        completion_message:
+          $ref: '#/components/schemas/CompletionMessage'
+        logprobs:
+          type: array
+          items:
+            $ref: '#/components/schemas/TokenLogProbs'
+      additionalProperties: false
+      required:
+        - completion_message
+    TokenLogProbs:
+      type: object
+      properties:
+        logprobs_by_token:
+          type: object
+          additionalProperties:
+            type: number
+      additionalProperties: false
+      required:
+        - logprobs_by_token
     BatchCompletionRequest:
       type: object
       properties:
@@ -1729,6 +1833,8 @@ components:
             $ref: '#/components/schemas/InterleavedContent'
         sampling_params:
           $ref: '#/components/schemas/SamplingParams'
+        response_format:
+          $ref: '#/components/schemas/ResponseFormat'
         logprobs:
           type: object
           properties:
@@ -1743,13 +1849,29 @@ components:
     BatchCompletionResponse:
       type: object
       properties:
-        completion_message_batch:
+        batch:
           type: array
           items:
-            $ref: '#/components/schemas/CompletionMessage'
+            $ref: '#/components/schemas/CompletionResponse'
       additionalProperties: false
       required:
-        - completion_message_batch
+        - batch
+    CompletionResponse:
+      type: object
+      properties:
+        content:
+          type: string
+        stop_reason:
+          $ref: '#/components/schemas/StopReason'
+        logprobs:
+          type: array
+          items:
+            $ref: '#/components/schemas/TokenLogProbs'
+      additionalProperties: false
+      required:
+        - content
+        - stop_reason
+      title: Completion response.
     CancelTrainingJobRequest:
       type: object
       properties:
@@ -1758,80 +1880,45 @@ components:
       additionalProperties: false
       required:
         - job_uuid
-    GrammarResponseFormat:
-      type: object
-      properties:
-        type:
-          type: string
-          const: grammar
-          default: grammar
-        bnf:
-          type: object
-          additionalProperties:
-            oneOf:
-              - type: 'null'
-              - type: boolean
-              - type: number
-              - type: string
-              - type: array
-              - type: object
-      additionalProperties: false
-      required:
-        - type
-        - bnf
-    JsonSchemaResponseFormat:
-      type: object
-      properties:
-        type:
-          type: string
-          const: json_schema
-          default: json_schema
-        json_schema:
-          type: object
-          additionalProperties:
-            oneOf:
-              - type: 'null'
-              - type: boolean
-              - type: number
-              - type: string
-              - type: array
-              - type: object
-      additionalProperties: false
-      required:
-        - type
-        - json_schema
-    ResponseFormat:
-      oneOf:
-        - $ref: '#/components/schemas/JsonSchemaResponseFormat'
-        - $ref: '#/components/schemas/GrammarResponseFormat'
-      discriminator:
-        propertyName: type
-        mapping:
-          json_schema: '#/components/schemas/JsonSchemaResponseFormat'
-          grammar: '#/components/schemas/GrammarResponseFormat'
     ChatCompletionRequest:
       type: object
       properties:
         model_id:
           type: string
+          description: The identifier of the model to use
         messages:
           type: array
           items:
             $ref: '#/components/schemas/Message'
+          description: List of messages in the conversation
         sampling_params:
           $ref: '#/components/schemas/SamplingParams'
+          description: >-
+            Parameters to control the sampling strategy
         tools:
           type: array
           items:
             $ref: '#/components/schemas/ToolDefinition'
+          description: >-
+            (Optional) List of tool definitions available to the model
         tool_choice:
           $ref: '#/components/schemas/ToolChoice'
+          description: >-
+            (Optional) Whether tool use is required or automatic. Defaults to ToolChoice.auto.
         tool_prompt_format:
           $ref: '#/components/schemas/ToolPromptFormat'
+          description: >-
+            (Optional) Specifies how tool definitions are formatted when presenting
+            to the model
         response_format:
           $ref: '#/components/schemas/ResponseFormat'
+          description: >-
+            (Optional) Grammar specification for guided (structured) decoding
         stream:
           type: boolean
+          description: >-
+            (Optional) If True, generate an SSE event stream of the response. Defaults
+            to False.
         logprobs:
           type: object
           properties:
@@ -1839,23 +1926,13 @@ components:
               type: integer
               default: 0
           additionalProperties: false
+          description: >-
+            (Optional) If specified, log probabilities for each token position will
+            be returned.
       additionalProperties: false
       required:
         - model_id
         - messages
-    ChatCompletionResponse:
-      type: object
-      properties:
-        completion_message:
-          $ref: '#/components/schemas/CompletionMessage'
-        logprobs:
-          type: array
-          items:
-            $ref: '#/components/schemas/TokenLogProbs'
-      additionalProperties: false
-      required:
-        - completion_message
-      title: Chat completion response.
     ChatCompletionResponseEvent:
       type: object
       properties:
@@ -1888,7 +1965,6 @@ components:
       additionalProperties: false
       required:
         - event
-      title: SSE-stream of these events.
     ContentDelta:
       oneOf:
         - $ref: '#/components/schemas/TextDelta'
@@ -1927,16 +2003,6 @@ components:
       required:
         - type
         - text
-    TokenLogProbs:
-      type: object
-      properties:
-        logprobs_by_token:
-          type: object
-          additionalProperties:
-            type: number
-      additionalProperties: false
-      required:
-        - logprobs_by_token
     ToolCallDelta:
       type: object
       properties:
@@ -1967,14 +2033,23 @@ components:
       properties:
         model_id:
           type: string
+          description: The identifier of the model to use
         content:
           $ref: '#/components/schemas/InterleavedContent'
+          description: The content to generate a completion for
         sampling_params:
           $ref: '#/components/schemas/SamplingParams'
+          description: >-
+            (Optional) Parameters to control the sampling strategy
         response_format:
           $ref: '#/components/schemas/ResponseFormat'
+          description: >-
+            (Optional) Grammar specification for guided (structured) decoding
         stream:
           type: boolean
+          description: >-
+            (Optional) If True, generate an SSE event stream of the response. Defaults
+            to False.
         logprobs:
           type: object
           properties:
@@ -1982,26 +2057,13 @@ components:
               type: integer
               default: 0
           additionalProperties: false
+          description: >-
+            (Optional) If specified, log probabilities for each token position will
+            be returned.
       additionalProperties: false
       required:
         - model_id
         - content
-    CompletionResponse:
-      type: object
-      properties:
-        content:
-          type: string
-        stop_reason:
-          $ref: '#/components/schemas/StopReason'
-        logprobs:
-          type: array
-          items:
-            $ref: '#/components/schemas/TokenLogProbs'
-      additionalProperties: false
-      required:
-        - content
-        - stop_reason
-      title: Completion response.
     CompletionResponseStreamChunk:
       type: object
       properties:
@@ -2558,7 +2620,8 @@ components:
         - output_message
         - output_attachments
         - started_at
-      title: A single turn in an interaction with an Agentic System.
+      title: >-
+        A single turn in an interaction with an Agentic System.
     ViolationLevel:
       type: string
       enum:
@@ -2570,10 +2633,14 @@ components:
       properties:
         model_id:
           type: string
+          description: The identifier of the model to use
         contents:
           type: array
           items:
             $ref: '#/components/schemas/InterleavedContent'
+          description: >-
+            List of contents to generate embeddings for. Note that content can be
+            multimodal.
       additionalProperties: false
       required:
         - model_id
@@ -2845,7 +2912,8 @@ components:
         - session_name
         - turns
         - started_at
-      title: A single session of an interaction with an Agentic System.
+      title: >-
+        A single session of an interaction with an Agentic System.
     AgentStepResponse:
       type: object
       properties:
@@ -3194,7 +3262,8 @@ components:
         - provider_resource_id
         - provider_id
         - type
-      title: A safety shield resource that can be used to check content
+      title: >-
+        A safety shield resource that can be used to check content
     Span:
       type: object
       properties:
@@ -4684,8 +4753,9 @@ components:
       additionalProperties: false
       required:
         - synthetic_data
-      title: Response from the synthetic data generation. Batch of (prompt, response,
-        score) tuples that pass the threshold.
+      title: >-
+        Response from the synthetic data generation. Batch of (prompt, response, score)
+        tuples that pass the threshold.
     VersionInfo:
       type: object
       properties:
@@ -4763,13 +4833,13 @@ tags:
   - name: ChatCompletionRequest
     description: ''
   - name: ChatCompletionResponse
-    description: Chat completion response.
+    description: ''
   - name: ChatCompletionResponseEvent
     description: Chat completion response event.
   - name: ChatCompletionResponseEventType
     description: ''
   - name: ChatCompletionResponseStreamChunk
-    description: SSE-stream of these events.
+    description: ''
   - name: Checkpoint
     description: Checkpoint created during training runs
   - name: CompletionInputType
@@ -4998,9 +5068,11 @@ tags:
   - name: ScoringResult
     description: ''
   - name: Session
-    description: A single session of an interaction with an Agentic System.
+    description: >-
+      A single session of an interaction with an Agentic System.
   - name: Shield
-    description: A safety shield resource that can be used to check content
+    description: >-
+      A safety shield resource that can be used to check content
   - name: ShieldCallStep
     description: ''
   - name: Shields
@@ -5028,8 +5100,9 @@ tags:
     description: ''
   - name: SyntheticDataGeneration (Coming Soon)
   - name: SyntheticDataGenerationResponse
-    description: Response from the synthetic data generation. Batch of (prompt, response,
-      score) tuples that pass the threshold.
+    description: >-
+      Response from the synthetic data generation. Batch of (prompt, response, score)
+      tuples that pass the threshold.
   - name: SystemMessage
     description: ''
   - name: Telemetry
@@ -5067,15 +5140,29 @@ tags:
   - name: ToolParameter
     description: ''
   - name: ToolPromptFormat
-    description: "This Enum refers to the prompt format for calling custom / zero
-      shot tools\n\n`json` --\n    Refers to the json format for calling tools.\n\
-      \    The json format takes the form like\n    {\n        \"type\": \"function\"\
-      ,\n        \"function\" : {\n            \"name\": \"function_name\",\n    \
-      \        \"description\": \"function_description\",\n            \"parameters\"\
-      : {...}\n        }\n    }\n\n`function_tag` --\n    This is an example of how
-      you could define\n    your own user defined format for making tool calls.\n\
-      \    The function_tag format looks like this,\n    <function=function_name>(parameters)</function>\n
-      \nThe detailed prompts for each of these formats are added to llama cli"
+    description: >-
+      This Enum refers to the prompt format for calling custom / zero shot tools
+
+
+      `json` --
+          Refers to the json format for calling tools.
+          The json format takes the form like
+          {
+              "type": "function",
+              "function" : {
+                  "name": "function_name",
+                  "description": "function_description",
+                  "parameters": {...}
+              }
+          }
+
+      `function_tag` --
+          This is an example of how you could define
+          your own user defined format for making tool calls.
+          The function_tag format looks like this,
+          <function=function_name>(parameters)</function>
+
+      The detailed prompts for each of these formats are added to llama cli
   - name: ToolResponse
     description: ''
   - name: ToolResponseMessage
@@ -5090,7 +5177,8 @@ tags:
   - name: TrainingConfig
     description: ''
   - name: Turn
-    description: A single turn in an interaction with an Agentic System.
+    description: >-
+      A single turn in an interaction with an Agentic System.
   - name: URL
     description: ''
   - name: UnionType

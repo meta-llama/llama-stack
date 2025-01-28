@@ -8,6 +8,7 @@ import collections
 import hashlib
 import ipaddress
 import typing
+from dataclasses import field, make_dataclass
 from typing import Any, Dict, Set, Union
 
 from ..strong_typing.core import JsonType
@@ -276,6 +277,20 @@ class StatusResponse:
     examples: List[Any] = dataclasses.field(default_factory=list)
 
 
+def create_docstring_for_request(
+    request_name: str, fields: List[Tuple[str, type, Any]], doc_params: Dict[str, str]
+) -> str:
+    """Creates a ReST-style docstring for a dynamically generated request dataclass."""
+    lines = ["\n"]  # Short description
+
+    # Add parameter documentation in ReST format
+    for name, type_ in fields:
+        desc = doc_params.get(name, "")
+        lines.append(f":param {name}: {desc}")
+
+    return "\n".join(lines)
+
+
 class ResponseBuilder:
     content_builder: ContentBuilder
 
@@ -493,11 +508,24 @@ class Generator:
             first = next(iter(op.request_params))
             request_name, request_type = first
 
-            from dataclasses import make_dataclass
-
             op_name = "".join(word.capitalize() for word in op.name.split("_"))
             request_name = f"{op_name}Request"
-            request_type = make_dataclass(request_name, op.request_params)
+            fields = [
+                (
+                    name,
+                    type_,
+                )
+                for name, type_ in op.request_params
+            ]
+            request_type = make_dataclass(
+                request_name,
+                fields,
+                namespace={
+                    "__doc__": create_docstring_for_request(
+                        request_name, fields, doc_params
+                    )
+                },
+            )
 
             requestBody = RequestBody(
                 content={

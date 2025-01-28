@@ -186,7 +186,6 @@ ResponseFormat = register_schema(
 )
 
 
-@json_schema_type
 class CompletionRequest(BaseModel):
     model: str
     content: InterleavedContent
@@ -215,23 +214,6 @@ class CompletionResponseStreamChunk(BaseModel):
     logprobs: Optional[List[TokenLogProbs]] = None
 
 
-@json_schema_type
-class BatchCompletionRequest(BaseModel):
-    model: str
-    content_batch: List[InterleavedContent]
-    sampling_params: Optional[SamplingParams] = SamplingParams()
-    response_format: Optional[ResponseFormat] = None
-    logprobs: Optional[LogProbConfig] = None
-
-
-@json_schema_type
-class BatchCompletionResponse(BaseModel):
-    """Batch completion response."""
-
-    batch: List[CompletionResponse]
-
-
-@json_schema_type
 class ChatCompletionRequest(BaseModel):
     model: str
     messages: List[Message]
@@ -249,35 +231,13 @@ class ChatCompletionRequest(BaseModel):
 
 @json_schema_type
 class ChatCompletionResponseStreamChunk(BaseModel):
-    """SSE-stream of these events."""
-
     event: ChatCompletionResponseEvent
 
 
 @json_schema_type
 class ChatCompletionResponse(BaseModel):
-    """Chat completion response."""
-
     completion_message: CompletionMessage
     logprobs: Optional[List[TokenLogProbs]] = None
-
-
-@json_schema_type
-class BatchChatCompletionRequest(BaseModel):
-    model: str
-    messages_batch: List[List[Message]]
-    sampling_params: Optional[SamplingParams] = SamplingParams()
-
-    # zero-shot tool definitions as input to the model
-    tools: Optional[List[ToolDefinition]] = Field(default_factory=list)
-    tool_choice: Optional[ToolChoice] = Field(default=ToolChoice.auto)
-    tool_prompt_format: Optional[ToolPromptFormat] = Field(default=None)
-    logprobs: Optional[LogProbConfig] = None
-
-
-@json_schema_type
-class BatchChatCompletionResponse(BaseModel):
-    batch: List[ChatCompletionResponse]
 
 
 @json_schema_type
@@ -303,7 +263,19 @@ class Inference(Protocol):
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
-    ) -> Union[CompletionResponse, AsyncIterator[CompletionResponseStreamChunk]]: ...
+    ) -> Union[CompletionResponse, AsyncIterator[CompletionResponseStreamChunk]]:
+        """Generate a completion for the given content using the specified model.
+
+        :param model_id: The identifier of the model to use
+        :param content: The content to generate a completion for
+        :param sampling_params: (Optional) Parameters to control the sampling strategy
+        :param response_format: (Optional) Grammar specification for guided (structured) decoding
+        :param stream: (Optional) If True, generate an SSE event stream of the response. Defaults to False.
+        :param logprobs: (Optional) If specified, log probabilities for each token position will be returned.
+        :returns: If stream=False, returns a CompletionResponse with the full completion.
+                 If stream=True, returns an SSE event stream of CompletionResponseStreamChunk
+        """
+        ...
 
     @webmethod(route="/inference/chat-completion", method="POST")
     async def chat_completion(
@@ -311,7 +283,6 @@ class Inference(Protocol):
         model_id: str,
         messages: List[Message],
         sampling_params: Optional[SamplingParams] = SamplingParams(),
-        # zero-shot tool definitions as input to the model
         tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
         tool_prompt_format: Optional[ToolPromptFormat] = None,
@@ -320,11 +291,33 @@ class Inference(Protocol):
         logprobs: Optional[LogProbConfig] = None,
     ) -> Union[
         ChatCompletionResponse, AsyncIterator[ChatCompletionResponseStreamChunk]
-    ]: ...
+    ]:
+        """Generate a chat completion for the given messages using the specified model.
+
+        :param model_id: The identifier of the model to use
+        :param messages: List of messages in the conversation
+        :param sampling_params: Parameters to control the sampling strategy
+        :param tools: (Optional) List of tool definitions available to the model
+        :param tool_choice: (Optional) Whether tool use is required or automatic. Defaults to ToolChoice.auto.
+        :param tool_prompt_format: (Optional) Specifies how tool definitions are formatted when presenting to the model
+        :param response_format: (Optional) Grammar specification for guided (structured) decoding
+        :param stream: (Optional) If True, generate an SSE event stream of the response. Defaults to False.
+        :param logprobs: (Optional) If specified, log probabilities for each token position will be returned.
+        :returns: If stream=False, returns a ChatCompletionResponse with the full completion.
+                 If stream=True, returns an SSE event stream of ChatCompletionResponseStreamChunk
+        """
+        ...
 
     @webmethod(route="/inference/embeddings", method="POST")
     async def embeddings(
         self,
         model_id: str,
         contents: List[InterleavedContent],
-    ) -> EmbeddingsResponse: ...
+    ) -> EmbeddingsResponse:
+        """Generate embeddings for content pieces using the specified model.
+
+        :param model_id: The identifier of the model to use
+        :param contents: List of contents to generate embeddings for. Note that content can be multimodal.
+        :returns: An array of embeddings, one for each content. Each embedding is a list of floats.
+        """
+        ...
