@@ -2,15 +2,44 @@
 We want to make contributing to this project as easy and transparent as
 possible.
 
-## Pull Requests
-We actively welcome your pull requests.
+## Discussions -> Issues -> Pull Requests
+
+We actively welcome your pull requests. However, please read the following. This is heavily inspired by [Ghostty](https://github.com/ghostty-org/ghostty/blob/main/CONTRIBUTING.md).
+
+If in doubt, please open a [discussion](https://github.com/meta-llama/llama-stack/discussions); we can always convert that to an issue later.
+
+**I'd like to contribute!**
+
+All issues are actionable (please report if they are not.) Pick one and start working on it. Thank you.
+If you need help or guidance, comment on the issue. Issues that are extra friendly to new contributors are tagged with "contributor friendly".
+
+**I have a bug!**
+
+1. Search the issue tracker and discussions for similar issues.
+2. If you don't have steps to reproduce, open a discussion.
+3. If you have steps to reproduce, open an issue.
+
+**I have an idea for a feature!**
+
+1. Open a discussion.
+
+**I've implemented a feature!**
+
+1. If there is an issue for the feature, open a pull request.
+2. If there is no issue, open a discussion and link to your branch.
+
+**I have a question!**
+
+1. Open a discussion or use [Discord](https://discord.gg/llama-stack).
+
+
+**Opening a Pull Request**
 
 1. Fork the repo and create your branch from `main`.
-2. If you've added code that should be tested, add tests.
-3. If you've changed APIs, update the documentation.
-4. Ensure the test suite passes.
-5. Make sure your code lints.
-6. If you haven't already, complete the Contributor License Agreement ("CLA").
+2. If you've changed APIs, update the documentation.
+3. Ensure the test suite passes.
+4. Make sure your code lints using `pre-commit`.
+5. If you haven't already, complete the Contributor License Agreement ("CLA").
 
 ## Contributor License Agreement ("CLA")
 In order to accept your pull request, we need you to submit a CLA. You only need
