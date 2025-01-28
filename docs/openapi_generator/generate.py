@@ -67,6 +67,9 @@ def main(output_dir: str):
         y.map_indent = 2
         y.sequence_indent = 4
         y.sequence_dash_offset = 2
+        y.width = 80
+        y.allow_unicode = True
+        y.explicit_start = True
         y.dump(
             spec.get_json(),
             fp,

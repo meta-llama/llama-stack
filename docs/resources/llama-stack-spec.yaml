@@ -1,3 +1,4 @@
+---
 openapi: 3.1.0
 info:
   title: Llama Stack Specification
@@ -5734,508 +5735,373 @@ security:
   - Default: []
 tags:
   - name: AgentCandidate
-    description: <SchemaDefinition schemaRef="#/components/schemas/AgentCandidate"
-      />
+    description: ''
   - name: AgentConfig
-    description: <SchemaDefinition schemaRef="#/components/schemas/AgentConfig" />
+    description: ''
   - name: AgentCreateResponse
-    description: <SchemaDefinition schemaRef="#/components/schemas/AgentCreateResponse"
-      />
+    description: ''
   - name: AgentSessionCreateResponse
-    description: <SchemaDefinition schemaRef="#/components/schemas/AgentSessionCreateResponse"
-      />
+    description: ''
   - name: AgentStepResponse
-    description: <SchemaDefinition schemaRef="#/components/schemas/AgentStepResponse"
-      />
+    description: ''
   - name: AgentTool
-    description: <SchemaDefinition schemaRef="#/components/schemas/AgentTool" />
+    description: ''
   - name: AgentTurnInputType
-    description: <SchemaDefinition schemaRef="#/components/schemas/AgentTurnInputType"
-      />
+    description: ''
   - name: AgentTurnResponseEvent
-    description: <SchemaDefinition schemaRef="#/components/schemas/AgentTurnResponseEvent"
-      />
+    description: ''
   - name: AgentTurnResponseEventPayload
-    description: <SchemaDefinition schemaRef="#/components/schemas/AgentTurnResponseEventPayload"
-      />
+    description: ''
   - name: AgentTurnResponseStepCompletePayload
-    description: <SchemaDefinition schemaRef="#/components/schemas/AgentTurnResponseStepCompletePayload"
-      />
+    description: ''
   - name: AgentTurnResponseStepProgressPayload
-    description: <SchemaDefinition schemaRef="#/components/schemas/AgentTurnResponseStepProgressPayload"
-      />
+    description: ''
   - name: AgentTurnResponseStepStartPayload
-    description: <SchemaDefinition schemaRef="#/components/schemas/AgentTurnResponseStepStartPayload"
-      />
+    description: ''
   - name: AgentTurnResponseStreamChunk
-    description: "streamed agent turn completion response.\n\n<SchemaDefinition schemaRef=\"\
-      #/components/schemas/AgentTurnResponseStreamChunk\" />"
+    description: streamed agent turn completion response.
   - name: AgentTurnResponseTurnCompletePayload
-    description: <SchemaDefinition schemaRef="#/components/schemas/AgentTurnResponseTurnCompletePayload"
-      />
+    description: ''
   - name: AgentTurnResponseTurnStartPayload
-    description: <SchemaDefinition schemaRef="#/components/schemas/AgentTurnResponseTurnStartPayload"
-      />
+    description: ''
   - name: Agents
   - name: AggregationFunctionType
-    description: <SchemaDefinition schemaRef="#/components/schemas/AggregationFunctionType"
-      />
+    description: ''
   - name: AlgorithmConfig
-    description: <SchemaDefinition schemaRef="#/components/schemas/AlgorithmConfig"
-      />
+    description: ''
   - name: AppEvalTaskConfig
-    description: <SchemaDefinition schemaRef="#/components/schemas/AppEvalTaskConfig"
-      />
+    description: ''
   - name: AppendRowsRequest
-    description: <SchemaDefinition schemaRef="#/components/schemas/AppendRowsRequest"
-      />
+    description: ''
   - name: ArrayType
-    description: <SchemaDefinition schemaRef="#/components/schemas/ArrayType" />
+    description: ''
   - name: BasicScoringFnParams
-    description: <SchemaDefinition schemaRef="#/components/schemas/BasicScoringFnParams"
-      />
+    description: ''
   - name: BatchChatCompletionRequest
-    description: <SchemaDefinition schemaRef="#/components/schemas/BatchChatCompletionRequest"
-      />
+    description: ''
   - name: BatchChatCompletionResponse
-    description: <SchemaDefinition schemaRef="#/components/schemas/BatchChatCompletionResponse"
-      />
+    description: ''
   - name: BatchCompletionRequest
-    description: <SchemaDefinition schemaRef="#/components/schemas/BatchCompletionRequest"
-      />
+    description: ''
   - name: BatchCompletionResponse
-    description: <SchemaDefinition schemaRef="#/components/schemas/BatchCompletionResponse"
-      />
+    description: ''
   - name: BatchInference (Coming Soon)
   - name: BenchmarkEvalTaskConfig
-    description: <SchemaDefinition schemaRef="#/components/schemas/BenchmarkEvalTaskConfig"
-      />
+    description: ''
   - name: BooleanType
-    description: <SchemaDefinition schemaRef="#/components/schemas/BooleanType" />
+    description: ''
   - name: BuiltinTool
-    description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinTool" />
+    description: ''
   - name: CancelTrainingJobRequest
-    description: <SchemaDefinition schemaRef="#/components/schemas/CancelTrainingJobRequest"
-      />
+    description: ''
   - name: ChatCompletionInputType
-    description: <SchemaDefinition schemaRef="#/components/schemas/ChatCompletionInputType"
-      />
+    description: ''
   - name: ChatCompletionRequest
-    description: <SchemaDefinition schemaRef="#/components/schemas/ChatCompletionRequest"
-      />
+    description: ''
   - name: ChatCompletionResponse
-    description: "Chat completion response.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/ChatCompletionResponse\"\
-      \ />"
+    description: Chat completion response.
   - name: ChatCompletionResponseEvent
-    description: "Chat completion response event.\n\n<SchemaDefinition schemaRef=\"\
-      #/components/schemas/ChatCompletionResponseEvent\" />"
+    description: Chat completion response event.
   - name: ChatCompletionResponseEventType
-    description: <SchemaDefinition schemaRef="#/components/schemas/ChatCompletionResponseEventType"
-      />
+    description: ''
   - name: ChatCompletionResponseStreamChunk
-    description: "SSE-stream of these events.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/ChatCompletionResponseStreamChunk\"\
-      \ />"
+    description: SSE-stream of these events.
   - name: Checkpoint
-    description: "Checkpoint created during training runs\n\n<SchemaDefinition schemaRef=\"\
-      #/components/schemas/Checkpoint\" />"
+    description: Checkpoint created during training runs
   - name: CompletionInputType
-    description: <SchemaDefinition schemaRef="#/components/schemas/CompletionInputType"
-      />
+    description: ''
   - name: CompletionMessage
-    description: <SchemaDefinition schemaRef="#/components/schemas/CompletionMessage"
-      />
+    description: ''
   - name: CompletionRequest
-    description: <SchemaDefinition schemaRef="#/components/schemas/CompletionRequest"
-      />
+    description: ''
   - name: CompletionResponse
-    description: "Completion response.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/CompletionResponse\"\
-      \ />"
+    description: Completion response.
   - name: CompletionResponseStreamChunk
-    description: "streamed completion response.\n\n<SchemaDefinition schemaRef=\"\
-      #/components/schemas/CompletionResponseStreamChunk\" />"
+    description: streamed completion response.
   - name: ContentDelta
-    description: <SchemaDefinition schemaRef="#/components/schemas/ContentDelta" />
+    description: ''
   - name: CreateAgentRequest
-    description: <SchemaDefinition schemaRef="#/components/schemas/CreateAgentRequest"
-      />
+    description: ''
   - name: CreateAgentSessionRequest
-    description: <SchemaDefinition schemaRef="#/components/schemas/CreateAgentSessionRequest"
-      />
+    description: ''
   - name: CreateAgentTurnRequest
-    description: <SchemaDefinition schemaRef="#/components/schemas/CreateAgentTurnRequest"
-      />
+    description: ''
   - name: DPOAlignmentConfig
-    description: <SchemaDefinition schemaRef="#/components/schemas/DPOAlignmentConfig"
-      />
+    description: ''
   - name: DataConfig
-    description: <SchemaDefinition schemaRef="#/components/schemas/DataConfig" />
+    description: ''
   - name: Dataset
-    description: <SchemaDefinition schemaRef="#/components/schemas/Dataset" />
+    description: ''
   - name: DatasetFormat
-    description: <SchemaDefinition schemaRef="#/components/schemas/DatasetFormat"
-      />
+    description: ''
   - name: DatasetIO
   - name: Datasets
   - name: DefaultRAGQueryGeneratorConfig
-    description: <SchemaDefinition schemaRef="#/components/schemas/DefaultRAGQueryGeneratorConfig"
-      />
+    description: ''
   - name: EfficiencyConfig
-    description: <SchemaDefinition schemaRef="#/components/schemas/EfficiencyConfig"
-      />
+    description: ''
   - name: EmbeddingsRequest
-    description: <SchemaDefinition schemaRef="#/components/schemas/EmbeddingsRequest"
-      />
+    description: ''
   - name: EmbeddingsResponse
-    description: <SchemaDefinition schemaRef="#/components/schemas/EmbeddingsResponse"
-      />
+    description: ''
   - name: Eval
   - name: EvalCandidate
-    description: <SchemaDefinition schemaRef="#/components/schemas/EvalCandidate"
-      />
+    description: ''
   - name: EvalTask
-    description: <SchemaDefinition schemaRef="#/components/schemas/EvalTask" />
+    description: ''
   - name: EvalTaskConfig
-    description: <SchemaDefinition schemaRef="#/components/schemas/EvalTaskConfig"
-      />
+    description: ''
   - name: EvalTasks
   - name: EvaluateResponse
-    description: <SchemaDefinition schemaRef="#/components/schemas/EvaluateResponse"
-      />
+    description: ''
   - name: EvaluateRowsRequest
-    description: <SchemaDefinition schemaRef="#/components/schemas/EvaluateRowsRequest"
-      />
+    description: ''
   - name: Event
-    description: <SchemaDefinition schemaRef="#/components/schemas/Event" />
+    description: ''
   - name: GrammarResponseFormat
-    description: <SchemaDefinition schemaRef="#/components/schemas/GrammarResponseFormat"
-      />
+    description: ''
   - name: GreedySamplingStrategy
-    description: <SchemaDefinition schemaRef="#/components/schemas/GreedySamplingStrategy"
-      />
+    description: ''
   - name: HealthInfo
-    description: <SchemaDefinition schemaRef="#/components/schemas/HealthInfo" />
+    description: ''
   - name: ImageContentItem
-    description: <SchemaDefinition schemaRef="#/components/schemas/ImageContentItem"
-      />
+    description: ''
   - name: ImageDelta
-    description: <SchemaDefinition schemaRef="#/components/schemas/ImageDelta" />
+    description: ''
   - name: Inference
   - name: InferenceStep
-    description: <SchemaDefinition schemaRef="#/components/schemas/InferenceStep"
-      />
+    description: ''
   - name: InsertChunksRequest
-    description: <SchemaDefinition schemaRef="#/components/schemas/InsertChunksRequest"
-      />
+    description: ''
   - name: InsertRequest
-    description: <SchemaDefinition schemaRef="#/components/schemas/InsertRequest"
-      />
+    description: ''
   - name: Inspect
   - name: InterleavedContent
-    description: <SchemaDefinition schemaRef="#/components/schemas/InterleavedContent"
-      />
+    description: ''
   - name: InterleavedContentItem
-    description: <SchemaDefinition schemaRef="#/components/schemas/InterleavedContentItem"
-      />
+    description: ''
   - name: InvokeToolRequest
-    description: <SchemaDefinition schemaRef="#/components/schemas/InvokeToolRequest"
-      />
+    description: ''
   - name: Job
-    description: <SchemaDefinition schemaRef="#/components/schemas/Job" />
+    description: ''
   - name: JobStatus
-    description: <SchemaDefinition schemaRef="#/components/schemas/JobStatus" />
+    description: ''
   - name: JsonSchemaResponseFormat
-    description: <SchemaDefinition schemaRef="#/components/schemas/JsonSchemaResponseFormat"
-      />
+    description: ''
   - name: JsonType
-    description: <SchemaDefinition schemaRef="#/components/schemas/JsonType" />
+    description: ''
   - name: LLMAsJudgeScoringFnParams
-    description: <SchemaDefinition schemaRef="#/components/schemas/LLMAsJudgeScoringFnParams"
-      />
+    description: ''
   - name: LLMRAGQueryGeneratorConfig
-    description: <SchemaDefinition schemaRef="#/components/schemas/LLMRAGQueryGeneratorConfig"
-      />
+    description: ''
   - name: ListDatasetsResponse
-    description: <SchemaDefinition schemaRef="#/components/schemas/ListDatasetsResponse"
-      />
+    description: ''
   - name: ListEvalTasksResponse
-    description: <SchemaDefinition schemaRef="#/components/schemas/ListEvalTasksResponse"
-      />
+    description: ''
   - name: ListModelsResponse
-    description: <SchemaDefinition schemaRef="#/components/schemas/ListModelsResponse"
-      />
+    description: ''
   - name: ListPostTrainingJobsResponse
-    description: <SchemaDefinition schemaRef="#/components/schemas/ListPostTrainingJobsResponse"
-      />
+    description: ''
   - name: ListProvidersResponse
-    description: <SchemaDefinition schemaRef="#/components/schemas/ListProvidersResponse"
-      />
+    description: ''
   - name: ListRoutesResponse
-    description: <SchemaDefinition schemaRef="#/components/schemas/ListRoutesResponse"
-      />
+    description: ''
   - name: ListScoringFunctionsResponse
-    description: <SchemaDefinition schemaRef="#/components/schemas/ListScoringFunctionsResponse"
-      />
+    description: ''
   - name: ListShieldsResponse
-    description: <SchemaDefinition schemaRef="#/components/schemas/ListShieldsResponse"
-      />
+    description: ''
   - name: ListToolGroupsResponse
-    description: <SchemaDefinition schemaRef="#/components/schemas/ListToolGroupsResponse"
-      />
+    description: ''
   - name: ListToolsResponse
-    description: <SchemaDefinition schemaRef="#/components/schemas/ListToolsResponse"
-      />
+    description: ''
   - name: ListVectorDBsResponse
-    description: <SchemaDefinition schemaRef="#/components/schemas/ListVectorDBsResponse"
-      />
+    description: ''
   - name: LogEventRequest
-    description: <SchemaDefinition schemaRef="#/components/schemas/LogEventRequest"
-      />
+    description: ''
   - name: LogSeverity
-    description: <SchemaDefinition schemaRef="#/components/schemas/LogSeverity" />
+    description: ''
   - name: LoraFinetuningConfig
-    description: <SchemaDefinition schemaRef="#/components/schemas/LoraFinetuningConfig"
-      />
+    description: ''
   - name: MemoryRetrievalStep
-    description: <SchemaDefinition schemaRef="#/components/schemas/MemoryRetrievalStep"
-      />
+    description: ''
   - name: Message
-    description: <SchemaDefinition schemaRef="#/components/schemas/Message" />
+    description: ''
   - name: MetricEvent
-    description: <SchemaDefinition schemaRef="#/components/schemas/MetricEvent" />
+    description: ''
   - name: Model
-    description: <SchemaDefinition schemaRef="#/components/schemas/Model" />
+    description: ''
   - name: ModelCandidate
-    description: <SchemaDefinition schemaRef="#/components/schemas/ModelCandidate"
-      />
+    description: ''
   - name: ModelType
-    description: <SchemaDefinition schemaRef="#/components/schemas/ModelType" />
+    description: ''
   - name: Models
   - name: NumberType
-    description: <SchemaDefinition schemaRef="#/components/schemas/NumberType" />
+    description: ''
   - name: ObjectType
-    description: <SchemaDefinition schemaRef="#/components/schemas/ObjectType" />
+    description: ''
   - name: OptimizerConfig
-    description: <SchemaDefinition schemaRef="#/components/schemas/OptimizerConfig"
-      />
+    description: ''
   - name: OptimizerType
-    description: <SchemaDefinition schemaRef="#/components/schemas/OptimizerType"
-      />
+    description: ''
   - name: PaginatedRowsResult
-    description: <SchemaDefinition schemaRef="#/components/schemas/PaginatedRowsResult"
-      />
+    description: ''
   - name: ParamType
-    description: <SchemaDefinition schemaRef="#/components/schemas/ParamType" />
+    description: ''
   - name: PostTraining (Coming Soon)
   - name: PostTrainingJob
-    description: <SchemaDefinition schemaRef="#/components/schemas/PostTrainingJob"
-      />
+    description: ''
   - name: PostTrainingJobArtifactsResponse
-    description: "Artifacts of a finetuning job.\n\n<SchemaDefinition schemaRef=\"\
-      #/components/schemas/PostTrainingJobArtifactsResponse\" />"
+    description: Artifacts of a finetuning job.
   - name: PostTrainingJobStatusResponse
-    description: "Status of a finetuning job.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/PostTrainingJobStatusResponse\"\
-      \ />"
+    description: Status of a finetuning job.
   - name: PreferenceOptimizeRequest
-    description: <SchemaDefinition schemaRef="#/components/schemas/PreferenceOptimizeRequest"
-      />
+    description: ''
   - name: ProviderInfo
-    description: <SchemaDefinition schemaRef="#/components/schemas/ProviderInfo" />
+    description: ''
   - name: QATFinetuningConfig
-    description: <SchemaDefinition schemaRef="#/components/schemas/QATFinetuningConfig"
-      />
+    description: ''
   - name: QueryChunksRequest
-    description: <SchemaDefinition schemaRef="#/components/schemas/QueryChunksRequest"
-      />
+    description: ''
   - name: QueryChunksResponse
-    description: <SchemaDefinition schemaRef="#/components/schemas/QueryChunksResponse"
-      />
+    description: ''
   - name: QueryCondition
-    description: <SchemaDefinition schemaRef="#/components/schemas/QueryCondition"
-      />
+    description: ''
   - name: QueryConditionOp
-    description: <SchemaDefinition schemaRef="#/components/schemas/QueryConditionOp"
-      />
+    description: ''
   - name: QueryRequest
-    description: <SchemaDefinition schemaRef="#/components/schemas/QueryRequest" />
+    description: ''
   - name: QuerySpanTreeResponse
-    description: <SchemaDefinition schemaRef="#/components/schemas/QuerySpanTreeResponse"
-      />
+    description: ''
   - name: QuerySpansResponse
-    description: <SchemaDefinition schemaRef="#/components/schemas/QuerySpansResponse"
-      />
+    description: ''
   - name: QueryTracesResponse
-    description: <SchemaDefinition schemaRef="#/components/schemas/QueryTracesResponse"
-      />
+    description: ''
   - name: RAGDocument
-    description: <SchemaDefinition schemaRef="#/components/schemas/RAGDocument" />
+    description: ''
   - name: RAGQueryConfig
-    description: <SchemaDefinition schemaRef="#/components/schemas/RAGQueryConfig"
-      />
+    description: ''
   - name: RAGQueryGeneratorConfig
-    description: <SchemaDefinition schemaRef="#/components/schemas/RAGQueryGeneratorConfig"
-      />
+    description: ''
   - name: RAGQueryResult
-    description: <SchemaDefinition schemaRef="#/components/schemas/RAGQueryResult"
-      />
+    description: ''
   - name: RegexParserScoringFnParams
-    description: <SchemaDefinition schemaRef="#/components/schemas/RegexParserScoringFnParams"
-      />
+    description: ''
   - name: RegisterDatasetRequest
-    description: <SchemaDefinition schemaRef="#/components/schemas/RegisterDatasetRequest"
-      />
+    description: ''
   - name: RegisterEvalTaskRequest
-    description: <SchemaDefinition schemaRef="#/components/schemas/RegisterEvalTaskRequest"
-      />
+    description: ''
   - name: RegisterModelRequest
-    description: <SchemaDefinition schemaRef="#/components/schemas/RegisterModelRequest"
-      />
+    description: ''
   - name: RegisterScoringFunctionRequest
-    description: <SchemaDefinition schemaRef="#/components/schemas/RegisterScoringFunctionRequest"
-      />
+    description: ''
   - name: RegisterShieldRequest
-    description: <SchemaDefinition schemaRef="#/components/schemas/RegisterShieldRequest"
-      />
+    description: ''
   - name: RegisterToolGroupRequest
-    description: <SchemaDefinition schemaRef="#/components/schemas/RegisterToolGroupRequest"
-      />
+    description: ''
   - name: RegisterVectorDbRequest
-    description: <SchemaDefinition schemaRef="#/components/schemas/RegisterVectorDbRequest"
-      />
+    description: ''
   - name: ResponseFormat
-    description: <SchemaDefinition schemaRef="#/components/schemas/ResponseFormat"
-      />
+    description: ''
   - name: RouteInfo
-    description: <SchemaDefinition schemaRef="#/components/schemas/RouteInfo" />
+    description: ''
   - name: RunEvalRequest
-    description: <SchemaDefinition schemaRef="#/components/schemas/RunEvalRequest"
-      />
+    description: ''
   - name: RunShieldRequest
-    description: <SchemaDefinition schemaRef="#/components/schemas/RunShieldRequest"
-      />
+    description: ''
   - name: RunShieldResponse
-    description: <SchemaDefinition schemaRef="#/components/schemas/RunShieldResponse"
-      />
+    description: ''
   - name: Safety
   - name: SafetyViolation
-    description: <SchemaDefinition schemaRef="#/components/schemas/SafetyViolation"
-      />
+    description: ''
   - name: SamplingParams
-    description: <SchemaDefinition schemaRef="#/components/schemas/SamplingParams"
-      />
+    description: ''
   - name: SaveSpansToDatasetRequest
-    description: <SchemaDefinition schemaRef="#/components/schemas/SaveSpansToDatasetRequest"
-      />
+    description: ''
   - name: ScoreBatchRequest
-    description: <SchemaDefinition schemaRef="#/components/schemas/ScoreBatchRequest"
-      />
+    description: ''
   - name: ScoreBatchResponse
-    description: <SchemaDefinition schemaRef="#/components/schemas/ScoreBatchResponse"
-      />
+    description: ''
   - name: ScoreRequest
-    description: <SchemaDefinition schemaRef="#/components/schemas/ScoreRequest" />
+    description: ''
   - name: ScoreResponse
-    description: <SchemaDefinition schemaRef="#/components/schemas/ScoreResponse"
-      />
+    description: ''
   - name: Scoring
   - name: ScoringFn
-    description: <SchemaDefinition schemaRef="#/components/schemas/ScoringFn" />
+    description: ''
   - name: ScoringFnParams
-    description: <SchemaDefinition schemaRef="#/components/schemas/ScoringFnParams"
-      />
+    description: ''
   - name: ScoringFunctions
   - name: ScoringResult
-    description: <SchemaDefinition schemaRef="#/components/schemas/ScoringResult"
-      />
+    description: ''
   - name: Session
-    description: "A single session of an interaction with an Agentic System.\n\n<SchemaDefinition
-      schemaRef=\"#/components/schemas/Session\" />"
+    description: A single session of an interaction with an Agentic System.
   - name: Shield
-    description: "A safety shield resource that can be used to check content\n\n<SchemaDefinition
-      schemaRef=\"#/components/schemas/Shield\" />"
+    description: A safety shield resource that can be used to check content
   - name: ShieldCallStep
-    description: <SchemaDefinition schemaRef="#/components/schemas/ShieldCallStep"
-      />
+    description: ''
   - name: Shields
   - name: Span
-    description: <SchemaDefinition schemaRef="#/components/schemas/Span" />
+    description: ''
   - name: SpanEndPayload
-    description: <SchemaDefinition schemaRef="#/components/schemas/SpanEndPayload"
-      />
+    description: ''
   - name: SpanStartPayload
-    description: <SchemaDefinition schemaRef="#/components/schemas/SpanStartPayload"
-      />
+    description: ''
   - name: SpanStatus
-    description: <SchemaDefinition schemaRef="#/components/schemas/SpanStatus" />
+    description: ''
   - name: SpanWithStatus
-    description: <SchemaDefinition schemaRef="#/components/schemas/SpanWithStatus"
-      />
+    description: ''
   - name: StopReason
-    description: <SchemaDefinition schemaRef="#/components/schemas/StopReason" />
+    description: ''
   - name: StringType
-    description: <SchemaDefinition schemaRef="#/components/schemas/StringType" />
+    description: ''
   - name: StructuredLogEvent
-    description: <SchemaDefinition schemaRef="#/components/schemas/StructuredLogEvent"
-      />
+    description: ''
   - name: StructuredLogPayload
-    description: <SchemaDefinition schemaRef="#/components/schemas/StructuredLogPayload"
-      />
+    description: ''
   - name: SupervisedFineTuneRequest
-    description: <SchemaDefinition schemaRef="#/components/schemas/SupervisedFineTuneRequest"
-      />
+    description: ''
   - name: SyntheticDataGenerateRequest
-    description: <SchemaDefinition schemaRef="#/components/schemas/SyntheticDataGenerateRequest"
-      />
+    description: ''
   - name: SyntheticDataGeneration (Coming Soon)
   - name: SyntheticDataGenerationResponse
-    description: "Response from the synthetic data generation. Batch of (prompt, response,
-      score) tuples that pass the threshold.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/SyntheticDataGenerationResponse\"\
-      \ />"
+    description: Response from the synthetic data generation. Batch of (prompt, response,
+      score) tuples that pass the threshold.
   - name: SystemMessage
-    description: <SchemaDefinition schemaRef="#/components/schemas/SystemMessage"
-      />
+    description: ''
   - name: Telemetry
   - name: TextContentItem
-    description: <SchemaDefinition schemaRef="#/components/schemas/TextContentItem"
-      />
+    description: ''
   - name: TextDelta
-    description: <SchemaDefinition schemaRef="#/components/schemas/TextDelta" />
+    description: ''
   - name: TokenLogProbs
-    description: <SchemaDefinition schemaRef="#/components/schemas/TokenLogProbs"
-      />
+    description: ''
   - name: Tool
-    description: <SchemaDefinition schemaRef="#/components/schemas/Tool" />
+    description: ''
   - name: ToolCall
-    description: <SchemaDefinition schemaRef="#/components/schemas/ToolCall" />
+    description: ''
   - name: ToolCallDelta
-    description: <SchemaDefinition schemaRef="#/components/schemas/ToolCallDelta"
-      />
+    description: ''
   - name: ToolCallParseStatus
-    description: <SchemaDefinition schemaRef="#/components/schemas/ToolCallParseStatus"
-      />
+    description: ''
   - name: ToolChoice
-    description: <SchemaDefinition schemaRef="#/components/schemas/ToolChoice" />
+    description: ''
   - name: ToolDef
-    description: <SchemaDefinition schemaRef="#/components/schemas/ToolDef" />
+    description: ''
   - name: ToolDefinition
-    description: <SchemaDefinition schemaRef="#/components/schemas/ToolDefinition"
-      />
+    description: ''
   - name: ToolExecutionStep
-    description: <SchemaDefinition schemaRef="#/components/schemas/ToolExecutionStep"
-      />
+    description: ''
   - name: ToolGroup
-    description: <SchemaDefinition schemaRef="#/components/schemas/ToolGroup" />
+    description: ''
   - name: ToolGroups
   - name: ToolHost
-    description: <SchemaDefinition schemaRef="#/components/schemas/ToolHost" />
+    description: ''
   - name: ToolInvocationResult
-    description: <SchemaDefinition schemaRef="#/components/schemas/ToolInvocationResult"
-      />
+    description: ''
   - name: ToolParamDefinition
-    description: <SchemaDefinition schemaRef="#/components/schemas/ToolParamDefinition"
-      />
+    description: ''
   - name: ToolParameter
-    description: <SchemaDefinition schemaRef="#/components/schemas/ToolParameter"
-      />
+    description: ''
   - name: ToolPromptFormat
     description: "This Enum refers to the prompt format for calling custom / zero
       shot tools\n\n`json` --\n    Refers to the json format for calling tools.\n\
@@ -6245,46 +6111,38 @@ tags:
       : {...}\n        }\n    }\n\n`function_tag` --\n    This is an example of how
       you could define\n    your own user defined format for making tool calls.\n\
       \    The function_tag format looks like this,\n    <function=function_name>(parameters)</function>\n
-      \nThe detailed prompts for each of these formats are added to llama cli\n\n
-      <SchemaDefinition schemaRef=\"#/components/schemas/ToolPromptFormat\" />"
+      \nThe detailed prompts for each of these formats are added to llama cli"
   - name: ToolResponse
-    description: <SchemaDefinition schemaRef="#/components/schemas/ToolResponse" />
+    description: ''
   - name: ToolResponseMessage
-    description: <SchemaDefinition schemaRef="#/components/schemas/ToolResponseMessage"
-      />
+    description: ''
   - name: ToolRuntime
   - name: TopKSamplingStrategy
-    description: <SchemaDefinition schemaRef="#/components/schemas/TopKSamplingStrategy"
-      />
+    description: ''
   - name: TopPSamplingStrategy
-    description: <SchemaDefinition schemaRef="#/components/schemas/TopPSamplingStrategy"
-      />
+    description: ''
   - name: Trace
-    description: <SchemaDefinition schemaRef="#/components/schemas/Trace" />
+    description: ''
   - name: TrainingConfig
-    description: <SchemaDefinition schemaRef="#/components/schemas/TrainingConfig"
-      />
+    description: ''
   - name: Turn
-    description: "A single turn in an interaction with an Agentic System.\n\n<SchemaDefinition
-      schemaRef=\"#/components/schemas/Turn\" />"
+    description: A single turn in an interaction with an Agentic System.
   - name: URL
-    description: <SchemaDefinition schemaRef="#/components/schemas/URL" />
+    description: ''
   - name: UnionType
-    description: <SchemaDefinition schemaRef="#/components/schemas/UnionType" />
+    description: ''
   - name: UnstructuredLogEvent
-    description: <SchemaDefinition schemaRef="#/components/schemas/UnstructuredLogEvent"
-      />
+    description: ''
   - name: UserMessage
-    description: <SchemaDefinition schemaRef="#/components/schemas/UserMessage" />
+    description: ''
   - name: VectorDB
-    description: <SchemaDefinition schemaRef="#/components/schemas/VectorDB" />
+    description: ''
   - name: VectorDBs
   - name: VectorIO
   - name: VersionInfo
-    description: <SchemaDefinition schemaRef="#/components/schemas/VersionInfo" />
+    description: ''
   - name: ViolationLevel
-    description: <SchemaDefinition schemaRef="#/components/schemas/ViolationLevel"
-      />
+    description: ''
 x-tagGroups:
   - name: Operations
     tags:
