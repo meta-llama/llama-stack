@@ -25,6 +25,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from llama_stack.apis.common.content_types import ContentDelta, InterleavedContent, URL
 from llama_stack.apis.inference import (
     CompletionMessage,
+    ResponseFormat,
     SamplingParams,
     ToolCall,
     ToolChoice,
@@ -32,7 +33,6 @@ from llama_stack.apis.inference import (
     ToolResponse,
     ToolResponseMessage,
     UserMessage,
-    ResponseFormat
 )
 from llama_stack.apis.safety import SafetyViolation
 from llama_stack.apis.tools import ToolDef
