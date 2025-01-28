@@ -64,6 +64,9 @@ def main(output_dir: str):
         y = yaml.YAML()
         y.default_flow_style = False
         y.block_seq_indent = 2
+        y.map_indent = 2
+        y.sequence_indent = 4
+        y.sequence_dash_offset = 2
         y.dump(
             spec.get_json(),
             fp,
