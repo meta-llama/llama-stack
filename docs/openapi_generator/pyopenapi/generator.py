@@ -403,14 +403,16 @@ class Generator:
         self.responses = {}
 
     def _build_type_tag(self, ref: str, schema: Schema) -> Tag:
-        definition = f'<SchemaDefinition schemaRef="#/components/schemas/{ref}" />'
+        # Don't include schema definition in the tag description because for one,
+        # it is not very valuable and for another, it causes string formatting
+        # discrepancies via the Stainless Studio.
+        #
+        # definition = f'<SchemaDefinition schemaRef="#/components/schemas/{ref}" />'
         title = typing.cast(str, schema.get("title"))
         description = typing.cast(str, schema.get("description"))
         return Tag(
             name=ref,
-            description="\n\n".join(
-                s for s in (title, description, definition) if s is not None
-            ),
+            description="\n\n".join(s for s in (title, description) if s is not None),
         )
 
     def _build_extra_tag_groups(
