@@ -4,11 +4,10 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import collections
 import hashlib
 import ipaddress
 import typing
-from dataclasses import field, make_dataclass
+from dataclasses import make_dataclass
 from typing import Any, Dict, Set, Union
 
 from ..strong_typing.core import JsonType

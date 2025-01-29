@@ -35,11 +35,23 @@ from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
 
 
 class LogProbConfig(BaseModel):
+    """
+
+    :param top_k: How many tokens (for each position) to return log probabilities for.
+    """
+
     top_k: Optional[int] = 0
 
 
 @json_schema_type
 class QuantizationType(Enum):
+    """Type of model quantization to run inference with.
+
+    :cvar bf16: BFloat16 typically this means _no_ quantization
+    :cvar fp8: 8-bit floating point quantization
+    :cvar int4: 4-bit integer quantization
+    """
+
     bf16 = "bf16"
     fp8 = "fp8"
     int4 = "int4"
@@ -57,6 +69,12 @@ class Bf16QuantizationConfig(BaseModel):
 
 @json_schema_type
 class Int4QuantizationConfig(BaseModel):
+    """Configuration for 4-bit integer quantization.
+
+    :param type: Must be "int4" to identify this quantization type
+    :param scheme: Quantization scheme to use. Defaults to "int4_weight_int8_dynamic_activation"
+    """
+
     type: Literal["int4"] = "int4"
     scheme: Optional[str] = "int4_weight_int8_dynamic_activation"
 
@@ -69,6 +87,13 @@ QuantizationConfig = Annotated[
 
 @json_schema_type
 class UserMessage(BaseModel):
+    """A message from the user in a chat conversation.
+
+    :param role: Must be "user" to identify this as a user message
+    :param content: The content of the message, which can include text and other media
+    :param context: (Optional) This field is used internally by Llama Stack to pass RAG context. This field may be removed in the API in the future.
+    """
+
     role: Literal["user"] = "user"
     content: InterleavedContent
     context: Optional[InterleavedContent] = None
@@ -76,15 +101,27 @@ class UserMessage(BaseModel):
 
 @json_schema_type
 class SystemMessage(BaseModel):
+    """A system message providing instructions or context to the model.
+
+    :param role: Must be "system" to identify this as a system message
+    :param content: The content of the "system prompt". If multiple system messages are provided, they are concatenated. The underlying Llama Stack code may also add other system messages (for example, for formatting tool definitions).
+    """
+
     role: Literal["system"] = "system"
     content: InterleavedContent
 
 
 @json_schema_type
 class ToolResponseMessage(BaseModel):
+    """A message representing the result of a tool invocation.
+
+    :param role: Must be "tool" to identify this as a tool response
+    :param call_id: Unique identifier for the tool call this response is for
+    :param tool_name: Name of the tool that was called
+    :param content: The response content from the tool
+    """
+
     role: Literal["tool"] = "tool"
-    # it was nice to re-use the ToolResponse type, but having all messages
-    # have a `content` type makes things nicer too
     call_id: str
     tool_name: Union[BuiltinTool, str]
     content: InterleavedContent
@@ -92,6 +129,17 @@ class ToolResponseMessage(BaseModel):
 
 @json_schema_type
 class CompletionMessage(BaseModel):
+    """A message containing the model's (assistant) response in a chat conversation.
+
+    :param role: Must be "assistant" to identify this as the model's response
+    :param content: The content of the model's response
+    :param stop_reason: Reason why the model stopped generating. Options are:
+        - `StopReason.end_of_turn`: The model finished generating the entire response.
+        - `StopReason.end_of_message`: The model finished generating but generated a partial response -- usually, a tool call. The user may call the tool and continue the conversation with the tool's response.
+        - `StopReason.out_of_tokens`: The model ran out of token budget.
+    :param tool_calls: List of tool calls. Each tool call is a ToolCall object.
+    """
+
     role: Literal["assistant"] = "assistant"
     content: InterleavedContent
     stop_reason: StopReason
@@ -131,17 +179,35 @@ class ToolResponse(BaseModel):
 
 @json_schema_type
 class ToolChoice(Enum):
+    """Whether tool use is required or automatic. This is a hint to the model which may not be followed. It depends on the Instruction Following capabilities of the model.
+
+    :cvar auto: The model may use tools if it determines that is appropriate.
+    :cvar required: The model must use tools.
+    """
+
     auto = "auto"
     required = "required"
 
 
 @json_schema_type
 class TokenLogProbs(BaseModel):
+    """Log probabilities for generated tokens.
+
+    :param logprobs_by_token: Dictionary mapping tokens to their log probabilities
+    """
+
     logprobs_by_token: Dict[str, float]
 
 
 @json_schema_type
 class ChatCompletionResponseEventType(Enum):
+    """Types of events that can occur during chat completion.
+
+    :cvar start: Inference has started
+    :cvar complete: Inference is complete and a full response is available
+    :cvar progress: Inference is in progress and a partial response is available
+    """
+
     start = "start"
     complete = "complete"
     progress = "progress"
@@ -149,7 +215,13 @@ class ChatCompletionResponseEventType(Enum):
 
 @json_schema_type
 class ChatCompletionResponseEvent(BaseModel):
-    """Chat completion response event."""
+    """An event during chat completion generation.
+
+    :param event_type: Type of the event
+    :param delta: Content generated since last event. This can be one or more tokens, or a tool call.
+    :param logprobs: Optional log probabilities for generated tokens
+    :param stop_reason: Optional reason why generation stopped, if complete
+    """
 
     event_type: ChatCompletionResponseEventType
     delta: ContentDelta
@@ -159,12 +231,24 @@ class ChatCompletionResponseEvent(BaseModel):
 
 @json_schema_type
 class ResponseFormatType(Enum):
+    """Types of formats for structured (guided) decoding.
+
+    :cvar json_schema: Response should conform to a JSON schema. In a Python SDK, this is often a `pydantic` model.
+    :cvar grammar: Response should conform to a BNF grammar
+    """
+
     json_schema = "json_schema"
     grammar = "grammar"
 
 
 @json_schema_type
 class JsonSchemaResponseFormat(BaseModel):
+    """Configuration for JSON schema-guided response generation.
+
+    :param type: Must be "json_schema" to identify this format type
+    :param json_schema: The JSON schema the response should conform to. In a Python SDK, this is often a `pydantic` model.
+    """
+
     type: Literal[ResponseFormatType.json_schema.value] = (
         ResponseFormatType.json_schema.value
     )
@@ -173,6 +257,12 @@ class JsonSchemaResponseFormat(BaseModel):
 
 @json_schema_type
 class GrammarResponseFormat(BaseModel):
+    """Configuration for grammar-guided response generation.
+
+    :param type: Must be "grammar" to identify this format type
+    :param bnf: The BNF grammar specification the response should conform to
+    """
+
     type: Literal[ResponseFormatType.grammar.value] = ResponseFormatType.grammar.value
     bnf: Dict[str, Any]
 
@@ -186,19 +276,24 @@ ResponseFormat = register_schema(
 )
 
 
+# This is an internally used class
 class CompletionRequest(BaseModel):
     model: str
     content: InterleavedContent
     sampling_params: Optional[SamplingParams] = SamplingParams()
     response_format: Optional[ResponseFormat] = None
-
     stream: Optional[bool] = False
     logprobs: Optional[LogProbConfig] = None
 
 
 @json_schema_type
 class CompletionResponse(BaseModel):
-    """Completion response."""
+    """Response from a completion request.
+
+    :param content: The generated completion text
+    :param stop_reason: Reason why generation stopped
+    :param logprobs: Optional log probabilities for generated tokens
+    """
 
     content: str
     stop_reason: StopReason
@@ -207,41 +302,60 @@ class CompletionResponse(BaseModel):
 
 @json_schema_type
 class CompletionResponseStreamChunk(BaseModel):
-    """streamed completion response."""
+    """A chunk of a streamed completion response.
+
+    :param delta: New content generated since last chunk. This can be one or more tokens.
+    :param stop_reason: Optional reason why generation stopped, if complete
+    :param logprobs: Optional log probabilities for generated tokens
+    """
 
     delta: str
     stop_reason: Optional[StopReason] = None
     logprobs: Optional[List[TokenLogProbs]] = None
 
 
+# This is an internally used class
 class ChatCompletionRequest(BaseModel):
     model: str
     messages: List[Message]
     sampling_params: Optional[SamplingParams] = SamplingParams()
-
-    # zero-shot tool definitions as input to the model
     tools: Optional[List[ToolDefinition]] = Field(default_factory=list)
     tool_choice: Optional[ToolChoice] = Field(default=ToolChoice.auto)
     tool_prompt_format: Optional[ToolPromptFormat] = Field(default=None)
     response_format: Optional[ResponseFormat] = None
-
     stream: Optional[bool] = False
     logprobs: Optional[LogProbConfig] = None
 
 
 @json_schema_type
 class ChatCompletionResponseStreamChunk(BaseModel):
+    """A chunk of a streamed chat completion response.
+
+    :param event: The event containing the new content
+    """
+
     event: ChatCompletionResponseEvent
 
 
 @json_schema_type
 class ChatCompletionResponse(BaseModel):
+    """Response from a chat completion request.
+
+    :param completion_message: The complete response message
+    :param logprobs: Optional log probabilities for generated tokens
+    """
+
     completion_message: CompletionMessage
     logprobs: Optional[List[TokenLogProbs]] = None
 
 
 @json_schema_type
 class EmbeddingsResponse(BaseModel):
+    """Response containing generated embeddings.
+
+    :param embeddings: List of embedding vectors, one per input content. Each embedding is a list of floats. The dimensionality of the embedding is model-specific; you can check model metadata using /models/{model_id}
+    """
+
     embeddings: List[List[float]]
 
 
@@ -266,7 +380,7 @@ class Inference(Protocol):
     ) -> Union[CompletionResponse, AsyncIterator[CompletionResponseStreamChunk]]:
         """Generate a completion for the given content using the specified model.
 
-        :param model_id: The identifier of the model to use
+        :param model_id: The identifier of the model to use. The model must be registered with Llama Stack and available via the /models endpoint.
         :param content: The content to generate a completion for
         :param sampling_params: (Optional) Parameters to control the sampling strategy
         :param response_format: (Optional) Grammar specification for guided (structured) decoding
@@ -294,13 +408,18 @@ class Inference(Protocol):
     ]:
         """Generate a chat completion for the given messages using the specified model.
 
-        :param model_id: The identifier of the model to use
+        :param model_id: The identifier of the model to use. The model must be registered with Llama Stack and available via the /models endpoint.
         :param messages: List of messages in the conversation
         :param sampling_params: Parameters to control the sampling strategy
         :param tools: (Optional) List of tool definitions available to the model
         :param tool_choice: (Optional) Whether tool use is required or automatic. Defaults to ToolChoice.auto.
-        :param tool_prompt_format: (Optional) Specifies how tool definitions are formatted when presenting to the model
-        :param response_format: (Optional) Grammar specification for guided (structured) decoding
+        :param tool_prompt_format: (Optional) Instructs the model how to format tool calls. By default, Llama Stack will attempt to use a format that is best adapted to the model.
+            - `ToolPromptFormat.json`: The tool calls are formatted as a JSON object.
+            - `ToolPromptFormat.function_tag`: The tool calls are enclosed in a <function=function_name> tag.
+            - `ToolPromptFormat.python_list`: The tool calls are output as Python syntax -- a list of function calls.
+        :param response_format: (Optional) Grammar specification for guided (structured) decoding. There are two options:
+            - `ResponseFormat.json_schema`: The grammar is a JSON schema. Most providers support this format.
+            - `ResponseFormat.grammar`: The grammar is a BNF grammar. This format is more flexible, but not all providers support it.
         :param stream: (Optional) If True, generate an SSE event stream of the response. Defaults to False.
         :param logprobs: (Optional) If specified, log probabilities for each token position will be returned.
         :returns: If stream=False, returns a ChatCompletionResponse with the full completion.
@@ -316,8 +435,8 @@ class Inference(Protocol):
     ) -> EmbeddingsResponse:
         """Generate embeddings for content pieces using the specified model.
 
-        :param model_id: The identifier of the model to use
-        :param contents: List of contents to generate embeddings for. Note that content can be multimodal.
-        :returns: An array of embeddings, one for each content. Each embedding is a list of floats.
+        :param model_id: The identifier of the model to use. The model must be an embedding model registered with Llama Stack and available via the /models endpoint.
+        :param contents: List of contents to generate embeddings for. Note that content can be multimodal. The behavior depends on the model and provider. Some models may only support text.
+        :returns: An array of embeddings, one for each content. Each embedding is a list of floats. The dimensionality of the embedding is model-specific; you can check model metadata using /models/{model_id}
         """
         ...

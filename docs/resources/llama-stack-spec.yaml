@@ -291,7 +291,8 @@ paths:
         '200':
           description: >-
             An array of embeddings, one for each content. Each embedding is a list
-            of floats.
+            of floats. The dimensionality of the embedding is model-specific; you
+            can check model metadata using /models/{model_id}
           content:
             application/json:
               schema:
@@ -1396,20 +1397,34 @@ components:
           type: string
           const: assistant
           default: assistant
+          description: >-
+            Must be "assistant" to identify this as the model's response
         content:
           $ref: '#/components/schemas/InterleavedContent'
+          description: The content of the model's response
         stop_reason:
           $ref: '#/components/schemas/StopReason'
+          description: >-
+            Reason why the model stopped generating. Options are: - `StopReason.end_of_turn`:
+            The model finished generating the entire response. - `StopReason.end_of_message`:
+            The model finished generating but generated a partial response -- usually,
+            a tool call. The user may call the tool and continue the conversation
+            with the tool's response. - `StopReason.out_of_tokens`: The model ran
+            out of token budget.
         tool_calls:
           type: array
           items:
             $ref: '#/components/schemas/ToolCall'
+          description: >-
+            List of tool calls. Each tool call is a ToolCall object.
       additionalProperties: false
       required:
         - role
         - content
         - stop_reason
         - tool_calls
+      title: >-
+        A message containing the model's (assistant) response in a chat conversation.
     GrammarResponseFormat:
       type: object
       properties:
@@ -1417,6 +1432,8 @@ components:
           type: string
           const: grammar
           default: grammar
+          description: >-
+            Must be "grammar" to identify this format type
         bnf:
           type: object
           additionalProperties:
@@ -1427,10 +1444,14 @@ components:
               - type: string
               - type: array
               - type: object
+          description: >-
+            The BNF grammar specification the response should conform to
       additionalProperties: false
       required:
         - type
         - bnf
+      title: >-
+        Configuration for grammar-guided response generation.
     GreedySamplingStrategy:
       type: object
       properties:
@@ -1484,6 +1505,8 @@ components:
           type: string
           const: json_schema
           default: json_schema
+          description: >-
+            Must be "json_schema" to identify this format type
         json_schema:
           type: object
           additionalProperties:
@@ -1494,10 +1517,15 @@ components:
               - type: string
               - type: array
               - type: object
+          description: >-
+            The JSON schema the response should conform to. In a Python SDK, this
+            is often a `pydantic` model.
       additionalProperties: false
       required:
         - type
         - json_schema
+      title: >-
+        Configuration for JSON schema-guided response generation.
     Message:
       oneOf:
         - $ref: '#/components/schemas/UserMessage'
@@ -1556,12 +1584,20 @@ components:
           type: string
           const: system
           default: system
+          description: >-
+            Must be "system" to identify this as a system message
         content:
           $ref: '#/components/schemas/InterleavedContent'
+          description: >-
+            The content of the "system prompt". If multiple system messages are provided,
+            they are concatenated. The underlying Llama Stack code may also add other
+            system messages (for example, for formatting tool definitions).
       additionalProperties: false
       required:
         - role
         - content
+      title: >-
+        A system message providing instructions or context to the model.
     TextContentItem:
       type: object
       properties:
@@ -1619,6 +1655,10 @@ components:
       enum:
         - auto
         - required
+      title: >-
+        Whether tool use is required or automatic. This is a hint to the model which
+        may not be followed. It depends on the Instruction Following capabilities
+        of the model.
     ToolDefinition:
       type: object
       properties:
@@ -1691,20 +1731,28 @@ components:
           type: string
           const: tool
           default: tool
+          description: >-
+            Must be "tool" to identify this as a tool response
         call_id:
           type: string
+          description: >-
+            Unique identifier for the tool call this response is for
         tool_name:
           oneOf:
             - $ref: '#/components/schemas/BuiltinTool'
             - type: string
+          description: Name of the tool that was called
         content:
           $ref: '#/components/schemas/InterleavedContent'
+          description: The response content from the tool
       additionalProperties: false
       required:
         - role
         - call_id
         - tool_name
         - content
+      title: >-
+        A message representing the result of a tool invocation.
     TopKSamplingStrategy:
       type: object
       properties:
@@ -1748,14 +1796,23 @@ components:
           type: string
           const: user
           default: user
+          description: >-
+            Must be "user" to identify this as a user message
         content:
           $ref: '#/components/schemas/InterleavedContent'
+          description: >-
+            The content of the message, which can include text and other media
         context:
           $ref: '#/components/schemas/InterleavedContent'
+          description: >-
+            (Optional) This field is used internally by Llama Stack to pass RAG context.
+            This field may be removed in the API in the future.
       additionalProperties: false
       required:
         - role
         - content
+      title: >-
+        A message from the user in a chat conversation.
     BatchChatCompletionRequest:
       type: object
       properties:
@@ -1785,6 +1842,8 @@ components:
             top_k:
               type: integer
               default: 0
+              description: >-
+                How many tokens (for each position) to return log probabilities for.
           additionalProperties: false
       additionalProperties: false
       required:
@@ -1805,13 +1864,17 @@ components:
       properties:
         completion_message:
           $ref: '#/components/schemas/CompletionMessage'
+          description: The complete response message
         logprobs:
           type: array
           items:
             $ref: '#/components/schemas/TokenLogProbs'
+          description: >-
+            Optional log probabilities for generated tokens
       additionalProperties: false
       required:
         - completion_message
+      title: Response from a chat completion request.
     TokenLogProbs:
       type: object
       properties:
@@ -1819,9 +1882,12 @@ components:
           type: object
           additionalProperties:
             type: number
+          description: >-
+            Dictionary mapping tokens to their log probabilities
       additionalProperties: false
       required:
         - logprobs_by_token
+      title: Log probabilities for generated tokens.
     BatchCompletionRequest:
       type: object
       properties:
@@ -1841,6 +1907,8 @@ components:
             top_k:
               type: integer
               default: 0
+              description: >-
+                How many tokens (for each position) to return log probabilities for.
           additionalProperties: false
       additionalProperties: false
       required:
@@ -1861,17 +1929,21 @@ components:
       properties:
         content:
           type: string
+          description: The generated completion text
         stop_reason:
           $ref: '#/components/schemas/StopReason'
+          description: Reason why generation stopped
         logprobs:
           type: array
           items:
             $ref: '#/components/schemas/TokenLogProbs'
+          description: >-
+            Optional log probabilities for generated tokens
       additionalProperties: false
       required:
         - content
         - stop_reason
-      title: Completion response.
+      title: Response from a completion request.
     CancelTrainingJobRequest:
       type: object
       properties:
@@ -1885,7 +1957,9 @@ components:
       properties:
         model_id:
           type: string
-          description: The identifier of the model to use
+          description: >-
+            The identifier of the model to use. The model must be registered with
+            Llama Stack and available via the /models endpoint.
         messages:
           type: array
           items:
@@ -1908,12 +1982,20 @@ components:
         tool_prompt_format:
           $ref: '#/components/schemas/ToolPromptFormat'
           description: >-
-            (Optional) Specifies how tool definitions are formatted when presenting
-            to the model
+            (Optional) Instructs the model how to format tool calls. By default, Llama
+            Stack will attempt to use a format that is best adapted to the model.
+            - `ToolPromptFormat.json`: The tool calls are formatted as a JSON object.
+            - `ToolPromptFormat.function_tag`: The tool calls are enclosed in a <function=function_name>
+            tag. - `ToolPromptFormat.python_list`: The tool calls are output as Python
+            syntax -- a list of function calls.
         response_format:
           $ref: '#/components/schemas/ResponseFormat'
           description: >-
-            (Optional) Grammar specification for guided (structured) decoding
+            (Optional) Grammar specification for guided (structured) decoding. There
+            are two options: - `ResponseFormat.json_schema`: The grammar is a JSON
+            schema. Most providers support this format. - `ResponseFormat.grammar`:
+            The grammar is a BNF grammar. This format is more flexible, but not all
+            providers support it.
         stream:
           type: boolean
           description: >-
@@ -1925,6 +2007,8 @@ components:
             top_k:
               type: integer
               default: 0
+              description: >-
+                How many tokens (for each position) to return log probabilities for.
           additionalProperties: false
           description: >-
             (Optional) If specified, log probabilities for each token position will
@@ -1938,33 +2022,47 @@ components:
       properties:
         event_type:
           $ref: '#/components/schemas/ChatCompletionResponseEventType'
+          description: Type of the event
         delta:
           $ref: '#/components/schemas/ContentDelta'
+          description: >-
+            Content generated since last event. This can be one or more tokens, or
+            a tool call.
         logprobs:
           type: array
           items:
             $ref: '#/components/schemas/TokenLogProbs'
+          description: >-
+            Optional log probabilities for generated tokens
         stop_reason:
           $ref: '#/components/schemas/StopReason'
+          description: >-
+            Optional reason why generation stopped, if complete
       additionalProperties: false
       required:
         - event_type
         - delta
-      title: Chat completion response event.
+      title: >-
+        An event during chat completion generation.
     ChatCompletionResponseEventType:
       type: string
       enum:
         - start
         - complete
         - progress
+      title: >-
+        Types of events that can occur during chat completion.
     ChatCompletionResponseStreamChunk:
       type: object
       properties:
         event:
           $ref: '#/components/schemas/ChatCompletionResponseEvent'
+          description: The event containing the new content
       additionalProperties: false
       required:
         - event
+      title: >-
+        A chunk of a streamed chat completion response.
     ContentDelta:
       oneOf:
         - $ref: '#/components/schemas/TextDelta'
@@ -2033,7 +2131,9 @@ components:
       properties:
         model_id:
           type: string
-          description: The identifier of the model to use
+          description: >-
+            The identifier of the model to use. The model must be registered with
+            Llama Stack and available via the /models endpoint.
         content:
           $ref: '#/components/schemas/InterleavedContent'
           description: The content to generate a completion for
@@ -2056,6 +2156,8 @@ components:
             top_k:
               type: integer
               default: 0
+              description: >-
+                How many tokens (for each position) to return log probabilities for.
           additionalProperties: false
           description: >-
             (Optional) If specified, log probabilities for each token position will
@@ -2069,16 +2171,23 @@ components:
       properties:
         delta:
           type: string
+          description: >-
+            New content generated since last chunk. This can be one or more tokens.
         stop_reason:
           $ref: '#/components/schemas/StopReason'
+          description: >-
+            Optional reason why generation stopped, if complete
         logprobs:
           type: array
           items:
             $ref: '#/components/schemas/TokenLogProbs'
+          description: >-
+            Optional log probabilities for generated tokens
       additionalProperties: false
       required:
         - delta
-      title: streamed completion response.
+      title: >-
+        A chunk of a streamed completion response.
     AgentConfig:
       type: object
       properties:
@@ -2633,14 +2742,17 @@ components:
       properties:
         model_id:
           type: string
-          description: The identifier of the model to use
+          description: >-
+            The identifier of the model to use. The model must be an embedding model
+            registered with Llama Stack and available via the /models endpoint.
         contents:
           type: array
           items:
             $ref: '#/components/schemas/InterleavedContent'
           description: >-
             List of contents to generate embeddings for. Note that content can be
-            multimodal.
+            multimodal. The behavior depends on the model and provider. Some models
+            may only support text.
       additionalProperties: false
       required:
         - model_id
@@ -2654,9 +2766,15 @@ components:
             type: array
             items:
               type: number
+          description: >-
+            List of embedding vectors, one per input content. Each embedding is a
+            list of floats. The dimensionality of the embedding is model-specific;
+            you can check model metadata using /models/{model_id}
       additionalProperties: false
       required:
         - embeddings
+      title: >-
+        Response containing generated embeddings.
     AgentCandidate:
       type: object
       properties:
@@ -4833,25 +4951,30 @@ tags:
   - name: ChatCompletionRequest
     description: ''
   - name: ChatCompletionResponse
-    description: ''
+    description: Response from a chat completion request.
   - name: ChatCompletionResponseEvent
-    description: Chat completion response event.
+    description: >-
+      An event during chat completion generation.
   - name: ChatCompletionResponseEventType
-    description: ''
+    description: >-
+      Types of events that can occur during chat completion.
   - name: ChatCompletionResponseStreamChunk
-    description: ''
+    description: >-
+      A chunk of a streamed chat completion response.
   - name: Checkpoint
     description: Checkpoint created during training runs
   - name: CompletionInputType
     description: ''
   - name: CompletionMessage
-    description: ''
+    description: >-
+      A message containing the model's (assistant) response in a chat conversation.
   - name: CompletionRequest
     description: ''
   - name: CompletionResponse
-    description: Completion response.
+    description: Response from a completion request.
   - name: CompletionResponseStreamChunk
-    description: streamed completion response.
+    description: >-
+      A chunk of a streamed completion response.
   - name: ContentDelta
     description: ''
   - name: CreateAgentRequest
@@ -4877,7 +5000,8 @@ tags:
   - name: EmbeddingsRequest
     description: ''
   - name: EmbeddingsResponse
-    description: ''
+    description: >-
+      Response containing generated embeddings.
   - name: Eval
   - name: EvalCandidate
     description: ''
@@ -4893,7 +5017,8 @@ tags:
   - name: Event
     description: ''
   - name: GrammarResponseFormat
-    description: ''
+    description: >-
+      Configuration for grammar-guided response generation.
   - name: GreedySamplingStrategy
     description: ''
   - name: HealthInfo
@@ -4921,7 +5046,8 @@ tags:
   - name: JobStatus
     description: ''
   - name: JsonSchemaResponseFormat
-    description: ''
+    description: >-
+      Configuration for JSON schema-guided response generation.
   - name: JsonType
     description: ''
   - name: LLMAsJudgeScoringFnParams
@@ -5104,14 +5230,15 @@ tags:
       Response from the synthetic data generation. Batch of (prompt, response, score)
       tuples that pass the threshold.
   - name: SystemMessage
-    description: ''
+    description: >-
+      A system message providing instructions or context to the model.
   - name: Telemetry
   - name: TextContentItem
     description: ''
   - name: TextDelta
     description: ''
   - name: TokenLogProbs
-    description: ''
+    description: Log probabilities for generated tokens.
   - name: Tool
     description: ''
   - name: ToolCall
@@ -5121,7 +5248,10 @@ tags:
   - name: ToolCallParseStatus
     description: ''
   - name: ToolChoice
-    description: ''
+    description: >-
+      Whether tool use is required or automatic. This is a hint to the model which
+      may not be followed. It depends on the Instruction Following capabilities of
+      the model.
   - name: ToolDef
     description: ''
   - name: ToolDefinition
@@ -5166,7 +5296,8 @@ tags:
   - name: ToolResponse
     description: ''
   - name: ToolResponseMessage
-    description: ''
+    description: >-
+      A message representing the result of a tool invocation.
   - name: ToolRuntime
   - name: TopKSamplingStrategy
     description: ''
@@ -5186,7 +5317,8 @@ tags:
   - name: UnstructuredLogEvent
     description: ''
   - name: UserMessage
-    description: ''
+    description: >-
+      A message from the user in a chat conversation.
   - name: VectorDB
     description: ''
   - name: VectorDBs
