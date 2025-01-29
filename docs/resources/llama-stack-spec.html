@@ -2337,15 +2337,6 @@
                     "rows"
                 ]
             },
-            "BuiltinTool": {
-                "type": "string",
-                "enum": [
-                    "brave_search",
-                    "wolfram_alpha",
-                    "photogen",
-                    "code_interpreter"
-                ]
-            },
             "CompletionMessage": {
                 "type": "object",
                 "properties": {
@@ -2360,7 +2351,12 @@
                         "description": "The content of the model's response"
                     },
                     "stop_reason": {
-                        "$ref": "#/components/schemas/StopReason",
+                        "type": "string",
+                        "enum": [
+                            "end_of_turn",
+                            "end_of_message",
+                            "out_of_tokens"
+                        ],
                         "description": "Reason why the model stopped generating. Options are: - `StopReason.end_of_turn`: The model finished generating the entire response. - `StopReason.end_of_message`: The model finished generating but generated a partial response -- usually, a tool call. The user may call the tool and continue the conversation with the tool's response. - `StopReason.out_of_tokens`: The model ran out of token budget."
                     },
                     "tool_calls": {
@@ -2587,25 +2583,7 @@
                 "type": "object",
                 "properties": {
                     "strategy": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/GreedySamplingStrategy"
-                            },
-                            {
-                                "$ref": "#/components/schemas/TopPSamplingStrategy"
-                            },
-                            {
-                                "$ref": "#/components/schemas/TopKSamplingStrategy"
-                            }
-                        ],
-                        "discriminator": {
-                            "propertyName": "type",
-                            "mapping": {
-                                "greedy": "#/components/schemas/GreedySamplingStrategy",
-                                "top_p": "#/components/schemas/TopPSamplingStrategy",
-                                "top_k": "#/components/schemas/TopKSamplingStrategy"
-                            }
-                        }
+                        "$ref": "#/components/schemas/SamplingStrategy"
                     },
                     "max_tokens": {
                         "type": "integer",
@@ -2621,13 +2599,26 @@
                     "strategy"
                 ]
             },
-            "StopReason": {
-                "type": "string",
-                "enum": [
-                    "end_of_turn",
-                    "end_of_message",
-                    "out_of_tokens"
-                ]
+            "SamplingStrategy": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/GreedySamplingStrategy"
+                    },
+                    {
+                        "$ref": "#/components/schemas/TopPSamplingStrategy"
+                    },
+                    {
+                        "$ref": "#/components/schemas/TopKSamplingStrategy"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "greedy": "#/components/schemas/GreedySamplingStrategy",
+                        "top_p": "#/components/schemas/TopPSamplingStrategy",
+                        "top_k": "#/components/schemas/TopKSamplingStrategy"
+                    }
+                }
             },
             "SystemMessage": {
                 "type": "object",
@@ -2677,7 +2668,13 @@
                     "tool_name": {
                         "oneOf": [
                             {
-                                "$ref": "#/components/schemas/BuiltinTool"
+                                "type": "string",
+                                "enum": [
+                                    "brave_search",
+                                    "wolfram_alpha",
+                                    "photogen",
+                                    "code_interpreter"
+                                ]
                             },
                             {
                                 "type": "string"
@@ -2758,21 +2755,19 @@
                     "arguments"
                 ]
             },
-            "ToolChoice": {
-                "type": "string",
-                "enum": [
-                    "auto",
-                    "required"
-                ],
-                "title": "Whether tool use is required or automatic. This is a hint to the model which may not be followed. It depends on the Instruction Following capabilities of the model."
-            },
             "ToolDefinition": {
                 "type": "object",
                 "properties": {
                     "tool_name": {
                         "oneOf": [
                             {
-                                "$ref": "#/components/schemas/BuiltinTool"
+                                "type": "string",
+                                "enum": [
+                                    "brave_search",
+                                    "wolfram_alpha",
+                                    "photogen",
+                                    "code_interpreter"
+                                ]
                             },
                             {
                                 "type": "string"
@@ -2835,16 +2830,6 @@
                     "param_type"
                 ]
             },
-            "ToolPromptFormat": {
-                "type": "string",
-                "enum": [
-                    "json",
-                    "function_tag",
-                    "python_list"
-                ],
-                "title": "This Enum refers to the prompt format for calling custom / zero shot tools",
-                "description": "`json` --\n    Refers to the json format for calling tools.\n    The json format takes the form like\n    {\n        \"type\": \"function\",\n        \"function\" : {\n            \"name\": \"function_name\",\n            \"description\": \"function_description\",\n            \"parameters\": {...}\n        }\n    }\n\n`function_tag` --\n    This is an example of how you could define\n    your own user defined format for making tool calls.\n    The function_tag format looks like this,\n    <function=function_name>(parameters)</function>\n\nThe detailed prompts for each of these formats are added to llama cli"
-            },
             "ToolResponseMessage": {
                 "type": "object",
                 "properties": {
@@ -2861,7 +2846,13 @@
                     "tool_name": {
                         "oneOf": [
                             {
-                                "$ref": "#/components/schemas/BuiltinTool"
+                                "type": "string",
+                                "enum": [
+                                    "brave_search",
+                                    "wolfram_alpha",
+                                    "photogen",
+                                    "code_interpreter"
+                                ]
                             },
                             {
                                 "type": "string"
@@ -2984,10 +2975,22 @@
                         }
                     },
                     "tool_choice": {
-                        "$ref": "#/components/schemas/ToolChoice"
+                        "type": "string",
+                        "enum": [
+                            "auto",
+                            "required"
+                        ],
+                        "title": "Whether tool use is required or automatic. This is a hint to the model which may not be followed. It depends on the Instruction Following capabilities of the model."
                     },
                     "tool_prompt_format": {
-                        "$ref": "#/components/schemas/ToolPromptFormat"
+                        "type": "string",
+                        "enum": [
+                            "json",
+                            "function_tag",
+                            "python_list"
+                        ],
+                        "title": "This Enum refers to the prompt format for calling custom / zero shot tools",
+                        "description": "The detailed prompts for each of these formats are added to llama cli"
                     },
                     "response_format": {
                         "$ref": "#/components/schemas/ResponseFormat"
@@ -3122,7 +3125,12 @@
                         "description": "The generated completion text"
                     },
                     "stop_reason": {
-                        "$ref": "#/components/schemas/StopReason",
+                        "type": "string",
+                        "enum": [
+                            "end_of_turn",
+                            "end_of_message",
+                            "out_of_tokens"
+                        ],
                         "description": "Reason why generation stopped"
                     },
                     "logprobs": {
@@ -3178,11 +3186,20 @@
                         "description": "(Optional) List of tool definitions available to the model"
                     },
                     "tool_choice": {
-                        "$ref": "#/components/schemas/ToolChoice",
+                        "type": "string",
+                        "enum": [
+                            "auto",
+                            "required"
+                        ],
                         "description": "(Optional) Whether tool use is required or automatic. Defaults to ToolChoice.auto."
                     },
                     "tool_prompt_format": {
-                        "$ref": "#/components/schemas/ToolPromptFormat",
+                        "type": "string",
+                        "enum": [
+                            "json",
+                            "function_tag",
+                            "python_list"
+                        ],
                         "description": "(Optional) Instructs the model how to format tool calls. By default, Llama Stack will attempt to use a format that is best adapted to the model. - `ToolPromptFormat.json`: The tool calls are formatted as a JSON object. - `ToolPromptFormat.function_tag`: The tool calls are enclosed in a <function=function_name> tag. - `ToolPromptFormat.python_list`: The tool calls are output as Python syntax -- a list of function calls."
                     },
                     "response_format": {
@@ -3216,7 +3233,12 @@
                 "type": "object",
                 "properties": {
                     "event_type": {
-                        "$ref": "#/components/schemas/ChatCompletionResponseEventType",
+                        "type": "string",
+                        "enum": [
+                            "start",
+                            "complete",
+                            "progress"
+                        ],
                         "description": "Type of the event"
                     },
                     "delta": {
@@ -3231,7 +3253,12 @@
                         "description": "Optional log probabilities for generated tokens"
                     },
                     "stop_reason": {
-                        "$ref": "#/components/schemas/StopReason",
+                        "type": "string",
+                        "enum": [
+                            "end_of_turn",
+                            "end_of_message",
+                            "out_of_tokens"
+                        ],
                         "description": "Optional reason why generation stopped, if complete"
                     }
                 },
@@ -3241,15 +3268,6 @@
                     "delta"
                 ],
                 "title": "An event during chat completion generation."
-            },
-            "ChatCompletionResponseEventType": {
-                "type": "string",
-                "enum": [
-                    "start",
-                    "complete",
-                    "progress"
-                ],
-                "title": "Types of events that can occur during chat completion."
             },
             "ChatCompletionResponseStreamChunk": {
                 "type": "object",
@@ -3342,7 +3360,13 @@
                         ]
                     },
                     "parse_status": {
-                        "$ref": "#/components/schemas/ToolCallParseStatus"
+                        "type": "string",
+                        "enum": [
+                            "started",
+                            "in_progress",
+                            "failed",
+                            "succeeded"
+                        ]
                     }
                 },
                 "additionalProperties": false,
@@ -3350,15 +3374,6 @@
                     "type",
                     "tool_call",
                     "parse_status"
-                ]
-            },
-            "ToolCallParseStatus": {
-                "type": "string",
-                "enum": [
-                    "started",
-                    "in_progress",
-                    "failed",
-                    "succeeded"
                 ]
             },
             "CompletionRequest": {
@@ -3411,7 +3426,12 @@
                         "description": "New content generated since last chunk. This can be one or more tokens."
                     },
                     "stop_reason": {
-                        "$ref": "#/components/schemas/StopReason",
+                        "type": "string",
+                        "enum": [
+                            "end_of_turn",
+                            "end_of_message",
+                            "out_of_tokens"
+                        ],
                         "description": "Optional reason why generation stopped, if complete"
                     },
                     "logprobs": {
@@ -3459,11 +3479,23 @@
                         }
                     },
                     "tool_choice": {
-                        "$ref": "#/components/schemas/ToolChoice",
+                        "type": "string",
+                        "enum": [
+                            "auto",
+                            "required"
+                        ],
+                        "title": "Whether tool use is required or automatic. This is a hint to the model which may not be followed. It depends on the Instruction Following capabilities of the model.",
                         "default": "auto"
                     },
                     "tool_prompt_format": {
-                        "$ref": "#/components/schemas/ToolPromptFormat"
+                        "type": "string",
+                        "enum": [
+                            "json",
+                            "function_tag",
+                            "python_list"
+                        ],
+                        "title": "This Enum refers to the prompt format for calling custom / zero shot tools",
+                        "description": "The detailed prompts for each of these formats are added to llama cli"
                     },
                     "max_infer_iters": {
                         "type": "integer",
@@ -4170,7 +4202,13 @@
                     "tool_name": {
                         "oneOf": [
                             {
-                                "$ref": "#/components/schemas/BuiltinTool"
+                                "type": "string",
+                                "enum": [
+                                    "brave_search",
+                                    "wolfram_alpha",
+                                    "photogen",
+                                    "code_interpreter"
+                                ]
                             },
                             {
                                 "type": "string"
@@ -7918,10 +7956,6 @@
             "description": ""
         },
         {
-            "name": "BuiltinTool",
-            "description": ""
-        },
-        {
             "name": "CancelTrainingJobRequest",
             "description": ""
         },
@@ -7940,10 +7974,6 @@
         {
             "name": "ChatCompletionResponseEvent",
             "description": "An event during chat completion generation."
-        },
-        {
-            "name": "ChatCompletionResponseEventType",
-            "description": "Types of events that can occur during chat completion."
         },
         {
             "name": "ChatCompletionResponseStreamChunk",
@@ -8377,6 +8407,10 @@
             "description": ""
         },
         {
+            "name": "SamplingStrategy",
+            "description": ""
+        },
+        {
             "name": "SaveSpansToDatasetRequest",
             "description": ""
         },
@@ -8450,10 +8484,6 @@
             "description": ""
         },
         {
-            "name": "StopReason",
-            "description": ""
-        },
-        {
             "name": "StringType",
             "description": ""
         },
@@ -8512,14 +8542,6 @@
             "description": ""
         },
         {
-            "name": "ToolCallParseStatus",
-            "description": ""
-        },
-        {
-            "name": "ToolChoice",
-            "description": "Whether tool use is required or automatic. This is a hint to the model which may not be followed. It depends on the Instruction Following capabilities of the model."
-        },
-        {
             "name": "ToolDef",
             "description": ""
         },
@@ -8553,10 +8575,6 @@
         {
             "name": "ToolParameter",
             "description": ""
-        },
-        {
-            "name": "ToolPromptFormat",
-            "description": "This Enum refers to the prompt format for calling custom / zero shot tools\n\n`json` --\n    Refers to the json format for calling tools.\n    The json format takes the form like\n    {\n        \"type\": \"function\",\n        \"function\" : {\n            \"name\": \"function_name\",\n            \"description\": \"function_description\",\n            \"parameters\": {...}\n        }\n    }\n\n`function_tag` --\n    This is an example of how you could define\n    your own user defined format for making tool calls.\n    The function_tag format looks like this,\n    <function=function_name>(parameters)</function>\n\nThe detailed prompts for each of these formats are added to llama cli"
         },
         {
             "name": "ToolResponse",
@@ -8680,13 +8698,11 @@
                 "BatchCompletionResponse",
                 "BenchmarkEvalTaskConfig",
                 "BooleanType",
-                "BuiltinTool",
                 "CancelTrainingJobRequest",
                 "ChatCompletionInputType",
                 "ChatCompletionRequest",
                 "ChatCompletionResponse",
                 "ChatCompletionResponseEvent",
-                "ChatCompletionResponseEventType",
                 "ChatCompletionResponseStreamChunk",
                 "Checkpoint",
                 "CompletionInputType",
@@ -8788,6 +8804,7 @@
                 "RunShieldResponse",
                 "SafetyViolation",
                 "SamplingParams",
+                "SamplingStrategy",
                 "SaveSpansToDatasetRequest",
                 "ScoreBatchRequest",
                 "ScoreBatchResponse",
@@ -8804,7 +8821,6 @@
                 "SpanStartPayload",
                 "SpanStatus",
                 "SpanWithStatus",
-                "StopReason",
                 "StringType",
                 "StructuredLogEvent",
                 "StructuredLogPayload",
@@ -8818,8 +8834,6 @@
                 "Tool",
                 "ToolCall",
                 "ToolCallDelta",
-                "ToolCallParseStatus",
-                "ToolChoice",
                 "ToolDef",
                 "ToolDefinition",
                 "ToolExecutionStep",
@@ -8828,7 +8842,6 @@
                 "ToolInvocationResult",
                 "ToolParamDefinition",
                 "ToolParameter",
-                "ToolPromptFormat",
                 "ToolResponse",
                 "ToolResponseMessage",
                 "TopKSamplingStrategy",

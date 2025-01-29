@@ -1383,13 +1383,6 @@ components:
       required:
         - dataset_id
         - rows
-    BuiltinTool:
-      type: string
-      enum:
-        - brave_search
-        - wolfram_alpha
-        - photogen
-        - code_interpreter
     CompletionMessage:
       type: object
       properties:
@@ -1403,7 +1396,11 @@ components:
           $ref: '#/components/schemas/InterleavedContent'
           description: The content of the model's response
         stop_reason:
-          $ref: '#/components/schemas/StopReason'
+          type: string
+          enum:
+            - end_of_turn
+            - end_of_message
+            - out_of_tokens
           description: >-
             Reason why the model stopped generating. Options are: - `StopReason.end_of_turn`:
             The model finished generating the entire response. - `StopReason.end_of_message`:
@@ -1552,16 +1549,7 @@ components:
       type: object
       properties:
         strategy:
-          oneOf:
-            - $ref: '#/components/schemas/GreedySamplingStrategy'
-            - $ref: '#/components/schemas/TopPSamplingStrategy'
-            - $ref: '#/components/schemas/TopKSamplingStrategy'
-          discriminator:
-            propertyName: type
-            mapping:
-              greedy: '#/components/schemas/GreedySamplingStrategy'
-              top_p: '#/components/schemas/TopPSamplingStrategy'
-              top_k: '#/components/schemas/TopKSamplingStrategy'
+          $ref: '#/components/schemas/SamplingStrategy'
         max_tokens:
           type: integer
           default: 0
@@ -1571,12 +1559,17 @@ components:
       additionalProperties: false
       required:
         - strategy
-    StopReason:
-      type: string
-      enum:
-        - end_of_turn
-        - end_of_message
-        - out_of_tokens
+    SamplingStrategy:
+      oneOf:
+        - $ref: '#/components/schemas/GreedySamplingStrategy'
+        - $ref: '#/components/schemas/TopPSamplingStrategy'
+        - $ref: '#/components/schemas/TopKSamplingStrategy'
+      discriminator:
+        propertyName: type
+        mapping:
+          greedy: '#/components/schemas/GreedySamplingStrategy'
+          top_p: '#/components/schemas/TopPSamplingStrategy'
+          top_k: '#/components/schemas/TopKSamplingStrategy'
     SystemMessage:
       type: object
       properties:
@@ -1618,7 +1611,12 @@ components:
           type: string
         tool_name:
           oneOf:
-            - $ref: '#/components/schemas/BuiltinTool'
+            - type: string
+              enum:
+                - brave_search
+                - wolfram_alpha
+                - photogen
+                - code_interpreter
             - type: string
         arguments:
           type: object
@@ -1650,21 +1648,17 @@ components:
         - call_id
         - tool_name
         - arguments
-    ToolChoice:
-      type: string
-      enum:
-        - auto
-        - required
-      title: >-
-        Whether tool use is required or automatic. This is a hint to the model which
-        may not be followed. It depends on the Instruction Following capabilities
-        of the model.
     ToolDefinition:
       type: object
       properties:
         tool_name:
           oneOf:
-            - $ref: '#/components/schemas/BuiltinTool'
+            - type: string
+              enum:
+                - brave_search
+                - wolfram_alpha
+                - photogen
+                - code_interpreter
             - type: string
         description:
           type: string
@@ -1696,34 +1690,6 @@ components:
       additionalProperties: false
       required:
         - param_type
-    ToolPromptFormat:
-      type: string
-      enum:
-        - json
-        - function_tag
-        - python_list
-      title: >-
-        This Enum refers to the prompt format for calling custom / zero shot tools
-      description: >-
-        `json` --
-            Refers to the json format for calling tools.
-            The json format takes the form like
-            {
-                "type": "function",
-                "function" : {
-                    "name": "function_name",
-                    "description": "function_description",
-                    "parameters": {...}
-                }
-            }
-
-        `function_tag` --
-            This is an example of how you could define
-            your own user defined format for making tool calls.
-            The function_tag format looks like this,
-            <function=function_name>(parameters)</function>
-
-        The detailed prompts for each of these formats are added to llama cli
     ToolResponseMessage:
       type: object
       properties:
@@ -1739,7 +1705,12 @@ components:
             Unique identifier for the tool call this response is for
         tool_name:
           oneOf:
-            - $ref: '#/components/schemas/BuiltinTool'
+            - type: string
+              enum:
+                - brave_search
+                - wolfram_alpha
+                - photogen
+                - code_interpreter
             - type: string
           description: Name of the tool that was called
         content:
@@ -1831,9 +1802,24 @@ components:
           items:
             $ref: '#/components/schemas/ToolDefinition'
         tool_choice:
-          $ref: '#/components/schemas/ToolChoice'
+          type: string
+          enum:
+            - auto
+            - required
+          title: >-
+            Whether tool use is required or automatic. This is a hint to the model
+            which may not be followed. It depends on the Instruction Following capabilities
+            of the model.
         tool_prompt_format:
-          $ref: '#/components/schemas/ToolPromptFormat'
+          type: string
+          enum:
+            - json
+            - function_tag
+            - python_list
+          title: >-
+            This Enum refers to the prompt format for calling custom / zero shot tools
+          description: >-
+            The detailed prompts for each of these formats are added to llama cli
         response_format:
           $ref: '#/components/schemas/ResponseFormat'
         logprobs:
@@ -1931,7 +1917,11 @@ components:
           type: string
           description: The generated completion text
         stop_reason:
-          $ref: '#/components/schemas/StopReason'
+          type: string
+          enum:
+            - end_of_turn
+            - end_of_message
+            - out_of_tokens
           description: Reason why generation stopped
         logprobs:
           type: array
@@ -1976,11 +1966,18 @@ components:
           description: >-
             (Optional) List of tool definitions available to the model
         tool_choice:
-          $ref: '#/components/schemas/ToolChoice'
+          type: string
+          enum:
+            - auto
+            - required
           description: >-
             (Optional) Whether tool use is required or automatic. Defaults to ToolChoice.auto.
         tool_prompt_format:
-          $ref: '#/components/schemas/ToolPromptFormat'
+          type: string
+          enum:
+            - json
+            - function_tag
+            - python_list
           description: >-
             (Optional) Instructs the model how to format tool calls. By default, Llama
             Stack will attempt to use a format that is best adapted to the model.
@@ -2021,7 +2018,11 @@ components:
       type: object
       properties:
         event_type:
-          $ref: '#/components/schemas/ChatCompletionResponseEventType'
+          type: string
+          enum:
+            - start
+            - complete
+            - progress
           description: Type of the event
         delta:
           $ref: '#/components/schemas/ContentDelta'
@@ -2035,7 +2036,11 @@ components:
           description: >-
             Optional log probabilities for generated tokens
         stop_reason:
-          $ref: '#/components/schemas/StopReason'
+          type: string
+          enum:
+            - end_of_turn
+            - end_of_message
+            - out_of_tokens
           description: >-
             Optional reason why generation stopped, if complete
       additionalProperties: false
@@ -2044,14 +2049,6 @@ components:
         - delta
       title: >-
         An event during chat completion generation.
-    ChatCompletionResponseEventType:
-      type: string
-      enum:
-        - start
-        - complete
-        - progress
-      title: >-
-        Types of events that can occur during chat completion.
     ChatCompletionResponseStreamChunk:
       type: object
       properties:
@@ -2113,19 +2110,17 @@ components:
             - type: string
             - $ref: '#/components/schemas/ToolCall'
         parse_status:
-          $ref: '#/components/schemas/ToolCallParseStatus'
+          type: string
+          enum:
+            - started
+            - in_progress
+            - failed
+            - succeeded
       additionalProperties: false
       required:
         - type
         - tool_call
         - parse_status
-    ToolCallParseStatus:
-      type: string
-      enum:
-        - started
-        - in_progress
-        - failed
-        - succeeded
     CompletionRequest:
       type: object
       properties:
@@ -2174,7 +2169,11 @@ components:
           description: >-
             New content generated since last chunk. This can be one or more tokens.
         stop_reason:
-          $ref: '#/components/schemas/StopReason'
+          type: string
+          enum:
+            - end_of_turn
+            - end_of_message
+            - out_of_tokens
           description: >-
             Optional reason why generation stopped, if complete
         logprobs:
@@ -2210,10 +2209,25 @@ components:
           items:
             $ref: '#/components/schemas/ToolDef'
         tool_choice:
-          $ref: '#/components/schemas/ToolChoice'
+          type: string
+          enum:
+            - auto
+            - required
+          title: >-
+            Whether tool use is required or automatic. This is a hint to the model
+            which may not be followed. It depends on the Instruction Following capabilities
+            of the model.
           default: auto
         tool_prompt_format:
-          $ref: '#/components/schemas/ToolPromptFormat'
+          type: string
+          enum:
+            - json
+            - function_tag
+            - python_list
+          title: >-
+            This Enum refers to the prompt format for calling custom / zero shot tools
+          description: >-
+            The detailed prompts for each of these formats are added to llama cli
         max_infer_iters:
           type: integer
           default: 10
@@ -2656,7 +2670,12 @@ components:
           type: string
         tool_name:
           oneOf:
-            - $ref: '#/components/schemas/BuiltinTool'
+            - type: string
+              enum:
+                - brave_search
+                - wolfram_alpha
+                - photogen
+                - code_interpreter
             - type: string
         content:
           $ref: '#/components/schemas/InterleavedContent'
@@ -4942,8 +4961,6 @@ tags:
     description: ''
   - name: BooleanType
     description: ''
-  - name: BuiltinTool
-    description: ''
   - name: CancelTrainingJobRequest
     description: ''
   - name: ChatCompletionInputType
@@ -4955,9 +4972,6 @@ tags:
   - name: ChatCompletionResponseEvent
     description: >-
       An event during chat completion generation.
-  - name: ChatCompletionResponseEventType
-    description: >-
-      Types of events that can occur during chat completion.
   - name: ChatCompletionResponseStreamChunk
     description: >-
       A chunk of a streamed chat completion response.
@@ -5175,6 +5189,8 @@ tags:
     description: ''
   - name: SamplingParams
     description: ''
+  - name: SamplingStrategy
+    description: ''
   - name: SaveSpansToDatasetRequest
     description: ''
   - name: ScoreBatchRequest
@@ -5212,8 +5228,6 @@ tags:
     description: ''
   - name: SpanWithStatus
     description: ''
-  - name: StopReason
-    description: ''
   - name: StringType
     description: ''
   - name: StructuredLogEvent
@@ -5245,13 +5259,6 @@ tags:
     description: ''
   - name: ToolCallDelta
     description: ''
-  - name: ToolCallParseStatus
-    description: ''
-  - name: ToolChoice
-    description: >-
-      Whether tool use is required or automatic. This is a hint to the model which
-      may not be followed. It depends on the Instruction Following capabilities of
-      the model.
   - name: ToolDef
     description: ''
   - name: ToolDefinition
@@ -5269,30 +5276,6 @@ tags:
     description: ''
   - name: ToolParameter
     description: ''
-  - name: ToolPromptFormat
-    description: >-
-      This Enum refers to the prompt format for calling custom / zero shot tools
-
-
-      `json` --
-          Refers to the json format for calling tools.
-          The json format takes the form like
-          {
-              "type": "function",
-              "function" : {
-                  "name": "function_name",
-                  "description": "function_description",
-                  "parameters": {...}
-              }
-          }
-
-      `function_tag` --
-          This is an example of how you could define
-          your own user defined format for making tool calls.
-          The function_tag format looks like this,
-          <function=function_name>(parameters)</function>
-
-      The detailed prompts for each of these formats are added to llama cli
   - name: ToolResponse
     description: ''
   - name: ToolResponseMessage
@@ -5379,13 +5362,11 @@ x-tagGroups:
       - BatchCompletionResponse
       - BenchmarkEvalTaskConfig
       - BooleanType
-      - BuiltinTool
       - CancelTrainingJobRequest
       - ChatCompletionInputType
       - ChatCompletionRequest
       - ChatCompletionResponse
       - ChatCompletionResponseEvent
-      - ChatCompletionResponseEventType
       - ChatCompletionResponseStreamChunk
       - Checkpoint
       - CompletionInputType
@@ -5487,6 +5468,7 @@ x-tagGroups:
       - RunShieldResponse
       - SafetyViolation
       - SamplingParams
+      - SamplingStrategy
       - SaveSpansToDatasetRequest
       - ScoreBatchRequest
       - ScoreBatchResponse
@@ -5503,7 +5485,6 @@ x-tagGroups:
       - SpanStartPayload
       - SpanStatus
       - SpanWithStatus
-      - StopReason
       - StringType
       - StructuredLogEvent
       - StructuredLogPayload
@@ -5517,8 +5498,6 @@ x-tagGroups:
       - Tool
       - ToolCall
       - ToolCallDelta
-      - ToolCallParseStatus
-      - ToolChoice
       - ToolDef
       - ToolDefinition
       - ToolExecutionStep
@@ -5527,7 +5506,6 @@ x-tagGroups:
       - ToolInvocationResult
       - ToolParamDefinition
       - ToolParameter
-      - ToolPromptFormat
       - ToolResponse
       - ToolResponseMessage
       - TopKSamplingStrategy

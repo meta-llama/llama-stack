@@ -6,11 +6,9 @@
 
 from enum import Enum
 
-from llama_models.schema_utils import json_schema_type
 from pydantic import BaseModel, Field
 
 
-@json_schema_type
 class ResourceType(Enum):
     model = "model"
     shield = "shield"

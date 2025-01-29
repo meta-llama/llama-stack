@@ -43,7 +43,6 @@ class LogProbConfig(BaseModel):
     top_k: Optional[int] = 0
 
 
-@json_schema_type
 class QuantizationType(Enum):
     """Type of model quantization to run inference with.
 
@@ -177,7 +176,6 @@ class ToolResponse(BaseModel):
         return v
 
 
-@json_schema_type
 class ToolChoice(Enum):
     """Whether tool use is required or automatic. This is a hint to the model which may not be followed. It depends on the Instruction Following capabilities of the model.
 
@@ -199,7 +197,6 @@ class TokenLogProbs(BaseModel):
     logprobs_by_token: Dict[str, float]
 
 
-@json_schema_type
 class ChatCompletionResponseEventType(Enum):
     """Types of events that can occur during chat completion.
 
@@ -229,7 +226,6 @@ class ChatCompletionResponseEvent(BaseModel):
     stop_reason: Optional[StopReason] = None
 
 
-@json_schema_type
 class ResponseFormatType(Enum):
     """Types of formats for structured (guided) decoding.
 
