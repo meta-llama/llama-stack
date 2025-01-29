@@ -77,7 +77,6 @@ class ImageDelta(BaseModel):
     image: bytes
 
 
-@json_schema_type
 class ToolCallParseStatus(Enum):
     started = "started"
     in_progress = "in_progress"

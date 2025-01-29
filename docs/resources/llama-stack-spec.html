@@ -190,7 +190,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "Chat completion response. **OR** SSE-stream of these events.",
+                        "description": "If stream=False, returns a ChatCompletionResponse with the full completion. If stream=True, returns an SSE event stream of ChatCompletionResponseStreamChunk",
                         "content": {
                             "text/event-stream": {
                                 "schema": {
@@ -210,6 +210,7 @@
                 "tags": [
                     "Inference"
                 ],
+                "summary": "Generate a chat completion for the given messages using the specified model.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -227,7 +228,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "Completion response. **OR** streamed completion response.",
+                        "description": "If stream=False, returns a CompletionResponse with the full completion. If stream=True, returns an SSE event stream of CompletionResponseStreamChunk",
                         "content": {
                             "text/event-stream": {
                                 "schema": {
@@ -247,6 +248,7 @@
                 "tags": [
                     "Inference"
                 ],
+                "summary": "Generate a completion for the given content using the specified model.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -485,7 +487,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "An array of embeddings, one for each content. Each embedding is a list of floats. The dimensionality of the embedding is model-specific; you can check model metadata using /models/{model_id}",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -498,6 +500,7 @@
                 "tags": [
                     "Inference"
                 ],
+                "summary": "Generate embeddings for content pieces using the specified model.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -2334,34 +2337,34 @@
                     "rows"
                 ]
             },
-            "BuiltinTool": {
-                "type": "string",
-                "enum": [
-                    "brave_search",
-                    "wolfram_alpha",
-                    "photogen",
-                    "code_interpreter"
-                ]
-            },
             "CompletionMessage": {
                 "type": "object",
                 "properties": {
                     "role": {
                         "type": "string",
                         "const": "assistant",
-                        "default": "assistant"
+                        "default": "assistant",
+                        "description": "Must be \"assistant\" to identify this as the model's response"
                     },
                     "content": {
-                        "$ref": "#/components/schemas/InterleavedContent"
+                        "$ref": "#/components/schemas/InterleavedContent",
+                        "description": "The content of the model's response"
                     },
                     "stop_reason": {
-                        "$ref": "#/components/schemas/StopReason"
+                        "type": "string",
+                        "enum": [
+                            "end_of_turn",
+                            "end_of_message",
+                            "out_of_tokens"
+                        ],
+                        "description": "Reason why the model stopped generating. Options are: - `StopReason.end_of_turn`: The model finished generating the entire response. - `StopReason.end_of_message`: The model finished generating but generated a partial response -- usually, a tool call. The user may call the tool and continue the conversation with the tool's response. - `StopReason.out_of_tokens`: The model ran out of token budget."
                     },
                     "tool_calls": {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/ToolCall"
-                        }
+                        },
+                        "description": "List of tool calls. Each tool call is a ToolCall object."
                     }
                 },
                 "additionalProperties": false,
@@ -2370,7 +2373,51 @@
                     "content",
                     "stop_reason",
                     "tool_calls"
-                ]
+                ],
+                "title": "A message containing the model's (assistant) response in a chat conversation."
+            },
+            "GrammarResponseFormat": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "grammar",
+                        "default": "grammar",
+                        "description": "Must be \"grammar\" to identify this format type"
+                    },
+                    "bnf": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        },
+                        "description": "The BNF grammar specification the response should conform to"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "bnf"
+                ],
+                "title": "Configuration for grammar-guided response generation."
             },
             "GreedySamplingStrategy": {
                 "type": "object",
@@ -2447,6 +2494,49 @@
                     }
                 }
             },
+            "JsonSchemaResponseFormat": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "json_schema",
+                        "default": "json_schema",
+                        "description": "Must be \"json_schema\" to identify this format type"
+                    },
+                    "json_schema": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        },
+                        "description": "The JSON schema the response should conform to. In a Python SDK, this is often a `pydantic` model."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "json_schema"
+                ],
+                "title": "Configuration for JSON schema-guided response generation."
+            },
             "Message": {
                 "oneOf": [
                     {
@@ -2472,29 +2562,28 @@
                     }
                 }
             },
+            "ResponseFormat": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/JsonSchemaResponseFormat"
+                    },
+                    {
+                        "$ref": "#/components/schemas/GrammarResponseFormat"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "json_schema": "#/components/schemas/JsonSchemaResponseFormat",
+                        "grammar": "#/components/schemas/GrammarResponseFormat"
+                    }
+                }
+            },
             "SamplingParams": {
                 "type": "object",
                 "properties": {
                     "strategy": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/GreedySamplingStrategy"
-                            },
-                            {
-                                "$ref": "#/components/schemas/TopPSamplingStrategy"
-                            },
-                            {
-                                "$ref": "#/components/schemas/TopKSamplingStrategy"
-                            }
-                        ],
-                        "discriminator": {
-                            "propertyName": "type",
-                            "mapping": {
-                                "greedy": "#/components/schemas/GreedySamplingStrategy",
-                                "top_p": "#/components/schemas/TopPSamplingStrategy",
-                                "top_k": "#/components/schemas/TopKSamplingStrategy"
-                            }
-                        }
+                        "$ref": "#/components/schemas/SamplingStrategy"
                     },
                     "max_tokens": {
                         "type": "integer",
@@ -2510,13 +2599,26 @@
                     "strategy"
                 ]
             },
-            "StopReason": {
-                "type": "string",
-                "enum": [
-                    "end_of_turn",
-                    "end_of_message",
-                    "out_of_tokens"
-                ]
+            "SamplingStrategy": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/GreedySamplingStrategy"
+                    },
+                    {
+                        "$ref": "#/components/schemas/TopPSamplingStrategy"
+                    },
+                    {
+                        "$ref": "#/components/schemas/TopKSamplingStrategy"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "greedy": "#/components/schemas/GreedySamplingStrategy",
+                        "top_p": "#/components/schemas/TopPSamplingStrategy",
+                        "top_k": "#/components/schemas/TopKSamplingStrategy"
+                    }
+                }
             },
             "SystemMessage": {
                 "type": "object",
@@ -2524,17 +2626,20 @@
                     "role": {
                         "type": "string",
                         "const": "system",
-                        "default": "system"
+                        "default": "system",
+                        "description": "Must be \"system\" to identify this as a system message"
                     },
                     "content": {
-                        "$ref": "#/components/schemas/InterleavedContent"
+                        "$ref": "#/components/schemas/InterleavedContent",
+                        "description": "The content of the \"system prompt\". If multiple system messages are provided, they are concatenated. The underlying Llama Stack code may also add other system messages (for example, for formatting tool definitions)."
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "role",
                     "content"
-                ]
+                ],
+                "title": "A system message providing instructions or context to the model."
             },
             "TextContentItem": {
                 "type": "object",
@@ -2563,7 +2668,13 @@
                     "tool_name": {
                         "oneOf": [
                             {
-                                "$ref": "#/components/schemas/BuiltinTool"
+                                "type": "string",
+                                "enum": [
+                                    "brave_search",
+                                    "wolfram_alpha",
+                                    "photogen",
+                                    "code_interpreter"
+                                ]
                             },
                             {
                                 "type": "string"
@@ -2644,20 +2755,19 @@
                     "arguments"
                 ]
             },
-            "ToolChoice": {
-                "type": "string",
-                "enum": [
-                    "auto",
-                    "required"
-                ]
-            },
             "ToolDefinition": {
                 "type": "object",
                 "properties": {
                     "tool_name": {
                         "oneOf": [
                             {
-                                "$ref": "#/components/schemas/BuiltinTool"
+                                "type": "string",
+                                "enum": [
+                                    "brave_search",
+                                    "wolfram_alpha",
+                                    "photogen",
+                                    "code_interpreter"
+                                ]
                             },
                             {
                                 "type": "string"
@@ -2720,39 +2830,39 @@
                     "param_type"
                 ]
             },
-            "ToolPromptFormat": {
-                "type": "string",
-                "enum": [
-                    "json",
-                    "function_tag",
-                    "python_list"
-                ],
-                "title": "This Enum refers to the prompt format for calling custom / zero shot tools",
-                "description": "`json` --\n    Refers to the json format for calling tools.\n    The json format takes the form like\n    {\n        \"type\": \"function\",\n        \"function\" : {\n            \"name\": \"function_name\",\n            \"description\": \"function_description\",\n            \"parameters\": {...}\n        }\n    }\n\n`function_tag` --\n    This is an example of how you could define\n    your own user defined format for making tool calls.\n    The function_tag format looks like this,\n    <function=function_name>(parameters)</function>\n\nThe detailed prompts for each of these formats are added to llama cli"
-            },
             "ToolResponseMessage": {
                 "type": "object",
                 "properties": {
                     "role": {
                         "type": "string",
                         "const": "tool",
-                        "default": "tool"
+                        "default": "tool",
+                        "description": "Must be \"tool\" to identify this as a tool response"
                     },
                     "call_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Unique identifier for the tool call this response is for"
                     },
                     "tool_name": {
                         "oneOf": [
                             {
-                                "$ref": "#/components/schemas/BuiltinTool"
+                                "type": "string",
+                                "enum": [
+                                    "brave_search",
+                                    "wolfram_alpha",
+                                    "photogen",
+                                    "code_interpreter"
+                                ]
                             },
                             {
                                 "type": "string"
                             }
-                        ]
+                        ],
+                        "description": "Name of the tool that was called"
                     },
                     "content": {
-                        "$ref": "#/components/schemas/InterleavedContent"
+                        "$ref": "#/components/schemas/InterleavedContent",
+                        "description": "The response content from the tool"
                     }
                 },
                 "additionalProperties": false,
@@ -2761,7 +2871,8 @@
                     "call_id",
                     "tool_name",
                     "content"
-                ]
+                ],
+                "title": "A message representing the result of a tool invocation."
             },
             "TopKSamplingStrategy": {
                 "type": "object",
@@ -2820,20 +2931,24 @@
                     "role": {
                         "type": "string",
                         "const": "user",
-                        "default": "user"
+                        "default": "user",
+                        "description": "Must be \"user\" to identify this as a user message"
                     },
                     "content": {
-                        "$ref": "#/components/schemas/InterleavedContent"
+                        "$ref": "#/components/schemas/InterleavedContent",
+                        "description": "The content of the message, which can include text and other media"
                     },
                     "context": {
-                        "$ref": "#/components/schemas/InterleavedContent"
+                        "$ref": "#/components/schemas/InterleavedContent",
+                        "description": "(Optional) This field is used internally by Llama Stack to pass RAG context. This field may be removed in the API in the future."
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "role",
                     "content"
-                ]
+                ],
+                "title": "A message from the user in a chat conversation."
             },
             "BatchChatCompletionRequest": {
                 "type": "object",
@@ -2860,17 +2975,32 @@
                         }
                     },
                     "tool_choice": {
-                        "$ref": "#/components/schemas/ToolChoice"
+                        "type": "string",
+                        "enum": [
+                            "auto",
+                            "required"
+                        ],
+                        "title": "Whether tool use is required or automatic. This is a hint to the model which may not be followed. It depends on the Instruction Following capabilities of the model."
                     },
                     "tool_prompt_format": {
-                        "$ref": "#/components/schemas/ToolPromptFormat"
+                        "type": "string",
+                        "enum": [
+                            "json",
+                            "function_tag",
+                            "python_list"
+                        ],
+                        "title": "Prompt format for calling custom / zero shot tools."
+                    },
+                    "response_format": {
+                        "$ref": "#/components/schemas/ResponseFormat"
                     },
                     "logprobs": {
                         "type": "object",
                         "properties": {
                             "top_k": {
                                 "type": "integer",
-                                "default": 0
+                                "default": 0,
+                                "description": "How many tokens (for each position) to return log probabilities for."
                             }
                         },
                         "additionalProperties": false
@@ -2885,17 +3015,55 @@
             "BatchChatCompletionResponse": {
                 "type": "object",
                 "properties": {
-                    "completion_message_batch": {
+                    "batch": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/CompletionMessage"
+                            "$ref": "#/components/schemas/ChatCompletionResponse"
                         }
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "completion_message_batch"
+                    "batch"
                 ]
+            },
+            "ChatCompletionResponse": {
+                "type": "object",
+                "properties": {
+                    "completion_message": {
+                        "$ref": "#/components/schemas/CompletionMessage",
+                        "description": "The complete response message"
+                    },
+                    "logprobs": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TokenLogProbs"
+                        },
+                        "description": "Optional log probabilities for generated tokens"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "completion_message"
+                ],
+                "title": "Response from a chat completion request."
+            },
+            "TokenLogProbs": {
+                "type": "object",
+                "properties": {
+                    "logprobs_by_token": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "number"
+                        },
+                        "description": "Dictionary mapping tokens to their log probabilities"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "logprobs_by_token"
+                ],
+                "title": "Log probabilities for generated tokens."
             },
             "BatchCompletionRequest": {
                 "type": "object",
@@ -2912,12 +3080,16 @@
                     "sampling_params": {
                         "$ref": "#/components/schemas/SamplingParams"
                     },
+                    "response_format": {
+                        "$ref": "#/components/schemas/ResponseFormat"
+                    },
                     "logprobs": {
                         "type": "object",
                         "properties": {
                             "top_k": {
                                 "type": "integer",
-                                "default": 0
+                                "default": 0,
+                                "description": "How many tokens (for each position) to return log probabilities for."
                             }
                         },
                         "additionalProperties": false
@@ -2932,17 +3104,48 @@
             "BatchCompletionResponse": {
                 "type": "object",
                 "properties": {
-                    "completion_message_batch": {
+                    "batch": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/CompletionMessage"
+                            "$ref": "#/components/schemas/CompletionResponse"
                         }
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "completion_message_batch"
+                    "batch"
                 ]
+            },
+            "CompletionResponse": {
+                "type": "object",
+                "properties": {
+                    "content": {
+                        "type": "string",
+                        "description": "The generated completion text"
+                    },
+                    "stop_reason": {
+                        "type": "string",
+                        "enum": [
+                            "end_of_turn",
+                            "end_of_message",
+                            "out_of_tokens"
+                        ],
+                        "description": "Reason why generation stopped"
+                    },
+                    "logprobs": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TokenLogProbs"
+                        },
+                        "description": "Optional log probabilities for generated tokens"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "content",
+                    "stop_reason"
+                ],
+                "title": "Response from a completion request."
             },
             "CancelTrainingJobRequest": {
                 "type": "object",
@@ -2956,145 +3159,67 @@
                     "job_uuid"
                 ]
             },
-            "GrammarResponseFormat": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "grammar",
-                        "default": "grammar"
-                    },
-                    "bnf": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type",
-                    "bnf"
-                ]
-            },
-            "JsonSchemaResponseFormat": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "json_schema",
-                        "default": "json_schema"
-                    },
-                    "json_schema": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type",
-                    "json_schema"
-                ]
-            },
-            "ResponseFormat": {
-                "oneOf": [
-                    {
-                        "$ref": "#/components/schemas/JsonSchemaResponseFormat"
-                    },
-                    {
-                        "$ref": "#/components/schemas/GrammarResponseFormat"
-                    }
-                ],
-                "discriminator": {
-                    "propertyName": "type",
-                    "mapping": {
-                        "json_schema": "#/components/schemas/JsonSchemaResponseFormat",
-                        "grammar": "#/components/schemas/GrammarResponseFormat"
-                    }
-                }
-            },
             "ChatCompletionRequest": {
                 "type": "object",
                 "properties": {
                     "model_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The identifier of the model to use. The model must be registered with Llama Stack and available via the /models endpoint."
                     },
                     "messages": {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/Message"
-                        }
+                        },
+                        "description": "List of messages in the conversation"
                     },
                     "sampling_params": {
-                        "$ref": "#/components/schemas/SamplingParams"
+                        "$ref": "#/components/schemas/SamplingParams",
+                        "description": "Parameters to control the sampling strategy"
                     },
                     "tools": {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/ToolDefinition"
-                        }
+                        },
+                        "description": "(Optional) List of tool definitions available to the model"
                     },
                     "tool_choice": {
-                        "$ref": "#/components/schemas/ToolChoice"
+                        "type": "string",
+                        "enum": [
+                            "auto",
+                            "required"
+                        ],
+                        "description": "(Optional) Whether tool use is required or automatic. Defaults to ToolChoice.auto."
                     },
                     "tool_prompt_format": {
-                        "$ref": "#/components/schemas/ToolPromptFormat"
+                        "type": "string",
+                        "enum": [
+                            "json",
+                            "function_tag",
+                            "python_list"
+                        ],
+                        "description": "(Optional) Instructs the model how to format tool calls. By default, Llama Stack will attempt to use a format that is best adapted to the model. - `ToolPromptFormat.json`: The tool calls are formatted as a JSON object. - `ToolPromptFormat.function_tag`: The tool calls are enclosed in a <function=function_name> tag. - `ToolPromptFormat.python_list`: The tool calls are output as Python syntax -- a list of function calls."
                     },
                     "response_format": {
-                        "$ref": "#/components/schemas/ResponseFormat"
+                        "$ref": "#/components/schemas/ResponseFormat",
+                        "description": "(Optional) Grammar specification for guided (structured) decoding. There are two options: - `ResponseFormat.json_schema`: The grammar is a JSON schema. Most providers support this format. - `ResponseFormat.grammar`: The grammar is a BNF grammar. This format is more flexible, but not all providers support it."
                     },
                     "stream": {
-                        "type": "boolean"
+                        "type": "boolean",
+                        "description": "(Optional) If True, generate an SSE event stream of the response. Defaults to False."
                     },
                     "logprobs": {
                         "type": "object",
                         "properties": {
                             "top_k": {
                                 "type": "integer",
-                                "default": 0
+                                "default": 0,
+                                "description": "How many tokens (for each position) to return log probabilities for."
                             }
                         },
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "(Optional) If specified, log probabilities for each token position will be returned."
                     }
                 },
                 "additionalProperties": false,
@@ -3103,42 +3228,37 @@
                     "messages"
                 ]
             },
-            "ChatCompletionResponse": {
-                "type": "object",
-                "properties": {
-                    "completion_message": {
-                        "$ref": "#/components/schemas/CompletionMessage"
-                    },
-                    "logprobs": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/TokenLogProbs"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "completion_message"
-                ],
-                "title": "Chat completion response."
-            },
             "ChatCompletionResponseEvent": {
                 "type": "object",
                 "properties": {
                     "event_type": {
-                        "$ref": "#/components/schemas/ChatCompletionResponseEventType"
+                        "type": "string",
+                        "enum": [
+                            "start",
+                            "complete",
+                            "progress"
+                        ],
+                        "description": "Type of the event"
                     },
                     "delta": {
-                        "$ref": "#/components/schemas/ContentDelta"
+                        "$ref": "#/components/schemas/ContentDelta",
+                        "description": "Content generated since last event. This can be one or more tokens, or a tool call."
                     },
                     "logprobs": {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/TokenLogProbs"
-                        }
+                        },
+                        "description": "Optional log probabilities for generated tokens"
                     },
                     "stop_reason": {
-                        "$ref": "#/components/schemas/StopReason"
+                        "type": "string",
+                        "enum": [
+                            "end_of_turn",
+                            "end_of_message",
+                            "out_of_tokens"
+                        ],
+                        "description": "Optional reason why generation stopped, if complete"
                     }
                 },
                 "additionalProperties": false,
@@ -3146,28 +3266,21 @@
                     "event_type",
                     "delta"
                 ],
-                "title": "Chat completion response event."
-            },
-            "ChatCompletionResponseEventType": {
-                "type": "string",
-                "enum": [
-                    "start",
-                    "complete",
-                    "progress"
-                ]
+                "title": "An event during chat completion generation."
             },
             "ChatCompletionResponseStreamChunk": {
                 "type": "object",
                 "properties": {
                     "event": {
-                        "$ref": "#/components/schemas/ChatCompletionResponseEvent"
+                        "$ref": "#/components/schemas/ChatCompletionResponseEvent",
+                        "description": "The event containing the new content"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "event"
                 ],
-                "title": "SSE-stream of these events."
+                "title": "A chunk of a streamed chat completion response."
             },
             "ContentDelta": {
                 "oneOf": [
@@ -3227,21 +3340,6 @@
                     "text"
                 ]
             },
-            "TokenLogProbs": {
-                "type": "object",
-                "properties": {
-                    "logprobs_by_token": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "type": "number"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "logprobs_by_token"
-                ]
-            },
             "ToolCallDelta": {
                 "type": "object",
                 "properties": {
@@ -3261,7 +3359,13 @@
                         ]
                     },
                     "parse_status": {
-                        "$ref": "#/components/schemas/ToolCallParseStatus"
+                        "type": "string",
+                        "enum": [
+                            "started",
+                            "in_progress",
+                            "failed",
+                            "succeeded"
+                        ]
                     }
                 },
                 "additionalProperties": false,
@@ -3271,42 +3375,40 @@
                     "parse_status"
                 ]
             },
-            "ToolCallParseStatus": {
-                "type": "string",
-                "enum": [
-                    "started",
-                    "in_progress",
-                    "failed",
-                    "succeeded"
-                ]
-            },
             "CompletionRequest": {
                 "type": "object",
                 "properties": {
                     "model_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The identifier of the model to use. The model must be registered with Llama Stack and available via the /models endpoint."
                     },
                     "content": {
-                        "$ref": "#/components/schemas/InterleavedContent"
+                        "$ref": "#/components/schemas/InterleavedContent",
+                        "description": "The content to generate a completion for"
                     },
                     "sampling_params": {
-                        "$ref": "#/components/schemas/SamplingParams"
+                        "$ref": "#/components/schemas/SamplingParams",
+                        "description": "(Optional) Parameters to control the sampling strategy"
                     },
                     "response_format": {
-                        "$ref": "#/components/schemas/ResponseFormat"
+                        "$ref": "#/components/schemas/ResponseFormat",
+                        "description": "(Optional) Grammar specification for guided (structured) decoding"
                     },
                     "stream": {
-                        "type": "boolean"
+                        "type": "boolean",
+                        "description": "(Optional) If True, generate an SSE event stream of the response. Defaults to False."
                     },
                     "logprobs": {
                         "type": "object",
                         "properties": {
                             "top_k": {
                                 "type": "integer",
-                                "default": 0
+                                "default": 0,
+                                "description": "How many tokens (for each position) to return log probabilities for."
                             }
                         },
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "(Optional) If specified, log probabilities for each token position will be returned."
                     }
                 },
                 "additionalProperties": false,
@@ -3315,50 +3417,35 @@
                     "content"
                 ]
             },
-            "CompletionResponse": {
-                "type": "object",
-                "properties": {
-                    "content": {
-                        "type": "string"
-                    },
-                    "stop_reason": {
-                        "$ref": "#/components/schemas/StopReason"
-                    },
-                    "logprobs": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/TokenLogProbs"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "content",
-                    "stop_reason"
-                ],
-                "title": "Completion response."
-            },
             "CompletionResponseStreamChunk": {
                 "type": "object",
                 "properties": {
                     "delta": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "New content generated since last chunk. This can be one or more tokens."
                     },
                     "stop_reason": {
-                        "$ref": "#/components/schemas/StopReason"
+                        "type": "string",
+                        "enum": [
+                            "end_of_turn",
+                            "end_of_message",
+                            "out_of_tokens"
+                        ],
+                        "description": "Optional reason why generation stopped, if complete"
                     },
                     "logprobs": {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/TokenLogProbs"
-                        }
+                        },
+                        "description": "Optional log probabilities for generated tokens"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "delta"
                 ],
-                "title": "streamed completion response."
+                "title": "A chunk of a streamed completion response."
             },
             "AgentConfig": {
                 "type": "object",
@@ -3391,11 +3478,22 @@
                         }
                     },
                     "tool_choice": {
-                        "$ref": "#/components/schemas/ToolChoice",
+                        "type": "string",
+                        "enum": [
+                            "auto",
+                            "required"
+                        ],
+                        "title": "Whether tool use is required or automatic. This is a hint to the model which may not be followed. It depends on the Instruction Following capabilities of the model.",
                         "default": "auto"
                     },
                     "tool_prompt_format": {
-                        "$ref": "#/components/schemas/ToolPromptFormat"
+                        "type": "string",
+                        "enum": [
+                            "json",
+                            "function_tag",
+                            "python_list"
+                        ],
+                        "title": "Prompt format for calling custom / zero shot tools."
                     },
                     "max_infer_iters": {
                         "type": "integer",
@@ -4102,7 +4200,13 @@
                     "tool_name": {
                         "oneOf": [
                             {
-                                "$ref": "#/components/schemas/BuiltinTool"
+                                "type": "string",
+                                "enum": [
+                                    "brave_search",
+                                    "wolfram_alpha",
+                                    "photogen",
+                                    "code_interpreter"
+                                ]
                             },
                             {
                                 "type": "string"
@@ -4241,13 +4345,15 @@
                 "type": "object",
                 "properties": {
                     "model_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The identifier of the model to use. The model must be an embedding model registered with Llama Stack and available via the /models endpoint."
                     },
                     "contents": {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/InterleavedContent"
-                        }
+                        },
+                        "description": "List of contents to generate embeddings for. Note that content can be multimodal. The behavior depends on the model and provider. Some models may only support text."
                     }
                 },
                 "additionalProperties": false,
@@ -4266,13 +4372,15 @@
                             "items": {
                                 "type": "number"
                             }
-                        }
+                        },
+                        "description": "List of embedding vectors, one per input content. Each embedding is a list of floats. The dimensionality of the embedding is model-specific; you can check model metadata using /models/{model_id}"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "embeddings"
-                ]
+                ],
+                "title": "Response containing generated embeddings."
             },
             "AgentCandidate": {
                 "type": "object",
@@ -7732,206 +7840,12 @@
     ],
     "tags": [
         {
-            "name": "AgentCandidate",
-            "description": ""
-        },
-        {
-            "name": "AgentConfig",
-            "description": ""
-        },
-        {
-            "name": "AgentCreateResponse",
-            "description": ""
-        },
-        {
-            "name": "AgentSessionCreateResponse",
-            "description": ""
-        },
-        {
-            "name": "AgentStepResponse",
-            "description": ""
-        },
-        {
-            "name": "AgentTool",
-            "description": ""
-        },
-        {
-            "name": "AgentTurnInputType",
-            "description": ""
-        },
-        {
-            "name": "AgentTurnResponseEvent",
-            "description": ""
-        },
-        {
-            "name": "AgentTurnResponseEventPayload",
-            "description": ""
-        },
-        {
-            "name": "AgentTurnResponseStepCompletePayload",
-            "description": ""
-        },
-        {
-            "name": "AgentTurnResponseStepProgressPayload",
-            "description": ""
-        },
-        {
-            "name": "AgentTurnResponseStepStartPayload",
-            "description": ""
-        },
-        {
-            "name": "AgentTurnResponseStreamChunk",
-            "description": "streamed agent turn completion response."
-        },
-        {
-            "name": "AgentTurnResponseTurnCompletePayload",
-            "description": ""
-        },
-        {
-            "name": "AgentTurnResponseTurnStartPayload",
-            "description": ""
-        },
-        {
-            "name": "Agents"
-        },
-        {
-            "name": "AggregationFunctionType",
-            "description": ""
-        },
-        {
-            "name": "AlgorithmConfig",
-            "description": ""
-        },
-        {
-            "name": "AppEvalTaskConfig",
-            "description": ""
-        },
-        {
-            "name": "AppendRowsRequest",
-            "description": ""
-        },
-        {
-            "name": "ArrayType",
-            "description": ""
-        },
-        {
-            "name": "BasicScoringFnParams",
-            "description": ""
-        },
-        {
-            "name": "BatchChatCompletionRequest",
-            "description": ""
-        },
-        {
-            "name": "BatchChatCompletionResponse",
-            "description": ""
-        },
-        {
-            "name": "BatchCompletionRequest",
-            "description": ""
-        },
-        {
-            "name": "BatchCompletionResponse",
-            "description": ""
+            "name": "Agents",
+            "description": "Main functionalities provided by this API:\n- Create agents with specific instructions and ability to use tools.\n- Interactions with agents are grouped into sessions (\"threads\"), and each interaction is called a \"turn\".\n- Agents can be provided with various tools (see the ToolGroups and ToolRuntime APIs for more details).\n- Agents can be provided with various shields (see the Safety API for more details).\n- Agents can also use Memory to retrieve information from knowledge bases. See the RAG Tool and Vector IO APIs for more details.",
+            "x-displayName": "Agents API for creating and interacting with agentic systems."
         },
         {
             "name": "BatchInference (Coming Soon)"
-        },
-        {
-            "name": "BenchmarkEvalTaskConfig",
-            "description": ""
-        },
-        {
-            "name": "BooleanType",
-            "description": ""
-        },
-        {
-            "name": "BuiltinTool",
-            "description": ""
-        },
-        {
-            "name": "CancelTrainingJobRequest",
-            "description": ""
-        },
-        {
-            "name": "ChatCompletionInputType",
-            "description": ""
-        },
-        {
-            "name": "ChatCompletionRequest",
-            "description": ""
-        },
-        {
-            "name": "ChatCompletionResponse",
-            "description": "Chat completion response."
-        },
-        {
-            "name": "ChatCompletionResponseEvent",
-            "description": "Chat completion response event."
-        },
-        {
-            "name": "ChatCompletionResponseEventType",
-            "description": ""
-        },
-        {
-            "name": "ChatCompletionResponseStreamChunk",
-            "description": "SSE-stream of these events."
-        },
-        {
-            "name": "Checkpoint",
-            "description": "Checkpoint created during training runs"
-        },
-        {
-            "name": "CompletionInputType",
-            "description": ""
-        },
-        {
-            "name": "CompletionMessage",
-            "description": ""
-        },
-        {
-            "name": "CompletionRequest",
-            "description": ""
-        },
-        {
-            "name": "CompletionResponse",
-            "description": "Completion response."
-        },
-        {
-            "name": "CompletionResponseStreamChunk",
-            "description": "streamed completion response."
-        },
-        {
-            "name": "ContentDelta",
-            "description": ""
-        },
-        {
-            "name": "CreateAgentRequest",
-            "description": ""
-        },
-        {
-            "name": "CreateAgentSessionRequest",
-            "description": ""
-        },
-        {
-            "name": "CreateAgentTurnRequest",
-            "description": ""
-        },
-        {
-            "name": "DPOAlignmentConfig",
-            "description": ""
-        },
-        {
-            "name": "DataConfig",
-            "description": ""
-        },
-        {
-            "name": "Dataset",
-            "description": ""
-        },
-        {
-            "name": "DatasetFormat",
-            "description": ""
         },
         {
             "name": "DatasetIO"
@@ -7940,616 +7854,54 @@
             "name": "Datasets"
         },
         {
-            "name": "DefaultRAGQueryGeneratorConfig",
-            "description": ""
-        },
-        {
-            "name": "EfficiencyConfig",
-            "description": ""
-        },
-        {
-            "name": "EmbeddingsRequest",
-            "description": ""
-        },
-        {
-            "name": "EmbeddingsResponse",
-            "description": ""
-        },
-        {
             "name": "Eval"
-        },
-        {
-            "name": "EvalCandidate",
-            "description": ""
-        },
-        {
-            "name": "EvalTask",
-            "description": ""
-        },
-        {
-            "name": "EvalTaskConfig",
-            "description": ""
         },
         {
             "name": "EvalTasks"
         },
         {
-            "name": "EvaluateResponse",
-            "description": ""
-        },
-        {
-            "name": "EvaluateRowsRequest",
-            "description": ""
-        },
-        {
-            "name": "Event",
-            "description": ""
-        },
-        {
-            "name": "GrammarResponseFormat",
-            "description": ""
-        },
-        {
-            "name": "GreedySamplingStrategy",
-            "description": ""
-        },
-        {
-            "name": "HealthInfo",
-            "description": ""
-        },
-        {
-            "name": "ImageContentItem",
-            "description": ""
-        },
-        {
-            "name": "ImageDelta",
-            "description": ""
-        },
-        {
-            "name": "Inference"
-        },
-        {
-            "name": "InferenceStep",
-            "description": ""
-        },
-        {
-            "name": "InsertChunksRequest",
-            "description": ""
-        },
-        {
-            "name": "InsertRequest",
-            "description": ""
+            "name": "Inference",
+            "description": "This API provides the raw interface to the underlying models. Two kinds of models are supported:\n- LLM models: these models generate \"raw\" and \"chat\" (conversational) completions.\n- Embedding models: these models generate embeddings to be used for semantic search.",
+            "x-displayName": "Llama Stack Inference API for generating completions, chat completions, and embeddings."
         },
         {
             "name": "Inspect"
         },
         {
-            "name": "InterleavedContent",
-            "description": ""
-        },
-        {
-            "name": "InterleavedContentItem",
-            "description": ""
-        },
-        {
-            "name": "InvokeToolRequest",
-            "description": ""
-        },
-        {
-            "name": "Job",
-            "description": ""
-        },
-        {
-            "name": "JobStatus",
-            "description": ""
-        },
-        {
-            "name": "JsonSchemaResponseFormat",
-            "description": ""
-        },
-        {
-            "name": "JsonType",
-            "description": ""
-        },
-        {
-            "name": "LLMAsJudgeScoringFnParams",
-            "description": ""
-        },
-        {
-            "name": "LLMRAGQueryGeneratorConfig",
-            "description": ""
-        },
-        {
-            "name": "ListDatasetsResponse",
-            "description": ""
-        },
-        {
-            "name": "ListEvalTasksResponse",
-            "description": ""
-        },
-        {
-            "name": "ListModelsResponse",
-            "description": ""
-        },
-        {
-            "name": "ListPostTrainingJobsResponse",
-            "description": ""
-        },
-        {
-            "name": "ListProvidersResponse",
-            "description": ""
-        },
-        {
-            "name": "ListRoutesResponse",
-            "description": ""
-        },
-        {
-            "name": "ListScoringFunctionsResponse",
-            "description": ""
-        },
-        {
-            "name": "ListShieldsResponse",
-            "description": ""
-        },
-        {
-            "name": "ListToolGroupsResponse",
-            "description": ""
-        },
-        {
-            "name": "ListToolsResponse",
-            "description": ""
-        },
-        {
-            "name": "ListVectorDBsResponse",
-            "description": ""
-        },
-        {
-            "name": "LogEventRequest",
-            "description": ""
-        },
-        {
-            "name": "LogSeverity",
-            "description": ""
-        },
-        {
-            "name": "LoraFinetuningConfig",
-            "description": ""
-        },
-        {
-            "name": "MemoryRetrievalStep",
-            "description": ""
-        },
-        {
-            "name": "Message",
-            "description": ""
-        },
-        {
-            "name": "MetricEvent",
-            "description": ""
-        },
-        {
-            "name": "Model",
-            "description": ""
-        },
-        {
-            "name": "ModelCandidate",
-            "description": ""
-        },
-        {
-            "name": "ModelType",
-            "description": ""
-        },
-        {
             "name": "Models"
-        },
-        {
-            "name": "NumberType",
-            "description": ""
-        },
-        {
-            "name": "ObjectType",
-            "description": ""
-        },
-        {
-            "name": "OptimizerConfig",
-            "description": ""
-        },
-        {
-            "name": "OptimizerType",
-            "description": ""
-        },
-        {
-            "name": "PaginatedRowsResult",
-            "description": ""
-        },
-        {
-            "name": "ParamType",
-            "description": ""
         },
         {
             "name": "PostTraining (Coming Soon)"
         },
         {
-            "name": "PostTrainingJob",
-            "description": ""
-        },
-        {
-            "name": "PostTrainingJobArtifactsResponse",
-            "description": "Artifacts of a finetuning job."
-        },
-        {
-            "name": "PostTrainingJobStatusResponse",
-            "description": "Status of a finetuning job."
-        },
-        {
-            "name": "PreferenceOptimizeRequest",
-            "description": ""
-        },
-        {
-            "name": "ProviderInfo",
-            "description": ""
-        },
-        {
-            "name": "QATFinetuningConfig",
-            "description": ""
-        },
-        {
-            "name": "QueryChunksRequest",
-            "description": ""
-        },
-        {
-            "name": "QueryChunksResponse",
-            "description": ""
-        },
-        {
-            "name": "QueryCondition",
-            "description": ""
-        },
-        {
-            "name": "QueryConditionOp",
-            "description": ""
-        },
-        {
-            "name": "QueryRequest",
-            "description": ""
-        },
-        {
-            "name": "QuerySpanTreeResponse",
-            "description": ""
-        },
-        {
-            "name": "QuerySpansResponse",
-            "description": ""
-        },
-        {
-            "name": "QueryTracesResponse",
-            "description": ""
-        },
-        {
-            "name": "RAGDocument",
-            "description": ""
-        },
-        {
-            "name": "RAGQueryConfig",
-            "description": ""
-        },
-        {
-            "name": "RAGQueryGeneratorConfig",
-            "description": ""
-        },
-        {
-            "name": "RAGQueryResult",
-            "description": ""
-        },
-        {
-            "name": "RegexParserScoringFnParams",
-            "description": ""
-        },
-        {
-            "name": "RegisterDatasetRequest",
-            "description": ""
-        },
-        {
-            "name": "RegisterEvalTaskRequest",
-            "description": ""
-        },
-        {
-            "name": "RegisterModelRequest",
-            "description": ""
-        },
-        {
-            "name": "RegisterScoringFunctionRequest",
-            "description": ""
-        },
-        {
-            "name": "RegisterShieldRequest",
-            "description": ""
-        },
-        {
-            "name": "RegisterToolGroupRequest",
-            "description": ""
-        },
-        {
-            "name": "RegisterVectorDbRequest",
-            "description": ""
-        },
-        {
-            "name": "ResponseFormat",
-            "description": ""
-        },
-        {
-            "name": "RouteInfo",
-            "description": ""
-        },
-        {
-            "name": "RunEvalRequest",
-            "description": ""
-        },
-        {
-            "name": "RunShieldRequest",
-            "description": ""
-        },
-        {
-            "name": "RunShieldResponse",
-            "description": ""
-        },
-        {
             "name": "Safety"
-        },
-        {
-            "name": "SafetyViolation",
-            "description": ""
-        },
-        {
-            "name": "SamplingParams",
-            "description": ""
-        },
-        {
-            "name": "SaveSpansToDatasetRequest",
-            "description": ""
-        },
-        {
-            "name": "ScoreBatchRequest",
-            "description": ""
-        },
-        {
-            "name": "ScoreBatchResponse",
-            "description": ""
-        },
-        {
-            "name": "ScoreRequest",
-            "description": ""
-        },
-        {
-            "name": "ScoreResponse",
-            "description": ""
         },
         {
             "name": "Scoring"
         },
         {
-            "name": "ScoringFn",
-            "description": ""
-        },
-        {
-            "name": "ScoringFnParams",
-            "description": ""
-        },
-        {
             "name": "ScoringFunctions"
-        },
-        {
-            "name": "ScoringResult",
-            "description": ""
-        },
-        {
-            "name": "Session",
-            "description": "A single session of an interaction with an Agentic System."
-        },
-        {
-            "name": "Shield",
-            "description": "A safety shield resource that can be used to check content"
-        },
-        {
-            "name": "ShieldCallStep",
-            "description": ""
         },
         {
             "name": "Shields"
         },
         {
-            "name": "Span",
-            "description": ""
-        },
-        {
-            "name": "SpanEndPayload",
-            "description": ""
-        },
-        {
-            "name": "SpanStartPayload",
-            "description": ""
-        },
-        {
-            "name": "SpanStatus",
-            "description": ""
-        },
-        {
-            "name": "SpanWithStatus",
-            "description": ""
-        },
-        {
-            "name": "StopReason",
-            "description": ""
-        },
-        {
-            "name": "StringType",
-            "description": ""
-        },
-        {
-            "name": "StructuredLogEvent",
-            "description": ""
-        },
-        {
-            "name": "StructuredLogPayload",
-            "description": ""
-        },
-        {
-            "name": "SupervisedFineTuneRequest",
-            "description": ""
-        },
-        {
-            "name": "SyntheticDataGenerateRequest",
-            "description": ""
-        },
-        {
             "name": "SyntheticDataGeneration (Coming Soon)"
-        },
-        {
-            "name": "SyntheticDataGenerationResponse",
-            "description": "Response from the synthetic data generation. Batch of (prompt, response, score) tuples that pass the threshold."
-        },
-        {
-            "name": "SystemMessage",
-            "description": ""
         },
         {
             "name": "Telemetry"
         },
         {
-            "name": "TextContentItem",
-            "description": ""
-        },
-        {
-            "name": "TextDelta",
-            "description": ""
-        },
-        {
-            "name": "TokenLogProbs",
-            "description": ""
-        },
-        {
-            "name": "Tool",
-            "description": ""
-        },
-        {
-            "name": "ToolCall",
-            "description": ""
-        },
-        {
-            "name": "ToolCallDelta",
-            "description": ""
-        },
-        {
-            "name": "ToolCallParseStatus",
-            "description": ""
-        },
-        {
-            "name": "ToolChoice",
-            "description": ""
-        },
-        {
-            "name": "ToolDef",
-            "description": ""
-        },
-        {
-            "name": "ToolDefinition",
-            "description": ""
-        },
-        {
-            "name": "ToolExecutionStep",
-            "description": ""
-        },
-        {
-            "name": "ToolGroup",
-            "description": ""
-        },
-        {
             "name": "ToolGroups"
         },
         {
-            "name": "ToolHost",
-            "description": ""
-        },
-        {
-            "name": "ToolInvocationResult",
-            "description": ""
-        },
-        {
-            "name": "ToolParamDefinition",
-            "description": ""
-        },
-        {
-            "name": "ToolParameter",
-            "description": ""
-        },
-        {
-            "name": "ToolPromptFormat",
-            "description": "This Enum refers to the prompt format for calling custom / zero shot tools\n\n`json` --\n    Refers to the json format for calling tools.\n    The json format takes the form like\n    {\n        \"type\": \"function\",\n        \"function\" : {\n            \"name\": \"function_name\",\n            \"description\": \"function_description\",\n            \"parameters\": {...}\n        }\n    }\n\n`function_tag` --\n    This is an example of how you could define\n    your own user defined format for making tool calls.\n    The function_tag format looks like this,\n    <function=function_name>(parameters)</function>\n\nThe detailed prompts for each of these formats are added to llama cli"
-        },
-        {
-            "name": "ToolResponse",
-            "description": ""
-        },
-        {
-            "name": "ToolResponseMessage",
-            "description": ""
-        },
-        {
             "name": "ToolRuntime"
-        },
-        {
-            "name": "TopKSamplingStrategy",
-            "description": ""
-        },
-        {
-            "name": "TopPSamplingStrategy",
-            "description": ""
-        },
-        {
-            "name": "Trace",
-            "description": ""
-        },
-        {
-            "name": "TrainingConfig",
-            "description": ""
-        },
-        {
-            "name": "Turn",
-            "description": "A single turn in an interaction with an Agentic System."
-        },
-        {
-            "name": "URL",
-            "description": ""
-        },
-        {
-            "name": "UnionType",
-            "description": ""
-        },
-        {
-            "name": "UnstructuredLogEvent",
-            "description": ""
-        },
-        {
-            "name": "UserMessage",
-            "description": ""
-        },
-        {
-            "name": "VectorDB",
-            "description": ""
         },
         {
             "name": "VectorDBs"
         },
         {
             "name": "VectorIO"
-        },
-        {
-            "name": "VersionInfo",
-            "description": ""
-        },
-        {
-            "name": "ViolationLevel",
-            "description": ""
         }
     ],
     "x-tagGroups": [
@@ -8576,201 +7928,6 @@
                 "ToolRuntime",
                 "VectorDBs",
                 "VectorIO"
-            ]
-        },
-        {
-            "name": "Types",
-            "tags": [
-                "AgentCandidate",
-                "AgentConfig",
-                "AgentCreateResponse",
-                "AgentSessionCreateResponse",
-                "AgentStepResponse",
-                "AgentTool",
-                "AgentTurnInputType",
-                "AgentTurnResponseEvent",
-                "AgentTurnResponseEventPayload",
-                "AgentTurnResponseStepCompletePayload",
-                "AgentTurnResponseStepProgressPayload",
-                "AgentTurnResponseStepStartPayload",
-                "AgentTurnResponseStreamChunk",
-                "AgentTurnResponseTurnCompletePayload",
-                "AgentTurnResponseTurnStartPayload",
-                "AggregationFunctionType",
-                "AlgorithmConfig",
-                "AppEvalTaskConfig",
-                "AppendRowsRequest",
-                "ArrayType",
-                "BasicScoringFnParams",
-                "BatchChatCompletionRequest",
-                "BatchChatCompletionResponse",
-                "BatchCompletionRequest",
-                "BatchCompletionResponse",
-                "BenchmarkEvalTaskConfig",
-                "BooleanType",
-                "BuiltinTool",
-                "CancelTrainingJobRequest",
-                "ChatCompletionInputType",
-                "ChatCompletionRequest",
-                "ChatCompletionResponse",
-                "ChatCompletionResponseEvent",
-                "ChatCompletionResponseEventType",
-                "ChatCompletionResponseStreamChunk",
-                "Checkpoint",
-                "CompletionInputType",
-                "CompletionMessage",
-                "CompletionRequest",
-                "CompletionResponse",
-                "CompletionResponseStreamChunk",
-                "ContentDelta",
-                "CreateAgentRequest",
-                "CreateAgentSessionRequest",
-                "CreateAgentTurnRequest",
-                "DPOAlignmentConfig",
-                "DataConfig",
-                "Dataset",
-                "DatasetFormat",
-                "DefaultRAGQueryGeneratorConfig",
-                "EfficiencyConfig",
-                "EmbeddingsRequest",
-                "EmbeddingsResponse",
-                "EvalCandidate",
-                "EvalTask",
-                "EvalTaskConfig",
-                "EvaluateResponse",
-                "EvaluateRowsRequest",
-                "Event",
-                "GrammarResponseFormat",
-                "GreedySamplingStrategy",
-                "HealthInfo",
-                "ImageContentItem",
-                "ImageDelta",
-                "InferenceStep",
-                "InsertChunksRequest",
-                "InsertRequest",
-                "InterleavedContent",
-                "InterleavedContentItem",
-                "InvokeToolRequest",
-                "Job",
-                "JobStatus",
-                "JsonSchemaResponseFormat",
-                "JsonType",
-                "LLMAsJudgeScoringFnParams",
-                "LLMRAGQueryGeneratorConfig",
-                "ListDatasetsResponse",
-                "ListEvalTasksResponse",
-                "ListModelsResponse",
-                "ListPostTrainingJobsResponse",
-                "ListProvidersResponse",
-                "ListRoutesResponse",
-                "ListScoringFunctionsResponse",
-                "ListShieldsResponse",
-                "ListToolGroupsResponse",
-                "ListToolsResponse",
-                "ListVectorDBsResponse",
-                "LogEventRequest",
-                "LogSeverity",
-                "LoraFinetuningConfig",
-                "MemoryRetrievalStep",
-                "Message",
-                "MetricEvent",
-                "Model",
-                "ModelCandidate",
-                "ModelType",
-                "NumberType",
-                "ObjectType",
-                "OptimizerConfig",
-                "OptimizerType",
-                "PaginatedRowsResult",
-                "ParamType",
-                "PostTrainingJob",
-                "PostTrainingJobArtifactsResponse",
-                "PostTrainingJobStatusResponse",
-                "PreferenceOptimizeRequest",
-                "ProviderInfo",
-                "QATFinetuningConfig",
-                "QueryChunksRequest",
-                "QueryChunksResponse",
-                "QueryCondition",
-                "QueryConditionOp",
-                "QueryRequest",
-                "QuerySpanTreeResponse",
-                "QuerySpansResponse",
-                "QueryTracesResponse",
-                "RAGDocument",
-                "RAGQueryConfig",
-                "RAGQueryGeneratorConfig",
-                "RAGQueryResult",
-                "RegexParserScoringFnParams",
-                "RegisterDatasetRequest",
-                "RegisterEvalTaskRequest",
-                "RegisterModelRequest",
-                "RegisterScoringFunctionRequest",
-                "RegisterShieldRequest",
-                "RegisterToolGroupRequest",
-                "RegisterVectorDbRequest",
-                "ResponseFormat",
-                "RouteInfo",
-                "RunEvalRequest",
-                "RunShieldRequest",
-                "RunShieldResponse",
-                "SafetyViolation",
-                "SamplingParams",
-                "SaveSpansToDatasetRequest",
-                "ScoreBatchRequest",
-                "ScoreBatchResponse",
-                "ScoreRequest",
-                "ScoreResponse",
-                "ScoringFn",
-                "ScoringFnParams",
-                "ScoringResult",
-                "Session",
-                "Shield",
-                "ShieldCallStep",
-                "Span",
-                "SpanEndPayload",
-                "SpanStartPayload",
-                "SpanStatus",
-                "SpanWithStatus",
-                "StopReason",
-                "StringType",
-                "StructuredLogEvent",
-                "StructuredLogPayload",
-                "SupervisedFineTuneRequest",
-                "SyntheticDataGenerateRequest",
-                "SyntheticDataGenerationResponse",
-                "SystemMessage",
-                "TextContentItem",
-                "TextDelta",
-                "TokenLogProbs",
-                "Tool",
-                "ToolCall",
-                "ToolCallDelta",
-                "ToolCallParseStatus",
-                "ToolChoice",
-                "ToolDef",
-                "ToolDefinition",
-                "ToolExecutionStep",
-                "ToolGroup",
-                "ToolHost",
-                "ToolInvocationResult",
-                "ToolParamDefinition",
-                "ToolParameter",
-                "ToolPromptFormat",
-                "ToolResponse",
-                "ToolResponseMessage",
-                "TopKSamplingStrategy",
-                "TopPSamplingStrategy",
-                "Trace",
-                "TrainingConfig",
-                "Turn",
-                "URL",
-                "UnionType",
-                "UnstructuredLogEvent",
-                "UserMessage",
-                "VectorDB",
-                "VersionInfo",
-                "ViolationLevel"
             ]
         }
     ]

@@ -36,6 +36,16 @@ from .pyopenapi.specification import Info, Server  # noqa: E402
 from .pyopenapi.utility import Specification  # noqa: E402
 
 
+def str_presenter(dumper, data):
+    if data.startswith(f"/{LLAMA_STACK_API_VERSION}") or data.startswith(
+        "#/components/schemas/"
+    ):
+        style = None
+    else:
+        style = ">" if "\n" in data or len(data) > 40 else None
+    return dumper.represent_scalar("tag:yaml.org,2002:str", data, style=style)
+
+
 def main(output_dir: str):
     output_dir = Path(output_dir)
     if not output_dir.exists():
@@ -69,7 +79,8 @@ def main(output_dir: str):
         y.sequence_dash_offset = 2
         y.width = 80
         y.allow_unicode = True
-        y.explicit_start = True
+        y.representer.add_representer(str, str_presenter)
+
         y.dump(
             spec.get_json(),
             fp,
