@@ -14,7 +14,12 @@ Another simple way to start interacting with Llama Stack is to just spin up a co
 
 **Conda**:
 
-Lastly, if you have a custom or an advanced setup or you are developing on Llama Stack you can also build a custom Llama Stack server. Using `llama stack build` and `llama stack run` you can build/run a custom Llama Stack server containing the exact combination of providers you wish. We have also provided various templates to make getting started easier. See [Building a Custom Distribution](building_distro) for more details.
+If you have a custom or an advanced setup or you are developing on Llama Stack you can also build a custom Llama Stack server. Using `llama stack build` and `llama stack run` you can build/run a custom Llama Stack server containing the exact combination of providers you wish. We have also provided various templates to make getting started easier. See [Building a Custom Distribution](building_distro) for more details.
+
+
+**Kubernetes**:
+
+If you have built a container image and want to deploy it in a Kubernetes cluster instead of starting the Llama Stack server locally. See [Kubernetes Deployment Guide](kubernetes_deployment) for more details.
 
 
 ```{toctree}
@@ -25,4 +30,5 @@ importing_as_library
 building_distro
 configuration
 selection
+kubernetes_deployment
 ```
