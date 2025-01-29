@@ -632,7 +632,7 @@ async def convert_openai_completion_stream(
     async for chunk in stream:
         choice = chunk.choices[0]
         yield CompletionResponseStreamChunk(
-            delta=TextDelta(text=choice.text),
+            delta=choice.text,
             stop_reason=_convert_openai_finish_reason(choice.finish_reason),
             logprobs=_convert_openai_completion_logprobs(choice.logprobs),
         )
