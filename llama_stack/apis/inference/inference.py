@@ -362,6 +362,13 @@ class ModelStore(Protocol):
 @runtime_checkable
 @trace_protocol
 class Inference(Protocol):
+    """Llama Stack Inference API for generating completions, chat completions, and embeddings.
+
+    This API provides the raw interface to the underlying models. Two kinds of models are supported:
+    - LLM models: these models generate "raw" and "chat" (conversational) completions.
+    - Embedding models: these models generate embeddings to be used for semantic search.
+    """
+
     model_store: ModelStore
 
     @webmethod(route="/inference/completion", method="POST")

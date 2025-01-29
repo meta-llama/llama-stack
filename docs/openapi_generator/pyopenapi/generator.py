@@ -677,12 +677,6 @@ class Generator:
                 )
             )
 
-        # types that are produced/consumed by operations
-        type_tags = [
-            self._build_type_tag(ref, schema)
-            for ref, schema in self.schema_builder.schemas.items()
-        ]
-
         # types that are emitted by events
         event_tags: List[Tag] = []
         events = get_endpoint_events(self.endpoint)
@@ -709,7 +703,6 @@ class Generator:
         # list all operations and types
         tags: List[Tag] = []
         tags.extend(operation_tags)
-        tags.extend(type_tags)
         tags.extend(event_tags)
         for extra_tag_group in extra_tag_groups.values():
             tags.extend(extra_tag_group)
@@ -722,13 +715,6 @@ class Generator:
                 TagGroup(
                     name=self.options.map("Operations"),
                     tags=sorted(tag.name for tag in operation_tags),
-                )
-            )
-        if type_tags:
-            tag_groups.append(
-                TagGroup(
-                    name=self.options.map("Types"),
-                    tags=sorted(tag.name for tag in type_tags),
                 )
             )
         if event_tags:
