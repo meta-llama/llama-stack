@@ -140,6 +140,10 @@ class StackRun(Subcommand):
                 return
 
             def get_conda_prefix(env_name):
+                # Conda "base" environment does not end with "base" in the
+                # prefix, so should be handled separately.
+                if env_name == "base":
+                    return os.environ.get("CONDA_PREFIX")
                 # Get conda environments info
                 conda_env_info = json.loads(
                     subprocess.check_output(
