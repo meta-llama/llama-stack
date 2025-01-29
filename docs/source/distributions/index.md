@@ -7,9 +7,9 @@ You can run a Llama Stack server in one of the following ways:
 This is the simplest way to get started. Using Llama Stack as a library means you do not need to start a server. This is especially useful when you are not running inference locally and relying on an external inference service (eg. fireworks, together, groq, etc.) See [Using Llama Stack as a Library](importing_as_library)
 
 
-**Docker**:
+**Container**:
 
-Another simple way to start interacting with Llama Stack is to just spin up docker which is pre-built with all the providers you need. We provide a number of pre-built Docker containers so you can start a Llama Stack server instantly. You can also build your own custom Docker container. Which distribution to choose depends on the hardware you have. See [Selection of a Distribution](distributions/selection) for more details.
+Another simple way to start interacting with Llama Stack is to just spin up a container (via Docker or Podman) which is pre-built with all the providers you need. We provide a number of pre-built images so you can start a Llama Stack server instantly. You can also build your own custom container. Which distribution to choose depends on the hardware you have. See [Selection of a Distribution](selection) for more details.
 
 
 **Conda**:
@@ -24,4 +24,5 @@ Lastly, if you have a custom or an advanced setup or you are developing on Llama
 importing_as_library
 building_distro
 configuration
+selection
 ```
