@@ -339,7 +339,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
                 method=options.method,
                 url=options.url,
                 params=options.params,
-                headers=options.headers,
+                headers=options.headers or {},
                 json=options.json_data,
             ),
         )
@@ -388,7 +388,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
                 method=options.method,
                 url=options.url,
                 params=options.params,
-                headers=options.headers,
+                headers=options.headers or {},
                 json=options.json_data,
             ),
         )
