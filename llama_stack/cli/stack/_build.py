@@ -74,7 +74,7 @@ def run_stack_build_command(
             build_config.image_type = args.image_type
         else:
             cprint(
-                f"Please specify a image-type (docker | conda | venv) for {args.template}",
+                f"Please specify a image-type (container | conda | venv) for {args.template}",
                 color="red",
             )
             return
@@ -95,10 +95,10 @@ def run_stack_build_command(
         )
 
         image_type = prompt(
-            "> Enter the image type you want your Llama Stack to be built as (docker or conda or venv): ",
+            "> Enter the image type you want your Llama Stack to be built as (container or conda or venv): ",
             validator=Validator.from_callable(
-                lambda x: x in ["docker", "conda", "venv"],
-                error_message="Invalid image type, please enter conda or docker or venv",
+                lambda x: x in ["container", "conda", "venv"],
+                error_message="Invalid image type, please enter conda or container or venv",
             ),
             default="conda",
         )
@@ -259,7 +259,7 @@ def _run_stack_build_command_from_build_config(
         else:
             if not image_name:
                 raise ValueError(
-                    "Please specify an image name when building a docker image without a template"
+                    "Please specify an image name when building a container image without a template"
                 )
     elif build_config.image_type == ImageType.conda.value:
         if not image_name:
