@@ -2439,27 +2439,32 @@
                     "type": {
                         "type": "string",
                         "const": "image",
-                        "default": "image"
+                        "default": "image",
+                        "description": "Discriminator type of the content item. Always \"image\""
                     },
                     "image": {
                         "type": "object",
                         "properties": {
                             "url": {
-                                "$ref": "#/components/schemas/URL"
+                                "$ref": "#/components/schemas/URL",
+                                "description": "A URL of the image or data URL in the format of data:image/{type};base64,{data}. Note that URL could have length limits."
                             },
                             "data": {
                                 "type": "string",
-                                "contentEncoding": "base64"
+                                "contentEncoding": "base64",
+                                "description": "base64 encoded image data as string"
                             }
                         },
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Image as a base64 encoded string or an URL"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "type",
                     "image"
-                ]
+                ],
+                "title": "A image content item"
             },
             "InterleavedContent": {
                 "oneOf": [
@@ -2647,17 +2652,20 @@
                     "type": {
                         "type": "string",
                         "const": "text",
-                        "default": "text"
+                        "default": "text",
+                        "description": "Discriminator type of the content item. Always \"text\""
                     },
                     "text": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Text content"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "type",
                     "text"
-                ]
+                ],
+                "title": "A text content item"
             },
             "ToolCall": {
                 "type": "object",
