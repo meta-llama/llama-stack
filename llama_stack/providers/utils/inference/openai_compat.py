@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import AsyncGenerator, Dict, List, Optional
+from typing import AsyncGenerator, Dict, List, Optional, Union
 
 from llama_models.datatypes import (
     GreedySamplingStrategy,
@@ -121,7 +121,31 @@ def convert_openai_completion_logprobs(
 ) -> Optional[List[TokenLogProbs]]:
     if not logprobs:
         return None
-    return [TokenLogProbs(logprobs_by_token=x) for x in logprobs.top_logprobs]
+    if hasattr(logprobs, "top_logprobs"):
+        return [TokenLogProbs(logprobs_by_token=x) for x in logprobs.top_logprobs]
+
+    # Together supports logprobs with top_k=1 only. This means for each token position,
+    # they return only the logprobs for the selected token (vs. the top n most likely tokens).
+    # Here we construct the response by matching the selected token with the logprobs.
+    if logprobs.tokens and logprobs.token_logprobs:
+        return [
+            TokenLogProbs(logprobs_by_token={token: token_lp})
+            for token, token_lp in zip(logprobs.tokens, logprobs.token_logprobs)
+        ]
+    return None
+
+
+def convert_openai_completion_logprobs_stream(
+    text: str, logprobs: Optional[Union[float, OpenAICompatLogprobs]]
+):
+    if logprobs is None:
+        return None
+    if isinstance(logprobs, float):
+        # Adapt response from Together CompletionChoicesChunk
+        return [TokenLogProbs(logprobs_by_token={text: logprobs})]
+    if hasattr(logprobs, "top_logprobs"):
+        return [TokenLogProbs(logprobs_by_token=x) for x in logprobs.top_logprobs]
+    return None
 
 
 def process_completion_response(
@@ -188,7 +212,7 @@ async def process_completion_stream_response(
         yield CompletionResponseStreamChunk(
             delta=text,
             stop_reason=stop_reason,
-            logprobs=convert_openai_completion_logprobs(choice.logprobs),
+            logprobs=convert_openai_completion_logprobs_stream(text, choice.logprobs),
         )
         if finish_reason:
             if finish_reason in ["stop", "eos", "eos_token"]:
