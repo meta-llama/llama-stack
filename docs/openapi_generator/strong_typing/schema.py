@@ -501,11 +501,6 @@ class JsonSchemaGenerator:
         properties: Dict[str, Schema] = {}
         required: List[str] = []
         for property_name, property_type in get_class_properties(typ):
-            defaults = {}
-            if "model_fields" in members:
-                f = members["model_fields"]
-                defaults = {k: finfo.default for k, finfo in f.items()}
-
             # rename property if an alias name is specified
             alias = get_annotation(property_type, Alias)
             if alias:
@@ -513,12 +508,12 @@ class JsonSchemaGenerator:
             else:
                 output_name = property_name
 
-            # check if there's additional field annotation
+            defaults = {}
             json_schema_extra = None
             if "model_fields" in members:
                 f = members["model_fields"]
-                if output_name in f:
-                    json_schema_extra = f[output_name].json_schema_extra
+                defaults = {k: finfo.default for k, finfo in f.items()}
+                json_schema_extra = f.get(output_name, None).json_schema_extra
 
             if is_type_optional(property_type):
                 optional_type: type = unwrap_optional_type(property_type)
