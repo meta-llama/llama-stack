@@ -66,6 +66,7 @@ from llama_stack.apis.vector_io import VectorIO
 from llama_stack.providers.utils.kvstore import KVStore
 from llama_stack.providers.utils.memory.vector_store import concat_interleaved_content
 from llama_stack.providers.utils.telemetry import tracing
+
 from .persistence import AgentPersistence
 from .safety import SafetyException, ShieldRunnerMixin
 
@@ -476,6 +477,12 @@ class ChatAgent(ShieldRunnerMixin):
                 )
                 span.set_attribute("output", retrieved_context)
                 span.set_attribute("tool_name", MEMORY_QUERY_TOOL)
+
+                # append retrieved_context to the last user message
+                for message in input_messages[::-1]:
+                    if isinstance(message, UserMessage):
+                        message.context = retrieved_context
+                        break
 
         output_attachments = []
 

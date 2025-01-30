@@ -211,7 +211,7 @@ def test_code_interpreter_for_attachments(llama_stack_client, agent_config):
     }
 
     codex_agent = Agent(llama_stack_client, agent_config)
-    session_id = codex_agent.create_session("test-session")
+    session_id = codex_agent.create_session(f"test-session-{uuid4()}")
     inflation_doc = AgentDocument(
         content="https://raw.githubusercontent.com/meta-llama/llama-stack-apps/main/examples/resources/inflation.csv",
         mime_type="text/csv",
@@ -299,7 +299,7 @@ def test_rag_agent(llama_stack_client, agent_config):
         ],
     }
     rag_agent = Agent(llama_stack_client, agent_config)
-    session_id = rag_agent.create_session("test-session")
+    session_id = rag_agent.create_session(f"test-session-{uuid4()}")
     user_prompts = [
         "What are the top 5 topics that were explained? Only list succinct bullet points.",
     ]
@@ -334,7 +334,7 @@ def test_rag_and_code_agent(llama_stack_client, agent_config):
     llama_stack_client.tool_runtime.rag_tool.insert(
         documents=documents,
         vector_db_id=vector_db_id,
-        chunk_size_in_tokens=512,
+        chunk_size_in_tokens=128,
     )
     agent_config = {
         **agent_config,
@@ -347,7 +347,6 @@ def test_rag_and_code_agent(llama_stack_client, agent_config):
         ],
     }
     agent = Agent(llama_stack_client, agent_config)
-    session_id = agent.create_session("test-session")
     inflation_doc = Document(
         document_id="test_csv",
         content="https://raw.githubusercontent.com/meta-llama/llama-stack-apps/main/examples/resources/inflation.csv",
@@ -356,21 +355,25 @@ def test_rag_and_code_agent(llama_stack_client, agent_config):
     )
     user_prompts = [
         (
+            "Here is a csv file, can you describe it?",
+            [inflation_doc],
+            "code_interpreter",
+        ),
+        (
             "What are the top 5 topics that were explained? Only list succinct bullet points.",
             [],
             "query_from_memory",
         ),
-        ("What is the average yearly inflation?", [inflation_doc], "code_interpreter"),
     ]
 
     for prompt, docs, tool_name in user_prompts:
         print(f"User> {prompt}")
+        session_id = agent.create_session(f"test-session-{uuid4()}")
         response = agent.create_turn(
             messages=[{"role": "user", "content": prompt}],
             session_id=session_id,
             documents=docs,
         )
-
         logs = [str(log) for log in EventLogger().log(response) if log is not None]
         logs_str = "".join(logs)
         assert f"Tool:{tool_name}" in logs_str
