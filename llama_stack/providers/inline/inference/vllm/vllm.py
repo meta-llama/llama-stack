@@ -249,6 +249,9 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         self.engine = None
         self.chat = None
 
+    def __del__(self):
+        self._shutdown()
+
     ###########################################################################
     # METHODS INHERITED FROM UNDOCUMENTED IMPLICIT MYSTERY BASE CLASS
 
@@ -265,6 +268,24 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         serving, so nothing happens here currently.
         """
         pass
+
+    async def shutdown(self) -> None:
+        """
+        Callback that apparently is invoked when shutting down the Llama
+        Stack server. Not sure how to shut down a Llama Stack server in such
+        a way as to trigger this callback.
+        """
+        _info("Shutting down inline vLLM inference provider.")
+        self._shutdown()
+
+    def _shutdown(self) -> None:
+        """Internal non-async version of self.shutdown(). Idempotent."""
+        if self.engine is not None:
+            self.engine.shutdown_background_loop()
+            self.engine = None
+            self.chat = None
+            self.model_ids = set()
+            self.resolved_model_id = None
 
     ###########################################################################
     # METHODS INHERITED FROM ModelsProtocolPrivate INTERFACE
@@ -368,14 +389,25 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         Callback that is called when the server removes an inference endpoint
         from an inference provider.
 
-        The semantics of this callback are not clear. How should model_id
-         be interpreted? What happens to pending requests?
-
-        :param model_id: Undocumented string parameter
-
-        :returns: Nothing, at least according to the spec
+        :param model_id: The same external ID that the higher layers of the
+         stack previously passed to :func:`register_model()`
         """
-        raise NotImplementedError()
+        if model_id not in self.model_ids:
+            raise ValueError(
+                f"Attempted to unregister model ID '{model_id}', "
+                f"but that ID is not registered to this provider."
+            )
+        self.model_ids.remove(model_id)
+
+        if len(self.model_ids) == 0:
+            # Last model was just unregistered. Shut down the connection
+            # to vLLM and free up resources.
+            # Note that this operation may cause in-flight chat completion
+            # requests on the now-unregistered model to return errors.
+            self.resolved_model_id = None
+            self.chat = None
+            self.engine.shutdown_background_loop()
+            self.engine = None
 
     ###########################################################################
     # METHODS INHERITED FROM Inference INTERFACE
