@@ -9,7 +9,6 @@ from typing import AsyncGenerator, List, Optional, Union
 from llama_models.datatypes import CoreModelId
 from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.tokenizer import Tokenizer
-from termcolor import cprint
 from together import Together
 
 from llama_stack.apis.common.content_types import InterleavedContent
@@ -181,9 +180,8 @@ class TogetherInferenceAdapter(
 
         if logprobs and logprobs.top_k:
             if logprobs.top_k != 1:
-                cprint(
-                    "Together only supports logprobs top_k=1. Overriding.",
-                    "Yello",
+                raise ValueError(
+                    f"Unsupported value: Together only supports logprobs top_k=1. {logprobs.top_k} was provided",
                 )
             options["logprobs"] = 1
 
