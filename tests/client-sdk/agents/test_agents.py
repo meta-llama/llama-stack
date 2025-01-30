@@ -357,7 +357,7 @@ def test_rag_and_code_agent(llama_stack_client, agent_config):
     user_prompts = [
         (
             "What are the top 5 topics that were explained? Only list succinct bullet points.",
-            documents,
+            [],
             "query_from_memory",
         ),
         ("What is the average yearly inflation?", [inflation_doc], "code_interpreter"),
@@ -370,11 +370,7 @@ def test_rag_and_code_agent(llama_stack_client, agent_config):
             session_id=session_id,
             documents=docs,
         )
-        logs = []
-        for log in EventLogger().log(response):
-            logs.append(str(log))
-            log.print()
 
-        # logs = [str(log) for log in EventLogger().log(response) if log is not None]
+        logs = [str(log) for log in EventLogger().log(response) if log is not None]
         logs_str = "".join(logs)
         assert f"Tool:{tool_name}" in logs_str
