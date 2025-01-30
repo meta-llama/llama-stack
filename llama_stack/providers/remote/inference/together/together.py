@@ -161,7 +161,10 @@ class TogetherInferenceAdapter(
             yield chunk
 
     def _build_options(
-        self, sampling_params: Optional[SamplingParams], fmt: ResponseFormat
+        self,
+        sampling_params: Optional[SamplingParams],
+        logprobs: Optional[LogProbConfig],
+        fmt: ResponseFormat,
     ) -> dict:
         options = get_sampling_options(sampling_params)
         if fmt:
@@ -174,6 +177,13 @@ class TogetherInferenceAdapter(
                 raise NotImplementedError("Grammar response format not supported yet")
             else:
                 raise ValueError(f"Unknown response format {fmt.type}")
+
+        if logprobs and logprobs.top_k:
+            if logprobs.top_k != 1:
+                raise ValueError(
+                    f"Unsupported value: Together only supports logprobs top_k=1. {logprobs.top_k} was provided",
+                )
+            options["logprobs"] = 1
 
         return options
 
@@ -263,7 +273,9 @@ class TogetherInferenceAdapter(
             "model": request.model,
             **input_dict,
             "stream": request.stream,
-            **self._build_options(request.sampling_params, request.response_format),
+            **self._build_options(
+                request.sampling_params, request.logprobs, request.response_format
+            ),
         }
 
     async def embeddings(
