@@ -27,8 +27,7 @@ class _URLOrData(BaseModel):
     """
 
     url: Optional[URL] = None
-    # data is a base64 encoded string
-    # TODO: generate contentEncoding="base64" in OpenAPI schema
+    # data is a base64 encoded string, hint with contentEncoding=base64
     data: Optional[str] = Field(contentEncoding="base64", default=None)
 
     @model_validator(mode="before")
