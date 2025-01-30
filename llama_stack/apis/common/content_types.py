@@ -28,8 +28,8 @@ class _URLOrData(BaseModel):
 
     url: Optional[URL] = None
     # data is a base64 encoded string
-    # TODO: annotate with contentEncoding="base64" in OpenAPI schema
-    data: Optional[str] = None
+    # TODO: generate contentEncoding="base64" in OpenAPI schema
+    data: Optional[str] = Field(contentEncoding="base64", default=None)
 
     @model_validator(mode="before")
     @classmethod

@@ -248,7 +248,9 @@ class JsonSchemaGenerator:
                 type_schema.update(self._metadata_to_schema(m))
         return type_schema
 
-    def _simple_type_to_schema(self, typ: TypeLike) -> Optional[Schema]:
+    def _simple_type_to_schema(
+        self, typ: TypeLike, json_schema_extra: Optional[dict] = None
+    ) -> Optional[Schema]:
         """
         Returns the JSON schema associated with a simple, unrestricted type.
 
@@ -264,6 +266,11 @@ class JsonSchemaGenerator:
         elif typ is float:
             return {"type": "number"}
         elif typ is str:
+            if json_schema_extra and "contentEncoding" in json_schema_extra:
+                return {
+                    "type": "string",
+                    "contentEncoding": json_schema_extra["contentEncoding"],
+                }
             return {"type": "string"}
         elif typ is bytes:
             return {"type": "string", "contentEncoding": "base64"}
@@ -303,7 +310,12 @@ class JsonSchemaGenerator:
             # not a simple type
             return None
 
-    def type_to_schema(self, data_type: TypeLike, force_expand: bool = False) -> Schema:
+    def type_to_schema(
+        self,
+        data_type: TypeLike,
+        force_expand: bool = False,
+        json_schema_extra: Optional[dict] = None,
+    ) -> Schema:
         """
         Returns the JSON schema associated with a type.
 
@@ -313,7 +325,7 @@ class JsonSchemaGenerator:
         """
 
         # short-circuit for common simple types
-        schema = self._simple_type_to_schema(data_type)
+        schema = self._simple_type_to_schema(data_type, json_schema_extra)
         if schema is not None:
             return schema
 
@@ -486,7 +498,6 @@ class JsonSchemaGenerator:
         property_docstrings = get_class_property_docstrings(
             typ, self.options.property_description_fun
         )
-
         properties: Dict[str, Schema] = {}
         required: List[str] = []
         for property_name, property_type in get_class_properties(typ):
@@ -502,11 +513,27 @@ class JsonSchemaGenerator:
             else:
                 output_name = property_name
 
+            # check if there's additional field annotation
+            json_schema_extra = None
+            if "model_fields" in members:
+                f = members["model_fields"]
+                if output_name in f:
+                    json_schema_extra = f[output_name].json_schema_extra
+
+            if json_schema_extra:
+                from rich.pretty import pprint
+
+                pprint(json_schema_extra)
+
             if is_type_optional(property_type):
                 optional_type: type = unwrap_optional_type(property_type)
-                property_def = self.type_to_schema(optional_type)
+                property_def = self.type_to_schema(
+                    optional_type, json_schema_extra=json_schema_extra
+                )
             else:
-                property_def = self.type_to_schema(property_type)
+                property_def = self.type_to_schema(
+                    property_type, json_schema_extra=json_schema_extra
+                )
                 required.append(output_name)
 
             # check if attribute has a default value initializer
@@ -536,6 +563,8 @@ class JsonSchemaGenerator:
                 property_def["description"] = property_doc
 
             properties[output_name] = property_def
+
+        # print("properties", properties)
 
         schema = {"type": "object"}
         if len(properties) > 0:
