@@ -135,7 +135,8 @@ async def interleaved_content_convert_to_raw(
                 else:
                     raise ValueError("Unsupported URL type")
             elif image.data:
-                data = image.data
+                # data is a base64 encoded string, decode it to bytes for RawMediaItem
+                data = base64.b64decode(image.data)
             else:
                 raise ValueError("No data or URL provided")
 

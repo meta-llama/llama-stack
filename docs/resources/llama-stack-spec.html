@@ -2439,7 +2439,8 @@
                     "type": {
                         "type": "string",
                         "const": "image",
-                        "default": "image"
+                        "default": "image",
+                        "description": "Discriminator type of the content item. Always \"image\""
                     },
                     "image": {
                         "type": "object",
@@ -2448,18 +2449,19 @@
                                 "$ref": "#/components/schemas/URL"
                             },
                             "data": {
-                                "type": "string",
-                                "contentEncoding": "base64"
+                                "type": "string"
                             }
                         },
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Image as a base64 encoded string or an URL"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "type",
                     "image"
-                ]
+                ],
+                "title": "A image content item"
             },
             "InterleavedContent": {
                 "oneOf": [
@@ -2647,17 +2649,20 @@
                     "type": {
                         "type": "string",
                         "const": "text",
-                        "default": "text"
+                        "default": "text",
+                        "description": "Discriminator type of the content item. Always \"text\""
                     },
                     "text": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Text content"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "type",
                     "text"
-                ]
+                ],
+                "title": "A text content item"
             },
             "ToolCall": {
                 "type": "object",
