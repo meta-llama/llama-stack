@@ -32,40 +32,47 @@ type: Opaque
 data:
   token: "<YOUR-HF-TOKEN>"
 ---
-apiVersion: v1
-kind: Pod
+apiVersion: apps/v1
+kind: Deployment
 metadata:
   name: vllm-server
-  labels:
-    app: vllm
 spec:
-  containers:
-  - name: llama-stack
-    image: <VLLM-IMAGE>
-    command:
-        - bash
-        - -c
-        - |
-          MODEL="meta-llama/Llama-3.2-1B-Instruct"
-          MODEL_PATH=/app/model/$(basename $MODEL)
-          huggingface-cli login --token $HUGGING_FACE_HUB_TOKEN
-          huggingface-cli download $MODEL --local-dir $MODEL_PATH --cache-dir $MODEL_PATH
-          python3 -m vllm.entrypoints.openai.api_server --model $MODEL_PATH --served-model-name $MODEL --port 8000
-    ports:
-      - containerPort: 8000
-    volumeMounts:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: vllm
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: vllm
+    spec:
+      containers:
+      - name: llama-stack
+        image: <VLLM-IMAGE>
+        command:
+            - bash
+            - -c
+            - |
+              MODEL="meta-llama/Llama-3.2-1B-Instruct"
+              MODEL_PATH=/app/model/$(basename $MODEL)
+              huggingface-cli login --token $HUGGING_FACE_HUB_TOKEN
+              huggingface-cli download $MODEL --local-dir $MODEL_PATH --cache-dir $MODEL_PATH
+              python3 -m vllm.entrypoints.openai.api_server --model $MODEL_PATH --served-model-name $MODEL --port 8000
+        ports:
+          - containerPort: 8000
+        volumeMounts:
+          - name: llama-storage
+            mountPath: /app/model
+        env:
+          - name: HUGGING_FACE_HUB_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: hf-token-secret
+                key: token
+      volumes:
       - name: llama-storage
-        mountPath: /app/model
-    env:
-      - name: HUGGING_FACE_HUB_TOKEN
-        valueFrom:
-          secretKeyRef:
-            name: hf-token-secret
-            key: token
-  volumes:
-  - name: llama-storage
-    persistentVolumeClaim:
-      claimName: vllm-models
+        persistentVolumeClaim:
+          claimName: vllm-models
 ---
 apiVersion: v1
 kind: Service
@@ -73,11 +80,12 @@ metadata:
   name: vllm-server
 spec:
   selector:
-    app: vllm
+    app.kubernetes.io/name: vllm
   ports:
-  - port: 8000
+  - protocol: TCP
+    port: 8000
     targetPort: 8000
-  type: NodePort
+  type: ClusterIP
 EOF
 ```
 
@@ -135,27 +143,34 @@ spec:
     requests:
       storage: 1Gi
 ---
-apiVersion: v1
-kind: Pod
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: llama-stack-pod
-  labels:
-    app: llama-stack
+  name: llama-stack-server
 spec:
-  containers:
-  - name: llama-stack
-    image: localhost/llama-stack-run-k8s:latest
-    imagePullPolicy: IfNotPresent
-    command: ["python", "-m", "llama_stack.distribution.server.server", "--yaml-config", "/app/config.yaml"]
-    ports:
-      - containerPort: 5000
-    volumeMounts:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: llama-stack
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: llama-stack
+    spec:
+      containers:
+      - name: llama-stack
+        image: localhost/llama-stack-run-k8s:latest
+        imagePullPolicy: IfNotPresent
+        command: ["python", "-m", "llama_stack.distribution.server.server", "--yaml-config", "/app/config.yaml"]
+        ports:
+          - containerPort: 5000
+        volumeMounts:
+          - name: llama-storage
+            mountPath: /root/.llama
+      volumes:
       - name: llama-storage
-        mountPath: /root/.llama
-  volumes:
-  - name: llama-storage
-    persistentVolumeClaim:
-      claimName: llama-pvc
+        persistentVolumeClaim:
+          claimName: llama-pvc
 ---
 apiVersion: v1
 kind: Service
@@ -163,7 +178,7 @@ metadata:
   name: llama-stack-service
 spec:
   selector:
-    app: llama-stack
+    app.kubernetes.io/name: llama-stack
   ports:
   - protocol: TCP
     port: 5000
