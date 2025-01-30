@@ -8,7 +8,7 @@ First, create a local Kubernetes cluster via Kind:
 kind create cluster --image kindest/node:v1.32.0 --name llama-stack-test
 ```
 
-Start vLLM server as a Kubernetes Pod and Service (remember to replace `<YOUR-HF-TOKEN>` with your actual token and `<VLLM-IMAGE>` to meet your local system architecture):
+Start vLLM server as a Kubernetes Pod and Service:
 
 ```bash
 cat <<EOF |kubectl apply -f -
@@ -30,7 +30,7 @@ metadata:
   name: hf-token-secret
 type: Opaque
 data:
-  token: "<YOUR-HF-TOKEN>"
+  token: $(HF_TOKEN)
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -48,7 +48,7 @@ spec:
     spec:
       containers:
       - name: llama-stack
-        image: <VLLM-IMAGE>
+        image: $(VLLM_IMAGE)
         command:
             - bash
             - -c
@@ -92,7 +92,7 @@ EOF
 We can verify that the vLLM server has started successfully via the logs (this might take a couple of minutes to download the model):
 
 ```bash
-$ kubectl logs vllm-server
+$ kubectl logs -l app.kubernetes.io/name=vllm
 ...
 INFO:     Started server process [1]
 INFO:     Waiting for application startup.
@@ -190,7 +190,7 @@ EOF
 We can check that the LlamaStack server has started:
 
 ```bash
-$ kubectl logs vllm-server
+$ kubectl logs -l app.kubernetes.io/name=llama-stack
 ...
 INFO:     Started server process [1]
 INFO:     Waiting for application startup.
