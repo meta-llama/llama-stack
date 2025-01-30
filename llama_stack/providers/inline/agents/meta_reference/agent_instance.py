@@ -476,9 +476,6 @@ class ChatAgent(ShieldRunnerMixin):
                 )
                 span.set_attribute("output", retrieved_context)
                 span.set_attribute("tool_name", MEMORY_QUERY_TOOL)
-                if retrieved_context:
-                    last_message = input_messages[-1]
-                    last_message.context = retrieved_context
 
         output_attachments = []
 
