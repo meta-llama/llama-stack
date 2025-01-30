@@ -19,8 +19,16 @@ class URL(BaseModel):
 
 
 class _URLOrData(BaseModel):
+    """
+    A URL or a base64 encoded string
+
+    :param url: A URL of the image or data URL in the format of data:image/{type};base64,{data}. Note that URL could have length limits.
+    :param data: base64 encoded image data as string
+    """
+
     url: Optional[URL] = None
     # data is a base64 encoded string
+    # TODO: annotate with contentEncoding="base64" in OpenAPI schema
     data: Optional[str] = None
 
     @model_validator(mode="before")

@@ -1473,8 +1473,12 @@ components:
           properties:
             url:
               $ref: '#/components/schemas/URL'
+              description: >-
+                A URL of the image or data URL in the format of data:image/{type};base64,{data}.
+                Note that URL could have length limits.
             data:
               type: string
+              description: base64 encoded image data as string
           additionalProperties: false
           description: >-
             Image as a base64 encoded string or an URL
