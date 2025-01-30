@@ -520,11 +520,6 @@ class JsonSchemaGenerator:
                 if output_name in f:
                     json_schema_extra = f[output_name].json_schema_extra
 
-            if json_schema_extra:
-                from rich.pretty import pprint
-
-                pprint(json_schema_extra)
-
             if is_type_optional(property_type):
                 optional_type: type = unwrap_optional_type(property_type)
                 property_def = self.type_to_schema(
@@ -563,8 +558,6 @@ class JsonSchemaGenerator:
                 property_def["description"] = property_doc
 
             properties[output_name] = property_def
-
-        # print("properties", properties)
 
         schema = {"type": "object"}
         if len(properties) > 0:
