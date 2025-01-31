@@ -4,8 +4,10 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import base64
 import json
 import warnings
+from io import BytesIO
 from typing import Any, AsyncGenerator, Dict, Generator, Iterable, List, Optional, Union
 
 from llama_models.datatypes import (
@@ -43,6 +45,8 @@ from openai.types.chat.chat_completion_message_tool_call_param import (
 )
 from openai.types.completion import Completion as OpenAICompletion
 from openai.types.completion_choice import Logprobs as OpenAICompletionLogprobs
+
+from PIL import Image
 
 from llama_stack.apis.common.content_types import (
     ImageContentItem,
@@ -186,9 +190,18 @@ def _convert_message(message: Message | Dict) -> OpenAIChatCompletionMessage:
                     type="image_url",
                 )
             elif content.image.data:
+                mime_type = Image.MIME[
+                    Image.open(
+                        BytesIO(
+                            base64.b64decode(
+                                content.image.data
+                            )  # TODO(mf): do this more efficiently, decode less
+                        )
+                    ).format
+                ]
                 return OpenAIChatCompletionContentPartImageParam(
                     image_url=OpenAIImageURL(
-                        url=f"data:image/png;base64,{content.image.data}"  # TODO(mf): how do we know the type?
+                        url=f"data:{mime_type};base64,{content.image.data}"
                     ),
                     type="image_url",
                 )
