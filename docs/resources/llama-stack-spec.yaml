@@ -113,11 +113,12 @@ paths:
             If stream=False, returns a ChatCompletionResponse with the full completion.
             If stream=True, returns an SSE event stream of ChatCompletionResponseStreamChunk
           content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatCompletionResponse'
             text/event-stream:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/ChatCompletionResponse'
-                  - $ref: '#/components/schemas/ChatCompletionResponseStreamChunk'
+                $ref: '#/components/schemas/ChatCompletionResponseStreamChunk'
       tags:
         - Inference
       summary: >-
@@ -137,11 +138,12 @@ paths:
             If stream=False, returns a CompletionResponse with the full completion.
             If stream=True, returns an SSE event stream of CompletionResponseStreamChunk
           content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompletionResponse'
             text/event-stream:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/CompletionResponse'
-                  - $ref: '#/components/schemas/CompletionResponseStreamChunk'
+                $ref: '#/components/schemas/CompletionResponseStreamChunk'
       tags:
         - Inference
       summary: >-
@@ -202,11 +204,12 @@ paths:
             A single turn in an interaction with an Agentic System. **OR** streamed
             agent turn completion response.
           content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Turn'
             text/event-stream:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/Turn'
-                  - $ref: '#/components/schemas/AgentTurnResponseStreamChunk'
+                $ref: '#/components/schemas/AgentTurnResponseStreamChunk'
       tags:
         - Agents
       parameters:
@@ -2394,154 +2397,6 @@ components:
       additionalProperties: false
       required:
         - messages
-    AgentTurnResponseEvent:
-      type: object
-      properties:
-        payload:
-          $ref: '#/components/schemas/AgentTurnResponseEventPayload'
-      additionalProperties: false
-      required:
-        - payload
-    AgentTurnResponseEventPayload:
-      oneOf:
-        - $ref: '#/components/schemas/AgentTurnResponseStepStartPayload'
-        - $ref: '#/components/schemas/AgentTurnResponseStepProgressPayload'
-        - $ref: '#/components/schemas/AgentTurnResponseStepCompletePayload'
-        - $ref: '#/components/schemas/AgentTurnResponseTurnStartPayload'
-        - $ref: '#/components/schemas/AgentTurnResponseTurnCompletePayload'
-      discriminator:
-        propertyName: event_type
-        mapping:
-          step_start: '#/components/schemas/AgentTurnResponseStepStartPayload'
-          step_progress: '#/components/schemas/AgentTurnResponseStepProgressPayload'
-          step_complete: '#/components/schemas/AgentTurnResponseStepCompletePayload'
-          turn_start: '#/components/schemas/AgentTurnResponseTurnStartPayload'
-          turn_complete: '#/components/schemas/AgentTurnResponseTurnCompletePayload'
-    AgentTurnResponseStepCompletePayload:
-      type: object
-      properties:
-        event_type:
-          type: string
-          const: step_complete
-          default: step_complete
-        step_type:
-          type: string
-          enum:
-            - inference
-            - tool_execution
-            - shield_call
-            - memory_retrieval
-        step_id:
-          type: string
-        step_details:
-          oneOf:
-            - $ref: '#/components/schemas/InferenceStep'
-            - $ref: '#/components/schemas/ToolExecutionStep'
-            - $ref: '#/components/schemas/ShieldCallStep'
-            - $ref: '#/components/schemas/MemoryRetrievalStep'
-          discriminator:
-            propertyName: step_type
-            mapping:
-              inference: '#/components/schemas/InferenceStep'
-              tool_execution: '#/components/schemas/ToolExecutionStep'
-              shield_call: '#/components/schemas/ShieldCallStep'
-              memory_retrieval: '#/components/schemas/MemoryRetrievalStep'
-      additionalProperties: false
-      required:
-        - event_type
-        - step_type
-        - step_id
-        - step_details
-    AgentTurnResponseStepProgressPayload:
-      type: object
-      properties:
-        event_type:
-          type: string
-          const: step_progress
-          default: step_progress
-        step_type:
-          type: string
-          enum:
-            - inference
-            - tool_execution
-            - shield_call
-            - memory_retrieval
-        step_id:
-          type: string
-        delta:
-          $ref: '#/components/schemas/ContentDelta'
-      additionalProperties: false
-      required:
-        - event_type
-        - step_type
-        - step_id
-        - delta
-    AgentTurnResponseStepStartPayload:
-      type: object
-      properties:
-        event_type:
-          type: string
-          const: step_start
-          default: step_start
-        step_type:
-          type: string
-          enum:
-            - inference
-            - tool_execution
-            - shield_call
-            - memory_retrieval
-        step_id:
-          type: string
-        metadata:
-          type: object
-          additionalProperties:
-            oneOf:
-              - type: 'null'
-              - type: boolean
-              - type: number
-              - type: string
-              - type: array
-              - type: object
-      additionalProperties: false
-      required:
-        - event_type
-        - step_type
-        - step_id
-    AgentTurnResponseStreamChunk:
-      type: object
-      properties:
-        event:
-          $ref: '#/components/schemas/AgentTurnResponseEvent'
-      additionalProperties: false
-      required:
-        - event
-      title: streamed agent turn completion response.
-    AgentTurnResponseTurnCompletePayload:
-      type: object
-      properties:
-        event_type:
-          type: string
-          const: turn_complete
-          default: turn_complete
-        turn:
-          $ref: '#/components/schemas/Turn'
-      additionalProperties: false
-      required:
-        - event_type
-        - turn
-    AgentTurnResponseTurnStartPayload:
-      type: object
-      properties:
-        event_type:
-          type: string
-          const: turn_start
-          default: turn_start
-        turn_id:
-          type: string
-      additionalProperties: false
-      required:
-        - event_type
-        - turn_id
     InferenceStep:
       type: object
       properties:
@@ -2765,6 +2620,154 @@ components:
         - info
         - warn
         - error
+    AgentTurnResponseEvent:
+      type: object
+      properties:
+        payload:
+          $ref: '#/components/schemas/AgentTurnResponseEventPayload'
+      additionalProperties: false
+      required:
+        - payload
+    AgentTurnResponseEventPayload:
+      oneOf:
+        - $ref: '#/components/schemas/AgentTurnResponseStepStartPayload'
+        - $ref: '#/components/schemas/AgentTurnResponseStepProgressPayload'
+        - $ref: '#/components/schemas/AgentTurnResponseStepCompletePayload'
+        - $ref: '#/components/schemas/AgentTurnResponseTurnStartPayload'
+        - $ref: '#/components/schemas/AgentTurnResponseTurnCompletePayload'
+      discriminator:
+        propertyName: event_type
+        mapping:
+          step_start: '#/components/schemas/AgentTurnResponseStepStartPayload'
+          step_progress: '#/components/schemas/AgentTurnResponseStepProgressPayload'
+          step_complete: '#/components/schemas/AgentTurnResponseStepCompletePayload'
+          turn_start: '#/components/schemas/AgentTurnResponseTurnStartPayload'
+          turn_complete: '#/components/schemas/AgentTurnResponseTurnCompletePayload'
+    AgentTurnResponseStepCompletePayload:
+      type: object
+      properties:
+        event_type:
+          type: string
+          const: step_complete
+          default: step_complete
+        step_type:
+          type: string
+          enum:
+            - inference
+            - tool_execution
+            - shield_call
+            - memory_retrieval
+        step_id:
+          type: string
+        step_details:
+          oneOf:
+            - $ref: '#/components/schemas/InferenceStep'
+            - $ref: '#/components/schemas/ToolExecutionStep'
+            - $ref: '#/components/schemas/ShieldCallStep'
+            - $ref: '#/components/schemas/MemoryRetrievalStep'
+          discriminator:
+            propertyName: step_type
+            mapping:
+              inference: '#/components/schemas/InferenceStep'
+              tool_execution: '#/components/schemas/ToolExecutionStep'
+              shield_call: '#/components/schemas/ShieldCallStep'
+              memory_retrieval: '#/components/schemas/MemoryRetrievalStep'
+      additionalProperties: false
+      required:
+        - event_type
+        - step_type
+        - step_id
+        - step_details
+    AgentTurnResponseStepProgressPayload:
+      type: object
+      properties:
+        event_type:
+          type: string
+          const: step_progress
+          default: step_progress
+        step_type:
+          type: string
+          enum:
+            - inference
+            - tool_execution
+            - shield_call
+            - memory_retrieval
+        step_id:
+          type: string
+        delta:
+          $ref: '#/components/schemas/ContentDelta'
+      additionalProperties: false
+      required:
+        - event_type
+        - step_type
+        - step_id
+        - delta
+    AgentTurnResponseStepStartPayload:
+      type: object
+      properties:
+        event_type:
+          type: string
+          const: step_start
+          default: step_start
+        step_type:
+          type: string
+          enum:
+            - inference
+            - tool_execution
+            - shield_call
+            - memory_retrieval
+        step_id:
+          type: string
+        metadata:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+      additionalProperties: false
+      required:
+        - event_type
+        - step_type
+        - step_id
+    AgentTurnResponseStreamChunk:
+      type: object
+      properties:
+        event:
+          $ref: '#/components/schemas/AgentTurnResponseEvent'
+      additionalProperties: false
+      required:
+        - event
+      title: streamed agent turn completion response.
+    AgentTurnResponseTurnCompletePayload:
+      type: object
+      properties:
+        event_type:
+          type: string
+          const: turn_complete
+          default: turn_complete
+        turn:
+          $ref: '#/components/schemas/Turn'
+      additionalProperties: false
+      required:
+        - event_type
+        - turn
+    AgentTurnResponseTurnStartPayload:
+      type: object
+      properties:
+        event_type:
+          type: string
+          const: turn_start
+          default: turn_start
+        turn_id:
+          type: string
+      additionalProperties: false
+      required:
+        - event_type
+        - turn_id
     EmbeddingsRequest:
       type: object
       properties:
