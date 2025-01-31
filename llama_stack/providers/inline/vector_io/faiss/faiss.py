@@ -179,6 +179,10 @@ class FaissVectorIOImpl(VectorIO, VectorDBsProtocolPrivate):
         return [i.vector_db for i in self.cache.values()]
 
     async def unregister_vector_db(self, vector_db_id: str) -> None:
+        if vector_db_id not in self.cache:
+            logger.warning(f"Vector DB {vector_db_id} not found")
+            return
+
         await self.cache[vector_db_id].index.delete()
         del self.cache[vector_db_id]
         await self.kvstore.delete(f"{VECTOR_DBS_PREFIX}{vector_db_id}")
