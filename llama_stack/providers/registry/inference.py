@@ -215,4 +215,15 @@ def available_providers() -> List[ProviderSpec]:
                 config_class="llama_stack.providers.remote.inference.sambanova.SambaNovaImplConfig",
             ),
         ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
+                adapter_type="lmstudio",
+                pip_packages=[
+                    "openai",
+                ],
+                module="llama_stack.providers.remote.inference.lmstudio",
+                config_class="llama_stack.providers.remote.inference.lmstudio.LMStudioImplConfig",
+            ),
+        ),
     ]
