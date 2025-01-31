@@ -37,7 +37,7 @@ The following models are available by default:
 
 ### Prerequisite: API Keys
 
-Make sure you have access to a SambaNova API Key. You can get one by visiting [SambaBova.ai](https://sambanova.ai/).
+Make sure you have access to a SambaNova API Key. You can get one by visiting [SambaNova.ai](https://sambanova.ai/).
 
 
 ## Running Llama Stack with SambaNova

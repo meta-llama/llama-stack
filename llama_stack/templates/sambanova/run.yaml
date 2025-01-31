@@ -2,11 +2,8 @@ version: '2'
 image_name: sambanova
 apis:
 - agents
-- datasetio
-- eval
 - inference
 - safety
-- scoring
 - telemetry
 - tool_runtime
 - vector_io
@@ -25,6 +22,12 @@ providers:
         type: sqlite
         namespace: null
         db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/sambanova}/faiss_store.db
+  - provider_id: chromadb
+    provider_type: remote::chromadb
+    config: {}
+  - provider_id: pgvector
+    provider_type: remote::pgvector
+    config: {}
   safety:
   - provider_id: llama-guard
     provider_type: inline::llama-guard
@@ -44,28 +47,6 @@ providers:
       service_name: ${env.OTEL_SERVICE_NAME:llama-stack}
       sinks: ${env.TELEMETRY_SINKS:console,sqlite}
       sqlite_db_path: ${env.SQLITE_DB_PATH:~/.llama/distributions/sambanova/trace_store.db}
-  eval:
-  - provider_id: meta-reference
-    provider_type: inline::meta-reference
-    config: {}
-  datasetio:
-  - provider_id: huggingface
-    provider_type: remote::huggingface
-    config: {}
-  - provider_id: localfs
-    provider_type: inline::localfs
-    config: {}
-  scoring:
-  - provider_id: basic
-    provider_type: inline::basic
-    config: {}
-  - provider_id: llm-as-judge
-    provider_type: inline::llm-as-judge
-    config: {}
-  - provider_id: braintrust
-    provider_type: inline::braintrust
-    config:
-      openai_api_key: ${env.OPENAI_API_KEY:}
   tool_runtime:
   - provider_id: brave-search
     provider_type: remote::brave-search
@@ -83,9 +64,6 @@ providers:
   - provider_id: rag-runtime
     provider_type: inline::rag-runtime
     config: {}
-  - provider_id: model-context-protocol
-    provider_type: remote::model-context-protocol
-    config: {}
 metadata_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/sambanova}/registry.db
@@ -97,7 +75,6 @@ models:
   model_type: llm
 - metadata: {}
   model_id: meta-llama/Llama-3.1-70B-Instruct
-  model_type: llm
   provider_id: sambanova
   provider_model_id: Meta-Llama-3.1-70B-Instruct
   model_type: llm
@@ -132,14 +109,9 @@ models:
   provider_model_id: Llama-3.2-90B-Vision-Instruct
   model_type: llm
 - metadata: {}
-  model_id: meta-llama/Llama-3.2-90B-Vision-Instruct
-  provider_id: sambanova
-  provider_model_id: Llama-3.2-90B-Vision-Instruct
-  model_type: llm
-- metadata: {}
   model_id: meta-llama/Llama-Guard-3-8B
   provider_id: sambanova
-  provider_model_id: Llama-Guard-3-8B
+  provider_model_id: Meta-Llama-Guard-3-8B
   model_type: llm
 shields:
 - shield_id: meta-llama/Llama-Guard-3-8B

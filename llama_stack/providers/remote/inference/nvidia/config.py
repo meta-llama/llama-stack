@@ -52,6 +52,6 @@ class NVIDIAConfig(BaseModel):
     @classmethod
     def sample_run_config(cls, **kwargs) -> Dict[str, Any]:
         return {
-            "url": "https://integrate.api.nvidia.com",
-            "api_key": "${env.NVIDIA_API_KEY}",
+            "url": "${env.NVIDIA_BASE_URL:https://integrate.api.nvidia.com}",
+            "api_key": "${env.NVIDIA_API_KEY:}",
         }
