@@ -137,7 +137,12 @@ class DistributionTemplate(BaseModel):
 
         template = self.template_path.read_text()
         # Render template with rich-generated table
-        env = jinja2.Environment(trim_blocks=True, lstrip_blocks=True)
+        env = jinja2.Environment(
+            trim_blocks=True,
+            lstrip_blocks=True,
+            # NOTE: autoescape is required to prevent XSS attacks
+            autoescape=True,
+        )
         template = env.from_string(template)
         return template.render(
             name=self.name,

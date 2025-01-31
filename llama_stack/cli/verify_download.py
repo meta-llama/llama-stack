@@ -50,7 +50,10 @@ def setup_verify_download_parser(parser: argparse.ArgumentParser) -> None:
 
 
 def calculate_md5(filepath: Path, chunk_size: int = 8192) -> str:
-    md5_hash = hashlib.md5()
+    # NOTE: MD5 is used here only for download integrity verification,
+    # not for security purposes
+    # TODO: switch to SHA256
+    md5_hash = hashlib.md5(usedforsecurity=False)
     with open(filepath, "rb") as f:
         for chunk in iter(lambda: f.read(chunk_size), b""):
             md5_hash.update(chunk)

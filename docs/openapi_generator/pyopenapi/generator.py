@@ -250,7 +250,9 @@ class ContentBuilder:
             value = sample_transformer(object_to_json(example))
 
             hash_string = (
-                hashlib.md5(json_dump_string(value).encode("utf-8")).digest().hex()
+                hashlib.sha256(json_dump_string(value).encode("utf-8"))
+                .digest()
+                .hex()[:16]
             )
             name = f"ex-{hash_string}"
 
