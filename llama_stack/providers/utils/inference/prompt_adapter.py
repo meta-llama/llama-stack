@@ -135,7 +135,8 @@ async def interleaved_content_convert_to_raw(
                 else:
                     raise ValueError("Unsupported URL type")
             elif image.data:
-                data = image.data
+                # data is a base64 encoded string, decode it to bytes for RawMediaItem
+                data = base64.b64decode(image.data)
             else:
                 raise ValueError("No data or URL provided")
 
@@ -184,8 +185,10 @@ async def localize_image_content(media: ImageContentItem) -> Tuple[bytes, str]:
 
         return content, format
     else:
-        pil_image = PIL_Image.open(io.BytesIO(image.data))
-        return image.data, pil_image.format
+        # data is a base64 encoded string, decode it to bytes first
+        data_bytes = base64.b64decode(image.data)
+        pil_image = PIL_Image.open(io.BytesIO(data_bytes))
+        return data_bytes, pil_image.format
 
 
 async def convert_image_content_to_url(
