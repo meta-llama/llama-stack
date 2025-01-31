@@ -186,7 +186,7 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
 
         await check_health(self._config)  # this raises errors
 
-        request = convert_chat_completion_request(
+        request = await convert_chat_completion_request(
             request=ChatCompletionRequest(
                 model=self.get_provider_model_id(model_id),
                 messages=messages,

@@ -186,6 +186,7 @@ async def localize_image_content(media: ImageContentItem) -> Tuple[bytes, str]:
         return content, format
     else:
         # data is a base64 encoded string, decode it to bytes first
+        # TODO(mf): do this more efficiently, decode less
         data_bytes = base64.b64decode(image.data)
         pil_image = PIL_Image.open(io.BytesIO(data_bytes))
         return data_bytes, pil_image.format
