@@ -77,8 +77,28 @@ class SQLiteSpanProcessor(SpanProcessor):
 
         cursor.execute(
             """
+            CREATE TABLE IF NOT EXISTS metrics (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                value REAL NOT NULL,
+                timestamp TIMESTAMP NOT NULL,
+                attributes TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """
+        )
+
+        cursor.execute(
+            """
             CREATE INDEX IF NOT EXISTS idx_traces_created_at
             ON traces(created_at)
+        """
+        )
+
+        cursor.execute(
+            """
+            CREATE INDEX IF NOT EXISTS idx_metrics_name_timestamp
+            ON metrics(name, timestamp)
         """
         )
 

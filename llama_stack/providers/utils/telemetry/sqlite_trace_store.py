@@ -10,7 +10,13 @@ from typing import Dict, List, Optional, Protocol
 
 import aiosqlite
 
-from llama_stack.apis.telemetry import QueryCondition, Span, SpanWithStatus, Trace
+from llama_stack.apis.telemetry import (
+    MetricValue,
+    QueryCondition,
+    Span,
+    SpanWithStatus,
+    Trace,
+)
 
 
 class TraceStore(Protocol):
@@ -28,6 +34,15 @@ class TraceStore(Protocol):
         attributes_to_return: Optional[List[str]] = None,
         max_depth: Optional[int] = None,
     ) -> Dict[str, SpanWithStatus]: ...
+
+    async def query_metrics(
+        self,
+        metric_names: Optional[List[str]] = None,
+        attribute_filters: Optional[List[QueryCondition]] = None,
+        start_time: Optional[datetime] = None,
+        end_time: Optional[datetime] = None,
+        limit: Optional[int] = 100,
+    ) -> List[MetricValue]: ...
 
 
 class SQLiteTraceStore(TraceStore):
@@ -187,3 +202,62 @@ class SQLiteTraceStore(TraceStore):
                 if row is None:
                     raise ValueError(f"Span {span_id} not found")
                 return Span(**row)
+
+    async def query_metrics(
+        self,
+        metric_names: Optional[List[str]] = None,
+        attribute_filters: Optional[List[QueryCondition]] = None,
+        start_time: Optional[datetime] = None,
+        end_time: Optional[datetime] = None,
+        limit: Optional[int] = 100,
+    ) -> List[MetricValue]:
+        conditions = []
+        params = []
+
+        # Build WHERE clause
+        if metric_names:
+            conditions.append(f"name IN ({','.join('?' * len(metric_names))})")
+            params.extend(metric_names)
+
+        if start_time:
+            conditions.append("timestamp >= ?")
+            params.append(start_time.isoformat())
+
+        if end_time:
+            conditions.append("timestamp <= ?")
+            params.append(end_time.isoformat())
+
+        if attribute_filters:
+            for condition in attribute_filters:
+                ops_map = {"eq": "=", "ne": "!=", "gt": ">", "lt": "<"}
+                conditions.append(
+                    f"json_extract(attributes, '$.{condition.key}') {ops_map[condition.op.value]} ?"
+                )
+                params.append(condition.value)
+
+        where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
+
+        query = f"""
+            SELECT name, value, timestamp, attributes
+            FROM metrics
+            {where_clause}
+            ORDER BY timestamp DESC
+            LIMIT ?
+        """
+        params.append(limit)
+
+        async with aiosqlite.connect(self.conn_string) as conn:
+            conn.row_factory = aiosqlite.Row
+            async with conn.execute(query, params) as cursor:
+                rows = await cursor.fetchall()
+                return [
+                    MetricValue(
+                        name=row["name"],
+                        value=row["value"],
+                        timestamp=datetime.fromisoformat(row["timestamp"]),
+                        attributes=(
+                            json.loads(row["attributes"]) if row["attributes"] else {}
+                        ),
+                    )
+                    for row in rows
+                ]

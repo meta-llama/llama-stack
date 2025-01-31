@@ -187,6 +187,33 @@ class QuerySpanTreeResponse(BaseModel):
     data: Dict[str, SpanWithStatus]
 
 
+@json_schema_type
+class MetricType(Enum):
+    COUNTER = "counter"
+    GAUGE = "gauge"
+    HISTOGRAM = "histogram"
+
+
+@json_schema_type
+class MetricDefinition(BaseModel):
+    name: str
+    type: MetricType
+    description: str
+    unit: str
+
+
+@json_schema_type
+class MetricValue(BaseModel):
+    name: str
+    value: Union[int, float]
+    timestamp: datetime
+    attributes: Optional[Dict[str, Any]] = Field(default_factory=dict)
+
+
+class QueryMetricsResponse(BaseModel):
+    data: List[MetricValue]
+
+
 @runtime_checkable
 class Telemetry(Protocol):
     @webmethod(route="/telemetry/events", method="POST")
@@ -233,3 +260,13 @@ class Telemetry(Protocol):
         dataset_id: str,
         max_depth: Optional[int] = None,
     ) -> None: ...
+
+    @webmethod(route="/telemetry/metrics", method="GET")
+    async def query_metrics(
+        self,
+        metric_names: Optional[List[str]] = None,
+        attribute_filters: Optional[List[QueryCondition]] = None,
+        start_time: Optional[datetime] = None,
+        end_time: Optional[datetime] = None,
+        limit: Optional[int] = 100,
+    ) -> QueryMetricsResponse: ...

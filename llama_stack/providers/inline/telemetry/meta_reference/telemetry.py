@@ -4,7 +4,9 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import json
 import threading
+from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from opentelemetry import metrics, trace
@@ -21,6 +23,7 @@ from llama_stack.apis.telemetry import (
     Event,
     MetricEvent,
     QueryCondition,
+    QueryMetricsResponse,
     QuerySpanTreeResponse,
     QueryTracesResponse,
     Span,
@@ -177,14 +180,35 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
         return _GLOBAL_STORAGE["gauges"][name]
 
     def _log_metric(self, event: MetricEvent) -> None:
-        if isinstance(event.value, int):
-            counter = self._get_or_create_counter(event.metric, event.unit)
-            counter.add(event.value, attributes=event.attributes)
-        elif isinstance(event.value, float):
-            up_down_counter = self._get_or_create_up_down_counter(
-                event.metric, event.unit
+        # Store in SQLite
+        if TelemetrySink.SQLITE in self.config.sinks:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+                INSERT INTO metrics (
+                    name, value, timestamp, attributes
+                ) VALUES (?, ?, ?, ?)
+                """,
+                (
+                    event.metric,
+                    event.value,
+                    datetime.fromtimestamp(event.timestamp).isoformat(),
+                    json.dumps(event.attributes),
+                ),
             )
-            up_down_counter.add(event.value, attributes=event.attributes)
+            conn.commit()
+
+        # Export to OTEL if configured
+        if TelemetrySink.OTEL in self.config.sinks:
+            if isinstance(event.value, int):
+                counter = self._get_or_create_counter(event.metric, event.unit)
+                counter.add(event.value, attributes=event.attributes)
+            elif isinstance(event.value, float):
+                up_down_counter = self._get_or_create_up_down_counter(
+                    event.metric, event.unit
+                )
+                up_down_counter.add(event.value, attributes=event.attributes)
 
     def _get_or_create_up_down_counter(
         self, name: str, unit: str
@@ -280,4 +304,20 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
                 attributes_to_return=attributes_to_return,
                 max_depth=max_depth,
             )
+        )
+
+    async def query_metrics(
+        self,
+        metric_names: Optional[List[str]] = None,
+        attribute_filters: Optional[List[QueryCondition]] = None,
+        start_time: Optional[datetime] = None,
+        end_time: Optional[datetime] = None,
+        limit: Optional[int] = 100,
+    ) -> QueryMetricsResponse:
+        return await self.trace_store.query_metrics(
+            metric_names=metric_names,
+            attribute_filters=attribute_filters,
+            start_time=start_time,
+            end_time=end_time,
+            limit=limit,
         )
