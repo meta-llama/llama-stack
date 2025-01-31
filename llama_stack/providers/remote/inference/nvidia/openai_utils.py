@@ -188,7 +188,7 @@ def _convert_message(message: Message | Dict) -> OpenAIChatCompletionMessage:
             elif content.image.data:
                 return OpenAIChatCompletionContentPartImageParam(
                     image_url=OpenAIImageURL(
-                        url=f"data:image/png;base64,{content.image.data.decode()}"  # TODO(mf): how do we know the type?
+                        url=f"data:image/png;base64,{content.image.data}"  # TODO(mf): how do we know the type?
                     ),
                     type="image_url",
                 )
