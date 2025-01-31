@@ -24,6 +24,7 @@ from llama_stack.apis.inference import (
     ResponseFormat,
     SamplingParams,
     ToolChoice,
+    ToolConfig,
     ToolDefinition,
     ToolPromptFormat,
 )
@@ -138,6 +139,7 @@ class InferenceRouter(Inference):
         tool_prompt_format: Optional[ToolPromptFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
+        tool_config: Optional[ToolConfig] = None,
     ) -> AsyncGenerator:
         model = await self.routing_table.get_model(model_id)
         if model is None:
@@ -145,6 +147,20 @@ class InferenceRouter(Inference):
         if model.model_type == ModelType.embedding:
             raise ValueError(
                 f"Model '{model_id}' is an embedding model and does not support chat completions"
+            )
+        if tool_config:
+            if tool_choice != tool_config.tool_choice:
+                raise ValueError(
+                    "tool_choice and tool_config.tool_choice must match"
+                )
+            if tool_prompt_format != tool_config.tool_prompt_format:
+                raise ValueError(
+                    "tool_prompt_format and tool_config.tool_prompt_format must match"
+                )
+        else:
+            tool_config = ToolConfig(
+                tool_choice=tool_choice,
+                tool_prompt_format=tool_prompt_format,
             )
         params = dict(
             model_id=model_id,
@@ -156,6 +172,7 @@ class InferenceRouter(Inference):
             response_format=response_format,
             stream=stream,
             logprobs=logprobs,
+            tool_config=tool_config,
         )
         provider = self.routing_table.get_provider_impl(model_id)
         if stream:

@@ -79,7 +79,7 @@ def convert_chat_completion_request(
         # so we exclude it for now
         warnings.warn("repetition_penalty is not supported")
 
-    if request.tool_prompt_format != ToolPromptFormat.json:
+    if request.tool_config.tool_prompt_format != ToolPromptFormat.json:
         warnings.warn("tool_prompt_format is not used by Groq. Ignoring.")
 
     sampling_options = get_sampling_strategy_options(request.sampling_params)
@@ -93,7 +93,11 @@ def convert_chat_completion_request(
         temperature=sampling_options.get("temperature", 1.0),
         top_p=sampling_options.get("top_p", 1.0),
         tools=[_convert_groq_tool_definition(tool) for tool in request.tools or []],
-        tool_choice=request.tool_choice.value if request.tool_choice else None,
+        tool_choice=(
+            request.tool_config.tool_choice.value
+            if request.tool_config.tool_choice
+            else None
+        ),
     )
 
 

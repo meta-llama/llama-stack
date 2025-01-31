@@ -33,6 +33,7 @@ from llama_stack.apis.inference import (
     ToolResponse,
     ToolResponseMessage,
     UserMessage,
+    ToolConfig,
 )
 from llama_stack.apis.safety import SafetyViolation
 from llama_stack.apis.tools import ToolDef
@@ -155,8 +156,13 @@ class AgentConfigCommon(BaseModel):
     output_shields: Optional[List[str]] = Field(default_factory=list)
     toolgroups: Optional[List[AgentToolGroup]] = Field(default_factory=list)
     client_tools: Optional[List[ToolDef]] = Field(default_factory=list)
-    tool_choice: Optional[ToolChoice] = Field(default=ToolChoice.auto)
-    tool_prompt_format: Optional[ToolPromptFormat] = Field(default=None)
+    tool_choice: Optional[ToolChoice] = Field(
+        default=ToolChoice.auto, deprecated="use tool_config instead"
+    )
+    tool_prompt_format: Optional[ToolPromptFormat] = Field(
+        default=None, deprecated="use tool_config instead"
+    )
+    tool_config: Optional[ToolConfig] = Field(default=None)
 
     max_infer_iters: int = 10
 
@@ -280,7 +286,7 @@ class AgentTurnCreateRequest(AgentConfigOverridablePerTurn):
     toolgroups: Optional[List[AgentToolGroup]] = None
 
     stream: Optional[bool] = False
-
+    tool_config: Optional[ToolConfig] = None
 
 @json_schema_type
 class AgentTurnResponseStreamChunk(BaseModel):
@@ -327,6 +333,7 @@ class Agents(Protocol):
         stream: Optional[bool] = False,
         documents: Optional[List[Document]] = None,
         toolgroups: Optional[List[AgentToolGroup]] = None,
+        tool_config: Optional[ToolConfig] = None,
     ) -> Union[Turn, AsyncIterator[AgentTurnResponseStreamChunk]]: ...
 
     @webmethod(

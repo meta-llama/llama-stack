@@ -29,6 +29,7 @@ from llama_stack.apis.inference import (
     ResponseFormat,
     SamplingParams,
     ToolChoice,
+    ToolConfig,
     ToolDefinition,
     ToolPromptFormat,
 )
@@ -224,6 +225,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         tool_prompt_format: Optional[ToolPromptFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
+        tool_config: Optional[ToolConfig] = None,
     ) -> AsyncGenerator:
         model = await self.model_store.get_model(model_id)
         request = ChatCompletionRequest(
@@ -231,11 +233,10 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
             messages=messages,
             sampling_params=sampling_params,
             tools=tools or [],
-            tool_choice=tool_choice,
-            tool_prompt_format=tool_prompt_format,
             stream=stream,
             logprobs=logprobs,
             response_format=response_format,
+            tool_config=tool_config,
         )
         if stream:
             return self._stream_chat_completion(request)
@@ -322,6 +323,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         self, request: ChatCompletionRequest
     ) -> AsyncGenerator:
         params = await self._get_params(request)
+        print(params)
 
         async def _generate_and_convert_to_openai_compat():
             if "messages" in params:

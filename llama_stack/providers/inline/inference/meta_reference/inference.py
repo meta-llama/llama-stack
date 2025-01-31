@@ -38,6 +38,7 @@ from llama_stack.apis.inference import (
     ResponseFormat,
     TokenLogProbs,
     ToolChoice,
+    ToolConfig,
 )
 from llama_stack.apis.models import Model, ModelType
 from llama_stack.providers.datatypes import ModelsProtocolPrivate
@@ -270,6 +271,7 @@ class MetaReferenceInferenceImpl(
         tool_prompt_format: Optional[ToolPromptFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
+        tool_config: Optional[ToolConfig] = None,
     ) -> AsyncGenerator:
         if logprobs:
             assert logprobs.top_k == 1, f"Unexpected top_k={logprobs.top_k}"
@@ -280,11 +282,10 @@ class MetaReferenceInferenceImpl(
             messages=messages,
             sampling_params=sampling_params,
             tools=tools or [],
-            tool_choice=tool_choice,
-            tool_prompt_format=tool_prompt_format,
             response_format=response_format,
             stream=stream,
             logprobs=logprobs,
+            tool_config=tool_config,
         )
         self.check_model(request)
 

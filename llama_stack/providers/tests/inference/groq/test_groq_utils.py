@@ -181,7 +181,7 @@ class TestConvertChatCompletionRequest:
 
     def test_includes_tool_choice(self):
         request = self._dummy_chat_completion_request()
-        request.tool_choice = ToolChoice.required
+        request.tool_config.tool_choice = ToolChoice.required
 
         converted = convert_chat_completion_request(request)
 

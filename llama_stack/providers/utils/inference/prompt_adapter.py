@@ -49,6 +49,7 @@ from llama_stack.apis.inference import (
     SystemMessage,
     ToolChoice,
     UserMessage,
+    SystemMessageBehavior,
 )
 from llama_stack.providers.utils.inference import supported_inference_models
 
@@ -319,7 +320,7 @@ def response_format_prompt(fmt: Optional[ResponseFormat]):
 def augment_messages_for_tools_llama_3_1(
     request: ChatCompletionRequest,
 ) -> List[Message]:
-    assert request.tool_choice == ToolChoice.auto, "Only `ToolChoice.auto` supported"
+    assert request.tool_config.tool_choice == ToolChoice.auto, "Only `ToolChoice.auto` supported"
 
     existing_messages = request.messages
     existing_system_message = None
@@ -368,7 +369,7 @@ def augment_messages_for_tools_llama_3_1(
 
     has_custom_tools = any(isinstance(dfn.tool_name, str) for dfn in request.tools)
     if has_custom_tools:
-        fmt = request.tool_prompt_format or ToolPromptFormat.json
+        fmt = request.tool_config.tool_prompt_format or ToolPromptFormat.json
         if fmt == ToolPromptFormat.json:
             tool_gen = JsonCustomToolGenerator()
         elif fmt == ToolPromptFormat.function_tag:
@@ -389,7 +390,7 @@ def augment_messages_for_tools_llama_3_1(
 def augment_messages_for_tools_llama_3_2(
     request: ChatCompletionRequest,
 ) -> List[Message]:
-    assert request.tool_choice == ToolChoice.auto, "Only `ToolChoice.auto` supported"
+    assert request.tool_config.tool_choice == ToolChoice.auto, "Only `ToolChoice.auto` supported"
 
     existing_messages = request.messages
     existing_system_message = None
@@ -419,19 +420,24 @@ def augment_messages_for_tools_llama_3_2(
 
     custom_tools = [dfn for dfn in request.tools if isinstance(dfn.tool_name, str)]
     if custom_tools:
-        fmt = request.tool_prompt_format or ToolPromptFormat.python_list
+        fmt = request.tool_config.tool_prompt_format or ToolPromptFormat.python_list
         if fmt != ToolPromptFormat.python_list:
             raise ValueError(
-                f"Non supported ToolPromptFormat {request.tool_prompt_format}"
+                f"Non supported ToolPromptFormat {request.tool_config.tool_prompt_format}"
             )
 
         tool_gen = PythonListCustomToolGenerator()
-        tool_template = tool_gen.gen(custom_tools)
+
+        system_prompt = None
+        if existing_system_message and request.tool_config.system_message_behavior == SystemMessageBehavior.replace:
+            system_prompt = existing_system_message.content
+
+        tool_template = tool_gen.gen(custom_tools, system_prompt)
 
         sys_content += tool_template.render()
         sys_content += "\n"
 
-    if existing_system_message:
+    if existing_system_message and request.tool_config.system_message_behavior == SystemMessageBehavior.append:
         sys_content += interleaved_content_as_str(
             existing_system_message.content, sep="\n"
         )

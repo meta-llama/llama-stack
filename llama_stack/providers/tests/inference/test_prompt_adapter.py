@@ -13,7 +13,12 @@ from llama_models.llama3.api.datatypes import (
     ToolPromptFormat,
 )
 
-from llama_stack.apis.inference import ChatCompletionRequest, SystemMessage, UserMessage
+from llama_stack.apis.inference import (
+    ChatCompletionRequest,
+    SystemMessage,
+    ToolConfig,
+    UserMessage,
+)
 from llama_stack.providers.utils.inference.prompt_adapter import (
     chat_completion_request_to_messages,
 )
@@ -73,7 +78,7 @@ class PrepareMessagesTests(unittest.IsolatedAsyncioTestCase):
                     },
                 )
             ],
-            tool_prompt_format=ToolPromptFormat.json,
+            tool_config=ToolConfig(tool_prompt_format=ToolPromptFormat.json),
         )
         messages = chat_completion_request_to_messages(request, MODEL)
         self.assertEqual(len(messages), 3)

@@ -253,9 +253,9 @@ def convert_chat_completion_request(
         payload.update(
             tools=[_convert_tooldef_to_openai_tool(tool) for tool in request.tools]
         )
-        if request.tool_choice:
+        if request.tool_config.tool_choice:
             payload.update(
-                tool_choice=request.tool_choice.value
+                tool_choice=request.tool_config.tool_choice.value
             )  # we cannot include tool_choice w/o tools, server will complain
 
     if request.logprobs:

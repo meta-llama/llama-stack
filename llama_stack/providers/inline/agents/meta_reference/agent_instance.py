@@ -515,10 +515,11 @@ class ChatAgent(ShieldRunnerMixin):
                         for tool in tool_defs.values()
                         if tool_to_group.get(tool.tool_name, None) != RAG_TOOL_GROUP
                     ],
-                    tool_prompt_format=self.agent_config.tool_prompt_format,
+                    tool_prompt_format=self.agent_config.tool_config.tool_prompt_format,
                     response_format=self.agent_config.response_format,
                     stream=True,
                     sampling_params=sampling_params,
+                    tool_config=self.agent_config.tool_config,
                 ):
                     event = chunk.event
                     if event.event_type == ChatCompletionResponseEventType.start:

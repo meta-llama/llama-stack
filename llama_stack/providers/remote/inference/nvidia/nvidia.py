@@ -178,6 +178,7 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
         tool_prompt_format: Optional[ToolPromptFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
+        tool_config: Optional[ToolConfig] = None,
     ) -> Union[
         ChatCompletionResponse, AsyncIterator[ChatCompletionResponseStreamChunk]
     ]:
@@ -193,10 +194,9 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
                 sampling_params=sampling_params,
                 response_format=response_format,
                 tools=tools,
-                tool_choice=tool_choice,
-                tool_prompt_format=tool_prompt_format,
                 stream=stream,
                 logprobs=logprobs,
+                tool_config=tool_config,
             ),
             n=1,
         )
