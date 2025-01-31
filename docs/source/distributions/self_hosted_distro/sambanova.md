@@ -38,13 +38,15 @@ The following models are available by default:
 - `meta-llama/Llama-3.1-405B-Instruct-FP8 (Meta-Llama-3.1-405B-Instruct)`
 - `meta-llama/Llama-3.2-1B-Instruct (Meta-Llama-3.2-1B-Instruct)`
 - `meta-llama/Llama-3.2-3B-Instruct (Meta-Llama-3.2-3B-Instruct)`
+- `meta-llama/Llama-3.3-70B-Instruct (Meta-Llama-3.3-70B-Instruct)`
 - `meta-llama/Llama-3.2-11B-Vision-Instruct (Llama-3.2-11B-Vision-Instruct)`
 - `meta-llama/Llama-3.2-90B-Vision-Instruct (Llama-3.2-90B-Vision-Instruct)`
+- `meta-llama/Llama-Guard-3-8B (Meta-Llama-Guard-3-8B)`
 
 
 ### Prerequisite: API Keys
 
-Make sure you have access to a SambaNova API Key. You can get one by visiting [SambaNova.ai](https://cloud.sambanova.ai/).
+Make sure you have access to a SambaNova API Key. You can get one by visiting [SambaNova.ai](https://sambanova.ai/).
 
 
 ## Running Llama Stack with SambaNova
