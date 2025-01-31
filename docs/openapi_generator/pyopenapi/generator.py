@@ -177,14 +177,6 @@ class ContentBuilder:
     ) -> Dict[str, MediaType]:
         "Creates the content subtree for a request or response."
 
-        # def has_iterator_type(t):
-        #     if typing.get_origin(t) is typing.Union:
-        #         return any(has_iterator_type(a) for a in typing.get_args(t))
-        #     else:
-        #         # TODO: needs a proper fix where we let all types correctly flow upwards
-        #         # and then test against AsyncIterator
-        #         return "StreamChunk" in str(t)
-
         def is_iterator_type(t):
             return "StreamChunk" in str(t)
 
