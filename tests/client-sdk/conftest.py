@@ -52,6 +52,12 @@ def pytest_addoption(parser):
         default=VISION_MODEL,
         help="Specify the vision inference model to use for testing",
     )
+    parser.addoption(
+        "--safety-shield",
+        action="store",
+        default="meta-llama/Llama-Guard-3-1B",
+        help="Specify the safety shield model to use for testing",
+    )
 
 
 @pytest.fixture(scope="session")
