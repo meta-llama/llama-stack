@@ -22,7 +22,12 @@ from termcolor import cprint
 
 from llama_stack.cli.table import print_table
 
-from llama_stack.distribution.build import build_image, ImageType
+from llama_stack.distribution.build import (
+    build_image,
+    get_provider_dependencies,
+    ImageType,
+    SERVER_DEPENDENCIES,
+)
 from llama_stack.distribution.datatypes import (
     BuildConfig,
     DistributionSpec,
@@ -34,7 +39,6 @@ from llama_stack.distribution.resolver import InvalidProviderError
 from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
 from llama_stack.providers.datatypes import Api
-
 
 TEMPLATES_PATH = Path(__file__).parent.parent.parent / "templates"
 
@@ -78,14 +82,7 @@ def run_stack_build_command(
                 color="red",
             )
             return
-        _run_stack_build_command_from_build_config(
-            build_config,
-            image_name=image_name,
-            template_name=args.template,
-        )
-        return
-
-    if not args.config and not args.template:
+    elif not args.config and not args.template:
         name = prompt(
             "> Enter a name for your Llama Stack (e.g. my-local-stack): ",
             validator=Validator.from_callable(
@@ -180,8 +177,22 @@ def run_stack_build_command(
             )
             return
 
+    if args.print_deps_only:
+        print(f"# Dependencies for {args.template or args.config or image_name}")
+        normal_deps, special_deps = get_provider_dependencies(
+            build_config.distribution_spec.providers
+        )
+        normal_deps += SERVER_DEPENDENCIES
+        print(f"pip install {' '.join(normal_deps)}")
+        for special_dep in special_deps:
+            print(f"pip install {special_dep}")
+        return
+
     _run_stack_build_command_from_build_config(
-        build_config, image_name=image_name, config_path=args.config
+        build_config,
+        image_name=image_name,
+        config_path=args.config,
+        template_name=args.template,
     )
 
 
