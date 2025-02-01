@@ -45,7 +45,6 @@ dev = [
     "pytest-nbval",  # For notebook testing
     "black",
     "ruff",
-    "mypy",
     "types-requests",
     "types-setuptools",
 ]
