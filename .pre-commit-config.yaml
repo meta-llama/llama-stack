@@ -5,10 +5,8 @@ default_language_version:
 
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: 6306a48f7dae5861702d573c9c247e4e9498e867
+    rev: v5.0.0  # Latest stable version
     hooks:
-    -   id: trailing-whitespace
-    -   id: check-ast
     -   id: check-merge-conflict
     -   id: check-added-large-files
         args: ['--maxkb=1000']
@@ -28,23 +26,32 @@ repos:
           - --license-filepath
           - docs/license_header.txt
 
--   repo: https://github.com/pycqa/flake8
-    rev: 34cbf8ef3950f43d09b85e2e45c15ae5717dc37b
+-   repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.4
     hooks:
-    -   id: flake8
-        additional_dependencies:
-          - flake8-bugbear == 22.4.25
-          - pep8-naming == 0.12.1
-          - torchfix
-        args: ['--config=.flake8']
+    -   id: ruff
+        args: [
+            --fix,
+            --exit-non-zero-on-fix
+        ]
+    -   id: ruff-format
 
--   repo: https://github.com/omnilib/ufmt
-    rev: v2.7.0
+-   repo: https://github.com/adamchainz/blacken-docs
+    rev: 1.19.0
     hooks:
-    -   id: ufmt
+    -   id: blacken-docs
         additional_dependencies:
-          - black == 24.4.2
-          - usort == 1.0.8
+        - black==24.3.0
+
+# -   repo: https://github.com/pre-commit/mirrors-mypy
+#     rev: v1.14.0
+#     hooks:
+#     -   id: mypy
+#         additional_dependencies:
+#           - types-requests
+#           - types-setuptools
+#           - pydantic
+#         args: [--ignore-missing-imports]
 
 # - repo: https://github.com/jsh9/pydoclint
 #   rev: d88180a8632bb1602a4d81344085cf320f288c5a
@@ -71,3 +78,7 @@ repos:
 #         require_serial: true
 #         files: ^llama_stack/templates/.*$
 #         stages: [manual]
+
+ci:
+    autofix_commit_msg: 🎨 [pre-commit.ci] Auto format from pre-commit.com hooks
+    autoupdate_commit_msg: ⬆ [pre-commit.ci] pre-commit autoupdate
