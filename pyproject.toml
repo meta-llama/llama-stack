@@ -57,7 +57,7 @@ llama = "llama_stack.cli.llama:main"
 install-wheel-from-presigned = "llama_stack.cli.scripts.run:install_wheel_from_presigned"
 
 [tool.setuptools]
-packages = ["llama_stack"]
+packages = {find = {}}
 
 [[tool.uv.index]]
 name = "pytorch-cpu"
