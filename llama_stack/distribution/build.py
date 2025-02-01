@@ -95,11 +95,11 @@ def print_pip_install_help(providers: Dict[str, List[Provider]]):
     normal_deps, special_deps = get_provider_dependencies(providers)
 
     cprint(
-        f"Please install needed dependencies using the following commands:\n\npip install {' '.join(normal_deps)}",
+        f"Please install needed dependencies using the following commands:\n\nuv pip install {' '.join(normal_deps)}",
         "yellow",
     )
     for special_dep in special_deps:
-        cprint(f"pip install {special_dep}", "yellow")
+        cprint(f"uv pip install {special_dep}", "yellow")
     print()
 
 
