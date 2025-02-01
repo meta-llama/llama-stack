@@ -1,4 +1,4 @@
-include requirements.txt
+include pyproject.toml
 include distributions/dependencies.json
 include llama_stack/distribution/*.sh
 include llama_stack/cli/scripts/*.sh
