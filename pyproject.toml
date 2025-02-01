@@ -42,7 +42,7 @@ dependencies = [
 dev = [
     "pytest",
     "pytest-asyncio",
-    "pytest-nbval",  # For notebook testing
+    "nbval",  # For notebook testing
     "black",
     "ruff",
     "types-requests",
