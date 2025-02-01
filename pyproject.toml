@@ -59,3 +59,8 @@ install-wheel-from-presigned = "llama_stack.cli.scripts.run:install_wheel_from_p
 
 [tool.setuptools]
 packages = ["llama_stack"]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
