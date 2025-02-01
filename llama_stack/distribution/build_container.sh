@@ -143,7 +143,7 @@ if [ -n "$LLAMA_MODELS_DIR" ]; then
   fi
 
   add_to_container << EOF
-RUN uv pip uninstall -y llama-models
+RUN uv pip uninstall llama-models
 RUN uv pip install --no-cache $models_mount
 
 EOF
