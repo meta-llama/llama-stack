@@ -76,6 +76,7 @@ RUN apt-get update && apt-get install -y \
        bubblewrap \
        && rm -rf /var/lib/apt/lists/*
 
+ENV UV_SYSTEM_PYTHON=1
 RUN pip install uv
 EOF
 fi
