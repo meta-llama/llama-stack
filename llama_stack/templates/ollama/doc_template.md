@@ -93,7 +93,7 @@ docker run \
 
 ### Via Conda
 
-Make sure you have done `pip install llama-stack` and have the Llama Stack CLI available.
+Make sure you have done `uv pip install llama-stack` and have the Llama Stack CLI available.
 
 ```bash
 export LLAMA_STACK_PORT=5001

@@ -68,9 +68,9 @@ def create_api_client_class(protocol) -> Type:
                 return_type = None
             else:
                 return_type = extract_non_async_iterator_type(sig.return_annotation)
-                assert (
-                    return_type
-                ), f"Could not extract return type for {sig.return_annotation}"
+                assert return_type, (
+                    f"Could not extract return type for {sig.return_annotation}"
+                )
 
             async with httpx.AsyncClient() as client:
                 params = self.httpx_request_params(method_name, *args, **kwargs)
@@ -87,9 +87,9 @@ def create_api_client_class(protocol) -> Type:
             webmethod, sig = self.routes[method_name]
 
             return_type = extract_async_iterator_type(sig.return_annotation)
-            assert (
-                return_type
-            ), f"Could not extract return type for {sig.return_annotation}"
+            assert return_type, (
+                f"Could not extract return type for {sig.return_annotation}"
+            )
 
             async with httpx.AsyncClient() as client:
                 params = self.httpx_request_params(method_name, *args, **kwargs)

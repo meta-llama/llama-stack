@@ -183,9 +183,9 @@ def run_stack_build_command(
             build_config.distribution_spec.providers
         )
         normal_deps += SERVER_DEPENDENCIES
-        print(f"pip install {' '.join(normal_deps)}")
+        print(f"uv pip install {' '.join(normal_deps)}")
         for special_dep in special_deps:
-            print(f"pip install {special_dep}")
+            print(f"uv pip install {special_dep}")
         return
 
     _run_stack_build_command_from_build_config(

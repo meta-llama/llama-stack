@@ -76,6 +76,8 @@ RUN apt-get update && apt-get install -y \
        bubblewrap \
        && rm -rf /var/lib/apt/lists/*
 
+ENV UV_SYSTEM_PYTHON=1
+RUN pip install uv
 EOF
 fi
 
@@ -83,7 +85,7 @@ fi
 # so we can reuse layers.
 if [ -n "$pip_dependencies" ]; then
   add_to_container << EOF
-RUN pip install --no-cache $pip_dependencies
+RUN uv pip install --no-cache $pip_dependencies
 EOF
 fi
 
@@ -91,7 +93,7 @@ if [ -n "$special_pip_deps" ]; then
   IFS='#' read -ra parts <<<"$special_pip_deps"
   for part in "${parts[@]}"; do
     add_to_container <<EOF
-RUN pip install --no-cache $part
+RUN uv pip install --no-cache $part
 EOF
   done
 fi
@@ -109,16 +111,16 @@ if [ -n "$LLAMA_STACK_DIR" ]; then
   # so that changes will be reflected in the container without having to do a
   # rebuild. This is just for development convenience.
   add_to_container << EOF
-RUN pip install --no-cache -e $stack_mount
+RUN uv pip install --no-cache -e $stack_mount
 EOF
 else
   if [ -n "$TEST_PYPI_VERSION" ]; then
     # these packages are damaged in test-pypi, so install them first
     add_to_container << EOF
-RUN pip install fastapi libcst
+RUN uv pip install fastapi libcst
 EOF
     add_to_container << EOF
-RUN pip install --no-cache --extra-index-url https://test.pypi.org/simple/ \
+RUN uv pip install --no-cache --extra-index-url https://test.pypi.org/simple/ \
   llama-models==$TEST_PYPI_VERSION llama-stack-client==$TEST_PYPI_VERSION llama-stack==$TEST_PYPI_VERSION
 
 EOF
@@ -129,7 +131,7 @@ EOF
       SPEC_VERSION="llama-stack"
     fi
     add_to_container << EOF
-RUN pip install --no-cache $SPEC_VERSION
+RUN uv pip install --no-cache $SPEC_VERSION
 EOF
   fi
 fi
@@ -141,8 +143,8 @@ if [ -n "$LLAMA_MODELS_DIR" ]; then
   fi
 
   add_to_container << EOF
-RUN pip uninstall -y llama-models
-RUN pip install --no-cache $models_mount
+RUN uv pip uninstall -y llama-models
+RUN uv pip install --no-cache $models_mount
 
 EOF
 fi

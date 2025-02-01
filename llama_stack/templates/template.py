@@ -58,9 +58,9 @@ class RunConfigSettings(BaseModel):
                     )
 
                 config_class = provider_registry[api][provider_type].config_class
-                assert (
-                    config_class is not None
-                ), f"No config class for provider type: {provider_type} for API: {api_str}"
+                assert config_class is not None, (
+                    f"No config class for provider type: {provider_type} for API: {api_str}"
+                )
 
                 config_class = instantiate_class_type(config_class)
                 if hasattr(config_class, "sample_run_config"):
