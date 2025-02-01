@@ -6,7 +6,7 @@
 
 import json
 import warnings
-from typing import Any, AsyncGenerator, Dict, Generator, List, Optional
+from typing import Any, AsyncGenerator, Dict, Generator, Iterable, List, Optional, Union
 
 from llama_models.datatypes import (
     GreedySamplingStrategy,
@@ -23,6 +23,8 @@ from openai import AsyncStream
 from openai.types.chat import (
     ChatCompletionAssistantMessageParam as OpenAIChatCompletionAssistantMessage,
     ChatCompletionChunk as OpenAIChatCompletionChunk,
+    ChatCompletionContentPartImageParam as OpenAIChatCompletionContentPartImageParam,
+    ChatCompletionContentPartParam as OpenAIChatCompletionContentPartParam,
     ChatCompletionMessageParam as OpenAIChatCompletionMessage,
     ChatCompletionMessageToolCallParam as OpenAIChatCompletionMessageToolCall,
     ChatCompletionSystemMessageParam as OpenAIChatCompletionSystemMessage,
@@ -33,6 +35,9 @@ from openai.types.chat.chat_completion import (
     Choice as OpenAIChoice,
     ChoiceLogprobs as OpenAIChoiceLogprobs,  # same as chat_completion_chunk ChoiceLogprobs
 )
+from openai.types.chat.chat_completion_content_part_image_param import (
+    ImageURL as OpenAIImageURL,
+)
 from openai.types.chat.chat_completion_message_tool_call_param import (
     Function as OpenAIFunction,
 )
@@ -40,6 +45,9 @@ from openai.types.completion import Completion as OpenAICompletion
 from openai.types.completion_choice import Logprobs as OpenAICompletionLogprobs
 
 from llama_stack.apis.common.content_types import (
+    ImageContentItem,
+    InterleavedContent,
+    TextContentItem,
     TextDelta,
     ToolCallDelta,
     ToolCallParseStatus,
@@ -60,6 +68,10 @@ from llama_stack.apis.inference import (
     TokenLogProbs,
     ToolResponseMessage,
     UserMessage,
+)
+
+from llama_stack.providers.utils.inference.prompt_adapter import (
+    convert_image_content_to_url,
 )
 
 
@@ -139,7 +151,7 @@ def _convert_tooldef_to_openai_tool(tool: ToolDefinition) -> dict:
     return out
 
 
-def _convert_message(message: Message | Dict) -> OpenAIChatCompletionMessage:
+async def _convert_message(message: Message | Dict) -> OpenAIChatCompletionMessage:
     """
     Convert a Message to an OpenAI API-compatible dictionary.
     """
@@ -159,11 +171,35 @@ def _convert_message(message: Message | Dict) -> OpenAIChatCompletionMessage:
         else:
             raise ValueError(f"Unsupported message role: {message['role']}")
 
+    # Map Llama Stack spec to OpenAI spec -
+    #  str -> str
+    #  {"type": "text", "text": ...} -> {"type": "text", "text": ...}
+    #  {"type": "image", "image": {"url": {"uri": ...}}} -> {"type": "image_url", "image_url": {"url": ...}}
+    #  {"type": "image", "image": {"data": ...}} -> {"type": "image_url", "image_url": {"url": "data:image/?;base64,..."}}
+    #  List[...] -> List[...]
+    async def _convert_user_message_content(
+        content: InterleavedContent,
+    ) -> Union[str, Iterable[OpenAIChatCompletionContentPartParam]]:
+        # Llama Stack and OpenAI spec match for str and text input
+        if isinstance(content, str) or isinstance(content, TextContentItem):
+            return content
+        elif isinstance(content, ImageContentItem):
+            return OpenAIChatCompletionContentPartImageParam(
+                image_url=OpenAIImageURL(
+                    url=await convert_image_content_to_url(content)
+                ),
+                type="image_url",
+            )
+        elif isinstance(content, List):
+            return [await _convert_user_message_content(item) for item in content]
+        else:
+            raise ValueError(f"Unsupported content type: {type(content)}")
+
     out: OpenAIChatCompletionMessage = None
     if isinstance(message, UserMessage):
         out = OpenAIChatCompletionUserMessage(
             role="user",
-            content=message.content,  # TODO(mf): handle image content
+            content=await _convert_user_message_content(message.content),
         )
     elif isinstance(message, CompletionMessage):
         out = OpenAIChatCompletionAssistantMessage(
@@ -198,7 +234,7 @@ def _convert_message(message: Message | Dict) -> OpenAIChatCompletionMessage:
     return out
 
 
-def convert_chat_completion_request(
+async def convert_chat_completion_request(
     request: ChatCompletionRequest,
     n: int = 1,
 ) -> dict:
@@ -235,7 +271,7 @@ def convert_chat_completion_request(
     nvext = {}
     payload: Dict[str, Any] = dict(
         model=request.model,
-        messages=[_convert_message(message) for message in request.messages],
+        messages=[await _convert_message(message) for message in request.messages],
         stream=request.stream,
         n=n,
         extra_body=dict(nvext=nvext),
