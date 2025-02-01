@@ -12,6 +12,9 @@ TEST_PYPI_VERSION=${TEST_PYPI_VERSION:-}
 PYPI_VERSION=${PYPI_VERSION:-}
 BUILD_PLATFORM=${BUILD_PLATFORM:-}
 
+# mounting is not supported by docker buildx, so we use COPY instead
+USE_COPY_NOT_MOUNT=${USE_COPY_NOT_MOUNT:-}
+
 if [ "$#" -lt 6 ]; then
   # This only works for templates
   echo "Usage: $0 <template_or_config> <image_name> <container_base> <build_file_path> <host_build_dir> <pip_dependencies> [<special_pip_deps>]" >&2
@@ -34,8 +37,6 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
-SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
-REPO_DIR=$(dirname $(dirname "$SCRIPT_DIR"))
 CONTAINER_BINARY=${CONTAINER_BINARY:-docker}
 CONTAINER_OPTS=${CONTAINER_OPTS:-}
 
@@ -110,6 +111,13 @@ if [ -n "$LLAMA_STACK_DIR" ]; then
   # Install in editable format. We will mount the source code into the container
   # so that changes will be reflected in the container without having to do a
   # rebuild. This is just for development convenience.
+
+  if [ "$USE_COPY_NOT_MOUNT" = "true" ]; then
+    add_to_container << EOF
+COPY $LLAMA_STACK_DIR $stack_mount
+EOF
+  fi
+
   add_to_container << EOF
 RUN uv pip install --no-cache -e $stack_mount
 EOF
@@ -142,10 +150,14 @@ if [ -n "$LLAMA_MODELS_DIR" ]; then
     exit 1
   fi
 
+  if [ "$USE_COPY_NOT_MOUNT" = "true" ]; then
+    add_to_container << EOF
+COPY $LLAMA_MODELS_DIR $models_mount
+EOF
+  fi
   add_to_container << EOF
 RUN uv pip uninstall llama-models
 RUN uv pip install --no-cache $models_mount
-
 EOF
 fi
 
@@ -165,11 +177,13 @@ cat $TEMP_DIR/Containerfile
 printf "\n"
 
 mounts=""
-if [ -n "$LLAMA_STACK_DIR" ]; then
-  mounts="$mounts -v $(readlink -f $LLAMA_STACK_DIR):$stack_mount"
-fi
-if [ -n "$LLAMA_MODELS_DIR" ]; then
-  mounts="$mounts -v $(readlink -f $LLAMA_MODELS_DIR):$models_mount"
+if [ "$USE_COPY_NOT_MOUNT" != "true" ]; then
+  if [ -n "$LLAMA_STACK_DIR" ]; then
+    mounts="$mounts -v $(readlink -f $LLAMA_STACK_DIR):$stack_mount"
+  fi
+  if [ -n "$LLAMA_MODELS_DIR" ]; then
+    mounts="$mounts -v $(readlink -f $LLAMA_MODELS_DIR):$models_mount"
+  fi
 fi
 
 if command -v selinuxenabled &>/dev/null && selinuxenabled; then
@@ -205,8 +219,11 @@ else
   exit 1
 fi
 
+echo "PWD: $(pwd)"
+echo "Containerfile: $TEMP_DIR/Containerfile"
 set -x
-$CONTAINER_BINARY build $CONTAINER_OPTS $PLATFORM -t $image_tag -f "$TEMP_DIR/Containerfile" "$REPO_DIR" $mounts
+$CONTAINER_BINARY build $CONTAINER_OPTS $PLATFORM -t $image_tag \
+  -f "$TEMP_DIR/Containerfile" "." $mounts --progress=plain
 
 # clean up tmp/configs
 set +x
