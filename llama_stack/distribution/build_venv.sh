@@ -12,6 +12,9 @@
 LLAMA_MODELS_DIR=${LLAMA_MODELS_DIR:-}
 LLAMA_STACK_DIR=${LLAMA_STACK_DIR:-}
 TEST_PYPI_VERSION=${TEST_PYPI_VERSION:-}
+# This is necessary when installing PyTorch via uv since it's likely to time out
+# Reference: https://github.com/astral-sh/uv/pull/1694
+UV_HTTP_TIMEOUT=500
 
 if [ -n "$LLAMA_STACK_DIR" ]; then
   echo "Using llama-stack-dir=$LLAMA_STACK_DIR"
