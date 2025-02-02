@@ -1,7 +1,7 @@
 ```{admonition} News
 :class: tip
 
-Llama Stack 0.1.0 is now available! See the [release notes](https://github.com/meta-llama/llama-stack/releases/tag/v0.1.0) for more details.
+Llama Stack 0.1.1 is now available! See the [release notes](https://github.com/meta-llama/llama-stack/releases/tag/v0.1.1) for more details.
 ```
 
 # Llama Stack
