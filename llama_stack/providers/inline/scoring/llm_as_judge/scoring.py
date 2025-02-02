@@ -64,9 +64,9 @@ class LlmAsJudgeScoringImpl(
         ]
 
         for f in scoring_fn_defs_list:
-            assert f.identifier.startswith(
-                "llm-as-judge"
-            ), "All llm-as-judge scoring fn must have identifier prefixed with 'llm-as-judge'! "
+            assert f.identifier.startswith("llm-as-judge"), (
+                "All llm-as-judge scoring fn must have identifier prefixed with 'llm-as-judge'! "
+            )
 
         return scoring_fn_defs_list
 

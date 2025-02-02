@@ -13,7 +13,7 @@ Here's how to set up basic evaluation:
 response = client.eval_tasks.register(
     eval_task_id="my_eval",
     dataset_id="my_dataset",
-    scoring_functions=["accuracy", "relevance"]
+    scoring_functions=["accuracy", "relevance"],
 )
 
 # Run evaluation
@@ -21,16 +21,10 @@ job = client.eval.run_eval(
     task_id="my_eval",
     task_config={
         "type": "app",
-        "eval_candidate": {
-            "type": "agent",
-            "config": agent_config
-        }
-    }
+        "eval_candidate": {"type": "agent", "config": agent_config},
+    },
 )
 
 # Get results
-result = client.eval.job_result(
-    task_id="my_eval",
-    job_id=job.job_id
-)
+result = client.eval.job_result(task_id="my_eval", job_id=job.job_id)
 ```

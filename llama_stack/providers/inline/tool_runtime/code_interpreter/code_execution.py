@@ -190,7 +190,7 @@ def execute_subprocess_request(request, ctx: CodeExecutionContext):
     if request["type"] == "matplotlib":
         return process_matplotlib_response(request, ctx.matplotlib_dump_dir)
     else:
-        raise Exception(f'Unrecognised network request type: {request["type"]}')
+        raise Exception(f"Unrecognised network request type: {request['type']}")
 
 
 def do_subprocess(*, cmd: list, env: dict, ctx: CodeExecutionContext):

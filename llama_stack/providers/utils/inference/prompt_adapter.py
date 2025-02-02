@@ -327,9 +327,9 @@ def augment_messages_for_tools_llama_3_1(
     if existing_messages[0].role == Role.system.value:
         existing_system_message = existing_messages.pop(0)
 
-    assert (
-        existing_messages[0].role != Role.system.value
-    ), "Should only have 1 system message"
+    assert existing_messages[0].role != Role.system.value, (
+        "Should only have 1 system message"
+    )
 
     messages = []
 
@@ -397,9 +397,9 @@ def augment_messages_for_tools_llama_3_2(
     if existing_messages[0].role == Role.system.value:
         existing_system_message = existing_messages.pop(0)
 
-    assert (
-        existing_messages[0].role != Role.system.value
-    ), "Should only have 1 system message"
+    assert existing_messages[0].role != Role.system.value, (
+        "Should only have 1 system message"
+    )
 
     messages = []
     sys_content = ""

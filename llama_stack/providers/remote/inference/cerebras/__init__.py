@@ -10,9 +10,9 @@ from .config import CerebrasImplConfig
 async def get_adapter_impl(config: CerebrasImplConfig, _deps):
     from .cerebras import CerebrasInferenceAdapter
 
-    assert isinstance(
-        config, CerebrasImplConfig
-    ), f"Unexpected config type: {type(config)}"
+    assert isinstance(config, CerebrasImplConfig), (
+        f"Unexpected config type: {type(config)}"
+    )
 
     impl = CerebrasInferenceAdapter(config)
 

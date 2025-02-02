@@ -139,9 +139,9 @@ class BraintrustScoringImpl(
     async def list_scoring_functions(self) -> List[ScoringFn]:
         scoring_fn_defs_list = [x for x in self.supported_fn_defs_registry.values()]
         for f in scoring_fn_defs_list:
-            assert f.identifier.startswith(
-                "braintrust"
-            ), "All braintrust scoring fn must have identifier prefixed with 'braintrust'! "
+            assert f.identifier.startswith("braintrust"), (
+                "All braintrust scoring fn must have identifier prefixed with 'braintrust'! "
+            )
 
         return scoring_fn_defs_list
 

@@ -35,7 +35,7 @@ Example client SDK call to register a "websearch" toolgroup that is provided by 
 client.toolgroups.register(
     toolgroup_id="builtin::websearch",
     provider_id="brave-search",
-    args={"max_results": 5}
+    args={"max_results": 5},
 )
 ```
 
@@ -50,8 +50,7 @@ The Code Interpreter allows execution of Python code within a controlled environ
 ```python
 # Register Code Interpreter tool group
 client.toolgroups.register(
-    toolgroup_id="builtin::code_interpreter",
-    provider_id="code_interpreter"
+    toolgroup_id="builtin::code_interpreter", provider_id="code_interpreter"
 )
 ```
 
@@ -68,16 +67,14 @@ The WolframAlpha tool provides access to computational knowledge through the Wol
 ```python
 # Register WolframAlpha tool group
 client.toolgroups.register(
-    toolgroup_id="builtin::wolfram_alpha",
-    provider_id="wolfram-alpha"
+    toolgroup_id="builtin::wolfram_alpha", provider_id="wolfram-alpha"
 )
 ```
 
 Example usage:
 ```python
 result = client.tool_runtime.invoke_tool(
-    tool_name="wolfram_alpha",
-    args={"query": "solve x^2 + 2x + 1 = 0"}
+    tool_name="wolfram_alpha", args={"query": "solve x^2 + 2x + 1 = 0"}
 )
 ```
 
@@ -90,10 +87,7 @@ The Memory tool enables retrieval of context from various types of memory banks 
 client.toolgroups.register(
     toolgroup_id="builtin::memory",
     provider_id="memory",
-    args={
-        "max_chunks": 5,
-        "max_tokens_in_context": 4096
-    }
+    args={"max_chunks": 5, "max_tokens_in_context": 4096},
 )
 ```
 
@@ -136,9 +130,7 @@ config = AgentConfig(
     toolgroups=[
         "builtin::websearch",
     ],
-    client_tools=[
-        ToolDef(name="client_tool", description="Client provided tool")
-    ]
+    client_tools=[ToolDef(name="client_tool", description="Client provided tool")],
 )
 ```
 
@@ -167,9 +159,9 @@ Example tool definition:
             "name": "query",
             "parameter_type": "string",
             "description": "The query to search for",
-            "required": True
+            "required": True,
         }
-    ]
+    ],
 }
 ```
 
@@ -179,8 +171,7 @@ Tools can be invoked using the `invoke_tool` method:
 
 ```python
 result = client.tool_runtime.invoke_tool(
-    tool_name="web_search",
-    kwargs={"query": "What is the capital of France?"}
+    tool_name="web_search", kwargs={"query": "What is the capital of France?"}
 )
 ```
 

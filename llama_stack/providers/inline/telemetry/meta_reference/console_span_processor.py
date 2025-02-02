@@ -27,7 +27,6 @@ COLORS = {
 
 
 class ConsoleSpanProcessor(SpanProcessor):
-
     def __init__(self, print_attributes: bool = False):
         self.print_attributes = print_attributes
 

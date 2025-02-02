@@ -150,9 +150,9 @@ class Llama:
 
         checkpoints = sorted(Path(ckpt_dir).glob("*.pth"))
         assert len(checkpoints) > 0, f"no checkpoint files found in {ckpt_dir}"
-        assert model_parallel_size == len(
-            checkpoints
-        ), f"Loading a checkpoint for MP={len(checkpoints)} but world size is {model_parallel_size}"
+        assert model_parallel_size == len(checkpoints), (
+            f"Loading a checkpoint for MP={len(checkpoints)} but world size is {model_parallel_size}"
+        )
         ckpt_path = checkpoints[get_model_parallel_rank()]
         state_dict = torch.load(ckpt_path, map_location="cpu", weights_only=True)
         with open(Path(ckpt_dir) / "params.json", "r") as f:
@@ -168,9 +168,9 @@ class Llama:
         )
 
         tokenizer = Tokenizer.get_instance()
-        assert (
-            model_args.vocab_size == tokenizer.n_words
-        ), f"model_args vocab = {model_args.vocab_size} but tokenizer vocab = {tokenizer.n_words}"
+        assert model_args.vocab_size == tokenizer.n_words, (
+            f"model_args vocab = {model_args.vocab_size} but tokenizer vocab = {tokenizer.n_words}"
+        )
 
         if isinstance(config, MetaReferenceQuantizedInferenceConfig):
             if isinstance(config.quantization, Fp8QuantizationConfig):

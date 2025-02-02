@@ -9,7 +9,7 @@ import enum
 from dataclasses import dataclass
 from typing import Any, ClassVar, Dict, List, Optional, Union
 
-from ..strong_typing.schema import JsonType, Schema, StrictJsonType
+from ..strong_typing.schema import Schema, StrictJsonType
 
 URL = str
 

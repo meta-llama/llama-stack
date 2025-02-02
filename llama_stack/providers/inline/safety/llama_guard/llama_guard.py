@@ -193,7 +193,9 @@ class LlamaGuardShield:
 
         assert len(excluded_categories) == 0 or all(
             x in SAFETY_CATEGORIES_TO_CODE_MAP.values() for x in excluded_categories
-        ), "Invalid categories in excluded categories. Expected format is ['S1', 'S2', ..]"
+        ), (
+            "Invalid categories in excluded categories. Expected format is ['S1', 'S2', ..]"
+        )
 
         if model not in MODEL_TO_SAFETY_CATEGORIES_MAP:
             raise ValueError(f"Unsupported model: {model}")

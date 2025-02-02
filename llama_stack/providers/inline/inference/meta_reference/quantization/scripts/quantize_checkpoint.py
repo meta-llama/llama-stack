@@ -76,9 +76,9 @@ def main(
 
         checkpoints = sorted(Path(ckpt_dir).glob("*.pth"))
         assert len(checkpoints) > 0, f"no checkpoint files found in {ckpt_dir}"
-        assert model_parallel_size == len(
-            checkpoints
-        ), f"Loading a checkpoint for MP={len(checkpoints)} but world size is {model_parallel_size}"
+        assert model_parallel_size == len(checkpoints), (
+            f"Loading a checkpoint for MP={len(checkpoints)} but world size is {model_parallel_size}"
+        )
         ckpt_path = checkpoints[get_model_parallel_rank()]
         checkpoint = torch.load(ckpt_path, map_location="cpu", weights_only=True)
         with open(Path(ckpt_dir) / "params.json", "r") as f:
@@ -90,9 +90,9 @@ def main(
             **params,
         )
         tokenizer = Tokenizer(model_path=tokenizer_path)
-        assert (
-            model_args.vocab_size == tokenizer.n_words
-        ), f"model_args vocab = {model_args.vocab_size} but tokenizer vocab = {tokenizer.n_words}"
+        assert model_args.vocab_size == tokenizer.n_words, (
+            f"model_args vocab = {model_args.vocab_size} but tokenizer vocab = {tokenizer.n_words}"
+        )
 
         # load on CPU in bf16 so that fp8 conversion does not find an unexpected (fp32, e.g.) datatype
         torch.set_default_tensor_type(torch.BFloat16Tensor)
@@ -106,9 +106,9 @@ def main(
             torch.set_default_tensor_type(torch.cuda.HalfTensor)
 
         log.info(ckpt_path)
-        assert (
-            quantized_ckpt_dir is not None
-        ), "QUantized checkpoint directory should not be None"
+        assert quantized_ckpt_dir is not None, (
+            "QUantized checkpoint directory should not be None"
+        )
         fp8_scales = {}
         for block in model.layers:
             if isinstance(block, TransformerBlock):

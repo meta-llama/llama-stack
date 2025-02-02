@@ -171,9 +171,9 @@ class MetaReferenceEvalImpl(
         self, input_rows: List[Dict[str, Any]], task_config: EvalTaskConfig
     ) -> List[Dict[str, Any]]:
         candidate = task_config.eval_candidate
-        assert (
-            candidate.sampling_params.max_tokens is not None
-        ), "SamplingParams.max_tokens must be provided"
+        assert candidate.sampling_params.max_tokens is not None, (
+            "SamplingParams.max_tokens must be provided"
+        )
 
         generations = []
         for x in tqdm(input_rows):

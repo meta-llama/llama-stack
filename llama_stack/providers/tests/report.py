@@ -71,9 +71,7 @@ SUPPORTED_MODELS = {
 
 
 class Report:
-
     def __init__(self, output_path):
-
         valid_file_format = (
             output_path.split(".")[1] in ["md", "markdown"]
             if len(output_path.split(".")) == 2

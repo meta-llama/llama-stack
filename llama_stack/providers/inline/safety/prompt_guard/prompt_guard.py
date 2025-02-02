@@ -71,9 +71,9 @@ class PromptGuardShield:
         threshold: float = 0.9,
         temperature: float = 1.0,
     ):
-        assert (
-            model_dir is not None
-        ), "Must provide a model directory for prompt injection shield"
+        assert model_dir is not None, (
+            "Must provide a model directory for prompt injection shield"
+        )
         if temperature <= 0:
             raise ValueError("Temperature must be greater than 0")
 

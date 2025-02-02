@@ -206,9 +206,9 @@ class ChatAgent(ShieldRunnerMixin):
                     output_message = chunk
                     continue
 
-                assert isinstance(
-                    chunk, AgentTurnResponseStreamChunk
-                ), f"Unexpected type {type(chunk)}"
+                assert isinstance(chunk, AgentTurnResponseStreamChunk), (
+                    f"Unexpected type {type(chunk)}"
+                )
                 event = chunk.event
                 if (
                     event.payload.event_type
@@ -667,9 +667,9 @@ class ChatAgent(ShieldRunnerMixin):
                         toolgroup_args,
                         tool_to_group,
                     )
-                    assert (
-                        len(result_messages) == 1
-                    ), "Currently not supporting multiple messages"
+                    assert len(result_messages) == 1, (
+                        "Currently not supporting multiple messages"
+                    )
                     result_message = result_messages[0]
                     span.set_attribute("output", result_message.model_dump_json())
 

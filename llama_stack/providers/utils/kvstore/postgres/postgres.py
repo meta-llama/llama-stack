@@ -46,7 +46,6 @@ class PostgresKVStoreImpl(KVStore):
                 """
             )
         except Exception as e:
-
             log.exception("Could not connect to PostgreSQL database server")
             raise RuntimeError("Could not connect to PostgreSQL database server") from e
 

@@ -33,7 +33,11 @@ from llama_stack_client.types import (
 Types:
 
 ```python
-from llama_stack_client.types import ListToolGroupsResponse, ToolGroup, ToolgroupListResponse
+from llama_stack_client.types import (
+    ListToolGroupsResponse,
+    ToolGroup,
+    ToolgroupListResponse,
+)
 ```
 
 Methods:
@@ -444,7 +448,11 @@ Methods:
 Types:
 
 ```python
-from llama_stack_client.types import EvalTask, ListEvalTasksResponse, EvalTaskListResponse
+from llama_stack_client.types import (
+    EvalTask,
+    ListEvalTasksResponse,
+    EvalTaskListResponse,
+)
 ```
 
 Methods:

@@ -279,7 +279,7 @@ def _convert_groq_tool_call(
     """
     try:
         arguments = json.loads(tool_call.function.arguments)
-    except Exception as e:
+    except Exception:
         return UnparseableToolCall(
             call_id=tool_call.id,
             tool_name=tool_call.function.name,

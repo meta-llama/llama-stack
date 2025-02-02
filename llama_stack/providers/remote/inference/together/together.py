@@ -262,9 +262,9 @@ class TogetherInferenceAdapter(
                     request, self.get_llama_model(request.model), self.formatter
                 )
         else:
-            assert (
-                not media_present
-            ), "Together does not support media for Completion requests"
+            assert not media_present, (
+                "Together does not support media for Completion requests"
+            )
             input_dict["prompt"] = await completion_request_to_prompt(
                 request, self.formatter
             )
@@ -284,9 +284,9 @@ class TogetherInferenceAdapter(
         contents: List[InterleavedContent],
     ) -> EmbeddingsResponse:
         model = await self.model_store.get_model(model_id)
-        assert all(
-            not content_has_media(content) for content in contents
-        ), "Together does not support media for embeddings"
+        assert all(not content_has_media(content) for content in contents), (
+            "Together does not support media for embeddings"
+        )
         r = self._get_client().embeddings.create(
             model=model.provider_resource_id,
             input=[interleaved_content_as_str(content) for content in contents],

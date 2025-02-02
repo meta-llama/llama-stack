@@ -43,9 +43,9 @@ class QdrantIndex(EmbeddingIndex):
         self.collection_name = collection_name
 
     async def add_chunks(self, chunks: List[Chunk], embeddings: NDArray):
-        assert len(chunks) == len(
-            embeddings
-        ), f"Chunk length {len(chunks)} does not match embedding length {len(embeddings)}"
+        assert len(chunks) == len(embeddings), (
+            f"Chunk length {len(chunks)} does not match embedding length {len(embeddings)}"
+        )
 
         if not await self.client.collection_exists(self.collection_name):
             await self.client.create_collection(

@@ -83,7 +83,6 @@ SUPPORTED_MODELS = {
 
 
 class Report:
-
     def __init__(self, report_path: Optional[str] = None):
         if os.environ.get("LLAMA_STACK_CONFIG"):
             config_path_or_template_name = get_env_or_fail("LLAMA_STACK_CONFIG")

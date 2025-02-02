@@ -9,9 +9,9 @@ from .databricks import DatabricksInferenceAdapter
 
 
 async def get_adapter_impl(config: DatabricksImplConfig, _deps):
-    assert isinstance(
-        config, DatabricksImplConfig
-    ), f"Unexpected config type: {type(config)}"
+    assert isinstance(config, DatabricksImplConfig), (
+        f"Unexpected config type: {type(config)}"
+    )
     impl = DatabricksInferenceAdapter(config)
     await impl.initialize()
     return impl

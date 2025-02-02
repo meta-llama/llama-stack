@@ -83,9 +83,7 @@ def old_config():
           telemetry:
             provider_type: noop
             config: {{}}
-    """.format(
-            built_at=datetime.now().isoformat()
-        )
+    """.format(built_at=datetime.now().isoformat())
     )
 
 

@@ -10,9 +10,9 @@ from .config import LlamaGuardConfig
 async def get_provider_impl(config: LlamaGuardConfig, deps):
     from .llama_guard import LlamaGuardSafetyImpl
 
-    assert isinstance(
-        config, LlamaGuardConfig
-    ), f"Unexpected config type: {type(config)}"
+    assert isinstance(config, LlamaGuardConfig), (
+        f"Unexpected config type: {type(config)}"
+    )
 
     impl = LlamaGuardSafetyImpl(config, deps)
     await impl.initialize()

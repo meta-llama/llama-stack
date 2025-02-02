@@ -271,9 +271,9 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
                     self.formatter,
                 )
         else:
-            assert (
-                not media_present
-            ), "Ollama does not support media for Completion requests"
+            assert not media_present, (
+                "Ollama does not support media for Completion requests"
+            )
             input_dict["prompt"] = await completion_request_to_prompt(
                 request, self.formatter
             )
@@ -356,9 +356,9 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
     ) -> EmbeddingsResponse:
         model = await self.model_store.get_model(model_id)
 
-        assert all(
-            not content_has_media(content) for content in contents
-        ), "Ollama does not support media for embeddings"
+        assert all(not content_has_media(content) for content in contents), (
+            "Ollama does not support media for embeddings"
+        )
         response = await self.client.embed(
             model=model.provider_resource_id,
             input=[interleaved_content_as_str(content) for content in contents],

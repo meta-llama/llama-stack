@@ -66,9 +66,9 @@ def convert_to_fp8_quantized_model(
         fp8_scales_path = os.path.join(
             checkpoint_dir, f"fp8_scales_{get_model_parallel_rank()}.pt"
         )
-        assert os.path.isfile(
-            fp8_scales_path
-        ), f"fp8_scales_path not found for rank {get_model_parallel_rank()}"
+        assert os.path.isfile(fp8_scales_path), (
+            f"fp8_scales_path not found for rank {get_model_parallel_rank()}"
+        )
         fp8_scales = torch.load(fp8_scales_path, weights_only=True)
 
         for block in model.layers:

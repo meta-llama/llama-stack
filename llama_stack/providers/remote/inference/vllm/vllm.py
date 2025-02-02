@@ -221,9 +221,9 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
                     self.formatter,
                 )
         else:
-            assert (
-                not media_present
-            ), "vLLM does not support media for Completion requests"
+            assert not media_present, (
+                "vLLM does not support media for Completion requests"
+            )
             input_dict["prompt"] = await completion_request_to_prompt(
                 request,
                 self.formatter,
@@ -257,9 +257,9 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         assert model.model_type == ModelType.embedding
         assert model.metadata.get("embedding_dimensions")
         kwargs["dimensions"] = model.metadata.get("embedding_dimensions")
-        assert all(
-            not content_has_media(content) for content in contents
-        ), "VLLM does not support media for embeddings"
+        assert all(not content_has_media(content) for content in contents), (
+            "VLLM does not support media for embeddings"
+        )
         response = self.client.embeddings.create(
             model=model.provider_resource_id,
             input=[interleaved_content_as_str(content) for content in contents],

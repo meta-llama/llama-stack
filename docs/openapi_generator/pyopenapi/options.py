@@ -12,9 +12,6 @@ from typing import Callable, ClassVar, Dict, List, Optional, Tuple, Union
 from .specification import (
     Info,
     SecurityScheme,
-    SecuritySchemeAPI,
-    SecuritySchemeHTTP,
-    SecuritySchemeOpenIDConnect,
     Server,
 )
 

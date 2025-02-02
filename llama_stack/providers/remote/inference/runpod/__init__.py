@@ -9,9 +9,9 @@ from .runpod import RunpodInferenceAdapter
 
 
 async def get_adapter_impl(config: RunpodImplConfig, _deps):
-    assert isinstance(
-        config, RunpodImplConfig
-    ), f"Unexpected config type: {type(config)}"
+    assert isinstance(config, RunpodImplConfig), (
+        f"Unexpected config type: {type(config)}"
+    )
     impl = RunpodInferenceAdapter(config)
     await impl.initialize()
     return impl

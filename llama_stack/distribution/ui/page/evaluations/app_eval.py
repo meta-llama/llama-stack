@@ -14,7 +14,6 @@ from modules.utils import process_dataset
 
 
 def application_evaluation_page():
-
     st.set_page_config(page_title="Evaluations (Scoring)", page_icon="🦙")
     st.title("📊 Evaluations (Scoring)")
 

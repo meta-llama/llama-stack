@@ -195,7 +195,6 @@ def run_evaluation_3():
 
     # Add run button and handle evaluation
     if st.button("Run Evaluation"):
-
         progress_text = "Running evaluation..."
         progress_bar = st.progress(0, text=progress_text)
         rows = rows.rows
@@ -247,7 +246,6 @@ def run_evaluation_3():
 
 
 def native_evaluation_page():
-
     st.set_page_config(page_title="Evaluations (Generation + Scoring)", page_icon="🦙")
     st.title("📊 Evaluations (Generation + Scoring)")
 

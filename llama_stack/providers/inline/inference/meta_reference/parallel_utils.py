@@ -226,7 +226,7 @@ def maybe_parse_message(maybe_json: Optional[str]) -> Optional[ProcessingMessage
         return parse_message(maybe_json)
     except json.JSONDecodeError:
         return None
-    except ValueError as e:
+    except ValueError:
         return None
 
 
@@ -373,7 +373,7 @@ class ModelParallelProcessGroup:
                 if isinstance(obj, TaskResponse):
                     yield obj.result
 
-        except GeneratorExit as e:
+        except GeneratorExit:
             self.request_socket.send(encode_msg(CancelSentinel()))
             while True:
                 obj_json = self.request_socket.send()

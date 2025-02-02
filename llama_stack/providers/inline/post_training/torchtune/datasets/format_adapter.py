@@ -16,7 +16,7 @@ from llama_stack.providers.utils.common.data_schema_validator import ColumnName
 
 
 def llama_stack_instruct_to_torchtune_instruct(
-    sample: Mapping[str, Any]
+    sample: Mapping[str, Any],
 ) -> Mapping[str, Any]:
     assert (
         ColumnName.chat_completion_input.value in sample
@@ -24,9 +24,9 @@ def llama_stack_instruct_to_torchtune_instruct(
     ), "Invalid input row"
     input_messages = eval(str(sample[ColumnName.chat_completion_input.value]))
 
-    assert (
-        len(input_messages) == 1
-    ), "llama stack intruct dataset format only supports 1 user message"
+    assert len(input_messages) == 1, (
+        "llama stack intruct dataset format only supports 1 user message"
+    )
     input_message = input_messages[0]
 
     assert "content" in input_message, "content not found in input message"
@@ -48,9 +48,9 @@ def llama_stack_chat_to_torchtune_chat(sample: Mapping[str, Any]) -> Mapping[str
     roles = []
     conversations = []
     for message in dialog:
-        assert (
-            "role" in message and "content" in message
-        ), "role and content must in message"
+        assert "role" in message and "content" in message, (
+            "role and content must in message"
+        )
         roles.append(message["role"])
         conversations.append(
             {"from": role_map[message["role"]], "value": message["content"]}

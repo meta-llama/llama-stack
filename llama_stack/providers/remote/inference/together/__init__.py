@@ -16,9 +16,9 @@ class TogetherProviderDataValidator(BaseModel):
 async def get_adapter_impl(config: TogetherImplConfig, _deps):
     from .together import TogetherInferenceAdapter
 
-    assert isinstance(
-        config, TogetherImplConfig
-    ), f"Unexpected config type: {type(config)}"
+    assert isinstance(config, TogetherImplConfig), (
+        f"Unexpected config type: {type(config)}"
+    )
     impl = TogetherInferenceAdapter(config)
     await impl.initialize()
     return impl

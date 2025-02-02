@@ -60,9 +60,9 @@ class BasicScoringImpl(
         ]
 
         for f in scoring_fn_defs_list:
-            assert f.identifier.startswith(
-                "basic"
-            ), "All basic scoring fn must have identifier prefixed with 'basic'! "
+            assert f.identifier.startswith("basic"), (
+                "All basic scoring fn must have identifier prefixed with 'basic'! "
+            )
 
         return scoring_fn_defs_list
 

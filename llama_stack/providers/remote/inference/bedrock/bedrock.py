@@ -196,9 +196,9 @@ class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
         model = await self.model_store.get_model(model_id)
         embeddings = []
         for content in contents:
-            assert not content_has_media(
-                content
-            ), "Bedrock does not support media for embeddings"
+            assert not content_has_media(content), (
+                "Bedrock does not support media for embeddings"
+            )
             input_text = interleaved_content_as_str(content)
             input_body = {"inputText": input_text}
             body = json.dumps(input_body)

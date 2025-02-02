@@ -452,12 +452,12 @@ def convert_openai_chat_completion_choice(
         end_of_message = "end_of_message"
         out_of_tokens = "out_of_tokens"
     """
-    assert (
-        hasattr(choice, "message") and choice.message
-    ), "error in server response: message not found"
-    assert (
-        hasattr(choice, "finish_reason") and choice.finish_reason
-    ), "error in server response: finish_reason not found"
+    assert hasattr(choice, "message") and choice.message, (
+        "error in server response: message not found"
+    )
+    assert hasattr(choice, "finish_reason") and choice.finish_reason, (
+        "error in server response: finish_reason not found"
+    )
 
     return ChatCompletionResponse(
         completion_message=CompletionMessage(
@@ -479,9 +479,9 @@ async def convert_openai_chat_completion_stream(
     """
 
     # generate a stream of ChatCompletionResponseEventType: start -> progress -> progress -> ...
-    def _event_type_generator() -> (
-        Generator[ChatCompletionResponseEventType, None, None]
-    ):
+    def _event_type_generator() -> Generator[
+        ChatCompletionResponseEventType, None, None
+    ]:
         yield ChatCompletionResponseEventType.start
         while True:
             yield ChatCompletionResponseEventType.progress

@@ -72,7 +72,7 @@ def is_discriminated_union(typ) -> bool:
     if isinstance(typ, FieldInfo):
         return typ.discriminator
     else:
-        if not (get_origin(typ) is Annotated):
+        if get_origin(typ) is not Annotated:
             return False
         args = get_args(typ)
         return len(args) >= 2 and args[1].discriminator

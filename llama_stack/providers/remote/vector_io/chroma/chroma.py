@@ -42,9 +42,9 @@ class ChromaIndex(EmbeddingIndex):
         self.collection = collection
 
     async def add_chunks(self, chunks: List[Chunk], embeddings: NDArray):
-        assert len(chunks) == len(
-            embeddings
-        ), f"Chunk length {len(chunks)} does not match embedding length {len(embeddings)}"
+        assert len(chunks) == len(embeddings), (
+            f"Chunk length {len(chunks)} does not match embedding length {len(embeddings)}"
+        )
 
         ids = [f"{c.metadata['document_id']}:chunk-{i}" for i, c in enumerate(chunks)]
         await maybe_await(

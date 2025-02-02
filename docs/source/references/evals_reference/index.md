@@ -51,6 +51,7 @@ This first example walks you through how to evaluate a model candidate served by
 
 ```python
 import datasets
+
 ds = datasets.load_dataset(path="llamastack/mmmu", name="Agriculture", split="dev")
 ds = ds.select_columns(["chat_completion_input", "input_query", "expected_answer"])
 eval_rows = ds.to_pandas().to_dict(orient="records")
@@ -79,7 +80,7 @@ system_message = {
 client.eval_tasks.register(
     eval_task_id="meta-reference::mmmu",
     dataset_id=f"mmmu-{subset}-{split}",
-    scoring_functions=["basic::regex_parser_multiple_choice_answer"]
+    scoring_functions=["basic::regex_parser_multiple_choice_answer"],
 )
 
 response = client.eval.evaluate_rows(
@@ -98,9 +99,9 @@ response = client.eval.evaluate_rows(
                 "max_tokens": 4096,
                 "repeat_penalty": 1.0,
             },
-            "system_message": system_message
-        }
-    }
+            "system_message": system_message,
+        },
+    },
 )
 ```
 
@@ -124,7 +125,7 @@ _ = client.datasets.register(
         "input_query": {"type": "string"},
         "expected_answer": {"type": "string"},
         "chat_completion_input": {"type": "chat_completion_input"},
-    }
+    },
 )
 
 eval_rows = client.datasetio.get_rows_paginated(
@@ -137,7 +138,7 @@ eval_rows = client.datasetio.get_rows_paginated(
 client.eval_tasks.register(
     eval_task_id="meta-reference::simpleqa",
     dataset_id=simpleqa_dataset_id,
-    scoring_functions=["llm-as-judge::405b-simpleqa"]
+    scoring_functions=["llm-as-judge::405b-simpleqa"],
 )
 
 response = client.eval.evaluate_rows(
@@ -156,8 +157,8 @@ response = client.eval.evaluate_rows(
                 "max_tokens": 4096,
                 "repeat_penalty": 1.0,
             },
-        }
-    }
+        },
+    },
 )
 ```
 
@@ -180,14 +181,14 @@ agent_config = {
         {
             "type": "brave_search",
             "engine": "tavily",
-            "api_key": userdata.get("TAVILY_SEARCH_API_KEY")
+            "api_key": userdata.get("TAVILY_SEARCH_API_KEY"),
         }
     ],
     "tool_choice": "auto",
     "tool_prompt_format": "json",
     "input_shields": [],
     "output_shields": [],
-    "enable_session_persistence": False
+    "enable_session_persistence": False,
 }
 
 response = client.eval.evaluate_rows(
@@ -199,8 +200,8 @@ response = client.eval.evaluate_rows(
         "eval_candidate": {
             "type": "agent",
             "config": agent_config,
-        }
-    }
+        },
+    },
 )
 ```
 
@@ -237,7 +238,9 @@ GENERATED_RESPONSE: {generated_answer}
 EXPECTED_RESPONSE: {expected_answer}
 """
 
-input_query = "What are the top 5 topics that were explained? Only list succinct bullet points."
+input_query = (
+    "What are the top 5 topics that were explained? Only list succinct bullet points."
+)
 generated_answer = """
 Here are the top 5 topics that were explained in the documentation for Torchtune:
 
@@ -268,7 +271,9 @@ scoring_params = {
     "braintrust::factuality": None,
 }
 
-response = client.scoring.score(input_rows=dataset_rows, scoring_functions=scoring_params)
+response = client.scoring.score(
+    input_rows=dataset_rows, scoring_functions=scoring_params
+)
 ```
 
 ## Running Evaluations via CLI

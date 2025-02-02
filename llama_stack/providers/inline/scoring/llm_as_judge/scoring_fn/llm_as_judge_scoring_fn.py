@@ -38,9 +38,9 @@ class LlmAsJudgeScoringFn(RegisteredBaseScoringFn):
         scoring_fn_identifier: Optional[str] = None,
         scoring_params: Optional[ScoringFnParams] = None,
     ) -> ScoringResultRow:
-        assert (
-            scoring_fn_identifier is not None
-        ), "Scoring function identifier not found."
+        assert scoring_fn_identifier is not None, (
+            "Scoring function identifier not found."
+        )
         fn_def = self.supported_fn_defs_registry[scoring_fn_identifier]
 
         # override params if scoring_params is provided
@@ -48,12 +48,12 @@ class LlmAsJudgeScoringFn(RegisteredBaseScoringFn):
             fn_def.params = scoring_params
 
         assert fn_def.params is not None, f"LLMAsJudgeparams not found for {fn_def}."
-        assert (
-            fn_def.params.prompt_template is not None
-        ), "LLM Judge prompt_template not found."
-        assert (
-            fn_def.params.judge_score_regexes is not None
-        ), "LLM Judge judge_score_regexes not found."
+        assert fn_def.params.prompt_template is not None, (
+            "LLM Judge prompt_template not found."
+        )
+        assert fn_def.params.judge_score_regexes is not None, (
+            "LLM Judge judge_score_regexes not found."
+        )
 
         input_query = input_row["input_query"]
         expected_answer = input_row["expected_answer"]
