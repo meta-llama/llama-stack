@@ -63,6 +63,8 @@ RUN microdnf -y update && microdnf install -y iputils net-tools wget \
     vim-minimal python3.11 python3.11-pip python3.11-wheel \
     python3.11-setuptools && ln -s /bin/pip3.11 /bin/pip && ln -s /bin/python3.11 /bin/python && microdnf clean all
 
+ENV UV_SYSTEM_PYTHON=1
+RUN pip install uv
 EOF
 else
   add_to_container << EOF
