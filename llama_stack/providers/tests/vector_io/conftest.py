@@ -87,9 +87,7 @@ def pytest_generate_tests(metafunc):
             "vector_io": VECTOR_IO_FIXTURES,
         }
         combinations = (
-            get_provider_fixture_overrides_from_test_config(
-                metafunc.config, "vector_io", DEFAULT_PROVIDER_COMBINATIONS
-            )
+            get_provider_fixture_overrides_from_test_config(metafunc.config, "vector_io", DEFAULT_PROVIDER_COMBINATIONS)
             or get_provider_fixture_overrides(metafunc.config, available_fixtures)
             or DEFAULT_PROVIDER_COMBINATIONS
         )

@@ -103,9 +103,7 @@ def _convert_message(message: Message) -> ChatCompletionMessageParam:
     elif message.role == "user":
         return ChatCompletionUserMessageParam(role="user", content=message.content)
     elif message.role == "assistant":
-        return ChatCompletionAssistantMessageParam(
-            role="assistant", content=message.content
-        )
+        return ChatCompletionAssistantMessageParam(role="assistant", content=message.content)
     else:
         raise ValueError(f"Invalid message role: {message.role}")
 
@@ -121,10 +119,7 @@ def _convert_groq_tool_definition(tool_definition: ToolDefinition) -> dict:
         function=FunctionDefinition(
             name=tool_definition.tool_name,
             description=tool_definition.description,
-            parameters={
-                key: _convert_groq_tool_parameter(param)
-                for key, param in tool_parameters.items()
-            },
+            parameters={key: _convert_groq_tool_parameter(param) for key, param in tool_parameters.items()},
         ),
     )
 
@@ -148,10 +143,7 @@ def convert_chat_completion_response(
     # groq only supports n=1 at time of writing, so there is only one choice
     choice = response.choices[0]
     if choice.finish_reason == "tool_calls":
-        tool_calls = [
-            _convert_groq_tool_call(tool_call)
-            for tool_call in choice.message.tool_calls
-        ]
+        tool_calls = [_convert_groq_tool_call(tool_call) for tool_call in choice.message.tool_calls]
         if any(isinstance(tool_call, UnparseableToolCall) for tool_call in tool_calls):
             # If we couldn't parse a tool call, jsonify the tool calls and return them
             return ChatCompletionResponse(
@@ -221,9 +213,7 @@ async def convert_chat_completion_response_stream(
         elif choice.delta.tool_calls:
             # We assume there is only one tool call per chunk, but emit a warning in case we're wrong
             if len(choice.delta.tool_calls) > 1:
-                warnings.warn(
-                    "Groq returned multiple tool calls in one chunk. Using the first one, ignoring the rest."
-                )
+                warnings.warn("Groq returned multiple tool calls in one chunk. Using the first one, ignoring the rest.")
 
             # We assume Groq produces fully formed tool calls for each chunk
             tool_call = _convert_groq_tool_call(choice.delta.tool_calls[0])

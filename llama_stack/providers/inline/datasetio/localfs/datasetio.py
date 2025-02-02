@@ -172,9 +172,7 @@ class LocalFSDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
 
         new_rows_df = pandas.DataFrame(rows)
         new_rows_df = dataset_impl._validate_dataset_schema(new_rows_df)
-        dataset_impl.df = pandas.concat(
-            [dataset_impl.df, new_rows_df], ignore_index=True
-        )
+        dataset_impl.df = pandas.concat([dataset_impl.df, new_rows_df], ignore_index=True)
 
         url = str(dataset_info.dataset_def.url)
         parsed_url = urlparse(url)
@@ -189,12 +187,8 @@ class LocalFSDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
                 raise ValueError("Data URL must be a base64-encoded CSV")
 
             csv_buffer = dataset_impl.df.to_csv(index=False)
-            base64_content = base64.b64encode(csv_buffer.encode("utf-8")).decode(
-                "utf-8"
-            )
-            dataset_info.dataset_def.url = URL(
-                uri=f"data:text/csv;base64,{base64_content}"
-            )
+            base64_content = base64.b64encode(csv_buffer.encode("utf-8")).decode("utf-8")
+            dataset_info.dataset_def.url = URL(uri=f"data:text/csv;base64,{base64_content}")
         else:
             raise ValueError(
                 f"Unsupported URL scheme: {parsed_url.scheme}. Only file:// and data: URLs are supported for writing."

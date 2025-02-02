@@ -73,9 +73,7 @@ class TestVisionModelInference:
             assert expected_string in response.completion_message.content
 
     @pytest.mark.asyncio
-    async def test_vision_chat_completion_streaming(
-        self, inference_model, inference_stack
-    ):
+    async def test_vision_chat_completion_streaming(self, inference_model, inference_stack):
         inference_impl, _ = inference_stack
 
         images = [
@@ -100,9 +98,7 @@ class TestVisionModelInference:
                         UserMessage(
                             content=[
                                 image,
-                                TextContentItem(
-                                    text="Describe this image in two sentences."
-                                ),
+                                TextContentItem(text="Describe this image in two sentences."),
                             ]
                         ),
                     ],
@@ -112,18 +108,12 @@ class TestVisionModelInference:
             ]
 
             assert len(response) > 0
-            assert all(
-                isinstance(chunk, ChatCompletionResponseStreamChunk)
-                for chunk in response
-            )
+            assert all(isinstance(chunk, ChatCompletionResponseStreamChunk) for chunk in response)
             grouped = group_chunks(response)
             assert len(grouped[ChatCompletionResponseEventType.start]) == 1
             assert len(grouped[ChatCompletionResponseEventType.progress]) > 0
             assert len(grouped[ChatCompletionResponseEventType.complete]) == 1
 
-            content = "".join(
-                chunk.event.delta.text
-                for chunk in grouped[ChatCompletionResponseEventType.progress]
-            )
+            content = "".join(chunk.event.delta.text for chunk in grouped[ChatCompletionResponseEventType.progress])
             for expected_string in expected_strings:
                 assert expected_string in content

@@ -224,7 +224,7 @@ client = LlamaStackClient(base_url="http://localhost:5001")
 response = client.inference.chat_completion(
     messages=[
         {"role": "system", "content": "You are a friendly assistant."},
-        {"role": "user", "content": "Write a two-sentence poem about llama."}
+        {"role": "user", "content": "Write a two-sentence poem about llama."},
     ],
     model_id=INFERENCE_MODEL,
 )

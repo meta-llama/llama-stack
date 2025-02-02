@@ -96,8 +96,7 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
         if _is_nvidia_hosted(config):
             if not config.api_key:
                 raise RuntimeError(
-                    "API key is required for hosted NVIDIA NIM. "
-                    "Either provide an API key or use a self-hosted NIM."
+                    "API key is required for hosted NVIDIA NIM. Either provide an API key or use a self-hosted NIM."
                 )
         # elif self._config.api_key:
         #
@@ -113,11 +112,7 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
         # make sure the client lives longer than any async calls
         self._client = AsyncOpenAI(
             base_url=f"{self._config.url}/v1",
-            api_key=(
-                self._config.api_key.get_secret_value()
-                if self._config.api_key
-                else "NO KEY"
-            ),
+            api_key=(self._config.api_key.get_secret_value() if self._config.api_key else "NO KEY"),
             timeout=self._config.timeout,
         )
 
@@ -150,9 +145,7 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
         try:
             response = await self._client.completions.create(**request)
         except APIConnectionError as e:
-            raise ConnectionError(
-                f"Failed to connect to NVIDIA NIM at {self._config.url}: {e}"
-            ) from e
+            raise ConnectionError(f"Failed to connect to NVIDIA NIM at {self._config.url}: {e}") from e
 
         if stream:
             return convert_openai_completion_stream(response)
@@ -178,9 +171,7 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
         tool_prompt_format: Optional[ToolPromptFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
-    ) -> Union[
-        ChatCompletionResponse, AsyncIterator[ChatCompletionResponseStreamChunk]
-    ]:
+    ) -> Union[ChatCompletionResponse, AsyncIterator[ChatCompletionResponseStreamChunk]]:
         if tool_prompt_format:
             warnings.warn("tool_prompt_format is not supported by NVIDIA NIM, ignoring")
 
@@ -204,9 +195,7 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
         try:
             response = await self._client.chat.completions.create(**request)
         except APIConnectionError as e:
-            raise ConnectionError(
-                f"Failed to connect to NVIDIA NIM at {self._config.url}: {e}"
-            ) from e
+            raise ConnectionError(f"Failed to connect to NVIDIA NIM at {self._config.url}: {e}") from e
 
         if stream:
             return convert_openai_chat_completion_stream(response)

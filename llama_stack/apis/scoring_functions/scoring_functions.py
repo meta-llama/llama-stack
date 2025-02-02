@@ -43,9 +43,7 @@ class AggregationFunctionType(Enum):
 
 @json_schema_type
 class LLMAsJudgeScoringFnParams(BaseModel):
-    type: Literal[ScoringFnParamsType.llm_as_judge.value] = (
-        ScoringFnParamsType.llm_as_judge.value
-    )
+    type: Literal[ScoringFnParamsType.llm_as_judge.value] = ScoringFnParamsType.llm_as_judge.value
     judge_model: str
     prompt_template: Optional[str] = None
     judge_score_regexes: Optional[List[str]] = Field(
@@ -60,9 +58,7 @@ class LLMAsJudgeScoringFnParams(BaseModel):
 
 @json_schema_type
 class RegexParserScoringFnParams(BaseModel):
-    type: Literal[ScoringFnParamsType.regex_parser.value] = (
-        ScoringFnParamsType.regex_parser.value
-    )
+    type: Literal[ScoringFnParamsType.regex_parser.value] = ScoringFnParamsType.regex_parser.value
     parsing_regexes: Optional[List[str]] = Field(
         description="Regex to extract the answer from generated response",
         default_factory=list,
@@ -112,9 +108,7 @@ class CommonScoringFnFields(BaseModel):
 
 @json_schema_type
 class ScoringFn(CommonScoringFnFields, Resource):
-    type: Literal[ResourceType.scoring_function.value] = (
-        ResourceType.scoring_function.value
-    )
+    type: Literal[ResourceType.scoring_function.value] = ResourceType.scoring_function.value
 
     @property
     def scoring_fn_id(self) -> str:
@@ -141,9 +135,7 @@ class ScoringFunctions(Protocol):
     async def list_scoring_functions(self) -> ListScoringFunctionsResponse: ...
 
     @webmethod(route="/scoring-functions/{scoring_fn_id}", method="GET")
-    async def get_scoring_function(
-        self, scoring_fn_id: str, /
-    ) -> Optional[ScoringFn]: ...
+    async def get_scoring_function(self, scoring_fn_id: str, /) -> Optional[ScoringFn]: ...
 
     @webmethod(route="/scoring-functions", method="POST")
     async def register_scoring_function(

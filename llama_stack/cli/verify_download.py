@@ -72,9 +72,7 @@ def load_checksums(checklist_path: Path) -> Dict[str, str]:
     return checksums
 
 
-def verify_files(
-    model_dir: Path, checksums: Dict[str, str], console: Console
-) -> List[VerificationResult]:
+def verify_files(model_dir: Path, checksums: Dict[str, str], console: Console) -> List[VerificationResult]:
     results = []
 
     with Progress(

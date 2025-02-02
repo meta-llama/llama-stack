@@ -35,9 +35,7 @@ class NVIDIAConfig(BaseModel):
     """
 
     url: str = Field(
-        default_factory=lambda: os.getenv(
-            "NVIDIA_BASE_URL", "https://integrate.api.nvidia.com"
-        ),
+        default_factory=lambda: os.getenv("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com"),
         description="A base url for accessing the NVIDIA NIM",
     )
     api_key: Optional[SecretStr] = Field(

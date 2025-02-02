@@ -18,7 +18,5 @@ subset_of = ScoringFn(
     return_type=NumberType(),
     provider_id="basic",
     provider_resource_id="subset-of",
-    params=BasicScoringFnParams(
-        aggregation_functions=[AggregationFunctionType.accuracy]
-    ),
+    params=BasicScoringFnParams(aggregation_functions=[AggregationFunctionType.accuracy]),
 )

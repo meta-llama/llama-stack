@@ -83,9 +83,7 @@ class TokenResult(BaseModel):
 class Llama:
     @staticmethod
     def build(
-        config: Union[
-            MetaReferenceInferenceConfig, MetaReferenceQuantizedInferenceConfig
-        ],
+        config: Union[MetaReferenceInferenceConfig, MetaReferenceQuantizedInferenceConfig],
         model_id: str,
         llama_model: Model,
     ):
@@ -150,9 +148,9 @@ class Llama:
 
         checkpoints = sorted(Path(ckpt_dir).glob("*.pth"))
         assert len(checkpoints) > 0, f"no checkpoint files found in {ckpt_dir}"
-        assert model_parallel_size == len(
-            checkpoints
-        ), f"Loading a checkpoint for MP={len(checkpoints)} but world size is {model_parallel_size}"
+        assert model_parallel_size == len(checkpoints), (
+            f"Loading a checkpoint for MP={len(checkpoints)} but world size is {model_parallel_size}"
+        )
         ckpt_path = checkpoints[get_model_parallel_rank()]
         state_dict = torch.load(ckpt_path, map_location="cpu", weights_only=True)
         with open(Path(ckpt_dir) / "params.json", "r") as f:
@@ -168,9 +166,9 @@ class Llama:
         )
 
         tokenizer = Tokenizer.get_instance()
-        assert (
-            model_args.vocab_size == tokenizer.n_words
-        ), f"model_args vocab = {model_args.vocab_size} but tokenizer vocab = {tokenizer.n_words}"
+        assert model_args.vocab_size == tokenizer.n_words, (
+            f"model_args vocab = {model_args.vocab_size} but tokenizer vocab = {tokenizer.n_words}"
+        )
 
         if isinstance(config, MetaReferenceQuantizedInferenceConfig):
             if isinstance(config.quantization, Fp8QuantizationConfig):
@@ -193,10 +191,7 @@ class Llama:
                 model = convert_to_int4_quantized_model(model, model_args, config)
                 model.load_state_dict(state_dict, strict=True)
 
-                if (
-                    model_args.quantization_args is not None
-                    and model_args.quantization_args.spinquant
-                ):
+                if model_args.quantization_args is not None and model_args.quantization_args.spinquant:
                     # Add a wrapper for adding hadamard transform for spinquant.
                     # This needs to be done after loading the state dict otherwise an error will be raised while
                     # loading the state dict.
@@ -206,9 +201,7 @@ class Llama:
 
                     add_hadamard_transform_for_spinquant(model)
             else:
-                raise NotImplementedError(
-                    "Currently int4 and fp8 are the only supported quantization methods."
-                )
+                raise NotImplementedError("Currently int4 and fp8 are the only supported quantization methods.")
         else:
             if device == "cuda":
                 if torch.cuda.is_bf16_supported():
@@ -262,10 +255,7 @@ class Llama:
         params = self.model.params
 
         if print_input_tokens:
-            input_tokens = [
-                self.formatter.vision_token if t == 128256 else t
-                for t in model_input.tokens
-            ]
+            input_tokens = [self.formatter.vision_token if t == 128256 else t for t in model_input.tokens]
             log.info("Input to model -> " + self.tokenizer.decode(input_tokens))
         prompt_tokens = [model_input.tokens]
 
@@ -287,12 +277,10 @@ class Llama:
             mask = model_input.vision.mask if model_input.vision is not None else []
 
             # the method works for bsz > 1 so add a batch dimension
-            xattn_caches, cross_attention_masks, full_text_row_masked_out_mask = (
-                self.model.compute_vision_tokens_masks(
-                    batch_images=[images],
-                    batch_masks=[mask],
-                    total_len=total_len,
-                )
+            xattn_caches, cross_attention_masks, full_text_row_masked_out_mask = self.model.compute_vision_tokens_masks(
+                batch_images=[images],
+                batch_masks=[mask],
+                total_len=total_len,
             )
 
         pad_id = self.tokenizer.pad_id
@@ -340,9 +328,7 @@ class Llama:
 
             next_token = next_token.reshape(-1)
             # only replace token if prompt has already been generated
-            next_token = torch.where(
-                input_text_mask[:, cur_pos], tokens[:, cur_pos], next_token
-            )
+            next_token = torch.where(input_text_mask[:, cur_pos], tokens[:, cur_pos], next_token)
             tokens[:, cur_pos] = next_token
 
             target = tokens[:, prev_pos + 1 : cur_pos + 1]
@@ -365,17 +351,11 @@ class Llama:
                     reduction="none",
                     ignore_index=pad_id,
                 )
-            eos_reached |= (~input_text_mask[:, cur_pos]) & (
-                torch.isin(next_token, stop_tokens)
-            )
+            eos_reached |= (~input_text_mask[:, cur_pos]) & (torch.isin(next_token, stop_tokens))
             yield TokenResult(
                 token=next_token[0].item(),
                 text=self.tokenizer.decode(next_token.tolist()),
-                logprobs=(
-                    token_logprobs[:, cur_pos : cur_pos + 1][0].tolist()
-                    if logprobs
-                    else None
-                ),
+                logprobs=(token_logprobs[:, cur_pos : cur_pos + 1][0].tolist() if logprobs else None),
             )
 
             prev_pos = cur_pos
@@ -388,11 +368,7 @@ class Llama:
     ) -> Generator:
         sampling_params = request.sampling_params
         max_gen_len = sampling_params.max_tokens
-        if (
-            max_gen_len is None
-            or max_gen_len == 0
-            or max_gen_len >= self.model.params.max_seq_len
-        ):
+        if max_gen_len is None or max_gen_len == 0 or max_gen_len >= self.model.params.max_seq_len:
             max_gen_len = self.model.params.max_seq_len - 1
 
         model_input = self.formatter.encode_content(request.content)
@@ -417,11 +393,7 @@ class Llama:
     ) -> Generator:
         sampling_params = request.sampling_params
         max_gen_len = sampling_params.max_tokens
-        if (
-            max_gen_len is None
-            or max_gen_len == 0
-            or max_gen_len >= self.model.params.max_seq_len
-        ):
+        if max_gen_len is None or max_gen_len == 0 or max_gen_len >= self.model.params.max_seq_len:
             max_gen_len = self.model.params.max_seq_len - 1
 
         temperature, top_p = _infer_sampling_params(sampling_params)
@@ -473,9 +445,7 @@ class LogitsProcessor:
         self.token_enforcer = token_enforcer
         self.mask: Optional[torch.Tensor] = None
 
-    def process_logits(
-        self, tokens: torch.Tensor, scores: torch.Tensor
-    ) -> torch.Tensor:
+    def process_logits(self, tokens: torch.Tensor, scores: torch.Tensor) -> torch.Tensor:
         token_sequence = tokens[0, :].tolist()
         allowed_tokens = self.token_enforcer.get_allowed_tokens(token_sequence)
 
@@ -510,9 +480,7 @@ def get_logits_processor(
     return LogitsProcessor(token_enforcer)
 
 
-def _build_regular_tokens_list(
-    tokenizer: Tokenizer, vocab_size: int
-) -> List[Tuple[int, str, bool]]:
+def _build_regular_tokens_list(tokenizer: Tokenizer, vocab_size: int) -> List[Tuple[int, str, bool]]:
     token_0 = tokenizer.encode("0", bos=False, eos=False)[-1]
     regular_tokens = []
 

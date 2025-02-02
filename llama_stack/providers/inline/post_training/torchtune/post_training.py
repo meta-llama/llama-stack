@@ -119,9 +119,7 @@ class TorchtunePostTrainingImpl:
         return ListPostTrainingJobsResponse(data=self.jobs_list)
 
     @webmethod(route="/post-training/job/status")
-    async def get_training_job_status(
-        self, job_uuid: str
-    ) -> Optional[PostTrainingJobStatusResponse]:
+    async def get_training_job_status(self, job_uuid: str) -> Optional[PostTrainingJobStatusResponse]:
         if job_uuid in self.jobs_status:
             return self.jobs_status[job_uuid]
         return None
@@ -131,12 +129,8 @@ class TorchtunePostTrainingImpl:
         raise NotImplementedError("Job cancel is not implemented yet")
 
     @webmethod(route="/post-training/job/artifacts")
-    async def get_training_job_artifacts(
-        self, job_uuid: str
-    ) -> Optional[PostTrainingJobArtifactsResponse]:
+    async def get_training_job_artifacts(self, job_uuid: str) -> Optional[PostTrainingJobArtifactsResponse]:
         if job_uuid in self.checkpoints_dict:
             checkpoints = self.checkpoints_dict.get(job_uuid, [])
-            return PostTrainingJobArtifactsResponse(
-                job_uuid=job_uuid, checkpoints=checkpoints
-            )
+            return PostTrainingJobArtifactsResponse(job_uuid=job_uuid, checkpoints=checkpoints)
         return None

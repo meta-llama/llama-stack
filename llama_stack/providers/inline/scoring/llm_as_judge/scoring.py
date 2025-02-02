@@ -58,15 +58,13 @@ class LlmAsJudgeScoringImpl(
 
     async def list_scoring_functions(self) -> List[ScoringFn]:
         scoring_fn_defs_list = [
-            fn_def
-            for impl in self.scoring_fn_id_impls.values()
-            for fn_def in impl.get_supported_scoring_fn_defs()
+            fn_def for impl in self.scoring_fn_id_impls.values() for fn_def in impl.get_supported_scoring_fn_defs()
         ]
 
         for f in scoring_fn_defs_list:
-            assert f.identifier.startswith(
-                "llm-as-judge"
-            ), "All llm-as-judge scoring fn must have identifier prefixed with 'llm-as-judge'! "
+            assert f.identifier.startswith("llm-as-judge"), (
+                "All llm-as-judge scoring fn must have identifier prefixed with 'llm-as-judge'! "
+            )
 
         return scoring_fn_defs_list
 
@@ -80,9 +78,7 @@ class LlmAsJudgeScoringImpl(
         save_results_dataset: bool = False,
     ) -> ScoreBatchResponse:
         dataset_def = await self.datasets_api.get_dataset(dataset_id=dataset_id)
-        validate_dataset_schema(
-            dataset_def.dataset_schema, get_valid_schemas(Api.scoring.value)
-        )
+        validate_dataset_schema(dataset_def.dataset_schema, get_valid_schemas(Api.scoring.value))
 
         all_rows = await self.datasetio_api.get_rows_paginated(
             dataset_id=dataset_id,
@@ -112,12 +108,8 @@ class LlmAsJudgeScoringImpl(
                 raise ValueError(f"Scoring function {scoring_fn_id} is not supported.")
             scoring_fn = self.scoring_fn_id_impls[scoring_fn_id]
             scoring_fn_params = scoring_functions.get(scoring_fn_id, None)
-            score_results = await scoring_fn.score(
-                input_rows, scoring_fn_id, scoring_fn_params
-            )
-            agg_results = await scoring_fn.aggregate(
-                score_results, scoring_fn_id, scoring_fn_params
-            )
+            score_results = await scoring_fn.score(input_rows, scoring_fn_id, scoring_fn_params)
+            agg_results = await scoring_fn.aggregate(score_results, scoring_fn_id, scoring_fn_params)
             res[scoring_fn_id] = ScoringResult(
                 score_rows=score_results,
                 aggregated_results=agg_results,

@@ -14,7 +14,6 @@ from modules.utils import process_dataset
 
 
 def application_evaluation_page():
-
     st.set_page_config(page_title="Evaluations (Scoring)", page_icon="🦙")
     st.title("📊 Evaluations (Scoring)")
 
@@ -83,9 +82,7 @@ def application_evaluation_page():
                         try:
                             new_params[param_name] = json.loads(value)
                         except json.JSONDecodeError:
-                            st.error(
-                                f"Invalid JSON for **{param_name}** in {scoring_fn_id}"
-                            )
+                            st.error(f"Invalid JSON for **{param_name}** in {scoring_fn_id}")
 
                 st.json(new_params)
             scoring_params[scoring_fn_id] = new_params
@@ -128,9 +125,7 @@ def application_evaluation_page():
                     output_res[fn_id].append(score_res.results[fn_id].score_rows[0])
 
                 # Display current row results using separate containers
-                progress_text_container.write(
-                    f"Expand to see current processed result ({i + 1} / {len(rows)})"
-                )
+                progress_text_container.write(f"Expand to see current processed result ({i + 1} / {len(rows)})")
                 results_container.json(
                     score_res.to_json(),
                     expanded=2,

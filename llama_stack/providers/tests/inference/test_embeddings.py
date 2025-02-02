@@ -29,11 +29,7 @@ class TestEmbeddings:
         assert isinstance(response, EmbeddingsResponse)
         assert len(response.embeddings) > 0
         assert all(isinstance(embedding, list) for embedding in response.embeddings)
-        assert all(
-            isinstance(value, float)
-            for embedding in response.embeddings
-            for value in embedding
-        )
+        assert all(isinstance(value, float) for embedding in response.embeddings for value in embedding)
 
     @pytest.mark.asyncio
     async def test_batch_embeddings(self, inference_model, inference_stack):
@@ -53,11 +49,7 @@ class TestEmbeddings:
         assert isinstance(response, EmbeddingsResponse)
         assert len(response.embeddings) == len(texts)
         assert all(isinstance(embedding, list) for embedding in response.embeddings)
-        assert all(
-            isinstance(value, float)
-            for embedding in response.embeddings
-            for value in embedding
-        )
+        assert all(isinstance(value, float) for embedding in response.embeddings for value in embedding)
 
         embedding_dim = len(response.embeddings[0])
         assert all(len(embedding) == embedding_dim for embedding in response.embeddings)

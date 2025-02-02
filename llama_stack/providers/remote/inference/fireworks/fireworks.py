@@ -95,9 +95,7 @@ MODEL_ALIASES = [
 ]
 
 
-class FireworksInferenceAdapter(
-    ModelRegistryHelper, Inference, NeedsRequestProviderData
-):
+class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProviderData):
     def __init__(self, config: FireworksImplConfig) -> None:
         ModelRegistryHelper.__init__(self, MODEL_ALIASES)
         self.config = config
@@ -147,9 +145,7 @@ class FireworksInferenceAdapter(
         else:
             return await self._nonstream_completion(request)
 
-    async def _nonstream_completion(
-        self, request: CompletionRequest
-    ) -> CompletionResponse:
+    async def _nonstream_completion(self, request: CompletionRequest) -> CompletionResponse:
         params = await self._get_params(request)
         r = await self._get_client().completion.acreate(**params)
         return process_completion_response(r, self.formatter)
@@ -227,9 +223,7 @@ class FireworksInferenceAdapter(
         else:
             return await self._nonstream_chat_completion(request)
 
-    async def _nonstream_chat_completion(
-        self, request: ChatCompletionRequest
-    ) -> ChatCompletionResponse:
+    async def _nonstream_chat_completion(self, request: ChatCompletionRequest) -> ChatCompletionResponse:
         params = await self._get_params(request)
         if "messages" in params:
             r = await self._get_client().chat.completions.acreate(**params)
@@ -237,9 +231,7 @@ class FireworksInferenceAdapter(
             r = await self._get_client().completion.acreate(**params)
         return process_chat_completion_response(r, self.formatter)
 
-    async def _stream_chat_completion(
-        self, request: ChatCompletionRequest
-    ) -> AsyncGenerator:
+    async def _stream_chat_completion(self, request: ChatCompletionRequest) -> AsyncGenerator:
         params = await self._get_params(request)
 
         async def _to_async_generator():
@@ -251,34 +243,25 @@ class FireworksInferenceAdapter(
                 yield chunk
 
         stream = _to_async_generator()
-        async for chunk in process_chat_completion_stream_response(
-            stream, self.formatter
-        ):
+        async for chunk in process_chat_completion_stream_response(stream, self.formatter):
             yield chunk
 
-    async def _get_params(
-        self, request: Union[ChatCompletionRequest, CompletionRequest]
-    ) -> dict:
+    async def _get_params(self, request: Union[ChatCompletionRequest, CompletionRequest]) -> dict:
         input_dict = {}
         media_present = request_has_media(request)
 
         if isinstance(request, ChatCompletionRequest):
             if media_present:
                 input_dict["messages"] = [
-                    await convert_message_to_openai_dict(m, download=True)
-                    for m in request.messages
+                    await convert_message_to_openai_dict(m, download=True) for m in request.messages
                 ]
             else:
                 input_dict["prompt"] = await chat_completion_request_to_prompt(
                     request, self.get_llama_model(request.model), self.formatter
                 )
         else:
-            assert (
-                not media_present
-            ), "Fireworks does not support media for Completion requests"
-            input_dict["prompt"] = await completion_request_to_prompt(
-                request, self.formatter
-            )
+            assert not media_present, "Fireworks does not support media for Completion requests"
+            input_dict["prompt"] = await completion_request_to_prompt(request, self.formatter)
 
         # Fireworks always prepends with BOS
         if "prompt" in input_dict:
@@ -289,9 +272,7 @@ class FireworksInferenceAdapter(
             "model": request.model,
             **input_dict,
             "stream": request.stream,
-            **self._build_options(
-                request.sampling_params, request.response_format, request.logprobs
-            ),
+            **self._build_options(request.sampling_params, request.response_format, request.logprobs),
         }
 
     async def embeddings(
@@ -304,9 +285,9 @@ class FireworksInferenceAdapter(
         kwargs = {}
         if model.metadata.get("embedding_dimensions"):
             kwargs["dimensions"] = model.metadata.get("embedding_dimensions")
-        assert all(
-            not content_has_media(content) for content in contents
-        ), "Fireworks does not support media for embeddings"
+        assert all(not content_has_media(content) for content in contents), (
+            "Fireworks does not support media for embeddings"
+        )
         response = self._get_client().embeddings.create(
             model=model.provider_resource_id,
             input=[interleaved_content_as_str(content) for content in contents],

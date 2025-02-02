@@ -59,10 +59,7 @@ class FaissIndex(EmbeddingIndex):
 
         if stored_data:
             data = json.loads(stored_data)
-            self.chunk_by_index = {
-                int(k): Chunk.model_validate_json(v)
-                for k, v in data["chunk_by_index"].items()
-            }
+            self.chunk_by_index = {int(k): Chunk.model_validate_json(v) for k, v in data["chunk_by_index"].items()}
 
             buffer = io.BytesIO(base64.b64decode(data["faiss_index"]))
             self.index = faiss.deserialize_index(np.loadtxt(buffer, dtype=np.uint8))
@@ -75,9 +72,7 @@ class FaissIndex(EmbeddingIndex):
         buffer = io.BytesIO()
         np.savetxt(buffer, np_index)
         data = {
-            "chunk_by_index": {
-                k: v.model_dump_json() for k, v in self.chunk_by_index.items()
-            },
+            "chunk_by_index": {k: v.model_dump_json() for k, v in self.chunk_by_index.items()},
             "faiss_index": base64.b64encode(buffer.getvalue()).decode("utf-8"),
         }
 
@@ -92,13 +87,9 @@ class FaissIndex(EmbeddingIndex):
 
     async def add_chunks(self, chunks: List[Chunk], embeddings: NDArray):
         # Add dimension check
-        embedding_dim = (
-            embeddings.shape[1] if len(embeddings.shape) > 1 else embeddings.shape[0]
-        )
+        embedding_dim = embeddings.shape[1] if len(embeddings.shape) > 1 else embeddings.shape[0]
         if embedding_dim != self.index.d:
-            raise ValueError(
-                f"Embedding dimension mismatch. Expected {self.index.d}, got {embedding_dim}"
-            )
+            raise ValueError(f"Embedding dimension mismatch. Expected {self.index.d}, got {embedding_dim}")
 
         indexlen = len(self.chunk_by_index)
         for i, chunk in enumerate(chunks):
@@ -109,12 +100,8 @@ class FaissIndex(EmbeddingIndex):
         # Save updated index
         await self._save_index()
 
-    async def query(
-        self, embedding: NDArray, k: int, score_threshold: float
-    ) -> QueryChunksResponse:
-        distances, indices = self.index.search(
-            embedding.reshape(1, -1).astype(np.float32), k
-        )
+    async def query(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
+        distances, indices = self.index.search(embedding.reshape(1, -1).astype(np.float32), k)
 
         chunks = []
         scores = []
@@ -145,9 +132,7 @@ class FaissVectorIOImpl(VectorIO, VectorDBsProtocolPrivate):
             vector_db = VectorDB.model_validate_json(vector_db_data)
             index = VectorDBWithIndex(
                 vector_db,
-                await FaissIndex.create(
-                    vector_db.embedding_dimension, self.kvstore, vector_db.identifier
-                ),
+                await FaissIndex.create(vector_db.embedding_dimension, self.kvstore, vector_db.identifier),
                 self.inference_api,
             )
             self.cache[vector_db.identifier] = index
@@ -169,9 +154,7 @@ class FaissVectorIOImpl(VectorIO, VectorDBsProtocolPrivate):
         # Store in cache
         self.cache[vector_db.identifier] = VectorDBWithIndex(
             vector_db=vector_db,
-            index=await FaissIndex.create(
-                vector_db.embedding_dimension, self.kvstore, vector_db.identifier
-            ),
+            index=await FaissIndex.create(vector_db.embedding_dimension, self.kvstore, vector_db.identifier),
             inference_api=self.inference_api,
         )
 
@@ -195,9 +178,7 @@ class FaissVectorIOImpl(VectorIO, VectorDBsProtocolPrivate):
     ) -> None:
         index = self.cache.get(vector_db_id)
         if index is None:
-            raise ValueError(
-                f"Vector DB {vector_db_id} not found. found: {self.cache.keys()}"
-            )
+            raise ValueError(f"Vector DB {vector_db_id} not found. found: {self.cache.keys()}")
 
         await index.insert_chunks(chunks)
 

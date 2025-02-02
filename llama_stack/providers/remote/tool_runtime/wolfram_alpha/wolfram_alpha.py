@@ -23,9 +23,7 @@ from llama_stack.providers.datatypes import ToolsProtocolPrivate
 from .config import WolframAlphaToolConfig
 
 
-class WolframAlphaToolRuntimeImpl(
-    ToolsProtocolPrivate, ToolRuntime, NeedsRequestProviderData
-):
+class WolframAlphaToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, NeedsRequestProviderData):
     def __init__(self, config: WolframAlphaToolConfig):
         self.config = config
         self.url = "https://api.wolframalpha.com/v2/query"
@@ -67,9 +65,7 @@ class WolframAlphaToolRuntimeImpl(
             )
         ]
 
-    async def invoke_tool(
-        self, tool_name: str, kwargs: Dict[str, Any]
-    ) -> ToolInvocationResult:
+    async def invoke_tool(self, tool_name: str, kwargs: Dict[str, Any]) -> ToolInvocationResult:
         api_key = self._get_api_key()
         params = {
             "input": kwargs["query"],
@@ -82,9 +78,7 @@ class WolframAlphaToolRuntimeImpl(
             params=params,
         )
 
-        return ToolInvocationResult(
-            content=json.dumps(self._clean_wolfram_alpha_response(response.json()))
-        )
+        return ToolInvocationResult(content=json.dumps(self._clean_wolfram_alpha_response(response.json())))
 
     def _clean_wolfram_alpha_response(self, wa_response):
         remove = {
@@ -128,10 +122,7 @@ class WolframAlphaToolRuntimeImpl(
                         for sub_key in key_to_remove:
                             if sub_key == "pods":
                                 for i in range(len(wa_response[main_key][sub_key])):
-                                    if (
-                                        wa_response[main_key][sub_key][i]["title"]
-                                        == "Result"
-                                    ):
+                                    if wa_response[main_key][sub_key][i]["title"] == "Result":
                                         del wa_response[main_key][sub_key][i + 1 :]
                                         break
                             sub_items = wa_response[main_key][sub_key]

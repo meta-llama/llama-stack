@@ -86,9 +86,7 @@ class ShieldCallStep(StepCommon):
 
 @json_schema_type
 class MemoryRetrievalStep(StepCommon):
-    step_type: Literal[StepType.memory_retrieval.value] = (
-        StepType.memory_retrieval.value
-    )
+    step_type: Literal[StepType.memory_retrieval.value] = StepType.memory_retrieval.value
     vector_db_ids: str
     inserted_context: InterleavedContent
 
@@ -184,9 +182,7 @@ class AgentTurnResponseEventType(Enum):
 
 @json_schema_type
 class AgentTurnResponseStepStartPayload(BaseModel):
-    event_type: Literal[AgentTurnResponseEventType.step_start.value] = (
-        AgentTurnResponseEventType.step_start.value
-    )
+    event_type: Literal[AgentTurnResponseEventType.step_start.value] = AgentTurnResponseEventType.step_start.value
     step_type: StepType
     step_id: str
     metadata: Optional[Dict[str, Any]] = Field(default_factory=dict)
@@ -194,9 +190,7 @@ class AgentTurnResponseStepStartPayload(BaseModel):
 
 @json_schema_type
 class AgentTurnResponseStepCompletePayload(BaseModel):
-    event_type: Literal[AgentTurnResponseEventType.step_complete.value] = (
-        AgentTurnResponseEventType.step_complete.value
-    )
+    event_type: Literal[AgentTurnResponseEventType.step_complete.value] = AgentTurnResponseEventType.step_complete.value
     step_type: StepType
     step_id: str
     step_details: Step
@@ -206,9 +200,7 @@ class AgentTurnResponseStepCompletePayload(BaseModel):
 class AgentTurnResponseStepProgressPayload(BaseModel):
     model_config = ConfigDict(protected_namespaces=())
 
-    event_type: Literal[AgentTurnResponseEventType.step_progress.value] = (
-        AgentTurnResponseEventType.step_progress.value
-    )
+    event_type: Literal[AgentTurnResponseEventType.step_progress.value] = AgentTurnResponseEventType.step_progress.value
     step_type: StepType
     step_id: str
 
@@ -217,17 +209,13 @@ class AgentTurnResponseStepProgressPayload(BaseModel):
 
 @json_schema_type
 class AgentTurnResponseTurnStartPayload(BaseModel):
-    event_type: Literal[AgentTurnResponseEventType.turn_start.value] = (
-        AgentTurnResponseEventType.turn_start.value
-    )
+    event_type: Literal[AgentTurnResponseEventType.turn_start.value] = AgentTurnResponseEventType.turn_start.value
     turn_id: str
 
 
 @json_schema_type
 class AgentTurnResponseTurnCompletePayload(BaseModel):
-    event_type: Literal[AgentTurnResponseEventType.turn_complete.value] = (
-        AgentTurnResponseEventType.turn_complete.value
-    )
+    event_type: Literal[AgentTurnResponseEventType.turn_complete.value] = AgentTurnResponseEventType.turn_complete.value
     turn: Turn
 
 
@@ -329,9 +317,7 @@ class Agents(Protocol):
         toolgroups: Optional[List[AgentToolGroup]] = None,
     ) -> Union[Turn, AsyncIterator[AgentTurnResponseStreamChunk]]: ...
 
-    @webmethod(
-        route="/agents/{agent_id}/session/{session_id}/turn/{turn_id}", method="GET"
-    )
+    @webmethod(route="/agents/{agent_id}/session/{session_id}/turn/{turn_id}", method="GET")
     async def get_agents_turn(
         self,
         agent_id: str,

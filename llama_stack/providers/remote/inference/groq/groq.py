@@ -99,9 +99,7 @@ class GroqInferenceAdapter(Inference, ModelRegistryHelper, NeedsRequestProviderD
         tool_prompt_format: Optional[ToolPromptFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
-    ) -> Union[
-        ChatCompletionResponse, AsyncIterator[ChatCompletionResponseStreamChunk]
-    ]:
+    ) -> Union[ChatCompletionResponse, AsyncIterator[ChatCompletionResponseStreamChunk]]:
         model_id = self.get_provider_model_id(model_id)
         if model_id == "llama-3.2-3b-preview":
             warnings.warn(
@@ -129,9 +127,7 @@ class GroqInferenceAdapter(Inference, ModelRegistryHelper, NeedsRequestProviderD
         except groq.BadRequestError as e:
             if e.body.get("error", {}).get("code") == "tool_use_failed":
                 # For smaller models, Groq may fail to call a tool even when the request is well formed
-                raise ValueError(
-                    "Groq failed to call a tool", e.body.get("error", {})
-                ) from e
+                raise ValueError("Groq failed to call a tool", e.body.get("error", {})) from e
             else:
                 raise e
 

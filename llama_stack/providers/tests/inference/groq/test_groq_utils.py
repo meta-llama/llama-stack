@@ -162,9 +162,7 @@ class TestConvertChatCompletionRequest:
 
     def test_includes_stratgy(self):
         request = self._dummy_chat_completion_request()
-        request.sampling_params.strategy = TopPSamplingStrategy(
-            temperature=0.5, top_p=0.95
-        )
+        request.sampling_params.strategy = TopPSamplingStrategy(temperature=0.5, top_p=0.95)
 
         converted = convert_chat_completion_request(request)
 
@@ -375,9 +373,7 @@ class TestConvertNonStreamChatCompletionResponse:
             choices=[
                 Choice(
                     index=0,
-                    message=ChatCompletionMessage(
-                        role="assistant", content="Hello World"
-                    ),
+                    message=ChatCompletionMessage(role="assistant", content="Hello World"),
                     finish_reason="stop",
                 )
             ],

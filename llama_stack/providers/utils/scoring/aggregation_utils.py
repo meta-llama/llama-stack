@@ -23,9 +23,7 @@ def aggregate_accuracy(scoring_results: List[ScoringResultRow]) -> Dict[str, Any
 
 def aggregate_average(scoring_results: List[ScoringResultRow]) -> Dict[str, Any]:
     return {
-        "average": sum(
-            result["score"] for result in scoring_results if result["score"] is not None
-        )
+        "average": sum(result["score"] for result in scoring_results if result["score"] is not None)
         / len([_ for _ in scoring_results if _["score"] is not None]),
     }
 

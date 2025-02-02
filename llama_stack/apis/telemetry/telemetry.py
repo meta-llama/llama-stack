@@ -102,9 +102,7 @@ class StructuredLogType(Enum):
 
 @json_schema_type
 class SpanStartPayload(BaseModel):
-    type: Literal[StructuredLogType.SPAN_START.value] = (
-        StructuredLogType.SPAN_START.value
-    )
+    type: Literal[StructuredLogType.SPAN_START.value] = StructuredLogType.SPAN_START.value
     name: str
     parent_span_id: Optional[str] = None
 
@@ -190,9 +188,7 @@ class QuerySpanTreeResponse(BaseModel):
 @runtime_checkable
 class Telemetry(Protocol):
     @webmethod(route="/telemetry/events", method="POST")
-    async def log_event(
-        self, event: Event, ttl_seconds: int = DEFAULT_TTL_DAYS * 86400
-    ) -> None: ...
+    async def log_event(self, event: Event, ttl_seconds: int = DEFAULT_TTL_DAYS * 86400) -> None: ...
 
     @webmethod(route="/telemetry/traces", method="GET")
     async def query_traces(

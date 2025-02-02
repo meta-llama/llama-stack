@@ -68,9 +68,7 @@ class RefreshableBotoSession:
 
         # if sts_arn is given, get credential by assuming the given role
         if self.sts_arn:
-            sts_client = session.client(
-                service_name="sts", region_name=self.region_name
-            )
+            sts_client = session.client(service_name="sts", region_name=self.region_name)
             response = sts_client.assume_role(
                 RoleArn=self.sts_arn,
                 RoleSessionName=self.session_name,

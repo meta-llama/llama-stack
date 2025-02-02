@@ -39,9 +39,7 @@ log = logging.getLogger(__name__)
 
 
 def make_random_string(length: int = 8):
-    return "".join(
-        secrets.choice(string.ascii_letters + string.digits) for _ in range(length)
-    )
+    return "".join(secrets.choice(string.ascii_letters + string.digits) for _ in range(length))
 
 
 class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
@@ -120,9 +118,7 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
             return RAGQueryResult(content=None)
 
         # sort by score
-        chunks, scores = zip(
-            *sorted(zip(chunks, scores), key=lambda x: x[1], reverse=True)
-        )
+        chunks, scores = zip(*sorted(zip(chunks, scores), key=lambda x: x[1], reverse=True))
 
         tokens = 0
         picked = []
@@ -169,9 +165,7 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
             ),
         ]
 
-    async def invoke_tool(
-        self, tool_name: str, kwargs: Dict[str, Any]
-    ) -> ToolInvocationResult:
+    async def invoke_tool(self, tool_name: str, kwargs: Dict[str, Any]) -> ToolInvocationResult:
         raise RuntimeError(
             "This toolgroup should not be called generically but only through specific methods of the RAGToolRuntime protocol"
         )

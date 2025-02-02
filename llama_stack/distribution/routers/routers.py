@@ -85,9 +85,7 @@ class VectorIORouter(VectorIO):
         chunks: List[Chunk],
         ttl_seconds: Optional[int] = None,
     ) -> None:
-        return await self.routing_table.get_provider_impl(vector_db_id).insert_chunks(
-            vector_db_id, chunks, ttl_seconds
-        )
+        return await self.routing_table.get_provider_impl(vector_db_id).insert_chunks(vector_db_id, chunks, ttl_seconds)
 
     async def query_chunks(
         self,
@@ -95,9 +93,7 @@ class VectorIORouter(VectorIO):
         query: InterleavedContent,
         params: Optional[Dict[str, Any]] = None,
     ) -> QueryChunksResponse:
-        return await self.routing_table.get_provider_impl(vector_db_id).query_chunks(
-            vector_db_id, query, params
-        )
+        return await self.routing_table.get_provider_impl(vector_db_id).query_chunks(vector_db_id, query, params)
 
 
 class InferenceRouter(Inference):
@@ -123,9 +119,7 @@ class InferenceRouter(Inference):
         metadata: Optional[Dict[str, Any]] = None,
         model_type: Optional[ModelType] = None,
     ) -> None:
-        await self.routing_table.register_model(
-            model_id, provider_model_id, provider_id, metadata, model_type
-        )
+        await self.routing_table.register_model(model_id, provider_model_id, provider_id, metadata, model_type)
 
     async def chat_completion(
         self,
@@ -143,9 +137,7 @@ class InferenceRouter(Inference):
         if model is None:
             raise ValueError(f"Model '{model_id}' not found")
         if model.model_type == ModelType.embedding:
-            raise ValueError(
-                f"Model '{model_id}' is an embedding model and does not support chat completions"
-            )
+            raise ValueError(f"Model '{model_id}' is an embedding model and does not support chat completions")
         params = dict(
             model_id=model_id,
             messages=messages,
@@ -176,9 +168,7 @@ class InferenceRouter(Inference):
         if model is None:
             raise ValueError(f"Model '{model_id}' not found")
         if model.model_type == ModelType.embedding:
-            raise ValueError(
-                f"Model '{model_id}' is an embedding model and does not support chat completions"
-            )
+            raise ValueError(f"Model '{model_id}' is an embedding model and does not support chat completions")
         provider = self.routing_table.get_provider_impl(model_id)
         params = dict(
             model_id=model_id,
@@ -202,9 +192,7 @@ class InferenceRouter(Inference):
         if model is None:
             raise ValueError(f"Model '{model_id}' not found")
         if model.model_type == ModelType.llm:
-            raise ValueError(
-                f"Model '{model_id}' is an LLM model and does not support embeddings"
-            )
+            raise ValueError(f"Model '{model_id}' is an LLM model and does not support embeddings")
         return await self.routing_table.get_provider_impl(model_id).embeddings(
             model_id=model_id,
             contents=contents,
@@ -231,9 +219,7 @@ class SafetyRouter(Safety):
         provider_id: Optional[str] = None,
         params: Optional[Dict[str, Any]] = None,
     ) -> Shield:
-        return await self.routing_table.register_shield(
-            shield_id, provider_shield_id, provider_id, params
-        )
+        return await self.routing_table.register_shield(shield_id, provider_shield_id, provider_id, params)
 
     async def run_shield(
         self,
@@ -268,9 +254,7 @@ class DatasetIORouter(DatasetIO):
         page_token: Optional[str] = None,
         filter_condition: Optional[str] = None,
     ) -> PaginatedRowsResult:
-        return await self.routing_table.get_provider_impl(
-            dataset_id
-        ).get_rows_paginated(
+        return await self.routing_table.get_provider_impl(dataset_id).get_rows_paginated(
             dataset_id=dataset_id,
             rows_in_page=rows_in_page,
             page_token=page_token,
@@ -305,9 +289,7 @@ class ScoringRouter(Scoring):
     ) -> ScoreBatchResponse:
         res = {}
         for fn_identifier in scoring_functions.keys():
-            score_response = await self.routing_table.get_provider_impl(
-                fn_identifier
-            ).score_batch(
+            score_response = await self.routing_table.get_provider_impl(fn_identifier).score_batch(
                 dataset_id=dataset_id,
                 scoring_functions={fn_identifier: scoring_functions[fn_identifier]},
             )
@@ -328,9 +310,7 @@ class ScoringRouter(Scoring):
         res = {}
         # look up and map each scoring function to its provider impl
         for fn_identifier in scoring_functions.keys():
-            score_response = await self.routing_table.get_provider_impl(
-                fn_identifier
-            ).score(
+            score_response = await self.routing_table.get_provider_impl(fn_identifier).score(
                 input_rows=input_rows,
                 scoring_functions={fn_identifier: scoring_functions[fn_identifier]},
             )
@@ -381,9 +361,7 @@ class EvalRouter(Eval):
         task_id: str,
         job_id: str,
     ) -> Optional[JobStatus]:
-        return await self.routing_table.get_provider_impl(task_id).job_status(
-            task_id, job_id
-        )
+        return await self.routing_table.get_provider_impl(task_id).job_status(task_id, job_id)
 
     async def job_cancel(
         self,
@@ -420,9 +398,9 @@ class ToolRuntimeRouter(ToolRuntime):
             vector_db_ids: List[str],
             query_config: Optional[RAGQueryConfig] = None,
         ) -> RAGQueryResult:
-            return await self.routing_table.get_provider_impl(
-                "query_from_memory"
-            ).query(content, vector_db_ids, query_config)
+            return await self.routing_table.get_provider_impl("query_from_memory").query(
+                content, vector_db_ids, query_config
+            )
 
         async def insert(
             self,
@@ -430,9 +408,9 @@ class ToolRuntimeRouter(ToolRuntime):
             vector_db_id: str,
             chunk_size_in_tokens: int = 512,
         ) -> None:
-            return await self.routing_table.get_provider_impl(
-                "insert_into_memory"
-            ).insert(documents, vector_db_id, chunk_size_in_tokens)
+            return await self.routing_table.get_provider_impl("insert_into_memory").insert(
+                documents, vector_db_id, chunk_size_in_tokens
+            )
 
     def __init__(
         self,
@@ -460,6 +438,4 @@ class ToolRuntimeRouter(ToolRuntime):
     async def list_runtime_tools(
         self, tool_group_id: Optional[str] = None, mcp_endpoint: Optional[URL] = None
     ) -> List[ToolDef]:
-        return await self.routing_table.get_provider_impl(tool_group_id).list_tools(
-            tool_group_id, mcp_endpoint
-        )
+        return await self.routing_table.get_provider_impl(tool_group_id).list_tools(tool_group_id, mcp_endpoint)

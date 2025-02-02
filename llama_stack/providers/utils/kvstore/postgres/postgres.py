@@ -46,7 +46,6 @@ class PostgresKVStoreImpl(KVStore):
                 """
             )
         except Exception as e:
-
             log.exception("Could not connect to PostgreSQL database server")
             raise RuntimeError("Could not connect to PostgreSQL database server") from e
 
@@ -55,9 +54,7 @@ class PostgresKVStoreImpl(KVStore):
             return key
         return f"{self.config.namespace}:{key}"
 
-    async def set(
-        self, key: str, value: str, expiration: Optional[datetime] = None
-    ) -> None:
+    async def set(self, key: str, value: str, expiration: Optional[datetime] = None) -> None:
         key = self._namespaced_key(key)
         self.cursor.execute(
             f"""

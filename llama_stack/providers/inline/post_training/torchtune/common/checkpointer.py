@@ -42,9 +42,7 @@ class TorchtuneCheckpointer:
         self._model_type = ModelType[model_type]
         self._output_dir = output_dir
         # get ckpt paths
-        self._checkpoint_path = Path.joinpath(
-            self._checkpoint_dir, self._checkpoint_file
-        )
+        self._checkpoint_path = Path.joinpath(self._checkpoint_dir, self._checkpoint_file)
 
     def load_checkpoint(self) -> Dict[str, Any]:
         """
@@ -57,13 +55,9 @@ class TorchtuneCheckpointer:
                 llama3_vision_meta_to_tune,
             )
 
-            state_dict[training.MODEL_KEY] = llama3_vision_meta_to_tune(
-                model_state_dict
-            )
+            state_dict[training.MODEL_KEY] = llama3_vision_meta_to_tune(model_state_dict)
         else:
-            state_dict[training.MODEL_KEY] = convert_weights.meta_to_tune(
-                model_state_dict
-            )
+            state_dict[training.MODEL_KEY] = convert_weights.meta_to_tune(model_state_dict)
 
         # llama3_2 has tied weights, so we need to remove the output.weight key
         if self._model_type == ModelType.LLAMA3_2:
@@ -82,10 +76,7 @@ class TorchtuneCheckpointer:
         epoch: int,
         adapter_only: bool = False,
     ) -> str:
-        model_file_path = (
-            Path(self._output_dir)
-            / f"{self._model_id}-{self._training_algorithm}-{epoch}"
-        )
+        model_file_path = Path(self._output_dir) / f"{self._model_id}-{self._training_algorithm}-{epoch}"
 
         model_file_path.mkdir(parents=True, exist_ok=True)
 
@@ -116,22 +107,13 @@ class TorchtuneCheckpointer:
                     llama3_vision_tune_to_meta,
                 )
 
-                state_dict[training.MODEL_KEY] = llama3_vision_tune_to_meta(
-                    model_state_dict
-                )
+                state_dict[training.MODEL_KEY] = llama3_vision_tune_to_meta(model_state_dict)
             else:
                 # llama3_2 has tied weights, so we need to add the output.weight key
-                if (
-                    self._model_type == ModelType.LLAMA3_2
-                    and "output.weight" not in model_state_dict
-                ):
-                    model_state_dict["output.weight"] = model_state_dict[
-                        "tok_embeddings.weight"
-                    ]
+                if self._model_type == ModelType.LLAMA3_2 and "output.weight" not in model_state_dict:
+                    model_state_dict["output.weight"] = model_state_dict["tok_embeddings.weight"]
 
-                state_dict[training.MODEL_KEY] = convert_weights.tune_to_meta(
-                    model_state_dict
-                )
+                state_dict[training.MODEL_KEY] = convert_weights.tune_to_meta(model_state_dict)
 
             model_file_name = Path.joinpath(model_file_path, "consolidated.00.pth")
 

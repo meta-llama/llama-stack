@@ -35,9 +35,9 @@ class WeaviateIndex(EmbeddingIndex):
         self.collection_name = collection_name
 
     async def add_chunks(self, chunks: List[Chunk], embeddings: NDArray):
-        assert len(chunks) == len(
-            embeddings
-        ), f"Chunk length {len(chunks)} does not match embedding length {len(embeddings)}"
+        assert len(chunks) == len(embeddings), (
+            f"Chunk length {len(chunks)} does not match embedding length {len(embeddings)}"
+        )
 
         data_objects = []
         for i, chunk in enumerate(chunks):
@@ -56,9 +56,7 @@ class WeaviateIndex(EmbeddingIndex):
         # TODO: make this async friendly
         collection.data.insert_many(data_objects)
 
-    async def query(
-        self, embedding: NDArray, k: int, score_threshold: float
-    ) -> QueryChunksResponse:
+    async def query(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
         collection = self.client.collections.get(self.collection_name)
 
         results = collection.query.near_vector(
@@ -85,9 +83,7 @@ class WeaviateIndex(EmbeddingIndex):
 
     async def delete(self, chunk_ids: List[str]) -> None:
         collection = self.client.collections.get(self.collection_name)
-        collection.data.delete_many(
-            where=Filter.by_property("id").contains_any(chunk_ids)
-        )
+        collection.data.delete_many(where=Filter.by_property("id").contains_any(chunk_ids))
 
 
 class WeaviateMemoryAdapter(
@@ -149,9 +145,7 @@ class WeaviateMemoryAdapter(
             self.inference_api,
         )
 
-    async def _get_and_cache_vector_db_index(
-        self, vector_db_id: str
-    ) -> Optional[VectorDBWithIndex]:
+    async def _get_and_cache_vector_db_index(self, vector_db_id: str) -> Optional[VectorDBWithIndex]:
         if vector_db_id in self.cache:
             return self.cache[vector_db_id]
 

@@ -64,9 +64,7 @@ RAGQueryGeneratorConfig = register_schema(
 class RAGQueryConfig(BaseModel):
     # This config defines how a query is generated using the messages
     # for memory bank retrieval.
-    query_generator_config: RAGQueryGeneratorConfig = Field(
-        default=DefaultRAGQueryGeneratorConfig()
-    )
+    query_generator_config: RAGQueryGeneratorConfig = Field(default=DefaultRAGQueryGeneratorConfig())
     max_tokens_in_context: int = 4096
     max_chunks: int = 5
 

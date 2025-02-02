@@ -23,9 +23,7 @@ from llama_stack.providers.datatypes import ToolsProtocolPrivate
 from .config import TavilySearchToolConfig
 
 
-class TavilySearchToolRuntimeImpl(
-    ToolsProtocolPrivate, ToolRuntime, NeedsRequestProviderData
-):
+class TavilySearchToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, NeedsRequestProviderData):
     def __init__(self, config: TavilySearchToolConfig):
         self.config = config
 
@@ -66,18 +64,14 @@ class TavilySearchToolRuntimeImpl(
             )
         ]
 
-    async def invoke_tool(
-        self, tool_name: str, kwargs: Dict[str, Any]
-    ) -> ToolInvocationResult:
+    async def invoke_tool(self, tool_name: str, kwargs: Dict[str, Any]) -> ToolInvocationResult:
         api_key = self._get_api_key()
         response = requests.post(
             "https://api.tavily.com/search",
             json={"api_key": api_key, "query": kwargs["query"]},
         )
 
-        return ToolInvocationResult(
-            content=json.dumps(self._clean_tavily_response(response.json()))
-        )
+        return ToolInvocationResult(content=json.dumps(self._clean_tavily_response(response.json())))
 
     def _clean_tavily_response(self, search_response, top_k=3):
         return {"query": search_response["query"], "top_k": search_response["results"]}

@@ -150,8 +150,6 @@ class ToolRuntime(Protocol):
     ) -> List[ToolDef]: ...
 
     @webmethod(route="/tool-runtime/invoke", method="POST")
-    async def invoke_tool(
-        self, tool_name: str, kwargs: Dict[str, Any]
-    ) -> ToolInvocationResult:
+    async def invoke_tool(self, tool_name: str, kwargs: Dict[str, Any]) -> ToolInvocationResult:
         """Run a tool with the given arguments"""
         ...

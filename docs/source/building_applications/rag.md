@@ -34,15 +34,16 @@ chunks = [
     {
         "document_id": "doc1",
         "content": "Your document text here",
-        "mime_type": "text/plain"
+        "mime_type": "text/plain",
     },
-    ...
+    ...,
 ]
 client.vector_io.insert(vector_db_id, chunks)
 
 # You can then query for these chunks
-chunks_response = client.vector_io.query(vector_db_id, query="What do you know about...")
-
+chunks_response = client.vector_io.query(
+    vector_db_id, query="What do you know about..."
+)
 ```
 
 ### Using the RAG Tool
@@ -81,7 +82,6 @@ results = client.tool_runtime.rag_tool.query(
 One of the most powerful patterns is combining agents with RAG capabilities. Here's a complete example:
 
 ```python
-
 # Configure agent with memory
 agent_config = AgentConfig(
     model="Llama3.2-3B-Instruct",
@@ -91,9 +91,9 @@ agent_config = AgentConfig(
             "name": "builtin::rag",
             "args": {
                 "vector_db_ids": [vector_db_id],
-            }
+            },
         }
-    ]
+    ],
 )
 
 agent = Agent(client, agent_config)
@@ -101,25 +101,21 @@ session_id = agent.create_session("rag_session")
 
 # Initial document ingestion
 response = agent.create_turn(
-    messages=[{
-        "role": "user",
-        "content": "I am providing some documents for reference."
-    }],
+    messages=[
+        {"role": "user", "content": "I am providing some documents for reference."}
+    ],
     documents=[
         dict(
             content="https://raw.githubusercontent.com/example/doc.rst",
-            mime_type="text/plain"
+            mime_type="text/plain",
         )
     ],
-    session_id=session_id
+    session_id=session_id,
 )
 
 # Query with RAG
 response = agent.create_turn(
-    messages=[{
-        "role": "user",
-        "content": "What are the key topics in the documents?"
-    }],
-    session_id=session_id
+    messages=[{"role": "user", "content": "What are the key topics in the documents?"}],
+    session_id=session_id,
 )
 ```

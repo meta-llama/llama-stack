@@ -89,9 +89,7 @@ class QATFinetuningConfig(BaseModel):
 
 
 AlgorithmConfig = register_schema(
-    Annotated[
-        Union[LoraFinetuningConfig, QATFinetuningConfig], Field(discriminator="type")
-    ],
+    Annotated[Union[LoraFinetuningConfig, QATFinetuningConfig], Field(discriminator="type")],
     name="AlgorithmConfig",
 )
 
@@ -204,14 +202,10 @@ class PostTraining(Protocol):
     async def get_training_jobs(self) -> ListPostTrainingJobsResponse: ...
 
     @webmethod(route="/post-training/job/status", method="GET")
-    async def get_training_job_status(
-        self, job_uuid: str
-    ) -> Optional[PostTrainingJobStatusResponse]: ...
+    async def get_training_job_status(self, job_uuid: str) -> Optional[PostTrainingJobStatusResponse]: ...
 
     @webmethod(route="/post-training/job/cancel", method="POST")
     async def cancel_training_job(self, job_uuid: str) -> None: ...
 
     @webmethod(route="/post-training/job/artifacts", method="GET")
-    async def get_training_job_artifacts(
-        self, job_uuid: str
-    ) -> Optional[PostTrainingJobArtifactsResponse]: ...
+    async def get_training_job_artifacts(self, job_uuid: str) -> Optional[PostTrainingJobArtifactsResponse]: ...

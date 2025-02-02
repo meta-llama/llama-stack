@@ -28,11 +28,7 @@ class InmemoryKVStoreImpl(KVStore):
         self._store[key] = value
 
     async def range(self, start_key: str, end_key: str) -> List[str]:
-        return [
-            self._store[key]
-            for key in self._store.keys()
-            if key >= start_key and key < end_key
-        ]
+        return [self._store[key] for key in self._store.keys() if key >= start_key and key < end_key]
 
 
 async def kvstore_impl(config: KVStoreConfig) -> KVStore:

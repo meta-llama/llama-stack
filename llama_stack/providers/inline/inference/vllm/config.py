@@ -53,7 +53,5 @@ class VLLMConfig(BaseModel):
         repos = [m.huggingface_repo for m in permitted_models]
         if model not in (descriptors + repos):
             model_list = "\n\t".join(repos)
-            raise ValueError(
-                f"Unknown model: `{model}`. Choose from [\n\t{model_list}\n]"
-            )
+            raise ValueError(f"Unknown model: `{model}`. Choose from [\n\t{model_list}\n]")
         return model

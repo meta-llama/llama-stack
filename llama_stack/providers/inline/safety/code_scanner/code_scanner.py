@@ -67,10 +67,6 @@ class MetaReferenceCodeScannerSafetyImpl(Safety):
             violation = SafetyViolation(
                 violation_level=(ViolationLevel.ERROR),
                 user_message="Sorry, I found security concerns in the code.",
-                metadata={
-                    "violation_type": ",".join(
-                        [issue.pattern_id for issue in result.issues_found]
-                    )
-                },
+                metadata={"violation_type": ",".join([issue.pattern_id for issue in result.issues_found])},
             )
         return RunShieldResponse(violation=violation)

@@ -114,13 +114,9 @@ class HuggingfaceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
         new_dataset = hf_datasets.Dataset.from_list(rows)
 
         # Concatenate the new rows with existing dataset
-        updated_dataset = hf_datasets.concatenate_datasets(
-            [loaded_dataset, new_dataset]
-        )
+        updated_dataset = hf_datasets.concatenate_datasets([loaded_dataset, new_dataset])
 
         if dataset_def.metadata.get("path", None):
             updated_dataset.push_to_hub(dataset_def.metadata["path"])
         else:
-            raise NotImplementedError(
-                "Uploading to URL-based datasets is not supported yet"
-            )
+            raise NotImplementedError("Uploading to URL-based datasets is not supported yet")

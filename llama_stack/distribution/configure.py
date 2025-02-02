@@ -26,9 +26,7 @@ from llama_stack.providers.datatypes import Api, ProviderSpec
 logger = logging.getLogger(__name__)
 
 
-def configure_single_provider(
-    registry: Dict[str, ProviderSpec], provider: Provider
-) -> Provider:
+def configure_single_provider(registry: Dict[str, ProviderSpec], provider: Provider) -> Provider:
     provider_spec = registry[provider.provider_type]
     config_type = instantiate_class_type(provider_spec.config_class)
     try:
@@ -47,9 +45,7 @@ def configure_single_provider(
     )
 
 
-def configure_api_providers(
-    config: StackRunConfig, build_spec: DistributionSpec
-) -> StackRunConfig:
+def configure_api_providers(config: StackRunConfig, build_spec: DistributionSpec) -> StackRunConfig:
     is_nux = len(config.providers) == 0
 
     if is_nux:
@@ -87,9 +83,7 @@ def configure_api_providers(
             updated_providers = []
             for p in existing_providers:
                 logger.info(f"> Configuring provider `({p.provider_type})`")
-                updated_providers.append(
-                    configure_single_provider(provider_registry[api], p)
-                )
+                updated_providers.append(configure_single_provider(provider_registry[api], p))
                 logger.info("")
         else:
             # we are newly configuring this API
@@ -114,11 +108,7 @@ def configure_api_providers(
                     configure_single_provider(
                         provider_registry[api],
                         Provider(
-                            provider_id=(
-                                f"{provider_type}-{i:02d}"
-                                if len(plist) > 1
-                                else provider_type
-                            ),
+                            provider_id=(f"{provider_type}-{i:02d}" if len(plist) > 1 else provider_type),
                             provider_type=provider_type,
                             config={},
                         ),
@@ -137,11 +127,7 @@ def upgrade_from_routing_table(
     def get_providers(entries):
         return [
             Provider(
-                provider_id=(
-                    f"{entry['provider_type']}-{i:02d}"
-                    if len(entries) > 1
-                    else entry["provider_type"]
-                ),
+                provider_id=(f"{entry['provider_type']}-{i:02d}" if len(entries) > 1 else entry["provider_type"]),
                 provider_type=entry["provider_type"],
                 config=entry["config"],
             )

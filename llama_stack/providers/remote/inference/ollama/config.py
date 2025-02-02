@@ -16,7 +16,5 @@ class OllamaImplConfig(BaseModel):
     url: str = DEFAULT_OLLAMA_URL
 
     @classmethod
-    def sample_run_config(
-        cls, url: str = "${env.OLLAMA_URL:http://localhost:11434}", **kwargs
-    ) -> Dict[str, Any]:
+    def sample_run_config(cls, url: str = "${env.OLLAMA_URL:http://localhost:11434}", **kwargs) -> Dict[str, Any]:
         return {"url": url}

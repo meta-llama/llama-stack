@@ -147,9 +147,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
             r = client.completions.create(**params)
         return process_chat_completion_response(r, self.formatter)
 
-    async def _stream_chat_completion(
-        self, request: ChatCompletionRequest, client: OpenAI
-    ) -> AsyncGenerator:
+    async def _stream_chat_completion(self, request: ChatCompletionRequest, client: OpenAI) -> AsyncGenerator:
         params = await self._get_params(request)
 
         # TODO: Can we use client.completions.acreate() or maybe there is another way to directly create an async
@@ -163,14 +161,10 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
                 yield chunk
 
         stream = _to_async_generator()
-        async for chunk in process_chat_completion_stream_response(
-            stream, self.formatter
-        ):
+        async for chunk in process_chat_completion_stream_response(stream, self.formatter):
             yield chunk
 
-    async def _nonstream_completion(
-        self, request: CompletionRequest
-    ) -> CompletionResponse:
+    async def _nonstream_completion(self, request: CompletionRequest) -> CompletionResponse:
         params = await self._get_params(request)
         r = self.client.completions.create(**params)
         return process_completion_response(r, self.formatter)
@@ -199,9 +193,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
             )
         return model
 
-    async def _get_params(
-        self, request: Union[ChatCompletionRequest, CompletionRequest]
-    ) -> dict:
+    async def _get_params(self, request: Union[ChatCompletionRequest, CompletionRequest]) -> dict:
         options = get_sampling_options(request.sampling_params)
         if "max_tokens" not in options:
             options["max_tokens"] = self.config.max_tokens
@@ -211,8 +203,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         if isinstance(request, ChatCompletionRequest):
             if media_present:
                 input_dict["messages"] = [
-                    await convert_message_to_openai_dict(m, download=True)
-                    for m in request.messages
+                    await convert_message_to_openai_dict(m, download=True) for m in request.messages
                 ]
             else:
                 input_dict["prompt"] = await chat_completion_request_to_prompt(
@@ -221,9 +212,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
                     self.formatter,
                 )
         else:
-            assert (
-                not media_present
-            ), "vLLM does not support media for Completion requests"
+            assert not media_present, "vLLM does not support media for Completion requests"
             input_dict["prompt"] = await completion_request_to_prompt(
                 request,
                 self.formatter,
@@ -231,9 +220,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
 
         if fmt := request.response_format:
             if fmt.type == ResponseFormatType.json_schema.value:
-                input_dict["extra_body"] = {
-                    "guided_json": request.response_format.json_schema
-                }
+                input_dict["extra_body"] = {"guided_json": request.response_format.json_schema}
             elif fmt.type == ResponseFormatType.grammar.value:
                 raise NotImplementedError("Grammar response format not supported yet")
             else:
@@ -257,9 +244,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         assert model.model_type == ModelType.embedding
         assert model.metadata.get("embedding_dimensions")
         kwargs["dimensions"] = model.metadata.get("embedding_dimensions")
-        assert all(
-            not content_has_media(content) for content in contents
-        ), "VLLM does not support media for embeddings"
+        assert all(not content_has_media(content) for content in contents), "VLLM does not support media for embeddings"
         response = self.client.embeddings.create(
             model=model.provider_resource_id,
             input=[interleaved_content_as_str(content) for content in contents],

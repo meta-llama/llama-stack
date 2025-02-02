@@ -57,9 +57,7 @@ class HadamardModule(torch.nn.Module):
         return x
 
 
-def add_hadamard_transform_for_spinquant(
-    model: torch.nn.Module, prefix: str = ""
-) -> None:
+def add_hadamard_transform_for_spinquant(model: torch.nn.Module, prefix: str = "") -> None:
     """
     Adds a Hadamard transform to the last linear layer of each feedforward network (FFN) in the model.
     This function recursively traverses the model's children and looks for layers that match the pattern
@@ -81,12 +79,8 @@ def add_hadamard_transform_for_spinquant(
     for module_name, module in model.named_children():
         child_full_name = prefix + "." + module_name
         if re.search(pattern_last_linear_ffn, child_full_name):
-            new_module = nn.Sequential(
-                HadamardModule(group_size=module.in_features), module
-            )
+            new_module = nn.Sequential(HadamardModule(group_size=module.in_features), module)
             del module
             setattr(model, module_name, new_module)
         else:
-            add_hadamard_transform_for_spinquant(
-                module, (prefix + "." if prefix else prefix) + module_name
-            )
+            add_hadamard_transform_for_spinquant(module, (prefix + "." if prefix else prefix) + module_name)

@@ -119,9 +119,7 @@ async def interleaved_content_convert_to_raw(
                 if image.url.uri.startswith("data"):
                     match = re.match(r"data:image/(\w+);base64,(.+)", image.url.uri)
                     if not match:
-                        raise ValueError(
-                            f"Invalid data URL format, {image.url.uri[:40]}..."
-                        )
+                        raise ValueError(f"Invalid data URL format, {image.url.uri[:40]}...")
                     _, image_data = match.groups()
                     data = base64.b64decode(image_data)
                 elif image.url.uri.startswith("file://"):
@@ -201,19 +199,13 @@ async def convert_image_content_to_url(
 
     content, format = await localize_image_content(media)
     if include_format:
-        return f"data:image/{format};base64," + base64.b64encode(content).decode(
-            "utf-8"
-        )
+        return f"data:image/{format};base64," + base64.b64encode(content).decode("utf-8")
     else:
         return base64.b64encode(content).decode("utf-8")
 
 
-async def completion_request_to_prompt(
-    request: CompletionRequest, formatter: ChatFormat
-) -> str:
-    content = augment_content_with_response_format_prompt(
-        request.response_format, request.content
-    )
+async def completion_request_to_prompt(request: CompletionRequest, formatter: ChatFormat) -> str:
+    content = augment_content_with_response_format_prompt(request.response_format, request.content)
     request.content = content
     request = await convert_request_to_raw(request)
     model_input = formatter.encode_content(request.content)
@@ -223,9 +215,7 @@ async def completion_request_to_prompt(
 async def completion_request_to_prompt_model_input_info(
     request: CompletionRequest, formatter: ChatFormat
 ) -> Tuple[str, int]:
-    content = augment_content_with_response_format_prompt(
-        request.response_format, request.content
-    )
+    content = augment_content_with_response_format_prompt(request.response_format, request.content)
     request.content = content
     request = await convert_request_to_raw(request)
     model_input = formatter.encode_content(request.content)
@@ -288,8 +278,7 @@ def chat_completion_request_to_messages(
         return request.messages
 
     if model.model_family == ModelFamily.llama3_1 or (
-        model.model_family == ModelFamily.llama3_2
-        and is_multimodal(model.core_model_id)
+        model.model_family == ModelFamily.llama3_2 and is_multimodal(model.core_model_id)
     ):
         # llama3.1 and llama3.2 multimodal models follow the same tool prompt format
         messages = augment_messages_for_tools_llama_3_1(request)
@@ -327,9 +316,7 @@ def augment_messages_for_tools_llama_3_1(
     if existing_messages[0].role == Role.system.value:
         existing_system_message = existing_messages.pop(0)
 
-    assert (
-        existing_messages[0].role != Role.system.value
-    ), "Should only have 1 system message"
+    assert existing_messages[0].role != Role.system.value, "Should only have 1 system message"
 
     messages = []
 
@@ -361,9 +348,7 @@ def augment_messages_for_tools_llama_3_1(
         if isinstance(existing_system_message.content, str):
             sys_content += _process(existing_system_message.content)
         elif isinstance(existing_system_message.content, list):
-            sys_content += "\n".join(
-                [_process(c) for c in existing_system_message.content]
-            )
+            sys_content += "\n".join([_process(c) for c in existing_system_message.content])
 
     messages.append(SystemMessage(content=sys_content))
 
@@ -397,9 +382,7 @@ def augment_messages_for_tools_llama_3_2(
     if existing_messages[0].role == Role.system.value:
         existing_system_message = existing_messages.pop(0)
 
-    assert (
-        existing_messages[0].role != Role.system.value
-    ), "Should only have 1 system message"
+    assert existing_messages[0].role != Role.system.value, "Should only have 1 system message"
 
     messages = []
     sys_content = ""
@@ -422,9 +405,7 @@ def augment_messages_for_tools_llama_3_2(
     if custom_tools:
         fmt = request.tool_prompt_format or ToolPromptFormat.python_list
         if fmt != ToolPromptFormat.python_list:
-            raise ValueError(
-                f"Non supported ToolPromptFormat {request.tool_prompt_format}"
-            )
+            raise ValueError(f"Non supported ToolPromptFormat {request.tool_prompt_format}")
 
         tool_gen = PythonListCustomToolGenerator()
         tool_template = tool_gen.gen(custom_tools)
@@ -433,9 +414,7 @@ def augment_messages_for_tools_llama_3_2(
         sys_content += "\n"
 
     if existing_system_message:
-        sys_content += interleaved_content_as_str(
-            existing_system_message.content, sep="\n"
-        )
+        sys_content += interleaved_content_as_str(existing_system_message.content, sep="\n")
 
     messages.append(SystemMessage(content=sys_content))
 
