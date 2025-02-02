@@ -41,9 +41,7 @@ def up_to_date_config():
             - provider_id: provider1
               provider_type: inline::meta-reference
               config: {{}}
-    """.format(
-            version=LLAMA_STACK_RUN_CONFIG_VERSION, built_at=datetime.now().isoformat()
-        )
+    """.format(version=LLAMA_STACK_RUN_CONFIG_VERSION, built_at=datetime.now().isoformat())
     )
 
 
@@ -83,9 +81,7 @@ def old_config():
           telemetry:
             provider_type: noop
             config: {{}}
-    """.format(
-            built_at=datetime.now().isoformat()
-        )
+    """.format(built_at=datetime.now().isoformat())
     )
 
 
@@ -108,10 +104,7 @@ def test_parse_and_maybe_upgrade_config_up_to_date(up_to_date_config):
 def test_parse_and_maybe_upgrade_config_old_format(old_config):
     result = parse_and_maybe_upgrade_config(old_config)
     assert result.version == LLAMA_STACK_RUN_CONFIG_VERSION
-    assert all(
-        api in result.providers
-        for api in ["inference", "safety", "memory", "telemetry"]
-    )
+    assert all(api in result.providers for api in ["inference", "safety", "memory", "telemetry"])
     safety_provider = result.providers["safety"][0]
     assert safety_provider.provider_type == "meta-reference"
     assert "llama_guard_shield" in safety_provider.config

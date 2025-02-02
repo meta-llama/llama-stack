@@ -42,9 +42,9 @@ class ChromaIndex(EmbeddingIndex):
         self.collection = collection
 
     async def add_chunks(self, chunks: List[Chunk], embeddings: NDArray):
-        assert len(chunks) == len(
-            embeddings
-        ), f"Chunk length {len(chunks)} does not match embedding length {len(embeddings)}"
+        assert len(chunks) == len(embeddings), (
+            f"Chunk length {len(chunks)} does not match embedding length {len(embeddings)}"
+        )
 
         ids = [f"{c.metadata['document_id']}:chunk-{i}" for i, c in enumerate(chunks)]
         await maybe_await(
@@ -55,9 +55,7 @@ class ChromaIndex(EmbeddingIndex):
             )
         )
 
-    async def query(
-        self, embedding: NDArray, k: int, score_threshold: float
-    ) -> QueryChunksResponse:
+    async def query(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
         results = await maybe_await(
             self.collection.query(
                 query_embeddings=[embedding.tolist()],
@@ -109,9 +107,7 @@ class ChromaVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
             if parsed.path and parsed.path != "/":
                 raise ValueError("URL should not contain a path")
 
-            self.client = await chromadb.AsyncHttpClient(
-                host=parsed.hostname, port=parsed.port
-            )
+            self.client = await chromadb.AsyncHttpClient(host=parsed.hostname, port=parsed.port)
         else:
             log.info(f"Connecting to Chroma local db at: {self.config.db_path}")
             self.client = chromadb.PersistentClient(path=self.config.db_path)
@@ -157,9 +153,7 @@ class ChromaVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
 
         return await index.query_chunks(query, params)
 
-    async def _get_and_cache_vector_db_index(
-        self, vector_db_id: str
-    ) -> VectorDBWithIndex:
+    async def _get_and_cache_vector_db_index(self, vector_db_id: str) -> VectorDBWithIndex:
         if vector_db_id in self.cache:
             return self.cache[vector_db_id]
 
@@ -169,8 +163,6 @@ class ChromaVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
         collection = await maybe_await(self.client.get_collection(vector_db_id))
         if not collection:
             raise ValueError(f"Vector DB {vector_db_id} not found in Chroma")
-        index = VectorDBWithIndex(
-            vector_db, ChromaIndex(self.client, collection), self.inference_api
-        )
+        index = VectorDBWithIndex(vector_db, ChromaIndex(self.client, collection), self.inference_api)
         self.cache[vector_db_id] = index
         return index

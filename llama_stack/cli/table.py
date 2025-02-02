@@ -22,11 +22,7 @@ def format_row(row, col_widths):
             if line.strip() == "":
                 lines.append("")
             else:
-                lines.extend(
-                    textwrap.wrap(
-                        line, width, break_long_words=False, replace_whitespace=False
-                    )
-                )
+                lines.extend(textwrap.wrap(line, width, break_long_words=False, replace_whitespace=False))
         return lines
 
     wrapped = [wrap(item, width) for item, width in zip(row, col_widths)]

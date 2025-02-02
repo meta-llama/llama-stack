@@ -163,9 +163,7 @@ a default SQLite store will be used.""",
 class BuildConfig(BaseModel):
     version: str = LLAMA_STACK_BUILD_CONFIG_VERSION
 
-    distribution_spec: DistributionSpec = Field(
-        description="The distribution spec to build including API providers. "
-    )
+    distribution_spec: DistributionSpec = Field(description="The distribution spec to build including API providers. ")
     image_type: str = Field(
         default="conda",
         description="Type of package to build (conda | container | venv)",

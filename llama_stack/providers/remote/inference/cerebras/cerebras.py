@@ -102,9 +102,7 @@ class CerebrasInferenceAdapter(ModelRegistryHelper, Inference):
         else:
             return await self._nonstream_completion(request)
 
-    async def _nonstream_completion(
-        self, request: CompletionRequest
-    ) -> CompletionResponse:
+    async def _nonstream_completion(self, request: CompletionRequest) -> CompletionResponse:
         params = await self._get_params(request)
 
         r = await self.client.completions.create(**params)
@@ -149,33 +147,23 @@ class CerebrasInferenceAdapter(ModelRegistryHelper, Inference):
         else:
             return await self._nonstream_chat_completion(request)
 
-    async def _nonstream_chat_completion(
-        self, request: CompletionRequest
-    ) -> CompletionResponse:
+    async def _nonstream_chat_completion(self, request: CompletionRequest) -> CompletionResponse:
         params = await self._get_params(request)
 
         r = await self.client.completions.create(**params)
 
         return process_chat_completion_response(r, self.formatter)
 
-    async def _stream_chat_completion(
-        self, request: CompletionRequest
-    ) -> AsyncGenerator:
+    async def _stream_chat_completion(self, request: CompletionRequest) -> AsyncGenerator:
         params = await self._get_params(request)
 
         stream = await self.client.completions.create(**params)
 
-        async for chunk in process_chat_completion_stream_response(
-            stream, self.formatter
-        ):
+        async for chunk in process_chat_completion_stream_response(stream, self.formatter):
             yield chunk
 
-    async def _get_params(
-        self, request: Union[ChatCompletionRequest, CompletionRequest]
-    ) -> dict:
-        if request.sampling_params and isinstance(
-            request.sampling_params.strategy, TopKSamplingStrategy
-        ):
+    async def _get_params(self, request: Union[ChatCompletionRequest, CompletionRequest]) -> dict:
+        if request.sampling_params and isinstance(request.sampling_params.strategy, TopKSamplingStrategy):
             raise ValueError("`top_k` not supported by Cerebras")
 
         prompt = ""

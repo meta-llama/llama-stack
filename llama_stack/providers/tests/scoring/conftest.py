@@ -71,7 +71,6 @@ def pytest_generate_tests(metafunc):
             "inference": INFERENCE_FIXTURES,
         }
         combinations = (
-            get_provider_fixture_overrides(metafunc.config, available_fixtures)
-            or DEFAULT_PROVIDER_COMBINATIONS
+            get_provider_fixture_overrides(metafunc.config, available_fixtures) or DEFAULT_PROVIDER_COMBINATIONS
         )
         metafunc.parametrize("scoring_stack", combinations, indirect=True)

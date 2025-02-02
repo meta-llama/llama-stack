@@ -96,18 +96,26 @@ Here is a simple example to perform chat completions using the SDK.
 ```python
 import os
 
+
 def create_http_client():
     from llama_stack_client import LlamaStackClient
-    return LlamaStackClient(base_url=f"http://localhost:{os.environ['LLAMA_STACK_PORT']}")
+
+    return LlamaStackClient(
+        base_url=f"http://localhost:{os.environ['LLAMA_STACK_PORT']}"
+    )
+
 
 def create_library_client(template="ollama"):
     from llama_stack import LlamaStackAsLibraryClient
+
     client = LlamaStackAsLibraryClient(template)
     client.initialize()
     return client
 
 
-client = create_library_client()  # or create_http_client() depending on the environment you picked
+client = (
+    create_library_client()
+)  # or create_http_client() depending on the environment you picked
 
 # List available models
 models = client.models.list()
@@ -120,8 +128,8 @@ response = client.inference.chat_completion(
     model_id=os.environ["INFERENCE_MODEL"],
     messages=[
         {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": "Write a haiku about coding"}
-    ]
+        {"role": "user", "content": "Write a haiku about coding"},
+    ],
 )
 print(response.completion_message.content)
 ```
@@ -139,7 +147,9 @@ from llama_stack_client.lib.agents.event_logger import EventLogger
 from llama_stack_client.types.agent_create_params import AgentConfig
 from llama_stack_client.types import Document
 
-client = create_library_client()  # or create_http_client() depending on the environment you picked
+client = (
+    create_library_client()
+)  # or create_http_client() depending on the environment you picked
 
 # Documents to be used for RAG
 urls = ["chat.rst", "llama3.rst", "datasets.rst", "lora_finetune.rst"]
@@ -174,12 +184,12 @@ agent_config = AgentConfig(
     instructions="You are a helpful assistant",
     enable_session_persistence=False,
     # Define tools available to the agent
-    toolgroups = [
+    toolgroups=[
         {
-          "name": "builtin::rag",
-          "args" : {
-            "vector_db_ids": [vector_db_id],
-          }
+            "name": "builtin::rag",
+            "args": {
+                "vector_db_ids": [vector_db_id],
+            },
         }
     ],
 )
@@ -193,7 +203,7 @@ user_prompts = [
 
 # Run the agent loop by calling the `create_turn` method
 for prompt in user_prompts:
-    cprint(f'User> {prompt}', 'green')
+    cprint(f"User> {prompt}", "green")
     response = rag_agent.create_turn(
         messages=[{"role": "user", "content": prompt}],
         session_id=session_id,

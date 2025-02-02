@@ -13,9 +13,7 @@ from llama_stack_client.types import Document
 
 @pytest.fixture(scope="function")
 def empty_vector_db_registry(llama_stack_client):
-    vector_dbs = [
-        vector_db.identifier for vector_db in llama_stack_client.vector_dbs.list()
-    ]
+    vector_dbs = [vector_db.identifier for vector_db in llama_stack_client.vector_dbs.list()]
     for vector_db_id in vector_dbs:
         llama_stack_client.vector_dbs.unregister(vector_db_id=vector_db_id)
 
@@ -29,9 +27,7 @@ def single_entry_vector_db_registry(llama_stack_client, empty_vector_db_registry
         embedding_dimension=384,
         provider_id="faiss",
     )
-    vector_dbs = [
-        vector_db.identifier for vector_db in llama_stack_client.vector_dbs.list()
-    ]
+    vector_dbs = [vector_db.identifier for vector_db in llama_stack_client.vector_dbs.list()]
     return vector_dbs
 
 
@@ -69,9 +65,7 @@ def assert_valid_response(response):
         assert isinstance(chunk.content, str)
 
 
-def test_vector_db_insert_inline_and_query(
-    llama_stack_client, single_entry_vector_db_registry, sample_documents
-):
+def test_vector_db_insert_inline_and_query(llama_stack_client, single_entry_vector_db_registry, sample_documents):
     vector_db_id = single_entry_vector_db_registry[0]
     llama_stack_client.tool_runtime.rag_tool.insert(
         documents=sample_documents,
@@ -118,9 +112,7 @@ def test_vector_db_insert_inline_and_query(
     assert all(score >= 0.01 for score in response4.scores)
 
 
-def test_vector_db_insert_from_url_and_query(
-    llama_stack_client, empty_vector_db_registry
-):
+def test_vector_db_insert_from_url_and_query(llama_stack_client, empty_vector_db_registry):
     providers = [p for p in llama_stack_client.providers.list() if p.api == "vector_io"]
     assert len(providers) > 0
 
@@ -134,9 +126,7 @@ def test_vector_db_insert_from_url_and_query(
     )
 
     # list to check memory bank is successfully registered
-    available_vector_dbs = [
-        vector_db.identifier for vector_db in llama_stack_client.vector_dbs.list()
-    ]
+    available_vector_dbs = [vector_db.identifier for vector_db in llama_stack_client.vector_dbs.list()]
     assert vector_db_id in available_vector_dbs
 
     # URLs of documents to insert

@@ -71,9 +71,9 @@ class PGVectorIndex(EmbeddingIndex):
         )
 
     async def add_chunks(self, chunks: List[Chunk], embeddings: NDArray):
-        assert len(chunks) == len(
-            embeddings
-        ), f"Chunk length {len(chunks)} does not match embedding length {len(embeddings)}"
+        assert len(chunks) == len(embeddings), (
+            f"Chunk length {len(chunks)} does not match embedding length {len(embeddings)}"
+        )
 
         values = []
         for i, chunk in enumerate(chunks):
@@ -94,9 +94,7 @@ class PGVectorIndex(EmbeddingIndex):
         )
         execute_values(self.cursor, query, values, template="(%s, %s, %s::vector)")
 
-    async def query(
-        self, embedding: NDArray, k: int, score_threshold: float
-    ) -> QueryChunksResponse:
+    async def query(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
         self.cursor.execute(
             f"""
         SELECT document, embedding <-> %s::vector AS distance
@@ -166,9 +164,7 @@ class PGVectorVectorDBAdapter(VectorIO, VectorDBsProtocolPrivate):
         upsert_models(self.cursor, [(vector_db.identifier, vector_db)])
 
         index = PGVectorIndex(vector_db, vector_db.embedding_dimension, self.cursor)
-        self.cache[vector_db.identifier] = VectorDBWithIndex(
-            vector_db, index, self.inference_api
-        )
+        self.cache[vector_db.identifier] = VectorDBWithIndex(vector_db, index, self.inference_api)
 
     async def unregister_vector_db(self, vector_db_id: str) -> None:
         await self.cache[vector_db_id].index.delete()
@@ -192,15 +188,11 @@ class PGVectorVectorDBAdapter(VectorIO, VectorDBsProtocolPrivate):
         index = await self._get_and_cache_vector_db_index(vector_db_id)
         return await index.query_chunks(query, params)
 
-    async def _get_and_cache_vector_db_index(
-        self, vector_db_id: str
-    ) -> VectorDBWithIndex:
+    async def _get_and_cache_vector_db_index(self, vector_db_id: str) -> VectorDBWithIndex:
         if vector_db_id in self.cache:
             return self.cache[vector_db_id]
 
         vector_db = await self.vector_db_store.get_vector_db(vector_db_id)
         index = PGVectorIndex(vector_db, vector_db.embedding_dimension, self.cursor)
-        self.cache[vector_db_id] = VectorDBWithIndex(
-            vector_db, index, self.inference_api
-        )
+        self.cache[vector_db_id] = VectorDBWithIndex(vector_db, index, self.inference_api)
         return self.cache[vector_db_id]

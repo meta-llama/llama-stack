@@ -65,25 +65,12 @@ SUPPORTED_MODELS = {
             CoreModelId.llama_guard_3_1b.value,
         ]
     ),
-    "tgi": set(
-        [
-            model.core_model_id.value
-            for model in all_registered_models()
-            if model.huggingface_repo
-        ]
-    ),
-    "vllm": set(
-        [
-            model.core_model_id.value
-            for model in all_registered_models()
-            if model.huggingface_repo
-        ]
-    ),
+    "tgi": set([model.core_model_id.value for model in all_registered_models() if model.huggingface_repo]),
+    "vllm": set([model.core_model_id.value for model in all_registered_models() if model.huggingface_repo]),
 }
 
 
 class Report:
-
     def __init__(self, report_path: Optional[str] = None):
         if os.environ.get("LLAMA_STACK_CONFIG"):
             config_path_or_template_name = get_env_or_fail("LLAMA_STACK_CONFIG")
@@ -91,8 +78,7 @@ class Report:
                 config_path = Path(config_path_or_template_name)
             else:
                 config_path = Path(
-                    importlib.resources.files("llama_stack")
-                    / f"templates/{config_path_or_template_name}/run.yaml"
+                    importlib.resources.files("llama_stack") / f"templates/{config_path_or_template_name}/run.yaml"
                 )
             if not config_path.exists():
                 raise ValueError(f"Config file {config_path} does not exist")
@@ -102,9 +88,7 @@ class Report:
             url = get_env_or_fail("LLAMA_STACK_BASE_URL")
             self.distro_name = urlparse(url).netloc
             if report_path is None:
-                raise ValueError(
-                    "Report path must be provided when LLAMA_STACK_BASE_URL is set"
-                )
+                raise ValueError("Report path must be provided when LLAMA_STACK_BASE_URL is set")
             self.output_path = Path(report_path)
         else:
             raise ValueError("LLAMA_STACK_CONFIG or LLAMA_STACK_BASE_URL must be set")
@@ -141,10 +125,9 @@ class Report:
         rows = []
         if self.distro_name in SUPPORTED_MODELS:
             for model in all_registered_models():
-                if (
-                    "Instruct" not in model.core_model_id.value
-                    and "Guard" not in model.core_model_id.value
-                ) or (model.variant):
+                if ("Instruct" not in model.core_model_id.value and "Guard" not in model.core_model_id.value) or (
+                    model.variant
+                ):
                     continue
                 row = f"| {model.core_model_id.value} |"
                 if model.core_model_id.value in SUPPORTED_MODELS[self.distro_name]:
@@ -171,11 +154,7 @@ class Report:
         for api, capa_map in API_MAPS[Api.inference].items():
             for capa, tests in capa_map.items():
                 for test_name in tests:
-                    model_id = (
-                        self.text_model_id
-                        if "text" in test_name
-                        else self.vision_model_id
-                    )
+                    model_id = self.text_model_id if "text" in test_name else self.vision_model_id
                     test_nodeids = self.test_name_to_nodeid[test_name]
                     assert len(test_nodeids) > 0
 
@@ -228,9 +207,7 @@ class Report:
 
         if self.client is None and "llama_stack_client" in item.funcargs:
             self.client = item.funcargs["llama_stack_client"]
-            self.distro_name = (
-                self.distro_name or self.client.async_client.config.image_name
-            )
+            self.distro_name = self.distro_name or self.client.async_client.config.image_name
 
     def _print_result_icon(self, result):
         if result == "Passed":
@@ -252,7 +229,4 @@ class Report:
         return report.outcome.capitalize()
 
     def _is_error(self, report: CollectReport):
-        return (
-            report.when in ["setup", "teardown", "collect"]
-            and report.outcome == "failed"
-        )
+        return report.when in ["setup", "teardown", "collect"] and report.outcome == "failed"

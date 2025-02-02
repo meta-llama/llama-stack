@@ -185,9 +185,7 @@ async def _convert_message(message: Message | Dict) -> OpenAIChatCompletionMessa
             return content
         elif isinstance(content, ImageContentItem):
             return OpenAIChatCompletionContentPartImageParam(
-                image_url=OpenAIImageURL(
-                    url=await convert_image_content_to_url(content)
-                ),
+                image_url=OpenAIImageURL(url=await convert_image_content_to_url(content)),
                 type="image_url",
             )
         elif isinstance(content, List):
@@ -260,12 +258,9 @@ async def convert_chat_completion_request(
     # stream -> stream
     # logprobs -> logprobs
 
-    if request.response_format and not isinstance(
-        request.response_format, JsonSchemaResponseFormat
-    ):
+    if request.response_format and not isinstance(request.response_format, JsonSchemaResponseFormat):
         raise ValueError(
-            f"Unsupported response format: {request.response_format}. "
-            "Only JsonSchemaResponseFormat is supported."
+            f"Unsupported response format: {request.response_format}. Only JsonSchemaResponseFormat is supported."
         )
 
     nvext = {}
@@ -286,9 +281,7 @@ async def convert_chat_completion_request(
         nvext.update(guided_json=request.response_format.json_schema)
 
     if request.tools:
-        payload.update(
-            tools=[_convert_tooldef_to_openai_tool(tool) for tool in request.tools]
-        )
+        payload.update(tools=[_convert_tooldef_to_openai_tool(tool) for tool in request.tools])
         if request.tool_choice:
             payload.update(
                 tool_choice=request.tool_choice.value
@@ -410,11 +403,7 @@ def _convert_openai_logprobs(
         return None
 
     return [
-        TokenLogProbs(
-            logprobs_by_token={
-                logprobs.token: logprobs.logprob for logprobs in content.top_logprobs
-            }
-        )
+        TokenLogProbs(logprobs_by_token={logprobs.token: logprobs.logprob for logprobs in content.top_logprobs})
         for content in logprobs.content
     ]
 
@@ -452,17 +441,14 @@ def convert_openai_chat_completion_choice(
         end_of_message = "end_of_message"
         out_of_tokens = "out_of_tokens"
     """
-    assert (
-        hasattr(choice, "message") and choice.message
-    ), "error in server response: message not found"
-    assert (
-        hasattr(choice, "finish_reason") and choice.finish_reason
-    ), "error in server response: finish_reason not found"
+    assert hasattr(choice, "message") and choice.message, "error in server response: message not found"
+    assert hasattr(choice, "finish_reason") and choice.finish_reason, (
+        "error in server response: finish_reason not found"
+    )
 
     return ChatCompletionResponse(
         completion_message=CompletionMessage(
-            content=choice.message.content
-            or "",  # CompletionMessage content is not optional
+            content=choice.message.content or "",  # CompletionMessage content is not optional
             stop_reason=_convert_openai_finish_reason(choice.finish_reason),
             tool_calls=_convert_openai_tool_calls(choice.message.tool_calls),
         ),
@@ -479,9 +465,7 @@ async def convert_openai_chat_completion_stream(
     """
 
     # generate a stream of ChatCompletionResponseEventType: start -> progress -> progress -> ...
-    def _event_type_generator() -> (
-        Generator[ChatCompletionResponseEventType, None, None]
-    ):
+    def _event_type_generator() -> Generator[ChatCompletionResponseEventType, None, None]:
         yield ChatCompletionResponseEventType.start
         while True:
             yield ChatCompletionResponseEventType.progress
@@ -532,18 +516,14 @@ async def convert_openai_chat_completion_stream(
             # it is possible to have parallel tool calls in stream, but
             # ChatCompletionResponseEvent only supports one per stream
             if len(choice.delta.tool_calls) > 1:
-                warnings.warn(
-                    "multiple tool calls found in a single delta, using the first, ignoring the rest"
-                )
+                warnings.warn("multiple tool calls found in a single delta, using the first, ignoring the rest")
 
             # NIM only produces fully formed tool calls, so we can assume success
             yield ChatCompletionResponseStreamChunk(
                 event=ChatCompletionResponseEvent(
                     event_type=next(event_type),
                     delta=ToolCallDelta(
-                        tool_call=_convert_openai_tool_calls(choice.delta.tool_calls)[
-                            0
-                        ],
+                        tool_call=_convert_openai_tool_calls(choice.delta.tool_calls)[0],
                         parse_status=ToolCallParseStatus.succeeded,
                     ),
                     logprobs=_convert_openai_logprobs(choice.logprobs),
@@ -618,10 +598,7 @@ def convert_completion_request(
             nvext.update(top_k=-1)
             payload.update(top_p=request.sampling_params.top_p)
         elif request.sampling_params.strategy == "top_k":
-            if (
-                request.sampling_params.top_k != -1
-                and request.sampling_params.top_k < 1
-            ):
+            if request.sampling_params.top_k != -1 and request.sampling_params.top_k < 1:
                 warnings.warn("top_k must be -1 or >= 1")
             nvext.update(top_k=request.sampling_params.top_k)
         elif request.sampling_params.strategy == "greedy":
@@ -640,9 +617,7 @@ def _convert_openai_completion_logprobs(
     if not logprobs:
         return None
 
-    return [
-        TokenLogProbs(logprobs_by_token=logprobs) for logprobs in logprobs.top_logprobs
-    ]
+    return [TokenLogProbs(logprobs_by_token=logprobs) for logprobs in logprobs.top_logprobs]
 
 
 def convert_openai_completion_choice(

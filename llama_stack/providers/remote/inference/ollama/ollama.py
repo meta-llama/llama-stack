@@ -242,9 +242,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         else:
             return await self._nonstream_chat_completion(request)
 
-    async def _get_params(
-        self, request: Union[ChatCompletionRequest, CompletionRequest]
-    ) -> dict:
+    async def _get_params(self, request: Union[ChatCompletionRequest, CompletionRequest]) -> dict:
         sampling_options = get_sampling_options(request.sampling_params)
         # This is needed since the Ollama API expects num_predict to be set
         # for early truncation instead of max_tokens.
@@ -255,14 +253,9 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         media_present = request_has_media(request)
         if isinstance(request, ChatCompletionRequest):
             if media_present:
-                contents = [
-                    await convert_message_to_openai_dict_for_ollama(m)
-                    for m in request.messages
-                ]
+                contents = [await convert_message_to_openai_dict_for_ollama(m) for m in request.messages]
                 # flatten the list of lists
-                input_dict["messages"] = [
-                    item for sublist in contents for item in sublist
-                ]
+                input_dict["messages"] = [item for sublist in contents for item in sublist]
             else:
                 input_dict["raw"] = True
                 input_dict["prompt"] = await chat_completion_request_to_prompt(
@@ -271,12 +264,8 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
                     self.formatter,
                 )
         else:
-            assert (
-                not media_present
-            ), "Ollama does not support media for Completion requests"
-            input_dict["prompt"] = await completion_request_to_prompt(
-                request, self.formatter
-            )
+            assert not media_present, "Ollama does not support media for Completion requests"
+            input_dict["prompt"] = await completion_request_to_prompt(request, self.formatter)
             input_dict["raw"] = True
 
         if fmt := request.response_format:
@@ -294,9 +283,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
             "stream": request.stream,
         }
 
-    async def _nonstream_chat_completion(
-        self, request: ChatCompletionRequest
-    ) -> ChatCompletionResponse:
+    async def _nonstream_chat_completion(self, request: ChatCompletionRequest) -> ChatCompletionResponse:
         params = await self._get_params(request)
         if "messages" in params:
             r = await self.client.chat(**params)
@@ -318,9 +305,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         )
         return process_chat_completion_response(response, self.formatter)
 
-    async def _stream_chat_completion(
-        self, request: ChatCompletionRequest
-    ) -> AsyncGenerator:
+    async def _stream_chat_completion(self, request: ChatCompletionRequest) -> AsyncGenerator:
         params = await self._get_params(request)
 
         async def _generate_and_convert_to_openai_compat():
@@ -344,9 +329,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
                 )
 
         stream = _generate_and_convert_to_openai_compat()
-        async for chunk in process_chat_completion_stream_response(
-            stream, self.formatter
-        ):
+        async for chunk in process_chat_completion_stream_response(stream, self.formatter):
             yield chunk
 
     async def embeddings(
@@ -356,9 +339,9 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
     ) -> EmbeddingsResponse:
         model = await self.model_store.get_model(model_id)
 
-        assert all(
-            not content_has_media(content) for content in contents
-        ), "Ollama does not support media for embeddings"
+        assert all(not content_has_media(content) for content in contents), (
+            "Ollama does not support media for embeddings"
+        )
         response = await self.client.embed(
             model=model.provider_resource_id,
             input=[interleaved_content_as_str(content) for content in contents],
@@ -395,11 +378,7 @@ async def convert_message_to_openai_dict_for_ollama(message: Message) -> List[di
         if isinstance(content, ImageContentItem):
             return {
                 "role": message.role,
-                "images": [
-                    await convert_image_content_to_url(
-                        content, download=True, include_format=False
-                    )
-                ],
+                "images": [await convert_image_content_to_url(content, download=True, include_format=False)],
             }
         else:
             text = content.text if isinstance(content, TextContentItem) else content

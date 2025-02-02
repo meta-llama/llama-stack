@@ -91,14 +91,10 @@ class MetaReferenceEvalImpl(
         candidate = task_config.eval_candidate
         scoring_functions = task_def.scoring_functions
         dataset_def = await self.datasets_api.get_dataset(dataset_id=dataset_id)
-        validate_dataset_schema(
-            dataset_def.dataset_schema, get_valid_schemas(Api.eval.value)
-        )
+        validate_dataset_schema(dataset_def.dataset_schema, get_valid_schemas(Api.eval.value))
         all_rows = await self.datasetio_api.get_rows_paginated(
             dataset_id=dataset_id,
-            rows_in_page=(
-                -1 if task_config.num_examples is None else task_config.num_examples
-            ),
+            rows_in_page=(-1 if task_config.num_examples is None else task_config.num_examples),
         )
         res = await self.evaluate_rows(
             task_id=task_id,
@@ -127,9 +123,7 @@ class MetaReferenceEvalImpl(
             input_messages = [UserMessage(**x) for x in input_messages]
 
             # NOTE: only single-turn agent generation is supported. Create a new session for each input row
-            session_create_response = await self.agents_api.create_agent_session(
-                agent_id, f"session-{i}"
-            )
+            session_create_response = await self.agents_api.create_agent_session(agent_id, f"session-{i}")
             session_id = session_create_response.session_id
 
             turn_request = dict(
@@ -138,12 +132,7 @@ class MetaReferenceEvalImpl(
                 messages=input_messages,
                 stream=True,
             )
-            turn_response = [
-                chunk
-                async for chunk in await self.agents_api.create_agent_turn(
-                    **turn_request
-                )
-            ]
+            turn_response = [chunk async for chunk in await self.agents_api.create_agent_turn(**turn_request)]
             final_event = turn_response[-1].event.payload
 
             # check if there's a memory retrieval step and extract the context
@@ -152,14 +141,10 @@ class MetaReferenceEvalImpl(
                 if step.step_type == StepType.tool_execution.value:
                     for tool_response in step.tool_responses:
                         if tool_response.tool_name == MEMORY_QUERY_TOOL:
-                            memory_rag_context = " ".join(
-                                x.text for x in tool_response.content
-                            )
+                            memory_rag_context = " ".join(x.text for x in tool_response.content)
 
             agent_generation = {}
-            agent_generation[ColumnName.generated_answer.value] = (
-                final_event.turn.output_message.content
-            )
+            agent_generation[ColumnName.generated_answer.value] = final_event.turn.output_message.content
             if memory_rag_context:
                 agent_generation[ColumnName.context.value] = memory_rag_context
 
@@ -171,9 +156,7 @@ class MetaReferenceEvalImpl(
         self, input_rows: List[Dict[str, Any]], task_config: EvalTaskConfig
     ) -> List[Dict[str, Any]]:
         candidate = task_config.eval_candidate
-        assert (
-            candidate.sampling_params.max_tokens is not None
-        ), "SamplingParams.max_tokens must be provided"
+        assert candidate.sampling_params.max_tokens is not None, "SamplingParams.max_tokens must be provided"
 
         generations = []
         for x in tqdm(input_rows):
@@ -184,15 +167,9 @@ class MetaReferenceEvalImpl(
                     content=input_content,
                     sampling_params=candidate.sampling_params,
                 )
-                generations.append(
-                    {
-                        ColumnName.generated_answer.value: response.completion_message.content
-                    }
-                )
+                generations.append({ColumnName.generated_answer.value: response.completion_message.content})
             elif ColumnName.chat_completion_input.value in x:
-                chat_completion_input_str = str(
-                    x[ColumnName.chat_completion_input.value]
-                )
+                chat_completion_input_str = str(x[ColumnName.chat_completion_input.value])
                 input_messages = eval(chat_completion_input_str)
                 input_messages = [UserMessage(**x) for x in input_messages]
                 messages = []
@@ -204,11 +181,7 @@ class MetaReferenceEvalImpl(
                     messages=messages,
                     sampling_params=candidate.sampling_params,
                 )
-                generations.append(
-                    {
-                        ColumnName.generated_answer.value: response.completion_message.content
-                    }
-                )
+                generations.append({ColumnName.generated_answer.value: response.completion_message.content})
             else:
                 raise ValueError("Invalid input row")
 
@@ -230,10 +203,7 @@ class MetaReferenceEvalImpl(
             raise ValueError(f"Invalid candidate type: {candidate.type}")
 
         # scoring with generated_answer
-        score_input_rows = [
-            input_r | generated_r
-            for input_r, generated_r in zip(input_rows, generations)
-        ]
+        score_input_rows = [input_r | generated_r for input_r, generated_r in zip(input_rows, generations)]
 
         if task_config.type == "app" and task_config.scoring_params is not None:
             scoring_functions_dict = {
@@ -241,9 +211,7 @@ class MetaReferenceEvalImpl(
                 for scoring_fn_id in scoring_functions
             }
         else:
-            scoring_functions_dict = {
-                scoring_fn_id: None for scoring_fn_id in scoring_functions
-            }
+            scoring_functions_dict = {scoring_fn_id: None for scoring_fn_id in scoring_functions}
 
         score_response = await self.scoring_api.score(
             input_rows=score_input_rows, scoring_functions=scoring_functions_dict

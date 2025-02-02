@@ -53,9 +53,7 @@ class RunConfigSettings(BaseModel):
 
                 api = Api(api_str)
                 if provider_type not in provider_registry[api]:
-                    raise ValueError(
-                        f"Unknown provider type: {provider_type} for API: {api_str}"
-                    )
+                    raise ValueError(f"Unknown provider type: {provider_type} for API: {api_str}")
 
                 config_class = provider_registry[api][provider_type].config_class
                 assert config_class is not None, (
@@ -64,9 +62,7 @@ class RunConfigSettings(BaseModel):
 
                 config_class = instantiate_class_type(config_class)
                 if hasattr(config_class, "sample_run_config"):
-                    config = config_class.sample_run_config(
-                        __distro_dir__=f"distributions/{name}"
-                    )
+                    config = config_class.sample_run_config(__distro_dir__=f"distributions/{name}")
                 else:
                     config = {}
 
@@ -79,7 +75,7 @@ class RunConfigSettings(BaseModel):
                 )
 
         # Get unique set of APIs from providers
-        apis = list(sorted(providers.keys()))
+        apis = sorted(providers.keys())
 
         return StackRunConfig(
             image_name=name,
@@ -173,9 +169,7 @@ class DistributionTemplate(BaseModel):
             )
 
         for yaml_pth, settings in self.run_configs.items():
-            run_config = settings.run_config(
-                self.name, self.providers, self.container_image
-            )
+            run_config = settings.run_config(self.name, self.providers, self.container_image)
             with open(yaml_output_dir / yaml_pth, "w") as f:
                 yaml.safe_dump(
                     run_config.model_dump(exclude_none=True),

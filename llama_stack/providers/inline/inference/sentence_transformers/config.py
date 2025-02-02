@@ -10,7 +10,6 @@ from pydantic import BaseModel
 
 
 class SentenceTransformersInferenceConfig(BaseModel):
-
     @classmethod
     def sample_run_config(cls) -> Dict[str, Any]:
         return {}

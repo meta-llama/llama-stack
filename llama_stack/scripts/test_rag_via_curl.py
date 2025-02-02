@@ -47,9 +47,7 @@ class TestRAGToolEndpoints:
         ]
 
     @pytest.mark.asyncio
-    async def test_rag_workflow(
-        self, base_url: str, sample_documents: List[RAGDocument]
-    ):
+    async def test_rag_workflow(self, base_url: str, sample_documents: List[RAGDocument]):
         vector_db_payload = {
             "vector_db_id": "test_vector_db",
             "embedding_model": "all-MiniLM-L6-v2",
@@ -61,9 +59,7 @@ class TestRAGToolEndpoints:
         vector_db = VectorDB(**response.json())
 
         insert_payload = {
-            "documents": [
-                json.loads(doc.model_dump_json()) for doc in sample_documents
-            ],
+            "documents": [json.loads(doc.model_dump_json()) for doc in sample_documents],
             "vector_db_id": vector_db.identifier,
             "chunk_size_in_tokens": 512,
         }

@@ -83,9 +83,7 @@ class BedrockSafetyAdapter(Safety, ShieldsProtocolPrivate):
         content_messages = []
         for message in messages:
             content_messages.append({"text": {"text": message.content}})
-        logger.debug(
-            f"run_shield::final:messages::{json.dumps(content_messages, indent=2)}:"
-        )
+        logger.debug(f"run_shield::final:messages::{json.dumps(content_messages, indent=2)}:")
 
         response = self.bedrock_runtime_client.apply_guardrail(
             guardrailIdentifier=shield.provider_resource_id,

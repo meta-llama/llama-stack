@@ -55,9 +55,7 @@ MULTILINGUAL_ANSWER_REGEXES = [
     r"Àṣàyàn\s*:",
 ]
 
-MULTILINGUAL_ANSWER_PATTERN_TEMPLATE = (
-    r"(?i){}\s*([A-D]|[أ-د]|[অ]|[ব]|[ড]|[ঢ]|[Ａ]|[Ｂ]|[Ｃ]|[Ｄ])"
-)
+MULTILINGUAL_ANSWER_PATTERN_TEMPLATE = r"(?i){}\s*([A-D]|[أ-د]|[অ]|[ব]|[ড]|[ঢ]|[Ａ]|[Ｂ]|[Ｃ]|[Ｄ])"
 
 regex_parser_multiple_choice_answer = ScoringFn(
     identifier="basic::regex_parser_multiple_choice_answer",
@@ -66,10 +64,7 @@ regex_parser_multiple_choice_answer = ScoringFn(
     provider_id="basic",
     provider_resource_id="regex-parser-multiple-choice-answer",
     params=RegexParserScoringFnParams(
-        parsing_regexes=[
-            MULTILINGUAL_ANSWER_PATTERN_TEMPLATE.format(x)
-            for x in MULTILINGUAL_ANSWER_REGEXES
-        ],
+        parsing_regexes=[MULTILINGUAL_ANSWER_PATTERN_TEMPLATE.format(x) for x in MULTILINGUAL_ANSWER_REGEXES],
         aggregation_functions=[AggregationFunctionType.accuracy],
     ),
 )

@@ -23,9 +23,7 @@ class ResourceType(Enum):
 class Resource(BaseModel):
     """Base class for all Llama Stack resources"""
 
-    identifier: str = Field(
-        description="Unique identifier for this resource in llama stack"
-    )
+    identifier: str = Field(description="Unique identifier for this resource in llama stack")
 
     provider_resource_id: str = Field(
         description="Unique identifier for this resource in the provider",
@@ -34,6 +32,4 @@ class Resource(BaseModel):
 
     provider_id: str = Field(description="ID of the provider that owns this resource")
 
-    type: ResourceType = Field(
-        description="Type of resource (e.g. 'model', 'shield', 'vector_db', etc.)"
-    )
+    type: ResourceType = Field(description="Type of resource (e.g. 'model', 'shield', 'vector_db', etc.)")

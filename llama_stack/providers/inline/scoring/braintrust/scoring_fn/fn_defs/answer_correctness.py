@@ -21,7 +21,5 @@ answer_correctness_fn_def = ScoringFn(
     provider_id="braintrust",
     provider_resource_id="answer-correctness",
     return_type=NumberType(),
-    params=BasicScoringFnParams(
-        aggregation_functions=[AggregationFunctionType.average]
-    ),
+    params=BasicScoringFnParams(aggregation_functions=[AggregationFunctionType.average]),
 )

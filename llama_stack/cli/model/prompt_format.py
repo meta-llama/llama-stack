@@ -47,33 +47,20 @@ class ModelPromptFormat(Subcommand):
 
         # Only Llama 3.1 and 3.2 are supported
         supported_model_ids = [
-            m
-            for m in CoreModelId
-            if model_family(m) in {ModelFamily.llama3_1, ModelFamily.llama3_2}
+            m for m in CoreModelId if model_family(m) in {ModelFamily.llama3_1, ModelFamily.llama3_2}
         ]
         model_str = "\n".join([m.value for m in supported_model_ids])
         try:
             model_id = CoreModelId(args.model_name)
         except ValueError:
-            self.parser.error(
-                f"{args.model_name} is not a valid Model. Choose one from --\n{model_str}"
-            )
+            self.parser.error(f"{args.model_name} is not a valid Model. Choose one from --\n{model_str}")
 
         if model_id not in supported_model_ids:
-            self.parser.error(
-                f"{model_id} is not a valid Model. Choose one from --\n {model_str}"
-            )
+            self.parser.error(f"{model_id} is not a valid Model. Choose one from --\n {model_str}")
 
-        llama_3_1_file = (
-            importlib.resources.files("llama_models") / "llama3_1/prompt_format.md"
-        )
-        llama_3_2_text_file = (
-            importlib.resources.files("llama_models") / "llama3_2/text_prompt_format.md"
-        )
-        llama_3_2_vision_file = (
-            importlib.resources.files("llama_models")
-            / "llama3_2/vision_prompt_format.md"
-        )
+        llama_3_1_file = importlib.resources.files("llama_models") / "llama3_1/prompt_format.md"
+        llama_3_2_text_file = importlib.resources.files("llama_models") / "llama3_2/text_prompt_format.md"
+        llama_3_2_vision_file = importlib.resources.files("llama_models") / "llama3_2/vision_prompt_format.md"
         if model_family(model_id) == ModelFamily.llama3_1:
             with importlib.resources.as_file(llama_3_1_file) as f:
                 content = f.open("r").read()

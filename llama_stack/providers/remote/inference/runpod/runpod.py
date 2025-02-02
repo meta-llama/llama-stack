@@ -45,9 +45,7 @@ RUNPOD_SUPPORTED_MODELS = {
 
 class RunpodInferenceAdapter(ModelRegistryHelper, Inference):
     def __init__(self, config: RunpodImplConfig) -> None:
-        ModelRegistryHelper.__init__(
-            self, stack_to_provider_models_map=RUNPOD_SUPPORTED_MODELS
-        )
+        ModelRegistryHelper.__init__(self, stack_to_provider_models_map=RUNPOD_SUPPORTED_MODELS)
         self.config = config
         self.formatter = ChatFormat(Tokenizer.get_instance())
 
@@ -104,9 +102,7 @@ class RunpodInferenceAdapter(ModelRegistryHelper, Inference):
         r = client.completions.create(**params)
         return process_chat_completion_response(r, self.formatter)
 
-    async def _stream_chat_completion(
-        self, request: ChatCompletionRequest, client: OpenAI
-    ) -> AsyncGenerator:
+    async def _stream_chat_completion(self, request: ChatCompletionRequest, client: OpenAI) -> AsyncGenerator:
         params = self._get_params(request)
 
         async def _to_async_generator():
@@ -115,9 +111,7 @@ class RunpodInferenceAdapter(ModelRegistryHelper, Inference):
                 yield chunk
 
         stream = _to_async_generator()
-        async for chunk in process_chat_completion_stream_response(
-            stream, self.formatter
-        ):
+        async for chunk in process_chat_completion_stream_response(stream, self.formatter):
             yield chunk
 
     def _get_params(self, request: ChatCompletionRequest) -> dict:

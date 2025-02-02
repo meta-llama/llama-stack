@@ -15,9 +15,7 @@ from llama_stack.providers.utils.bedrock.refreshable_boto_session import (
 )
 
 
-def create_bedrock_client(
-    config: BedrockBaseConfig, service_name: str = "bedrock-runtime"
-) -> BaseClient:
+def create_bedrock_client(config: BedrockBaseConfig, service_name: str = "bedrock-runtime") -> BaseClient:
     """Creates a boto3 client for Bedrock services with the given configuration.
 
     Args:

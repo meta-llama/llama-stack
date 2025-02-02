@@ -90,9 +90,7 @@ MODEL_ALIASES = [
 ]
 
 
-class TogetherInferenceAdapter(
-    ModelRegistryHelper, Inference, NeedsRequestProviderData
-):
+class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProviderData):
     def __init__(self, config: TogetherImplConfig) -> None:
         ModelRegistryHelper.__init__(self, MODEL_ALIASES)
         self.config = config
@@ -140,9 +138,7 @@ class TogetherInferenceAdapter(
             together_api_key = provider_data.together_api_key
         return Together(api_key=together_api_key)
 
-    async def _nonstream_completion(
-        self, request: CompletionRequest
-    ) -> ChatCompletionResponse:
+    async def _nonstream_completion(self, request: CompletionRequest) -> ChatCompletionResponse:
         params = await self._get_params(request)
         r = self._get_client().completions.create(**params)
         return process_completion_response(r, self.formatter)
@@ -217,9 +213,7 @@ class TogetherInferenceAdapter(
         else:
             return await self._nonstream_chat_completion(request)
 
-    async def _nonstream_chat_completion(
-        self, request: ChatCompletionRequest
-    ) -> ChatCompletionResponse:
+    async def _nonstream_chat_completion(self, request: ChatCompletionRequest) -> ChatCompletionResponse:
         params = await self._get_params(request)
         if "messages" in params:
             r = self._get_client().chat.completions.create(**params)
@@ -227,9 +221,7 @@ class TogetherInferenceAdapter(
             r = self._get_client().completions.create(**params)
         return process_chat_completion_response(r, self.formatter)
 
-    async def _stream_chat_completion(
-        self, request: ChatCompletionRequest
-    ) -> AsyncGenerator:
+    async def _stream_chat_completion(self, request: ChatCompletionRequest) -> AsyncGenerator:
         params = await self._get_params(request)
 
         # if we shift to TogetherAsyncClient, we won't need this wrapper
@@ -242,40 +234,28 @@ class TogetherInferenceAdapter(
                 yield chunk
 
         stream = _to_async_generator()
-        async for chunk in process_chat_completion_stream_response(
-            stream, self.formatter
-        ):
+        async for chunk in process_chat_completion_stream_response(stream, self.formatter):
             yield chunk
 
-    async def _get_params(
-        self, request: Union[ChatCompletionRequest, CompletionRequest]
-    ) -> dict:
+    async def _get_params(self, request: Union[ChatCompletionRequest, CompletionRequest]) -> dict:
         input_dict = {}
         media_present = request_has_media(request)
         if isinstance(request, ChatCompletionRequest):
             if media_present:
-                input_dict["messages"] = [
-                    await convert_message_to_openai_dict(m) for m in request.messages
-                ]
+                input_dict["messages"] = [await convert_message_to_openai_dict(m) for m in request.messages]
             else:
                 input_dict["prompt"] = await chat_completion_request_to_prompt(
                     request, self.get_llama_model(request.model), self.formatter
                 )
         else:
-            assert (
-                not media_present
-            ), "Together does not support media for Completion requests"
-            input_dict["prompt"] = await completion_request_to_prompt(
-                request, self.formatter
-            )
+            assert not media_present, "Together does not support media for Completion requests"
+            input_dict["prompt"] = await completion_request_to_prompt(request, self.formatter)
 
         return {
             "model": request.model,
             **input_dict,
             "stream": request.stream,
-            **self._build_options(
-                request.sampling_params, request.logprobs, request.response_format
-            ),
+            **self._build_options(request.sampling_params, request.logprobs, request.response_format),
         }
 
     async def embeddings(
@@ -284,9 +264,9 @@ class TogetherInferenceAdapter(
         contents: List[InterleavedContent],
     ) -> EmbeddingsResponse:
         model = await self.model_store.get_model(model_id)
-        assert all(
-            not content_has_media(content) for content in contents
-        ), "Together does not support media for embeddings"
+        assert all(not content_has_media(content) for content in contents), (
+            "Together does not support media for embeddings"
+        )
         r = self._get_client().embeddings.create(
             model=model.provider_resource_id,
             input=[interleaved_content_as_str(content) for content in contents],

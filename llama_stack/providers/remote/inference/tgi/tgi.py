@@ -74,9 +74,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
         self.formatter = ChatFormat(Tokenizer.get_instance())
         self.register_helper = ModelRegistryHelper(build_model_aliases())
         self.huggingface_repo_to_llama_model_id = {
-            model.huggingface_repo: model.descriptor()
-            for model in all_registered_models()
-            if model.huggingface_repo
+            model.huggingface_repo: model.descriptor() for model in all_registered_models() if model.huggingface_repo
         }
 
     async def shutdown(self) -> None:
@@ -150,17 +148,13 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
         return options
 
     async def _get_params_for_completion(self, request: CompletionRequest) -> dict:
-        prompt, input_tokens = await completion_request_to_prompt_model_input_info(
-            request, self.formatter
-        )
+        prompt, input_tokens = await completion_request_to_prompt_model_input_info(request, self.formatter)
 
         return dict(
             prompt=prompt,
             stream=request.stream,
             details=True,
-            max_new_tokens=self._get_max_new_tokens(
-                request.sampling_params, input_tokens
-            ),
+            max_new_tokens=self._get_max_new_tokens(request.sampling_params, input_tokens),
             stop_sequences=["<|eom_id|>", "<|eot_id|>"],
             **self._build_options(request.sampling_params, request.response_format),
         )
@@ -176,9 +170,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
                 if chunk.details:
                     finish_reason = chunk.details.finish_reason
 
-                choice = OpenAICompatCompletionChoice(
-                    text=token_result.text, finish_reason=finish_reason
-                )
+                choice = OpenAICompatCompletionChoice(text=token_result.text, finish_reason=finish_reason)
                 yield OpenAICompatCompletionResponse(
                     choices=[choice],
                 )
@@ -232,9 +224,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
         else:
             return await self._nonstream_chat_completion(request)
 
-    async def _nonstream_chat_completion(
-        self, request: ChatCompletionRequest
-    ) -> ChatCompletionResponse:
+    async def _nonstream_chat_completion(self, request: ChatCompletionRequest) -> ChatCompletionResponse:
         params = await self._get_params(request)
         r = await self.client.text_generation(**params)
 
@@ -247,9 +237,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
         )
         return process_chat_completion_response(response, self.formatter)
 
-    async def _stream_chat_completion(
-        self, request: ChatCompletionRequest
-    ) -> AsyncGenerator:
+    async def _stream_chat_completion(self, request: ChatCompletionRequest) -> AsyncGenerator:
         params = await self._get_params(request)
 
         async def _generate_and_convert_to_openai_compat():
@@ -263,9 +251,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
                 )
 
         stream = _generate_and_convert_to_openai_compat()
-        async for chunk in process_chat_completion_stream_response(
-            stream, self.formatter
-        ):
+        async for chunk in process_chat_completion_stream_response(stream, self.formatter):
             yield chunk
 
     async def _get_params(self, request: ChatCompletionRequest) -> dict:
@@ -276,9 +262,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
             prompt=prompt,
             stream=request.stream,
             details=True,
-            max_new_tokens=self._get_max_new_tokens(
-                request.sampling_params, input_tokens
-            ),
+            max_new_tokens=self._get_max_new_tokens(request.sampling_params, input_tokens),
             stop_sequences=["<|eom_id|>", "<|eot_id|>"],
             **self._build_options(request.sampling_params, request.response_format),
         )
@@ -304,9 +288,7 @@ class TGIAdapter(_HfAdapter):
 
 class InferenceAPIAdapter(_HfAdapter):
     async def initialize(self, config: InferenceAPIImplConfig) -> None:
-        self.client = AsyncInferenceClient(
-            model=config.huggingface_repo, token=config.api_token.get_secret_value()
-        )
+        self.client = AsyncInferenceClient(model=config.huggingface_repo, token=config.api_token.get_secret_value())
         endpoint_info = await self.client.get_endpoint_info()
         self.max_tokens = endpoint_info["max_total_tokens"]
         self.model_id = endpoint_info["model_id"]
@@ -324,6 +306,4 @@ class InferenceEndpointAdapter(_HfAdapter):
         # Initialize the adapter
         self.client = endpoint.async_client
         self.model_id = endpoint.repository
-        self.max_tokens = int(
-            endpoint.raw["model"]["image"]["custom"]["env"]["MAX_TOTAL_TOKENS"]
-        )
+        self.max_tokens = int(endpoint.raw["model"]["image"]["custom"]["env"]["MAX_TOTAL_TOKENS"])

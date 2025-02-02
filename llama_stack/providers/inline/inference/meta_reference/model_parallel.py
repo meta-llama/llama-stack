@@ -91,9 +91,7 @@ class LlamaModelParallelGenerator:
 
         self.group = ModelParallelProcessGroup(
             model_parallel_size,
-            init_model_cb=partial(
-                init_model_cb, self.config, self.model_id, self.llama_model
-            ),
+            init_model_cb=partial(init_model_cb, self.config, self.model_id, self.llama_model),
         )
         self.group.start()
         return self

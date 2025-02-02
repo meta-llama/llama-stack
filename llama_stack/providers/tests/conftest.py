@@ -79,9 +79,7 @@ def get_test_config_for_api(metafunc_config, api):
     return getattr(test_config, api)
 
 
-def get_provider_fixture_overrides_from_test_config(
-    metafunc_config, api, default_provider_fixture_combinations
-):
+def get_provider_fixture_overrides_from_test_config(metafunc_config, api, default_provider_fixture_combinations):
     api_config = get_test_config_for_api(metafunc_config, api)
     if api_config is None:
         return None
@@ -165,9 +163,7 @@ def pytest_addoption(parser):
         help="Set output file for test report, e.g. --output=pytest_report.md",
     )
     """Add custom command line options"""
-    parser.addoption(
-        "--env", action="append", help="Set environment variables, e.g. --env KEY=value"
-    )
+    parser.addoption("--env", action="append", help="Set environment variables, e.g. --env KEY=value")
     parser.addoption(
         "--inference-model",
         action="store",
@@ -205,9 +201,7 @@ def get_provider_marks(providers: Dict[str, str]) -> List[Any]:
     return marks
 
 
-def get_provider_fixture_overrides(
-    config, available_fixtures: Dict[str, List[str]]
-) -> Optional[List[pytest.param]]:
+def get_provider_fixture_overrides(config, available_fixtures: Dict[str, List[str]]) -> Optional[List[pytest.param]]:
     provider_str = config.getoption("--providers")
     if not provider_str:
         return None
@@ -222,9 +216,7 @@ def get_provider_fixture_overrides(
     ]
 
 
-def parse_fixture_string(
-    provider_str: str, available_fixtures: Dict[str, List[str]]
-) -> Dict[str, str]:
+def parse_fixture_string(provider_str: str, available_fixtures: Dict[str, List[str]]) -> Dict[str, str]:
     """Parse provider string of format 'api1=provider1,api2=provider2'"""
     if not provider_str:
         return {}
@@ -233,18 +225,13 @@ def parse_fixture_string(
     pairs = provider_str.split(",")
     for pair in pairs:
         if "=" not in pair:
-            raise ValueError(
-                f"Invalid provider specification: {pair}. Expected format: api=provider"
-            )
+            raise ValueError(f"Invalid provider specification: {pair}. Expected format: api=provider")
         api, fixture = pair.split("=")
         if api not in available_fixtures:
-            raise ValueError(
-                f"Unknown API: {api}. Available APIs: {list(available_fixtures.keys())}"
-            )
+            raise ValueError(f"Unknown API: {api}. Available APIs: {list(available_fixtures.keys())}")
         if fixture not in available_fixtures[api]:
             raise ValueError(
-                f"Unknown provider '{fixture}' for API '{api}'. "
-                f"Available providers: {list(available_fixtures[api])}"
+                f"Unknown provider '{fixture}' for API '{api}'. Available providers: {list(available_fixtures[api])}"
             )
         fixtures[api] = fixture
 
@@ -252,8 +239,7 @@ def parse_fixture_string(
     for api in available_fixtures.keys():
         if api not in fixtures:
             raise ValueError(
-                f"Missing provider fixture for API '{api}'. Available providers: "
-                f"{list(available_fixtures[api])}"
+                f"Missing provider fixture for API '{api}'. Available providers: {list(available_fixtures[api])}"
             )
     return fixtures
 

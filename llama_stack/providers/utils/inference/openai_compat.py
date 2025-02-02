@@ -135,9 +135,7 @@ def convert_openai_completion_logprobs(
     return None
 
 
-def convert_openai_completion_logprobs_stream(
-    text: str, logprobs: Optional[Union[float, OpenAICompatLogprobs]]
-):
+def convert_openai_completion_logprobs_stream(text: str, logprobs: Optional[Union[float, OpenAICompatLogprobs]]):
     if logprobs is None:
         return None
     if isinstance(logprobs, float):
@@ -148,9 +146,7 @@ def convert_openai_completion_logprobs_stream(
     return None
 
 
-def process_completion_response(
-    response: OpenAICompatCompletionResponse, formatter: ChatFormat
-) -> CompletionResponse:
+def process_completion_response(response: OpenAICompatCompletionResponse, formatter: ChatFormat) -> CompletionResponse:
     choice = response.choices[0]
     # drop suffix <eot_id> if present and return stop reason as end of turn
     if choice.text.endswith("<|eot_id|>"):
@@ -341,17 +337,13 @@ async def process_chat_completion_stream_response(
     )
 
 
-async def convert_message_to_openai_dict(
-    message: Message, download: bool = False
-) -> dict:
+async def convert_message_to_openai_dict(message: Message, download: bool = False) -> dict:
     async def _convert_content(content) -> dict:
         if isinstance(content, ImageContentItem):
             return {
                 "type": "image_url",
                 "image_url": {
-                    "url": await convert_image_content_to_url(
-                        content, download=download
-                    ),
+                    "url": await convert_image_content_to_url(content, download=download),
                 },
             }
         else:

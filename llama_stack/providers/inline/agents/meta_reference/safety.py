@@ -33,9 +33,7 @@ class ShieldRunnerMixin:
         self.input_shields = input_shields
         self.output_shields = output_shields
 
-    async def run_multiple_shields(
-        self, messages: List[Message], identifiers: List[str]
-    ) -> None:
+    async def run_multiple_shields(self, messages: List[Message], identifiers: List[str]) -> None:
         responses = await asyncio.gather(
             *[
                 self.safety_api.run_shield(

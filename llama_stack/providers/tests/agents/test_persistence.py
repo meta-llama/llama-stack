@@ -57,14 +57,10 @@ class TestAgentPersistence:
 
         run_config = agents_stack.run_config
         provider_config = run_config.providers["agents"][0].config
-        persistence_store = await kvstore_impl(
-            SqliteKVStoreConfig(**provider_config["persistence_store"])
-        )
+        persistence_store = await kvstore_impl(SqliteKVStoreConfig(**provider_config["persistence_store"]))
 
         await agents_impl.delete_agents_session(agent_id, session_id)
-        session_response = await persistence_store.get(
-            f"session:{agent_id}:{session_id}"
-        )
+        session_response = await persistence_store.get(f"session:{agent_id}:{session_id}")
 
         await agents_impl.delete_agents(agent_id)
         agent_response = await persistence_store.get(f"agent:{agent_id}")
@@ -73,9 +69,7 @@ class TestAgentPersistence:
         assert agent_response is None
 
     @pytest.mark.asyncio
-    async def test_get_agent_turns_and_steps(
-        self, agents_stack, sample_messages, common_params
-    ):
+    async def test_get_agent_turns_and_steps(self, agents_stack, sample_messages, common_params):
         agents_impl = agents_stack.impls[Api.agents]
 
         agent_id, session_id = await create_agent_session(
@@ -97,17 +91,13 @@ class TestAgentPersistence:
             stream=True,
         )
 
-        turn_response = [
-            chunk async for chunk in await agents_impl.create_agent_turn(**turn_request)
-        ]
+        turn_response = [chunk async for chunk in await agents_impl.create_agent_turn(**turn_request)]
 
         final_event = turn_response[-1].event.payload
         turn_id = final_event.turn.turn_id
 
         provider_config = agents_stack.run_config.providers["agents"][0].config
-        persistence_store = await kvstore_impl(
-            SqliteKVStoreConfig(**provider_config["persistence_store"])
-        )
+        persistence_store = await kvstore_impl(SqliteKVStoreConfig(**provider_config["persistence_store"]))
         turn = await persistence_store.get(f"session:{agent_id}:{session_id}:{turn_id}")
         response = await agents_impl.get_agents_turn(agent_id, session_id, turn_id)
 
@@ -117,8 +107,6 @@ class TestAgentPersistence:
 
         steps = final_event.turn.steps
         step_id = steps[0].step_id
-        step_response = await agents_impl.get_agents_step(
-            agent_id, session_id, turn_id, step_id
-        )
+        step_response = await agents_impl.get_agents_step(agent_id, session_id, turn_id, step_id)
 
         assert step_response.step == steps[0]

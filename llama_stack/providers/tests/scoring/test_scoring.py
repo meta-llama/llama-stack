@@ -56,9 +56,7 @@ class TestScoring:
         scoring_fns_list = await scoring_functions_impl.list_scoring_functions()
         provider_id = scoring_fns_list[0].provider_id
         if provider_id == "llm-as-judge":
-            pytest.skip(
-                f"{provider_id} provider does not support scoring without params"
-            )
+            pytest.skip(f"{provider_id} provider does not support scoring without params")
 
         await register_dataset(datasets_impl, for_rag=True)
         response = await datasets_impl.list_datasets()

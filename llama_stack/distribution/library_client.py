@@ -154,9 +154,7 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
 
             def sync_generator():
                 try:
-                    async_stream = loop.run_until_complete(
-                        self.async_client.request(*args, **kwargs)
-                    )
+                    async_stream = loop.run_until_complete(self.async_client.request(*args, **kwargs))
                     while True:
                         chunk = loop.run_until_complete(async_stream.__anext__())
                         yield chunk
@@ -181,9 +179,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         # when using the library client, we should not log to console since many
         # of our logs are intended for server-side usage
         current_sinks = os.environ.get("TELEMETRY_SINKS", "sqlite").split(",")
-        os.environ["TELEMETRY_SINKS"] = ",".join(
-            sink for sink in current_sinks if sink != "console"
-        )
+        os.environ["TELEMETRY_SINKS"] = ",".join(sink for sink in current_sinks if sink != "console")
 
         if config_path_or_template_name.endswith(".yaml"):
             config_path = Path(config_path_or_template_name)
@@ -202,9 +198,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
 
     async def initialize(self):
         try:
-            self.impls = await construct_stack(
-                self.config, self.custom_provider_registry
-            )
+            self.impls = await construct_stack(self.config, self.custom_provider_registry)
         except ModuleNotFoundError as _e:
             cprint(_e.msg, "red")
             cprint(
@@ -247,9 +241,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
                 func = getattr(impl, endpoint.name)
                 if endpoint.method not in endpoint_impls:
                     endpoint_impls[endpoint.method] = {}
-                endpoint_impls[endpoint.method][
-                    _convert_path_to_regex(endpoint.route)
-                ] = func
+                endpoint_impls[endpoint.method][_convert_path_to_regex(endpoint.route)] = func
 
         self.endpoint_impls = endpoint_impls
         return True
@@ -266,9 +258,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
             raise ValueError("Client not initialized")
 
         if self.provider_data:
-            set_request_provider_data(
-                {"X-LlamaStack-Provider-Data": json.dumps(self.provider_data)}
-            )
+            set_request_provider_data({"X-LlamaStack-Provider-Data": json.dumps(self.provider_data)})
 
         if stream:
             response = await self._call_streaming(
@@ -408,9 +398,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         )
         return await response.parse()
 
-    def _convert_body(
-        self, path: str, method: str, body: Optional[dict] = None
-    ) -> dict:
+    def _convert_body(self, path: str, method: str, body: Optional[dict] = None) -> dict:
         if not body:
             return {}
 
@@ -425,7 +413,5 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         for param_name, param in sig.parameters.items():
             if param_name in body:
                 value = body.get(param_name)
-                converted_body[param_name] = convert_to_pydantic(
-                    param.annotation, value
-                )
+                converted_body[param_name] = convert_to_pydantic(param.annotation, value)
         return converted_body

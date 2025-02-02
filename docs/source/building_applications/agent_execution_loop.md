@@ -77,7 +77,7 @@ agent_config = AgentConfig(
     instructions="You are a helpful assistant",
     # Enable both RAG and tool usage
     toolgroups=[
-        {"name": "builtin::rag", "args": {"vector_db_ids": ["my_docs"]}}.
+        {"name": "builtin::rag", "args": {"vector_db_ids": ["my_docs"]}},
         "builtin::code_interpreter",
     ],
     # Configure safety
@@ -86,13 +86,9 @@ agent_config = AgentConfig(
     # Control the inference loop
     max_infer_iters=5,
     sampling_params={
-        "strategy": {
-            "type": "top_p",
-            "temperature": 0.7,
-            "top_p": 0.95
-        },
-        "max_tokens": 2048
-    }
+        "strategy": {"type": "top_p", "temperature": 0.7, "top_p": 0.95},
+        "max_tokens": 2048,
+    },
 )
 
 agent = Agent(client, agent_config)
@@ -101,11 +97,13 @@ session_id = agent.create_session("monitored_session")
 # Stream the agent's execution steps
 response = agent.create_turn(
     messages=[{"role": "user", "content": "Analyze this code and run it"}],
-    attachments=[{
-        "content": "https://raw.githubusercontent.com/example/code.py",
-        "mime_type": "text/plain"
-    }],
-    session_id=session_id
+    attachments=[
+        {
+            "content": "https://raw.githubusercontent.com/example/code.py",
+            "mime_type": "text/plain",
+        }
+    ],
+    session_id=session_id,
 )
 
 # Monitor each step of execution

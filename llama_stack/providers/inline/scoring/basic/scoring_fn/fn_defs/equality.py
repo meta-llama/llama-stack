@@ -18,7 +18,5 @@ equality = ScoringFn(
     provider_id="basic",
     provider_resource_id="equality",
     return_type=NumberType(),
-    params=BasicScoringFnParams(
-        aggregation_functions=[AggregationFunctionType.accuracy]
-    ),
+    params=BasicScoringFnParams(aggregation_functions=[AggregationFunctionType.accuracy]),
 )

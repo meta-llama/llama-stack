@@ -87,13 +87,9 @@ class CodeExecutor:
         scripts = req.scripts
         for i in range(len(scripts) - 1):
             if req.only_last_cell_stdouterr:
-                scripts[i] = STDOUTERR_SINK_WRAPPER_TEMPLATE.format(
-                    code=textwrap.indent(scripts[i], " " * 4)
-                )
+                scripts[i] = STDOUTERR_SINK_WRAPPER_TEMPLATE.format(code=textwrap.indent(scripts[i], " " * 4))
             if req.only_last_cell_fail:
-                scripts[i] = TRYEXCEPT_WRAPPER_TEMPLATE.format(
-                    code=textwrap.indent(scripts[i], " " * 4)
-                )
+                scripts[i] = TRYEXCEPT_WRAPPER_TEMPLATE.format(code=textwrap.indent(scripts[i], " " * 4))
 
         # Seeds prefix:
         seed = req.seed
@@ -190,7 +186,7 @@ def execute_subprocess_request(request, ctx: CodeExecutionContext):
     if request["type"] == "matplotlib":
         return process_matplotlib_response(request, ctx.matplotlib_dump_dir)
     else:
-        raise Exception(f'Unrecognised network request type: {request["type"]}')
+        raise Exception(f"Unrecognised network request type: {request['type']}")
 
 
 def do_subprocess(*, cmd: list, env: dict, ctx: CodeExecutionContext):

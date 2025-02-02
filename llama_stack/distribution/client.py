@@ -68,9 +68,7 @@ def create_api_client_class(protocol) -> Type:
                 return_type = None
             else:
                 return_type = extract_non_async_iterator_type(sig.return_annotation)
-                assert return_type, (
-                    f"Could not extract return type for {sig.return_annotation}"
-                )
+                assert return_type, f"Could not extract return type for {sig.return_annotation}"
 
             async with httpx.AsyncClient() as client:
                 params = self.httpx_request_params(method_name, *args, **kwargs)
@@ -87,9 +85,7 @@ def create_api_client_class(protocol) -> Type:
             webmethod, sig = self.routes[method_name]
 
             return_type = extract_async_iterator_type(sig.return_annotation)
-            assert return_type, (
-                f"Could not extract return type for {sig.return_annotation}"
-            )
+            assert return_type, f"Could not extract return type for {sig.return_annotation}"
 
             async with httpx.AsyncClient() as client:
                 params = self.httpx_request_params(method_name, *args, **kwargs)
@@ -204,9 +200,7 @@ async def example(model: str = None):
     if not model:
         model = "Llama3.2-3B-Instruct"
 
-    message = UserMessage(
-        content="hello world, write me a 2 sentence poem about the moon"
-    )
+    message = UserMessage(content="hello world, write me a 2 sentence poem about the moon")
     cprint(f"User>{message.content}", "green")
 
     stream = True

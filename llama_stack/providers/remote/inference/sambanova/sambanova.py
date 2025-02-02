@@ -137,9 +137,7 @@ class SambaNovaInferenceAdapter(ModelRegistryHelper, Inference):
         else:
             return await self._nonstream_chat_completion(request_sambanova)
 
-    async def _nonstream_chat_completion(
-        self, request: ChatCompletionRequest
-    ) -> ChatCompletionResponse:
+    async def _nonstream_chat_completion(self, request: ChatCompletionRequest) -> ChatCompletionResponse:
         response = self._get_client().chat.completions.create(**request)
 
         choice = response.choices[0]
@@ -147,30 +145,22 @@ class SambaNovaInferenceAdapter(ModelRegistryHelper, Inference):
         result = ChatCompletionResponse(
             completion_message=CompletionMessage(
                 content=choice.message.content or "",
-                stop_reason=self.convert_to_sambanova_finish_reason(
-                    choice.finish_reason
-                ),
-                tool_calls=self.convert_to_sambanova_tool_calls(
-                    choice.message.tool_calls
-                ),
+                stop_reason=self.convert_to_sambanova_finish_reason(choice.finish_reason),
+                tool_calls=self.convert_to_sambanova_tool_calls(choice.message.tool_calls),
             ),
             logprobs=None,
         )
 
         return result
 
-    async def _stream_chat_completion(
-        self, request: ChatCompletionRequest
-    ) -> AsyncGenerator:
+    async def _stream_chat_completion(self, request: ChatCompletionRequest) -> AsyncGenerator:
         async def _to_async_generator():
             streaming = self._get_client().chat.completions.create(**request)
             for chunk in streaming:
                 yield chunk
 
         stream = _to_async_generator()
-        async for chunk in process_chat_completion_stream_response(
-            stream, self.formatter
-        ):
+        async for chunk in process_chat_completion_stream_response(stream, self.formatter):
             yield chunk
 
     async def embeddings(
@@ -180,14 +170,10 @@ class SambaNovaInferenceAdapter(ModelRegistryHelper, Inference):
     ) -> EmbeddingsResponse:
         raise NotImplementedError()
 
-    async def convert_chat_completion_request(
-        self, request: ChatCompletionRequest
-    ) -> dict:
+    async def convert_chat_completion_request(self, request: ChatCompletionRequest) -> dict:
         compatible_request = self.convert_sampling_params(request.sampling_params)
         compatible_request["model"] = request.model
-        compatible_request["messages"] = await self.convert_to_sambanova_messages(
-            request.messages
-        )
+        compatible_request["messages"] = await self.convert_to_sambanova_messages(request.messages)
         compatible_request["stream"] = request.stream
         compatible_request["logprobs"] = False
         compatible_request["extra_headers"] = {
@@ -196,9 +182,7 @@ class SambaNovaInferenceAdapter(ModelRegistryHelper, Inference):
         compatible_request["tools"] = self.convert_to_sambanova_tool(request.tools)
         return compatible_request
 
-    def convert_sampling_params(
-        self, sampling_params: SamplingParams, legacy: bool = False
-    ) -> dict:
+    def convert_sampling_params(self, sampling_params: SamplingParams, legacy: bool = False) -> dict:
         params = {}
 
         if sampling_params:
@@ -219,9 +203,7 @@ class SambaNovaInferenceAdapter(ModelRegistryHelper, Inference):
 
         return params
 
-    async def convert_to_sambanova_messages(
-        self, messages: List[Message]
-    ) -> List[dict]:
+    async def convert_to_sambanova_messages(self, messages: List[Message]) -> List[dict]:
         conversation = []
         for message in messages:
             content = {}

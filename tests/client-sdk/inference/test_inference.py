@@ -101,9 +101,7 @@ def test_text_completion_streaming(llama_stack_client, text_model_id):
     assert len(content_str) > 10
 
 
-def test_completion_log_probs_non_streaming(
-    llama_stack_client, text_model_id, inference_provider_type
-):
+def test_completion_log_probs_non_streaming(llama_stack_client, text_model_id, inference_provider_type):
     if inference_provider_type not in PROVIDER_LOGPROBS_TOP_K:
         pytest.xfail(f"{inference_provider_type} doesn't support log probs yet")
 
@@ -119,15 +117,11 @@ def test_completion_log_probs_non_streaming(
         },
     )
     assert response.logprobs, "Logprobs should not be empty"
-    assert (
-        1 <= len(response.logprobs) <= 5
-    )  # each token has 1 logprob and here max_tokens=5
+    assert 1 <= len(response.logprobs) <= 5  # each token has 1 logprob and here max_tokens=5
     assert all(len(logprob.logprobs_by_token) == 1 for logprob in response.logprobs)
 
 
-def test_completion_log_probs_streaming(
-    llama_stack_client, text_model_id, inference_provider_type
-):
+def test_completion_log_probs_streaming(llama_stack_client, text_model_id, inference_provider_type):
     if inference_provider_type not in PROVIDER_LOGPROBS_TOP_K:
         pytest.xfail(f"{inference_provider_type} doesn't support log probs yet")
 
@@ -146,16 +140,12 @@ def test_completion_log_probs_streaming(
     for chunk in streamed_content:
         if chunk.delta:  # if there's a token, we expect logprobs
             assert chunk.logprobs, "Logprobs should not be empty"
-            assert all(
-                len(logprob.logprobs_by_token) == 1 for logprob in chunk.logprobs
-            )
+            assert all(len(logprob.logprobs_by_token) == 1 for logprob in chunk.logprobs)
         else:  # no token, no logprobs
             assert not chunk.logprobs, "Logprobs should be empty"
 
 
-def test_text_completion_structured_output(
-    llama_stack_client, text_model_id, inference_provider_type
-):
+def test_text_completion_structured_output(llama_stack_client, text_model_id, inference_provider_type):
     user_input = """
     Michael Jordan was born in 1963. He played basketball for the Chicago Bulls. He retired in 2003.
     """
@@ -190,9 +180,7 @@ def test_text_completion_structured_output(
         ("What are the names of the planets that have rings around them?", "Saturn"),
     ],
 )
-def test_text_chat_completion_non_streaming(
-    llama_stack_client, text_model_id, question, expected
-):
+def test_text_chat_completion_non_streaming(llama_stack_client, text_model_id, question, expected):
     response = llama_stack_client.inference.chat_completion(
         model_id=text_model_id,
         messages=[
@@ -215,17 +203,13 @@ def test_text_chat_completion_non_streaming(
         ("What is the name of the US captial?", "Washington"),
     ],
 )
-def test_text_chat_completion_streaming(
-    llama_stack_client, text_model_id, question, expected
-):
+def test_text_chat_completion_streaming(llama_stack_client, text_model_id, question, expected):
     response = llama_stack_client.inference.chat_completion(
         model_id=text_model_id,
         messages=[{"role": "user", "content": question}],
         stream=True,
     )
-    streamed_content = [
-        str(chunk.event.delta.text.lower().strip()) for chunk in response
-    ]
+    streamed_content = [str(chunk.event.delta.text.lower().strip()) for chunk in response]
     assert len(streamed_content) > 0
     assert expected.lower() in "".join(streamed_content)
 
@@ -251,9 +235,7 @@ def test_text_chat_completion_with_tool_calling_and_non_streaming(
 
     assert len(response.completion_message.tool_calls) == 1
     assert response.completion_message.tool_calls[0].tool_name == "get_weather"
-    assert response.completion_message.tool_calls[0].arguments == {
-        "location": "San Francisco, CA"
-    }
+    assert response.completion_message.tool_calls[0].arguments == {"location": "San Francisco, CA"}
 
 
 # Will extract streamed text and separate it from tool invocation content
@@ -287,9 +269,7 @@ def test_text_chat_completion_with_tool_calling_and_streaming(
     assert tool_invocation_content == "[get_weather, {'location': 'San Francisco, CA'}]"
 
 
-def test_text_chat_completion_structured_output(
-    llama_stack_client, text_model_id, inference_provider_type
-):
+def test_text_chat_completion_structured_output(llama_stack_client, text_model_id, inference_provider_type):
     class AnswerFormat(BaseModel):
         first_name: str
         last_name: str
@@ -382,9 +362,7 @@ def test_image_chat_completion_streaming(llama_stack_client, vision_model_id):
 
 
 @pytest.mark.parametrize("type_", ["url", "data"])
-def test_image_chat_completion_base64(
-    llama_stack_client, vision_model_id, base64_image_data, base64_image_url, type_
-):
+def test_image_chat_completion_base64(llama_stack_client, vision_model_id, base64_image_data, base64_image_url, type_):
     image_spec = {
         "url": {
             "type": "image",

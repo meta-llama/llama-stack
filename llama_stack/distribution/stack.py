@@ -110,9 +110,7 @@ class EnvVarError(Exception):
     def __init__(self, var_name: str, path: str = ""):
         self.var_name = var_name
         self.path = path
-        super().__init__(
-            f"Environment variable '{var_name}' not set or empty{f' at {path}' if path else ''}"
-        )
+        super().__init__(f"Environment variable '{var_name}' not set or empty{f' at {path}' if path else ''}")
 
 
 def redact_sensitive_fields(data: Dict[str, Any]) -> Dict[str, Any]:
@@ -187,9 +185,7 @@ def validate_env_pair(env_pair: str) -> tuple[str, str]:
         if not key:
             raise ValueError(f"Empty key in environment variable pair: {env_pair}")
         if not all(c.isalnum() or c == "_" for c in key):
-            raise ValueError(
-                f"Key must contain only alphanumeric characters and underscores: {key}"
-            )
+            raise ValueError(f"Key must contain only alphanumeric characters and underscores: {key}")
         return key, value
     except ValueError as e:
         raise ValueError(
@@ -202,20 +198,14 @@ def validate_env_pair(env_pair: str) -> tuple[str, str]:
 async def construct_stack(
     run_config: StackRunConfig, provider_registry: Optional[ProviderRegistry] = None
 ) -> Dict[Api, Any]:
-    dist_registry, _ = await create_dist_registry(
-        run_config.metadata_store, run_config.image_name
-    )
-    impls = await resolve_impls(
-        run_config, provider_registry or get_provider_registry(), dist_registry
-    )
+    dist_registry, _ = await create_dist_registry(run_config.metadata_store, run_config.image_name)
+    impls = await resolve_impls(run_config, provider_registry or get_provider_registry(), dist_registry)
     await register_resources(run_config, impls)
     return impls
 
 
 def get_stack_run_config_from_template(template: str) -> StackRunConfig:
-    template_path = (
-        importlib.resources.files("llama_stack") / f"templates/{template}/run.yaml"
-    )
+    template_path = importlib.resources.files("llama_stack") / f"templates/{template}/run.yaml"
 
     with importlib.resources.as_file(template_path) as path:
         if not path.exists():

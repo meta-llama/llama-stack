@@ -12,9 +12,7 @@ from .fixtures import INFERENCE_FIXTURES
 
 def pytest_configure(config):
     for model in ["llama_8b", "llama_3b", "llama_vision"]:
-        config.addinivalue_line(
-            "markers", f"{model}: mark test to run only with the given model"
-        )
+        config.addinivalue_line("markers", f"{model}: mark test to run only with the given model")
 
     for fixture_name in INFERENCE_FIXTURES:
         config.addinivalue_line(
@@ -24,12 +22,8 @@ def pytest_configure(config):
 
 
 MODEL_PARAMS = [
-    pytest.param(
-        "meta-llama/Llama-3.1-8B-Instruct", marks=pytest.mark.llama_8b, id="llama_8b"
-    ),
-    pytest.param(
-        "meta-llama/Llama-3.2-3B-Instruct", marks=pytest.mark.llama_3b, id="llama_3b"
-    ),
+    pytest.param("meta-llama/Llama-3.1-8B-Instruct", marks=pytest.mark.llama_8b, id="llama_8b"),
+    pytest.param("meta-llama/Llama-3.2-3B-Instruct", marks=pytest.mark.llama_3b, id="llama_3b"),
 ]
 
 VISION_MODEL_PARAMS = [
@@ -49,9 +43,7 @@ def pytest_generate_tests(metafunc):
         params = []
         inference_models = getattr(test_config, "inference_models", [])
         for model in inference_models:
-            if ("Vision" in cls_name and "Vision" in model) or (
-                "Vision" not in cls_name and "Vision" not in model
-            ):
+            if ("Vision" in cls_name and "Vision" in model) or ("Vision" not in cls_name and "Vision" not in model):
                 params.append(pytest.param(model, id=model))
 
         if not params:
@@ -74,10 +66,7 @@ def pytest_generate_tests(metafunc):
             fixtures = [stack.values[0]["inference"] for stack in filtered_stacks]
         if test_config:
             if custom_fixtures := [
-                (
-                    scenario.fixture_combo_id
-                    or scenario.provider_fixtures.get("inference")
-                )
+                (scenario.fixture_combo_id or scenario.provider_fixtures.get("inference"))
                 for scenario in test_config.scenarios
             ]:
                 fixtures = custom_fixtures

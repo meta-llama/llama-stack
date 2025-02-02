@@ -245,9 +245,7 @@ class JsonSchemaResponseFormat(BaseModel):
     :param json_schema: The JSON schema the response should conform to. In a Python SDK, this is often a `pydantic` model.
     """
 
-    type: Literal[ResponseFormatType.json_schema.value] = (
-        ResponseFormatType.json_schema.value
-    )
+    type: Literal[ResponseFormatType.json_schema.value] = ResponseFormatType.json_schema.value
     json_schema: Dict[str, Any]
 
 
@@ -406,9 +404,7 @@ class Inference(Protocol):
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
-    ) -> Union[
-        ChatCompletionResponse, AsyncIterator[ChatCompletionResponseStreamChunk]
-    ]:
+    ) -> Union[ChatCompletionResponse, AsyncIterator[ChatCompletionResponseStreamChunk]]:
         """Generate a chat completion for the given messages using the specified model.
 
         :param model_id: The identifier of the model to use. The model must be registered with Llama Stack and available via the /models endpoint.

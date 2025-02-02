@@ -81,9 +81,7 @@ class TestClientTool(ClientTool):
 
 @pytest.fixture(scope="session")
 def agent_config(llama_stack_client, text_model_id):
-    available_shields = [
-        shield.identifier for shield in llama_stack_client.shields.list()
-    ]
+    available_shields = [shield.identifier for shield in llama_stack_client.shields.list()]
     available_shields = available_shields[:1]
     print(f"Using shield: {available_shields}")
     agent_config = AgentConfig(

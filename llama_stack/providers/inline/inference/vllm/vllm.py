@@ -176,13 +176,9 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         log.info("Sampling params: %s", sampling_params)
         request_id = _random_uuid()
 
-        prompt = await chat_completion_request_to_prompt(
-            request, self.config.model, self.formatter
-        )
+        prompt = await chat_completion_request_to_prompt(request, self.config.model, self.formatter)
         vllm_sampling_params = self._sampling_params(request.sampling_params)
-        results_generator = self.engine.generate(
-            prompt, vllm_sampling_params, request_id
-        )
+        results_generator = self.engine.generate(prompt, vllm_sampling_params, request_id)
         if stream:
             return self._stream_chat_completion(request, results_generator)
         else:
@@ -230,12 +226,8 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
                 )
 
         stream = _generate_and_convert_to_openai_compat()
-        async for chunk in process_chat_completion_stream_response(
-            stream, self.formatter
-        ):
+        async for chunk in process_chat_completion_stream_response(stream, self.formatter):
             yield chunk
 
-    async def embeddings(
-        self, model_id: str, contents: List[InterleavedContent]
-    ) -> EmbeddingsResponse:
+    async def embeddings(self, model_id: str, contents: List[InterleavedContent]) -> EmbeddingsResponse:
         raise NotImplementedError()

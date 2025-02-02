@@ -29,9 +29,7 @@ def find_template_dirs(templates_dir: Path) -> Iterator[Path]:
     if not templates_dir.exists():
         raise FileNotFoundError(f"Templates directory not found: {templates_dir}")
 
-    return (
-        d for d in templates_dir.iterdir() if d.is_dir() and d.name != "__pycache__"
-    )
+    return (d for d in templates_dir.iterdir() if d.is_dir() and d.name != "__pycache__")
 
 
 def process_template(template_dir: Path, progress) -> None:
@@ -49,14 +47,10 @@ def process_template(template_dir: Path, progress) -> None:
 
             template.save_distribution(
                 yaml_output_dir=REPO_ROOT / "llama_stack" / "templates" / template.name,
-                doc_output_dir=REPO_ROOT
-                / "docs/source/distributions"
-                / f"{template.distro_type}_distro",
+                doc_output_dir=REPO_ROOT / "docs/source/distributions" / f"{template.distro_type}_distro",
             )
         else:
-            progress.print(
-                f"[yellow]Warning: {template_dir.name} has no get_distribution_template function"
-            )
+            progress.print(f"[yellow]Warning: {template_dir.name} has no get_distribution_template function")
 
     except Exception as e:
         progress.print(f"[red]Error processing {template_dir.name}: {str(e)}")
@@ -82,9 +76,7 @@ def collect_template_dependencies(template_dir: Path) -> tuple[str, list[str]]:
             template = template_func()
             normal_deps, special_deps = get_provider_dependencies(template.providers)
             # Combine all dependencies in order: normal deps, special deps, server deps
-            all_deps = sorted(list(set(normal_deps + SERVER_DEPENDENCIES))) + sorted(
-                list(set(special_deps))
-            )
+            all_deps = sorted(list(set(normal_deps + SERVER_DEPENDENCIES))) + sorted(list(set(special_deps)))
 
             return template.name, all_deps
     except Exception:
@@ -114,9 +106,7 @@ def main():
         TextColumn("[progress.description]{task.description}"),
     ) as progress:
         template_dirs = list(find_template_dirs(templates_dir))
-        task = progress.add_task(
-            "Processing distribution templates...", total=len(template_dirs)
-        )
+        task = progress.add_task("Processing distribution templates...", total=len(template_dirs))
 
         # Create a partial function with the progress bar
         process_func = partial(process_template, progress=progress)

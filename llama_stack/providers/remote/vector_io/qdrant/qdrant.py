@@ -43,16 +43,14 @@ class QdrantIndex(EmbeddingIndex):
         self.collection_name = collection_name
 
     async def add_chunks(self, chunks: List[Chunk], embeddings: NDArray):
-        assert len(chunks) == len(
-            embeddings
-        ), f"Chunk length {len(chunks)} does not match embedding length {len(embeddings)}"
+        assert len(chunks) == len(embeddings), (
+            f"Chunk length {len(chunks)} does not match embedding length {len(embeddings)}"
+        )
 
         if not await self.client.collection_exists(self.collection_name):
             await self.client.create_collection(
                 self.collection_name,
-                vectors_config=models.VectorParams(
-                    size=len(embeddings[0]), distance=models.Distance.COSINE
-                ),
+                vectors_config=models.VectorParams(size=len(embeddings[0]), distance=models.Distance.COSINE),
             )
 
         points = []
@@ -62,16 +60,13 @@ class QdrantIndex(EmbeddingIndex):
                 PointStruct(
                     id=convert_id(chunk_id),
                     vector=embedding,
-                    payload={"chunk_content": chunk.model_dump()}
-                    | {CHUNK_ID_KEY: chunk_id},
+                    payload={"chunk_content": chunk.model_dump()} | {CHUNK_ID_KEY: chunk_id},
                 )
             )
 
         await self.client.upsert(collection_name=self.collection_name, points=points)
 
-    async def query(
-        self, embedding: NDArray, k: int, score_threshold: float
-    ) -> QueryChunksResponse:
+    async def query(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
         results = (
             await self.client.query_points(
                 collection_name=self.collection_name,
@@ -124,9 +119,7 @@ class QdrantVectorDBAdapter(VectorIO, VectorDBsProtocolPrivate):
 
         self.cache[vector_db.identifier] = index
 
-    async def _get_and_cache_vector_db_index(
-        self, vector_db_id: str
-    ) -> Optional[VectorDBWithIndex]:
+    async def _get_and_cache_vector_db_index(self, vector_db_id: str) -> Optional[VectorDBWithIndex]:
         if vector_db_id in self.cache:
             return self.cache[vector_db_id]
 

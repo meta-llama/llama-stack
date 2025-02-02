@@ -23,9 +23,7 @@ from llama_stack.providers.datatypes import ToolsProtocolPrivate
 from .config import BingSearchToolConfig
 
 
-class BingSearchToolRuntimeImpl(
-    ToolsProtocolPrivate, ToolRuntime, NeedsRequestProviderData
-):
+class BingSearchToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, NeedsRequestProviderData):
     def __init__(self, config: BingSearchToolConfig):
         self.config = config
         self.url = "https://api.bing.microsoft.com/v7.0/search"
@@ -67,9 +65,7 @@ class BingSearchToolRuntimeImpl(
             )
         ]
 
-    async def invoke_tool(
-        self, tool_name: str, kwargs: Dict[str, Any]
-    ) -> ToolInvocationResult:
+    async def invoke_tool(self, tool_name: str, kwargs: Dict[str, Any]) -> ToolInvocationResult:
         api_key = self._get_api_key()
         headers = {
             "Ocp-Apim-Subscription-Key": api_key,
@@ -88,9 +84,7 @@ class BingSearchToolRuntimeImpl(
         )
         response.raise_for_status()
 
-        return ToolInvocationResult(
-            content=json.dumps(self._clean_response(response.json()))
-        )
+        return ToolInvocationResult(content=json.dumps(self._clean_response(response.json())))
 
     def _clean_response(self, search_response):
         clean_response = []
@@ -99,9 +93,7 @@ class BingSearchToolRuntimeImpl(
             pages = search_response["webPages"]["value"]
             for p in pages:
                 selected_keys = {"name", "url", "snippet"}
-                clean_response.append(
-                    {k: v for k, v in p.items() if k in selected_keys}
-                )
+                clean_response.append({k: v for k, v in p.items() if k in selected_keys})
         if "news" in search_response:
             clean_news = []
             news = search_response["news"]["value"]

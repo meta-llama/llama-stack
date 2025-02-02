@@ -141,9 +141,7 @@ async def content_from_doc(doc: RAGDocument) -> str:
     return interleaved_content_as_str(doc.content)
 
 
-def make_overlapped_chunks(
-    document_id: str, text: str, window_len: int, overlap_len: int
-) -> List[Chunk]:
+def make_overlapped_chunks(document_id: str, text: str, window_len: int, overlap_len: int) -> List[Chunk]:
     tokenizer = Tokenizer.get_instance()
     tokens = tokenizer.encode(text, bos=False, eos=False)
 
@@ -171,9 +169,7 @@ class EmbeddingIndex(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    async def query(
-        self, embedding: NDArray, k: int, score_threshold: float
-    ) -> QueryChunksResponse:
+    async def query(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
         raise NotImplementedError()
 
     @abstractmethod
@@ -209,8 +205,6 @@ class VectorDBWithIndex:
         score_threshold = params.get("score_threshold", 0.0)
 
         query_str = interleaved_content_as_str(query)
-        embeddings_response = await self.inference_api.embeddings(
-            self.vector_db.embedding_model, [query_str]
-        )
+        embeddings_response = await self.inference_api.embeddings(self.vector_db.embedding_model, [query_str])
         query_vector = np.array(embeddings_response.embeddings[0], dtype=np.float32)
         return await self.index.query(query_vector, k, score_threshold)

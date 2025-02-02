@@ -53,9 +53,7 @@ class TestTools:
         tools_impl = tools_stack.impls[Api.tool_runtime]
 
         # Execute the tool
-        response = await tools_impl.invoke_tool(
-            tool_name="web_search", kwargs={"query": sample_search_query}
-        )
+        response = await tools_impl.invoke_tool(tool_name="web_search", kwargs={"query": sample_search_query})
 
         # Verify the response
         assert isinstance(response, ToolInvocationResult)
@@ -71,9 +69,7 @@ class TestTools:
 
         tools_impl = tools_stack.impls[Api.tool_runtime]
 
-        response = await tools_impl.invoke_tool(
-            tool_name="wolfram_alpha", kwargs={"query": sample_wolfram_alpha_query}
-        )
+        response = await tools_impl.invoke_tool(tool_name="wolfram_alpha", kwargs={"query": sample_wolfram_alpha_query})
 
         # Verify the response
         assert isinstance(response, ToolInvocationResult)

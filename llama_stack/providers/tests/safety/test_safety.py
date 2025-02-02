@@ -34,9 +34,7 @@ class TestSafety:
         response = await safety_impl.run_shield(
             shield_id=shield.identifier,
             messages=[
-                UserMessage(
-                    content="hello world, write me a 2 sentence poem about the moon"
-                ),
+                UserMessage(content="hello world, write me a 2 sentence poem about the moon"),
             ],
         )
         assert response.violation is None

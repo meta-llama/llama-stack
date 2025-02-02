@@ -11,9 +11,7 @@ from modules.api import llama_stack_api
 with st.sidebar:
     st.header("Configuration")
     available_models = llama_stack_api.client.models.list()
-    available_models = [
-        model.identifier for model in available_models if model.model_type == "llm"
-    ]
+    available_models = [model.identifier for model in available_models if model.model_type == "llm"]
     selected_model = st.selectbox(
         "Choose a model",
         available_models,
@@ -128,6 +126,4 @@ if prompt := st.chat_input("Example: What is Llama Stack?"):
             full_response = response
             message_placeholder.markdown(full_response.completion_message.content)
 
-        st.session_state.messages.append(
-            {"role": "assistant", "content": full_response}
-        )
+        st.session_state.messages.append({"role": "assistant", "content": full_response})

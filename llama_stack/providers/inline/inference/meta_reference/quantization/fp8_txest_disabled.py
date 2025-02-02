@@ -17,8 +17,7 @@ from torch import Tensor
 
 
 @unittest.skipIf(
-    not torch.cuda.is_available()
-    or torch.cuda.get_device_properties(torch.cuda.current_device()).major < 9,
+    not torch.cuda.is_available() or torch.cuda.get_device_properties(torch.cuda.current_device()).major < 9,
     "Skip when H100 is not available",
 )
 class FP8Tests(unittest.TestCase):

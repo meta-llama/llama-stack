@@ -59,9 +59,7 @@ def get_distribution_template() -> DistributionTemplate:
         config=SentenceTransformersInferenceConfig.sample_run_config(),
     )
 
-    core_model_to_hf_repo = {
-        m.descriptor(): m.huggingface_repo for m in all_registered_models()
-    }
+    core_model_to_hf_repo = {m.descriptor(): m.huggingface_repo for m in all_registered_models()}
     default_models = [
         ModelInput(
             model_id=core_model_to_hf_repo[m.llama_model],

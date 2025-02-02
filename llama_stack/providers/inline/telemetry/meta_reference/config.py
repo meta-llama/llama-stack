@@ -44,15 +44,9 @@ class TelemetryConfig(BaseModel):
         return v
 
     @classmethod
-    def sample_run_config(
-        cls, __distro_dir__: str = "runtime", db_name: str = "trace_store.db"
-    ) -> Dict[str, Any]:
+    def sample_run_config(cls, __distro_dir__: str = "runtime", db_name: str = "trace_store.db") -> Dict[str, Any]:
         return {
             "service_name": "${env.OTEL_SERVICE_NAME:llama-stack}",
             "sinks": "${env.TELEMETRY_SINKS:console,sqlite}",
-            "sqlite_db_path": "${env.SQLITE_DB_PATH:~/.llama/"
-            + __distro_dir__
-            + "/"
-            + db_name
-            + "}",
+            "sqlite_db_path": "${env.SQLITE_DB_PATH:~/.llama/" + __distro_dir__ + "/" + db_name + "}",
         }

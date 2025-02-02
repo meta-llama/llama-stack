@@ -65,9 +65,7 @@ def pytest_configure(config):
 
 
 SAFETY_SHIELD_PARAMS = [
-    pytest.param(
-        "meta-llama/Llama-Guard-3-1B", marks=pytest.mark.guard_1b, id="guard_1b"
-    ),
+    pytest.param("meta-llama/Llama-Guard-3-1B", marks=pytest.mark.guard_1b, id="guard_1b"),
 ]
 
 
@@ -96,7 +94,6 @@ def pytest_generate_tests(metafunc):
             "safety": SAFETY_FIXTURES,
         }
         combinations = (
-            get_provider_fixture_overrides(metafunc.config, available_fixtures)
-            or DEFAULT_PROVIDER_COMBINATIONS
+            get_provider_fixture_overrides(metafunc.config, available_fixtures) or DEFAULT_PROVIDER_COMBINATIONS
         )
         metafunc.parametrize("safety_stack", combinations, indirect=True)
