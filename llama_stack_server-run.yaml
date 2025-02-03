@@ -1,0 +1,79 @@
+version: '2'
+image_name: llama_stack_server
+container_image: null
+apis:
+- inference
+- safety
+- agents
+- vector_io
+- datasetio
+- scoring
+- eval
+- post_training
+- tool_runtime
+- telemetry
+providers:
+  inference:
+  - provider_id: litellm
+    provider_type: remote::litellm
+    config:
+      openai_api_key: ???
+  safety:
+  - provider_id: llama-guard
+    provider_type: inline::llama-guard
+    config: {}
+  agents:
+  - provider_id: meta-reference
+    provider_type: inline::meta-reference
+    config:
+      persistence_store:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/llama_stack_server}/agents_store.db
+  vector_io:
+  - provider_id: faiss
+    provider_type: inline::faiss
+    config:
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/llama_stack_server}/faiss_store.db
+  datasetio:
+  - provider_id: localfs
+    provider_type: inline::localfs
+    config: {}
+  scoring:
+  - provider_id: basic
+    provider_type: inline::basic
+    config: {}
+  eval:
+  - provider_id: meta-reference
+    provider_type: inline::meta-reference
+    config: {}
+  post_training:
+  - provider_id: torchtune
+    provider_type: inline::torchtune
+    config: {}
+  tool_runtime:
+  - provider_id: rag-runtime
+    provider_type: inline::rag-runtime
+    config: {}
+  telemetry:
+  - provider_id: meta-reference
+    provider_type: inline::meta-reference
+    config:
+      service_name: ${env.OTEL_SERVICE_NAME:llama-stack}
+      sinks: ${env.TELEMETRY_SINKS:console,sqlite}
+      sqlite_db_path: ${env.SQLITE_DB_PATH:~/.llama/distributions/llama_stack_server/trace_store.db}
+metadata_store: null
+models:
+- metadata: {}
+  model_id: gpt-4o
+  provider_id: litellm
+  model_type: llm
+shields: []
+vector_dbs: []
+datasets: []
+scoring_fns: []
+eval_tasks: []
+tool_groups: []
