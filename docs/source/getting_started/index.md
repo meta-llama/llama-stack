@@ -15,7 +15,7 @@ ollama run llama3.2:3b-instruct-fp16 --keepalive 60m
 
 By default, Ollama keeps the model loaded in memory for 5 minutes which can be too short. We set the `--keepalive` flag to 60 minutes to ensure the model remains loaded for sometime.
 
-NOTE: If you do not have ollama, you can install it from [here](https://ollama.ai/docs/installation).
+NOTE: If you do not have ollama, you can install it from [here](https://ollama.com/download).
 
 
 
