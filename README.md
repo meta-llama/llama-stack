@@ -11,7 +11,7 @@ Llama Stack defines and standardizes the core building blocks that simplify AI a
 - **Unified API layer** for Inference, RAG, Agents, Tools, Safety, Evals, and Telemetry.
 - **Plugin architecture** to support the rich ecosystem of implementations of the different APIs in different environments like local development, on-premises, cloud, and mobile.
 - **Prepackaged verified distributions** which offer a one-stop solution for developers to get started quickly and reliably in any environment
-- **Multiple developer interfaces** like CLI and SDKs for Python, Node, iOS, and Android
+- **Multiple developer interfaces** like CLI and SDKs for Python, Typescript, iOS, and Android
 - **Standalone applications** as examples for how to build production-grade AI applications with Llama Stack
 
 <div style="text-align: center;">
