@@ -36,6 +36,7 @@ def get_distribution_template() -> DistributionTemplate:
             "remote::tavily-search",
             "inline::code-interpreter",
             "inline::rag-runtime",
+            "remote::mem0",
         ],
     }
     name = "ollama"

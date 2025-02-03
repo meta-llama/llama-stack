@@ -53,12 +53,8 @@ class Mem0MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntim
     def __init__(
         self,
         config: Mem0ToolRuntimeConfig,
-        vector_io_api: VectorIO,
-        inference_api: Inference,
     ):
         self.config = config
-        self.vector_io_api = vector_io_api
-        self.inference_api = inference_api
 
         # Mem0 API configuration
         self.api_base_url = config.host
@@ -69,7 +65,7 @@ class Mem0MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntim
         # Validate configuration
         if not self.api_key:
             raise ValueError("Mem0 API Key not provided")
-        if not (self.org_id and self.project_id):
+        if (self.org_id is not None) != (self.project_id is not None):
             raise ValueError("Both org_id and project_id must be provided")
 
         # Setup headers
@@ -116,10 +112,11 @@ class Mem0MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntim
                 payload = {
                     "messages": [{"role": "user", "content": content}],
                     "metadata": {"document_id": doc.document_id},
-                    "org_id": self.org_id,
-                    "project_id": self.project_id,
                     "user_id": vector_db_id,
                 }
+                if self.org_id and self.project_id:
+                    payload["org_id"] = self.org_id
+                    payload["project_id"] = self.project_id
 
                 response = requests.post(
                     urljoin(self.api_base_url, "/v1/memories/"),
@@ -127,6 +124,7 @@ class Mem0MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntim
                     json=payload,
                     timeout=60
                 )
+                print(response.json())
                 response.raise_for_status()
             except requests.exceptions.RequestException as e:
                 log.error(f"Failed to insert document to Mem0: {str(e)}")
@@ -144,11 +142,6 @@ class Mem0MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntim
         if not chunks:
             return
 
-        await self.vector_io_api.insert_chunks(
-            chunks=chunks,
-            vector_db_id=vector_db_id,
-        )
-
     async def query(
         self,
         content: InterleavedContent,
@@ -159,39 +152,40 @@ class Mem0MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntim
             return RAGQueryResult(content=None)
 
         query_config = query_config or RAGQueryConfig()
-        query = await generate_rag_query(
-            query_config.query_generator_config,
-            content,
-            inference_api=self.inference_api,
-        )
+        query = content
+        print(query)
 
         # Search Mem0 memory via API
         mem0_chunks = []
-        try:
-            payload = {
-                "query": query,
-                "org_id": self.org_id,
-                "project_id": self.project_id,
-            }
+        for vector_db_id in vector_db_ids:
+            try:
+                payload = {
+                    "query": query,
+                    "user_id": vector_db_id
+                }
+                if self.org_id and self.project_id:
+                    payload["org_id"] = self.org_id
+                    payload["project_id"] = self.project_id
 
-            response = requests.post(
-                urljoin(self.api_base_url, "/v1/memories/search/"),
-                headers=self.headers,
-                json=payload,
-                timeout=60
-            )
-            response.raise_for_status()
-
-            mem0_results = response.json()
-            mem0_chunks = [
-                TextContentItem(
-                    text=f"id:{result.get('metadata', {}).get('document_id', 'unknown')}; content:{result.get('memory', '')}"
+                response = requests.post(
+                    urljoin(self.api_base_url, "/v1/memories/search/"),
+                    headers=self.headers,
+                    json=payload,
+                    timeout=60
                 )
-                for result in mem0_results
-            ]
-        except requests.exceptions.RequestException as e:
-            log.error(f"Failed to search Mem0: {str(e)}")
-            # Continue with vector store search even if Mem0 fails
+                print(response.json())
+                response.raise_for_status()
+
+                mem0_results = response.json()
+                mem0_chunks = [
+                    TextContentItem(
+                        text=f"id:{result.get('metadata', {}).get('document_id', 'unknown')}; content:{result.get('memory', '')}"
+                    )
+                    for result in mem0_results
+                ]
+            except requests.exceptions.RequestException as e:
+                log.error(f"Failed to search Mem0: {str(e)}")
+                # Continue with vector store search even if Mem0 fails
 
         if not mem0_chunks:
             return RAGQueryResult(content=None)
@@ -216,12 +210,12 @@ class Mem0MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntim
         # encountering fatals.
         return [
             ToolDef(
-                name="query_from_memory",
-                description="Retrieve context from memory",
+                name="query_from_mem0",
+                description="Retrieve context from mem0",
             ),
             ToolDef(
-                name="insert_into_memory",
-                description="Insert documents into memory",
+                name="insert_into_mem0",
+                description="Insert documents into mem0",
             ),
         ]
 

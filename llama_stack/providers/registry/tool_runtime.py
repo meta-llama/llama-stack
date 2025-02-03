@@ -81,4 +81,13 @@ def available_providers() -> List[ProviderSpec]:
                 pip_packages=["mcp"],
             ),
         ),
+        remote_provider_spec(
+            api=Api.tool_runtime,
+            adapter=AdapterSpec(
+                adapter_type="mem0",
+                module="llama_stack.providers.remote.tool_runtime.mem0_memory",
+                config_class="llama_stack.providers.remote.tool_runtime.mem0_memory.config.Mem0ToolRuntimeConfig",
+                pip_packages=["mem0"],
+            ),
+        ),
     ]

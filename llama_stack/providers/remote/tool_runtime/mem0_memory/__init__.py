@@ -12,7 +12,7 @@ from .config import Mem0ToolRuntimeConfig
 from .memory import Mem0MemoryToolRuntimeImpl
 
 
-async def get_provider_impl(config: Mem0ToolRuntimeConfig, deps: Dict[str, Any]):
-    impl = Mem0MemoryToolRuntimeImpl(config, deps[Api.vector_io], deps[Api.inference])
+async def get_adapter_impl(config: Mem0ToolRuntimeConfig, _deps):
+    impl = Mem0MemoryToolRuntimeImpl(config)
     await impl.initialize()
     return impl
