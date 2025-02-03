@@ -36,7 +36,7 @@ def check_extension_version(cur):
 
 
 def upsert_models(conn, keys_models: List[Tuple[str, BaseModel]]):
-    with conn.cursor() as cur:
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
         query = sql.SQL(
             """
             INSERT INTO metadata_store (key, data)
@@ -59,7 +59,7 @@ def load_models(cur, cls):
 class PGVectorIndex(EmbeddingIndex):
     def __init__(self, vector_db: VectorDB, dimension: int, conn):
         self.conn = conn
-        with conn.cursor() as cur:
+        with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
             self.table_name = f"vector_store_{vector_db.identifier}"
 
             cur.execute(
