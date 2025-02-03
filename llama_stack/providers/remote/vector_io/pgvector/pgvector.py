@@ -158,7 +158,9 @@ class PGVectorVectorDBAdapter(VectorIO, VectorDBsProtocolPrivate):
             raise RuntimeError("Could not connect to PGVector database server") from e
 
     async def shutdown(self) -> None:
-        pass
+        if self.conn is not None:
+            self.conn.close()
+            log.info("Connection to PGVector database server closed")
 
     async def register_vector_db(self, vector_db: VectorDB) -> None:
         upsert_models(self.cursor, [(vector_db.identifier, vector_db)])
