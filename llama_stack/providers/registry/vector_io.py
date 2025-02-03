@@ -30,7 +30,7 @@ EMBEDDING_DEPS = [
     # we need a better way to do this to identify potential conflicts, etc.
     # for now, this lets us significantly reduce the size of the container which
     # does not have any "local" inference code (and hence does not need GPU-enabled torch)
-    "torch --index-url https://download.pytorch.org/whl/cpu",
+    "torch torchvision --index-url https://download.pytorch.org/whl/cpu",
     "sentence-transformers --no-deps",
 ]
 
