@@ -38,7 +38,7 @@ The API is **exactly identical** for both clients.
 :::{dropdown} Starting up the Llama Stack server
 The Llama Stack server can be configured flexibly so you can mix-and-match various providers for its individual API components -- beyond Inference, these include Vector IO, Agents, Telemetry, Evals, Post Training, etc.
 
-To get started quickly, we provide various Docker images for the server component that work with different inference providers out of the box. For this guide, we will use `llamastack/distribution-ollama` as the Docker image.
+To get started quickly, we provide various container images for the server component that work with different inference providers out of the box. For this guide, we will use `llamastack/distribution-ollama` as the container image.
 
 Lets setup some environment variables that we will use in the rest of the guide.
 ```bash
@@ -46,7 +46,12 @@ INFERENCE_MODEL="meta-llama/Llama-3.2-3B-Instruct"
 LLAMA_STACK_PORT=8321
 ```
 
-You can start the server using the following command:
+Next you can create a local directory to mount into the container’s file system.
+```bash
+mkdir -p ~/.llama
+```
+
+Then you can start the server using the container tool of your choice.  For example, if you are running Docker you can use the following command:
 ```bash
 docker run -it \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
@@ -56,6 +61,9 @@ docker run -it \
   --env INFERENCE_MODEL=$INFERENCE_MODEL \
   --env OLLAMA_URL=http://host.docker.internal:11434
 ```
+
+As another example, to start the container with Podman, you can do the same but replace `docker` at the start of the command with `podman` and replace `host.docker.internal` in the `OLLAMA_URL` with `host.containers.internal`.
+
 Configuration for this is available at `distributions/ollama/run.yaml`.
 
 :::
