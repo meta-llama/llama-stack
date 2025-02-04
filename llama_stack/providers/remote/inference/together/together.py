@@ -196,8 +196,6 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
         model = await self.model_store.get_model(model_id)
-        print("inside together chat completion messages", messages)
-        breakpoint()
         request = ChatCompletionRequest(
             model=model.provider_resource_id,
             messages=messages,
@@ -225,11 +223,6 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
 
     async def _stream_chat_completion(self, request: ChatCompletionRequest) -> AsyncGenerator:
         params = await self._get_params(request)
-        from rich.pretty import pprint
-
-        print("together stream completion")
-        pprint(request)
-        pprint(params)
 
         # if we shift to TogetherAsyncClient, we won't need this wrapper
         async def _to_async_generator():
@@ -247,7 +240,6 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
     async def _get_params(self, request: Union[ChatCompletionRequest, CompletionRequest]) -> dict:
         input_dict = {}
         media_present = request_has_media(request)
-        breakpoint()
         if isinstance(request, ChatCompletionRequest):
             if media_present:
                 input_dict["messages"] = [await convert_message_to_openai_dict(m) for m in request.messages]

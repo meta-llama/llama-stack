@@ -168,17 +168,10 @@ class ChatAgent(ShieldRunnerMixin):
             if self.agent_config.instructions != "":
                 messages.append(SystemMessage(content=self.agent_config.instructions))
 
-            from rich.pretty import pprint
-
-            print("create_and_execute_turn")
-            pprint(request)
-
             for i, turn in enumerate(turns):
                 messages.extend(self.turn_to_messages(turn))
 
             messages.extend(request.messages)
-            print("create_and_execute_turn turn to messages")
-            pprint(messages)
 
             turn_id = str(uuid.uuid4())
             span.set_attribute("turn_id", turn_id)
@@ -367,7 +360,6 @@ class ChatAgent(ShieldRunnerMixin):
         documents: Optional[List[Document]] = None,
         toolgroups_for_turn: Optional[List[AgentToolGroup]] = None,
     ) -> AsyncGenerator:
-        print("_run messages", input_messages)
         # TODO: simplify all of this code, it can be simpler
         toolgroup_args = {}
         toolgroups = set()
@@ -498,7 +490,6 @@ class ChatAgent(ShieldRunnerMixin):
             stop_reason = None
 
             with tracing.span("inference") as span:
-                print("just before chat completion", input_messages)
                 async for chunk in await self.inference_api.chat_completion(
                     self.agent_config.model,
                     input_messages,
