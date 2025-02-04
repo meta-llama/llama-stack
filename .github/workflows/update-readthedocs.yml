@@ -28,18 +28,9 @@ jobs:
             exit 1
           fi
 
-          y=$TOKEN
-          py="foo-${y}"
-
-          # echo first letter of $TOKEN
-          # echo last letter of $TOKEN
-          echo $TOKEN | cut -c 1
-          echo $TOKEN | cut -c -1
-          echo $py
-
           response=$(curl -X POST \
             -H "Content-Type: application/json" \
-            -d '{"token": "$TOKEN"}' \
+            -d "{\"token\": \"$TOKEN\"}" \
             https://readthedocs.org/api/v2/webhook/llama-stack/289768/)
 
           echo "Response: $response"
