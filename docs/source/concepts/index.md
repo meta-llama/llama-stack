@@ -62,10 +62,3 @@ While there is a lot of flexibility to mix-and-match providers, often users will
 
 
 **On-device Distro**: Finally, you may want to run Llama Stack directly on an edge device (mobile phone or a tablet.) We provide Distros for iOS and Android (coming soon.)
-
-```{toctree}
-:maxdepth: 1
-:hidden:
-
-distributions/index
-```

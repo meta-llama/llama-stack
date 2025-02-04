@@ -43,7 +43,6 @@ self_hosted_distro/nvidia
 self_hosted_distro/ollama
 self_hosted_distro/together
 self_hosted_distro/fireworks
-ondevice_distro/index
 ```
 
 ### On-Device Distributions

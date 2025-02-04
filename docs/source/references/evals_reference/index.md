@@ -12,7 +12,7 @@ This guide goes over the sets of APIs and developer experience flow of using Lla
 
 ## Evaluation Concepts
 
-The Evaluation APIs are associated with a set of Resources as shown in the following diagram. Please visit the Resources section in our [Core Concepts](../concepts/index.md) guide for better high-level understanding.
+The Evaluation APIs are associated with a set of Resources as shown in the following diagram. Please visit the Resources section in our [Core Concepts](../../concepts/index.md) guide for better high-level understanding.
 
 ![Eval Concepts](./resources/eval-concept.png)
 

@@ -12,3 +12,7 @@
 .wy-side-nav-search {
     background-color: transparent !important;
 }
+
+.hide-title h1 {
+    display: none;
+}

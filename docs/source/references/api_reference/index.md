@@ -1,7 +1,6 @@
+{.hide-title}
 # API Reference
 
-```{eval-rst}
-.. sphinxcontrib-redoc:: ../resources/llama-stack-spec.yaml
-   :page-title: API Reference
-   :expand-responses: all
+```{raw} html
+   :file: ../../../_static/llama-stack-spec.html
 ```
