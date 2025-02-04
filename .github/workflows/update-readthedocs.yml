@@ -10,7 +10,7 @@ on:
       - '.github/workflows/update-readthedocs.yml'
 
 jobs:
-  openapi-check:
+  update-readthedocs:
     runs-on: ubuntu-latest    
     steps:
       - name: Trigger ReadTheDocs build
