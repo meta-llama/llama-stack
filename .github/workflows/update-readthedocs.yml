@@ -1,0 +1,21 @@
+name: Update ReadTheDocs
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/source/**'
+      - 'docs/resources/**'
+      - '.github/workflows/update-readthedocs.yml'
+
+jobs:
+  openapi-check:
+    runs-on: ubuntu-latest    
+    steps:
+      - name: Trigger ReadTheDocs build
+        run: |
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -d '{"token": "{{ secrets.READTHEDOCS_TOKEN }}"}' \
+            https://readthedocs.org/api/v2/webhook/llama-stack/289764/ 
