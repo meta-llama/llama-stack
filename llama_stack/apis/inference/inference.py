@@ -320,7 +320,7 @@ class ChatCompletionRequest(BaseModel):
     response_format: Optional[ResponseFormat] = None
     stream: Optional[bool] = False
     logprobs: Optional[LogProbConfig] = None
-    response_output_parser: Optional[ResponseOutputParser] = Field(default=ResponseOutputParser.auto)
+    response_output_parser: Optional[ResponseOutputParser] = Field(default=ResponseOutputParser.default)
 
 
 @json_schema_type
