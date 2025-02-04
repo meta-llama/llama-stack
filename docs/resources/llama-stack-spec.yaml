@@ -1956,6 +1956,46 @@ components:
       additionalProperties: false
       required:
         - job_uuid
+    ToolConfig:
+      type: object
+      properties:
+        tool_choice:
+          type: string
+          enum:
+            - auto
+            - required
+          default: auto
+          description: >-
+            (Optional) Whether tool use is required or automatic. Defaults to ToolChoice.auto.
+        tool_prompt_format:
+          type: string
+          enum:
+            - json
+            - function_tag
+            - python_list
+          description: >-
+            (Optional) Instructs the model how to format tool calls. By default, Llama
+            Stack will attempt to use a format that is best adapted to the model.
+            - `ToolPromptFormat.json`: The tool calls are formatted as a JSON object.
+            - `ToolPromptFormat.function_tag`: The tool calls are enclosed in a <function=function_name>
+            tag. - `ToolPromptFormat.python_list`: The tool calls are output as Python
+            syntax -- a list of function calls.
+        system_message_behavior:
+          type: string
+          enum:
+            - append
+            - replace
+          default: append
+          description: >-
+            (Optional) Config for how to override the default system prompt. - `SystemMessageBehavior.append`:
+            Appends the provided system message to the default system prompt. - `SystemMessageBehavior.replace`:
+            Replaces the default system prompt with the provided system message. The
+            system message can include the string '{{function_definitions}}' to indicate
+            where the function definitions should be inserted.
+      additionalProperties: false
+      required:
+        - system_message_behavior
+      title: Configuration for tool use.
     ChatCompletionRequest:
       type: object
       properties:
@@ -1986,6 +2026,7 @@ components:
             - required
           description: >-
             (Optional) Whether tool use is required or automatic. Defaults to ToolChoice.auto.
+            .. deprecated:: Use tool_config instead.
         tool_prompt_format:
           type: string
           enum:
@@ -1998,7 +2039,7 @@ components:
             - `ToolPromptFormat.json`: The tool calls are formatted as a JSON object.
             - `ToolPromptFormat.function_tag`: The tool calls are enclosed in a <function=function_name>
             tag. - `ToolPromptFormat.python_list`: The tool calls are output as Python
-            syntax -- a list of function calls.
+            syntax -- a list of function calls. .. deprecated:: Use tool_config instead.
         response_format:
           $ref: '#/components/schemas/ResponseFormat'
           description: >-
@@ -2024,6 +2065,9 @@ components:
           description: >-
             (Optional) If specified, log probabilities for each token position will
             be returned.
+        tool_config:
+          $ref: '#/components/schemas/ToolConfig'
+          description: (Optional) Configuration for tool use.
       additionalProperties: false
       required:
         - model_id

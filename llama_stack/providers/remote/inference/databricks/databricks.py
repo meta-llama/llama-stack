@@ -89,16 +89,16 @@ class DatabricksInferenceAdapter(ModelRegistryHelper, Inference):
         tool_prompt_format: Optional[ToolPromptFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
+        tool_config: Optional[ToolConfig] = None,
     ) -> AsyncGenerator:
         request = ChatCompletionRequest(
             model=model,
             messages=messages,
             sampling_params=sampling_params,
             tools=tools or [],
-            tool_choice=tool_choice,
-            tool_prompt_format=tool_prompt_format,
             stream=stream,
             logprobs=logprobs,
+            tool_config=tool_config,
         )
 
         client = OpenAI(base_url=self.config.url, api_key=self.config.api_token)

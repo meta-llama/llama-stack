@@ -308,14 +308,49 @@ class CompletionResponseStreamChunk(BaseModel):
     logprobs: Optional[List[TokenLogProbs]] = None
 
 
+class SystemMessageBehavior(Enum):
+    """Config for how to override the default system prompt.
+
+    :cvar append: Appends the provided system message to the default system prompt:
+        https://www.llama.com/docs/model-cards-and-prompt-formats/llama3_2/#-function-definitions-in-the-system-prompt-
+    :cvar replace: Replaces the default system prompt with the provided system message. The system message can include the string
+        '{{function_definitions}}' to indicate where the function definitions should be inserted.
+    """
+
+    append = "append"
+    replace = "replace"
+
+
+@json_schema_type
+class ToolConfig(BaseModel):
+    """Configuration for tool use.
+
+    :param tool_choice: (Optional) Whether tool use is required or automatic. Defaults to ToolChoice.auto.
+    :param tool_prompt_format: (Optional) Instructs the model how to format tool calls. By default, Llama Stack will attempt to use a format that is best adapted to the model.
+        - `ToolPromptFormat.json`: The tool calls are formatted as a JSON object.
+        - `ToolPromptFormat.function_tag`: The tool calls are enclosed in a <function=function_name> tag.
+        - `ToolPromptFormat.python_list`: The tool calls are output as Python syntax -- a list of function calls.
+    :param system_message_behavior: (Optional) Config for how to override the default system prompt.
+        - `SystemMessageBehavior.append`: Appends the provided system message to the default system prompt.
+        - `SystemMessageBehavior.replace`: Replaces the default system prompt with the provided system message. The system message can include the string
+            '{{function_definitions}}' to indicate where the function definitions should be inserted.
+    """
+
+    tool_choice: Optional[ToolChoice] = Field(default=ToolChoice.auto)
+    tool_prompt_format: Optional[ToolPromptFormat] = Field(default=None)
+    system_message_behavior: SystemMessageBehavior = Field(default=SystemMessageBehavior.append)
+
+
 # This is an internally used class
+@json_schema_type
 class ChatCompletionRequest(BaseModel):
     model: str
     messages: List[Message]
     sampling_params: Optional[SamplingParams] = SamplingParams()
+
     tools: Optional[List[ToolDefinition]] = Field(default_factory=list)
-    tool_choice: Optional[ToolChoice] = Field(default=ToolChoice.auto)
-    tool_prompt_format: Optional[ToolPromptFormat] = Field(default=None)
+    tool_config: Optional[ToolConfig] = Field(default_factory=ToolConfig)
+
     response_format: Optional[ResponseFormat] = None
     stream: Optional[bool] = False
     logprobs: Optional[LogProbConfig] = None
@@ -404,6 +439,7 @@ class Inference(Protocol):
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
+        tool_config: Optional[ToolConfig] = None,
     ) -> Union[ChatCompletionResponse, AsyncIterator[ChatCompletionResponseStreamChunk]]:
         """Generate a chat completion for the given messages using the specified model.
 
@@ -412,15 +448,20 @@ class Inference(Protocol):
         :param sampling_params: Parameters to control the sampling strategy
         :param tools: (Optional) List of tool definitions available to the model
         :param tool_choice: (Optional) Whether tool use is required or automatic. Defaults to ToolChoice.auto.
+            .. deprecated::
+               Use tool_config instead.
         :param tool_prompt_format: (Optional) Instructs the model how to format tool calls. By default, Llama Stack will attempt to use a format that is best adapted to the model.
             - `ToolPromptFormat.json`: The tool calls are formatted as a JSON object.
             - `ToolPromptFormat.function_tag`: The tool calls are enclosed in a <function=function_name> tag.
             - `ToolPromptFormat.python_list`: The tool calls are output as Python syntax -- a list of function calls.
+            .. deprecated::
+               Use tool_config instead.
         :param response_format: (Optional) Grammar specification for guided (structured) decoding. There are two options:
             - `ResponseFormat.json_schema`: The grammar is a JSON schema. Most providers support this format.
             - `ResponseFormat.grammar`: The grammar is a BNF grammar. This format is more flexible, but not all providers support it.
         :param stream: (Optional) If True, generate an SSE event stream of the response. Defaults to False.
         :param logprobs: (Optional) If specified, log probabilities for each token position will be returned.
+        :param tool_config: (Optional) Configuration for tool use.
         :returns: If stream=False, returns a ChatCompletionResponse with the full completion.
                  If stream=True, returns an SSE event stream of ChatCompletionResponseStreamChunk
         """

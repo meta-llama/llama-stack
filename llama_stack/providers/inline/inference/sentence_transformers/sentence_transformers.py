@@ -17,6 +17,7 @@ from llama_stack.apis.inference import (
     ToolChoice,
     ToolDefinition,
     ToolPromptFormat,
+    ToolConfig,
 )
 from llama_stack.providers.datatypes import Model, ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.embedding_mixin import (
@@ -71,5 +72,6 @@ class SentenceTransformersInferenceImpl(
         tool_prompt_format: Optional[ToolPromptFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
+        tool_config: Optional[ToolConfig] = None,
     ) -> AsyncGenerator:
         raise ValueError("Sentence transformers don't support chat completion")
