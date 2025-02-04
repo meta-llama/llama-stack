@@ -20,7 +20,7 @@ class TelemetrySink(str, Enum):
 
 class TelemetryConfig(BaseModel):
     otel_endpoint: str = Field(
-        default="http://localhost:4318/v1/traces",
+        default="http://localhost:4318",
         description="The OpenTelemetry collector endpoint URL",
     )
     service_name: str = Field(

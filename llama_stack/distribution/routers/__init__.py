@@ -45,7 +45,7 @@ async def get_routing_table_impl(
     return impl
 
 
-async def get_auto_router_impl(api: Api, routing_table: RoutingTable, _deps) -> Any:
+async def get_auto_router_impl(api: Api, routing_table: RoutingTable, _deps: Dict[str, Any]) -> Any:
     from .routers import (
         DatasetIORouter,
         EvalRouter,
@@ -65,9 +65,18 @@ async def get_auto_router_impl(api: Api, routing_table: RoutingTable, _deps) -> 
         "eval": EvalRouter,
         "tool_runtime": ToolRuntimeRouter,
     }
+    api_to_deps = {
+        "inference": [Api.telemetry],
+    }
     if api.value not in api_to_routers:
         raise ValueError(f"API {api.value} not found in router map")
 
-    impl = api_to_routers[api.value](routing_table)
+    deps = []
+    for dep in api_to_deps.get(api.value, []):
+        if dep not in _deps:
+            raise ValueError(f"Dependency {dep} not found in _deps")
+        deps.append(_deps[dep])
+
+    impl = api_to_routers[api.value](routing_table, *deps)
     await impl.initialize()
     return impl

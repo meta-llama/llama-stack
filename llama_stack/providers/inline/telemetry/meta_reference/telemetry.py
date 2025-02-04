@@ -6,6 +6,7 @@
 
 import threading
 from typing import Any, Dict, List, Optional
+from urllib.parse import urljoin
 
 from opentelemetry import metrics, trace
 from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
@@ -92,13 +93,13 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
             _TRACER_PROVIDER = provider
             if TelemetrySink.OTEL in self.config.sinks:
                 otlp_exporter = OTLPSpanExporter(
-                    endpoint=self.config.otel_endpoint,
+                    endpoint=urljoin(self.config.otel_endpoint, "v1/traces"),
                 )
                 span_processor = BatchSpanProcessor(otlp_exporter)
                 trace.get_tracer_provider().add_span_processor(span_processor)
                 metric_reader = PeriodicExportingMetricReader(
                     OTLPMetricExporter(
-                        endpoint=self.config.otel_endpoint,
+                        endpoint=urljoin(self.config.otel_endpoint, "v1/metrics"),
                     )
                 )
                 metric_provider = MeterProvider(resource=resource, metric_readers=[metric_reader])
@@ -161,31 +162,9 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
             )
         return _GLOBAL_STORAGE["counters"][name]
 
-    def _get_or_create_gauge(self, name: str, unit: str) -> metrics.ObservableGauge:
-        if name not in _GLOBAL_STORAGE["gauges"]:
-            _GLOBAL_STORAGE["gauges"][name] = self.meter.create_gauge(
-                name=name,
-                unit=unit,
-                description=f"Gauge for {name}",
-            )
-        return _GLOBAL_STORAGE["gauges"][name]
-
     def _log_metric(self, event: MetricEvent) -> None:
-        if isinstance(event.value, int):
-            counter = self._get_or_create_counter(event.metric, event.unit)
-            counter.add(event.value, attributes=event.attributes)
-        elif isinstance(event.value, float):
-            up_down_counter = self._get_or_create_up_down_counter(event.metric, event.unit)
-            up_down_counter.add(event.value, attributes=event.attributes)
-
-    def _get_or_create_up_down_counter(self, name: str, unit: str) -> metrics.UpDownCounter:
-        if name not in _GLOBAL_STORAGE["up_down_counters"]:
-            _GLOBAL_STORAGE["up_down_counters"][name] = self.meter.create_up_down_counter(
-                name=name,
-                unit=unit,
-                description=f"UpDownCounter for {name}",
-            )
-        return _GLOBAL_STORAGE["up_down_counters"][name]
+        counter = self._get_or_create_counter(event.metric, event.unit)
+        counter.add(event.value, attributes=event.attributes)
 
     def _log_structured(self, event: StructuredLogEvent, ttl_seconds: int) -> None:
         with self._lock:

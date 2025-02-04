@@ -182,7 +182,9 @@ async def resolve_impls(
                     module="llama_stack.distribution.routers",
                     routing_table_api=info.routing_table_api,
                     api_dependencies=[info.routing_table_api],
-                    deps__=([info.routing_table_api.value]),
+                    # Add telemetry as an optional dependency to all auto-routed providers
+                    optional_api_dependencies=[Api.telemetry],
+                    deps__=([info.routing_table_api.value, Api.telemetry.value]),
                 ),
             )
         }
