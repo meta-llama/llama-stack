@@ -375,6 +375,7 @@ def augment_messages_for_tools_llama_3_1(
 def augment_messages_for_tools_llama_3_2(
     request: ChatCompletionRequest,
 ) -> List[Message]:
+    breakpoint()
     assert request.tool_choice == ToolChoice.auto, "Only `ToolChoice.auto` supported"
 
     existing_messages = request.messages
