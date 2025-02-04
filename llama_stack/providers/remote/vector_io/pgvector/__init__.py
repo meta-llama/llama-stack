@@ -12,8 +12,8 @@ from .config import PGVectorConfig
 
 
 async def get_adapter_impl(config: PGVectorConfig, deps: Dict[Api, ProviderSpec]):
-    from .pgvector import PGVectorMemoryAdapter
+    from .pgvector import PGVectorVectorDBAdapter
 
-    impl = PGVectorMemoryAdapter(config, deps[Api.inference])
+    impl = PGVectorVectorDBAdapter(config, deps[Api.inference])
     await impl.initialize()
     return impl

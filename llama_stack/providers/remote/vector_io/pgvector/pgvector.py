@@ -81,7 +81,7 @@ class PGVectorIndex(EmbeddingIndex):
         for i, chunk in enumerate(chunks):
             values.append(
                 (
-                    f"{chunk.document_id}:chunk-{i}",
+                    f"{chunk.metadata['document_id']}:chunk-{i}",
                     Json(chunk.model_dump()),
                     embeddings[i].tolist(),
                 )

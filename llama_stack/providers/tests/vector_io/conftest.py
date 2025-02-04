@@ -28,6 +28,14 @@ DEFAULT_PROVIDER_COMBINATIONS = [
     pytest.param(
         {
             "inference": "ollama",
+            "vector_io": "pgvector",
+        },
+        id="pgvector",
+        marks=pytest.mark.pgvector,
+    ),
+    pytest.param(
+        {
+            "inference": "ollama",
             "vector_io": "faiss",
         },
         id="ollama",
@@ -77,7 +85,7 @@ def pytest_generate_tests(metafunc):
         if model:
             params = [pytest.param(model, id="")]
         else:
-            params = [pytest.param("all-MiniLM-L6-v2", id="")]
+            params = [pytest.param("all-minilm:l6-v2", id="")]
 
         metafunc.parametrize("embedding_model", params, indirect=True)
 
