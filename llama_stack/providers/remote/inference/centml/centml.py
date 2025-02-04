@@ -17,6 +17,7 @@ from llama_stack.apis.inference import (
     ChatCompletionRequest,
     ChatCompletionResponse,
     CompletionRequest,
+    CompletionResponse,
     EmbeddingsResponse,
     Inference,
     LogProbConfig,
@@ -25,6 +26,7 @@ from llama_stack.apis.inference import (
     ResponseFormatType,
     SamplingParams,
     ToolChoice,
+    ToolConfig,
     ToolDefinition,
     ToolPromptFormat,
 )
@@ -42,6 +44,7 @@ from llama_stack.providers.utils.inference.openai_compat import (
     process_completion_stream_response,
 )
 from llama_stack.providers.utils.inference.prompt_adapter import (
+    chat_completion_request_to_prompt,
     completion_request_to_prompt,
     content_has_media,
     interleaved_content_as_str,
@@ -176,6 +179,7 @@ class CentMLInferenceAdapter(
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
+        tool_config: Optional[ToolConfig] = None,
     ) -> AsyncGenerator:
         """
         For "chat completion" style requests.
