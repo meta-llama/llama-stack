@@ -1,6 +1,6 @@
 # Quick Start
 
-In this guide, we'll walk through how you can use the Llama Stack (server and client SDK ) to test a simple RAG agent.
+In this guide, we'll walk through how you can use the Llama Stack (server and client SDK) to test a simple RAG agent.
 
 A Llama Stack agent is a simple integrated system that can perform tasks by combining a Llama model for reasoning with tools (e.g., RAG, web search, code execution, etc.) for taking actions.
 
