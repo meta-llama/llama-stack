@@ -6,17 +6,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>OpenAPI specification</title>
     <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700" rel="stylesheet">
+    <script type="module" src="https://unpkg.com/@stoplight/elements/web-components.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/@stoplight/elements/styles.min.css">
     <style>
         body {
             margin: 0;
             padding: 0;
+            height: 100vh;
         }
 
+        elements-api {
+            height: 100%;
+        }
     </style>
-    <script defer="defer" src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"></script>
-    <script defer="defer">
+</head>
+
+<body>
+    <elements-api id="openapi-container" router="hash" layout="sidebar" hideExport="true"
+        hideInternal="true"></elements-api>
+
+    <script>
         document.addEventListener("DOMContentLoaded", function () {
-            spec = {
+            const spec = {
     "openapi": "3.1.0",
     "info": {
         "title": "Llama Stack Specification",
@@ -46,6 +57,7 @@
                 "tags": [
                     "DatasetIO"
                 ],
+                "description": "",
                 "parameters": [
                     {
                         "name": "dataset_id",
@@ -90,6 +102,7 @@
                 "tags": [
                     "DatasetIO"
                 ],
+                "description": "",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -120,6 +133,7 @@
                 "tags": [
                     "BatchInference (Coming Soon)"
                 ],
+                "description": "",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -150,6 +164,7 @@
                 "tags": [
                     "BatchInference (Coming Soon)"
                 ],
+                "description": "",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -173,6 +188,7 @@
                 "tags": [
                     "PostTraining (Coming Soon)"
                 ],
+                "description": "",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -208,7 +224,7 @@
                 "tags": [
                     "Inference"
                 ],
-                "summary": "Generate a chat completion for the given messages using the specified model.",
+                "description": "Generate a chat completion for the given messages using the specified model.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -244,7 +260,7 @@
                 "tags": [
                     "Inference"
                 ],
-                "summary": "Generate a completion for the given content using the specified model.",
+                "description": "Generate a completion for the given content using the specified model.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -275,6 +291,7 @@
                 "tags": [
                     "Agents"
                 ],
+                "description": "",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -305,6 +322,7 @@
                 "tags": [
                     "Agents"
                 ],
+                "description": "",
                 "parameters": [
                     {
                         "name": "agent_id",
@@ -349,6 +367,7 @@
                 "tags": [
                     "Agents"
                 ],
+                "description": "",
                 "parameters": [
                     {
                         "name": "agent_id",
@@ -389,6 +408,7 @@
                 "tags": [
                     "Agents"
                 ],
+                "description": "",
                 "parameters": [
                     {
                         "name": "agent_id",
@@ -418,6 +438,7 @@
                 "tags": [
                     "Agents"
                 ],
+                "description": "",
                 "parameters": [
                     {
                         "name": "session_id",
@@ -457,6 +478,7 @@
                 "tags": [
                     "Agents"
                 ],
+                "description": "",
                 "parameters": [
                     {
                         "name": "session_id",
@@ -494,7 +516,7 @@
                 "tags": [
                     "Inference"
                 ],
-                "summary": "Generate embeddings for content pieces using the specified model.",
+                "description": "Generate embeddings for content pieces using the specified model.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -525,6 +547,7 @@
                 "tags": [
                     "Eval"
                 ],
+                "description": "",
                 "parameters": [
                     {
                         "name": "task_id",
@@ -564,6 +587,7 @@
                 "tags": [
                     "Agents"
                 ],
+                "description": "",
                 "parameters": [
                     {
                         "name": "agent_id",
@@ -617,6 +641,7 @@
                 "tags": [
                     "Agents"
                 ],
+                "description": "",
                 "parameters": [
                     {
                         "name": "agent_id",
@@ -669,6 +694,7 @@
                 "tags": [
                     "Datasets"
                 ],
+                "description": "",
                 "parameters": [
                     {
                         "name": "dataset_id",
@@ -689,6 +715,7 @@
                 "tags": [
                     "Datasets"
                 ],
+                "description": "",
                 "parameters": [
                     {
                         "name": "dataset_id",
@@ -725,6 +752,7 @@
                 "tags": [
                     "EvalTasks"
                 ],
+                "description": "",
                 "parameters": [
                     {
                         "name": "eval_task_id",
@@ -761,6 +789,7 @@
                 "tags": [
                     "Models"
                 ],
+                "description": "",
                 "parameters": [
                     {
                         "name": "model_id",
@@ -781,6 +810,7 @@
                 "tags": [
                     "Models"
                 ],
+                "description": "",
                 "parameters": [
                     {
                         "name": "model_id",
@@ -817,6 +847,7 @@
                 "tags": [
                     "ScoringFunctions"
                 ],
+                "description": "",
                 "parameters": [
                     {
                         "name": "scoring_fn_id",
@@ -853,6 +884,7 @@
                 "tags": [
                     "Shields"
                 ],
+                "description": "",
                 "parameters": [
                     {
                         "name": "identifier",
@@ -882,6 +914,7 @@
                 "tags": [
                     "Telemetry"
                 ],
+                "description": "",
                 "parameters": [
                     {
                         "name": "trace_id",
@@ -919,6 +952,7 @@
                 "tags": [
                     "Telemetry"
                 ],
+                "description": "",
                 "parameters": [
                     {
                         "name": "span_id",
@@ -967,6 +1001,7 @@
                 "tags": [
                     "ToolGroups"
                 ],
+                "description": "",
                 "parameters": [
                     {
                         "name": "tool_name",
@@ -996,6 +1031,7 @@
                 "tags": [
                     "ToolGroups"
                 ],
+                "description": "",
                 "parameters": [
                     {
                         "name": "toolgroup_id",
@@ -1016,7 +1052,7 @@
                 "tags": [
                     "ToolGroups"
                 ],
-                "summary": "Unregister a tool group",
+                "description": "Unregister a tool group",
                 "parameters": [
                     {
                         "name": "toolgroup_id",
@@ -1046,6 +1082,7 @@
                 "tags": [
                     "Telemetry"
                 ],
+                "description": "",
                 "parameters": [
                     {
                         "name": "trace_id",
@@ -1082,6 +1119,7 @@
                 "tags": [
                     "PostTraining (Coming Soon)"
                 ],
+                "description": "",
                 "parameters": [
                     {
                         "name": "job_uuid",
@@ -1118,6 +1156,7 @@
                 "tags": [
                     "PostTraining (Coming Soon)"
                 ],
+                "description": "",
                 "parameters": [
                     {
                         "name": "job_uuid",
@@ -1147,6 +1186,7 @@
                 "tags": [
                     "PostTraining (Coming Soon)"
                 ],
+                "description": "",
                 "parameters": []
             }
         },
@@ -1174,6 +1214,7 @@
                 "tags": [
                     "VectorDBs"
                 ],
+                "description": "",
                 "parameters": [
                     {
                         "name": "vector_db_id",
@@ -1194,6 +1235,7 @@
                 "tags": [
                     "VectorDBs"
                 ],
+                "description": "",
                 "parameters": [
                     {
                         "name": "vector_db_id",
@@ -1223,6 +1265,7 @@
                 "tags": [
                     "Inspect"
                 ],
+                "description": "",
                 "parameters": []
             }
         },
@@ -1236,7 +1279,7 @@
                 "tags": [
                     "ToolRuntime"
                 ],
-                "summary": "Index documents so they can be used by the RAG system",
+                "description": "Index documents so they can be used by the RAG system",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -1260,6 +1303,7 @@
                 "tags": [
                     "VectorIO"
                 ],
+                "description": "",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -1290,7 +1334,7 @@
                 "tags": [
                     "ToolRuntime"
                 ],
-                "summary": "Run a tool with the given arguments",
+                "description": "Run a tool with the given arguments",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -1328,6 +1372,7 @@
                 "tags": [
                     "Eval"
                 ],
+                "description": "",
                 "parameters": [
                     {
                         "name": "task_id",
@@ -1356,6 +1401,7 @@
                 "tags": [
                     "Eval"
                 ],
+                "description": "",
                 "parameters": [
                     {
                         "name": "task_id",
@@ -1393,6 +1439,7 @@
                 "tags": [
                     "Eval"
                 ],
+                "description": "",
                 "parameters": [
                     {
                         "name": "job_id",
@@ -1430,6 +1477,7 @@
                 "tags": [
                     "Datasets"
                 ],
+                "description": "",
                 "parameters": []
             },
             "post": {
@@ -1441,6 +1489,7 @@
                 "tags": [
                     "Datasets"
                 ],
+                "description": "",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -1471,6 +1520,7 @@
                 "tags": [
                     "EvalTasks"
                 ],
+                "description": "",
                 "parameters": []
             },
             "post": {
@@ -1482,6 +1532,7 @@
                 "tags": [
                     "EvalTasks"
                 ],
+                "description": "",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -1512,6 +1563,7 @@
                 "tags": [
                     "Models"
                 ],
+                "description": "",
                 "parameters": []
             },
             "post": {
@@ -1530,6 +1582,7 @@
                 "tags": [
                     "Models"
                 ],
+                "description": "",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -1560,6 +1613,7 @@
                 "tags": [
                     "Inspect"
                 ],
+                "description": "",
                 "parameters": []
             }
         },
@@ -1580,6 +1634,7 @@
                 "tags": [
                     "Inspect"
                 ],
+                "description": "",
                 "parameters": []
             }
         },
@@ -1600,6 +1655,7 @@
                 "tags": [
                     "ToolRuntime"
                 ],
+                "description": "",
                 "parameters": [
                     {
                         "name": "tool_group_id",
@@ -1637,6 +1693,7 @@
                 "tags": [
                     "ScoringFunctions"
                 ],
+                "description": "",
                 "parameters": []
             },
             "post": {
@@ -1648,6 +1705,7 @@
                 "tags": [
                     "ScoringFunctions"
                 ],
+                "description": "",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -1678,6 +1736,7 @@
                 "tags": [
                     "Shields"
                 ],
+                "description": "",
                 "parameters": []
             },
             "post": {
@@ -1696,6 +1755,7 @@
                 "tags": [
                     "Shields"
                 ],
+                "description": "",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -1726,7 +1786,7 @@
                 "tags": [
                     "ToolGroups"
                 ],
-                "summary": "List tool groups with optional provider",
+                "description": "List tool groups with optional provider",
                 "parameters": []
             },
             "post": {
@@ -1738,7 +1798,7 @@
                 "tags": [
                     "ToolGroups"
                 ],
-                "summary": "Register a tool group",
+                "description": "Register a tool group",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -1769,7 +1829,7 @@
                 "tags": [
                     "ToolGroups"
                 ],
-                "summary": "List tools with optional tool group",
+                "description": "List tools with optional tool group",
                 "parameters": [
                     {
                         "name": "toolgroup_id",
@@ -1799,6 +1859,7 @@
                 "tags": [
                     "VectorDBs"
                 ],
+                "description": "",
                 "parameters": []
             },
             "post": {
@@ -1817,6 +1878,7 @@
                 "tags": [
                     "VectorDBs"
                 ],
+                "description": "",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -1840,6 +1902,7 @@
                 "tags": [
                     "Telemetry"
                 ],
+                "description": "",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -1870,6 +1933,7 @@
                 "tags": [
                     "PostTraining (Coming Soon)"
                 ],
+                "description": "",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -1900,7 +1964,7 @@
                 "tags": [
                     "ToolRuntime"
                 ],
-                "summary": "Query the RAG system for context; typically invoked by the agent",
+                "description": "Query the RAG system for context; typically invoked by the agent",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -1931,6 +1995,7 @@
                 "tags": [
                     "VectorIO"
                 ],
+                "description": "",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -1961,6 +2026,7 @@
                 "tags": [
                     "Telemetry"
                 ],
+                "description": "",
                 "parameters": [
                     {
                         "name": "attribute_filters",
@@ -2012,6 +2078,7 @@
                 "tags": [
                     "Telemetry"
                 ],
+                "description": "",
                 "parameters": [
                     {
                         "name": "attribute_filters",
@@ -2071,6 +2138,7 @@
                 "tags": [
                     "Eval"
                 ],
+                "description": "",
                 "parameters": [
                     {
                         "name": "task_id",
@@ -2110,6 +2178,7 @@
                 "tags": [
                     "Safety"
                 ],
+                "description": "",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -2133,6 +2202,7 @@
                 "tags": [
                     "Telemetry"
                 ],
+                "description": "",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -2163,6 +2233,7 @@
                 "tags": [
                     "Scoring"
                 ],
+                "description": "",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -2193,6 +2264,7 @@
                 "tags": [
                     "Scoring"
                 ],
+                "description": "",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -2223,6 +2295,7 @@
                 "tags": [
                     "PostTraining (Coming Soon)"
                 ],
+                "description": "",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -2253,6 +2326,7 @@
                 "tags": [
                     "SyntheticDataGeneration (Coming Soon)"
                 ],
+                "description": "",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -2283,6 +2357,7 @@
                 "tags": [
                     "Inspect"
                 ],
+                "description": "",
                 "parameters": []
             }
         }
@@ -2368,7 +2443,7 @@
                     "stop_reason",
                     "tool_calls"
                 ],
-                "title": "A message containing the model's (assistant) response in a chat conversation."
+                "description": "A message containing the model's (assistant) response in a chat conversation."
             },
             "GrammarResponseFormat": {
                 "type": "object",
@@ -2411,7 +2486,7 @@
                     "type",
                     "bnf"
                 ],
-                "title": "Configuration for grammar-guided response generation."
+                "description": "Configuration for grammar-guided response generation."
             },
             "GreedySamplingStrategy": {
                 "type": "object",
@@ -2458,7 +2533,7 @@
                     "type",
                     "image"
                 ],
-                "title": "A image content item"
+                "description": "A image content item"
             },
             "InterleavedContent": {
                 "oneOf": [
@@ -2534,7 +2609,7 @@
                     "type",
                     "json_schema"
                 ],
-                "title": "Configuration for JSON schema-guided response generation."
+                "description": "Configuration for JSON schema-guided response generation."
             },
             "Message": {
                 "oneOf": [
@@ -2638,7 +2713,7 @@
                     "role",
                     "content"
                 ],
-                "title": "A system message providing instructions or context to the model."
+                "description": "A system message providing instructions or context to the model."
             },
             "TextContentItem": {
                 "type": "object",
@@ -2659,7 +2734,7 @@
                     "type",
                     "text"
                 ],
-                "title": "A text content item"
+                "description": "A text content item"
             },
             "ToolCall": {
                 "type": "object",
@@ -2874,7 +2949,7 @@
                     "tool_name",
                     "content"
                 ],
-                "title": "A message representing the result of a tool invocation."
+                "description": "A message representing the result of a tool invocation."
             },
             "TopKSamplingStrategy": {
                 "type": "object",
@@ -2950,7 +3025,7 @@
                     "role",
                     "content"
                 ],
-                "title": "A message from the user in a chat conversation."
+                "description": "A message from the user in a chat conversation."
             },
             "BatchChatCompletionRequest": {
                 "type": "object",
@@ -2982,7 +3057,7 @@
                             "auto",
                             "required"
                         ],
-                        "title": "Whether tool use is required or automatic. This is a hint to the model which may not be followed. It depends on the Instruction Following capabilities of the model."
+                        "description": "Whether tool use is required or automatic. This is a hint to the model which may not be followed. It depends on the Instruction Following capabilities of the model."
                     },
                     "tool_prompt_format": {
                         "type": "string",
@@ -2991,7 +3066,7 @@
                             "function_tag",
                             "python_list"
                         ],
-                        "title": "Prompt format for calling custom / zero shot tools."
+                        "description": "Prompt format for calling custom / zero shot tools."
                     },
                     "response_format": {
                         "$ref": "#/components/schemas/ResponseFormat"
@@ -3048,7 +3123,7 @@
                 "required": [
                     "completion_message"
                 ],
-                "title": "Response from a chat completion request."
+                "description": "Response from a chat completion request."
             },
             "TokenLogProbs": {
                 "type": "object",
@@ -3065,7 +3140,7 @@
                 "required": [
                     "logprobs_by_token"
                 ],
-                "title": "Log probabilities for generated tokens."
+                "description": "Log probabilities for generated tokens."
             },
             "BatchCompletionRequest": {
                 "type": "object",
@@ -3147,7 +3222,7 @@
                     "content",
                     "stop_reason"
                 ],
-                "title": "Response from a completion request."
+                "description": "Response from a completion request."
             },
             "CancelTrainingJobRequest": {
                 "type": "object",
@@ -3170,8 +3245,8 @@
                             "auto",
                             "required"
                         ],
-                        "default": "auto",
-                        "description": "(Optional) Whether tool use is required or automatic. Defaults to ToolChoice.auto."
+                        "description": "(Optional) Whether tool use is required or automatic. Defaults to ToolChoice.auto.",
+                        "default": "auto"
                     },
                     "tool_prompt_format": {
                         "type": "string",
@@ -3188,15 +3263,15 @@
                             "append",
                             "replace"
                         ],
-                        "default": "append",
-                        "description": "(Optional) Config for how to override the default system prompt. - `SystemMessageBehavior.append`: Appends the provided system message to the default system prompt. - `SystemMessageBehavior.replace`: Replaces the default system prompt with the provided system message. The system message can include the string '{{function_definitions}}' to indicate where the function definitions should be inserted."
+                        "description": "(Optional) Config for how to override the default system prompt. - `SystemMessageBehavior.append`: Appends the provided system message to the default system prompt. - `SystemMessageBehavior.replace`: Replaces the default system prompt with the provided system message. The system message can include the string '{{function_definitions}}' to indicate where the function definitions should be inserted.",
+                        "default": "append"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "system_message_behavior"
                 ],
-                "title": "Configuration for tool use."
+                "description": "Configuration for tool use."
             },
             "ChatCompletionRequest": {
                 "type": "object",
@@ -3309,7 +3384,7 @@
                     "event_type",
                     "delta"
                 ],
-                "title": "An event during chat completion generation."
+                "description": "An event during chat completion generation."
             },
             "ChatCompletionResponseStreamChunk": {
                 "type": "object",
@@ -3323,7 +3398,7 @@
                 "required": [
                     "event"
                 ],
-                "title": "A chunk of a streamed chat completion response."
+                "description": "A chunk of a streamed chat completion response."
             },
             "ContentDelta": {
                 "oneOf": [
@@ -3488,7 +3563,7 @@
                 "required": [
                     "delta"
                 ],
-                "title": "A chunk of a streamed completion response."
+                "description": "A chunk of a streamed completion response."
             },
             "AgentConfig": {
                 "type": "object",
@@ -3526,7 +3601,7 @@
                             "auto",
                             "required"
                         ],
-                        "title": "Whether tool use is required or automatic. This is a hint to the model which may not be followed. It depends on the Instruction Following capabilities of the model.",
+                        "description": "Whether tool use is required or automatic. This is a hint to the model which may not be followed. It depends on the Instruction Following capabilities of the model.",
                         "default": "auto"
                     },
                     "tool_prompt_format": {
@@ -3536,7 +3611,7 @@
                             "function_tag",
                             "python_list"
                         ],
-                        "title": "Prompt format for calling custom / zero shot tools."
+                        "description": "Prompt format for calling custom / zero shot tools."
                     },
                     "max_infer_iters": {
                         "type": "integer",
@@ -4145,7 +4220,7 @@
                     "output_attachments",
                     "started_at"
                 ],
-                "title": "A single turn in an interaction with an Agentic System."
+                "description": "A single turn in an interaction with an Agentic System."
             },
             "ViolationLevel": {
                 "type": "string",
@@ -4346,7 +4421,7 @@
                 "required": [
                     "event"
                 ],
-                "title": "streamed agent turn completion response."
+                "description": "streamed agent turn completion response."
             },
             "AgentTurnResponseTurnCompletePayload": {
                 "type": "object",
@@ -4423,7 +4498,7 @@
                 "required": [
                     "embeddings"
                 ],
-                "title": "Response containing generated embeddings."
+                "description": "Response containing generated embeddings."
             },
             "AgentCandidate": {
                 "type": "object",
@@ -4842,7 +4917,7 @@
                     "turns",
                     "started_at"
                 ],
-                "title": "A single session of an interaction with an Agentic System."
+                "description": "A single session of an interaction with an Agentic System."
             },
             "AgentStepResponse": {
                 "type": "object",
@@ -5413,7 +5488,7 @@
                     "provider_id",
                     "type"
                 ],
-                "title": "A safety shield resource that can be used to check content"
+                "description": "A safety shield resource that can be used to check content"
             },
             "Span": {
                 "type": "object",
@@ -5732,7 +5807,7 @@
                     "job_uuid",
                     "checkpoints"
                 ],
-                "title": "Artifacts of a finetuning job."
+                "description": "Artifacts of a finetuning job."
             },
             "JobStatus": {
                 "type": "string",
@@ -5802,7 +5877,7 @@
                     "status",
                     "checkpoints"
                 ],
-                "title": "Status of a finetuning job."
+                "description": "Status of a finetuning job."
             },
             "ListPostTrainingJobsResponse": {
                 "type": "object",
@@ -7786,7 +7861,7 @@
                             "top_k_top_p",
                             "sigmoid"
                         ],
-                        "title": "The type of filtering function."
+                        "description": "The type of filtering function."
                     },
                     "model": {
                         "type": "string"
@@ -7859,7 +7934,7 @@
                 "required": [
                     "synthetic_data"
                 ],
-                "title": "Response from the synthetic data generation. Batch of (prompt, response, score) tuples that pass the threshold."
+                "description": "Response from the synthetic data generation. Batch of (prompt, response, score) tuples that pass the threshold."
             },
             "VersionInfo": {
                 "type": "object",
@@ -7975,25 +8050,14 @@
         }
     ]
 };
-            options = {
-                downloadFileName: "openapi.json",
-                expandResponses: "200",
-                expandSingleSchemaField: true,
-                jsonSampleExpandLevel: "all",
-                schemaExpansionLevel: "all",
-            };
-            element = document.getElementById("openapi-container");
-            Redoc.init(spec, options, element);
+            const element = document.getElementById("openapi-container");
+            element.apiDescriptionDocument = spec;
 
             if (spec.info && spec.info.title) {
                 document.title = spec.info.title;
             }
         });
     </script>
-</head>
-
-<body>
-    <div id="openapi-container"></div>
 </body>
 
 </html>

@@ -109,10 +109,10 @@ def get_class_property_docstrings(
 def docstring_to_schema(data_type: type) -> Schema:
     short_description, long_description = get_class_docstrings(data_type)
     schema: Schema = {}
-    if short_description:
-        schema["title"] = short_description
-    if long_description:
-        schema["description"] = long_description
+
+    description = "\n".join(filter(None, [short_description, long_description]))
+    if description:
+        schema["description"] = description
     return schema
 
 
