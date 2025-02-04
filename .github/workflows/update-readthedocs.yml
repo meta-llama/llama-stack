@@ -30,12 +30,17 @@ jobs:
 
           y=$TOKEN
           py="foo-${y}"
+
+          # echo first letter of $TOKEN
+          # echo last letter of $TOKEN
+          echo $TOKEN | cut -c 1
+          echo $TOKEN | cut -c -1
           echo $py
 
           response=$(curl -X POST \
             -H "Content-Type: application/json" \
-            -d '{"token": "17d374d5a988931656c1ef951151841f5681262f"}' \
-            https://readthedocs.org/api/v2/webhook/llama-stack/289766/)
+            -d '{"token": "$TOKEN"}' \
+            https://readthedocs.org/api/v2/webhook/llama-stack/289768/)
 
           echo "Response: $response"
           if [ $(echo $response | jq -r '.build_triggered') != 'true' ]; then
