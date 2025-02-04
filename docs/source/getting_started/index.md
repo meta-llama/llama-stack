@@ -98,6 +98,7 @@ llama-stack-client \
 Here is a simple example to perform chat completions using the SDK.
 ```python
 import os
+import sys
 
 
 def create_http_client():
@@ -112,7 +113,9 @@ def create_library_client(template="ollama"):
     from llama_stack import LlamaStackAsLibraryClient
 
     client = LlamaStackAsLibraryClient(template)
-    client.initialize()
+    if not client.initialize():
+        print("llama stack not built properly")
+        sys.exit(1)
     return client
 
 
