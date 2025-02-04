@@ -1,6 +1,12 @@
 name: Update ReadTheDocs
 
 on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'RTD version to update'
+        required: false
+        default: 'latest'
   push:
     branches:
       - main
@@ -12,25 +18,26 @@ on:
 jobs:
   update-readthedocs:
     runs-on: ubuntu-latest    
+    env:
+      TOKEN: ${{ secrets.READTHEDOCS_TOKEN }}
     steps:
       - name: Trigger ReadTheDocs build
         run: |
-          if [ -z "{{ secrets.READTHEDOCS_TOKEN }}" ]; then
+          if [ -z "$TOKEN" ]; then
             echo "READTHEDOCS_TOKEN is not set"
             exit 1
           fi
 
-          y="{{ secrets.READTHEDOCS_TOKEN }}"
+          y=$TOKEN
           py="foo-${y}"
           echo $py
-          exit 1
-          
+
           response=$(curl -X POST \
             -H "Content-Type: application/json" \
-            -d '{"token": "{{ secrets.READTHEDOCS_TOKEN }}"}' \
+            -d '{"token": "$TOKEN"}' \
             https://readthedocs.org/api/v2/webhook/llama-stack/289764/)
 
-          echo $response
+          echo "Response: $response"
           if [ $(echo $response | jq -r '.build_triggered') != 'true' ]; then
             echo "Failed to trigger ReadTheDocs build"
             exit 1
