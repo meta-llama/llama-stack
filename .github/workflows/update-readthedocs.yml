@@ -20,6 +20,11 @@ jobs:
             exit 1
           fi
 
+          y="{{ secrets.READTHEDOCS_TOKEN }}"
+          py="foo-${y}"
+          echo $py
+          exit 1
+          
           response=$(curl -X POST \
             -H "Content-Type: application/json" \
             -d '{"token": "{{ secrets.READTHEDOCS_TOKEN }}"}' \
