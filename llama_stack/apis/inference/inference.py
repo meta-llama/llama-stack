@@ -17,12 +17,13 @@ from typing import (
     runtime_checkable,
 )
 
+from llama_models.schema_utils import json_schema_type, register_schema, webmethod
 from pydantic import BaseModel, Field, field_validator
 from typing_extensions import Annotated
 
 from llama_stack.apis.common.content_types import ContentDelta, InterleavedContent, InterleavedContentItem
 from llama_stack.apis.models import Model
-from llama_stack.apis.telemetry.telemetry import MetricResponseMixin
+from llama_stack.apis.telemetry.telemetry import MetricsMixin
 from llama_stack.models.llama.datatypes import (
     BuiltinTool,
     SamplingParams,
@@ -285,7 +286,7 @@ class CompletionRequest(BaseModel):
 
 
 @json_schema_type
-class CompletionResponse(BaseModel):
+class CompletionResponse(MetricsMixin, BaseModel):
     """Response from a completion request.
 
     :param content: The generated completion text
@@ -299,7 +300,7 @@ class CompletionResponse(BaseModel):
 
 
 @json_schema_type
-class CompletionResponseStreamChunk(BaseModel):
+class CompletionResponseStreamChunk(MetricsMixin, BaseModel):
     """A chunk of a streamed completion response.
 
     :param delta: New content generated since last chunk. This can be one or more tokens.
@@ -368,7 +369,7 @@ class ChatCompletionRequest(BaseModel):
 
 
 @json_schema_type
-class ChatCompletionResponseStreamChunk(MetricResponseMixin, BaseModel):
+class ChatCompletionResponseStreamChunk(MetricsMixin, BaseModel):
     """A chunk of a streamed chat completion response.
 
     :param event: The event containing the new content
@@ -378,7 +379,7 @@ class ChatCompletionResponseStreamChunk(MetricResponseMixin, BaseModel):
 
 
 @json_schema_type
-class ChatCompletionResponse(MetricResponseMixin, BaseModel):
+class ChatCompletionResponse(MetricsMixin, BaseModel):
     """Response from a chat completion request.
 
     :param completion_message: The complete response message
@@ -390,7 +391,7 @@ class ChatCompletionResponse(MetricResponseMixin, BaseModel):
 
 
 @json_schema_type
-class EmbeddingsResponse(BaseModel):
+class EmbeddingsResponse(MetricsMixin, BaseModel):
     """Response containing generated embeddings.
 
     :param embeddings: List of embedding vectors, one per input content. Each embedding is a list of floats. The dimensionality of the embedding is model-specific; you can check model metadata using /models/{model_id}

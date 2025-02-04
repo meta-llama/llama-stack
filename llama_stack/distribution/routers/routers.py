@@ -6,6 +6,9 @@
 
 from typing import Any, AsyncGenerator, Dict, List, Optional
 
+from llama_models.llama3.api.chat_format import ChatFormat
+from llama_models.llama3.api.tokenizer import Tokenizer
+
 from llama_stack.apis.common.content_types import (
     URL,
     InterleavedContent,
@@ -42,6 +45,7 @@ from llama_stack.apis.scoring import (
     ScoringFnParams,
 )
 from llama_stack.apis.shields import Shield
+from llama_stack.apis.telemetry import TokenUsage
 from llama_stack.apis.tools import (
     RAGDocument,
     RAGQueryConfig,
@@ -111,6 +115,8 @@ class InferenceRouter(Inference):
         routing_table: RoutingTable,
     ) -> None:
         self.routing_table = routing_table
+        self.tokenizer = Tokenizer.get_instance()
+        self.formatter = ChatFormat(self.tokenizer)
 
     async def initialize(self) -> None:
         pass
@@ -190,7 +196,28 @@ class InferenceRouter(Inference):
         if stream:
             return (chunk async for chunk in await provider.chat_completion(**params))
         else:
-            return await provider.chat_completion(**params)
+            response = await provider.chat_completion(**params)
+            model_input = self.formatter.encode_dialog_prompt(
+                messages,
+                tool_config.tool_prompt_format,
+            )
+            model_output = self.formatter.encode_dialog_prompt(
+                [response.completion_message],
+                tool_config.tool_prompt_format,
+            )
+            prompt_tokens = len(model_input.tokens) if model_input.tokens else 0
+            completion_tokens = len(model_output.tokens) if model_output.tokens else 0
+            total_tokens = prompt_tokens + completion_tokens
+            if response.metrics is None:
+                response.metrics = []
+            response.metrics.append(
+                TokenUsage(
+                    prompt_tokens=prompt_tokens,
+                    completion_tokens=completion_tokens,
+                    total_tokens=total_tokens,
+                )
+            )
+            return response
 
     async def completion(
         self,
