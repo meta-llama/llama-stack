@@ -24,6 +24,7 @@ from llama_stack.apis.inference import (
     ResponseFormat,
     SamplingParams,
     ToolChoice,
+    ToolConfig,
     ToolDefinition,
     ToolPromptFormat,
 )
@@ -128,6 +129,7 @@ class CerebrasInferenceAdapter(ModelRegistryHelper, Inference):
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
+        tool_config: Optional[ToolConfig] = None,
     ) -> AsyncGenerator:
         model = await self.model_store.get_model(model_id)
         request = ChatCompletionRequest(
@@ -140,6 +142,7 @@ class CerebrasInferenceAdapter(ModelRegistryHelper, Inference):
             response_format=response_format,
             stream=stream,
             logprobs=logprobs,
+            tool_config=tool_config,
         )
 
         if stream:

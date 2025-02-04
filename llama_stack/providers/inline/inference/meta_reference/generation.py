@@ -400,7 +400,7 @@ class Llama:
         yield from self.generate(
             model_input=self.formatter.encode_dialog_prompt(
                 request.messages,
-                request.tool_prompt_format,
+                request.tool_config.tool_prompt_format,
             ),
             max_gen_len=max_gen_len,
             temperature=temperature,
