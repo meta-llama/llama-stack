@@ -15,7 +15,18 @@ jobs:
     steps:
       - name: Trigger ReadTheDocs build
         run: |
-          curl -X POST \
+          if [ -z "{{ secrets.READTHEDOCS_TOKEN }}" ]; then
+            echo "READTHEDOCS_TOKEN is not set"
+            exit 1
+          fi
+
+          response=$(curl -X POST \
             -H "Content-Type: application/json" \
             -d '{"token": "{{ secrets.READTHEDOCS_TOKEN }}"}' \
-            https://readthedocs.org/api/v2/webhook/llama-stack/289764/ 
+            https://readthedocs.org/api/v2/webhook/llama-stack/289764/)
+
+          echo $response
+          if [ $(echo $response | jq -r '.build_triggered') != 'true' ]; then
+            echo "Failed to trigger ReadTheDocs build"
+            exit 1
+          fi
