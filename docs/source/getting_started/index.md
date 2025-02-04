@@ -42,8 +42,8 @@ To get started quickly, we provide various Docker images for the server componen
 
 Lets setup some environment variables that we will use in the rest of the guide.
 ```bash
-INFERENCE_MODEL="meta-llama/Llama-3.2-3B-Instruct"
-LLAMA_STACK_PORT=8321
+export INFERENCE_MODEL="meta-llama/Llama-3.2-3B-Instruct"
+export LLAMA_STACK_PORT=8321
 ```
 
 You can start the server using the following command:
