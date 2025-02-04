@@ -165,6 +165,7 @@ class AgentConfig(AgentConfigCommon):
     instructions: str
     enable_session_persistence: bool
     response_format: Optional[ResponseFormat] = None
+    output_parser: Optional[OutputParser] = Field(default=OutputParser.auto)
 
 
 class AgentConfigOverridablePerTurn(AgentConfigCommon):
