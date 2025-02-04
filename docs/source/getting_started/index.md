@@ -46,7 +46,12 @@ INFERENCE_MODEL="meta-llama/Llama-3.2-3B-Instruct"
 LLAMA_STACK_PORT=8321
 ```
 
-You can start the server using the container tool of your choice.  For example, if you are running Docker you can use the following command:
+Next you can create a local directory to mount into the container’s file system.
+```bash
+mkdir -p ~/.llama
+```
+
+Then you can start the server using the container tool of your choice.  For example, if you are running Docker you can use the following command:
 ```bash
 docker run -it \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
@@ -57,19 +62,7 @@ docker run -it \
   --env OLLAMA_URL=http://host.docker.internal:11434
 ```
 
-As another example, to start the container with Podman, you need to first create the `~/.llama` directory and then start Podman as follows (note that the OLLAMA_URL is slightly different too):
-
-```bash
-mkdir ~/.llama
-
-podman run -it \
-  -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
-  -v ~/.llama:/root/.llama \
-  llamastack/distribution-ollama \
-  --port $LLAMA_STACK_PORT \
-  --env INFERENCE_MODEL=$INFERENCE_MODEL \
-  --env OLLAMA_URL=http://host.containers.internal:11434
-```
+As another example, to start the container with Podman, you can do the same but replace `docker` at the start of the command with `podman` and replace `host.docker.internal` in the `OLLAMA_URL` with `host.containers.internal`.
 
 Configuration for this is available at `distributions/ollama/run.yaml`.
 
