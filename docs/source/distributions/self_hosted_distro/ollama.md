@@ -25,7 +25,9 @@ The `llamastack/distribution-ollama` distribution consists of the following prov
 | vector_io | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
 
 
-You should use this distribution if you have a regular desktop machine without very powerful GPUs. Of course, if you have powerful GPUs, you can still continue using this distribution since Ollama supports GPU acceleration.### Environment Variables
+You should use this distribution if you have a regular desktop machine without very powerful GPUs. Of course, if you have powerful GPUs, you can still continue using this distribution since Ollama supports GPU acceleration.
+
+### Environment Variables
 
 The following environment variables can be configured:
 

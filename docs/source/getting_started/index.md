@@ -1,6 +1,6 @@
 # Quick Start
 
-In this guide, we'll walk through how you can use the Llama Stack (server and client SDK ) to test a simple RAG agent.
+In this guide, we'll walk through how you can use the Llama Stack (server and client SDK) to test a simple RAG agent.
 
 A Llama Stack agent is a simple integrated system that can perform tasks by combining a Llama model for reasoning with tools (e.g., RAG, web search, code execution, etc.) for taking actions.
 
@@ -42,8 +42,8 @@ To get started quickly, we provide various container images for the server compo
 
 Lets setup some environment variables that we will use in the rest of the guide.
 ```bash
-INFERENCE_MODEL="meta-llama/Llama-3.2-3B-Instruct"
-LLAMA_STACK_PORT=8321
+export INFERENCE_MODEL="meta-llama/Llama-3.2-3B-Instruct"
+export LLAMA_STACK_PORT=8321
 ```
 
 Next you can create a local directory to mount into the container’s file system.
@@ -82,8 +82,10 @@ pip install llama-stack-client
 Let's use the `llama-stack-client` CLI to check the connectivity to the server.
 
 ```bash
-llama-stack-client configure --endpoint http://localhost:$LLAMA_STACK_PORT
-llama-stack-client models list
+$ llama-stack-client configure --endpoint http://localhost:$LLAMA_STACK_PORT
+> Enter the API key (leave empty if no key is needed):
+Done! You can now use the Llama Stack Client CLI with endpoint http://localhost:8321
+$ llama-stack-client models list
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━┓
 ┃ identifier                       ┃ provider_id ┃ provider_resource_id      ┃ metadata ┃
 ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━┩
