@@ -6,11 +6,11 @@ apis:
   - datasetio
   - eval
   - inference
-  - memory
   - safety
   - scoring
   - telemetry
   - tool_runtime
+  - vector_io
 providers:
   inference:
   - provider_id: centml
@@ -22,7 +22,7 @@ providers:
     provider_type: inline::sentence-transformers
     config: {}
 
-  memory:
+  vector_io:
   - provider_id: faiss
     provider_type: inline::faiss
     config:
@@ -92,8 +92,11 @@ providers:
   - provider_id: code-interpreter
     provider_type: inline::code-interpreter
     config: {}
-  - provider_id: memory-runtime
-    provider_type: inline::memory-runtime
+  - provider_id: rag-runtime
+    provider_type: inline::rag-runtime
+    config: {}
+  - provider_id: model-context-protocol
+    provider_type: remote::model-context-protocol
     config: {}
 
 metadata_store:
@@ -116,14 +119,14 @@ models:
 shields:
   - shield_id: meta-llama/Llama-Guard-3-8B
 
-memory_banks: []
+vector_dbs: []
 datasets: []
 scoring_fns: []
 eval_tasks: []
 tool_groups:
   - toolgroup_id: builtin::websearch
     provider_id: tavily-search
-  - toolgroup_id: builtin::memory
-    provider_id: memory-runtime
+  - toolgroup_id: builtin::rag
+    provider_id: rag-runtime
   - toolgroup_id: builtin::code_interpreter
     provider_id: code-interpreter
