@@ -116,7 +116,7 @@ class Turn(BaseModel):
     ]
     steps: List[Step]
     output_message: CompletionMessage
-    output_attachments: List[Attachment] = Field(default_factory=list)
+    output_attachments: Optional[List[Attachment]] = Field(default_factory=list)
 
     started_at: datetime
     completed_at: Optional[datetime] = None
@@ -156,7 +156,7 @@ class AgentConfigCommon(BaseModel):
     tool_choice: Optional[ToolChoice] = Field(default=ToolChoice.auto)
     tool_prompt_format: Optional[ToolPromptFormat] = Field(default=None)
 
-    max_infer_iters: int = 10
+    max_infer_iters: Optional[int] = 10
 
 
 @json_schema_type
