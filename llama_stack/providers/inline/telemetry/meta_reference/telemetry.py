@@ -268,8 +268,8 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
         query_type: MetricQueryType = MetricQueryType.RANGE,
         label_matchers: Optional[List[MetricLabelMatcher]] = None,
     ) -> GetMetricsResponse:
-        if TelemetrySink.OTEL not in self.config.sinks:
-            return GetMetricsResponse(data=[])
+        if self.prom is None:
+            raise ValueError("Prometheus endpoint not configured")
 
         try:
             # Build query with label matchers if provided
