@@ -264,7 +264,7 @@ def test_custom_tool(llama_stack_client, agent_config):
 
 
 def test_rag_agent(llama_stack_client, agent_config):
-    urls = ["chat.rst", "llama3.rst", "datasets.rst", "lora_finetune.rst"]
+    urls = ["chat.rst", "llama3.rst", "memory_optimizations.rst", "lora_finetune.rst"]
     documents = [
         Document(
             document_id=f"num-{i}",
