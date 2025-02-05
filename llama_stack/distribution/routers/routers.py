@@ -119,12 +119,13 @@ class InferenceRouter(Inference):
     def __init__(
         self,
         routing_table: RoutingTable,
-        telemetry: Telemetry,
+        telemetry: Optional[Telemetry] = None,
     ) -> None:
         self.routing_table = routing_table
         self.telemetry = telemetry
-        self.tokenizer = Tokenizer.get_instance()
-        self.formatter = ChatFormat(self.tokenizer)
+        if self.telemetry:
+            self.tokenizer = Tokenizer.get_instance()
+            self.formatter = ChatFormat(self.tokenizer)
 
     async def initialize(self) -> None:
         pass
@@ -226,13 +227,13 @@ class InferenceRouter(Inference):
             tool_config=tool_config,
         )
         provider = self.routing_table.get_provider_impl(model_id)
+        model_input = self.formatter.encode_dialog_prompt(
+            messages,
+            tool_config.tool_prompt_format,
+        )
         if stream:
 
             async def stream_generator():
-                model_input = self.formatter.encode_dialog_prompt(
-                    messages,
-                    tool_config.tool_prompt_format,
-                )
                 prompt_tokens = len(model_input.tokens) if model_input.tokens else 0
                 completion_text = ""
                 async for chunk in await provider.chat_completion(**params):
@@ -255,16 +256,13 @@ class InferenceRouter(Inference):
                                 total_tokens=total_tokens,
                             )
                         )
-                        await self._log_token_usage(prompt_tokens, completion_tokens, total_tokens, model)
+                        if self.telemetry:
+                            await self._log_token_usage(prompt_tokens, completion_tokens, total_tokens, model)
                     yield chunk
 
             return stream_generator()
         else:
             response = await provider.chat_completion(**params)
-            model_input = self.formatter.encode_dialog_prompt(
-                messages,
-                tool_config.tool_prompt_format,
-            )
             model_output = self.formatter.encode_dialog_prompt(
                 [response.completion_message],
                 tool_config.tool_prompt_format,
@@ -281,7 +279,8 @@ class InferenceRouter(Inference):
                     total_tokens=total_tokens,
                 )
             )
-            await self._log_token_usage(prompt_tokens, completion_tokens, total_tokens, model)
+            if self.telemetry:
+                await self._log_token_usage(prompt_tokens, completion_tokens, total_tokens, model)
             return response
 
     async def completion(
