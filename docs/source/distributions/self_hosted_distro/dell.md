@@ -26,15 +26,15 @@ The `llamastack/distribution-dell` distribution consists of the following provid
 | vector_io | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
 
 
-You can use this distribution if you have GPUs and want to run an independent TGI server container for running inference.
+You can use this distribution if you have GPUs and want to run an independent TGI or Dell Enterprise Hub container for running inference.
 
 ### Environment Variables
 
 The following environment variables can be configured:
 
-- `DEH_URL`: URL for the Dell inference server (default: `http://0.0.0.0:8080`)
-- `DEH_SAFETY_URL`: URL for the Dell safety inference server (default: `http://0.0.0.0:8081`)
-- `CHROMA_URL`: URL for the Chroma server (default: `http://0.0.0.0:8000`)
+- `DEH_URL`: URL for the Dell inference server (default: `http://0.0.0.0:8181`)
+- `DEH_SAFETY_URL`: URL for the Dell safety inference server (default: `http://0.0.0.0:8282`)
+- `CHROMA_URL`: URL for the Chroma server (default: `http://localhost:6601`)
 - `INFERENCE_MODEL`: Inference model loaded into the TGI server (default: `meta-llama/Llama-3.2-3B-Instruct`)
 - `SAFETY_MODEL`: Name of the safety (Llama-Guard) model to use (default: `meta-llama/Llama-Guard-3-1B`)
 
@@ -44,40 +44,69 @@ The following environment variables can be configured:
 Please check the [TGI Getting Started Guide](https://github.com/huggingface/text-generation-inference?tab=readme-ov-file#get-started) to get a TGI endpoint. Here is a sample script to start a TGI server locally via Docker:
 
 ```bash
-export INFERENCE_PORT=8080
-export INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct
+export INFERENCE_PORT=8181
+export DEH_URL=http://0.0.0.0:$INFERENCE_PORT
+export INFERENCE_MODEL=meta-llama/Llama-3.1-8B-Instruct
+export CHROMADB_HOST=localhost
+export CHROMADB_PORT=6601
+export CHROMA_URL=http://$CHROMADB_HOST:$CHROMADB_PORT
 export CUDA_VISIBLE_DEVICES=0
+export LLAMA_STACK_PORT=8321
 
 docker run --rm -it \
-  -v $HOME/.cache/huggingface:/data \
-  -p $INFERENCE_PORT:$INFERENCE_PORT \
-  --gpus $CUDA_VISIBLE_DEVICES \
-  ghcr.io/huggingface/text-generation-inference:2.3.1 \
-  --dtype bfloat16 \
-  --usage-stats off \
-  --sharded false \
-  --cuda-memory-fraction 0.7 \
-  --model-id $INFERENCE_MODEL \
-  --port $INFERENCE_PORT
+--network host \
+-v $HOME/.cache/huggingface:/data \
+-e HF_TOKEN=$HF_TOKEN \
+-p $INFERENCE_PORT:$INFERENCE_PORT \
+--gpus $CUDA_VISIBLE_DEVICES \
+ghcr.io/huggingface/text-generation-inference \
+--dtype bfloat16 \
+--usage-stats off \
+--sharded false \
+--cuda-memory-fraction 0.7 \
+--model-id $INFERENCE_MODEL \
+--port $INFERENCE_PORT --hostname 0.0.0.0
 ```
 
 If you are using Llama Stack Safety / Shield APIs, then you will need to also run another instance of a TGI with a corresponding safety model like `meta-llama/Llama-Guard-3-1B` using a script like:
 
 ```bash
-export SAFETY_PORT=8081
+export SAFETY_INFERENCE_PORT=8282
+export DEH_SAFETY_URL=http://0.0.0.0:$SAFETY_INFERENCE_PORT
 export SAFETY_MODEL=meta-llama/Llama-Guard-3-1B
 export CUDA_VISIBLE_DEVICES=1
 
 docker run --rm -it \
-  -v $HOME/.cache/huggingface:/data \
-  -p $SAFETY_PORT:$SAFETY_PORT \
-  --gpus $CUDA_VISIBLE_DEVICES \
-  ghcr.io/huggingface/text-generation-inference:2.3.1 \
-  --dtype bfloat16 \
-  --usage-stats off \
-  --sharded false \
-  --model-id $SAFETY_MODEL \
-  --port $SAFETY_PORT
+--network host \
+-v $HOME/.cache/huggingface:/data \
+-e HF_TOKEN=$HF_TOKEN \
+-p $SAFETY_PORT:$SAFETY_PORT \
+--gpus $CUDA_VISIBLE_DEVICES \
+ghcr.io/huggingface/text-generation-inference \
+--dtype bfloat16 \
+--usage-stats off \
+--sharded false \
+--cuda-memory-fraction 0.7 \
+--model-id $SAFETY_MODEL \
+--hostname 0.0.0.0 \
+--port $SAFETY_INFERENCE_PORT
+```
+
+## Dell distribution relies on ChromDB for vector database usage
+
+You can start a chrom-db easily using docker.
+```bash
+# This is where the indices are persisted
+mkdir -p chromadb
+
+podman run --rm -it \
+--network host \
+--name chromadb \
+-v ./chromadb:/chroma/chroma \
+-e IS_PERSISTENT=TRUE \
+chromadb/chroma:latest \
+--port $CHROMADB_PORT \
+--host $CHROMADB_HOST
 ```
 
 ## Running Llama Stack
@@ -89,14 +118,19 @@ Now you are ready to run Llama Stack with TGI as the inference provider. You can
 This method allows you to get started quickly without having to build the distribution code.
 
 ```bash
-LLAMA_STACK_PORT=5001
-docker run \
-  -it \
-  -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
-  llamastack/distribution-dell \
-  --port $LLAMA_STACK_PORT \
-  --env INFERENCE_MODEL=$INFERENCE_MODEL \
-  --env TGI_URL=http://host.docker.internal:$INFERENCE_PORT
+docker run -it \
+--network host \
+-p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
+-v ~/.llama:/root/.llama \
+# NOTE: mount the llama-stack / llama-model directories if testing local changes else not needed
+-v /home/hjshah/git/llama-stack:/app/llama-stack-source -v /home/hjshah/git/llama-models:/app/llama-models-source \
+# localhost/distribution-dell:dev if building / testing locally
+llamastack/distribution-dell\
+--port $LLAMA_STACK_PORT  \
+--env INFERENCE_MODEL=$INFERENCE_MODEL \
+--env DEH_URL=$DEH_URL \
+--env CHROMA_URL=$CHROMA_URL
+
 ```
 
 If you are using Llama Stack Safety / Shield APIs, use:
@@ -105,6 +139,10 @@ If you are using Llama Stack Safety / Shield APIs, use:
 # You need a local checkout of llama-stack to run this, get it using
 # git clone https://github.com/meta-llama/llama-stack.git
 cd /path/to/llama-stack
+
+export SAFETY_INFERENCE_PORT=8282
+export DEH_SAFETY_URL=http://0.0.0.0:$SAFETY_INFERENCE_PORT
+export SAFETY_MODEL=meta-llama/Llama-Guard-3-1B
 
 docker run \
   -it \
@@ -115,9 +153,10 @@ docker run \
   --yaml-config /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=$INFERENCE_MODEL \
-  --env TGI_URL=http://host.docker.internal:$INFERENCE_PORT \
+  --env DEH_URL=$DEH_URL \
   --env SAFETY_MODEL=$SAFETY_MODEL \
-  --env TGI_SAFETY_URL=http://host.docker.internal:$SAFETY_PORT
+  --env DEH_SAFETY_URL=$DEH_SAFETY_URL \
+  --env CHROMA_URL=$CHROMA_URL
 ```
 
 ### Via Conda
@@ -126,10 +165,11 @@ Make sure you have done `pip install llama-stack` and have the Llama Stack CLI a
 
 ```bash
 llama stack build --template dell --image-type conda
-llama stack run ./run.yaml
+llama stack run dell
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=$INFERENCE_MODEL \
-  --env TGI_URL=http://127.0.0.1:$INFERENCE_PORT
+  --env DEH_URL=$DEH_URL \
+  --env CHROMA_URL=$CHROMA_URL
 ```
 
 If you are using Llama Stack Safety / Shield APIs, use:
@@ -138,7 +178,8 @@ If you are using Llama Stack Safety / Shield APIs, use:
 llama stack run ./run-with-safety.yaml \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=$INFERENCE_MODEL \
-  --env TGI_URL=http://127.0.0.1:$INFERENCE_PORT \
+  --env DEH_URL=$DEH_URL \
   --env SAFETY_MODEL=$SAFETY_MODEL \
-  --env TGI_SAFETY_URL=http://127.0.0.1:$SAFETY_PORT
+  --env DEH_SAFETY_URL=$DEH_SAFETY_URL \
+  --env CHROMA_URL=$CHROMA_URL
 ```

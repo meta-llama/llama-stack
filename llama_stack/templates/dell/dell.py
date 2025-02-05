@@ -128,16 +128,15 @@ def get_distribution_template() -> DistributionTemplate:
         },
         run_config_env_vars={
             "DEH_URL": (
-                "http://0.0.0.0:8080",
+                "http://0.0.0.0:8181",
                 "URL for the Dell inference server",
             ),
             "DEH_SAFETY_URL": (
-                "http://0.0.0.0:8081",
+                "http://0.0.0.0:8282",
                 "URL for the Dell safety inference server",
             ),
             "CHROMA_URL": (
-                # http://host.containers.internal:8000 if running via docker
-                "http://0.0.0.0:8000",
+                "http://localhost:6601",
                 "URL for the Chroma server",
             ),
             "INFERENCE_MODEL": (
