@@ -185,7 +185,7 @@ client = (
 )  # or create_http_client() depending on the environment you picked
 
 # Documents to be used for RAG
-urls = ["chat.rst", "llama3.rst", "datasets.rst", "lora_finetune.rst"]
+urls = ["chat.rst", "llama3.rst", "memory_optimizations.rst", "lora_finetune.rst"]
 documents = [
     Document(
         document_id=f"num-{i}",

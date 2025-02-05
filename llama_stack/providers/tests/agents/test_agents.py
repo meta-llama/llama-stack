@@ -152,7 +152,6 @@ class TestAgents:
             "memory_optimizations.rst",
             "chat.rst",
             "llama3.rst",
-            "datasets.rst",
             "qat_finetune.rst",
             "lora_finetune.rst",
         ]
