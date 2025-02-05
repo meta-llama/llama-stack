@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 from enum import Enum
-from typing import Any, Dict, List
+from typing import Annotated, Any, Dict, List, Literal, Optional, Union
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -18,18 +18,43 @@ class TelemetrySink(str, Enum):
     CONSOLE = "console"
 
 
+class MetricsStoreType(str, Enum):
+    PROMETHEUS = "prometheus"
+
+
+class PrometheusConfig(BaseModel):
+    endpoint: str = Field(
+        default="http://localhost:9090",
+        description="The Prometheus endpoint URL",
+    )
+    disable_ssl: bool = Field(
+        default=True,
+        description="Whether to disable SSL for the Prometheus endpoint",
+    )
+
+
+class PrometheusMetricsStoreConfig(BaseModel):
+    type: Literal["prometheus"] = Field(
+        default="prometheus",
+        description="The type of metrics store to use",
+    )
+    endpoint: str = Field(
+        default="http://localhost:9090",
+        description="The Prometheus endpoint URL",
+    )
+    disable_ssl: bool = Field(
+        default=True,
+        description="Whether to disable SSL for the Prometheus endpoint",
+    )
+
+
+MetricsStoreConfig = Annotated[Union[PrometheusMetricsStoreConfig], Field(discriminator="type")]
+
+
 class TelemetryConfig(BaseModel):
     otel_endpoint: str = Field(
         default="http://localhost:4318",
         description="The OpenTelemetry collector endpoint URL",
-    )
-    prometheus_endpoint: str = Field(
-        default="http://localhost:9090",
-        description="The Prometheus endpoint URL",
-    )
-    prometheus_disable_ssl: bool = Field(
-        default=True,
-        description="Whether to disable SSL for the Prometheus endpoint",
     )
     service_name: str = Field(
         default="llama-stack",
@@ -43,6 +68,7 @@ class TelemetryConfig(BaseModel):
         default=(RUNTIME_BASE_DIR / "trace_store.db").as_posix(),
         description="The path to the SQLite database to use for storing traces",
     )
+    metrics_store_config: Optional[MetricsStoreConfig] = None
 
     @field_validator("sinks", mode="before")
     @classmethod

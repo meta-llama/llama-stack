@@ -18,16 +18,13 @@ from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.semconv.resource import ResourceAttributes
-from prometheus_api_client import PrometheusConnect
 
 from llama_stack.apis.telemetry import (
     Event,
     GetMetricsResponse,
-    MetricDataPoint,
     MetricEvent,
     MetricLabelMatcher,
     MetricQueryType,
-    MetricSeries,
     QueryCondition,
     QuerySpanTreeResponse,
     QueryTracesResponse,
@@ -44,6 +41,7 @@ from llama_stack.distribution.datatypes import Api
 from llama_stack.providers.inline.telemetry.meta_reference.console_span_processor import (
     ConsoleSpanProcessor,
 )
+from llama_stack.providers.inline.telemetry.meta_reference.prometheus_metrics_store import PrometheusMetricsStore
 from llama_stack.providers.inline.telemetry.meta_reference.sqlite_span_processor import (
     SQLiteSpanProcessor,
 )
@@ -118,9 +116,12 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
 
         if TelemetrySink.OTEL in self.config.sinks:
             self.meter = metrics.get_meter(__name__)
-            self.prom = PrometheusConnect(
-                url=self.config.prometheus_endpoint, disable_ssl=self.config.prometheus_disable_ssl
-            )
+            if self.config.metrics_store_config is not None:
+                if self.config.metrics_store_config.type == "prometheus":
+                    self.metrics_store = PrometheusMetricsStore(
+                        endpoint=self.config.metrics_store_config.endpoint,
+                        disable_ssl=self.config.metrics_store_config.disable_ssl,
+                    )
         if TelemetrySink.SQLITE in self.config.sinks:
             self.trace_store = SQLiteTraceStore(self.config.sqlite_db_path)
 
@@ -268,39 +269,13 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
         query_type: MetricQueryType = MetricQueryType.RANGE,
         label_matchers: Optional[List[MetricLabelMatcher]] = None,
     ) -> GetMetricsResponse:
-        if self.prom is None:
-            raise ValueError("Prometheus endpoint not configured")
-
-        try:
-            # Build query with label matchers if provided
-            query = metric_name
-            if label_matchers:
-                matchers = [f'{m.name}{m.operator.value}"{m.value}"' for m in label_matchers]
-                query = f"{metric_name}{{{','.join(matchers)}}}"
-
-            # Use instant query for current values, range query for historical data
-            if query_type == MetricQueryType.INSTANT:
-                result = self.prom.custom_query(query=query)
-                # Convert instant query results to same format as range query
-                result = [{"metric": r["metric"], "values": [[r["value"][0], r["value"][1]]]} for r in result]
-            else:
-                result = self.prom.custom_query_range(
-                    query=query,
-                    start_time=start_time,
-                    end_time=end_time if end_time else None,
-                    step=step,
-                )
-
-            series = []
-            for metric_data in result:
-                values = [
-                    MetricDataPoint(timestamp=datetime.fromtimestamp(point[0]), value=float(point[1]))
-                    for point in metric_data["values"]
-                ]
-                series.append(MetricSeries(metric=metric_name, labels=metric_data.get("metric", {}), values=values))
-
-            return GetMetricsResponse(data=series)
-
-        except Exception as e:
-            print(f"Error querying metrics: {e}")
-            return GetMetricsResponse(data=[])
+        if not hasattr(self, "metrics_store"):
+            raise ValueError("Metrics store not configured")
+        return await self.metrics_store.get_metrics(
+            metric_name=metric_name,
+            start_time=start_time,
+            end_time=end_time,
+            step=step,
+            query_type=query_type,
+            label_matchers=label_matchers,
+        )
