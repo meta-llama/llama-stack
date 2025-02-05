@@ -239,6 +239,7 @@ def inference_sambanova() -> ProviderFixture:
     )
 
 
+@pytest.fixture(scope="session")
 def inference_centml() -> ProviderFixture:
     api_key = os.getenv("CENTML_API_KEY")
     if not api_key:
