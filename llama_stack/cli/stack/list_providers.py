@@ -24,7 +24,7 @@ class StackListProviders(Subcommand):
     def _add_arguments(self):
         from llama_stack.distribution.distribution import builtin_automatically_routed_apis
 
-        api_values = [x.router_api for x in builtin_automatically_routed_apis()]
+        api_values = [x.router_api.value for x in builtin_automatically_routed_apis()]
         self.parser.add_argument(
             "api",
             type=str,
