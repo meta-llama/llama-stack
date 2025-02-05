@@ -235,15 +235,23 @@ class MetricsMixin(BaseModel):
 
 @json_schema_type
 class MetricQueryType(Enum):
-    RANGE = "range"  # Returns data points over time range
-    INSTANT = "instant"  # Returns single data point
+    RANGE = "range"
+    INSTANT = "instant"
+
+
+@json_schema_type
+class MetricLabelOperator(Enum):
+    EQUALS = "="
+    NOT_EQUALS = "!="
+    REGEX_MATCH = "=~"
+    REGEX_NOT_MATCH = "!~"
 
 
 @json_schema_type
 class MetricLabelMatcher(BaseModel):
     name: str
     value: str
-    operator: Literal["=", "!=", "=~", "!~"] = "="  # Prometheus-style operators
+    operator: MetricLabelOperator = MetricLabelOperator.EQUALS
 
 
 @json_schema_type
@@ -313,9 +321,9 @@ class Telemetry(Protocol):
     async def get_metrics(
         self,
         metric_name: str,
-        start_time: int,  # Unix timestamp in seconds
-        end_time: Optional[int] = None,  # Unix timestamp in seconds
-        step: Optional[str] = "1m",  # Prometheus-style duration: 1m, 5m, 1h, etc.
+        start_time: int,
+        end_time: Optional[int] = None,
+        step: Optional[str] = "1m",
         query_type: MetricQueryType = MetricQueryType.RANGE,
         label_matchers: Optional[List[MetricLabelMatcher]] = None,
     ) -> GetMetricsResponse: ...

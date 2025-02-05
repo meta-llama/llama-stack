@@ -2236,6 +2236,10 @@ components:
     CompletionResponse:
       type: object
       properties:
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/Metric'
         content:
           type: string
           description: The generated completion text
@@ -2554,6 +2558,10 @@ components:
     CompletionResponseStreamChunk:
       type: object
       properties:
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/Metric'
         delta:
           type: string
           description: >-
@@ -3341,6 +3349,10 @@ components:
     EmbeddingsResponse:
       type: object
       properties:
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/Metric'
         embeddings:
           type: array
           items:
