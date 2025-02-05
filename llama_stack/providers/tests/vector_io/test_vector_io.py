@@ -17,8 +17,8 @@ from llama_stack.providers.utils.memory.vector_store import make_overlapped_chun
 
 # How to run this test:
 #
-# pytest llama_stack/providers/tests/memory/test_memory.py
-#   -m "sentence_transformers" --env EMBEDDING_DIMENSION=384
+# pytest llama_stack/providers/tests/vector_io/test_vector_io.py \
+#   -m "pgvector" --env EMBEDDING_DIMENSION=384 PGVECTOR_PORT=7432 \
 #   -v -s --tb=short --disable-warnings
 
 
