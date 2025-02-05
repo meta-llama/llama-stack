@@ -10,6 +10,20 @@ from llama_models.schema_utils import json_schema_type
 
 
 @json_schema_type
+class RegisteredApi(Enum):
+    agents = "agents"
+    datasetio = "datasetio"
+    eval = "eval"
+    inference = "inference"
+    post_training = "post_training"
+    safety = "safety"
+    scoring = "scoring"
+    telemetry = "telemetry"
+    tool_runtime = "tool_runtime"
+    vector_io = "vector_io"
+
+
+@json_schema_type
 class Api(Enum):
     inference = "inference"
     safety = "safety"
