@@ -237,7 +237,8 @@ class InferenceRouter(Inference):
                 completion_text = ""
                 async for chunk in await provider.chat_completion(**params):
                     if chunk.event.event_type == ChatCompletionResponseEventType.progress:
-                        completion_text += chunk.event.delta.text
+                        if chunk.event.delta.type == "text":
+                            completion_text += chunk.event.delta.text
                     if chunk.event.event_type == ChatCompletionResponseEventType.complete:
                         model_output = self.formatter.encode_dialog_prompt(
                             [RawMessage(role="assistant", content=completion_text)],
