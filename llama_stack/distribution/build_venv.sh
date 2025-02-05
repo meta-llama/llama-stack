@@ -89,7 +89,7 @@ run() {
       fi
 
       printf "Installing from LLAMA_MODELS_DIR: $LLAMA_MODELS_DIR\n"
-      uv pip uninstall -y llama-models
+      uv pip uninstall llama-models
       uv pip install --no-cache-dir -e "$LLAMA_MODELS_DIR"
     fi
 
