@@ -26,6 +26,7 @@ from llama_stack.apis.inference import (
     Message,
     ResponseFormat,
     ToolChoice,
+    ToolConfig,
 )
 from llama_stack.providers.utils.inference.model_registry import (
     build_model_alias,

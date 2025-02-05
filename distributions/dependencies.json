@@ -27,7 +27,7 @@
     "transformers",
     "uvicorn",
     "sentence-transformers --no-deps",
-    "torch --index-url https://download.pytorch.org/whl/cpu"
+    "torch torchvision --index-url https://download.pytorch.org/whl/cpu"
   ],
   "hf-serverless": [
     "aiohttp",
@@ -62,7 +62,7 @@
     "transformers",
     "uvicorn",
     "sentence-transformers --no-deps",
-    "torch --index-url https://download.pytorch.org/whl/cpu"
+    "torch torchvision --index-url https://download.pytorch.org/whl/cpu"
   ],
   "together": [
     "aiosqlite",
@@ -96,7 +96,7 @@
     "transformers",
     "uvicorn",
     "sentence-transformers --no-deps",
-    "torch --index-url https://download.pytorch.org/whl/cpu"
+    "torch torchvision --index-url https://download.pytorch.org/whl/cpu"
   ],
   "vllm-gpu": [
     "aiosqlite",
@@ -130,7 +130,7 @@
     "uvicorn",
     "vllm",
     "sentence-transformers --no-deps",
-    "torch --index-url https://download.pytorch.org/whl/cpu"
+    "torch torchvision --index-url https://download.pytorch.org/whl/cpu"
   ],
   "remote-vllm": [
     "aiosqlite",
@@ -163,7 +163,7 @@
     "transformers",
     "uvicorn",
     "sentence-transformers --no-deps",
-    "torch --index-url https://download.pytorch.org/whl/cpu"
+    "torch torchvision --index-url https://download.pytorch.org/whl/cpu"
   ],
   "fireworks": [
     "aiosqlite",
@@ -197,7 +197,7 @@
     "transformers",
     "uvicorn",
     "sentence-transformers --no-deps",
-    "torch --index-url https://download.pytorch.org/whl/cpu"
+    "torch torchvision --index-url https://download.pytorch.org/whl/cpu"
   ],
   "tgi": [
     "aiohttp",
@@ -232,7 +232,41 @@
     "transformers",
     "uvicorn",
     "sentence-transformers --no-deps",
-    "torch --index-url https://download.pytorch.org/whl/cpu"
+    "torch torchvision --index-url https://download.pytorch.org/whl/cpu"
+  ],
+  "dell": [
+    "aiohttp",
+    "aiosqlite",
+    "autoevals",
+    "blobfile",
+    "chardet",
+    "chromadb-client",
+    "datasets",
+    "faiss-cpu",
+    "fastapi",
+    "fire",
+    "httpx",
+    "huggingface_hub",
+    "matplotlib",
+    "nltk",
+    "numpy",
+    "openai",
+    "opentelemetry-exporter-otlp-proto-http",
+    "opentelemetry-sdk",
+    "pandas",
+    "pillow",
+    "psycopg2-binary",
+    "pypdf",
+    "redis",
+    "requests",
+    "scikit-learn",
+    "scipy",
+    "sentencepiece",
+    "tqdm",
+    "transformers",
+    "uvicorn",
+    "sentence-transformers --no-deps",
+    "torch torchvision --index-url https://download.pytorch.org/whl/cpu"
   ],
   "bedrock": [
     "aiosqlite",
@@ -266,7 +300,7 @@
     "transformers",
     "uvicorn",
     "sentence-transformers --no-deps",
-    "torch --index-url https://download.pytorch.org/whl/cpu"
+    "torch torchvision --index-url https://download.pytorch.org/whl/cpu"
   ],
   "meta-reference-gpu": [
     "accelerate",
@@ -306,7 +340,7 @@
     "uvicorn",
     "zmq",
     "sentence-transformers --no-deps",
-    "torch --index-url https://download.pytorch.org/whl/cpu"
+    "torch torchvision --index-url https://download.pytorch.org/whl/cpu"
   ],
   "nvidia": [
     "aiosqlite",
@@ -338,7 +372,7 @@
     "transformers",
     "uvicorn",
     "sentence-transformers --no-deps",
-    "torch --index-url https://download.pytorch.org/whl/cpu"
+    "torch torchvision --index-url https://download.pytorch.org/whl/cpu"
   ],
   "meta-reference-quantized-gpu": [
     "accelerate",
@@ -380,7 +414,7 @@
     "uvicorn",
     "zmq",
     "sentence-transformers --no-deps",
-    "torch --index-url https://download.pytorch.org/whl/cpu"
+    "torch torchvision --index-url https://download.pytorch.org/whl/cpu"
   ],
   "cerebras": [
     "aiosqlite",
@@ -413,7 +447,7 @@
     "transformers",
     "uvicorn",
     "sentence-transformers --no-deps",
-    "torch --index-url https://download.pytorch.org/whl/cpu"
+    "torch torchvision --index-url https://download.pytorch.org/whl/cpu"
   ],
   "ollama": [
     "aiohttp",
@@ -447,7 +481,7 @@
     "transformers",
     "uvicorn",
     "sentence-transformers --no-deps",
-    "torch --index-url https://download.pytorch.org/whl/cpu"
+    "torch torchvision --index-url https://download.pytorch.org/whl/cpu"
   ],
   "hf-endpoint": [
     "aiohttp",
@@ -482,6 +516,6 @@
     "transformers",
     "uvicorn",
     "sentence-transformers --no-deps",
-    "torch --index-url https://download.pytorch.org/whl/cpu"
+    "torch torchvision --index-url https://download.pytorch.org/whl/cpu"
   ]
 }

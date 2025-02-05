@@ -2,7 +2,7 @@
 orphan: true
 ---
 
-# TGI Distribution
+# Dell Distribution of Llama Stack
 
 ```{toctree}
 :maxdepth: 2
@@ -11,32 +11,21 @@ orphan: true
 self
 ```
 
-The `llamastack/distribution-tgi` distribution consists of the following provider configurations.
+The `llamastack/distribution-{{ name }}` distribution consists of the following provider configurations.
 
-| API | Provider(s) |
-|-----|-------------|
-| agents | `inline::meta-reference` |
-| datasetio | `remote::huggingface`, `inline::localfs` |
-| eval | `inline::meta-reference` |
-| inference | `remote::tgi` |
-| safety | `inline::llama-guard` |
-| scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |
-| telemetry | `inline::meta-reference` |
-| tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::code-interpreter`, `inline::rag-runtime`, `remote::model-context-protocol` |
-| vector_io | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
-
+{{ providers_table }}
 
 You can use this distribution if you have GPUs and want to run an independent TGI server container for running inference.
 
+{% if run_config_env_vars %}
 ### Environment Variables
 
 The following environment variables can be configured:
 
-- `LLAMA_STACK_PORT`: Port for the Llama Stack distribution server (default: `5001`)
-- `INFERENCE_MODEL`: Inference model loaded into the TGI server (default: `meta-llama/Llama-3.2-3B-Instruct`)
-- `TGI_URL`: URL of the TGI server with the main inference model (default: `http://127.0.0.1:8080}/v1`)
-- `TGI_SAFETY_URL`: URL of the TGI server with the safety model (default: `http://127.0.0.1:8081/v1`)
-- `SAFETY_MODEL`: Name of the safety (Llama-Guard) model to use (default: `meta-llama/Llama-Guard-3-1B`)
+{% for var, (default_value, description) in run_config_env_vars.items() %}
+- `{{ var }}`: {{ description }} (default: `{{ default_value }}`)
+{% endfor %}
+{% endif %}
 
 
 ## Setting up TGI server
@@ -93,7 +82,7 @@ LLAMA_STACK_PORT=5001
 docker run \
   -it \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
-  llamastack/distribution-tgi \
+  llamastack/distribution-{{ name }} \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=$INFERENCE_MODEL \
   --env TGI_URL=http://host.docker.internal:$INFERENCE_PORT
@@ -111,7 +100,7 @@ docker run \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ~/.llama:/root/.llama \
   -v ./llama_stack/templates/tgi/run-with-safety.yaml:/root/my-run.yaml \
-  llamastack/distribution-tgi \
+  llamastack/distribution-{{ name }} \
   --yaml-config /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=$INFERENCE_MODEL \
@@ -122,10 +111,10 @@ docker run \
 
 ### Via Conda
 
-Make sure you have done `uv pip install llama-stack` and have the Llama Stack CLI available.
+Make sure you have done `pip install llama-stack` and have the Llama Stack CLI available.
 
 ```bash
-llama stack build --template tgi --image-type conda
+llama stack build --template {{ name }} --image-type conda
 llama stack run ./run.yaml
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=$INFERENCE_MODEL \
