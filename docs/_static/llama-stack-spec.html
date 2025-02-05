@@ -2440,8 +2440,7 @@
                 "required": [
                     "role",
                     "content",
-                    "stop_reason",
-                    "tool_calls"
+                    "stop_reason"
                 ],
                 "description": "A message containing the model's (assistant) response in a chat conversation."
             },
@@ -3632,7 +3631,6 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "max_infer_iters",
                     "model",
                     "instructions",
                     "enable_session_persistence"
@@ -4217,7 +4215,6 @@
                     "input_messages",
                     "steps",
                     "output_message",
-                    "output_attachments",
                     "started_at"
                 ],
                 "description": "A single turn in an interaction with an Agentic System."

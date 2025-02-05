@@ -142,7 +142,7 @@ class CompletionMessage(BaseModel):
     role: Literal["assistant"] = "assistant"
     content: InterleavedContent
     stop_reason: StopReason
-    tool_calls: List[ToolCall] = Field(default_factory=list)
+    tool_calls: Optional[List[ToolCall]] = Field(default_factory=list)
 
 
 Message = register_schema(
