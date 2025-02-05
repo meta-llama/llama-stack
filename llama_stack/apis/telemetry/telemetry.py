@@ -230,7 +230,7 @@ Metric = register_schema(
 
 @json_schema_type
 class MetricsMixin(BaseModel):
-    metrics: List[Metric] = Field(default_factory=list)
+    metrics: Optional[List[Metric]] = None
 
 
 @runtime_checkable
