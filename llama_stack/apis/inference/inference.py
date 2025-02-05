@@ -19,7 +19,6 @@ from typing import (
 
 from llama_models.llama3.api.datatypes import (
     BuiltinTool,
-    ResponseOutputParser,
     SamplingParams,
     StopReason,
     ToolCall,
@@ -320,7 +319,6 @@ class ChatCompletionRequest(BaseModel):
     response_format: Optional[ResponseFormat] = None
     stream: Optional[bool] = False
     logprobs: Optional[LogProbConfig] = None
-    response_output_parser: Optional[ResponseOutputParser] = Field(default=ResponseOutputParser.default)
 
 
 @json_schema_type

@@ -26,7 +26,6 @@ from llama_stack.apis.common.content_types import ContentDelta, InterleavedConte
 from llama_stack.apis.inference import (
     CompletionMessage,
     ResponseFormat,
-    ResponseOutputParser,
     SamplingParams,
     ToolCall,
     ToolChoice,
@@ -166,7 +165,6 @@ class AgentConfig(AgentConfigCommon):
     instructions: str
     enable_session_persistence: bool
     response_format: Optional[ResponseFormat] = None
-    response_output_parser: Optional[ResponseOutputParser] = Field(default=ResponseOutputParser.default)
 
 
 class AgentConfigOverridablePerTurn(AgentConfigCommon):
