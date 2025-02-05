@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 import threading
+from datetime import datetime
 from typing import Any, Dict, List, Optional
 from urllib.parse import urljoin
 
@@ -17,10 +18,16 @@ from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.semconv.resource import ResourceAttributes
+from prometheus_api_client import PrometheusConnect
 
 from llama_stack.apis.telemetry import (
     Event,
+    GetMetricsResponse,
+    MetricDataPoint,
     MetricEvent,
+    MetricLabelMatcher,
+    MetricQueryType,
+    MetricSeries,
     QueryCondition,
     QuerySpanTreeResponse,
     QueryTracesResponse,
@@ -111,6 +118,9 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
 
         if TelemetrySink.OTEL in self.config.sinks:
             self.meter = metrics.get_meter(__name__)
+            self.prom = PrometheusConnect(
+                url=self.config.prometheus_endpoint, disable_ssl=self.config.prometheus_disable_ssl
+            )
         if TelemetrySink.SQLITE in self.config.sinks:
             self.trace_store = SQLiteTraceStore(self.config.sqlite_db_path)
 
@@ -248,3 +258,49 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
                 max_depth=max_depth,
             )
         )
+
+    async def get_metrics(
+        self,
+        metric_name: str,
+        start_time: datetime,
+        end_time: Optional[datetime] = None,
+        step: Optional[str] = "15s",
+        query_type: MetricQueryType = MetricQueryType.RANGE,
+        label_matchers: Optional[List[MetricLabelMatcher]] = None,
+    ) -> GetMetricsResponse:
+        if TelemetrySink.OTEL not in self.config.sinks:
+            return GetMetricsResponse(data=[])
+
+        try:
+            # Build query with label matchers if provided
+            query = metric_name
+            if label_matchers:
+                matchers = [f'{m.name}{m.operator.value}"{m.value}"' for m in label_matchers]
+                query = f"{metric_name}{{{','.join(matchers)}}}"
+
+            # Use instant query for current values, range query for historical data
+            if query_type == MetricQueryType.INSTANT:
+                result = self.prom.custom_query(query=query)
+                # Convert instant query results to same format as range query
+                result = [{"metric": r["metric"], "values": [[r["value"][0], r["value"][1]]]} for r in result]
+            else:
+                result = self.prom.custom_query_range(
+                    query=query,
+                    start_time=start_time,
+                    end_time=end_time if end_time else None,
+                    step=step,
+                )
+
+            series = []
+            for metric_data in result:
+                values = [
+                    MetricDataPoint(timestamp=datetime.fromtimestamp(point[0]), value=float(point[1]))
+                    for point in metric_data["values"]
+                ]
+                series.append(MetricSeries(metric=metric_name, labels=metric_data.get("metric", {}), values=values))
+
+            return GetMetricsResponse(data=series)
+
+        except Exception as e:
+            print(f"Error querying metrics: {e}")
+            return GetMetricsResponse(data=[])

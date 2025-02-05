@@ -23,6 +23,14 @@ class TelemetryConfig(BaseModel):
         default="http://localhost:4318",
         description="The OpenTelemetry collector endpoint URL",
     )
+    prometheus_endpoint: str = Field(
+        default="http://localhost:9090",
+        description="The Prometheus endpoint URL",
+    )
+    prometheus_disable_ssl: bool = Field(
+        default=True,
+        description="Whether to disable SSL for the Prometheus endpoint",
+    )
     service_name: str = Field(
         default="llama-stack",
         description="The service name to use for telemetry",
