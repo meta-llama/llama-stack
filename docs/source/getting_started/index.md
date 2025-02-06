@@ -66,6 +66,23 @@ As another example, to start the container with Podman, you can do the same but 
 
 Configuration for this is available at `distributions/ollama/run.yaml`.
 
+```{admonition} Note
+:class: note
+
+Docker containers run in their own isolated network namespaces on Linux. To allow the container to communicate with services running on the host via `localhost`, you need `--network=host`. This makes the container use the host’s network directly so it can connect to Ollama running on `localhost:11434`.
+
+Linux users having issues running the above command should instead try the following:
+```bash
+docker run -it \
+  -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
+  -v ~/.llama:/root/.llama \
+  --network=host \
+  llamastack/distribution-ollama \
+  --port $LLAMA_STACK_PORT \
+  --env INFERENCE_MODEL=$INFERENCE_MODEL \
+  --env OLLAMA_URL=http://localhost:11434
+```
+
 :::
 
 
