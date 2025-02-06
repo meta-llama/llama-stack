@@ -33,6 +33,7 @@ from llama_stack.apis.inference import (
     ToolResponse,
     ToolResponseMessage,
     UserMessage,
+    ToolConfig,
 )
 from llama_stack.apis.safety import SafetyViolation
 from llama_stack.apis.tools import ToolDef
@@ -153,10 +154,23 @@ class AgentConfigCommon(BaseModel):
     output_shields: Optional[List[str]] = Field(default_factory=list)
     toolgroups: Optional[List[AgentToolGroup]] = Field(default_factory=list)
     client_tools: Optional[List[ToolDef]] = Field(default_factory=list)
-    tool_choice: Optional[ToolChoice] = Field(default=ToolChoice.auto)
-    tool_prompt_format: Optional[ToolPromptFormat] = Field(default=None)
+    tool_choice: Optional[ToolChoice] = Field(default=ToolChoice.auto, deprecated="use tool_config instead")
+    tool_prompt_format: Optional[ToolPromptFormat] = Field(default=None, deprecated="use tool_config instead")
+    tool_config: Optional[ToolConfig] = Field(default=None)
 
     max_infer_iters: Optional[int] = 10
+
+    def model_post_init(self, __context):
+        if self.tool_config:
+            if self.tool_choice and self.tool_config.tool_choice != self.tool_choice:
+                raise ValueError("tool_choice is deprecated. Use tool_choice in tool_config instead.")
+            if self.tool_prompt_format and self.tool_config.tool_prompt_format != self.tool_prompt_format:
+                raise ValueError("tool_prompt_format is deprecated. Use tool_prompt_format in tool_config instead.")
+        if self.tool_config is None:
+            self.tool_config = ToolConfig(
+                tool_choice=self.tool_choice,
+                tool_prompt_format=self.tool_prompt_format,
+            )
 
 
 @json_schema_type
@@ -268,6 +282,7 @@ class AgentTurnCreateRequest(AgentConfigOverridablePerTurn):
     toolgroups: Optional[List[AgentToolGroup]] = None
 
     stream: Optional[bool] = False
+    tool_config: Optional[ToolConfig] = None
 
 
 @json_schema_type
@@ -315,6 +330,7 @@ class Agents(Protocol):
         stream: Optional[bool] = False,
         documents: Optional[List[Document]] = None,
         toolgroups: Optional[List[AgentToolGroup]] = None,
+        tool_config: Optional[ToolConfig] = None,
     ) -> Union[Turn, AsyncIterator[AgentTurnResponseStreamChunk]]: ...
 
     @webmethod(route="/agents/{agent_id}/session/{session_id}/turn/{turn_id}", method="GET")

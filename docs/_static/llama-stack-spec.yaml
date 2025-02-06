@@ -2347,6 +2347,8 @@ components:
             - python_list
           description: >-
             Prompt format for calling custom / zero shot tools.
+        tool_config:
+          $ref: '#/components/schemas/ToolConfig'
         max_infer_iters:
           type: integer
           default: 10
@@ -2500,6 +2502,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AgentTool'
+        tool_config:
+          $ref: '#/components/schemas/ToolConfig'
       additionalProperties: false
       required:
         - messages
