@@ -56,7 +56,7 @@ def available_templates_specs() -> Dict[str, BuildConfig]:
     return template_specs
 
 
-def run_stack_build_command(parser: argparse.ArgumentParser, args: argparse.Namespace) -> None:
+def run_stack_build_command(args: argparse.Namespace) -> None:
     if args.list_templates:
         return _run_template_list_cmd()
 

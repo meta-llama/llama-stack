@@ -75,4 +75,4 @@ environment is active, you must specify a name.
         # can be fast to load and reduces dependencies
         from ._build import run_stack_build_command
 
-        return run_stack_build_command(self.parser, args)
+        return run_stack_build_command(args)
