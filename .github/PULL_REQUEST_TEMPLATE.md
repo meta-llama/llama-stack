@@ -1,20 +1,25 @@
 # What does this PR do?
 
-In short, provide a summary of what this PR does and why. Usually, the relevant context should be present in a linked issue.
+<!-- Provide a short summary of what this PR does and why. Usually, the relevant context should be present in a linked issue. -->
 
-- [ ] Addresses issue (#issue)
+<!-- Uncomment this section with the issue number if an issue is being resolved
+**Issue resolved by this Pull Request:**
+Closes #
+--->
 
 
 ## Test Plan
 
+<!--
 Please describe:
  - tests you ran to verify your changes with result summaries.
  - provide instructions so it can be reproduced.
+-->
 
 
 ## Sources
 
-Please link relevant resources if necessary.
+<!-- Please link relevant resources if necessary. -->
 
 
 ## Before submitting
