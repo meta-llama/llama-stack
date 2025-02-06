@@ -26,6 +26,7 @@ from llama_stack.apis.inference import (
     Message,
     ResponseFormat,
     ToolChoice,
+    ToolConfig,
 )
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.providers.remote.inference.groq.config import GroqConfig
