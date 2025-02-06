@@ -1,30 +1,11 @@
 # What does this PR do?
+[Provide a short summary of what this PR does and why. Link to relevant issues if applicable.]
 
-<!-- Provide a short summary of what this PR does and why. Usually, the relevant context should be present in a linked issue. -->
-
-<!-- Uncomment this section with the issue number if an issue is being resolved
-**Issue resolved by this Pull Request:** Closes #
---->
-
+[//]: # (If resolving an issue, uncomment and update the line below)
+[//]: # (Closes #[issue-number])
 
 ## Test Plan
+[Describe the tests you ran to verify your changes with result summaries. *Provide clear instructions so the plan can be easily re-executed.*]
 
-<!--
-Please describe:
- - tests you ran to verify your changes with result summaries.
- - provide instructions so it can be reproduced.
--->
-
-<!--
-## Sources
-
-Please link relevant resources if necessary. 
-
--->
-
-<!--
-## Documentation
-
-- [ ] Added a [Changelog](https://github.com/meta-llama/llama-stack/blob/main/CHANGELOG.md) entry if the change is significant (new feature, breaking change etc.).
-
--->
+[//]: # (## Documentation)
+[//]: # (- [ ] Added a Changelog entry if the change is significant)
