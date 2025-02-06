@@ -95,7 +95,7 @@ class TestDatasetIO:
         assert len(response) == 1
         assert response[0].identifier == "test_dataset"
 
-        with pytest.raises(Exception) as exc_info:
+        with pytest.raises(ValueError):
             # unregister a dataset that does not exist
             await datasets_impl.unregister_dataset("test_dataset2")
 
@@ -104,7 +104,7 @@ class TestDatasetIO:
         assert isinstance(response, list)
         assert len(response) == 0
 
-        with pytest.raises(Exception) as exc_info:
+        with pytest.raises(ValueError):
             await datasets_impl.unregister_dataset("test_dataset")
 
     @pytest.mark.asyncio
