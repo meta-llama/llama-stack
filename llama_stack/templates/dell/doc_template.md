@@ -28,9 +28,9 @@ The following environment variables can be configured:
 {% endif %}
 
 
-## Setting up TGI server
+## Setting up Inference server using Dell Enterprise Hub's custom TGI container
 
-Please check the [TGI Getting Started Guide](https://github.com/huggingface/text-generation-inference?tab=readme-ov-file#get-started) to get a TGI endpoint. Here is a sample script to start a TGI server locally via Docker:
+You can
 
 ```bash
 export INFERENCE_PORT=8181
@@ -42,19 +42,18 @@ export CHROMA_URL=http://$CHROMADB_HOST:$CHROMADB_PORT
 export CUDA_VISIBLE_DEVICES=0
 export LLAMA_STACK_PORT=8321
 
-docker run --rm -it \
---network host \
--v $HOME/.cache/huggingface:/data \
--e HF_TOKEN=$HF_TOKEN \
--p $INFERENCE_PORT:$INFERENCE_PORT \
---gpus $CUDA_VISIBLE_DEVICES \
-ghcr.io/huggingface/text-generation-inference \
---dtype bfloat16 \
---usage-stats off \
---sharded false \
---cuda-memory-fraction 0.7 \
---model-id $INFERENCE_MODEL \
---port $INFERENCE_PORT --hostname 0.0.0.0
+docker run \
+  -it \
+  --network host \
+  --shm-size 1g \
+  -p $INFERENCE_PORT:$INFERENCE_PORT \
+  --gpus $CUDA_VISIBLE_DEVICES \
+  -e NUM_SHARD=1 \
+  -e MAX_BATCH_PREFILL_TOKENS=32768 \
+  -e MAX_INPUT_TOKENS=8000 \
+  -e MAX_TOTAL_TOKENS=8192 \
+  -e RUST_BACKTRACE=full \
+  registry.dell.huggingface.co/enterprise-dell-inference-meta-llama-meta-llama-3.1-8b-instruct
 ```
 
 If you are using Llama Stack Safety / Shield APIs, then you will need to also run another instance of a TGI with a corresponding safety model like `meta-llama/Llama-Guard-3-1B` using a script like:
@@ -81,21 +80,21 @@ ghcr.io/huggingface/text-generation-inference \
 --port $SAFETY_INFERENCE_PORT
 ```
 
-## Dell distribution relies on ChromDB for vector database usage
+## Dell distribution relies on ChromaDB for vector database usage
 
-You can start a chrom-db easily using docker.
+You can start a chroma-db easily using docker.
 ```bash
 # This is where the indices are persisted
 mkdir -p chromadb
 
 podman run --rm -it \
---network host \
---name chromadb \
--v ./chromadb:/chroma/chroma \
--e IS_PERSISTENT=TRUE \
-chromadb/chroma:latest \
---port $CHROMADB_PORT \
---host $CHROMADB_HOST
+  --network host \
+  --name chromadb \
+  -v ./chromadb:/chroma/chroma \
+  -e IS_PERSISTENT=TRUE \
+  chromadb/chroma:latest \
+  --port $CHROMADB_PORT \
+  --host $CHROMADB_HOST
 ```
 
 ## Running Llama Stack
@@ -108,17 +107,17 @@ This method allows you to get started quickly without having to build the distri
 
 ```bash
 docker run -it \
---network host \
--p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
--v ~/.llama:/root/.llama \
-# NOTE: mount the llama-stack / llama-model directories if testing local changes else not needed
--v /home/hjshah/git/llama-stack:/app/llama-stack-source -v /home/hjshah/git/llama-models:/app/llama-models-source \
-# localhost/distribution-dell:dev if building / testing locally
-llamastack/distribution-{{ name }}\
---port $LLAMA_STACK_PORT  \
---env INFERENCE_MODEL=$INFERENCE_MODEL \
---env DEH_URL=$DEH_URL \
---env CHROMA_URL=$CHROMA_URL
+  --network host \
+  -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
+  -v ~/.llama:/root/.llama \
+  # NOTE: mount the llama-stack / llama-model directories if testing local changes else not needed
+  -v /home/hjshah/git/llama-stack:/app/llama-stack-source -v /home/hjshah/git/llama-models:/app/llama-models-source \
+  # localhost/distribution-dell:dev if building / testing locally
+  llamastack/distribution-{{ name }}\
+  --port $LLAMA_STACK_PORT  \
+  --env INFERENCE_MODEL=$INFERENCE_MODEL \
+  --env DEH_URL=$DEH_URL \
+  --env CHROMA_URL=$CHROMA_URL
 
 ```
 
