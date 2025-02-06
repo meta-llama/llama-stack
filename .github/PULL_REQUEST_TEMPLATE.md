@@ -25,3 +25,4 @@ Please link relevant resources if necessary.
       Pull Request section?
 - [ ] Updated relevant documentation.
 - [ ] Wrote necessary unit or integration tests.
+- [ ] Added a [Changelog](https://github.com/meta-llama/llama-stack/blob/main/CHANGELOG.md) entry if the change is significant (new feature, breaking change etc.).
