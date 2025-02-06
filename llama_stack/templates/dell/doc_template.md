@@ -86,12 +86,12 @@ docker run --rm -it \
 You can start a chroma-db easily using docker.
 ```bash
 # This is where the indices are persisted
-mkdir -p chromadb
+mkdir -p $HOME/chromadb
 
 podman run --rm -it \
   --network host \
   --name chromadb \
-  -v ./chromadb:/chroma/chroma \
+  -v $HOME/chromadb:/chroma/chroma \
   -e IS_PERSISTENT=TRUE \
   chromadb/chroma:latest \
   --port $CHROMADB_PORT \
@@ -110,7 +110,7 @@ This method allows you to get started quickly without having to build the distri
 docker run -it \
   --network host \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
-  -v ~/.llama:/root/.llama \
+  -v $HOME/.llama:/root/.llama \
   # NOTE: mount the llama-stack / llama-model directories if testing local changes else not needed
   -v /home/hjshah/git/llama-stack:/app/llama-stack-source -v /home/hjshah/git/llama-models:/app/llama-models-source \
   # localhost/distribution-dell:dev if building / testing locally
@@ -136,7 +136,7 @@ export SAFETY_MODEL=meta-llama/Llama-Guard-3-1B
 docker run \
   -it \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
-  -v ~/.llama:/root/.llama \
+  -v $HOME/.llama:/root/.llama \
   -v ./llama_stack/templates/tgi/run-with-safety.yaml:/root/my-run.yaml \
   llamastack/distribution-{{ name }} \
   --yaml-config /root/my-run.yaml \
