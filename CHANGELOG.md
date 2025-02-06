@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.0
+
+### Added
+
+### Changed
+
+### Removed
+
+
 ## 0.0.53
 
 ### Added
