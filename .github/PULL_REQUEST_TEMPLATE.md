@@ -2,7 +2,7 @@
 
 In short, provide a summary of what this PR does and why. Usually, the relevant context should be present in a linked issue.
 
-- [ ] Addresses issue (#issue)
+- [ ] Resolves issue (#issue)
 
 
 ## Test Plan
