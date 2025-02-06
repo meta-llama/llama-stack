@@ -28,9 +28,9 @@ The following environment variables can be configured:
 {% endif %}
 
 
-## Setting up Inference server using Dell Enterprise Hub's custom TGI container
+## Setting up Inference server using Dell Enterprise Hub's custom TGI container.
 
-You can
+NOTE: This is a placeholder to run inference with TGI. This will be updated to use [Dell Enterprise Hub's containers](https://dell.huggingface.co/authenticated/models) once verified.
 
 ```bash
 export INFERENCE_PORT=8181
@@ -42,18 +42,19 @@ export CHROMA_URL=http://$CHROMADB_HOST:$CHROMADB_PORT
 export CUDA_VISIBLE_DEVICES=0
 export LLAMA_STACK_PORT=8321
 
-docker run \
-  -it \
+docker run --rm -it \
   --network host \
-  --shm-size 1g \
+  -v $HOME/.cache/huggingface:/data \
+  -e HF_TOKEN=$HF_TOKEN \
   -p $INFERENCE_PORT:$INFERENCE_PORT \
   --gpus $CUDA_VISIBLE_DEVICES \
-  -e NUM_SHARD=1 \
-  -e MAX_BATCH_PREFILL_TOKENS=32768 \
-  -e MAX_INPUT_TOKENS=8000 \
-  -e MAX_TOTAL_TOKENS=8192 \
-  -e RUST_BACKTRACE=full \
-  registry.dell.huggingface.co/enterprise-dell-inference-meta-llama-meta-llama-3.1-8b-instruct
+  ghcr.io/huggingface/text-generation-inference \
+  --dtype bfloat16 \
+  --usage-stats off \
+  --sharded false \
+  --cuda-memory-fraction 0.7 \
+  --model-id $INFERENCE_MODEL \
+  --port $INFERENCE_PORT --hostname 0.0.0.0
 ```
 
 If you are using Llama Stack Safety / Shield APIs, then you will need to also run another instance of a TGI with a corresponding safety model like `meta-llama/Llama-Guard-3-1B` using a script like:
@@ -65,19 +66,19 @@ export SAFETY_MODEL=meta-llama/Llama-Guard-3-1B
 export CUDA_VISIBLE_DEVICES=1
 
 docker run --rm -it \
---network host \
--v $HOME/.cache/huggingface:/data \
--e HF_TOKEN=$HF_TOKEN \
--p $SAFETY_PORT:$SAFETY_PORT \
---gpus $CUDA_VISIBLE_DEVICES \
-ghcr.io/huggingface/text-generation-inference \
---dtype bfloat16 \
---usage-stats off \
---sharded false \
---cuda-memory-fraction 0.7 \
---model-id $SAFETY_MODEL \
---hostname 0.0.0.0 \
---port $SAFETY_INFERENCE_PORT
+  --network host \
+  -v $HOME/.cache/huggingface:/data \
+  -e HF_TOKEN=$HF_TOKEN \
+  -p $SAFETY_INFERENCE_PORT:$SAFETY_INFERENCE_PORT \
+  --gpus $CUDA_VISIBLE_DEVICES \
+  ghcr.io/huggingface/text-generation-inference \
+  --dtype bfloat16 \
+  --usage-stats off \
+  --sharded false \
+  --cuda-memory-fraction 0.7 \
+  --model-id $SAFETY_MODEL \
+  --hostname 0.0.0.0 \
+  --port $SAFETY_INFERENCE_PORT
 ```
 
 ## Dell distribution relies on ChromaDB for vector database usage
