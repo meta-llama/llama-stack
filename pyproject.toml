@@ -5,9 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "llama_stack"
 version = "0.1.1"
-authors = [
-    { name = "Meta Llama", email = "llama-oss@meta.com" },
-]
+authors = [{ name = "Meta Llama", email = "llama-oss@meta.com" }]
 description = "Llama Stack"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -42,11 +40,23 @@ dependencies = [
 dev = [
     "pytest",
     "pytest-asyncio",
-    "nbval",  # For notebook testing
+    "nbval",            # For notebook testing
     "black",
     "ruff",
     "types-requests",
     "types-setuptools",
+    "pre-commit",
+]
+docs = [
+    "sphinx-autobuild",
+    "myst-parser",
+    "sphinx-rtd-theme",
+    "sphinx-copybutton",
+    "sphinx-tabs",
+    "sphinx-design",
+    "sphinxcontrib.redoc",
+    "sphinxcontrib.video",
+    "sphinxcontrib.mermaid",
 ]
 
 [project.urls]
@@ -57,7 +67,7 @@ llama = "llama_stack.cli.llama:main"
 install-wheel-from-presigned = "llama_stack.cli.scripts.run:install_wheel_from_presigned"
 
 [tool.setuptools]
-packages = {find = {}}
+packages = { find = {} }
 license-files = []
 
 [[tool.uv.index]]

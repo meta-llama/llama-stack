@@ -56,19 +56,46 @@ disclosure of security bugs. In those cases, please go through the process
 outlined on that page and do not file a public issue.
 
 
+## Set up your development environment
+
+We use [uv](https://github.com/astral-sh/uv) to manage python dependencies and virtual environments.
+You can install `uv` by following this [guide](https://docs.astral.sh/uv/getting-started/installation/).
+You can install the dependencies by running:
+
+```bash
+$ cd llama-stack
+$ uv sync --extra dev
+$ uv pip install -e .
+$ source .venv/bin/activate
+```
+
 ## Pre-commit Hooks
 
 We use [pre-commit](https://pre-commit.com/) to run linting and formatting checks on your code. You can install the pre-commit hooks by running:
 
 ```bash
-$ cd llama-stack
-$ conda activate <your-environment>
-$ pip install pre-commit
-$ pre-commit install
+$ uv run pre-commit install
 ```
 
 After that, pre-commit hooks will run automatically before each commit.
 
+Alternatively, if you don't want to install the pre-commit hooks, you can run the checks manually by running:
+
+```bash
+$ uv run pre-commit run --all-files
+```
+
+> [!CAUTION]
+> Before pushing your changes, make sure that the pre-commit hooks have passed successfully.
+
+## Adding a new dependency to the project
+
+To add a new dependency to the project, you can use the `uv` command. For example, to add `foo` to the project, you can run:
+
+```bash
+$ uv add foo
+$ uv sync
+```
 
 ## Coding Style
 * 2 spaces for indentation rather than tabs
@@ -102,13 +129,12 @@ If you have made changes to a provider's configuration in any form (introducing 
 If you are making changes to the documentation at [https://llama-stack.readthedocs.io/en/latest/](https://llama-stack.readthedocs.io/en/latest/), you can use the following command to build the documentation and preview your changes. You will need [Sphinx](https://www.sphinx-doc.org/en/master/) and the readthedocs theme.
 
 ```bash
-cd llama-stack/docs
-pip install -r requirements.txt
-pip install sphinx-autobuild
+$ cd llama-stack/docs
+$ uv sync --extra docs
 
 # This will start a local server (usually at http://127.0.0.1:8000) that automatically rebuilds and refreshes when you make changes to the documentation.
-make html
-sphinx-autobuild source build/html
+$ make html
+$ uv run sphinx-autobuild source build/html
 ```
 
 
