@@ -62,7 +62,7 @@ docker run -it \
   --env OLLAMA_URL=http://host.docker.internal:11434
 ```
 
-As another example, to start the container with Podman, you can do the same but replace `docker` at the start of the command with `podman` and replace `host.docker.internal` in the `OLLAMA_URL` with `host.containers.internal`.
+As another example, to start the container with Podman, you can do the same but replace `docker` at the start of the command with `podman`. If you are using `podman` older than `4.7.0`, please also replace `host.docker.internal` in the `OLLAMA_URL` with `host.containers.internal`.
 
 Configuration for this is available at `distributions/ollama/run.yaml`.
 
