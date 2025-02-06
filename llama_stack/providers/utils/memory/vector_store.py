@@ -17,9 +17,6 @@ import httpx
 import numpy as np
 
 from llama_models.llama3.api.tokenizer import Tokenizer
-from numpy.typing import NDArray
-
-from pypdf import PdfReader
 
 from llama_stack.apis.common.content_types import (
     InterleavedContent,
@@ -33,6 +30,9 @@ from llama_stack.providers.datatypes import Api
 from llama_stack.providers.utils.inference.prompt_adapter import (
     interleaved_content_as_str,
 )
+from numpy.typing import NDArray
+
+from pypdf import PdfReader
 
 log = logging.getLogger(__name__)
 
