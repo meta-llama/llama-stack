@@ -361,6 +361,7 @@ def test_image_chat_completion_streaming(llama_stack_client, vision_model_id):
     assert any(expected in streamed_content for expected in {"dog", "puppy", "pup"})
 
 
+# TODO(mf): test w/ List input
 @pytest.mark.parametrize("type_", ["url", "data"])
 def test_image_chat_completion_base64(llama_stack_client, vision_model_id, base64_image_data, base64_image_url, type_):
     image_spec = {
