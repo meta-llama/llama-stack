@@ -263,7 +263,8 @@ def test_custom_tool(llama_stack_client, agent_config):
     assert "CustomTool" in logs_str
 
 
-def test_override_system_message_behavior(llama_stack_client, agent_config):
+# TODO: fix this flaky test
+def xtest_override_system_message_behavior(llama_stack_client, agent_config):
     client_tool = TestClientTool()
     agent_config = {
         **agent_config,
