@@ -173,6 +173,7 @@ Here is an example of a simple RAG (Retrieval Augmented Generation) chatbot agen
 
 ```python
 import os
+import uuid
 from termcolor import cprint
 
 from llama_stack_client.lib.agents.agent import Agent
@@ -214,7 +215,7 @@ documents = [
 ]
 
 # Register a vector database
-vector_db_id = "test-vector-db"
+vector_db_id = f"test-vector-db-{uuid.uuid4().hex}"
 client.vector_dbs.register(
     vector_db_id=vector_db_id,
     embedding_model="all-MiniLM-L6-v2",
