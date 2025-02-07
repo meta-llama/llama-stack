@@ -269,6 +269,7 @@ def test_override_system_message_behavior(llama_stack_client, agent_config):
         **agent_config,
         "instructions": "You are a pirate",
         "client_tools": [client_tool.get_tool_definition()],
+        "model": "meta-llama/Llama-3.2-3B-Instruct",
     }
 
     agent = Agent(llama_stack_client, agent_config, client_tools=(client_tool,))
