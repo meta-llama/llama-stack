@@ -134,13 +134,7 @@ client = (
 )  # or create_http_client() depending on the environment you picked
 
 # List available models
-
-try:
-    models = client.models.list()
-except ValueError as e:
-    print(e)
-    sys.exit(1)
-
+models = client.models.list()
 print("--- Available models: ---")
 for m in models:
     print(f"- {m.identifier}")
