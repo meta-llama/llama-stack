@@ -55,6 +55,16 @@ class StackRun(Subcommand):
             default=[],
             metavar="KEY=VALUE",
         )
+        self.parser.add_argument(
+            "--ssl-keyfile",
+            type=str,
+            help="Path to SSL key file for HTTPS",
+        )
+        self.parser.add_argument(
+            "--ssl-certfile",
+            type=str,
+            help="Path to SSL certificate file for HTTPS",
+        )
 
     def _run_stack_run_cmd(self, args: argparse.Namespace) -> None:
         import importlib.resources
@@ -177,5 +187,8 @@ class StackRun(Subcommand):
                 )
                 return
             run_args.extend(["--env", f"{key}={value}"])
+
+        if args.ssl_keyfile and args.ssl_certfile:
+            run_args.extend(["--ssl-keyfile", args.ssl_keyfile, "--ssl-certfile", args.ssl_certfile])
 
         run_with_pty(run_args)

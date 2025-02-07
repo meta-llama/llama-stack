@@ -282,6 +282,19 @@ def main():
         action="append",
         help="Environment variables in KEY=value format. Can be specified multiple times.",
     )
+    parser.add_argument(
+        "--ssl-keyfile",
+        help="Path to SSL key file for HTTPS",
+    )
+    parser.add_argument(
+        "--ssl-certfile",
+        help="Path to SSL certificate file for HTTPS",
+    )
+
+    if args.ssl_keyfile and not args.ssl_certfile:
+        parser.error("You must provide both --ssl-keyfile and --ssl-certfile when using HTTPS")
+    if args.ssl_certfile and not args.ssl_keyfile:
+        parser.error("You must provide both --ssl-keyfile and --ssl-certfile when using HTTPS")
 
     args = parser.parse_args()
     if args.env:
@@ -381,11 +394,36 @@ def main():
 
     import uvicorn
 
-    # FYI this does not do hot-reloads
+    # Configure SSL if certificates are provided
+    port = args.port or config.server.port
+
+    ssl_config = None
+    if args.ssl_keyfile:
+        keyfile = args.ssl_keyfile
+        certfile = args.ssl_certfile
+    else:
+        keyfile = config.server.ssl_keyfile
+        certfile = config.server.ssl_certfile
+
+    if keyfile and certfile:
+        ssl_config = {
+            "ssl_keyfile": keyfile,
+            "ssl_certfile": certfile,
+        }
+        print(f"HTTPS enabled with certificates:\n  Key: {keyfile}\n  Cert: {certfile}")
 
     listen_host = ["::", "0.0.0.0"] if not args.disable_ipv6 else "0.0.0.0"
-    print(f"Listening on {listen_host}:{args.port}")
-    uvicorn.run(app, host=listen_host, port=args.port)
+    print(f"Listening on {listen_host}:{port}")
+
+    uvicorn_config = {
+        "app": app,
+        "host": listen_host,
+        "port": port,
+    }
+    if ssl_config:
+        uvicorn_config.update(ssl_config)
+
+    uvicorn.run(**uvicorn_config)
 
 
 def extract_path_params(route: str) -> List[str]:
