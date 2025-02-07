@@ -352,24 +352,20 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         return EmbeddingsResponse(embeddings=embeddings)
 
     async def register_model(self, model: Model) -> Model:
-        # ollama does not have embedding models running. Check if the model is in list of available models.
-        if model.model_type == ModelType.embedding:
-            response = await self.client.list()
+        async def check_model_availability(model_id: str):
+            response = await self.client.ps()
             available_models = [m["model"] for m in response["models"]]
-            if model.provider_resource_id not in available_models:
+            if model_id not in available_models:
                 raise ValueError(
-                    f"Model '{model.provider_resource_id}' is not available in Ollama. "
-                    f"Available models: {', '.join(available_models)}"
+                    f"Model '{model_id}' is not available in Ollama. Available models: {', '.join(available_models)}"
                 )
+
+        if model.model_type == ModelType.embedding:
+            await check_model_availability(model.provider_resource_id)
             return model
+
         model = await self.register_helper.register_model(model)
-        models = await self.client.ps()
-        available_models = [m["model"] for m in models["models"]]
-        if model.provider_resource_id not in available_models:
-            raise ValueError(
-                f"Model '{model.provider_resource_id}' is not available in Ollama. "
-                f"Available models: {', '.join(available_models)}"
-            )
+        await check_model_availability(model.provider_resource_id)
 
         return model
 
