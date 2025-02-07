@@ -177,7 +177,7 @@ class AgentConfigCommon(BaseModel):
 class AgentConfig(AgentConfigCommon):
     model: str
     instructions: str
-    enable_session_persistence: bool
+    enable_session_persistence: Optional[bool] = False
     response_format: Optional[ResponseFormat] = None
 
 
