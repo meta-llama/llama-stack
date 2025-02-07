@@ -283,14 +283,14 @@ def main():
         help="Environment variables in KEY=value format. Can be specified multiple times.",
     )
     parser.add_argument(
-        "--ssl-keyfile",
-        help="Path to SSL key file for HTTPS",
-        required="--ssl-certfile" in sys.argv,
+        "--tls-keyfile",
+        help="Path to TLS key file for HTTPS",
+        required="--tls-certfile" in sys.argv,
     )
     parser.add_argument(
-        "--ssl-certfile",
-        help="Path to SSL certificate file for HTTPS",
-        required="--ssl-keyfile" in sys.argv,
+        "--tls-certfile",
+        help="Path to TLS certificate file for HTTPS",
+        required="--tls-keyfile" in sys.argv,
     )
 
     args = parser.parse_args()
@@ -396,12 +396,12 @@ def main():
     port = args.port or config.server.port
 
     ssl_config = None
-    if args.ssl_keyfile:
-        keyfile = args.ssl_keyfile
-        certfile = args.ssl_certfile
+    if args.tls_keyfile:
+        keyfile = args.tls_keyfile
+        certfile = args.tls_certfile
     else:
-        keyfile = config.server.ssl_keyfile
-        certfile = config.server.ssl_certfile
+        keyfile = config.server.tls_keyfile
+        certfile = config.server.tls_certfile
 
     if keyfile and certfile:
         ssl_config = {

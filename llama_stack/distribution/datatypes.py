@@ -124,13 +124,13 @@ class ServerConfig(BaseModel):
         ge=1024,
         le=65535,
     )
-    ssl_certfile: Optional[str] = Field(
+    tls_certfile: Optional[str] = Field(
         default=None,
-        description="Path to SSL certificate file for HTTPS",
+        description="Path to TLS certificate file for HTTPS",
     )
-    ssl_keyfile: Optional[str] = Field(
+    tls_keyfile: Optional[str] = Field(
         default=None,
-        description="Path to SSL key file for HTTPS",
+        description="Path to TLS key file for HTTPS",
     )
 
 
