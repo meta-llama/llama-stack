@@ -285,18 +285,15 @@ def main():
     parser.add_argument(
         "--ssl-keyfile",
         help="Path to SSL key file for HTTPS",
+        required="--ssl-certfile" in sys.argv,
     )
     parser.add_argument(
         "--ssl-certfile",
         help="Path to SSL certificate file for HTTPS",
+        required="--ssl-keyfile" in sys.argv,
     )
 
     args = parser.parse_args()
-
-    if args.ssl_keyfile and not args.ssl_certfile:
-        parser.error("You must provide both --ssl-keyfile and --ssl-certfile when using HTTPS")
-    if args.ssl_certfile and not args.ssl_keyfile:
-        parser.error("You must provide both --ssl-keyfile and --ssl-certfile when using HTTPS")
 
     if args.env:
         for env_pair in args.env:

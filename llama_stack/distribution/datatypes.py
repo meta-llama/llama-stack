@@ -121,6 +121,8 @@ class ServerConfig(BaseModel):
     port: int = Field(
         default=8321,
         description="Port to listen on",
+        ge=1024,
+        le=65535,
     )
     ssl_certfile: Optional[str] = Field(
         default=None,
