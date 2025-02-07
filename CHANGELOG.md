@@ -3,6 +3,7 @@
 ## 0.2.0
 
 ### Added
+- `llama model download` can now download any type of model from huggingface. The model will be stored in `~/.llama/checkpoints/hf_repo/model_name`
 
 ### Changed
 
