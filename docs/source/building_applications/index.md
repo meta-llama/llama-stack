@@ -4,7 +4,7 @@ Llama Stack provides all the building blocks needed to create sophisticated AI a
 
 The best way to get started is to look at this notebook which walks through the various APIs (from basic inference, to RAG agents) and how to use them.
 
-**Notebook**: [Building AI Applications](https://github.com/meta-llama/llama-stack/blob/main/docs/notebooks/Llama_Stack_Benchmark_Evals.ipynb)
+**Notebook**: [Building AI Applications](https://github.com/meta-llama/llama-stack/blob/main/docs/getting_started.ipynb)
 
 Here are some key topics that will help you build effective agents:
 
