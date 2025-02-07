@@ -54,7 +54,7 @@ jobs:
           echo "REPORT_FILE=${REPORT_OUTPUT}" >> "$GITHUB_ENV"
 
           export INFERENCE_MODEL=meta-llama/Llama-3.1-8B-Instruct
-          LLAMA_STACK_CONFIG=./llama_stack/templates/${{ matrix.provider }}/run.yaml pytest --md-report --md-report-verbose=1 ./tests/client-sdk/inference/test_inference.py --md-report-output "$REPORT_OUTPUT"
+          LLAMA_STACK_CONFIG=./llama_stack/templates/${{ matrix.provider }}/run.yaml pytest --md-report --md-report-verbose=1 ./tests/client-sdk/inference/ --md-report-output "$REPORT_OUTPUT"
 
       - name: Output reports to the job summary
         if: always()
