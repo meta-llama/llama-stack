@@ -45,7 +45,7 @@ class TestClientTool(ClientTool):
             tool_name=tool_call.tool_name,
             content=response_str,
         )
-        return [message]
+        return message
 
     def get_name(self) -> str:
         return "get_boiling_point"
