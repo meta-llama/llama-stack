@@ -32,7 +32,7 @@ class TestModelRegistration:
             )
 
         # Try to register a model that's too large for local inference
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(ValueError):
             await models_impl.register_model(
                 model_id="Llama3.1-70B-Instruct",
             )
@@ -42,7 +42,7 @@ class TestModelRegistration:
         _, models_impl = inference_stack
 
         # Try to register a non-existent model
-        with pytest.raises(Exception) as exc_info:
+        with pytest.raises(ValueError):
             await models_impl.register_model(
                 model_id="Llama3-NonExistent-Model",
             )
@@ -59,7 +59,7 @@ class TestModelRegistration:
             },
         )
 
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(ValueError):
             await models_impl.register_model(
                 model_id="custom-model-2",
                 metadata={
@@ -88,7 +88,7 @@ class TestModelRegistration:
     async def test_register_with_invalid_llama_model(self, inference_stack):
         _, models_impl = inference_stack
 
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(ValueError):
             await models_impl.register_model(
                 model_id="custom-model-2",
                 metadata={"llama_model": "invalid-llama-model"},
