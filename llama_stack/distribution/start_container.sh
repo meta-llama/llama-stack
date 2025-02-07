@@ -40,8 +40,12 @@ shift
 port="$1"
 shift
 
+# Initialize other_args
+other_args=""
+
 # Process environment variables from --env arguments
 env_vars=""
+
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --env)
@@ -55,6 +59,7 @@ while [[ $# -gt 0 ]]; do
             fi
             ;;
         *)
+            other_args="$other_args $1"
             shift
             ;;
     esac
@@ -93,5 +98,8 @@ $CONTAINER_BINARY run $CONTAINER_OPTS -it \
   -v "$yaml_config:/app/config.yaml" \
   $mounts \
   --env LLAMA_STACK_PORT=$port \
-  --entrypoint='["python", "-m", "llama_stack.distribution.server.server", "--yaml-config", "/app/config.yaml"]' \
-  $container_image:$version_tag
+  --entrypoint python \
+  $container_image:$version_tag \
+  -m llama_stack.distribution.server.server \
+  --yaml-config /app/config.yaml \
+  $other_args
