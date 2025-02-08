@@ -156,8 +156,8 @@ def test_text_completion_structured_output(llama_stack_client, text_model_id, in
 @pytest.mark.parametrize(
     "question,expected",
     [
-        ("Which planet do humans live?", "Earth"),
-        ("Which planet has rings around them with a name starting with letter S?", "Saturn"),
+        ("Which planet do humans live on?", "Earth"),
+        ("Which planet has rings around it with a name starting with letter S?", "Saturn"),
     ],
 )
 def test_text_chat_completion_non_streaming(llama_stack_client, text_model_id, question, expected):
