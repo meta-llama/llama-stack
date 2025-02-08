@@ -4,6 +4,7 @@ annotated-types==0.7.0
 anyio==4.8.0
 blobfile==3.0.0
 certifi==2025.1.31
+chardet==5.2.0
 charset-normalizer==3.4.1
 click==8.1.8
 colorama==0.4.6 ; sys_platform == 'win32'
@@ -34,6 +35,7 @@ pycryptodomex==3.21.0
 pydantic==2.10.6
 pydantic-core==2.27.2
 pygments==2.19.1
+pypdf==5.2.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 pytz==2025.1
