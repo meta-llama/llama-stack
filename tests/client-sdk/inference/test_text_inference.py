@@ -11,6 +11,7 @@ PROVIDER_TOOL_PROMPT_FORMAT = {
     "remote::ollama": "json",
     "remote::together": "json",
     "remote::fireworks": "json",
+    "remote::vllm": "json",
 }
 
 PROVIDER_LOGPROBS_TOP_K = set(
