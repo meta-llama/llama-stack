@@ -10,6 +10,7 @@ info:
 servers:
   - url: http://any-hosted-llama-stack.com
 paths:
+<<<<<<< HEAD
   /v1/eval/tasks/{task_id}/evaluations:
     post:
       responses:
@@ -125,6 +126,8 @@ paths:
           schema:
             type: string
       deprecated: true
+=======
+>>>>>>> 974941be (deprecation in OpenAPI spec)
   /v1/eval-tasks:
     get:
       responses:
@@ -133,6 +136,7 @@ paths:
           content:
             application/json:
               schema:
+<<<<<<< HEAD
                 $ref: '#/components/schemas/ListBenchmarksResponse'
       tags:
         - Benchmarks
@@ -179,6 +183,14 @@ paths:
               $ref: '#/components/schemas/DeprecatedRunEvalRequest'
         required: true
       deprecated: true
+=======
+                $ref: '#/components/schemas/ListEvalTasksResponse'
+      tags:
+        - EvalTasks
+      description: ''
+      parameters: []
+      deprecated: true
+>>>>>>> 974941be (deprecation in OpenAPI spec)
   /v1/datasetio/rows:
     get:
       responses:
@@ -1598,7 +1610,59 @@ jsonSchemaDialect: >-
   https://json-schema.org/draft/2020-12/schema
 components:
   schemas:
+<<<<<<< HEAD
     AgentCandidate:
+=======
+    EvalTask:
+      type: object
+      properties:
+        identifier:
+          type: string
+        provider_resource_id:
+          type: string
+        provider_id:
+          type: string
+        type:
+          type: string
+          const: eval_task
+          default: eval_task
+        dataset_id:
+          type: string
+        scoring_functions:
+          type: array
+          items:
+            type: string
+        metadata:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+      additionalProperties: false
+      required:
+        - identifier
+        - provider_resource_id
+        - provider_id
+        - type
+        - dataset_id
+        - scoring_functions
+        - metadata
+    ListEvalTasksResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/EvalTask'
+      additionalProperties: false
+      required:
+        - data
+    AppendRowsRequest:
+>>>>>>> 974941be (deprecation in OpenAPI spec)
       type: object
       properties:
         type:

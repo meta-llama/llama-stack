@@ -647,6 +647,7 @@ class Generator:
         description = "\n".join(
             filter(None, [doc_string.short_description, doc_string.long_description])
         )
+
         return Operation(
             tags=[op.defining_class.__name__],
             summary=None,
