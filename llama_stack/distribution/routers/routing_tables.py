@@ -437,7 +437,7 @@ class EvalTasksRoutingTable(CommonRoutingTableImpl, EvalTasks):
 
     async def register_eval_task(
         self,
-        eval_task_id: str,
+        task_id: str,
         dataset_id: str,
         scoring_functions: List[str],
         metadata: Optional[Dict[str, Any]] = None,
@@ -454,9 +454,9 @@ class EvalTasksRoutingTable(CommonRoutingTableImpl, EvalTasks):
                     "No provider specified and multiple providers available. Please specify a provider_id."
                 )
         if provider_eval_task_id is None:
-            provider_eval_task_id = eval_task_id
+            provider_eval_task_id = task_id
         eval_task = EvalTask(
-            identifier=eval_task_id,
+            identifier=task_id,
             dataset_id=dataset_id,
             scoring_functions=scoring_functions,
             metadata=metadata,

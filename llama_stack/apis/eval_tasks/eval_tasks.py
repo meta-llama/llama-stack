@@ -25,7 +25,7 @@ class EvalTask(CommonEvalTaskFields, Resource):
     type: Literal[ResourceType.eval_task.value] = ResourceType.eval_task.value
 
     @property
-    def eval_task_id(self) -> str:
+    def task_id(self) -> str:
         return self.identifier
 
     @property
@@ -34,7 +34,7 @@ class EvalTask(CommonEvalTaskFields, Resource):
 
 
 class EvalTaskInput(CommonEvalTaskFields, BaseModel):
-    eval_task_id: str
+    task_id: str
     provider_id: Optional[str] = None
     provider_eval_task_id: Optional[str] = None
 
@@ -45,7 +45,7 @@ class ListEvalTasksResponse(BaseModel):
 
 @runtime_checkable
 class EvalTasks(Protocol):
-    @webmethod(route="/eval/tasks/", method="GET")
+    @webmethod(route="/eval/tasks", method="GET")
     async def list_eval_tasks(self) -> ListEvalTasksResponse: ...
 
     @webmethod(route="/eval/tasks/{task_id}", method="GET")

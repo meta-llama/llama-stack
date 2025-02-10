@@ -1503,7 +1503,7 @@
                 }
             }
         },
-        "/v1/eval/tasks/": {
+        "/v1/eval/tasks": {
             "get": {
                 "responses": {
                     "200": {
@@ -1522,6 +1522,28 @@
                 ],
                 "description": "",
                 "parameters": []
+            },
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "EvalTasks"
+                ],
+                "description": "",
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegisterEvalTaskRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
             }
         },
         "/v1/models": {
@@ -2097,30 +2119,6 @@
                         }
                     }
                 ]
-            }
-        },
-        "/v1/eval/tasks": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                },
-                "tags": [
-                    "EvalTasks"
-                ],
-                "description": "",
-                "parameters": [],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/RegisterEvalTaskRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
             }
         },
         "/v1/eval/tasks/{task_id}/jobs": {

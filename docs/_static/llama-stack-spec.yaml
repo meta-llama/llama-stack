@@ -895,7 +895,7 @@ paths:
             schema:
               $ref: '#/components/schemas/RegisterDatasetRequest'
         required: true
-  /v1/eval/tasks/:
+  /v1/eval/tasks:
     get:
       responses:
         '200':
@@ -908,6 +908,20 @@ paths:
         - EvalTasks
       description: ''
       parameters: []
+    post:
+      responses:
+        '200':
+          description: OK
+      tags:
+        - EvalTasks
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterEvalTaskRequest'
+        required: true
   /v1/models:
     get:
       responses:
@@ -1264,21 +1278,6 @@ paths:
             type: array
             items:
               type: string
-  /v1/eval/tasks:
-    post:
-      responses:
-        '200':
-          description: OK
-      tags:
-        - EvalTasks
-      description: ''
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RegisterEvalTaskRequest'
-        required: true
   /v1/eval/tasks/{task_id}/jobs:
     post:
       responses:
