@@ -8,14 +8,15 @@ from typing import Dict
 
 from llama_stack.providers.datatypes import Api, ProviderSpec
 
-from .config import FaissImplConfig
+
+from .config import FaissVectorIOConfig
 
 
-async def get_provider_impl(config: FaissImplConfig, deps: Dict[Api, ProviderSpec]):
-    from .faiss import FaissVectorIOImpl
+async def get_provider_impl(config: FaissVectorIOConfig, deps: Dict[Api, ProviderSpec]):
+    from .faiss import FaissVectorIOAdapter
 
-    assert isinstance(config, FaissImplConfig), f"Unexpected config type: {type(config)}"
+    assert isinstance(config, FaissVectorIOConfig), f"Unexpected config type: {type(config)}"
 
-    impl = FaissVectorIOImpl(config, deps[Api.inference])
+    impl = FaissVectorIOAdapter(config, deps[Api.inference])
     await impl.initialize()
     return impl

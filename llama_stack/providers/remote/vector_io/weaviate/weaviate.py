@@ -23,7 +23,7 @@ from llama_stack.providers.utils.memory.vector_store import (
     VectorDBWithIndex,
 )
 
-from .config import WeaviateConfig, WeaviateRequestProviderData
+from .config import WeaviateVectorIOConfig, WeaviateRequestProviderData
 
 log = logging.getLogger(__name__)
 
@@ -85,12 +85,12 @@ class WeaviateIndex(EmbeddingIndex):
         collection.data.delete_many(where=Filter.by_property("id").contains_any(chunk_ids))
 
 
-class WeaviateMemoryAdapter(
+class WeaviateVectorIOAdapter(
     VectorIO,
     NeedsRequestProviderData,
     VectorDBsProtocolPrivate,
 ):
-    def __init__(self, config: WeaviateConfig, inference_api: Api.inference) -> None:
+    def __init__(self, config: WeaviateVectorIOConfig, inference_api: Api.inference) -> None:
         self.config = config
         self.inference_api = inference_api
         self.client_cache = {}

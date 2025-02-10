@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 
 
 @json_schema_type
-class PGVectorConfig(BaseModel):
+class PGVectorVectorIOConfig(BaseModel):
     host: str = Field(default="localhost")
     port: int = Field(default=5432)
     db: str = Field(default="postgres")

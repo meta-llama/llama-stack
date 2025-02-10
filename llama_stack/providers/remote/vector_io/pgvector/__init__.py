@@ -8,12 +8,12 @@ from typing import Dict
 
 from llama_stack.providers.datatypes import Api, ProviderSpec
 
-from .config import PGVectorConfig
+from .config import PGVectorVectorIOConfig
 
 
-async def get_adapter_impl(config: PGVectorConfig, deps: Dict[Api, ProviderSpec]):
-    from .pgvector import PGVectorVectorDBAdapter
+async def get_adapter_impl(config: PGVectorVectorIOConfig, deps: Dict[Api, ProviderSpec]):
+    from .pgvector import PGVectorVectorIOAdapter
 
-    impl = PGVectorVectorDBAdapter(config, deps[Api.inference])
+    impl = PGVectorVectorIOAdapter(config, deps[Api.inference])
     await impl.initialize()
     return impl
