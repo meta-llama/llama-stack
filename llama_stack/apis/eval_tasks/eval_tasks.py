@@ -45,6 +45,11 @@ class ListEvalTasksResponse(BaseModel):
 
 @runtime_checkable
 class EvalTasks(Protocol):
+    @webmethod(route="/eval-tasks", method="GET")
+    async def DEPRECATED_list_eval_tasks_deprecated(
+        self,
+    ) -> ListEvalTasksResponse: ...
+
     @webmethod(route="/eval/tasks", method="GET")
     async def list_eval_tasks(self) -> ListEvalTasksResponse: ...
 

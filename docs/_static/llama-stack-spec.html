@@ -40,6 +40,28 @@
         }
     ],
     "paths": {
+        "/v1/eval-tasks": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ListEvalTasksResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "EvalTasks"
+                ],
+                "description": "",
+                "parameters": [],
+                "deprecated": true
+            }
+        },
         "/v1/datasetio/rows": {
             "get": {
                 "responses": {
@@ -2365,6 +2387,84 @@
     "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
     "components": {
         "schemas": {
+            "EvalTask": {
+                "type": "object",
+                "properties": {
+                    "identifier": {
+                        "type": "string"
+                    },
+                    "provider_resource_id": {
+                        "type": "string"
+                    },
+                    "provider_id": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "eval_task",
+                        "default": "eval_task"
+                    },
+                    "dataset_id": {
+                        "type": "string"
+                    },
+                    "scoring_functions": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "identifier",
+                    "provider_resource_id",
+                    "provider_id",
+                    "type",
+                    "dataset_id",
+                    "scoring_functions",
+                    "metadata"
+                ]
+            },
+            "ListEvalTasksResponse": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/EvalTask"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "data"
+                ]
+            },
             "AppendRowsRequest": {
                 "type": "object",
                 "properties": {
@@ -5208,69 +5308,6 @@
                     "type"
                 ]
             },
-            "EvalTask": {
-                "type": "object",
-                "properties": {
-                    "identifier": {
-                        "type": "string"
-                    },
-                    "provider_resource_id": {
-                        "type": "string"
-                    },
-                    "provider_id": {
-                        "type": "string"
-                    },
-                    "type": {
-                        "type": "string",
-                        "const": "eval_task",
-                        "default": "eval_task"
-                    },
-                    "dataset_id": {
-                        "type": "string"
-                    },
-                    "scoring_functions": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "metadata": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "identifier",
-                    "provider_resource_id",
-                    "provider_id",
-                    "type",
-                    "dataset_id",
-                    "scoring_functions",
-                    "metadata"
-                ]
-            },
             "Model": {
                 "type": "object",
                 "properties": {
@@ -6156,21 +6193,6 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/Dataset"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "data"
-                ]
-            },
-            "ListEvalTasksResponse": {
-                "type": "object",
-                "properties": {
-                    "data": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/EvalTask"
                         }
                     }
                 },
