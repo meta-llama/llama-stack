@@ -39,7 +39,7 @@ class TestVisionModelInference:
                 ImageContentItem(
                     image=dict(
                         url=URL(
-                            uri="https://www.healthypawspetinsurance.com/Images/V3/DogAndPuppyInsurance/Dog_CTA_Desktop_HeroImage.jpg"
+                            uri="https://raw.githubusercontent.com/meta-llama/llama-stack/main/tests/client-sdk/inference/dog.png"
                         )
                     )
                 ),
@@ -80,7 +80,7 @@ class TestVisionModelInference:
             ImageContentItem(
                 image=dict(
                     url=URL(
-                        uri="https://www.healthypawspetinsurance.com/Images/V3/DogAndPuppyInsurance/Dog_CTA_Desktop_HeroImage.jpg"
+                        uri="https://raw.githubusercontent.com/meta-llama/llama-stack/main/tests/client-sdk/inference/dog.png"
                     )
                 )
             ),
