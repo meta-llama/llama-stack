@@ -7,7 +7,6 @@
 from llama_stack.apis.common.type_system import NumberType
 from llama_stack.apis.scoring_functions import LLMAsJudgeScoringFnParams, ScoringFn
 
-
 llm_as_judge_base = ScoringFn(
     identifier="llm-as-judge::base",
     description="Llm As Judge Scoring Function",

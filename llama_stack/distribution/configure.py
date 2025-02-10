@@ -5,12 +5,11 @@
 # the root directory of this source tree.
 import logging
 import textwrap
-
 from typing import Any, Dict
 
 from llama_stack.distribution.datatypes import (
-    DistributionSpec,
     LLAMA_STACK_RUN_CONFIG_VERSION,
+    DistributionSpec,
     Provider,
     StackRunConfig,
 )
@@ -20,7 +19,6 @@ from llama_stack.distribution.distribution import (
 )
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
 from llama_stack.distribution.utils.prompt_for_config import prompt_for_config
-
 from llama_stack.providers.datatypes import Api, ProviderSpec
 
 logger = logging.getLogger(__name__)

@@ -13,10 +13,14 @@ from llama_models.llama3.api.tokenizer import Tokenizer
 from llama_models.sku_list import all_registered_models
 from openai import OpenAI
 
-from llama_stack.apis.common.content_types import InterleavedContent, ToolCallDelta, ToolCallParseStatus, TextDelta
+from llama_stack.apis.common.content_types import InterleavedContent, TextDelta, ToolCallDelta, ToolCallParseStatus
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
     ChatCompletionResponse,
+    ChatCompletionResponseEvent,
+    ChatCompletionResponseEventType,
+    ChatCompletionResponseStreamChunk,
+    CompletionMessage,
     CompletionRequest,
     CompletionResponse,
     CompletionResponseStreamChunk,
@@ -31,26 +35,22 @@ from llama_stack.apis.inference import (
     ToolConfig,
     ToolDefinition,
     ToolPromptFormat,
-    CompletionMessage,
-    ChatCompletionResponseEventType,
-    ChatCompletionResponseStreamChunk,
-    ChatCompletionResponseEvent,
 )
 from llama_stack.apis.models import Model, ModelType
 from llama_stack.providers.datatypes import ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.model_registry import (
-    build_model_alias,
     ModelRegistryHelper,
+    build_model_alias,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
-    convert_message_to_openai_dict,
-    get_sampling_options,
-    process_completion_response,
-    process_completion_stream_response,
     OpenAICompatCompletionResponse,
     UnparseableToolCall,
+    convert_message_to_openai_dict,
     convert_tool_call,
+    get_sampling_options,
     process_chat_completion_stream_response,
+    process_completion_response,
+    process_completion_stream_response,
 )
 from llama_stack.providers.utils.inference.prompt_adapter import (
     completion_request_to_prompt,

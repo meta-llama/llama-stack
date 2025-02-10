@@ -15,25 +15,25 @@ from typing import (
     Literal,
     Optional,
     Protocol,
-    runtime_checkable,
     Union,
+    runtime_checkable,
 )
 
 from llama_models.schema_utils import json_schema_type, register_schema, webmethod
 from pydantic import BaseModel, ConfigDict, Field
 
-from llama_stack.apis.common.content_types import ContentDelta, InterleavedContent, URL
+from llama_stack.apis.common.content_types import URL, ContentDelta, InterleavedContent
 from llama_stack.apis.inference import (
     CompletionMessage,
     ResponseFormat,
     SamplingParams,
     ToolCall,
     ToolChoice,
+    ToolConfig,
     ToolPromptFormat,
     ToolResponse,
     ToolResponseMessage,
     UserMessage,
-    ToolConfig,
 )
 from llama_stack.apis.safety import SafetyViolation
 from llama_stack.apis.tools import ToolDef

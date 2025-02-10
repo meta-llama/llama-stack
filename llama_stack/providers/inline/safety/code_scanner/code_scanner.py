@@ -21,7 +21,6 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 
 from .config import CodeScannerConfig
 
-
 log = logging.getLogger(__name__)
 
 ALLOWED_CODE_SCANNER_MODEL_IDS = [
