@@ -16,7 +16,7 @@ The `llamastack/distribution-{{ name }}` distribution consists of the following 
 
 You should use this distribution if you have a regular desktop machine without very powerful GPUs. Of course, if you have powerful GPUs, you can still continue using this distribution since Ollama supports GPU acceleration.
 
-{%- if run_config_env_vars %}
+{% if run_config_env_vars %}
 ### Environment Variables
 
 The following environment variables can be configured:
