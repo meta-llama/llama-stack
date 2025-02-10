@@ -69,6 +69,9 @@ providers:
     config:
       openai_api_key: ${env.OPENAI_API_KEY:}
   tool_runtime:
+  - provider_id: mem0
+    provider_type: remote::mem0
+    config: {}
   - provider_id: brave-search
     provider_type: remote::brave-search
     config:
@@ -110,3 +113,5 @@ tool_groups:
   provider_id: rag-runtime
 - toolgroup_id: builtin::code_interpreter
   provider_id: code-interpreter
+- toolgroup_id: builtin::rag
+  provider_id: mem0
