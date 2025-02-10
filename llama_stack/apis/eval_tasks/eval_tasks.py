@@ -45,16 +45,16 @@ class ListEvalTasksResponse(BaseModel):
 
 @runtime_checkable
 class EvalTasks(Protocol):
-    @webmethod(route="/eval-tasks", method="GET")
+    @webmethod(route="/eval/tasks/", method="GET")
     async def list_eval_tasks(self) -> ListEvalTasksResponse: ...
 
-    @webmethod(route="/eval-tasks/{eval_task_id}", method="GET")
+    @webmethod(route="/eval/tasks/{task_id}", method="GET")
     async def get_eval_task(
         self,
         eval_task_id: str,
     ) -> Optional[EvalTask]: ...
 
-    @webmethod(route="/eval-tasks", method="POST")
+    @webmethod(route="/eval/tasks", method="POST")
     async def register_eval_task(
         self,
         eval_task_id: str,
