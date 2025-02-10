@@ -755,8 +755,8 @@
                 "description": "",
                 "parameters": [
                     {
-                        "name": "eval_task_id",
-                        "in": "query",
+                        "name": "task_id",
+                        "in": "path",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -7226,7 +7226,7 @@
             "RegisterEvalTaskRequest": {
                 "type": "object",
                 "properties": {
-                    "eval_task_id": {
+                    "task_id": {
                         "type": "string"
                     },
                     "dataset_id": {
@@ -7272,7 +7272,7 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "eval_task_id",
+                    "task_id",
                     "dataset_id",
                     "scoring_functions"
                 ]

@@ -455,8 +455,8 @@ paths:
         - EvalTasks
       description: ''
       parameters:
-        - name: eval_task_id
-          in: query
+        - name: task_id
+          in: path
           required: true
           schema:
             type: string
@@ -4599,7 +4599,7 @@ components:
     RegisterEvalTaskRequest:
       type: object
       properties:
-        eval_task_id:
+        task_id:
           type: string
         dataset_id:
           type: string
@@ -4623,7 +4623,7 @@ components:
               - type: object
       additionalProperties: false
       required:
-        - eval_task_id
+        - task_id
         - dataset_id
         - scoring_functions
     RegisterModelRequest:
