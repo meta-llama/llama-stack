@@ -14,7 +14,7 @@ from llama_stack.providers.inline.inference.meta_reference import (
 from llama_stack.providers.inline.inference.sentence_transformers import (
     SentenceTransformersInferenceConfig,
 )
-from llama_stack.providers.inline.vector_io.faiss.config import FaissImplConfig
+from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOConfig
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
 
@@ -67,7 +67,7 @@ def get_distribution_template() -> DistributionTemplate:
     vector_io_provider = Provider(
         provider_id="faiss",
         provider_type="inline::faiss",
-        config=FaissImplConfig.sample_run_config(f"distributions/{name}"),
+        config=FaissVectorIOConfig.sample_run_config(f"distributions/{name}"),
     )
 
     inference_model = ModelInput(

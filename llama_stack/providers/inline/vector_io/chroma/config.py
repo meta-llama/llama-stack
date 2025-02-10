@@ -9,7 +9,7 @@ from typing import Any, Dict
 from pydantic import BaseModel
 
 
-class ChromaInlineImplConfig(BaseModel):
+class ChromaVectorIOConfig(BaseModel):
     db_path: str
 
     @classmethod

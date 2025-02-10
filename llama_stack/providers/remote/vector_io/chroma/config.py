@@ -9,7 +9,7 @@ from typing import Any, Dict
 from pydantic import BaseModel
 
 
-class ChromaRemoteImplConfig(BaseModel):
+class ChromaVectorIOConfig(BaseModel):
     url: str
 
     @classmethod

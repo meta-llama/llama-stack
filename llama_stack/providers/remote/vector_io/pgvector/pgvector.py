@@ -24,7 +24,7 @@ from llama_stack.providers.utils.memory.vector_store import (
     VectorDBWithIndex,
 )
 
-from .config import PGVectorConfig
+from .config import PGVectorVectorIOConfig
 
 log = logging.getLogger(__name__)
 
@@ -123,8 +123,8 @@ class PGVectorIndex(EmbeddingIndex):
             cur.execute(f"DROP TABLE IF EXISTS {self.table_name}")
 
 
-class PGVectorVectorDBAdapter(VectorIO, VectorDBsProtocolPrivate):
-    def __init__(self, config: PGVectorConfig, inference_api: Api.inference) -> None:
+class PGVectorVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
+    def __init__(self, config: PGVectorVectorIOConfig, inference_api: Api.inference) -> None:
         self.config = config
         self.inference_api = inference_api
         self.conn = None

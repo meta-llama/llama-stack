@@ -6,12 +6,12 @@
 
 from typing import Any
 
-from .config import SampleConfig
+from .config import SampleVectorIOConfig
 
 
-async def get_adapter_impl(config: SampleConfig, _deps) -> Any:
-    from .sample import SampleMemoryImpl
+async def get_adapter_impl(config: SampleVectorIOConfig, _deps) -> Any:
+    from .sample import SampleVectorIOImpl
 
-    impl = SampleMemoryImpl(config)
+    impl = SampleVectorIOImpl(config)
     await impl.initialize()
     return impl

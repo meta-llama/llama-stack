@@ -11,7 +11,7 @@ from pydantic import BaseModel
 
 
 @json_schema_type
-class QdrantConfig(BaseModel):
+class QdrantVectorIOConfig(BaseModel):
     location: Optional[str] = None
     url: Optional[str] = None
     port: Optional[int] = 6333

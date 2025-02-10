@@ -12,5 +12,5 @@ class WeaviateRequestProviderData(BaseModel):
     weaviate_cluster_url: str
 
 
-class WeaviateConfig(BaseModel):
+class WeaviateVectorIOConfig(BaseModel):
     pass
