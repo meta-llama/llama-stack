@@ -49,7 +49,6 @@ class SQLiteVecIndex(EmbeddingIndex):
 
     async def initialize(self) -> None:
         cur = self.connection.cursor()
-        print(f"Creating tables {self.metadata_table} and {self.vector_table}")
         # Create the table to store chunk metadata.
         cur.execute(f"""
             CREATE TABLE IF NOT EXISTS {self.metadata_table} (
@@ -135,7 +134,6 @@ class SQLiteVecVectorIOImpl(VectorIO, VectorDBsProtocolPrivate):
 
     async def initialize(self) -> None:
         # Open a connection to the SQLite database (the file is specified in the config).
-        print(f"Connecting to SQLite database at {self.config.db_path}")
         self.connection = sqlite3.connect(self.config.db_path)
         self.connection.enable_load_extension(True)
         sqlite_vec.load(self.connection)

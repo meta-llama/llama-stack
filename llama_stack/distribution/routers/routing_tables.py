@@ -185,9 +185,7 @@ class CommonRoutingTableImpl(RoutingTable):
             obj.provider_id = list(self.impls_by_provider_id.keys())[0]
 
         if obj.provider_id not in self.impls_by_provider_id:
-            raise ValueError(
-                f"Provider `{obj.provider_id}` not found \navailable providers: {self.impls_by_provider_id.keys()}"
-            )
+            raise ValueError(f"Provider `{obj.provider_id}` not found")
 
         p = self.impls_by_provider_id[obj.provider_id]
 
@@ -337,7 +335,6 @@ class VectorDBsRoutingTable(CommonRoutingTableImpl, VectorDBs):
             "embedding_model": embedding_model,
             "embedding_dimension": model.metadata["embedding_dimension"],
         }
-        print(f"Registering vector db {vector_db_data} with embedding model {embedding_model}")
         vector_db = TypeAdapter(VectorDB).validate_python(vector_db_data)
         await self.register_object(vector_db)
         return vector_db
