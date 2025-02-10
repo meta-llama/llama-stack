@@ -465,6 +465,26 @@ class EvalTasksRoutingTable(CommonRoutingTableImpl, EvalTasks):
         )
         await self.register_object(eval_task)
 
+    async def DEPRECATED_list_eval_tasks(self) -> ListEvalTasksResponse:
+        raise DeprecationWarning("Use /eval/tasks instead")
+
+    async def DEPRECATED_get_eval_task(
+        self,
+        eval_task_id: str,
+    ) -> Optional[EvalTask]:
+        raise DeprecationWarning("Use /eval/tasks instead")
+
+    async def DEPRECATED_register_eval_task(
+        self,
+        eval_task_id: str,
+        dataset_id: str,
+        scoring_functions: List[str],
+        provider_eval_task_id: Optional[str] = None,
+        provider_id: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        raise DeprecationWarning("Use /eval/tasks instead")
+
 
 class ToolGroupsRoutingTable(CommonRoutingTableImpl, ToolGroups):
     async def list_tools(self, toolgroup_id: Optional[str] = None) -> ListToolsResponse:

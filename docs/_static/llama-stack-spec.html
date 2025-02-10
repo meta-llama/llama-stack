@@ -40,6 +40,44 @@
         }
     ],
     "paths": {
+        "/v1/eval-tasks/{eval_task_id}": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/EvalTask"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "EvalTasks"
+                ],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "eval_task_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "deprecated": true
+            }
+        },
         "/v1/eval-tasks": {
             "get": {
                 "responses": {
@@ -59,6 +97,29 @@
                 ],
                 "description": "",
                 "parameters": [],
+                "deprecated": true
+            },
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "EvalTasks"
+                ],
+                "description": "",
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DeprecatedRegisterEvalTaskRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
                 "deprecated": true
             }
         },
@@ -2463,6 +2524,60 @@
                 "additionalProperties": false,
                 "required": [
                     "data"
+                ]
+            },
+            "DeprecatedRegisterEvalTaskRequest": {
+                "type": "object",
+                "properties": {
+                    "eval_task_id": {
+                        "type": "string"
+                    },
+                    "dataset_id": {
+                        "type": "string"
+                    },
+                    "scoring_functions": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "provider_eval_task_id": {
+                        "type": "string"
+                    },
+                    "provider_id": {
+                        "type": "string"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "eval_task_id",
+                    "dataset_id",
+                    "scoring_functions"
                 ]
             },
             "AppendRowsRequest": {

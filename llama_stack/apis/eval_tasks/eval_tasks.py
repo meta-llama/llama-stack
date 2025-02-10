@@ -45,11 +45,6 @@ class ListEvalTasksResponse(BaseModel):
 
 @runtime_checkable
 class EvalTasks(Protocol):
-    @webmethod(route="/eval-tasks", method="GET")
-    async def DEPRECATED_list_eval_tasks_deprecated(
-        self,
-    ) -> ListEvalTasksResponse: ...
-
     @webmethod(route="/eval/tasks", method="GET")
     async def list_eval_tasks(self) -> ListEvalTasksResponse: ...
 
@@ -63,6 +58,26 @@ class EvalTasks(Protocol):
     async def register_eval_task(
         self,
         task_id: str,
+        dataset_id: str,
+        scoring_functions: List[str],
+        provider_eval_task_id: Optional[str] = None,
+        provider_id: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> None: ...
+
+    @webmethod(route="/eval-tasks", method="GET")
+    async def DEPRECATED_list_eval_tasks(self) -> ListEvalTasksResponse: ...
+
+    @webmethod(route="/eval-tasks/{eval_task_id}", method="GET")
+    async def DEPRECATED_get_eval_task(
+        self,
+        eval_task_id: str,
+    ) -> Optional[EvalTask]: ...
+
+    @webmethod(route="/eval-tasks", method="POST")
+    async def DEPRECATED_register_eval_task(
+        self,
+        eval_task_id: str,
         dataset_id: str,
         scoring_functions: List[str],
         provider_eval_task_id: Optional[str] = None,
