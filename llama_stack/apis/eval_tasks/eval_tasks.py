@@ -51,13 +51,13 @@ class EvalTasks(Protocol):
     @webmethod(route="/eval/tasks/{task_id}", method="GET")
     async def get_eval_task(
         self,
-        eval_task_id: str,
+        task_id: str,
     ) -> Optional[EvalTask]: ...
 
     @webmethod(route="/eval/tasks", method="POST")
     async def register_eval_task(
         self,
-        eval_task_id: str,
+        task_id: str,
         dataset_id: str,
         scoring_functions: List[str],
         provider_eval_task_id: Optional[str] = None,

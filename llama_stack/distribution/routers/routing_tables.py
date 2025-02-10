@@ -432,8 +432,8 @@ class EvalTasksRoutingTable(CommonRoutingTableImpl, EvalTasks):
     async def list_eval_tasks(self) -> ListEvalTasksResponse:
         return ListEvalTasksResponse(data=await self.get_all_with_type("eval_task"))
 
-    async def get_eval_task(self, eval_task_id: str) -> Optional[EvalTask]:
-        return await self.get_object_by_identifier("eval_task", eval_task_id)
+    async def get_eval_task(self, task_id: str) -> Optional[EvalTask]:
+        return await self.get_object_by_identifier("eval_task", task_id)
 
     async def register_eval_task(
         self,
