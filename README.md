@@ -34,22 +34,22 @@ By reducing friction and complexity, Llama Stack empowers developers to focus on
 ### API Providers
 Here is a list of the various API providers and available distributions to developers started easily,
 
-|                                  **API Provider Builder**                                  |    **Environments**    |     **Agents**     |   **Inference**    |     **Memory**     |     **Safety**     |   **Telemetry**    |
-|:------------------------------------------------------------------------------------------:|:----------------------:|:------------------:|:------------------:|:------------------:|:------------------:|:------------------:|
-|                                       Meta Reference                                       |      Single Node       | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-|                                          SambaNova                                         |         Hosted         |                    | :heavy_check_mark: |                    |                    |                    |
-|                                          Cerebras                                          |         Hosted         |                    | :heavy_check_mark: |                    |                    |                    |
-|                                         Fireworks                                          |         Hosted         | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |                    |                    |
-|                                        AWS Bedrock                                         |         Hosted         |                    | :heavy_check_mark: |                    | :heavy_check_mark: |                    |
-|                                          Together                                          |         Hosted         | :heavy_check_mark: | :heavy_check_mark: |                    | :heavy_check_mark: |                    |
-|                                            Groq                                            |         Hosted         |                    | :heavy_check_mark: |                    |                    |                    |
-|                                           Ollama                                           |      Single Node       |                    | :heavy_check_mark: |                    |                    |                    |
-|                                            TGI                                             | Hosted and Single Node |                    | :heavy_check_mark: |                    |                    |                    |
-| NVIDIA NIM | Hosted and Single Node |                    | :heavy_check_mark: |                    |                    |                    |
-|                                           Chroma                                           |      Single Node       |                    |                    | :heavy_check_mark: |                    |                    |
-|                                         PG Vector                                          |      Single Node       |                    |                    | :heavy_check_mark: |                    |                    |
-|                                     PyTorch ExecuTorch                                     |     On-device iOS      | :heavy_check_mark: | :heavy_check_mark: |                    |                    |                    |
-|                        vLLM                        | Hosted and Single Node |                    | :heavy_check_mark: |                    |                    |                    |
+| **API Provider Builder** |    **Environments**    | **Agents** | **Inference** | **Memory** | **Safety** | **Telemetry** |
+|:------------------------:|:----------------------:|:----------:|:-------------:|:----------:|:----------:|:-------------:|
+|      Meta Reference      |      Single Node       |     ✅      |       ✅       |     ✅      |     ✅      |       ✅       |
+|        SambaNova         |         Hosted         |            |       ✅       |            |            |               |
+|         Cerebras         |         Hosted         |            |       ✅       |            |            |               |
+|        Fireworks         |         Hosted         |     ✅      |       ✅       |     ✅      |            |               |
+|       AWS Bedrock        |         Hosted         |            |       ✅       |            |     ✅      |               |
+|         Together         |         Hosted         |     ✅      |       ✅       |            |     ✅      |               |
+|           Groq           |         Hosted         |            |       ✅       |            |            |               |
+|          Ollama          |      Single Node       |            |       ✅       |            |            |               |
+|           TGI            | Hosted and Single Node |            |       ✅       |            |            |               |
+|        NVIDIA NIM        | Hosted and Single Node |            |       ✅       |            |            |               |
+|          Chroma          |      Single Node       |            |               |     ✅      |            |               |
+|        PG Vector         |      Single Node       |            |               |     ✅      |            |               |
+|    PyTorch ExecuTorch    |     On-device iOS      |     ✅      |       ✅       |            |            |               |
+|           vLLM           | Hosted and Single Node |            |       ✅       |            |            |               |
 
 ### Distributions
 
