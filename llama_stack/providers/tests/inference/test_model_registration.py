@@ -16,6 +16,14 @@ import pytest
 
 
 class TestModelRegistration:
+    def provider_supports_custom_names(self, provider) -> bool:
+        """Returns True if the provider supports custom model names."""
+        return "remote::ollama" not in provider.__provider_spec__.provider_type
+
+    def provider_loads_models_on_register(self, provider) -> bool:
+        """Returns True if the provider loads models during registration."""
+        return "meta-reference" in provider.__provider_spec__.provider_type
+
     @pytest.mark.asyncio
     async def test_register_unsupported_model(self, inference_stack, inference_model):
         inference_impl, models_impl = inference_stack
@@ -48,7 +56,12 @@ class TestModelRegistration:
             )
 
     @pytest.mark.asyncio
-    async def test_register_with_llama_model(self, inference_stack):
+    async def test_register_with_llama_model(self, inference_stack, inference_model):
+        inference_impl, models_impl = inference_stack
+        provider = inference_impl.routing_table.get_provider_impl(inference_model)
+        if not self.provider_supports_custom_names(provider):
+            pytest.skip("Provider does not support custom model names")
+
         _, models_impl = inference_stack
 
         _ = await models_impl.register_model(
@@ -69,8 +82,11 @@ class TestModelRegistration:
             )
 
     @pytest.mark.asyncio
-    async def test_initialize_model_during_registering(self, inference_stack):
-        _, models_impl = inference_stack
+    async def test_initialize_model_during_registering(self, inference_stack, inference_model):
+        inference_impl, models_impl = inference_stack
+        provider = inference_impl.routing_table.get_provider_impl(inference_model)
+        if not self.provider_loads_models_on_register(provider):
+            pytest.skip("Provider does not load models during registration")
 
         with patch(
             "llama_stack.providers.inline.inference.meta_reference.inference.MetaReferenceInferenceImpl.load_model",
