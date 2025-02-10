@@ -15,6 +15,7 @@ from llama_stack.distribution.datatypes import Api, Provider
 
 from llama_stack.providers.inline.vector_io.chroma import ChromaInlineImplConfig
 from llama_stack.providers.inline.vector_io.faiss import FaissImplConfig
+from llama_stack.providers.inline.vector_io.sqlite_vec import SQLiteVecImplConfig
 from llama_stack.providers.remote.vector_io.chroma import ChromaRemoteImplConfig
 from llama_stack.providers.remote.vector_io.pgvector import PGVectorConfig
 from llama_stack.providers.remote.vector_io.weaviate import WeaviateConfig
@@ -46,6 +47,22 @@ def vector_io_faiss() -> ProviderFixture:
                 provider_id="faiss",
                 provider_type="inline::faiss",
                 config=FaissImplConfig(
+                    kvstore=SqliteKVStoreConfig(db_path=temp_file.name).model_dump(),
+                ).model_dump(),
+            )
+        ],
+    )
+
+
+@pytest.fixture(scope="session")
+def vector_io_sqlite_vec() -> ProviderFixture:
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".db")
+    return ProviderFixture(
+        providers=[
+            Provider(
+                provider_id="sqlite_vec",
+                provider_type="inline::sqlite_vec",
+                config=SQLiteVecImplConfig(
                     kvstore=SqliteKVStoreConfig(db_path=temp_file.name).model_dump(),
                 ).model_dump(),
             )
@@ -111,7 +128,13 @@ def vector_io_chroma() -> ProviderFixture:
     )
 
 
-VECTOR_IO_FIXTURES = ["faiss", "pgvector", "weaviate", "chroma"]
+VECTOR_IO_FIXTURES = [
+    "faiss",
+    "pgvector",
+    "weaviate",
+    "chroma",
+    "sqlite_vec",
+]
 
 
 @pytest_asyncio.fixture(scope="session")

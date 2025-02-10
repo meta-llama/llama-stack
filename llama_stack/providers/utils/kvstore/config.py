@@ -17,6 +17,7 @@ from llama_stack.distribution.utils.config_dirs import RUNTIME_BASE_DIR
 class KVStoreType(Enum):
     redis = "redis"
     sqlite = "sqlite"
+    milvus_lite = "milvus_lite"
     postgres = "postgres"
 
 
@@ -57,6 +58,22 @@ class SqliteKVStoreConfig(CommonConfig):
     def sample_run_config(cls, __distro_dir__: str = "runtime", db_name: str = "kvstore.db"):
         return {
             "type": "sqlite",
+            "namespace": None,
+            "db_path": "${env.SQLITE_STORE_DIR:~/.llama/" + __distro_dir__ + "}/" + db_name,
+        }
+
+
+class MilvusLiteKVStoreConfig(CommonConfig):
+    type: Literal[KVStoreType.milvus_lite.value] = KVStoreType.milvus_lite.value
+    db_path: str = Field(
+        default=(RUNTIME_BASE_DIR / "kvstore.db").as_posix(),
+        description="File path for the sqlite database",
+    )
+
+    @classmethod
+    def sample_run_config(cls, __distro_dir__: str = "runtime", db_name: str = "kvstore.db"):
+        return {
+            "type": "milvuslite",
             "namespace": None,
             "db_path": "${env.SQLITE_STORE_DIR:~/.llama/" + __distro_dir__ + "}/" + db_name,
         }

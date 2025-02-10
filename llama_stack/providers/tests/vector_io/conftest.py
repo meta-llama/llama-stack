@@ -43,6 +43,14 @@ DEFAULT_PROVIDER_COMBINATIONS = [
     ),
     pytest.param(
         {
+            "inference": "ollama",
+            "vector_io": "sqlite_vec",
+        },
+        id="sqlite_vec",
+        marks=pytest.mark.ollama,
+    ),
+    pytest.param(
+        {
             "inference": "sentence_transformers",
             "vector_io": "chroma",
         },

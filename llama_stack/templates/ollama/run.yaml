@@ -20,13 +20,14 @@ providers:
     provider_type: inline::sentence-transformers
     config: {}
   vector_io:
-  - provider_id: faiss
-    provider_type: inline::faiss
+  - provider_id: sqlite_vec
+    provider_type: inline::sqlite_vec
     config:
       kvstore:
         type: sqlite
         namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/faiss_store.db
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/sqlite_vec.db
+      db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/sqlite_vec.db
   safety:
   - provider_id: llama-guard
     provider_type: inline::llama-guard
