@@ -80,7 +80,7 @@ def llama_stack_client(provider_data):
             skip_logger_removal=True,
         )
         if not client.initialize():
-            raise RuntimeError(f"Initialization failed {os.environ.get('LLAMA_STACK_CONFIG')} not found")
+            raise RuntimeError("Initialization failed")
 
     elif os.environ.get("LLAMA_STACK_BASE_URL"):
         client = LlamaStackClient(
