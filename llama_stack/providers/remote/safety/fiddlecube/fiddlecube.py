@@ -14,8 +14,6 @@ from llama_stack.apis.inference import Message
 from llama_stack.apis.safety import (
     RunShieldResponse,
     Safety,
-    SafetyViolation,
-    ViolationLevel,
 )
 from llama_stack.apis.shields import Shield
 from llama_stack.providers.datatypes import ShieldsProtocolPrivate
@@ -77,28 +75,29 @@ class FiddlecubeSafetyAdapter(Safety, ShieldsProtocolPrivate):
             content_messages.append({"text": {"text": message.content}})
         logger.debug(f"run_shield::final:messages::{json.dumps(content_messages, indent=2)}:")
 
-        response = self.bedrock_runtime_client.apply_guardrail(
-            guardrailIdentifier=shield.provider_resource_id,
-            guardrailVersion=shield_params["guardrailVersion"],
-            source="OUTPUT",  # or 'INPUT' depending on your use case
-            content=content_messages,
-        )
-        if response["action"] == "GUARDRAIL_INTERVENED":
-            user_message = ""
-            metadata = {}
-            for output in response["outputs"]:
-                # guardrails returns a list - however for this implementation we will leverage the last values
-                user_message = output["text"]
-            for assessment in response["assessments"]:
-                # guardrails returns a list - however for this implementation we will leverage the last values
-                metadata = dict(assessment)
-
-            return RunShieldResponse(
-                violation=SafetyViolation(
-                    user_message=user_message,
-                    violation_level=ViolationLevel.ERROR,
-                    metadata=metadata,
-                )
+        # Make a call to the FiddleCube API for guardrails
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            request_body = {
+                "messages": [message.model_dump(mode="json") for message in messages],
+            }
+            if params.get("excluded_categories"):
+                request_body["excluded_categories"] = params.get("excluded_categories")
+            headers = {"Content-Type": "application/json"}
+            response = await client.post(
+                f"{self.config.api_url}/safety/guard/check",
+                json=request_body,
+                headers=headers,
             )
+
+            logger.debug("Response:::", response.status_code)
+
+        # Check if the response is successful
+        if response.status_code != 200:
+            logger.error(f"FiddleCube API error: {response.status_code} - {response.text}")
+            raise RuntimeError("Failed to run shield with FiddleCube API")
+
+        # Convert the response into the format RunShieldResponse expects
+        response_data = response.json()
+        logger.debug("Response data", response_data)
 
         return RunShieldResponse()
