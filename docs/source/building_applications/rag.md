@@ -36,13 +36,12 @@ chunks = [
         "content": "Your document text here",
         "mime_type": "text/plain",
     },
-    ...,
 ]
-client.vector_io.insert(vector_db_id, chunks)
+client.vector_io.insert(vector_db_id=vector_db_id, chunks=chunks)
 
 # You can then query for these chunks
 chunks_response = client.vector_io.query(
-    vector_db_id, query="What do you know about..."
+    vector_db_id=vector_db_id, query="What do you know about..."
 )
 ```
 
@@ -72,8 +71,8 @@ client.tool_runtime.rag_tool.insert(
 
 # Query documents
 results = client.tool_runtime.rag_tool.query(
-    vector_db_id=vector_db_id,
-    query="What do you know about...",
+    vector_db_ids=[vector_db_id],
+    content="What do you know about...",
 )
 ```
 
@@ -82,10 +81,14 @@ results = client.tool_runtime.rag_tool.query(
 One of the most powerful patterns is combining agents with RAG capabilities. Here's a complete example:
 
 ```python
+from llama_stack_client.types.agent_create_params import AgentConfig
+from llama_stack_client.lib.agents.agent import Agent
+
 # Configure agent with memory
 agent_config = AgentConfig(
-    model="Llama3.2-3B-Instruct",
+    model="meta-llama/Llama-3.2-3B-Instruct",
     instructions="You are a helpful assistant",
+    enable_session_persistence=False,
     toolgroups=[
         {
             "name": "builtin::rag",
@@ -105,10 +108,10 @@ response = agent.create_turn(
         {"role": "user", "content": "I am providing some documents for reference."}
     ],
     documents=[
-        dict(
-            content="https://raw.githubusercontent.com/example/doc.rst",
-            mime_type="text/plain",
-        )
+        {
+            "content": "https://raw.githubusercontent.com/example/doc.rst",
+            "mime_type": "text/plain",
+        }
     ],
     session_id=session_id,
 )
