@@ -117,6 +117,23 @@ class Provider(BaseModel):
     config: Dict[str, Any]
 
 
+class ServerConfig(BaseModel):
+    port: int = Field(
+        default=8321,
+        description="Port to listen on",
+        ge=1024,
+        le=65535,
+    )
+    tls_certfile: Optional[str] = Field(
+        default=None,
+        description="Path to TLS certificate file for HTTPS",
+    )
+    tls_keyfile: Optional[str] = Field(
+        default=None,
+        description="Path to TLS key file for HTTPS",
+    )
+
+
 class StackRunConfig(BaseModel):
     version: str = LLAMA_STACK_RUN_CONFIG_VERSION
 
@@ -158,6 +175,11 @@ a default SQLite store will be used.""",
     scoring_fns: List[ScoringFnInput] = Field(default_factory=list)
     eval_tasks: List[EvalTaskInput] = Field(default_factory=list)
     tool_groups: List[ToolGroupInput] = Field(default_factory=list)
+
+    server: ServerConfig = Field(
+        default_factory=ServerConfig,
+        description="Configuration for the HTTP(S) server",
+    )
 
 
 class BuildConfig(BaseModel):

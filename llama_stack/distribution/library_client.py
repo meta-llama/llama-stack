@@ -17,17 +17,6 @@ from typing import Any, get_args, get_origin, Optional, TypeVar
 
 import httpx
 import yaml
-from llama_stack_client import (
-    APIResponse,
-    AsyncAPIResponse,
-    AsyncLlamaStackClient,
-    AsyncStream,
-    LlamaStackClient,
-    NOT_GIVEN,
-)
-from pydantic import BaseModel, TypeAdapter
-from rich.console import Console
-from termcolor import cprint
 
 from llama_stack.distribution.build import print_pip_install_help
 from llama_stack.distribution.configure import parse_and_maybe_upgrade_config
@@ -46,6 +35,17 @@ from llama_stack.providers.utils.telemetry.tracing import (
     setup_logger,
     start_trace,
 )
+from llama_stack_client import (
+    APIResponse,
+    AsyncAPIResponse,
+    AsyncLlamaStackClient,
+    AsyncStream,
+    LlamaStackClient,
+    NOT_GIVEN,
+)
+from pydantic import BaseModel, TypeAdapter
+from rich.console import Console
+from termcolor import cprint
 
 T = TypeVar("T")
 
@@ -198,6 +198,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
 
     async def initialize(self) -> bool:
         try:
+            self.endpoint_impls = None
             self.impls = await construct_stack(self.config, self.custom_provider_registry)
         except ModuleNotFoundError as _e:
             cprint(_e.msg, "red")
@@ -213,7 +214,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
                     f"Please run:\n\n{prefix}llama stack build --template {self.config_path_or_template_name} --image-type venv\n\n",
                     "yellow",
                 )
-            return False
+            raise _e
 
         if Api.telemetry in self.impls:
             setup_logger(self.impls[Api.telemetry])

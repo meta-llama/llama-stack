@@ -55,7 +55,7 @@ class QdrantIndex(EmbeddingIndex):
 
         points = []
         for i, (chunk, embedding) in enumerate(zip(chunks, embeddings)):
-            chunk_id = f"{chunk.document_id}:chunk-{i}"
+            chunk_id = f"{chunk.metadata['document_id']}:chunk-{i}"
             points.append(
                 PointStruct(
                     id=convert_id(chunk_id),
@@ -92,6 +92,9 @@ class QdrantIndex(EmbeddingIndex):
             scores.append(point.score)
 
         return QueryChunksResponse(chunks=chunks, scores=scores)
+
+    async def delete(self):
+        await self.client.delete_collection(collection_name=self.collection_name)
 
 
 class QdrantVectorDBAdapter(VectorIO, VectorDBsProtocolPrivate):

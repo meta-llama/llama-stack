@@ -67,7 +67,6 @@ def generate_bwrap_command(bind_dirs: List[str]) -> str:
 @dataclass
 class CodeExecutionContext:
     matplotlib_dump_dir: str
-    use_proxy: bool = False
 
 
 @dataclass

@@ -12,8 +12,8 @@ from .config import QdrantConfig
 
 
 async def get_adapter_impl(config: QdrantConfig, deps: Dict[Api, ProviderSpec]):
-    from .qdrant import QdrantVectorMemoryAdapter
+    from .qdrant import QdrantVectorDBAdapter
 
-    impl = QdrantVectorMemoryAdapter(config, deps[Api.inference])
+    impl = QdrantVectorDBAdapter(config, deps[Api.inference])
     await impl.initialize()
     return impl
