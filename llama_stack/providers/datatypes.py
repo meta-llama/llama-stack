@@ -86,6 +86,10 @@ class ProviderSpec(BaseModel):
     # used internally by the resolver; this is a hack for now
     deps__: List[str] = Field(default_factory=list)
 
+    @property
+    def is_sample(self) -> bool:
+        return self.provider_type in ("sample", "remote::sample")
+
 
 class RoutingTable(Protocol):
     def get_provider_impl(self, routing_key: str) -> Any: ...
