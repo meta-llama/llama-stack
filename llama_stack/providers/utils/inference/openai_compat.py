@@ -251,7 +251,9 @@ async def process_completion_stream_response(
 
 
 async def process_chat_completion_stream_response(
-    stream: AsyncGenerator[OpenAICompatCompletionResponse, None], formatter: ChatFormat
+    stream: AsyncGenerator[OpenAICompatCompletionResponse, None],
+    formatter: ChatFormat,
+    request: ChatCompletionRequest,
 ) -> AsyncGenerator:
     yield ChatCompletionResponseStreamChunk(
         event=ChatCompletionResponseEvent(
@@ -334,7 +336,6 @@ async def process_chat_completion_stream_response(
 
     # parse tool calls and report errors
     message = formatter.decode_assistant_message_from_content(buffer, stop_reason)
-    print(f"Parse TOOL CALLS message: {message}")
 
     parsed_tool_calls = len(message.tool_calls) > 0
     if ipython and not parsed_tool_calls:
@@ -349,17 +350,33 @@ async def process_chat_completion_stream_response(
             )
         )
 
+    request_tools = {t.tool_name: t for t in request.tools}
     for tool_call in message.tool_calls:
-        yield ChatCompletionResponseStreamChunk(
-            event=ChatCompletionResponseEvent(
-                event_type=ChatCompletionResponseEventType.progress,
-                delta=ToolCallDelta(
-                    tool_call=tool_call,
-                    parse_status=ToolCallParseStatus.succeeded,
-                ),
-                stop_reason=stop_reason,
+        if tool_call.tool_name in request_tools:
+            yield ChatCompletionResponseStreamChunk(
+                event=ChatCompletionResponseEvent(
+                    event_type=ChatCompletionResponseEventType.progress,
+                    delta=ToolCallDelta(
+                        tool_call=tool_call,
+                        parse_status=ToolCallParseStatus.succeeded,
+                    ),
+                    stop_reason=stop_reason,
+                )
             )
-        )
+        else:
+            logger.warning(f"Tool {tool_call.tool_name} not found in request tools")
+            yield ChatCompletionResponseStreamChunk(
+                event=ChatCompletionResponseEvent(
+                    event_type=ChatCompletionResponseEventType.progress,
+                    delta=ToolCallDelta(
+                        # Parsing tool call failed due to tool call not being found in request tools,
+                        # We still add the raw message text inside tool_call for responding back to the user
+                        tool_call=buffer,
+                        parse_status=ToolCallParseStatus.failed,
+                    ),
+                    stop_reason=stop_reason,
+                )
+            )
 
     yield ChatCompletionResponseStreamChunk(
         event=ChatCompletionResponseEvent(
