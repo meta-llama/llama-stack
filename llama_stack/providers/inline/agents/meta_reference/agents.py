@@ -212,3 +212,6 @@ class MetaReferenceAgentsImpl(Agents):
 
     async def delete_agent(self, agent_id: str) -> None:
         await self.persistence_store.delete(f"agent:{agent_id}")
+
+    async def shutdown(self) -> None:
+        pass

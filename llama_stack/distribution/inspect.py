@@ -82,3 +82,6 @@ class DistributionInspectImpl(Inspect):
 
     async def version(self) -> VersionInfo:
         return VersionInfo(version=version("llama-stack"))
+
+    async def shutdown(self) -> None:
+        pass

@@ -537,3 +537,6 @@ class ToolGroupsRoutingTable(CommonRoutingTableImpl, ToolGroups):
         for tool in tools:
             await self.unregister_object(tool)
         await self.unregister_object(tool_group)
+
+    async def shutdown(self) -> None:
+        pass
