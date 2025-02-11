@@ -43,8 +43,7 @@ def test_image_chat_completion_non_streaming(llama_stack_client, vision_model_id
                 "type": "image",
                 "image": {
                     "url": {
-                        # TODO: Replace with Github based URI to resources/sample1.jpg
-                        "uri": "https://www.healthypawspetinsurance.com/Images/V3/DogAndPuppyInsurance/Dog_CTA_Desktop_HeroImage.jpg"
+                        "uri": "https://raw.githubusercontent.com/meta-llama/llama-stack/main/tests/client-sdk/inference/dog.png"
                     },
                 },
             },
@@ -72,8 +71,7 @@ def test_image_chat_completion_streaming(llama_stack_client, vision_model_id):
                 "type": "image",
                 "image": {
                     "url": {
-                        # TODO: Replace with Github based URI to resources/sample1.jpg
-                        "uri": "https://www.healthypawspetinsurance.com/Images/V3/DogAndPuppyInsurance/Dog_CTA_Desktop_HeroImage.jpg"
+                        "uri": "https://raw.githubusercontent.com/meta-llama/llama-stack/main/tests/client-sdk/inference/dog.png"
                     },
                 },
             },
