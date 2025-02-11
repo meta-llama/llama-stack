@@ -1956,12 +1956,11 @@ components:
           type: object
           additionalProperties:
             oneOf:
-              - type: 'null'
-              - type: boolean
-              - type: number
               - type: string
-              - type: array
-              - type: object
+              - type: integer
+              - type: number
+              - type: boolean
+              - type: 'null'
         type:
           type: string
           const: metric
@@ -2387,7 +2386,6 @@ components:
             Whether tool use is required or automatic. This is a hint to the model
             which may not be followed. It depends on the Instruction Following capabilities
             of the model.
-          default: auto
         tool_prompt_format:
           type: string
           enum:
@@ -4161,12 +4159,11 @@ components:
           type: object
           additionalProperties:
             oneOf:
-              - type: 'null'
-              - type: boolean
-              - type: number
               - type: string
-              - type: array
-              - type: object
+              - type: integer
+              - type: number
+              - type: boolean
+              - type: 'null'
         type:
           type: string
           const: structured_log
@@ -4203,12 +4200,11 @@ components:
           type: object
           additionalProperties:
             oneOf:
-              - type: 'null'
-              - type: boolean
-              - type: number
               - type: string
-              - type: array
-              - type: object
+              - type: integer
+              - type: number
+              - type: boolean
+              - type: 'null'
         type:
           type: string
           const: unstructured_log
