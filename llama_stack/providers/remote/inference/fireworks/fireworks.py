@@ -226,14 +226,19 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProv
 
     async def _nonstream_chat_completion(self, request: ChatCompletionRequest) -> ChatCompletionResponse:
         params = await self._get_params(request)
+
         if "messages" in params:
             r = await self._get_client().chat.completions.acreate(**params)
         else:
             r = await self._get_client().completion.acreate(**params)
-        return process_chat_completion_response(r, self.formatter)
+        return process_chat_completion_response(r, self.formatter, request)
 
     async def _stream_chat_completion(self, request: ChatCompletionRequest) -> AsyncGenerator:
         params = await self._get_params(request)
+        from rich.pretty import pprint
+
+        print("!! FIREWORKS STREAM PARAMS !!")
+        pprint(params)
 
         async def _to_async_generator():
             if "messages" in params:
