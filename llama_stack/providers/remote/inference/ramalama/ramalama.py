@@ -5,9 +5,12 @@
 # the root directory of this source tree.
 
 
-from typing import AsyncGenerator, List, Optional
+from typing import Any, AsyncGenerator, AsyncIterator, Dict, List, Optional, Union
 
 from openai import AsyncOpenAI, BadRequestError
+from openai.types.chat.chat_completion_chunk import (
+    ChatCompletionChunk as OpenAIChatCompletionChunk,
+)
 
 from llama_stack.apis.common.content_types import (
     InterleavedContent,
@@ -30,6 +33,12 @@ from llama_stack.apis.inference import (
     ToolDefinition,
     ToolPromptFormat,
 )
+from llama_stack.apis.inference.inference import (
+    OpenAIChatCompletion,
+    OpenAICompletion,
+    OpenAIMessageParam,
+    OpenAIResponseFormatParam,
+)
 from llama_stack.apis.models import Model
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import ModelsProtocolPrivate
@@ -37,17 +46,16 @@ from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
+    convert_chat_completion_request,
+    convert_completion_request,
     convert_openai_chat_completion_choice,
     convert_openai_chat_completion_stream,
+    convert_openai_completion_choice,
+    convert_openai_completion_stream,
+    prepare_openai_completion_params,
 )
 
 from .models import model_entries
-from .openai_utils import (
-    convert_chat_completion_request,
-    convert_completion_request,
-    convert_openai_completion_choice,
-    convert_openai_completion_stream,
-)
 
 logger = get_logger(name=__name__, category="inference")
 
@@ -180,9 +188,132 @@ class RamalamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         model = await self.register_helper.register_model(model)
         res = await self.client.models.list()
         available_models = [m.id async for m in res]
-        if model.provider_resource_id not in available_models:
+        # Ramalama handles paths on MacOS and Linux differently
+        if (model.provider_resource_id.split("/")[-1] not in available_models) and (
+            model.provider_resource_id not in available_models
+        ):
             raise ValueError(
-                f"Model {model.provider_resource_id} is not being served by vLLM. "
+                f"Model {model.provider_resource_id} is not being served by Ramalama. "
                 f"Available models: {', '.join(available_models)}"
             )
         return model
+
+    async def openai_completion(
+        self,
+        model: str,
+        prompt: Union[str, List[str], List[int], List[List[int]]],
+        best_of: Optional[int] = None,
+        echo: Optional[bool] = None,
+        frequency_penalty: Optional[float] = None,
+        logit_bias: Optional[Dict[str, float]] = None,
+        logprobs: Optional[bool] = None,
+        max_tokens: Optional[int] = None,
+        n: Optional[int] = None,
+        presence_penalty: Optional[float] = None,
+        seed: Optional[int] = None,
+        stop: Optional[Union[str, List[str]]] = None,
+        stream: Optional[bool] = None,
+        stream_options: Optional[Dict[str, Any]] = None,
+        temperature: Optional[float] = None,
+        top_p: Optional[float] = None,
+        user: Optional[str] = None,
+        guided_choice: Optional[List[str]] = None,
+        prompt_logprobs: Optional[int] = None,
+    ) -> OpenAICompletion:
+        model_obj = await self.model_store.get_model(model)
+        params = await prepare_openai_completion_params(
+            model=model_obj.provider_resource_id,
+            prompt=prompt,
+            best_of=best_of,
+            echo=echo,
+            frequency_penalty=frequency_penalty,
+            logit_bias=logit_bias,
+            logprobs=logprobs,
+            max_tokens=max_tokens,
+            n=n,
+            presence_penalty=presence_penalty,
+            seed=seed,
+            stop=stop,
+            stream=stream,
+            stream_options=stream_options,
+            temperature=temperature,
+            top_p=top_p,
+            user=user,
+        )
+        return await self.client.completions.create(**params)  # type: ignore
+
+    async def openai_chat_completion(
+        self,
+        model: str,
+        messages: List[OpenAIMessageParam],
+        frequency_penalty: Optional[float] = None,
+        function_call: Optional[Union[str, Dict[str, Any]]] = None,
+        functions: Optional[List[Dict[str, Any]]] = None,
+        logit_bias: Optional[Dict[str, float]] = None,
+        logprobs: Optional[bool] = None,
+        max_completion_tokens: Optional[int] = None,
+        max_tokens: Optional[int] = None,
+        n: Optional[int] = None,
+        parallel_tool_calls: Optional[bool] = None,
+        presence_penalty: Optional[float] = None,
+        response_format: Optional[OpenAIResponseFormatParam] = None,
+        seed: Optional[int] = None,
+        stop: Optional[Union[str, List[str]]] = None,
+        stream: Optional[bool] = None,
+        stream_options: Optional[Dict[str, Any]] = None,
+        temperature: Optional[float] = None,
+        tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
+        tools: Optional[List[Dict[str, Any]]] = None,
+        top_logprobs: Optional[int] = None,
+        top_p: Optional[float] = None,
+        user: Optional[str] = None,
+    ) -> Union[OpenAIChatCompletion, AsyncIterator[OpenAIChatCompletionChunk]]:
+        model_obj = await self.model_store.get_model(model)
+        params = await prepare_openai_completion_params(
+            model=model_obj.provider_resource_id,
+            messages=messages,
+            frequency_penalty=frequency_penalty,
+            function_call=function_call,
+            functions=functions,
+            logit_bias=logit_bias,
+            logprobs=logprobs,
+            max_completion_tokens=max_completion_tokens,
+            max_tokens=max_tokens,
+            n=n,
+            parallel_tool_calls=parallel_tool_calls,
+            presence_penalty=presence_penalty,
+            response_format=response_format,
+            seed=seed,
+            stop=stop,
+            stream=stream,
+            stream_options=stream_options,
+            temperature=temperature,
+            tool_choice=tool_choice,
+            tools=tools,
+            top_logprobs=top_logprobs,
+            top_p=top_p,
+            user=user,
+        )
+        return await self.client.chat.completions.create(**params)  # type: ignore
+
+    async def batch_completion(
+        self,
+        model_id: str,
+        content_batch: List[InterleavedContent],
+        sampling_params: Optional[SamplingParams] = None,
+        response_format: Optional[ResponseFormat] = None,
+        logprobs: Optional[LogProbConfig] = None,
+    ):
+        raise NotImplementedError("Batch completion is not supported for Ramalama")
+
+    async def batch_chat_completion(
+        self,
+        model_id: str,
+        messages_batch: List[List[Message]],
+        sampling_params: Optional[SamplingParams] = None,
+        tools: Optional[List[ToolDefinition]] = None,
+        tool_config: Optional[ToolConfig] = None,
+        response_format: Optional[ResponseFormat] = None,
+        logprobs: Optional[LogProbConfig] = None,
+    ):
+        raise NotImplementedError("Batch chat completion is not supported for Ramalama")
