@@ -178,9 +178,9 @@ async def llama_stack_chat_completion_to_openai_chat_completion_dict(
         "tools": converted_tools,
         "tool_choice": converted_tool_choice,
         "stream": request.stream,
+        **sampling_options,
+        **guided_decoding_options,
+        **logprob_options,
     }
-    request_options.update(sampling_options)
-    request_options.update(guided_decoding_options)
-    request_options.update(logprob_options)
 
     return request_options
