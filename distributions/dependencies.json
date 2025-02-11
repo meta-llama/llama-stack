@@ -66,6 +66,9 @@
     "sentence-transformers --no-deps",
     "torch torchvision --index-url https://download.pytorch.org/whl/cpu"
   ],
+  "fiddlecube": [
+    "httpx"
+  ],
   "fireworks": [
     "aiosqlite",
     "autoevals",
