@@ -27,6 +27,9 @@ providers:
   - provider_id: bedrock
     provider_type: remote::bedrock
     config: {}
+  - provider_id: fiddlecube
+    provider_type: remote::fiddlecube
+    config: {}
   agents:
   - provider_id: meta-reference
     provider_type: inline::meta-reference

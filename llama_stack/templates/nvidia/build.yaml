@@ -8,6 +8,7 @@ distribution_spec:
     - inline::faiss
     safety:
     - inline::llama-guard
+    - remote::fiddlecube
     agents:
     - inline::meta-reference
     telemetry:

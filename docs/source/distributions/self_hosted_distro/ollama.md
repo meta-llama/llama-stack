@@ -19,7 +19,7 @@ The `llamastack/distribution-ollama` distribution consists of the following prov
 | datasetio | `remote::huggingface`, `inline::localfs` |
 | eval | `inline::meta-reference` |
 | inference | `remote::ollama` |
-| safety | `inline::llama-guard` |
+| safety | `inline::llama-guard`, `remote::fiddlecube` |
 | scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |
 | telemetry | `inline::meta-reference` |
 | tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::code-interpreter`, `inline::rag-runtime` |

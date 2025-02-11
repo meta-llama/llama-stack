@@ -24,6 +24,9 @@ providers:
   - provider_id: llama-guard
     provider_type: inline::llama-guard
     config: {}
+  - provider_id: fiddlecube
+    provider_type: remote::fiddlecube
+    config: {}
   vector_io:
   - provider_id: faiss
     provider_type: inline::faiss

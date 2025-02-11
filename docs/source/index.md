@@ -78,6 +78,7 @@ A number of "adapters" are available for some popular Inference and Vector Store
 |  Prompt Guard | Single Node |
 |  Code Scanner | Single Node |
 |  AWS Bedrock | Hosted |
+|  FiddleCube | Hosted |
 
 
 ```{toctree}

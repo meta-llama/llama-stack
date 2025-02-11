@@ -19,7 +19,7 @@ def get_distribution_template() -> DistributionTemplate:
     providers = {
         "inference": ["remote::bedrock"],
         "vector_io": ["inline::faiss", "remote::chromadb", "remote::pgvector"],
-        "safety": ["remote::bedrock"],
+        "safety": ["remote::bedrock", "remote::fiddlecube"],
         "agents": ["inline::meta-reference"],
         "telemetry": ["inline::meta-reference"],
         "eval": ["inline::meta-reference"],

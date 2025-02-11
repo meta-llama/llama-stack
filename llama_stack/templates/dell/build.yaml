@@ -11,6 +11,7 @@ distribution_spec:
     - remote::pgvector
     safety:
     - inline::llama-guard
+    - remote::fiddlecube
     agents:
     - inline::meta-reference
     telemetry:
