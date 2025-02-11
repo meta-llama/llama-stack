@@ -8,8 +8,7 @@ import random
 
 import pytest
 
-INLINE_VECTOR_DB_PROVIDERS = ["faiss"]
-# "sqlite_vec"
+INLINE_VECTOR_DB_PROVIDERS = ["faiss", "sqlite_vec"]
 
 
 @pytest.fixture(scope="function")
