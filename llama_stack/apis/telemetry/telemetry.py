@@ -13,8 +13,8 @@ from typing import (
     Literal,
     Optional,
     Protocol,
-    runtime_checkable,
     Union,
+    runtime_checkable,
 )
 
 from llama_models.schema_utils import json_schema_type, register_schema, webmethod
@@ -92,6 +92,11 @@ class MetricEvent(EventCommon):
     metric: str  # this would be an enum
     value: Union[int, float]
     unit: str
+
+
+@json_schema_type
+class MetricResponseMixin:
+    metrics: Optional[List[MetricEvent]] = None
 
 
 @json_schema_type

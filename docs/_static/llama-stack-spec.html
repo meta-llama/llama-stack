@@ -3106,6 +3106,12 @@
             "ChatCompletionResponse": {
                 "type": "object",
                 "properties": {
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricEvent"
+                        }
+                    },
                     "completion_message": {
                         "$ref": "#/components/schemas/CompletionMessage",
                         "description": "The complete response message"
@@ -3123,6 +3129,77 @@
                     "completion_message"
                 ],
                 "description": "Response from a chat completion request."
+            },
+            "MetricEvent": {
+                "type": "object",
+                "properties": {
+                    "trace_id": {
+                        "type": "string"
+                    },
+                    "span_id": {
+                        "type": "string"
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "attributes": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "metric",
+                        "default": "metric"
+                    },
+                    "metric": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "oneOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "number"
+                            }
+                        ]
+                    },
+                    "unit": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "trace_id",
+                    "span_id",
+                    "timestamp",
+                    "type",
+                    "metric",
+                    "value",
+                    "unit"
+                ]
             },
             "TokenLogProbs": {
                 "type": "object",
@@ -3388,6 +3465,12 @@
             "ChatCompletionResponseStreamChunk": {
                 "type": "object",
                 "properties": {
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricEvent"
+                        }
+                    },
                     "event": {
                         "$ref": "#/components/schemas/ChatCompletionResponseEvent",
                         "description": "The event containing the new content"
@@ -6372,77 +6455,6 @@
                     "warn",
                     "error",
                     "critical"
-                ]
-            },
-            "MetricEvent": {
-                "type": "object",
-                "properties": {
-                    "trace_id": {
-                        "type": "string"
-                    },
-                    "span_id": {
-                        "type": "string"
-                    },
-                    "timestamp": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "attributes": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    },
-                    "type": {
-                        "type": "string",
-                        "const": "metric",
-                        "default": "metric"
-                    },
-                    "metric": {
-                        "type": "string"
-                    },
-                    "value": {
-                        "oneOf": [
-                            {
-                                "type": "integer"
-                            },
-                            {
-                                "type": "number"
-                            }
-                        ]
-                    },
-                    "unit": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "trace_id",
-                    "span_id",
-                    "timestamp",
-                    "type",
-                    "metric",
-                    "value",
-                    "unit"
                 ]
             },
             "SpanEndPayload": {
