@@ -180,9 +180,12 @@ class RamalamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         model = await self.register_helper.register_model(model)
         res = await self.client.models.list()
         available_models = [m.id async for m in res]
-        if model.provider_resource_id not in available_models:
+        # Ramalama handles paths on MacOS and Linux differently
+        if (model.provider_resource_id.split("/")[-1] not in available_models) and (
+            model.provider_resource_id not in available_models
+        ):
             raise ValueError(
-                f"Model {model.provider_resource_id} is not being served by vLLM. "
+                f"Model {model.provider_resource_id} is not being served by Ramalama. "
                 f"Available models: {', '.join(available_models)}"
             )
         return model

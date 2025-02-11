@@ -146,10 +146,8 @@ from llama_stack.apis.inference import (
     CompletionRequest,
     CompletionResponse,
     CompletionResponseStreamChunk,
-    TokenLogProbs,
-)
-from llama_stack.models.llama.datatypes import (
     GreedySamplingStrategy,
+    TokenLogProbs,
     TopKSamplingStrategy,
     TopPSamplingStrategy,
 )
