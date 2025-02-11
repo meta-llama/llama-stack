@@ -207,9 +207,7 @@ paths:
     post:
       responses:
         '200':
-          description: >-
-            A single turn in an interaction with an Agentic System. **OR** streamed
-            agent turn completion response.
+          description: ''
           content:
             application/json:
               schema:
@@ -416,7 +414,47 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/Dataset'
+                  - type: object
+                    properties:
+                      identifier:
+                        type: string
+                      provider_resource_id:
+                        type: string
+                      provider_id:
+                        type: string
+                      type:
+                        type: string
+                        const: dataset
+                        default: dataset
+                      dataset_schema:
+                        type: object
+                        additionalProperties:
+                          $ref: '#/components/schemas/ParamType'
+                      url:
+                        $ref: '#/components/schemas/URL'
+                      metadata:
+                        type: object
+                        additionalProperties:
+                          oneOf:
+                            - type: 'null'
+                            - type: boolean
+                            - type: number
+                            - type: string
+                            - type: array
+                            - type: object
+                      metrics:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/MetricEvent'
+                    additionalProperties: false
+                    required:
+                      - identifier
+                      - provider_resource_id
+                      - provider_id
+                      - type
+                      - dataset_schema
+                      - url
+                      - metadata
                   - type: 'null'
       tags:
         - Datasets
@@ -449,7 +487,47 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/EvalTask'
+                  - type: object
+                    properties:
+                      identifier:
+                        type: string
+                      provider_resource_id:
+                        type: string
+                      provider_id:
+                        type: string
+                      type:
+                        type: string
+                        const: eval_task
+                        default: eval_task
+                      dataset_id:
+                        type: string
+                      scoring_functions:
+                        type: array
+                        items:
+                          type: string
+                      metadata:
+                        type: object
+                        additionalProperties:
+                          oneOf:
+                            - type: 'null'
+                            - type: boolean
+                            - type: number
+                            - type: string
+                            - type: array
+                            - type: object
+                      metrics:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/MetricEvent'
+                    additionalProperties: false
+                    required:
+                      - identifier
+                      - provider_resource_id
+                      - provider_id
+                      - type
+                      - dataset_id
+                      - scoring_functions
+                      - metadata
                   - type: 'null'
       tags:
         - EvalTasks
@@ -469,7 +547,43 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/Model'
+                  - type: object
+                    properties:
+                      identifier:
+                        type: string
+                      provider_resource_id:
+                        type: string
+                      provider_id:
+                        type: string
+                      type:
+                        type: string
+                        const: model
+                        default: model
+                      metadata:
+                        type: object
+                        additionalProperties:
+                          oneOf:
+                            - type: 'null'
+                            - type: boolean
+                            - type: number
+                            - type: string
+                            - type: array
+                            - type: object
+                      model_type:
+                        $ref: '#/components/schemas/ModelType'
+                        default: llm
+                      metrics:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/MetricEvent'
+                    additionalProperties: false
+                    required:
+                      - identifier
+                      - provider_resource_id
+                      - provider_id
+                      - type
+                      - metadata
+                      - model_type
                   - type: 'null'
       tags:
         - Models
@@ -502,7 +616,46 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/ScoringFn'
+                  - type: object
+                    properties:
+                      identifier:
+                        type: string
+                      provider_resource_id:
+                        type: string
+                      provider_id:
+                        type: string
+                      type:
+                        type: string
+                        const: scoring_function
+                        default: scoring_function
+                      description:
+                        type: string
+                      metadata:
+                        type: object
+                        additionalProperties:
+                          oneOf:
+                            - type: 'null'
+                            - type: boolean
+                            - type: number
+                            - type: string
+                            - type: array
+                            - type: object
+                      return_type:
+                        $ref: '#/components/schemas/ParamType'
+                      params:
+                        $ref: '#/components/schemas/ScoringFnParams'
+                      metrics:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/MetricEvent'
+                    additionalProperties: false
+                    required:
+                      - identifier
+                      - provider_resource_id
+                      - provider_id
+                      - type
+                      - metadata
+                      - return_type
                   - type: 'null'
       tags:
         - ScoringFunctions
@@ -522,7 +675,38 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/Shield'
+                  - type: object
+                    properties:
+                      identifier:
+                        type: string
+                      provider_resource_id:
+                        type: string
+                      provider_id:
+                        type: string
+                      type:
+                        type: string
+                        const: shield
+                        default: shield
+                      params:
+                        type: object
+                        additionalProperties:
+                          oneOf:
+                            - type: 'null'
+                            - type: boolean
+                            - type: number
+                            - type: string
+                            - type: array
+                            - type: object
+                      metrics:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/MetricEvent'
+                    additionalProperties: false
+                    required:
+                      - identifier
+                      - provider_resource_id
+                      - provider_id
+                      - type
                   - type: 'null'
       tags:
         - Shields
@@ -662,7 +846,22 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/PostTrainingJobArtifactsResponse'
+                  - type: object
+                    properties:
+                      job_uuid:
+                        type: string
+                      checkpoints:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Checkpoint'
+                      metrics:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/MetricEvent'
+                    additionalProperties: false
+                    required:
+                      - job_uuid
+                      - checkpoints
                   - type: 'null'
       tags:
         - PostTraining (Coming Soon)
@@ -682,7 +881,44 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/PostTrainingJobStatusResponse'
+                  - type: object
+                    properties:
+                      job_uuid:
+                        type: string
+                      status:
+                        $ref: '#/components/schemas/JobStatus'
+                      scheduled_at:
+                        type: string
+                        format: date-time
+                      started_at:
+                        type: string
+                        format: date-time
+                      completed_at:
+                        type: string
+                        format: date-time
+                      resources_allocated:
+                        type: object
+                        additionalProperties:
+                          oneOf:
+                            - type: 'null'
+                            - type: boolean
+                            - type: number
+                            - type: string
+                            - type: array
+                            - type: object
+                      checkpoints:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Checkpoint'
+                      metrics:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/MetricEvent'
+                    additionalProperties: false
+                    required:
+                      - job_uuid
+                      - status
+                      - checkpoints
                   - type: 'null'
       tags:
         - PostTraining (Coming Soon)
@@ -715,7 +951,34 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/VectorDB'
+                  - type: object
+                    properties:
+                      identifier:
+                        type: string
+                      provider_resource_id:
+                        type: string
+                      provider_id:
+                        type: string
+                      type:
+                        type: string
+                        const: vector_db
+                        default: vector_db
+                      embedding_model:
+                        type: string
+                      embedding_dimension:
+                        type: integer
+                      metrics:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/MetricEvent'
+                    additionalProperties: false
+                    required:
+                      - identifier
+                      - provider_resource_id
+                      - provider_id
+                      - type
+                      - embedding_model
+                      - embedding_dimension
                   - type: 'null'
       tags:
         - VectorDBs
@@ -1912,16 +2175,6 @@ components:
       required:
         - model
         - messages_batch
-    BatchChatCompletionResponse:
-      type: object
-      properties:
-        batch:
-          type: array
-          items:
-            $ref: '#/components/schemas/ChatCompletionResponse'
-      additionalProperties: false
-      required:
-        - batch
     ChatCompletionResponse:
       type: object
       properties:
@@ -1938,6 +2191,47 @@ components:
       required:
         - completion_message
       description: Response from a chat completion request.
+    MetricEvent:
+      type: object
+      properties:
+        trace_id:
+          type: string
+        span_id:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        attributes:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+        type:
+          type: string
+          const: metric
+          default: metric
+        metric:
+          type: string
+        value:
+          oneOf:
+            - type: integer
+            - type: number
+        unit:
+          type: string
+      additionalProperties: false
+      required:
+        - trace_id
+        - span_id
+        - timestamp
+        - type
+        - metric
+        - value
+        - unit
     TokenLogProbs:
       type: object
       properties:
@@ -1951,6 +2245,20 @@ components:
       required:
         - logprobs_by_token
       description: Log probabilities for generated tokens.
+    BatchChatCompletionResponse:
+      type: object
+      properties:
+        batch:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatCompletionResponse'
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
+      additionalProperties: false
+      required:
+        - batch
     BatchCompletionRequest:
       type: object
       properties:
@@ -1977,16 +2285,6 @@ components:
       required:
         - model
         - content_batch
-    BatchCompletionResponse:
-      type: object
-      properties:
-        batch:
-          type: array
-          items:
-            $ref: '#/components/schemas/CompletionResponse'
-      additionalProperties: false
-      required:
-        - batch
     CompletionResponse:
       type: object
       properties:
@@ -2011,6 +2309,20 @@ components:
         - content
         - stop_reason
       description: Response from a completion request.
+    BatchCompletionResponse:
+      type: object
+      properties:
+        batch:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompletionResponse'
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
+      additionalProperties: false
+      required:
+        - batch
     CancelTrainingJobRequest:
       type: object
       properties:
@@ -2170,17 +2482,6 @@ components:
         - delta
       description: >-
         An event during chat completion generation.
-    ChatCompletionResponseStreamChunk:
-      type: object
-      properties:
-        event:
-          $ref: '#/components/schemas/ChatCompletionResponseEvent'
-          description: The event containing the new content
-      additionalProperties: false
-      required:
-        - event
-      description: >-
-        A chunk of a streamed chat completion response.
     ContentDelta:
       oneOf:
         - $ref: '#/components/schemas/TextDelta'
@@ -2242,6 +2543,19 @@ components:
         - type
         - tool_call
         - parse_status
+    ChatCompletionResponseStreamChunk:
+      type: object
+      properties:
+        event:
+          $ref: '#/components/schemas/ChatCompletionResponseEvent'
+          description: The event containing the new content
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
+      additionalProperties: false
+      required:
+        - event
     CompletionRequest:
       type: object
       properties:
@@ -2303,11 +2617,13 @@ components:
             $ref: '#/components/schemas/TokenLogProbs'
           description: >-
             Optional log probabilities for generated tokens
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - delta
-      description: >-
-        A chunk of a streamed completion response.
     AgentConfig:
       type: object
       properties:
@@ -2449,6 +2765,10 @@ components:
       properties:
         agent_id:
           type: string
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - agent_id
@@ -2465,6 +2785,10 @@ components:
       properties:
         session_id:
           type: string
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - session_id
@@ -2658,6 +2982,12 @@ components:
         - call_id
         - tool_name
         - content
+    ViolationLevel:
+      type: string
+      enum:
+        - info
+        - warn
+        - error
     Turn:
       type: object
       properties:
@@ -2713,6 +3043,10 @@ components:
         completed_at:
           type: string
           format: date-time
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - turn_id
@@ -2721,14 +3055,6 @@ components:
         - steps
         - output_message
         - started_at
-      description: >-
-        A single turn in an interaction with an Agentic System.
-    ViolationLevel:
-      type: string
-      enum:
-        - info
-        - warn
-        - error
     AgentTurnResponseEvent:
       type: object
       properties:
@@ -2842,15 +3168,6 @@ components:
         - event_type
         - step_type
         - step_id
-    AgentTurnResponseStreamChunk:
-      type: object
-      properties:
-        event:
-          $ref: '#/components/schemas/AgentTurnResponseEvent'
-      additionalProperties: false
-      required:
-        - event
-      description: streamed agent turn completion response.
     AgentTurnResponseTurnCompletePayload:
       type: object
       properties:
@@ -2877,6 +3194,18 @@ components:
       required:
         - event_type
         - turn_id
+    AgentTurnResponseStreamChunk:
+      type: object
+      properties:
+        event:
+          $ref: '#/components/schemas/AgentTurnResponseEvent'
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
+      additionalProperties: false
+      required:
+        - event
     EmbeddingsRequest:
       type: object
       properties:
@@ -2910,11 +3239,13 @@ components:
             List of embedding vectors, one per input content. Each embedding is a
             list of floats. The dimensionality of the embedding is model-specific;
             you can check model metadata using /models/{model_id}
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - embeddings
-      description: >-
-        Response containing generated embeddings.
     AgentCandidate:
       type: object
       properties:
@@ -3098,29 +3429,6 @@ components:
         - input_rows
         - scoring_functions
         - task_config
-    EvaluateResponse:
-      type: object
-      properties:
-        generations:
-          type: array
-          items:
-            type: object
-            additionalProperties:
-              oneOf:
-                - type: 'null'
-                - type: boolean
-                - type: number
-                - type: string
-                - type: array
-                - type: object
-        scores:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/ScoringResult'
-      additionalProperties: false
-      required:
-        - generations
-        - scores
     ScoringResult:
       type: object
       properties:
@@ -3150,6 +3458,33 @@ components:
       required:
         - score_rows
         - aggregated_results
+    EvaluateResponse:
+      type: object
+      properties:
+        generations:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              oneOf:
+                - type: 'null'
+                - type: boolean
+                - type: number
+                - type: string
+                - type: array
+                - type: object
+        scores:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ScoringResult'
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
+      additionalProperties: false
+      required:
+        - generations
+        - scores
     Session:
       type: object
       properties:
@@ -3164,14 +3499,16 @@ components:
         started_at:
           type: string
           format: date-time
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - session_id
         - session_name
         - turns
         - started_at
-      description: >-
-        A single session of an interaction with an Agentic System.
     AgentStepResponse:
       type: object
       properties:
@@ -3188,6 +3525,10 @@ components:
               tool_execution: '#/components/schemas/ToolExecutionStep'
               shield_call: '#/components/schemas/ShieldCallStep'
               memory_retrieval: '#/components/schemas/MemoryRetrievalStep'
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - step
@@ -3241,44 +3582,6 @@ components:
       additionalProperties: false
       required:
         - type
-    Dataset:
-      type: object
-      properties:
-        identifier:
-          type: string
-        provider_resource_id:
-          type: string
-        provider_id:
-          type: string
-        type:
-          type: string
-          const: dataset
-          default: dataset
-        dataset_schema:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/ParamType'
-        url:
-          $ref: '#/components/schemas/URL'
-        metadata:
-          type: object
-          additionalProperties:
-            oneOf:
-              - type: 'null'
-              - type: boolean
-              - type: number
-              - type: string
-              - type: array
-              - type: object
-      additionalProperties: false
-      required:
-        - identifier
-        - provider_resource_id
-        - provider_id
-        - type
-        - dataset_schema
-        - url
-        - metadata
     JsonType:
       type: object
       properties:
@@ -3354,78 +3657,6 @@ components:
       additionalProperties: false
       required:
         - type
-    EvalTask:
-      type: object
-      properties:
-        identifier:
-          type: string
-        provider_resource_id:
-          type: string
-        provider_id:
-          type: string
-        type:
-          type: string
-          const: eval_task
-          default: eval_task
-        dataset_id:
-          type: string
-        scoring_functions:
-          type: array
-          items:
-            type: string
-        metadata:
-          type: object
-          additionalProperties:
-            oneOf:
-              - type: 'null'
-              - type: boolean
-              - type: number
-              - type: string
-              - type: array
-              - type: object
-      additionalProperties: false
-      required:
-        - identifier
-        - provider_resource_id
-        - provider_id
-        - type
-        - dataset_id
-        - scoring_functions
-        - metadata
-    Model:
-      type: object
-      properties:
-        identifier:
-          type: string
-        provider_resource_id:
-          type: string
-        provider_id:
-          type: string
-        type:
-          type: string
-          const: model
-          default: model
-        metadata:
-          type: object
-          additionalProperties:
-            oneOf:
-              - type: 'null'
-              - type: boolean
-              - type: number
-              - type: string
-              - type: array
-              - type: object
-        model_type:
-          $ref: '#/components/schemas/ModelType'
-          default: llm
-      additionalProperties: false
-      required:
-        - identifier
-        - provider_resource_id
-        - provider_id
-        - type
-        - metadata
-        - model_type
     ModelType:
       type: string
       enum:
@@ -3450,78 +3681,14 @@ components:
           type: integer
         next_page_token:
           type: string
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - rows
         - total_count
-    ScoringFn:
-      type: object
-      properties:
-        identifier:
-          type: string
-        provider_resource_id:
-          type: string
-        provider_id:
-          type: string
-        type:
-          type: string
-          const: scoring_function
-          default: scoring_function
-        description:
-          type: string
-        metadata:
-          type: object
-          additionalProperties:
-            oneOf:
-              - type: 'null'
-              - type: boolean
-              - type: number
-              - type: string
-              - type: array
-              - type: object
-        return_type:
-          $ref: '#/components/schemas/ParamType'
-        params:
-          $ref: '#/components/schemas/ScoringFnParams'
-      additionalProperties: false
-      required:
-        - identifier
-        - provider_resource_id
-        - provider_id
-        - type
-        - metadata
-        - return_type
-    Shield:
-      type: object
-      properties:
-        identifier:
-          type: string
-        provider_resource_id:
-          type: string
-        provider_id:
-          type: string
-        type:
-          type: string
-          const: shield
-          default: shield
-        params:
-          type: object
-          additionalProperties:
-            oneOf:
-              - type: 'null'
-              - type: boolean
-              - type: number
-              - type: string
-              - type: array
-              - type: object
-      additionalProperties: false
-      required:
-        - identifier
-        - provider_resource_id
-        - provider_id
-        - type
-      description: >-
-        A safety shield resource that can be used to check content
     Span:
       type: object
       properties:
@@ -3549,6 +3716,10 @@ components:
               - type: string
               - type: array
               - type: object
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - span_id
@@ -3605,6 +3776,12 @@ components:
       additionalProperties: false
       required:
         - data
+    ToolHost:
+      type: string
+      enum:
+        - distribution
+        - client
+        - model_context_protocol
     Tool:
       type: object
       properties:
@@ -3638,6 +3815,10 @@ components:
               - type: string
               - type: array
               - type: object
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - identifier
@@ -3648,12 +3829,6 @@ components:
         - tool_host
         - description
         - parameters
-    ToolHost:
-      type: string
-      enum:
-        - distribution
-        - client
-        - model_context_protocol
     ToolGroup:
       type: object
       properties:
@@ -3679,6 +3854,10 @@ components:
               - type: string
               - type: array
               - type: object
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - identifier
@@ -3698,6 +3877,10 @@ components:
         end_time:
           type: string
           format: date-time
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - trace_id
@@ -3705,20 +3888,6 @@ components:
         - start_time
     Checkpoint:
       description: Checkpoint created during training runs
-    PostTrainingJobArtifactsResponse:
-      type: object
-      properties:
-        job_uuid:
-          type: string
-        checkpoints:
-          type: array
-          items:
-            $ref: '#/components/schemas/Checkpoint'
-      additionalProperties: false
-      required:
-        - job_uuid
-        - checkpoints
-      description: Artifacts of a finetuning job.
     JobStatus:
       type: string
       enum:
@@ -3726,42 +3895,6 @@ components:
         - in_progress
         - failed
         - scheduled
-    PostTrainingJobStatusResponse:
-      type: object
-      properties:
-        job_uuid:
-          type: string
-        status:
-          $ref: '#/components/schemas/JobStatus'
-        scheduled_at:
-          type: string
-          format: date-time
-        started_at:
-          type: string
-          format: date-time
-        completed_at:
-          type: string
-          format: date-time
-        resources_allocated:
-          type: object
-          additionalProperties:
-            oneOf:
-              - type: 'null'
-              - type: boolean
-              - type: number
-              - type: string
-              - type: array
-              - type: object
-        checkpoints:
-          type: array
-          items:
-            $ref: '#/components/schemas/Checkpoint'
-      additionalProperties: false
-      required:
-        - job_uuid
-        - status
-        - checkpoints
-      description: Status of a finetuning job.
     ListPostTrainingJobsResponse:
       type: object
       properties:
@@ -3778,36 +3911,15 @@ components:
       additionalProperties: false
       required:
         - data
-    VectorDB:
-      type: object
-      properties:
-        identifier:
-          type: string
-        provider_resource_id:
-          type: string
-        provider_id:
-          type: string
-        type:
-          type: string
-          const: vector_db
-          default: vector_db
-        embedding_model:
-          type: string
-        embedding_dimension:
-          type: integer
-      additionalProperties: false
-      required:
-        - identifier
-        - provider_resource_id
-        - provider_id
-        - type
-        - embedding_model
-        - embedding_dimension
     HealthInfo:
       type: object
       properties:
         status:
           type: string
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - status
@@ -3917,9 +4029,51 @@ components:
           type: string
         error_code:
           type: integer
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - content
+    Dataset:
+      type: object
+      properties:
+        identifier:
+          type: string
+        provider_resource_id:
+          type: string
+        provider_id:
+          type: string
+        type:
+          type: string
+          const: dataset
+          default: dataset
+        dataset_schema:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ParamType'
+        url:
+          $ref: '#/components/schemas/URL'
+        metadata:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+      additionalProperties: false
+      required:
+        - identifier
+        - provider_resource_id
+        - provider_id
+        - type
+        - dataset_schema
+        - url
+        - metadata
     ListDatasetsResponse:
       type: object
       properties:
@@ -3930,6 +4084,44 @@ components:
       additionalProperties: false
       required:
         - data
+    EvalTask:
+      type: object
+      properties:
+        identifier:
+          type: string
+        provider_resource_id:
+          type: string
+        provider_id:
+          type: string
+        type:
+          type: string
+          const: eval_task
+          default: eval_task
+        dataset_id:
+          type: string
+        scoring_functions:
+          type: array
+          items:
+            type: string
+        metadata:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+      additionalProperties: false
+      required:
+        - identifier
+        - provider_resource_id
+        - provider_id
+        - type
+        - dataset_id
+        - scoring_functions
+        - metadata
     ListEvalTasksResponse:
       type: object
       properties:
@@ -3940,6 +4132,40 @@ components:
       additionalProperties: false
       required:
         - data
+    Model:
+      type: object
+      properties:
+        identifier:
+          type: string
+        provider_resource_id:
+          type: string
+        provider_id:
+          type: string
+        type:
+          type: string
+          const: model
+          default: model
+        metadata:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+        model_type:
+          $ref: '#/components/schemas/ModelType'
+          default: llm
+      additionalProperties: false
+      required:
+        - identifier
+        - provider_resource_id
+        - provider_id
+        - type
+        - metadata
+        - model_type
     ListModelsResponse:
       type: object
       properties:
@@ -4000,6 +4226,43 @@ components:
       additionalProperties: false
       required:
         - data
+    ScoringFn:
+      type: object
+      properties:
+        identifier:
+          type: string
+        provider_resource_id:
+          type: string
+        provider_id:
+          type: string
+        type:
+          type: string
+          const: scoring_function
+          default: scoring_function
+        description:
+          type: string
+        metadata:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+        return_type:
+          $ref: '#/components/schemas/ParamType'
+        params:
+          $ref: '#/components/schemas/ScoringFnParams'
+      additionalProperties: false
+      required:
+        - identifier
+        - provider_resource_id
+        - provider_id
+        - type
+        - metadata
+        - return_type
     ListScoringFunctionsResponse:
       type: object
       properties:
@@ -4010,6 +4273,37 @@ components:
       additionalProperties: false
       required:
         - data
+    Shield:
+      type: object
+      properties:
+        identifier:
+          type: string
+        provider_resource_id:
+          type: string
+        provider_id:
+          type: string
+        type:
+          type: string
+          const: shield
+          default: shield
+        params:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+      additionalProperties: false
+      required:
+        - identifier
+        - provider_resource_id
+        - provider_id
+        - type
+      description: >-
+        A safety shield resource that can be used to check content
     ListShieldsResponse:
       type: object
       properties:
@@ -4040,6 +4334,31 @@ components:
       additionalProperties: false
       required:
         - data
+    VectorDB:
+      type: object
+      properties:
+        identifier:
+          type: string
+        provider_resource_id:
+          type: string
+        provider_id:
+          type: string
+        type:
+          type: string
+          const: vector_db
+          default: vector_db
+        embedding_model:
+          type: string
+        embedding_dimension:
+          type: integer
+      additionalProperties: false
+      required:
+        - identifier
+        - provider_resource_id
+        - provider_id
+        - type
+        - embedding_model
+        - embedding_dimension
     ListVectorDBsResponse:
       type: object
       properties:
@@ -4070,47 +4389,6 @@ components:
         - warn
         - error
         - critical
-    MetricEvent:
-      type: object
-      properties:
-        trace_id:
-          type: string
-        span_id:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-        attributes:
-          type: object
-          additionalProperties:
-            oneOf:
-              - type: 'null'
-              - type: boolean
-              - type: number
-              - type: string
-              - type: array
-              - type: object
-        type:
-          type: string
-          const: metric
-          default: metric
-        metric:
-          type: string
-        value:
-          oneOf:
-            - type: integer
-            - type: number
-        unit:
-          type: string
-      additionalProperties: false
-      required:
-        - trace_id
-        - span_id
-        - timestamp
-        - type
-        - metric
-        - value
-        - unit
     SpanEndPayload:
       type: object
       properties:
@@ -4386,6 +4664,10 @@ components:
       properties:
         job_uuid:
           type: string
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - job_uuid
@@ -4464,6 +4746,10 @@ components:
       properties:
         content:
           $ref: '#/components/schemas/InterleavedContent'
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
     QueryChunksRequest:
       type: object
@@ -4514,6 +4800,10 @@ components:
           type: array
           items:
             type: number
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - chunks
@@ -4744,6 +5034,10 @@ components:
       properties:
         job_id:
           type: string
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - job_id
@@ -4776,6 +5070,10 @@ components:
       properties:
         violation:
           $ref: '#/components/schemas/SafetyViolation'
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
     SaveSpansToDatasetRequest:
       type: object
@@ -4829,6 +5127,10 @@ components:
           type: object
           additionalProperties:
             $ref: '#/components/schemas/ScoringResult'
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - results
@@ -4859,6 +5161,10 @@ components:
           type: object
           additionalProperties:
             $ref: '#/components/schemas/ScoringResult'
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - results
@@ -5008,17 +5314,22 @@ components:
               - type: string
               - type: array
               - type: object
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - synthetic_data
-      description: >-
-        Response from the synthetic data generation. Batch of (prompt, response, score)
-        tuples that pass the threshold.
     VersionInfo:
       type: object
       properties:
         version:
           type: string
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - version
