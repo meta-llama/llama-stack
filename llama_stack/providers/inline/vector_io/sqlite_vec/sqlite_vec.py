@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-# sqlite_vec_impl.py
 import sqlite3
 import sqlite_vec
 import struct
