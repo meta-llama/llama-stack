@@ -190,7 +190,7 @@ def process_chat_completion_response(
         if not request.tools:
             raw_message.tool_calls = []
             raw_message.content = text_from_choice(choice)
-        elif request.tools:
+        else:
             # only return tool_calls if provided in the request
             new_tool_calls = []
             request_tools = {t.tool_name: t for t in request.tools}
