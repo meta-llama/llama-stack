@@ -22,7 +22,7 @@ def get_distribution_template() -> DistributionTemplate:
     providers = {
         "inference": ["inline::meta-reference-quantized"],
         "vector_io": ["inline::faiss", "remote::chromadb", "remote::pgvector"],
-        "safety": ["inline::llama-guard"],
+        "safety": ["remote::fiddlecube"],
         "agents": ["inline::meta-reference"],
         "telemetry": ["inline::meta-reference"],
         "eval": ["inline::meta-reference"],

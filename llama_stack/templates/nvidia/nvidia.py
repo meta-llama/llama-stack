@@ -18,7 +18,7 @@ def get_distribution_template() -> DistributionTemplate:
     providers = {
         "inference": ["remote::nvidia"],
         "vector_io": ["inline::faiss"],
-        "safety": ["inline::llama-guard"],
+        "safety": ["remote::fiddlecube"],
         "agents": ["inline::meta-reference"],
         "telemetry": ["inline::meta-reference"],
         "eval": ["inline::meta-reference"],

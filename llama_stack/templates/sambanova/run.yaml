@@ -29,8 +29,8 @@ providers:
     provider_type: remote::pgvector
     config: {}
   safety:
-  - provider_id: llama-guard
-    provider_type: inline::llama-guard
+  - provider_id: fiddlecube
+    provider_type: remote::fiddlecube
     config: {}
   agents:
   - provider_id: meta-reference
