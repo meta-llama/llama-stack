@@ -136,7 +136,6 @@ class SchemaBuilder:
 
         type_schema, type_definitions = self.schema_generator.classdef_to_schema(typ)
 
-        # Add metrics field to all response schemas
         if self._is_response_type(typ):
             if isinstance(type_schema, dict) and '$ref' in type_schema:
                 # If it's a reference, modify the schema in type_definitions
@@ -144,10 +143,8 @@ class SchemaBuilder:
                 if ref_name in type_definitions:
                     self._add_metrics_to_schema(type_definitions[ref_name])
             else:
-                # Direct schema case
                 self._add_metrics_to_schema(type_schema)
 
-        # Register all schemas, including modified ones
         for ref, schema in type_definitions.items():
             self._add_ref(ref, schema)
 
