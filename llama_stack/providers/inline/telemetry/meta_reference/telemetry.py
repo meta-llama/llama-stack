@@ -5,7 +5,9 @@
 # the root directory of this source tree.
 
 import threading
+from datetime import datetime
 from typing import Any, Dict, List, Optional
+from urllib.parse import urljoin
 
 from opentelemetry import metrics, trace
 from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
@@ -19,7 +21,10 @@ from opentelemetry.semconv.resource import ResourceAttributes
 
 from llama_stack.apis.telemetry import (
     Event,
+    GetMetricsResponse,
     MetricEvent,
+    MetricLabelMatcher,
+    MetricQueryType,
     QueryCondition,
     QuerySpanTreeResponse,
     QueryTracesResponse,
@@ -36,6 +41,7 @@ from llama_stack.distribution.datatypes import Api
 from llama_stack.providers.inline.telemetry.meta_reference.console_span_processor import (
     ConsoleSpanProcessor,
 )
+from llama_stack.providers.inline.telemetry.meta_reference.prometheus_metrics_store import PrometheusMetricsStore
 from llama_stack.providers.inline.telemetry.meta_reference.sqlite_span_processor import (
     SQLiteSpanProcessor,
 )
@@ -92,13 +98,13 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
             _TRACER_PROVIDER = provider
             if TelemetrySink.OTEL in self.config.sinks:
                 otlp_exporter = OTLPSpanExporter(
-                    endpoint=self.config.otel_endpoint,
+                    endpoint=urljoin(self.config.otel_endpoint, "v1/traces"),
                 )
                 span_processor = BatchSpanProcessor(otlp_exporter)
                 trace.get_tracer_provider().add_span_processor(span_processor)
                 metric_reader = PeriodicExportingMetricReader(
                     OTLPMetricExporter(
-                        endpoint=self.config.otel_endpoint,
+                        endpoint=urljoin(self.config.otel_endpoint, "v1/metrics"),
                     )
                 )
                 metric_provider = MeterProvider(resource=resource, metric_readers=[metric_reader])
@@ -110,6 +116,12 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
 
         if TelemetrySink.OTEL in self.config.sinks:
             self.meter = metrics.get_meter(__name__)
+            if self.config.metrics_store_config is not None:
+                if self.config.metrics_store_config.type == "prometheus":
+                    self.metrics_store = PrometheusMetricsStore(
+                        endpoint=self.config.metrics_store_config.endpoint,
+                        disable_ssl=self.config.metrics_store_config.disable_ssl,
+                    )
         if TelemetrySink.SQLITE in self.config.sinks:
             self.trace_store = SQLiteTraceStore(self.config.sqlite_db_path)
 
@@ -161,31 +173,9 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
             )
         return _GLOBAL_STORAGE["counters"][name]
 
-    def _get_or_create_gauge(self, name: str, unit: str) -> metrics.ObservableGauge:
-        if name not in _GLOBAL_STORAGE["gauges"]:
-            _GLOBAL_STORAGE["gauges"][name] = self.meter.create_gauge(
-                name=name,
-                unit=unit,
-                description=f"Gauge for {name}",
-            )
-        return _GLOBAL_STORAGE["gauges"][name]
-
     def _log_metric(self, event: MetricEvent) -> None:
-        if isinstance(event.value, int):
-            counter = self._get_or_create_counter(event.metric, event.unit)
-            counter.add(event.value, attributes=event.attributes)
-        elif isinstance(event.value, float):
-            up_down_counter = self._get_or_create_up_down_counter(event.metric, event.unit)
-            up_down_counter.add(event.value, attributes=event.attributes)
-
-    def _get_or_create_up_down_counter(self, name: str, unit: str) -> metrics.UpDownCounter:
-        if name not in _GLOBAL_STORAGE["up_down_counters"]:
-            _GLOBAL_STORAGE["up_down_counters"][name] = self.meter.create_up_down_counter(
-                name=name,
-                unit=unit,
-                description=f"UpDownCounter for {name}",
-            )
-        return _GLOBAL_STORAGE["up_down_counters"][name]
+        counter = self._get_or_create_counter(event.metric, event.unit)
+        counter.add(event.value, attributes=event.attributes)
 
     def _log_structured(self, event: StructuredLogEvent, ttl_seconds: int) -> None:
         with self._lock:
@@ -268,4 +258,24 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
                 attributes_to_return=attributes_to_return,
                 max_depth=max_depth,
             )
+        )
+
+    async def get_metrics(
+        self,
+        metric_name: str,
+        start_time: datetime,
+        end_time: Optional[datetime] = None,
+        step: Optional[str] = "15s",
+        query_type: MetricQueryType = MetricQueryType.RANGE,
+        label_matchers: Optional[List[MetricLabelMatcher]] = None,
+    ) -> GetMetricsResponse:
+        if not hasattr(self, "metrics_store"):
+            raise ValueError("Metrics store not configured")
+        return await self.metrics_store.get_metrics(
+            metric_name=metric_name,
+            start_time=start_time,
+            end_time=end_time,
+            step=step,
+            query_type=query_type,
+            label_matchers=label_matchers,
         )

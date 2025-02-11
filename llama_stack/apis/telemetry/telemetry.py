@@ -13,8 +13,8 @@ from typing import (
     Literal,
     Optional,
     Protocol,
-    runtime_checkable,
     Union,
+    runtime_checkable,
 )
 
 from llama_models.schema_utils import json_schema_type, register_schema, webmethod
@@ -185,6 +185,67 @@ class QuerySpanTreeResponse(BaseModel):
     data: Dict[str, SpanWithStatus]
 
 
+@json_schema_type
+class TokenUsage(BaseModel):
+    type: Literal["token_usage"] = "token_usage"
+    prompt_tokens: int
+    completion_tokens: int
+    total_tokens: int
+
+
+Metric = register_schema(
+    Annotated[
+        Union[TokenUsage],
+        Field(discriminator="type"),
+    ],
+    name="Metric",
+)
+
+
+@json_schema_type
+class MetricsMixin(BaseModel):
+    metrics: Optional[List[Metric]] = None
+
+
+@json_schema_type
+class MetricQueryType(Enum):
+    RANGE = "range"
+    INSTANT = "instant"
+
+
+@json_schema_type
+class MetricLabelOperator(Enum):
+    EQUALS = "="
+    NOT_EQUALS = "!="
+    REGEX_MATCH = "=~"
+    REGEX_NOT_MATCH = "!~"
+
+
+@json_schema_type
+class MetricLabelMatcher(BaseModel):
+    name: str
+    value: str
+    operator: MetricLabelOperator = MetricLabelOperator.EQUALS
+
+
+@json_schema_type
+class MetricDataPoint(BaseModel):
+    timestamp: datetime
+    value: float
+
+
+@json_schema_type
+class MetricSeries(BaseModel):
+    metric: str
+    labels: Dict[str, str]
+    values: List[MetricDataPoint]
+
+
+@json_schema_type
+class GetMetricsResponse(BaseModel):
+    data: List[MetricSeries]
+
+
 @runtime_checkable
 class Telemetry(Protocol):
     @webmethod(route="/telemetry/events", method="POST")
@@ -229,3 +290,14 @@ class Telemetry(Protocol):
         dataset_id: str,
         max_depth: Optional[int] = None,
     ) -> None: ...
+
+    @webmethod(route="/telemetry/metrics/{metric_name}", method="POST")
+    async def get_metrics(
+        self,
+        metric_name: str,
+        start_time: int,
+        end_time: Optional[int] = None,
+        step: Optional[str] = "1m",
+        query_type: MetricQueryType = MetricQueryType.RANGE,
+        label_matchers: Optional[List[MetricLabelMatcher]] = None,
+    ) -> GetMetricsResponse: ...

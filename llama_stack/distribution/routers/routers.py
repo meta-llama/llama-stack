@@ -4,9 +4,14 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, AsyncGenerator, Dict, List, Optional
+import time
+from typing import Any, AsyncGenerator, AsyncIterator, Dict, List, Optional, Union
 
-from llama_stack.apis.common.content_types import InterleavedContent, URL
+from llama_models.llama3.api.chat_format import ChatFormat
+from llama_models.llama3.api.datatypes import RawMessage
+from llama_models.llama3.api.tokenizer import Tokenizer
+
+from llama_stack.apis.common.content_types import URL, InterleavedContent
 from llama_stack.apis.datasetio import DatasetIO, PaginatedRowsResult
 from llama_stack.apis.eval import (
     AppEvalTaskConfig,
@@ -17,6 +22,9 @@ from llama_stack.apis.eval import (
     JobStatus,
 )
 from llama_stack.apis.inference import (
+    ChatCompletionResponse,
+    ChatCompletionResponseEventType,
+    ChatCompletionResponseStreamChunk,
     EmbeddingsResponse,
     Inference,
     LogProbConfig,
@@ -28,7 +36,7 @@ from llama_stack.apis.inference import (
     ToolDefinition,
     ToolPromptFormat,
 )
-from llama_stack.apis.models import ModelType
+from llama_stack.apis.models import Model, ModelType
 from llama_stack.apis.safety import RunShieldResponse, Safety
 from llama_stack.apis.scoring import (
     ScoreBatchResponse,
@@ -37,6 +45,7 @@ from llama_stack.apis.scoring import (
     ScoringFnParams,
 )
 from llama_stack.apis.shields import Shield
+from llama_stack.apis.telemetry import MetricEvent, Telemetry, TokenUsage
 from llama_stack.apis.tools import (
     RAGDocument,
     RAGQueryConfig,
@@ -47,6 +56,7 @@ from llama_stack.apis.tools import (
 )
 from llama_stack.apis.vector_io import Chunk, QueryChunksResponse, VectorIO
 from llama_stack.providers.datatypes import RoutingTable
+from llama_stack.providers.utils.telemetry.tracing import get_current_span
 
 
 class VectorIORouter(VectorIO):
@@ -103,8 +113,13 @@ class InferenceRouter(Inference):
     def __init__(
         self,
         routing_table: RoutingTable,
+        telemetry: Optional[Telemetry] = None,
     ) -> None:
         self.routing_table = routing_table
+        self.telemetry = telemetry
+        if self.telemetry:
+            self.tokenizer = Tokenizer.get_instance()
+            self.formatter = ChatFormat(self.tokenizer)
 
     async def initialize(self) -> None:
         pass
@@ -122,6 +137,62 @@ class InferenceRouter(Inference):
     ) -> None:
         await self.routing_table.register_model(model_id, provider_model_id, provider_id, metadata, model_type)
 
+    async def _log_token_usage(
+        self, prompt_tokens: int, completion_tokens: int, total_tokens: int, model: Model
+    ) -> None:
+        span = get_current_span()
+        metrics = [
+            ("prompt_tokens", prompt_tokens),
+            ("completion_tokens", completion_tokens),
+            ("total_tokens", total_tokens),
+        ]
+        for metric_name, value in metrics:
+            await self.telemetry.log_event(
+                MetricEvent(
+                    trace_id=span.trace_id,
+                    span_id=span.span_id,
+                    metric=metric_name,
+                    value=value,
+                    timestamp=time.time(),
+                    unit="tokens",
+                    attributes={
+                        "model_id": model.model_id,
+                        "provider_id": model.provider_id,
+                    },
+                )
+            )
+
+    async def _add_token_metrics(
+        self,
+        prompt_tokens: int,
+        completion_tokens: int,
+        total_tokens: int,
+        model: Model,
+        target: Any,
+    ) -> None:
+        metrics = getattr(target, "metrics", None)
+        if metrics is None:
+            target.metrics = []
+        target.metrics.append(
+            TokenUsage(
+                prompt_tokens=prompt_tokens,
+                completion_tokens=completion_tokens,
+                total_tokens=total_tokens,
+            )
+        )
+        if self.telemetry:
+            await self._log_token_usage(prompt_tokens, completion_tokens, total_tokens, model)
+
+    async def _count_tokens(
+        self,
+        messages: Union[List[Message], List[RawMessage]],
+        tool_prompt_format: Optional[ToolPromptFormat] = None,
+    ) -> Optional[int]:
+        if not self.telemetry:
+            return None
+        encoded = self.formatter.encode_dialog_prompt(messages, tool_prompt_format)
+        return len(encoded.tokens) if encoded and encoded.tokens else 0
+
     async def chat_completion(
         self,
         model_id: str,
@@ -134,7 +205,7 @@ class InferenceRouter(Inference):
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
         tool_config: Optional[ToolConfig] = None,
-    ) -> AsyncGenerator:
+    ) -> Union[ChatCompletionResponse, AsyncIterator[ChatCompletionResponseStreamChunk]]:
         model = await self.routing_table.get_model(model_id)
         if model is None:
             raise ValueError(f"Model '{model_id}' not found")
@@ -163,10 +234,47 @@ class InferenceRouter(Inference):
             tool_config=tool_config,
         )
         provider = self.routing_table.get_provider_impl(model_id)
+        prompt_tokens = await self._count_tokens(messages, tool_config.tool_prompt_format)
+
         if stream:
-            return (chunk async for chunk in await provider.chat_completion(**params))
+
+            async def stream_generator():
+                completion_text = ""
+                async for chunk in await provider.chat_completion(**params):
+                    if chunk.event.event_type == ChatCompletionResponseEventType.progress:
+                        if chunk.event.delta.type == "text":
+                            completion_text += chunk.event.delta.text
+                    if chunk.event.event_type == ChatCompletionResponseEventType.complete:
+                        completion_tokens = await self._count_tokens(
+                            [RawMessage(role="assistant", content=completion_text)],
+                            tool_config.tool_prompt_format,
+                        )
+                        total_tokens = (prompt_tokens or 0) + (completion_tokens or 0)
+                        await self._add_token_metrics(
+                            prompt_tokens or 0,
+                            completion_tokens or 0,
+                            total_tokens,
+                            model,
+                            chunk,
+                        )
+                    yield chunk
+
+            return stream_generator()
         else:
-            return await provider.chat_completion(**params)
+            response = await provider.chat_completion(**params)
+            completion_tokens = await self._count_tokens(
+                [response.completion_message],
+                tool_config.tool_prompt_format,
+            )
+            total_tokens = (prompt_tokens or 0) + (completion_tokens or 0)
+            await self._add_token_metrics(
+                prompt_tokens or 0,
+                completion_tokens or 0,
+                total_tokens,
+                model,
+                response,
+            )
+            return response
 
     async def completion(
         self,
@@ -191,10 +299,43 @@ class InferenceRouter(Inference):
             stream=stream,
             logprobs=logprobs,
         )
+
+        prompt_tokens = await self._count_tokens([RawMessage(role="user", content=str(content))])
+
         if stream:
-            return (chunk async for chunk in await provider.completion(**params))
+
+            async def stream_generator():
+                completion_text = ""
+                async for chunk in await provider.completion(**params):
+                    if hasattr(chunk, "delta"):
+                        completion_text += chunk.delta
+                    if hasattr(chunk, "stop_reason") and chunk.stop_reason and self.telemetry:
+                        completion_tokens = await self._count_tokens(
+                            [RawMessage(role="assistant", content=completion_text)]
+                        )
+                        total_tokens = (prompt_tokens or 0) + (completion_tokens or 0)
+                        await self._add_token_metrics(
+                            prompt_tokens or 0,
+                            completion_tokens or 0,
+                            total_tokens,
+                            model,
+                            chunk,
+                        )
+                    yield chunk
+
+            return stream_generator()
         else:
-            return await provider.completion(**params)
+            response = await provider.completion(**params)
+            completion_tokens = await self._count_tokens([RawMessage(role="assistant", content=str(response.content))])
+            total_tokens = (prompt_tokens or 0) + (completion_tokens or 0)
+            await self._add_token_metrics(
+                prompt_tokens or 0,
+                completion_tokens or 0,
+                total_tokens,
+                model,
+                response,
+            )
+            return response
 
     async def embeddings(
         self,

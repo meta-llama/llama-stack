@@ -765,6 +765,79 @@
                 ]
             }
         },
+        "/v1/telemetry/metrics/{metric_name}": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GetMetricsResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Telemetry"
+                ],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "metric_name",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "start_time",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "end_time",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "step",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "query_type",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/schemas/MetricQueryType"
+                        }
+                    },
+                    {
+                        "name": "label_matchers",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/components/schemas/MetricLabelMatcher"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
         "/v1/models/{model_id}": {
             "get": {
                 "responses": {
@@ -3106,6 +3179,12 @@
             "ChatCompletionResponse": {
                 "type": "object",
                 "properties": {
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Metric"
+                        }
+                    },
                     "completion_message": {
                         "$ref": "#/components/schemas/CompletionMessage",
                         "description": "The complete response message"
@@ -3123,6 +3202,32 @@
                     "completion_message"
                 ],
                 "description": "Response from a chat completion request."
+            },
+            "Metric": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "token_usage",
+                        "default": "token_usage"
+                    },
+                    "prompt_tokens": {
+                        "type": "integer"
+                    },
+                    "completion_tokens": {
+                        "type": "integer"
+                    },
+                    "total_tokens": {
+                        "type": "integer"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "prompt_tokens",
+                    "completion_tokens",
+                    "total_tokens"
+                ]
             },
             "TokenLogProbs": {
                 "type": "object",
@@ -3195,6 +3300,12 @@
             "CompletionResponse": {
                 "type": "object",
                 "properties": {
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Metric"
+                        }
+                    },
                     "content": {
                         "type": "string",
                         "description": "The generated completion text"
@@ -3388,6 +3499,12 @@
             "ChatCompletionResponseStreamChunk": {
                 "type": "object",
                 "properties": {
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Metric"
+                        }
+                    },
                     "event": {
                         "$ref": "#/components/schemas/ChatCompletionResponseEvent",
                         "description": "The event containing the new content"
@@ -3537,6 +3654,12 @@
             "CompletionResponseStreamChunk": {
                 "type": "object",
                 "properties": {
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Metric"
+                        }
+                    },
                     "delta": {
                         "type": "string",
                         "description": "New content generated since last chunk. This can be one or more tokens."
@@ -4486,6 +4609,12 @@
             "EmbeddingsResponse": {
                 "type": "object",
                 "properties": {
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Metric"
+                        }
+                    },
                     "embeddings": {
                         "type": "array",
                         "items": {
@@ -5269,6 +5398,101 @@
                     "dataset_id",
                     "scoring_functions",
                     "metadata"
+                ]
+            },
+            "MetricQueryType": {
+                "type": "string",
+                "enum": [
+                    "range",
+                    "instant"
+                ]
+            },
+            "MetricLabelMatcher": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "string"
+                    },
+                    "operator": {
+                        "$ref": "#/components/schemas/MetricLabelOperator",
+                        "default": "="
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "name",
+                    "value",
+                    "operator"
+                ]
+            },
+            "MetricLabelOperator": {
+                "type": "string",
+                "enum": [
+                    "=",
+                    "!=",
+                    "=~",
+                    "!~"
+                ]
+            },
+            "GetMetricsResponse": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricSeries"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "data"
+                ]
+            },
+            "MetricDataPoint": {
+                "type": "object",
+                "properties": {
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "value": {
+                        "type": "number"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "timestamp",
+                    "value"
+                ]
+            },
+            "MetricSeries": {
+                "type": "object",
+                "properties": {
+                    "metric": {
+                        "type": "string"
+                    },
+                    "labels": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
+                    },
+                    "values": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricDataPoint"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "metric",
+                    "labels",
+                    "values"
                 ]
             },
             "Model": {

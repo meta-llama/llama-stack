@@ -23,6 +23,7 @@ def available_providers() -> List[ProviderSpec]:
             pip_packages=[
                 "opentelemetry-sdk",
                 "opentelemetry-exporter-otlp-proto-http",
+                "prometheus-api-client",
             ],
             optional_api_dependencies=[Api.datasetio],
             module="llama_stack.providers.inline.telemetry.meta_reference",
