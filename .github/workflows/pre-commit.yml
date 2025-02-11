@@ -23,3 +23,7 @@ jobs:
             .pre-commit-config.yaml
 
       - uses: pre-commit/action@v3.0.1
+
+      - name: Verify if there are any diff files after pre-commit
+        run: |
+          git diff --exit-code || (echo "There are uncommitted changes, run pre-commit locally and commit again" && exit 1)
