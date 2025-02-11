@@ -1919,6 +1919,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ChatCompletionResponse'
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - batch
@@ -1934,6 +1938,10 @@ components:
             $ref: '#/components/schemas/TokenLogProbs'
           description: >-
             Optional log probabilities for generated tokens
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - completion_message
@@ -1984,6 +1992,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/CompletionResponse'
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - batch
@@ -2006,6 +2018,10 @@ components:
             $ref: '#/components/schemas/TokenLogProbs'
           description: >-
             Optional log probabilities for generated tokens
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - content
@@ -2176,6 +2192,10 @@ components:
         event:
           $ref: '#/components/schemas/ChatCompletionResponseEvent'
           description: The event containing the new content
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - event
@@ -2303,6 +2323,10 @@ components:
             $ref: '#/components/schemas/TokenLogProbs'
           description: >-
             Optional log probabilities for generated tokens
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - delta
@@ -2449,6 +2473,10 @@ components:
       properties:
         agent_id:
           type: string
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - agent_id
@@ -2465,6 +2493,10 @@ components:
       properties:
         session_id:
           type: string
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - session_id
@@ -2653,6 +2685,10 @@ components:
             - type: string
         content:
           $ref: '#/components/schemas/InterleavedContent'
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - call_id
@@ -2847,6 +2883,10 @@ components:
       properties:
         event:
           $ref: '#/components/schemas/AgentTurnResponseEvent'
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - event
@@ -2910,6 +2950,10 @@ components:
             List of embedding vectors, one per input content. Each embedding is a
             list of floats. The dimensionality of the embedding is model-specific;
             you can check model metadata using /models/{model_id}
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - embeddings
@@ -3117,6 +3161,10 @@ components:
           type: object
           additionalProperties:
             $ref: '#/components/schemas/ScoringResult'
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - generations
@@ -3188,6 +3236,10 @@ components:
               tool_execution: '#/components/schemas/ToolExecutionStep'
               shield_call: '#/components/schemas/ShieldCallStep'
               memory_retrieval: '#/components/schemas/MemoryRetrievalStep'
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - step
@@ -3602,6 +3654,10 @@ components:
           type: object
           additionalProperties:
             $ref: '#/components/schemas/SpanWithStatus'
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - data
@@ -3714,6 +3770,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Checkpoint'
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - job_uuid
@@ -3756,6 +3816,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Checkpoint'
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - job_uuid
@@ -4514,6 +4578,10 @@ components:
           type: array
           items:
             type: number
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - chunks
@@ -4552,6 +4620,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Span'
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - data
@@ -4562,6 +4634,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Trace'
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - data
@@ -4776,6 +4852,10 @@ components:
       properties:
         violation:
           $ref: '#/components/schemas/SafetyViolation'
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
     SaveSpansToDatasetRequest:
       type: object
@@ -4829,6 +4909,10 @@ components:
           type: object
           additionalProperties:
             $ref: '#/components/schemas/ScoringResult'
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - results
@@ -4859,6 +4943,10 @@ components:
           type: object
           additionalProperties:
             $ref: '#/components/schemas/ScoringResult'
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - results
@@ -5008,6 +5096,10 @@ components:
               - type: string
               - type: array
               - type: object
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
       additionalProperties: false
       required:
         - synthetic_data

@@ -55,6 +55,7 @@ from .specification import (
     Tag,
     TagGroup,
 )
+from llama_stack.apis.inference import ChatCompletionResponse
 
 register_schema(
     ipaddress.IPv4Address,
@@ -106,6 +107,27 @@ class SchemaBuilder:
         self.schema_generator = schema_generator
         self.schemas = {}
 
+    def _is_response_type(self, type_or_name: Union[str, type]) -> bool:
+        """Helper method to check if a type or type name is a response type.
+        
+        Args:
+            type_or_name: Either a string type name or a type object
+            
+        Returns:
+            bool: True if the type represents a response, False otherwise
+        """
+        name = type_or_name if isinstance(type_or_name, str) else type_or_name.__name__
+        return not name.startswith('List') and any(name.endswith(suffix) for suffix in ('Response', 'ResponseStreamChunk'))
+
+    def _add_metrics_to_schema(self, schema: Dict[str, Any]) -> None:
+        """Helper method to add metrics field to a schema"""
+        if 'properties' not in schema:
+            schema['properties'] = {}
+        schema['properties']['metrics'] = {
+            'type': 'array',
+            'items': {'$ref': '#/components/schemas/MetricEvent'}
+        }
+
     def classdef_to_schema(self, typ: type) -> Schema:
         """
         Converts a type to a JSON schema.
@@ -114,7 +136,18 @@ class SchemaBuilder:
 
         type_schema, type_definitions = self.schema_generator.classdef_to_schema(typ)
 
-        # append schema to list of known schemas, to be used in OpenAPI's Components Object section
+        # Add metrics field to all response schemas
+        if self._is_response_type(typ):
+            if isinstance(type_schema, dict) and '$ref' in type_schema:
+                # If it's a reference, modify the schema in type_definitions
+                ref_name = type_schema['$ref'].split('/')[-1]
+                if ref_name in type_definitions:
+                    self._add_metrics_to_schema(type_definitions[ref_name])
+            else:
+                # Direct schema case
+                self._add_metrics_to_schema(type_schema)
+
+        # Register all schemas, including modified ones
         for ref, schema in type_definitions.items():
             self._add_ref(ref, schema)
 
@@ -122,6 +155,14 @@ class SchemaBuilder:
 
     def classdef_to_named_schema(self, name: str, typ: type) -> Schema:
         schema = self.classdef_to_schema(typ)
+        # If this is a Response type, ensure the registered schema has metrics
+        if self._is_response_type(typ):
+            if isinstance(schema, dict) and '$ref' in schema:
+                ref_name = schema['$ref'].split('/')[-1]
+                if ref_name in self.schemas:
+                    self._add_metrics_to_schema(self.schemas[ref_name])
+            else:
+                self._add_metrics_to_schema(schema)
         self._add_ref(name, schema)
         return schema
 
@@ -154,6 +195,10 @@ class SchemaBuilder:
 
     def _add_ref(self, type_name: str, type_schema: Schema) -> None:
         if type_name not in self.schemas:
+            # If adding a Response type, ensure it has metrics field
+            if self._is_response_type(type_name):
+                if isinstance(type_schema, dict):
+                    self._add_metrics_to_schema(type_schema)
             self.schemas[type_name] = type_schema
 
 

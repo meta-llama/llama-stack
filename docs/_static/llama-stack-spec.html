@@ -3096,6 +3096,12 @@
                         "items": {
                             "$ref": "#/components/schemas/ChatCompletionResponse"
                         }
+                    },
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricEvent"
+                        }
                     }
                 },
                 "additionalProperties": false,
@@ -3116,6 +3122,12 @@
                             "$ref": "#/components/schemas/TokenLogProbs"
                         },
                         "description": "Optional log probabilities for generated tokens"
+                    },
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricEvent"
+                        }
                     }
                 },
                 "additionalProperties": false,
@@ -3185,6 +3197,12 @@
                         "items": {
                             "$ref": "#/components/schemas/CompletionResponse"
                         }
+                    },
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricEvent"
+                        }
                     }
                 },
                 "additionalProperties": false,
@@ -3214,6 +3232,12 @@
                             "$ref": "#/components/schemas/TokenLogProbs"
                         },
                         "description": "Optional log probabilities for generated tokens"
+                    },
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricEvent"
+                        }
                     }
                 },
                 "additionalProperties": false,
@@ -3391,6 +3415,12 @@
                     "event": {
                         "$ref": "#/components/schemas/ChatCompletionResponseEvent",
                         "description": "The event containing the new content"
+                    },
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricEvent"
+                        }
                     }
                 },
                 "additionalProperties": false,
@@ -3556,6 +3586,12 @@
                             "$ref": "#/components/schemas/TokenLogProbs"
                         },
                         "description": "Optional log probabilities for generated tokens"
+                    },
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricEvent"
+                        }
                     }
                 },
                 "additionalProperties": false,
@@ -3794,6 +3830,12 @@
                 "properties": {
                     "agent_id": {
                         "type": "string"
+                    },
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricEvent"
+                        }
                     }
                 },
                 "additionalProperties": false,
@@ -3818,6 +3860,12 @@
                 "properties": {
                     "session_id": {
                         "type": "string"
+                    },
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricEvent"
+                        }
                     }
                 },
                 "additionalProperties": false,
@@ -4108,6 +4156,12 @@
                     },
                     "content": {
                         "$ref": "#/components/schemas/InterleavedContent"
+                    },
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricEvent"
+                        }
                     }
                 },
                 "additionalProperties": false,
@@ -4418,6 +4472,12 @@
                 "properties": {
                     "event": {
                         "$ref": "#/components/schemas/AgentTurnResponseEvent"
+                    },
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricEvent"
+                        }
                     }
                 },
                 "additionalProperties": false,
@@ -4495,6 +4555,12 @@
                             }
                         },
                         "description": "List of embedding vectors, one per input content. Each embedding is a list of floats. The dimensionality of the embedding is model-specific; you can check model metadata using /models/{model_id}"
+                    },
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricEvent"
+                        }
                     }
                 },
                 "additionalProperties": false,
@@ -4822,6 +4888,12 @@
                         "additionalProperties": {
                             "$ref": "#/components/schemas/ScoringResult"
                         }
+                    },
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricEvent"
+                        }
                     }
                 },
                 "additionalProperties": false,
@@ -4948,6 +5020,12 @@
                                 "shield_call": "#/components/schemas/ShieldCallStep",
                                 "memory_retrieval": "#/components/schemas/MemoryRetrievalStep"
                             }
+                        }
+                    },
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricEvent"
                         }
                     }
                 },
@@ -5625,6 +5703,12 @@
                         "additionalProperties": {
                             "$ref": "#/components/schemas/SpanWithStatus"
                         }
+                    },
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricEvent"
+                        }
                     }
                 },
                 "additionalProperties": false,
@@ -5803,6 +5887,12 @@
                         "items": {
                             "$ref": "#/components/schemas/Checkpoint"
                         }
+                    },
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricEvent"
+                        }
                     }
                 },
                 "additionalProperties": false,
@@ -5871,6 +5961,12 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/Checkpoint"
+                        }
+                    },
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricEvent"
                         }
                     }
                 },
@@ -7081,6 +7177,12 @@
                         "items": {
                             "type": "number"
                         }
+                    },
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricEvent"
+                        }
                     }
                 },
                 "additionalProperties": false,
@@ -7145,6 +7247,12 @@
                         "items": {
                             "$ref": "#/components/schemas/Span"
                         }
+                    },
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricEvent"
+                        }
                     }
                 },
                 "additionalProperties": false,
@@ -7159,6 +7267,12 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/Trace"
+                        }
+                    },
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricEvent"
                         }
                     }
                 },
@@ -7536,6 +7650,12 @@
                 "properties": {
                     "violation": {
                         "$ref": "#/components/schemas/SafetyViolation"
+                    },
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricEvent"
+                        }
                     }
                 },
                 "additionalProperties": false
@@ -7628,6 +7748,12 @@
                         "additionalProperties": {
                             "$ref": "#/components/schemas/ScoringResult"
                         }
+                    },
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricEvent"
+                        }
                     }
                 },
                 "additionalProperties": false,
@@ -7675,6 +7801,12 @@
                         "type": "object",
                         "additionalProperties": {
                             "$ref": "#/components/schemas/ScoringResult"
+                        }
+                    },
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricEvent"
                         }
                     }
                 },
@@ -7930,6 +8062,12 @@
                                     "type": "object"
                                 }
                             ]
+                        }
+                    },
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricEvent"
                         }
                     }
                 },
