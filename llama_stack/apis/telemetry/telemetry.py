@@ -17,6 +17,7 @@ from typing import (
     runtime_checkable,
 )
 
+from llama_models.llama3.api.datatypes import Primitive
 from llama_models.schema_utils import json_schema_type, register_schema, webmethod
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
@@ -76,7 +77,7 @@ class EventCommon(BaseModel):
     trace_id: str
     span_id: str
     timestamp: datetime
-    attributes: Optional[Dict[str, Any]] = Field(default_factory=dict)
+    attributes: Optional[Dict[str, Primitive]] = Field(default_factory=dict)
 
 
 @json_schema_type
