@@ -69,7 +69,7 @@ def build_model_aliases():
     ]
 
 
-def convert_to_vllm_tool_calls_in_response(
+def _convert_to_vllm_tool_calls_in_response(
     tool_calls,
 ) -> List[ToolCall]:
     if not tool_calls:
@@ -89,7 +89,7 @@ def convert_to_vllm_tool_calls_in_response(
     ]
 
 
-def convert_to_vllm_tools_in_request(tools: List[ToolDefinition]) -> List[dict]:
+def _convert_to_vllm_tools_in_request(tools: List[ToolDefinition]) -> List[dict]:
     if tools is None:
         return tools
 
@@ -128,7 +128,7 @@ def convert_to_vllm_tools_in_request(tools: List[ToolDefinition]) -> List[dict]:
     return None
 
 
-def convert_to_vllm_finish_reason(finish_reason: str) -> StopReason:
+def _convert_to_vllm_finish_reason(finish_reason: str) -> StopReason:
     return {
         "stop": StopReason.end_of_turn,
         "length": StopReason.out_of_tokens,
@@ -214,8 +214,8 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         result = ChatCompletionResponse(
             completion_message=CompletionMessage(
                 content=choice.message.content or "",
-                stop_reason=convert_to_vllm_finish_reason(choice.finish_reason),
-                tool_calls=convert_to_vllm_tool_calls_in_response(choice.message.tool_calls),
+                stop_reason=_convert_to_vllm_finish_reason(choice.finish_reason),
+                tool_calls=_convert_to_vllm_tool_calls_in_response(choice.message.tool_calls),
             ),
             logprobs=None,
         )
@@ -269,7 +269,9 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         if "max_tokens" not in options:
             options["max_tokens"] = self.config.max_tokens
 
-        input_dict = {"tools": convert_to_vllm_tools_in_request(request.tools)}
+        input_dict = {}
+        if isinstance(request, ChatCompletionRequest) and request.tools is not None:
+            input_dict = {"tools": _convert_to_vllm_tools_in_request(request.tools)}
 
         if isinstance(request, ChatCompletionRequest):
             input_dict["messages"] = [await convert_message_to_openai_dict(m, download=True) for m in request.messages]
