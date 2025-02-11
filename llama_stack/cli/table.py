@@ -6,6 +6,7 @@
 
 import re
 import textwrap
+from typing import Iterable
 
 from termcolor import cprint
 
@@ -39,11 +40,15 @@ def format_row(row, col_widths):
     return "\n".join(lines)
 
 
-def print_table(rows, headers=None, separate_rows: bool = False):
+def print_table(rows, headers=None, separate_rows: bool = False, sort_by: Iterable[int] = tuple()):
     def itemlen(item):
         return max([len(line) for line in strip_ansi_colors(item).split("\n")])
 
     rows = [[x or "" for x in row] for row in rows]
+
+    if sort_by:
+        rows.sort(key=lambda x: tuple(x[i] for i in sort_by))
+
     if not headers:
         col_widths = [max(itemlen(item) for item in col) for col in zip(*rows)]
     else:
