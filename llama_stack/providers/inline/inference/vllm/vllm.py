@@ -31,7 +31,7 @@ from llama_models.llama3.api.tokenizer import Tokenizer
 from vllm.engine.arg_utils import AsyncEngineArgs
 from vllm.engine.async_llm_engine import AsyncLLMEngine
 from vllm.entrypoints.openai.serving_chat import OpenAIServingChat
-from vllm.entrypoints.openai.serving_engine import BaseModelPath
+from vllm.entrypoints.openai.serving_models import BaseModelPath, OpenAIServingModels
 
 from llama_stack.apis.common.content_types import (
     InterleavedContent,
@@ -323,15 +323,17 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         self.chat = OpenAIServingChat(
             engine_client=self.engine,
             model_config=model_config,
-            base_model_paths=[
-                # The layer below us will only see resolved model IDs
-                BaseModelPath(resolved_model_id, resolved_model_id)
-            ],
+            models=OpenAIServingModels(
+                engine_client=self.engine,
+                model_config=model_config,
+                base_model_paths=[
+                    # The layer below us will only see resolved model IDs
+                    BaseModelPath(resolved_model_id, resolved_model_id)
+                ],
+            ),
             response_role="assistant",
-            lora_modules=None,
-            prompt_adapters=None,
-            request_logger=None,
-            chat_template=None,
+            request_logger=None,  # Use default logging
+            chat_template=None,  # Use default template from model checkpoint
             enable_auto_tools=True,
             tool_parser=tool_parser,
             chat_template_content_format="auto",
