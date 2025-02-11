@@ -8,4 +8,3 @@
 [Describe the tests you ran to verify your changes with result summaries. *Provide clear instructions so the plan can be easily re-executed.*]
 
 [//]: # (## Documentation)
-[//]: # (- [ ] Added a Changelog entry if the change is significant)
