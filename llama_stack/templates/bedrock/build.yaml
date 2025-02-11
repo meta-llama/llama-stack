@@ -10,7 +10,6 @@ distribution_spec:
     - remote::pgvector
     safety:
     - remote::bedrock
-    - remote::fiddlecube
     agents:
     - inline::meta-reference
     telemetry:

@@ -25,7 +25,7 @@ def get_distribution_template() -> DistributionTemplate:
     providers = {
         "inference": ["remote::vllm"],
         "vector_io": ["inline::faiss", "remote::chromadb", "remote::pgvector"],
-        "safety": ["inline::llama-guard", "remote::fiddlecube"],
+        "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],
         "eval": ["inline::meta-reference"],
         "datasetio": ["remote::huggingface", "inline::localfs"],
