@@ -98,7 +98,8 @@ $ uv sync
 ```
 
 ## Coding Style
-* 2 spaces for indentation rather than tabs
+
+* 4 spaces for indentation rather than tabs
 * 80 character line length
 * ...
 
