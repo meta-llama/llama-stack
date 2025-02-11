@@ -9,6 +9,8 @@ import logging
 
 from typing import Any, Dict, List
 
+import httpx
+
 from llama_stack.apis.inference import Message
 
 from llama_stack.apis.safety import (
