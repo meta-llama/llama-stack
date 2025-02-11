@@ -265,12 +265,8 @@ async def process_chat_completion_stream_response(
     buffer = ""
     ipython = False
     stop_reason = None
-    from rich.pretty import pprint
 
     async for chunk in stream:
-        print("!! CHUNK !!")
-        pprint(chunk)
-
         choice = chunk.choices[0]
         finish_reason = choice.finish_reason
 
