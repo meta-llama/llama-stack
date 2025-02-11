@@ -118,7 +118,7 @@ class SQLiteVecIndex(EmbeddingIndex):
         return QueryChunksResponse(chunks=chunks, scores=scores)
 
 
-class SQLiteVecVectorIOImpl(VectorIO, VectorDBsProtocolPrivate):
+class SQLiteVecVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
     """
     A VectorIO implementation using SQLite + sqlite_vec.
     This class handles vector database registration (with metadata stored in a table named `vector_dbs`)

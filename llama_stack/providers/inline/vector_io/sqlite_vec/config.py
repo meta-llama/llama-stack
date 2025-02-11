@@ -14,7 +14,7 @@ from llama_stack.providers.utils.kvstore.config import (
 )
 
 
-class SQLiteVecImplConfig(BaseModel):
+class SQLiteVectorIOConfig(BaseModel):
     db_path: str
     kvstore: KVStoreConfig
 

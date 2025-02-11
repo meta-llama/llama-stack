@@ -17,7 +17,7 @@ from llama_stack.providers.inline.inference.sentence_transformers import (
     SentenceTransformersInferenceConfig,
 )
 from llama_stack.providers.inline.vector_io.faiss.config import FaissImplConfig
-from llama_stack.providers.inline.vector_io.sqlite_vec.config import SQLiteVecImplConfig
+from llama_stack.providers.inline.vector_io.sqlite_vec.config import SQLiteVectorIOConfig
 from llama_stack.providers.remote.inference.ollama import OllamaImplConfig
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
@@ -58,7 +58,7 @@ def get_distribution_template() -> DistributionTemplate:
     vector_io_provider_sqlite = Provider(
         provider_id="sqlite_vec",
         provider_type="inline::sqlite_vec",
-        config=SQLiteVecImplConfig.sample_run_config(f"distributions/{name}"),
+        config=SQLiteVectorIOConfig.sample_run_config(f"distributions/{name}"),
     )
 
     inference_model = ModelInput(

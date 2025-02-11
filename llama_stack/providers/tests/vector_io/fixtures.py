@@ -15,7 +15,7 @@ from llama_stack.distribution.datatypes import Api, Provider
 
 from llama_stack.providers.inline.vector_io.chroma import ChromaInlineImplConfig
 from llama_stack.providers.inline.vector_io.faiss import FaissImplConfig
-from llama_stack.providers.inline.vector_io.sqlite_vec import SQLiteVecImplConfig
+from llama_stack.providers.inline.vector_io.sqlite_vec import SQLiteVectorIOConfig
 from llama_stack.providers.remote.vector_io.chroma import ChromaRemoteImplConfig
 from llama_stack.providers.remote.vector_io.pgvector import PGVectorConfig
 from llama_stack.providers.remote.vector_io.weaviate import WeaviateConfig
@@ -62,7 +62,7 @@ def vector_io_sqlite_vec() -> ProviderFixture:
             Provider(
                 provider_id="sqlite_vec",
                 provider_type="inline::sqlite_vec",
-                config=SQLiteVecImplConfig(
+                config=SQLiteVectorIOConfig(
                     kvstore=SqliteKVStoreConfig(db_path=temp_file.name).model_dump(),
                 ).model_dump(),
             )

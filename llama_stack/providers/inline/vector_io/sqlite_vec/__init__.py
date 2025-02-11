@@ -6,13 +6,13 @@
 
 from typing import Dict
 from llama_stack.providers.datatypes import Api, ProviderSpec
-from .config import SQLiteVecImplConfig
+from .config import SQLiteVectorIOConfig
 
 
-async def get_provider_impl(config: SQLiteVecImplConfig, deps: Dict[Api, ProviderSpec]):
-    from .sqlite_vec import SQLiteVecVectorIOImpl
+async def get_provider_impl(config: SQLiteVectorIOConfig, deps: Dict[Api, ProviderSpec]):
+    from .sqlite_vec import SQLiteVecVectorIOAdapter
 
-    assert isinstance(config, SQLiteVecImplConfig), f"Unexpected config type: {type(config)}"
-    impl = SQLiteVecVectorIOImpl(config, deps[Api.inference])
+    assert isinstance(config, SQLiteVectorIOConfig), f"Unexpected config type: {type(config)}"
+    impl = SQLiteVecVectorIOAdapter(config, deps[Api.inference])
     await impl.initialize()
     return impl
