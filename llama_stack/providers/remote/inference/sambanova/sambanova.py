@@ -116,6 +116,7 @@ class SambaNovaInferenceAdapter(ModelRegistryHelper, Inference):
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
         tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.json,
         stream: Optional[bool] = False,
+        tool_config: Optional[ToolConfig] = None,
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
         model = await self.model_store.get_model(model_id)

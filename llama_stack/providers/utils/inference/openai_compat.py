@@ -179,6 +179,8 @@ def process_chat_completion_response(
 ) -> ChatCompletionResponse:
     choice = response.choices[0]
 
+    # TODO: This does not work well with tool calls for vLLM remote provider
+    #   Ref: https://github.com/meta-llama/llama-stack/issues/1058
     raw_message = formatter.decode_assistant_message_from_content(
         text_from_choice(choice), get_stop_reason(choice.finish_reason)
     )

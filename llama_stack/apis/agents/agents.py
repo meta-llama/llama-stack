@@ -154,7 +154,7 @@ class AgentConfigCommon(BaseModel):
     output_shields: Optional[List[str]] = Field(default_factory=list)
     toolgroups: Optional[List[AgentToolGroup]] = Field(default_factory=list)
     client_tools: Optional[List[ToolDef]] = Field(default_factory=list)
-    tool_choice: Optional[ToolChoice] = Field(default=ToolChoice.auto, deprecated="use tool_config instead")
+    tool_choice: Optional[ToolChoice] = Field(default=None, deprecated="use tool_config instead")
     tool_prompt_format: Optional[ToolPromptFormat] = Field(default=None, deprecated="use tool_config instead")
     tool_config: Optional[ToolConfig] = Field(default=None)
 
@@ -166,11 +166,13 @@ class AgentConfigCommon(BaseModel):
                 raise ValueError("tool_choice is deprecated. Use tool_choice in tool_config instead.")
             if self.tool_prompt_format and self.tool_config.tool_prompt_format != self.tool_prompt_format:
                 raise ValueError("tool_prompt_format is deprecated. Use tool_prompt_format in tool_config instead.")
-        if self.tool_config is None:
-            self.tool_config = ToolConfig(
-                tool_choice=self.tool_choice,
-                tool_prompt_format=self.tool_prompt_format,
-            )
+        else:
+            params = {}
+            if self.tool_choice:
+                params["tool_choice"] = self.tool_choice
+            if self.tool_prompt_format:
+                params["tool_prompt_format"] = self.tool_prompt_format
+            self.tool_config = ToolConfig(**params)
 
 
 @json_schema_type
