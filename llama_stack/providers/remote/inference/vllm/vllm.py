@@ -13,7 +13,7 @@ from llama_models.llama3.api.tokenizer import Tokenizer
 from llama_models.sku_list import all_registered_models
 from openai import OpenAI
 
-from llama_stack.apis.common.content_types import InterleavedContent
+from llama_stack.apis.common.content_types import InterleavedContent, ToolCallDelta, ToolCallParseStatus, TextDelta
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
     ChatCompletionResponse,
@@ -32,6 +32,9 @@ from llama_stack.apis.inference import (
     ToolDefinition,
     ToolPromptFormat,
     CompletionMessage,
+    ChatCompletionResponseEventType,
+    ChatCompletionResponseStreamChunk,
+    ChatCompletionResponseEvent,
 )
 from llama_stack.apis.models import Model, ModelType
 from llama_stack.providers.datatypes import ModelsProtocolPrivate
@@ -42,9 +45,12 @@ from llama_stack.providers.utils.inference.model_registry import (
 from llama_stack.providers.utils.inference.openai_compat import (
     convert_message_to_openai_dict,
     get_sampling_options,
-    process_chat_completion_stream_response,
     process_completion_response,
     process_completion_stream_response,
+    OpenAICompatCompletionResponse,
+    UnparseableToolCall,
+    convert_tool_call,
+    process_chat_completion_stream_response,
 )
 from llama_stack.providers.utils.inference.prompt_adapter import (
     completion_request_to_prompt,
@@ -134,6 +140,51 @@ def _convert_to_vllm_finish_reason(finish_reason: str) -> StopReason:
         "length": StopReason.out_of_tokens,
         "tool_calls": StopReason.end_of_message,
     }.get(finish_reason, StopReason.end_of_turn)
+
+
+async def _process_vllm_chat_completion_stream_response(
+    stream: AsyncGenerator[OpenAICompatCompletionResponse, None],
+) -> AsyncGenerator:
+    event_type = ChatCompletionResponseEventType.start
+    tool_call_buf = UnparseableToolCall()
+    async for chunk in stream:
+        choice = chunk.choices[0]
+        if choice.finish_reason:
+            yield ChatCompletionResponseStreamChunk(
+                event=ChatCompletionResponseEvent(
+                    event_type=event_type,
+                    delta=ToolCallDelta(
+                        tool_call=ToolCall(
+                            call_id=tool_call_buf.call_id,
+                            tool_name=tool_call_buf.tool_name,
+                            arguments=json.loads(tool_call_buf.arguments),
+                        ),
+                        parse_status=ToolCallParseStatus.succeeded,
+                    ),
+                )
+            )
+            yield ChatCompletionResponseStreamChunk(
+                event=ChatCompletionResponseEvent(
+                    event_type=ChatCompletionResponseEventType.complete,
+                    delta=TextDelta(text=choice.delta.content or ""),
+                    logprobs=None,
+                    stop_reason=_convert_to_vllm_finish_reason(choice.finish_reason),
+                )
+            )
+        elif choice.delta.tool_calls:
+            tool_call = convert_tool_call(choice.delta.tool_calls[0])
+            tool_call_buf.tool_name += tool_call.tool_name
+            tool_call_buf.call_id += tool_call.call_id
+            tool_call_buf.arguments += tool_call.arguments
+        else:
+            yield ChatCompletionResponseStreamChunk(
+                event=ChatCompletionResponseEvent(
+                    event_type=event_type,
+                    delta=TextDelta(text=choice.delta.content or ""),
+                    logprobs=None,
+                )
+            )
+            event_type = ChatCompletionResponseEventType.progress
 
 
 class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
@@ -232,7 +283,11 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
                 yield chunk
 
         stream = _to_async_generator()
-        async for chunk in process_chat_completion_stream_response(stream, self.formatter, request):
+        if len(request.tools) > 0:
+            res = _process_vllm_chat_completion_stream_response(stream)
+        else:
+            res = process_chat_completion_stream_response(stream, self.formatter, request)
+        async for chunk in res:
             yield chunk
 
     async def _nonstream_completion(self, request: CompletionRequest) -> CompletionResponse:
