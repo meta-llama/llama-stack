@@ -73,18 +73,30 @@ class SQLiteVecIndex(EmbeddingIndex):
         Add new chunks along with their embeddings.
         For each chunk, we insert its JSON into the metadata table and then insert its
         embedding (serialized to raw bytes) into the virtual table using the assigned rowid.
+        If any insert fails, the transaction is rolled back to maintain consistency.
         """
         cur = self.connection.cursor()
-        for chunk, emb in zip(chunks, embeddings):
-            # Serialize and insert the chunk metadata.
-            chunk_json = chunk.model_dump_json()
-            cur.execute(f"INSERT INTO {self.metadata_table} (chunk) VALUES (?)", (chunk_json,))
-            row_id = cur.lastrowid
-            # Ensure the embedding is a list of floats.
-            emb_list = emb.tolist() if isinstance(emb, np.ndarray) else list(emb)
-            emb_blob = serialize_vector(emb_list)
-            cur.execute(f"INSERT INTO {self.vector_table} (rowid, embedding) VALUES (?, ?)", (row_id, emb_blob))
-        self.connection.commit()
+        try:
+            # Start transaction
+            cur.execute("BEGIN TRANSACTION")
+            for chunk, emb in zip(chunks, embeddings):
+                # Serialize and insert the chunk metadata.
+                chunk_json = chunk.model_dump_json()
+                cur.execute(f"INSERT INTO {self.metadata_table} (chunk) VALUES (?)", (chunk_json,))
+                row_id = cur.lastrowid
+                # Ensure the embedding is a list of floats.
+                emb_list = emb.tolist() if isinstance(emb, np.ndarray) else list(emb)
+                emb_blob = serialize_vector(emb_list)
+                cur.execute(f"INSERT INTO {self.vector_table} (rowid, embedding) VALUES (?, ?)", (row_id, emb_blob))
+            # Commit transaction if all inserts succeed
+            self.connection.commit()
+
+        except sqlite3.Error as e:
+            self.connection.rollback()  # Rollback on failure
+            print(f"Error inserting into {self.vector_table} - error: {e}")  # Log error (Consider using logging module)
+
+        finally:
+            cur.close()  # Ensure cursor is closed
 
     async def query(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
         """
