@@ -13,10 +13,12 @@ import pytest_asyncio
 from llama_stack.apis.models import ModelInput, ModelType
 from llama_stack.distribution.datatypes import Api, Provider
 
+
 from llama_stack.providers.inline.vector_io.chroma import ChromaInlineImplConfig
 from llama_stack.providers.inline.vector_io.faiss import FaissImplConfig
 from llama_stack.providers.remote.vector_io.chroma import ChromaRemoteImplConfig
 from llama_stack.providers.remote.vector_io.pgvector import PGVectorConfig
+from llama_stack.providers.remote.vector_io.qdrant import QdrantConfig
 from llama_stack.providers.remote.vector_io.weaviate import WeaviateConfig
 from llama_stack.providers.tests.resolver import construct_stack_for_test
 from llama_stack.providers.utils.kvstore.config import SqliteKVStoreConfig
@@ -111,7 +113,26 @@ def vector_io_chroma() -> ProviderFixture:
     )
 
 
-VECTOR_IO_FIXTURES = ["faiss", "pgvector", "weaviate", "chroma"]
+@pytest.fixture(scope="session")
+def vector_io_qdrant() -> ProviderFixture:
+    url = os.getenv("QDRANT_URL")
+    if url:
+        config = QdrantConfig(url=url)
+        provider_type = "remote::qdrant"
+    else:
+        raise ValueError("QDRANT_URL must be set")
+    return ProviderFixture(
+        providers=[
+            Provider(
+                provider_id="qdrant",
+                provider_type=provider_type,
+                config=config.model_dump(),
+            )
+        ]
+    )
+
+
+VECTOR_IO_FIXTURES = ["faiss", "pgvector", "weaviate", "chroma", "qdrant"]
 
 
 @pytest_asyncio.fixture(scope="session")
