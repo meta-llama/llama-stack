@@ -11,9 +11,9 @@ import string
 from typing import Any, Dict, List, Optional
 
 from llama_stack.apis.common.content_types import (
+    URL,
     InterleavedContent,
     TextContentItem,
-    URL,
 )
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.tools import (
@@ -27,15 +27,14 @@ from llama_stack.apis.tools import (
 )
 from llama_stack.apis.vector_io import QueryChunksResponse, VectorIO
 from llama_stack.providers.datatypes import ToolsProtocolPrivate
-from llama_stack.providers.utils.memory.vector_store import (
-    content_from_doc,
-    make_overlapped_chunks,
-)
+from llama_stack.providers.utils.docling.converter import Converter
+from llama_stack.providers.utils.docling.chunker import Chunker
 
 from .config import RagToolRuntimeConfig
 from .context_retriever import generate_rag_query
 
 log = logging.getLogger(__name__)
+log.setLevel(logging.INFO)
 
 
 def make_random_string(length: int = 8):
@@ -65,11 +64,16 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
         vector_db_id: str,
         chunk_size_in_tokens: int = 512,
     ) -> None:
+        log.info("HELLO async def insert")
+        converter: Converter = Converter.from_config(self.config.docling)
+        chunker: Chunker = Chunker.from_config(self.config.chunker)
+        log.info(f"converter is {converter}")
+        log.info(f"chunker is {chunker}")
         chunks = []
         for doc in documents:
-            content = await content_from_doc(doc)
+            content = await converter.content_from_doc(doc=doc)
             chunks.extend(
-                make_overlapped_chunks(
+                chunker.make_overlapped_chunks(
                     doc.document_id,
                     content,
                     chunk_size_in_tokens,
