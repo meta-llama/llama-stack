@@ -15,19 +15,26 @@ import logging
 import tempfile
 from pathlib import Path
 
-from .converter import Converter
-from .chunker import Chunker
-from ...inline.tool_runtime.rag.config import DoclingConfig
-from llama_stack.apis.vector_io import Chunk
-
-
-from docling.datamodel.pipeline_options import AcceleratorDevice, AcceleratorOptions, PdfPipelineOptions  # type: ignore
 from docling.datamodel.base_models import ConversionStatus, InputFormat  # type: ignore
 from docling.datamodel.document import ConversionResult  # type: ignore
-from docling.document_converter import DocumentConverter, PdfFormatOption  # type: ignore
+from docling.datamodel.pipeline_options import (  # type: ignore
+    AcceleratorDevice,
+    AcceleratorOptions,
+    PdfPipelineOptions,
+)
+from docling.document_converter import (
+    DocumentConverter,  # type: ignore
+    PdfFormatOption,
+)
 from docling_core.transforms.chunker.hybrid_chunker import HybridChunker
 from docling_core.types.doc import DoclingDocument
 from pydantic_core._pydantic_core import ValidationError
+
+from llama_stack.apis.vector_io import Chunk
+
+from ...inline.tool_runtime.rag.config import DoclingConfig
+from .chunker import Chunker
+from .converter import Converter
 
 logger = logging.getLogger(__name__)
 
@@ -40,9 +47,6 @@ class DoclingConverter(Converter):
         accelerator_options = AcceleratorOptions(
             device=AcceleratorDevice.AUTO, **(docling_config.accelerator_options or {})
         )
-        # # Fix segmentation fault issue
-        # accelerator_options.num_threads = 4
-
         pipeline_options = PdfPipelineOptions(
             do_ocr=False,
             accelerator_options=accelerator_options,
@@ -63,19 +67,17 @@ class DoclingConverter(Converter):
             return result.document.export_to_dict()
 
     async def convert_from_url(self, data_url: str, mime_type: str | None) -> str:
-        try:
-            result = self.doc_converter.convert(data_url, raises_on_error=False)
-            # TODO make the output format configurable
-            if self.export_type == "JSON":
-                result_text = json.dumps(result.document.export_to_dict())
-            else:
-                result_text = result.document.export_to_markdown()
+        result = self.doc_converter.convert(data_url, raises_on_error=False)
+        # TODO make the output format configurable
+        if self.export_type == "JSON":
+            result_text = json.dumps(result.document.export_to_dict())
+        else:
+            result_text = result.document.export_to_markdown()
 
-            # TO REMOVE
-            _export_documents(result, Path("./converted_docs"))
-            return result_text
-        except Exception as ex:
-            logger.exception("HERE", ex)
+        # TO REMOVE
+        # ADD PARAMETER TO  CONFIGURE THIS STEP
+        _export_documents(result, Path("./converted_docs"))
+        return result_text
 
 
 class DoclingChunker(Chunker):
@@ -83,6 +85,7 @@ class DoclingChunker(Chunker):
         pass
 
     def make_overlapped_chunks(self, document_id: str, text: str, window_len: int, overlap_len: int) -> list[Chunk]:
+        # TODO: use configured model-id instead
         self.__chunker = HybridChunker(
             tokenizer="sentence-transformers/all-MiniLM-L6-v2",
         )
@@ -94,7 +97,7 @@ class DoclingChunker(Chunker):
                     Chunk(
                         content=chunk.text,
                         metadata={
-                            "token_count": len(chunk.text),  # TBD???
+                            "token_count": len(chunk.text),  # TBD: text len is not reflecting # of tokens
                             "document_id": document_id,
                         },
                         # Todo adapt chunk.meta instead docling_core.transforms.chunker.DocMeta
@@ -106,14 +109,10 @@ class DoclingChunker(Chunker):
             raise e
 
 
-# From the Docling batch conversion example: https://ds4sd.github.io/docling/examples/batch_convert/
 def _export_documents(
     conversion_result: ConversionResult,
     output_dir: Path,
 ):
-    """
-    TODO
-    """
     output_dir.mkdir(parents=True, exist_ok=True)
 
     success_count = 0

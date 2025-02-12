@@ -4,13 +4,15 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import httpx
 import io
+
+import httpx
+from llama_models.llama3.api.tokenizer import Tokenizer
+
+from llama_stack.apis.vector_io import Chunk
 
 from .chunker import Chunker
 from .converter import Converter
-from llama_models.llama3.api.tokenizer import Tokenizer
-from llama_stack.apis.vector_io import Chunk
 
 
 class DefaultConverter(Converter):

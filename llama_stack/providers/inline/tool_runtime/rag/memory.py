@@ -27,8 +27,8 @@ from llama_stack.apis.tools import (
 )
 from llama_stack.apis.vector_io import QueryChunksResponse, VectorIO
 from llama_stack.providers.datatypes import ToolsProtocolPrivate
-from llama_stack.providers.utils.docling.converter import Converter
 from llama_stack.providers.utils.docling.chunker import Chunker
+from llama_stack.providers.utils.docling.converter import Converter
 
 from .config import RagToolRuntimeConfig
 from .context_retriever import generate_rag_query
@@ -64,11 +64,8 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
         vector_db_id: str,
         chunk_size_in_tokens: int = 512,
     ) -> None:
-        log.info("HELLO async def insert")
         converter: Converter = Converter.from_config(self.config.docling)
         chunker: Chunker = Chunker.from_config(self.config.docling)
-        log.info(f"converter is {converter}")
-        log.info(f"chunker is {chunker}")
         chunks = []
         for doc in documents:
             content = await converter.content_from_doc(doc=doc)

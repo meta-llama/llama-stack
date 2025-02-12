@@ -4,17 +4,19 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from abc import ABC, abstractmethod
-import chardet
 import re
+from abc import ABC, abstractmethod
 
-from ...inline.tool_runtime.rag.config import DoclingConfig
+import chardet
+
+from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.tools import RAGDocument
+from llama_stack.apis.vector_io import Chunk
 from llama_stack.providers.utils.inference.prompt_adapter import (
     interleaved_content_as_str,
 )
-from llama_stack.apis.common.content_types import URL
-from llama_stack.apis.vector_io import Chunk
+
+from ...inline.tool_runtime.rag.config import DoclingConfig
 
 
 class Chunker(ABC):
