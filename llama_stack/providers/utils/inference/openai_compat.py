@@ -3,6 +3,7 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
+import json
 import logging
 from typing import AsyncGenerator, Dict, List, Optional, Union
 
@@ -14,7 +15,8 @@ from llama_models.datatypes import (
 )
 
 from llama_models.llama3.api.chat_format import ChatFormat
-from llama_models.llama3.api.datatypes import StopReason
+from llama_models.llama3.api.datatypes import StopReason, ToolCall
+from openai.types.chat import ChatCompletionMessageToolCall
 from pydantic import BaseModel
 
 from llama_stack.apis.common.content_types import (
@@ -408,3 +410,38 @@ async def convert_message_to_openai_dict(message: Message, download: bool = Fals
         "role": message.role,
         "content": content,
     }
+
+
+class UnparseableToolCall(BaseModel):
+    """
+    A ToolCall with arguments that are not valid JSON.
+    Mirrors the ToolCall schema, but with arguments as a string.
+    """
+
+    call_id: str = ""
+    tool_name: str = ""
+    arguments: str = ""
+
+
+def convert_tool_call(
+    tool_call: ChatCompletionMessageToolCall,
+) -> Union[ToolCall, UnparseableToolCall]:
+    """
+    Convert a ChatCompletionMessageToolCall tool call to either a
+    ToolCall or UnparseableToolCall. Returns an UnparseableToolCall
+    if the tool call is not valid JSON.
+    """
+    try:
+        arguments = json.loads(tool_call.function.arguments)
+    except Exception as e:
+        return UnparseableToolCall(
+            call_id=tool_call.id or "",
+            tool_name=tool_call.function.name or "",
+            arguments=tool_call.function.arguments or "",
+        )
+
+    return ToolCall(
+        call_id=tool_call.id,
+        tool_name=tool_call.function.name,
+        arguments=arguments,
+    )
