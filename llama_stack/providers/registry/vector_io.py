@@ -54,6 +54,14 @@ def available_providers() -> List[ProviderSpec]:
             config_class="llama_stack.providers.inline.vector_io.faiss.FaissImplConfig",
             api_dependencies=[Api.inference],
         ),
+        InlineProviderSpec(
+            api=Api.vector_io,
+            provider_type="inline::sqlite_vec",
+            pip_packages=EMBEDDING_DEPS + ["sqlite-vec"],
+            module="llama_stack.providers.inline.vector_io.sqlite_vec",
+            config_class="llama_stack.providers.inline.vector_io.sqlite_vec.SQLiteVectorIOConfig",
+            api_dependencies=[Api.inference],
+        ),
         remote_provider_spec(
             Api.vector_io,
             AdapterSpec(
