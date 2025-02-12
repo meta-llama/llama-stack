@@ -236,7 +236,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
         response = OpenAICompatCompletionResponse(
             choices=[choice],
         )
-        return process_chat_completion_response(response, self.formatter)
+        return process_chat_completion_response(response, self.formatter, request)
 
     async def _stream_chat_completion(self, request: ChatCompletionRequest) -> AsyncGenerator:
         params = await self._get_params(request)
@@ -252,7 +252,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
                 )
 
         stream = _generate_and_convert_to_openai_compat()
-        async for chunk in process_chat_completion_stream_response(stream, self.formatter):
+        async for chunk in process_chat_completion_stream_response(stream, self.formatter, request):
             yield chunk
 
     async def _get_params(self, request: ChatCompletionRequest) -> dict:

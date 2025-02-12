@@ -232,7 +232,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
                 yield chunk
 
         stream = _to_async_generator()
-        async for chunk in process_chat_completion_stream_response(stream, self.formatter):
+        async for chunk in process_chat_completion_stream_response(stream, self.formatter, request):
             yield chunk
 
     async def _nonstream_completion(self, request: CompletionRequest) -> CompletionResponse:

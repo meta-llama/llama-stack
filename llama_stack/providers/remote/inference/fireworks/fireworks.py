@@ -230,7 +230,7 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProv
             r = await self._get_client().chat.completions.acreate(**params)
         else:
             r = await self._get_client().completion.acreate(**params)
-        return process_chat_completion_response(r, self.formatter)
+        return process_chat_completion_response(r, self.formatter, request)
 
     async def _stream_chat_completion(self, request: ChatCompletionRequest) -> AsyncGenerator:
         params = await self._get_params(request)
@@ -244,7 +244,7 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProv
                 yield chunk
 
         stream = _to_async_generator()
-        async for chunk in process_chat_completion_stream_response(stream, self.formatter):
+        async for chunk in process_chat_completion_stream_response(stream, self.formatter, request):
             yield chunk
 
     async def _get_params(self, request: Union[ChatCompletionRequest, CompletionRequest]) -> dict:
