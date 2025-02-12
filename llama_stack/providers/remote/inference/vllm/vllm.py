@@ -50,6 +50,7 @@ from llama_stack.providers.utils.inference.openai_compat import (
     OpenAICompatCompletionResponse,
     UnparseableToolCall,
     convert_tool_call,
+    process_chat_completion_stream_response,
 )
 from llama_stack.providers.utils.inference.prompt_adapter import (
     completion_request_to_prompt,
@@ -282,7 +283,11 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
                 yield chunk
 
         stream = _to_async_generator()
-        async for chunk in _process_vllm_chat_completion_stream_response(stream):
+        if len(request.tools) > 0:
+            res = _process_vllm_chat_completion_stream_response(stream)
+        else:
+            res = process_chat_completion_stream_response(stream, self.formatter, request)
+        async for chunk in res:
             yield chunk
 
     async def _nonstream_completion(self, request: CompletionRequest) -> CompletionResponse:
