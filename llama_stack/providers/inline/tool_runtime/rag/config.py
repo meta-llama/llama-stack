@@ -27,11 +27,7 @@ class RagToolRuntimeConfig(BaseModel):
         default_factory=DoclingConfig,
         description="The optional Docling settings",
     )
-    chunker: Optional[str] = Field(
-        default=None,
-        description="The chunker implementation, one of default or docling",
-    )
 
     @classmethod
     def sample_config(cls) -> dict[str, any]:
-        return {"docling": {"export_type": "MARKDOWN"}, "chunker": "default"}
+        return {"docling": {"export_type": "MARKDOWN"}}

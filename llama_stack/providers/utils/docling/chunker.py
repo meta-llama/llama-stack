@@ -8,6 +8,7 @@ from abc import ABC, abstractmethod
 import chardet
 import re
 
+from ...inline.tool_runtime.rag.config import DoclingConfig
 from llama_stack.apis.tools import RAGDocument
 from llama_stack.providers.utils.inference.prompt_adapter import (
     interleaved_content_as_str,
@@ -22,11 +23,11 @@ class Chunker(ABC):
         raise NotImplementedError()
 
     @staticmethod
-    def from_config(converter: str) -> "Chunker":
-        if "docling" == converter:
-            from .docling import DoclingConverter
+    def from_config(docling_config: DoclingConfig) -> "Chunker":
+        if docling_config:
+            from .docling import DoclingChunker
 
-            return DoclingConverter()
+            return DoclingChunker(docling_config)
         from .default import DefaultConverter
 
         return DefaultConverter()

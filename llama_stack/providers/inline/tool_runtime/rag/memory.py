@@ -66,7 +66,7 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
     ) -> None:
         log.info("HELLO async def insert")
         converter: Converter = Converter.from_config(self.config.docling)
-        chunker: Chunker = Chunker.from_config(self.config.chunker)
+        chunker: Chunker = Chunker.from_config(self.config.docling)
         log.info(f"converter is {converter}")
         log.info(f"chunker is {chunker}")
         chunks = []

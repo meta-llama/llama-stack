@@ -64,8 +64,6 @@ class DoclingConverter(Converter):
 
     async def convert_from_url(self, data_url: str, mime_type: str | None) -> str:
         try:
-            dl = logging.getLogger("docling")
-            dl.setLevel(logging.DEBUG)
             result = self.doc_converter.convert(data_url, raises_on_error=False)
             # TODO make the output format configurable
             if self.export_type == "JSON":

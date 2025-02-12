@@ -89,8 +89,6 @@ providers:
         export_type: JSON # one of JSON, MARKDOWN
         accelerator_options:
           num_threads: 1
-      # chunker: default
-      chunker: docling
 metadata_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/registry.db
