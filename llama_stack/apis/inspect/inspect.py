@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import List, Protocol, runtime_checkable
+from typing import List, Protocol, runtime_checkable, Dict, Any
 
 from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel
@@ -15,6 +15,7 @@ class ProviderInfo(BaseModel):
     api: str
     provider_id: str
     provider_type: str
+    config: Dict[str, Any]
 
 
 @json_schema_type
