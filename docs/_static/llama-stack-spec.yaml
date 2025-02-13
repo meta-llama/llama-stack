@@ -25,8 +25,8 @@ paths:
         - Benchmarks
       description: ''
       parameters:
-        - name: benchmark_id
-          in: path
+        - name: task_id
+          in: query
           required: true
           schema:
             type: string
@@ -57,7 +57,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DeprecatedRegisterBenchmarkRequest'
+              $ref: '#/components/schemas/DeprecatedRegisterEvalTaskRequest'
         required: true
       deprecated: true
   /v1/datasetio/rows:
@@ -372,7 +372,7 @@ paths:
             schema:
               $ref: '#/components/schemas/EmbeddingsRequest'
         required: true
-  /v1/eval/tasks/{benchmark_id}/evaluations:
+  /v1/eval/benchmarks/{benchmark_id}/evaluations:
     post:
       responses:
         '200':
@@ -396,6 +396,31 @@ paths:
             schema:
               $ref: '#/components/schemas/EvaluateRowsRequest'
         required: true
+  /v1/eval/tasks/{task_id}/evaluations:
+    post:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvaluateResponse'
+      tags:
+        - Eval
+      description: ''
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EvaluateRowsDeprecatedRequest'
+        required: true
+      deprecated: true
   /v1/agents/{agent_id}/session/{session_id}/turn/{turn_id}/step/{step_id}:
     get:
       responses:
@@ -457,6 +482,26 @@ paths:
           required: true
           schema:
             type: string
+  /v1/eval/benchmarks/{benchmark_id}:
+    get:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/Benchmark'
+                  - type: 'null'
+      tags:
+        - Benchmarks
+      description: ''
+      parameters:
+        - name: benchmark_id
+          in: path
+          required: true
+          schema:
+            type: string
   /v1/datasets/{dataset_id}:
     get:
       responses:
@@ -486,26 +531,6 @@ paths:
       description: ''
       parameters:
         - name: dataset_id
-          in: path
-          required: true
-          schema:
-            type: string
-  /v1/eval/tasks/{benchmark_id}:
-    get:
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - $ref: '#/components/schemas/Benchmark'
-                  - type: 'null'
-      tags:
-        - Benchmarks
-      description: ''
-      parameters:
-        - name: benchmark_id
           in: path
           required: true
           schema:
@@ -852,7 +877,7 @@ paths:
             schema:
               $ref: '#/components/schemas/InvokeToolRequest'
         required: true
-  /v1/eval/tasks/{benchmark_id}/jobs/{job_id}:
+  /v1/eval/benchmarks/{benchmark_id}/jobs/{job_id}:
     get:
       responses:
         '200':
@@ -895,7 +920,52 @@ paths:
           required: true
           schema:
             type: string
-  /v1/eval/tasks/{benchmark_id}/jobs/{job_id}/result:
+  /v1/eval/tasks/{task_id}/jobs/{job_id}:
+    get:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/JobStatus'
+                  - type: 'null'
+      tags:
+        - Eval
+      description: ''
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+      deprecated: true
+    delete:
+      responses:
+        '200':
+          description: OK
+      tags:
+        - Eval
+      description: ''
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+      deprecated: true
+  /v1/eval/benchmarks/{benchmark_id}/jobs/{job_id}/result:
     get:
       responses:
         '200':
@@ -908,16 +978,67 @@ paths:
         - Eval
       description: ''
       parameters:
-        - name: job_id
-          in: path
-          required: true
-          schema:
-            type: string
         - name: benchmark_id
           in: path
           required: true
           schema:
             type: string
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+  /v1/eval/tasks/{task_id}/jobs/{job_id}/result:
+    get:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvaluateResponse'
+      tags:
+        - Eval
+      description: ''
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+      deprecated: true
+  /v1/eval/benchmarks:
+    get:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListBenchmarksResponse'
+      tags:
+        - Benchmarks
+      description: ''
+      parameters: []
+    post:
+      responses:
+        '200':
+          description: OK
+      tags:
+        - Benchmarks
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterBenchmarkRequest'
+        required: true
   /v1/datasets:
     get:
       responses:
@@ -944,33 +1065,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/RegisterDatasetRequest'
-        required: true
-  /v1/eval/tasks:
-    get:
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ListBenchmarksResponse'
-      tags:
-        - Benchmarks
-      description: ''
-      parameters: []
-    post:
-      responses:
-        '200':
-          description: OK
-      tags:
-        - Benchmarks
-      description: ''
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RegisterBenchmarkRequest'
         required: true
   /v1/models:
     get:
@@ -1328,7 +1422,7 @@ paths:
             type: array
             items:
               type: string
-  /v1/eval/tasks/{benchmark_id}/jobs:
+  /v1/eval/benchmarks/{benchmark_id}/jobs:
     post:
       responses:
         '200':
@@ -1352,6 +1446,31 @@ paths:
             schema:
               $ref: '#/components/schemas/RunEvalRequest'
         required: true
+  /v1/eval/tasks/{task_id}/jobs:
+    post:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+      tags:
+        - Eval
+      description: ''
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RunEvalDeprecatedRequest'
+        required: true
+      deprecated: true
   /v1/safety/run-shield:
     post:
       responses:
@@ -1527,10 +1646,10 @@ components:
       additionalProperties: false
       required:
         - data
-    DeprecatedRegisterBenchmarkRequest:
+    DeprecatedRegisterEvalTaskRequest:
       type: object
       properties:
-        benchmark_id:
+        task_id:
           type: string
         dataset_id:
           type: string
@@ -1554,7 +1673,7 @@ components:
               - type: object
       additionalProperties: false
       required:
-        - benchmark_id
+        - task_id
         - dataset_id
         - scoring_functions
     AppendRowsRequest:
@@ -3063,26 +3182,6 @@ components:
         - median
         - categorical_count
         - accuracy
-    AppBenchmarkConfig:
-      type: object
-      properties:
-        type:
-          type: string
-          const: app
-          default: app
-        eval_candidate:
-          $ref: '#/components/schemas/EvalCandidate'
-        scoring_params:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/ScoringFnParams'
-        num_examples:
-          type: integer
-      additionalProperties: false
-      required:
-        - type
-        - eval_candidate
-        - scoring_params
     BasicScoringFnParams:
       type: object
       properties:
@@ -3097,21 +3196,21 @@ components:
       additionalProperties: false
       required:
         - type
-    BenchmarkBenchmarkConfig:
+    BenchmarkConfig:
       type: object
       properties:
-        type:
-          type: string
-          const: benchmark
-          default: benchmark
         eval_candidate:
           $ref: '#/components/schemas/EvalCandidate'
+        scoring_params:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ScoringFnParams'
         num_examples:
           type: integer
       additionalProperties: false
       required:
-        - type
         - eval_candidate
+        - scoring_params
     EvalCandidate:
       oneOf:
         - $ref: '#/components/schemas/ModelCandidate'
@@ -3121,15 +3220,6 @@ components:
         mapping:
           model: '#/components/schemas/ModelCandidate'
           agent: '#/components/schemas/AgentCandidate'
-    BenchmarkConfig:
-      oneOf:
-        - $ref: '#/components/schemas/BenchmarkBenchmarkConfig'
-        - $ref: '#/components/schemas/AppBenchmarkConfig'
-      discriminator:
-        propertyName: type
-        mapping:
-          benchmark: '#/components/schemas/BenchmarkBenchmarkConfig'
-          app: '#/components/schemas/AppBenchmarkConfig'
     LLMAsJudgeScoringFnParams:
       type: object
       properties:
@@ -3278,6 +3368,32 @@ components:
       required:
         - score_rows
         - aggregated_results
+    EvaluateRowsDeprecatedRequest:
+      type: object
+      properties:
+        input_rows:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              oneOf:
+                - type: 'null'
+                - type: boolean
+                - type: number
+                - type: string
+                - type: array
+                - type: object
+        scoring_functions:
+          type: array
+          items:
+            type: string
+        task_config:
+          $ref: '#/components/schemas/BenchmarkConfig'
+      additionalProperties: false
+      required:
+        - input_rows
+        - scoring_functions
+        - task_config
     Session:
       type: object
       properties:
@@ -4645,36 +4761,6 @@ components:
       additionalProperties: false
       required:
         - data
-    RegisterDatasetRequest:
-      type: object
-      properties:
-        dataset_id:
-          type: string
-        dataset_schema:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/ParamType'
-        url:
-          $ref: '#/components/schemas/URL'
-        provider_dataset_id:
-          type: string
-        provider_id:
-          type: string
-        metadata:
-          type: object
-          additionalProperties:
-            oneOf:
-              - type: 'null'
-              - type: boolean
-              - type: number
-              - type: string
-              - type: array
-              - type: object
-      additionalProperties: false
-      required:
-        - dataset_id
-        - dataset_schema
-        - url
     RegisterBenchmarkRequest:
       type: object
       properties:
@@ -4705,6 +4791,36 @@ components:
         - benchmark_id
         - dataset_id
         - scoring_functions
+    RegisterDatasetRequest:
+      type: object
+      properties:
+        dataset_id:
+          type: string
+        dataset_schema:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ParamType'
+        url:
+          $ref: '#/components/schemas/URL'
+        provider_dataset_id:
+          type: string
+        provider_id:
+          type: string
+        metadata:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+      additionalProperties: false
+      required:
+        - dataset_id
+        - dataset_schema
+        - url
     RegisterModelRequest:
       type: object
       properties:
@@ -4827,6 +4943,14 @@ components:
       additionalProperties: false
       required:
         - job_id
+    RunEvalDeprecatedRequest:
+      type: object
+      properties:
+        task_config:
+          $ref: '#/components/schemas/BenchmarkConfig'
+      additionalProperties: false
+      required:
+        - task_config
     RunShieldRequest:
       type: object
       properties:
@@ -5125,10 +5249,10 @@ tags:
     x-displayName: >-
       Agents API for creating and interacting with agentic systems.
   - name: BatchInference (Coming Soon)
+  - name: Benchmarks
   - name: DatasetIO
   - name: Datasets
   - name: Eval
-  - name: Benchmarks
   - name: Inference
     description: >-
       This API provides the raw interface to the underlying models. Two kinds of models
@@ -5159,10 +5283,10 @@ x-tagGroups:
     tags:
       - Agents
       - BatchInference (Coming Soon)
+      - Benchmarks
       - DatasetIO
       - Datasets
       - Eval
-      - Benchmarks
       - Inference
       - Inspect
       - Models

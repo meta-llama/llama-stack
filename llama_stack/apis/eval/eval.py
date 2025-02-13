@@ -83,3 +83,28 @@ class Eval(Protocol):
 
     @webmethod(route="/eval/benchmarks/{benchmark_id}/jobs/{job_id}/result", method="GET")
     async def job_result(self, benchmark_id: str, job_id: str) -> EvaluateResponse: ...
+
+    @webmethod(route="/eval/tasks/{task_id}/jobs", method="POST")
+    async def run_eval_DEPRECATED(
+        self,
+        task_id: str,
+        task_config: BenchmarkConfig,
+    ) -> Job: ...
+
+    @webmethod(route="/eval/tasks/{task_id}/evaluations", method="POST")
+    async def evaluate_rows_DEPRECATED(
+        self,
+        task_id: str,
+        input_rows: List[Dict[str, Any]],
+        scoring_functions: List[str],
+        task_config: BenchmarkConfig,
+    ) -> EvaluateResponse: ...
+
+    @webmethod(route="/eval/tasks/{task_id}/jobs/{job_id}", method="GET")
+    async def job_status_DEPRECATED(self, task_id: str, job_id: str) -> Optional[JobStatus]: ...
+
+    @webmethod(route="/eval/tasks/{task_id}/jobs/{job_id}", method="DELETE")
+    async def job_cancel_DEPRECATED(self, task_id: str, job_id: str) -> None: ...
+
+    @webmethod(route="/eval/tasks/{task_id}/jobs/{job_id}/result", method="GET")
+    async def job_result_DEPRECATED(self, task_id: str, job_id: str) -> EvaluateResponse: ...
