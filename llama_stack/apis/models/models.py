@@ -62,7 +62,7 @@ class Models(Protocol):
     @webmethod(route="/models", method="GET")
     async def list_models(self) -> ListModelsResponse: ...
 
-    @webmethod(route="/models/{model_id}", method="GET")
+    @webmethod(route="/models/{model_id:path}", method="GET")
     async def get_model(
         self,
         model_id: str,
@@ -78,7 +78,7 @@ class Models(Protocol):
         model_type: Optional[ModelType] = None,
     ) -> Model: ...
 
-    @webmethod(route="/models/{model_id}", method="DELETE")
+    @webmethod(route="/models/{model_id:path}", method="DELETE")
     async def unregister_model(
         self,
         model_id: str,

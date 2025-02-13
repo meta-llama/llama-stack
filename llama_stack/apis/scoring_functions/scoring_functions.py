@@ -134,7 +134,7 @@ class ScoringFunctions(Protocol):
     @webmethod(route="/scoring-functions", method="GET")
     async def list_scoring_functions(self) -> ListScoringFunctionsResponse: ...
 
-    @webmethod(route="/scoring-functions/{scoring_fn_id}", method="GET")
+    @webmethod(route="/scoring-functions/{scoring_fn_id:path}", method="GET")
     async def get_scoring_function(self, scoring_fn_id: str, /) -> Optional[ScoringFn]: ...
 
     @webmethod(route="/scoring-functions", method="POST")
