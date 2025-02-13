@@ -395,6 +395,48 @@ class EvalRouter(Eval):
             job_id,
         )
 
+    async def DEPRECATED_run_eval(
+        self,
+        task_id: str,
+        task_config: BenchmarkConfig,
+    ) -> Job:
+        return await self.run_eval(benchmark_id=task_id, task_config=task_config)
+
+    async def DEPRECATED_evaluate_rows(
+        self,
+        task_id: str,
+        input_rows: List[Dict[str, Any]],
+        scoring_functions: List[str],
+        task_config: BenchmarkConfig,
+    ) -> EvaluateResponse:
+        return await self.evaluate_rows(
+            benchmark_id=task_id,
+            input_rows=input_rows,
+            scoring_functions=scoring_functions,
+            task_config=task_config,
+        )
+
+    async def DEPRECATED_job_status(
+        self,
+        task_id: str,
+        job_id: str,
+    ) -> Optional[JobStatus]:
+        return await self.job_status(benchmark_id=task_id, job_id=job_id)
+
+    async def DEPRECATED_job_cancel(
+        self,
+        task_id: str,
+        job_id: str,
+    ) -> None:
+        return await self.job_cancel(benchmark_id=task_id, job_id=job_id)
+
+    async def DEPRECATED_job_result(
+        self,
+        task_id: str,
+        job_id: str,
+    ) -> EvaluateResponse:
+        return await self.job_result(benchmark_id=task_id, job_id=job_id)
+
 
 class ToolRuntimeRouter(ToolRuntime):
     class RagToolImpl(RAGToolRuntime):
