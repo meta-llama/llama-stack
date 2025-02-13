@@ -16,13 +16,13 @@ from llama_stack.apis.inference import InterleavedContent
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import Chunk, QueryChunksResponse, VectorIO
 from llama_stack.providers.datatypes import Api, VectorDBsProtocolPrivate
-from llama_stack.providers.inline.vector_io.chroma import ChromaVectorIOConfig as RemoteChromaVectorIOConfig
+from llama_stack.providers.inline.vector_io.chroma import ChromaVectorIOConfig as InlineChromaVectorIOConfig
 from llama_stack.providers.utils.memory.vector_store import (
     EmbeddingIndex,
     VectorDBWithIndex,
 )
 
-from .config import ChromaVectorIOConfig as InlineChromaVectorIOConfig
+from .config import ChromaVectorIOConfig as RemoteChromaVectorIOConfig
 
 log = logging.getLogger(__name__)
 
