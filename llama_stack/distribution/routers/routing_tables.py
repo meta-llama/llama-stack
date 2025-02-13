@@ -10,7 +10,6 @@ from typing import Any, Dict, List, Optional
 from pydantic import TypeAdapter
 
 from llama_stack.apis.benchmarks import Benchmark, Benchmarks, ListBenchmarksResponse
-
 from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.common.type_system import ParamType
 from llama_stack.apis.datasets import Dataset, Datasets, ListDatasetsResponse

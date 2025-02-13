@@ -11,7 +11,6 @@ from llama_models.schema_utils import json_schema_type
 from pydantic import BaseModel, Field
 
 from llama_stack.apis.benchmarks import Benchmark
-
 from llama_stack.apis.datasets import Dataset
 from llama_stack.apis.datatypes import Api
 from llama_stack.apis.models import Model

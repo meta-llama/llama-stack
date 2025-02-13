@@ -15,7 +15,6 @@ from llama_stack.apis.inference import Inference, UserMessage
 from llama_stack.apis.scoring import Scoring
 from llama_stack.distribution.datatypes import Api
 from llama_stack.providers.datatypes import BenchmarksProtocolPrivate
-
 from llama_stack.providers.inline.agents.meta_reference.agent_instance import (
     MEMORY_QUERY_TOOL,
 )

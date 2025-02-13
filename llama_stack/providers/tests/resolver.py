@@ -11,7 +11,6 @@ from typing import Any, Dict, List, Optional
 from pydantic import BaseModel
 
 from llama_stack.apis.benchmarks import BenchmarkInput
-
 from llama_stack.apis.datasets import DatasetInput
 from llama_stack.apis.models import ModelInput
 from llama_stack.apis.scoring_functions import ScoringFnInput
