@@ -38,7 +38,7 @@ class ModelList(Subcommand):
 
         headers = [
             "Model Descriptor",
-            "Hugging Face Repo",
+            "Model ID",
             "Context Length",
         ]
 
