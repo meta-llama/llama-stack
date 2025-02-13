@@ -88,7 +88,7 @@ class ChromaIndex(EmbeddingIndex):
 class ChromaVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
     def __init__(
         self,
-        config: Union[ChromaVectorIOConfig, ChromaVectorIOConfig],
+        config: ChromaVectorIOConfig,
         inference_api: Api.inference,
     ) -> None:
         log.info(f"Initializing ChromaVectorIOAdapter with url: {config}")
