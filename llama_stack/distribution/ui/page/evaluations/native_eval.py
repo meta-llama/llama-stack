@@ -211,7 +211,7 @@ def run_evaluation_3():
             progress_bar.progress(progress, text=progress_text)
             # Run evaluation for current row
             eval_res = llama_stack_api.client.eval.evaluate_rows(
-                task_id=selected_benchmark,
+                benchmark_id=selected_benchmark,
                 input_rows=[r],
                 scoring_functions=benchmarks[selected_benchmark].scoring_functions,
                 task_config=benchmark_config,

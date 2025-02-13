@@ -372,7 +372,7 @@ paths:
             schema:
               $ref: '#/components/schemas/EmbeddingsRequest'
         required: true
-  /v1/eval/tasks/{task_id}/evaluations:
+  /v1/eval/tasks/{benchmark_id}/evaluations:
     post:
       responses:
         '200':
@@ -385,7 +385,7 @@ paths:
         - Eval
       description: ''
       parameters:
-        - name: task_id
+        - name: benchmark_id
           in: path
           required: true
           schema:
@@ -490,7 +490,7 @@ paths:
           required: true
           schema:
             type: string
-  /v1/eval/tasks/{task_id}:
+  /v1/eval/tasks/{benchmark_id}:
     get:
       responses:
         '200':
@@ -505,7 +505,7 @@ paths:
         - Benchmarks
       description: ''
       parameters:
-        - name: task_id
+        - name: benchmark_id
           in: path
           required: true
           schema:
@@ -852,7 +852,7 @@ paths:
             schema:
               $ref: '#/components/schemas/InvokeToolRequest'
         required: true
-  /v1/eval/tasks/{task_id}/jobs/{job_id}:
+  /v1/eval/tasks/{benchmark_id}/jobs/{job_id}:
     get:
       responses:
         '200':
@@ -867,7 +867,7 @@ paths:
         - Eval
       description: ''
       parameters:
-        - name: task_id
+        - name: benchmark_id
           in: path
           required: true
           schema:
@@ -885,7 +885,7 @@ paths:
         - Eval
       description: ''
       parameters:
-        - name: task_id
+        - name: benchmark_id
           in: path
           required: true
           schema:
@@ -895,7 +895,7 @@ paths:
           required: true
           schema:
             type: string
-  /v1/eval/tasks/{task_id}/jobs/{job_id}/result:
+  /v1/eval/tasks/{benchmark_id}/jobs/{job_id}/result:
     get:
       responses:
         '200':
@@ -913,7 +913,7 @@ paths:
           required: true
           schema:
             type: string
-        - name: task_id
+        - name: benchmark_id
           in: path
           required: true
           schema:
@@ -1328,7 +1328,7 @@ paths:
             type: array
             items:
               type: string
-  /v1/eval/tasks/{task_id}/jobs:
+  /v1/eval/tasks/{benchmark_id}/jobs:
     post:
       responses:
         '200':
@@ -1341,7 +1341,7 @@ paths:
         - Eval
       description: ''
       parameters:
-        - name: task_id
+        - name: benchmark_id
           in: path
           required: true
           schema:
@@ -4678,7 +4678,7 @@ components:
     RegisterBenchmarkRequest:
       type: object
       properties:
-        task_id:
+        benchmark_id:
           type: string
         dataset_id:
           type: string
@@ -4702,7 +4702,7 @@ components:
               - type: object
       additionalProperties: false
       required:
-        - task_id
+        - benchmark_id
         - dataset_id
         - scoring_functions
     RegisterModelRequest:

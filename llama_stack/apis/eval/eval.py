@@ -76,27 +76,27 @@ class EvaluateResponse(BaseModel):
 
 
 class Eval(Protocol):
-    @webmethod(route="/eval/tasks/{task_id}/jobs", method="POST")
+    @webmethod(route="/eval/tasks/{benchmark_id}/jobs", method="POST")
     async def run_eval(
         self,
-        task_id: str,
+        benchmark_id: str,
         task_config: BenchmarkConfig,
     ) -> Job: ...
 
-    @webmethod(route="/eval/tasks/{task_id}/evaluations", method="POST")
+    @webmethod(route="/eval/tasks/{benchmark_id}/evaluations", method="POST")
     async def evaluate_rows(
         self,
-        task_id: str,
+        benchmark_id: str,
         input_rows: List[Dict[str, Any]],
         scoring_functions: List[str],
         task_config: BenchmarkConfig,
     ) -> EvaluateResponse: ...
 
-    @webmethod(route="/eval/tasks/{task_id}/jobs/{job_id}", method="GET")
-    async def job_status(self, task_id: str, job_id: str) -> Optional[JobStatus]: ...
+    @webmethod(route="/eval/tasks/{benchmark_id}/jobs/{job_id}", method="GET")
+    async def job_status(self, benchmark_id: str, job_id: str) -> Optional[JobStatus]: ...
 
-    @webmethod(route="/eval/tasks/{task_id}/jobs/{job_id}", method="DELETE")
-    async def job_cancel(self, task_id: str, job_id: str) -> None: ...
+    @webmethod(route="/eval/tasks/{benchmark_id}/jobs/{job_id}", method="DELETE")
+    async def job_cancel(self, benchmark_id: str, job_id: str) -> None: ...
 
-    @webmethod(route="/eval/tasks/{task_id}/jobs/{job_id}/result", method="GET")
-    async def job_result(self, job_id: str, task_id: str) -> EvaluateResponse: ...
+    @webmethod(route="/eval/tasks/{benchmark_id}/jobs/{job_id}/result", method="GET")
+    async def job_result(self, job_id: str, benchmark_id: str) -> EvaluateResponse: ...

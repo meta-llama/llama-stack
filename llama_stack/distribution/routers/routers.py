@@ -347,23 +347,23 @@ class EvalRouter(Eval):
 
     async def run_eval(
         self,
-        task_id: str,
+        benchmark_id: str,
         task_config: AppBenchmarkConfig,
     ) -> Job:
-        return await self.routing_table.get_provider_impl(task_id).run_eval(
-            task_id=task_id,
+        return await self.routing_table.get_provider_impl(benchmark_id).run_eval(
+            benchmark_id=benchmark_id,
             task_config=task_config,
         )
 
     async def evaluate_rows(
         self,
-        task_id: str,
+        benchmark_id: str,
         input_rows: List[Dict[str, Any]],
         scoring_functions: List[str],
         task_config: BenchmarkConfig,
     ) -> EvaluateResponse:
-        return await self.routing_table.get_provider_impl(task_id).evaluate_rows(
-            task_id=task_id,
+        return await self.routing_table.get_provider_impl(benchmark_id).evaluate_rows(
+            benchmark_id=benchmark_id,
             input_rows=input_rows,
             scoring_functions=scoring_functions,
             task_config=task_config,
@@ -371,28 +371,28 @@ class EvalRouter(Eval):
 
     async def job_status(
         self,
-        task_id: str,
+        benchmark_id: str,
         job_id: str,
     ) -> Optional[JobStatus]:
-        return await self.routing_table.get_provider_impl(task_id).job_status(task_id, job_id)
+        return await self.routing_table.get_provider_impl(benchmark_id).job_status(benchmark_id, job_id)
 
     async def job_cancel(
         self,
-        task_id: str,
+        benchmark_id: str,
         job_id: str,
     ) -> None:
-        await self.routing_table.get_provider_impl(task_id).job_cancel(
-            task_id,
+        await self.routing_table.get_provider_impl(benchmark_id).job_cancel(
+            benchmark_id,
             job_id,
         )
 
     async def job_result(
         self,
-        task_id: str,
+        benchmark_id: str,
         job_id: str,
     ) -> EvaluateResponse:
-        return await self.routing_table.get_provider_impl(task_id).job_result(
-            task_id,
+        return await self.routing_table.get_provider_impl(benchmark_id).job_result(
+            benchmark_id,
             job_id,
         )
 

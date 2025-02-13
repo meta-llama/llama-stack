@@ -433,12 +433,12 @@ class BenchmarksRoutingTable(CommonRoutingTableImpl, Benchmarks):
     async def list_benchmarks(self) -> ListBenchmarksResponse:
         return ListBenchmarksResponse(data=await self.get_all_with_type("benchmark"))
 
-    async def get_benchmark(self, task_id: str) -> Optional[Benchmark]:
-        return await self.get_object_by_identifier("benchmark", task_id)
+    async def get_benchmark(self, benchmark_id: str) -> Optional[Benchmark]:
+        return await self.get_object_by_identifier("benchmark", benchmark_id)
 
     async def register_benchmark(
         self,
-        task_id: str,
+        benchmark_id: str,
         dataset_id: str,
         scoring_functions: List[str],
         metadata: Optional[Dict[str, Any]] = None,
@@ -455,9 +455,9 @@ class BenchmarksRoutingTable(CommonRoutingTableImpl, Benchmarks):
                     "No provider specified and multiple providers available. Please specify a provider_id."
                 )
         if provider_benchmark_id is None:
-            provider_benchmark_id = task_id
+            provider_benchmark_id = benchmark_id
         benchmark = Benchmark(
-            identifier=task_id,
+            identifier=benchmark_id,
             dataset_id=dataset_id,
             scoring_functions=scoring_functions,
             metadata=metadata,

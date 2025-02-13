@@ -48,7 +48,7 @@ client.benchmarks.register(
 )
 
 response = client.eval.evaluate_rows(
-    task_id="meta-reference::mmmu",
+    benchmark_id="meta-reference::mmmu",
     input_rows=eval_rows,
     scoring_functions=["basic::regex_parser_multiple_choice_answer"],
     task_config={
@@ -106,7 +106,7 @@ client.benchmarks.register(
 )
 
 response = client.eval.evaluate_rows(
-    task_id="meta-reference::simpleqa",
+    benchmark_id="meta-reference::simpleqa",
     input_rows=eval_rows.rows,
     scoring_functions=["llm-as-judge::405b-simpleqa"],
     task_config={
@@ -156,7 +156,7 @@ agent_config = {
 }
 
 response = client.eval.evaluate_rows(
-    task_id="meta-reference::simpleqa",
+    benchmark_id="meta-reference::simpleqa",
     input_rows=eval_rows.rows,
     scoring_functions=["llm-as-judge::405b-simpleqa"],
     task_config={

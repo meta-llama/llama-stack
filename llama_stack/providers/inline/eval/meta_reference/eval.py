@@ -83,10 +83,10 @@ class MetaReferenceEvalImpl(
 
     async def run_eval(
         self,
-        task_id: str,
+        benchmark_id: str,
         task_config: BenchmarkConfig,
     ) -> Job:
-        task_def = self.benchmarks[task_id]
+        task_def = self.benchmarks[benchmark_id]
         dataset_id = task_def.dataset_id
         candidate = task_config.eval_candidate
         scoring_functions = task_def.scoring_functions
@@ -97,7 +97,7 @@ class MetaReferenceEvalImpl(
             rows_in_page=(-1 if task_config.num_examples is None else task_config.num_examples),
         )
         res = await self.evaluate_rows(
-            task_id=task_id,
+            benchmark_id=benchmark_id,
             input_rows=all_rows.rows,
             scoring_functions=scoring_functions,
             task_config=task_config,
@@ -189,7 +189,7 @@ class MetaReferenceEvalImpl(
 
     async def evaluate_rows(
         self,
-        task_id: str,
+        benchmark_id: str,
         input_rows: List[Dict[str, Any]],
         scoring_functions: List[str],
         task_config: BenchmarkConfig,
@@ -219,17 +219,17 @@ class MetaReferenceEvalImpl(
 
         return EvaluateResponse(generations=generations, scores=score_response.results)
 
-    async def job_status(self, task_id: str, job_id: str) -> Optional[JobStatus]:
+    async def job_status(self, benchmark_id: str, job_id: str) -> Optional[JobStatus]:
         if job_id in self.jobs:
             return JobStatus.completed
 
         return None
 
-    async def job_cancel(self, task_id: str, job_id: str) -> None:
+    async def job_cancel(self, benchmark_id: str, job_id: str) -> None:
         raise NotImplementedError("Job cancel is not implemented yet")
 
-    async def job_result(self, task_id: str, job_id: str) -> EvaluateResponse:
-        status = await self.job_status(task_id, job_id)
+    async def job_result(self, benchmark_id: str, job_id: str) -> EvaluateResponse:
+        status = await self.job_status(benchmark_id, job_id)
         if not status or status != JobStatus.completed:
             raise ValueError(f"Job is not completed, Status: {status.value}")
 
