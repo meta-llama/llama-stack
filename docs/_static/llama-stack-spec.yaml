@@ -10,7 +10,6 @@ info:
 servers:
   - url: http://any-hosted-llama-stack.com
 paths:
-<<<<<<< HEAD
   /v1/eval/tasks/{task_id}/evaluations:
     post:
       responses:
@@ -126,8 +125,6 @@ paths:
           schema:
             type: string
       deprecated: true
-=======
->>>>>>> 974941be (deprecation in OpenAPI spec)
   /v1/eval-tasks:
     get:
       responses:
@@ -136,7 +133,6 @@ paths:
           content:
             application/json:
               schema:
-<<<<<<< HEAD
                 $ref: '#/components/schemas/ListBenchmarksResponse'
       tags:
         - Benchmarks
@@ -183,14 +179,6 @@ paths:
               $ref: '#/components/schemas/DeprecatedRunEvalRequest'
         required: true
       deprecated: true
-=======
-                $ref: '#/components/schemas/ListEvalTasksResponse'
-      tags:
-        - EvalTasks
-      description: ''
-      parameters: []
-      deprecated: true
->>>>>>> 974941be (deprecation in OpenAPI spec)
   /v1/datasetio/rows:
     get:
       responses:
@@ -1610,52 +1598,7 @@ jsonSchemaDialect: >-
   https://json-schema.org/draft/2020-12/schema
 components:
   schemas:
-<<<<<<< HEAD
     AgentCandidate:
-=======
-    EvalTask:
-      type: object
-      properties:
-        type:
-          type: string
-          const: eval_task
-          default: eval_task
-        dataset_id:
-          type: string
-        scoring_functions:
-          type: array
-          items:
-            type: string
-        metadata:
-          type: object
-          additionalProperties:
-            oneOf:
-              - type: 'null'
-              - type: boolean
-              - type: number
-              - type: string
-              - type: array
-              - type: object
-      additionalProperties: false
-      required:
-        - type
-        - dataset_id
-        - scoring_functions
-        - metadata
-    ListEvalTasksResponse:
-      type: object
-      properties:
-        sampling_params:
-          $ref: '#/components/schemas/SamplingParams'
-        input_shields:
-          type: array
-          items:
-            $ref: '#/components/schemas/EvalTask'
-      additionalProperties: false
-      required:
-        - data
-    AppendRowsRequest:
->>>>>>> 974941be (deprecation in OpenAPI spec)
       type: object
       properties:
         type:
@@ -2922,47 +2865,34 @@ components:
     TextDelta:
       type: object
       properties:
-        name:
+        type:
           type: string
-        description:
+          const: text
+          default: text
+        text:
           type: string
-        parameters:
-          type: array
-          items:
-            $ref: '#/components/schemas/ToolParameter'
-        metadata:
-          type: object
-          additionalProperties:
-            oneOf:
-              - type: 'null'
-              - type: boolean
-              - type: number
-              - type: string
-              - type: array
-              - type: object
       additionalProperties: false
       required:
-        - name
-    ToolParameter:
+        - type
+        - text
+    ToolCallDelta:
       type: object
       properties:
-        name:
+        type:
           type: string
-        parameter_type:
-          type: string
-        description:
-          type: string
-        required:
-          type: boolean
-          default: true
-        default:
+          const: tool_call
+          default: tool_call
+        tool_call:
           oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
             - type: string
-            - type: array
-            - type: object
+            - $ref: '#/components/schemas/ToolCall'
+        parse_status:
+          type: string
+          enum:
+            - started
+            - in_progress
+            - failed
+            - succeeded
       additionalProperties: false
       required:
         - type

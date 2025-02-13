@@ -40,7 +40,6 @@
         }
     ],
     "paths": {
-<<<<<<< HEAD
         "/v1/eval/tasks/{task_id}/evaluations": {
             "post": {
                 "responses": {
@@ -235,8 +234,6 @@
                 "deprecated": true
             }
         },
-=======
->>>>>>> 974941be (deprecation in OpenAPI spec)
         "/v1/eval-tasks": {
             "get": {
                 "responses": {
@@ -245,27 +242,18 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-<<<<<<< HEAD
                                     "$ref": "#/components/schemas/ListBenchmarksResponse"
-=======
-                                    "$ref": "#/components/schemas/ListEvalTasksResponse"
->>>>>>> 974941be (deprecation in OpenAPI spec)
                                 }
                             }
                         }
                     }
                 },
                 "tags": [
-<<<<<<< HEAD
                     "Benchmarks"
-=======
-                    "EvalTasks"
->>>>>>> 974941be (deprecation in OpenAPI spec)
                 ],
                 "description": "",
                 "parameters": [],
                 "deprecated": true
-<<<<<<< HEAD
             },
             "post": {
                 "responses": {
@@ -330,8 +318,6 @@
                     "required": true
                 },
                 "deprecated": true
-=======
->>>>>>> 974941be (deprecation in OpenAPI spec)
             }
         },
         "/v1/datasetio/rows": {
@@ -2659,50 +2645,7 @@
     "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
     "components": {
         "schemas": {
-<<<<<<< HEAD
             "AgentCandidate": {
-=======
-            "EvalTask": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "eval_task",
-                        "default": "eval_task"
-                    },
-                    "dataset_id": {
-                        "type": "string"
-                    },
-                    "config": {
-                        "$ref": "#/components/schemas/AgentConfig"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type",
-                    "config"
-                ]
-            },
-            "ListEvalTasksResponse": {
-                "type": "object",
-                "properties": {
-                    "sampling_params": {
-                        "$ref": "#/components/schemas/SamplingParams"
-                    },
-                    "input_shields": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/EvalTask"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "data"
-                ]
-            },
-            "AppendRowsRequest": {
->>>>>>> 974941be (deprecation in OpenAPI spec)
                 "type": "object",
                 "properties": {
                     "type": {
@@ -2729,7 +2672,7 @@
                     "input_shields": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/ToolDef"
+                            "type": "string"
                         }
                     },
                     "output_shields": {
