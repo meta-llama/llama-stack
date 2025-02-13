@@ -16,7 +16,7 @@ from llama_stack.providers.utils.kvstore.config import (
 
 
 @json_schema_type
-class FaissImplConfig(BaseModel):
+class FaissVectorIOConfig(BaseModel):
     kvstore: KVStoreConfig
 
     @classmethod

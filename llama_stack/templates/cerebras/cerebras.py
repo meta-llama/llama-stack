@@ -13,7 +13,7 @@ from llama_stack.distribution.datatypes import ModelInput, Provider, ToolGroupIn
 from llama_stack.providers.inline.inference.sentence_transformers import (
     SentenceTransformersInferenceConfig,
 )
-from llama_stack.providers.inline.vector_io.faiss.config import FaissImplConfig
+from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOConfig
 from llama_stack.providers.remote.inference.cerebras import CerebrasImplConfig
 from llama_stack.providers.remote.inference.cerebras.cerebras import model_aliases
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
@@ -69,7 +69,7 @@ def get_distribution_template() -> DistributionTemplate:
     vector_io_provider = Provider(
         provider_id="faiss",
         provider_type="inline::faiss",
-        config=FaissImplConfig.sample_run_config(f"distributions/{name}"),
+        config=FaissVectorIOConfig.sample_run_config(f"distributions/{name}"),
     )
     default_tool_groups = [
         ToolGroupInput(
