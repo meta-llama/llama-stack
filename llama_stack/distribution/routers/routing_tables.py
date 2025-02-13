@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import logging
 from typing import Any, Dict, List, Optional
 
 from pydantic import TypeAdapter
@@ -38,6 +39,8 @@ from llama_stack.distribution.datatypes import (
 )
 from llama_stack.distribution.store import DistributionRegistry
 from llama_stack.providers.datatypes import Api, RoutingTable
+
+logger = logging.getLogger(__name__)
 
 
 def get_impl_api(p: Any) -> Api:
@@ -466,16 +469,18 @@ class BenchmarksRoutingTable(CommonRoutingTableImpl, Benchmarks):
         )
         await self.register_object(benchmark)
 
-    async def DEPRECATED_list_benchmarks(self) -> ListBenchmarksResponse:
+    async def DEPRECATED_list_eval_tasks(self) -> ListBenchmarksResponse:
+        logger.warning("DEPRECATED: Use /eval/benchmarks instead")
         raise DeprecationWarning("Use /eval/tasks instead")
 
-    async def DEPRECATED_get_benchmark(
+    async def DEPRECATED_get_eval_task(
         self,
         benchmark_id: str,
     ) -> Optional[Benchmark]:
+        logger.warning("DEPRECATED: Use /eval/benchmarks instead")
         raise DeprecationWarning("Use /eval/tasks instead")
 
-    async def DEPRECATED_register_benchmark(
+    async def DEPRECATED_register_eval_task(
         self,
         benchmark_id: str,
         dataset_id: str,
@@ -484,7 +489,14 @@ class BenchmarksRoutingTable(CommonRoutingTableImpl, Benchmarks):
         provider_id: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None,
     ) -> None:
-        raise DeprecationWarning("Use /eval/tasks instead")
+        logger.warning("DEPRECATED: Use /eval/benchmarks instead")
+        self.register_benchmark(
+            benchmark_id=benchmark_id,
+            dataset_id=dataset_id,
+            scoring_functions=scoring_functions,
+            metadata=metadata,
+            provider_benchmark_id=provider_benchmark_id,
+        )
 
 
 class ToolGroupsRoutingTable(CommonRoutingTableImpl, ToolGroups):
