@@ -98,6 +98,8 @@ class ToolCallParseStatus(Enum):
 
 @json_schema_type
 class ToolCallDelta(BaseModel):
+    """Deprecated: use InProgressToolCallDelta or ParsedToolCallDelta instead"""
+
     type: Literal["tool_call"] = "tool_call"
 
     # you either send an in-progress tool call so the client can stream a long
@@ -107,10 +109,34 @@ class ToolCallDelta(BaseModel):
     parse_status: ToolCallParseStatus
 
 
+@json_schema_type
+class InProgressToolCallDelta(BaseModel):
+    """Delta sent when the tool call is in progress
+
+    :param type: Discriminator type of the content item. Always "in_progress_tool_call"
+    :param tool_call: The tool call that is currently being executed
+    """
+
+    type: Literal["in_progress_tool_call"] = "in_progress_tool_call"
+    tool_call: str
+
+
+@json_schema_type
+class FinalToolCallDelta(BaseModel):
+    """Delta sent when the tool call is complete
+
+    :param type: Discriminator type of the content item. Always "final_tool_call"
+    :param tool_call: The final parsed tool call. If the tool call failed to parse, this will be None.
+    """
+
+    type: Literal["final_tool_call"] = "final_tool_call"
+    tool_call: Optional[ToolCall]
+
+
 # streaming completions send a stream of ContentDeltas
 ContentDelta = register_schema(
     Annotated[
-        Union[TextDelta, ImageDelta, ToolCallDelta],
+        Union[TextDelta, ImageDelta, ToolCallDelta, InProgressToolCallDelta, FinalToolCallDelta],
         Field(discriminator="type"),
     ],
     name="ContentDelta",
