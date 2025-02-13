@@ -2922,34 +2922,47 @@ components:
     TextDelta:
       type: object
       properties:
-        type:
+        name:
           type: string
-          const: text
-          default: text
-        text:
+        description:
           type: string
+        parameters:
+          type: array
+          items:
+            $ref: '#/components/schemas/ToolParameter'
+        metadata:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
       additionalProperties: false
       required:
-        - type
-        - text
-    ToolCallDelta:
+        - name
+    ToolParameter:
       type: object
       properties:
-        type:
+        name:
           type: string
-          const: tool_call
-          default: tool_call
-        tool_call:
+        parameter_type:
+          type: string
+        description:
+          type: string
+        required:
+          type: boolean
+          default: true
+        default:
           oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
             - type: string
-            - $ref: '#/components/schemas/ToolCall'
-        parse_status:
-          type: string
-          enum:
-            - started
-            - in_progress
-            - failed
-            - succeeded
+            - type: array
+            - type: object
       additionalProperties: false
       required:
         - type
