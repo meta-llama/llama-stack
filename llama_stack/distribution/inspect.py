@@ -4,7 +4,9 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import re
 from importlib.metadata import version
+from typing import Any, Dict
 
 from pydantic import BaseModel
 
@@ -50,6 +52,7 @@ class DistributionInspectImpl(Inspect):
                         api=api,
                         provider_id=p.provider_id,
                         provider_type=p.provider_type,
+                        config=_redact_dict(p.config),
                     )
                     for p in providers
                 ]
@@ -82,3 +85,12 @@ class DistributionInspectImpl(Inspect):
 
     async def version(self) -> VersionInfo:
         return VersionInfo(version=version("llama-stack"))
+
+
+def _redact_dict(d: Dict[str, Any]) -> Dict[str, Any]:
+    """Redact sensitive information from dict before printing."""
+    if not isinstance(d, dict):
+        raise TypeError("Expected a dictionary")
+
+    sensitive_patterns = re.compile(r"(api_key|api_token|password|secret|passphrase)", re.IGNORECASE)
+    return {key: "REDACTED" if sensitive_patterns.search(key) else value for key, value in d.items()}
