@@ -21,7 +21,6 @@ from llama_stack.providers.utils.memory.vector_store import (
     VectorDBWithIndex,
 )
 
-
 from .config import QdrantVectorIOConfig
 
 log = logging.getLogger(__name__)

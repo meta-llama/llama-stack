@@ -23,7 +23,7 @@ from llama_stack.providers.utils.memory.vector_store import (
     VectorDBWithIndex,
 )
 
-from .config import WeaviateVectorIOConfig, WeaviateRequestProviderData
+from .config import WeaviateRequestProviderData, WeaviateVectorIOConfig
 
 log = logging.getLogger(__name__)
 

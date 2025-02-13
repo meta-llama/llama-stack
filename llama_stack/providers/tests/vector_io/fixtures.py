@@ -12,9 +12,9 @@ import pytest_asyncio
 
 from llama_stack.apis.models import ModelInput, ModelType
 from llama_stack.distribution.datatypes import Api, Provider
-from llama_stack.providers.inline.vector_io.sqlite_vec import SQLiteVectorIOConfig
 from llama_stack.providers.inline.vector_io.chroma import ChromaVectorIOConfig as InlineChromaVectorIOConfig
 from llama_stack.providers.inline.vector_io.faiss import FaissVectorIOConfig
+from llama_stack.providers.inline.vector_io.sqlite_vec import SQLiteVectorIOConfig
 from llama_stack.providers.remote.vector_io.chroma import ChromaVectorIOConfig
 from llama_stack.providers.remote.vector_io.pgvector import PGVectorVectorIOConfig
 from llama_stack.providers.remote.vector_io.weaviate import WeaviateVectorIOConfig
