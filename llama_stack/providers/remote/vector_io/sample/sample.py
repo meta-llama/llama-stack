@@ -7,11 +7,11 @@
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import VectorIO
 
-from .config import SampleConfig
+from .config import SampleVectorIOConfig
 
 
-class SampleMemoryImpl(VectorIO):
-    def __init__(self, config: SampleConfig):
+class SampleVectorIOImpl(VectorIO):
+    def __init__(self, config: SampleVectorIOConfig):
         self.config = config
 
     async def register_vector_db(self, vector_db: VectorDB) -> None:

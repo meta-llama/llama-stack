@@ -24,7 +24,7 @@ from llama_stack.providers.utils.memory.vector_store import (
     VectorDBWithIndex,
 )
 
-from .config import FaissImplConfig
+from .config import FaissVectorIOConfig
 
 logger = logging.getLogger(__name__)
 
@@ -112,8 +112,8 @@ class FaissIndex(EmbeddingIndex):
         return QueryChunksResponse(chunks=chunks, scores=scores)
 
 
-class FaissVectorIOImpl(VectorIO, VectorDBsProtocolPrivate):
-    def __init__(self, config: FaissImplConfig, inference_api: Api.inference) -> None:
+class FaissVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
+    def __init__(self, config: FaissVectorIOConfig, inference_api: Api.inference) -> None:
         self.config = config
         self.inference_api = inference_api
         self.cache = {}

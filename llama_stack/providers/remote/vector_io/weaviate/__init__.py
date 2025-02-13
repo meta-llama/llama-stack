@@ -8,12 +8,12 @@ from typing import Dict
 
 from llama_stack.providers.datatypes import Api, ProviderSpec
 
-from .config import WeaviateConfig, WeaviateRequestProviderData  # noqa: F401
+from .config import WeaviateRequestProviderData, WeaviateVectorIOConfig  # noqa: F401
 
 
-async def get_adapter_impl(config: WeaviateConfig, deps: Dict[Api, ProviderSpec]):
-    from .weaviate import WeaviateMemoryAdapter
+async def get_adapter_impl(config: WeaviateVectorIOConfig, deps: Dict[Api, ProviderSpec]):
+    from .weaviate import WeaviateVectorIOAdapter
 
-    impl = WeaviateMemoryAdapter(config, deps[Api.inference])
+    impl = WeaviateVectorIOAdapter(config, deps[Api.inference])
     await impl.initialize()
     return impl
