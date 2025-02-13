@@ -38,18 +38,7 @@ EvalCandidate = register_schema(
 
 
 @json_schema_type
-class BenchmarkBenchmarkConfig(BaseModel):
-    type: Literal["benchmark"] = "benchmark"
-    eval_candidate: EvalCandidate
-    num_examples: Optional[int] = Field(
-        description="Number of examples to evaluate (useful for testing), if not provided, all examples in the dataset will be evaluated",
-        default=None,
-    )
-
-
-@json_schema_type
-class AppBenchmarkConfig(BaseModel):
-    type: Literal["app"] = "app"
+class BenchmarkConfig(BaseModel):
     eval_candidate: EvalCandidate
     scoring_params: Dict[str, ScoringFnParams] = Field(
         description="Map between scoring function id and parameters for each scoring function you want to run",
@@ -62,12 +51,6 @@ class AppBenchmarkConfig(BaseModel):
     # we could optinally add any specific dataset config here
 
 
-BenchmarkConfig = register_schema(
-    Annotated[Union[BenchmarkBenchmarkConfig, AppBenchmarkConfig], Field(discriminator="type")],
-    name="BenchmarkConfig",
-)
-
-
 @json_schema_type
 class EvaluateResponse(BaseModel):
     generations: List[Dict[str, Any]]
@@ -76,14 +59,14 @@ class EvaluateResponse(BaseModel):
 
 
 class Eval(Protocol):
-    @webmethod(route="/eval/tasks/{benchmark_id}/jobs", method="POST")
+    @webmethod(route="/eval/benchmarks/{benchmark_id}/jobs", method="POST")
     async def run_eval(
         self,
         benchmark_id: str,
         task_config: BenchmarkConfig,
     ) -> Job: ...
 
-    @webmethod(route="/eval/tasks/{benchmark_id}/evaluations", method="POST")
+    @webmethod(route="/eval/benchmarks/{benchmark_id}/evaluations", method="POST")
     async def evaluate_rows(
         self,
         benchmark_id: str,
@@ -92,11 +75,11 @@ class Eval(Protocol):
         task_config: BenchmarkConfig,
     ) -> EvaluateResponse: ...
 
-    @webmethod(route="/eval/tasks/{benchmark_id}/jobs/{job_id}", method="GET")
+    @webmethod(route="/eval/benchmarks/{benchmark_id}/jobs/{job_id}", method="GET")
     async def job_status(self, benchmark_id: str, job_id: str) -> Optional[JobStatus]: ...
 
-    @webmethod(route="/eval/tasks/{benchmark_id}/jobs/{job_id}", method="DELETE")
+    @webmethod(route="/eval/benchmarks/{benchmark_id}/jobs/{job_id}", method="DELETE")
     async def job_cancel(self, benchmark_id: str, job_id: str) -> None: ...
 
-    @webmethod(route="/eval/tasks/{benchmark_id}/jobs/{job_id}/result", method="GET")
-    async def job_result(self, job_id: str, benchmark_id: str) -> EvaluateResponse: ...
+    @webmethod(route="/eval/benchmarks/{benchmark_id}/jobs/{job_id}/result", method="GET")
+    async def job_result(self, benchmark_id: str, job_id: str) -> EvaluateResponse: ...
