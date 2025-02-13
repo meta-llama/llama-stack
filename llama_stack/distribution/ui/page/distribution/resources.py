@@ -4,8 +4,8 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+from page.distribution.benchmarks import benchmarks
 from page.distribution.datasets import datasets
-from page.distribution.eval_tasks import eval_tasks
 from page.distribution.models import models
 from page.distribution.scoring_functions import scoring_functions
 from page.distribution.shields import shields
@@ -36,7 +36,7 @@ def resources_page():
         },
     )
     if selected_resource == "Eval Tasks":
-        eval_tasks()
+        benchmarks()
     elif selected_resource == "Vector Databases":
         vector_dbs()
     elif selected_resource == "Datasets":

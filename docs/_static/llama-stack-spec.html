@@ -40,7 +40,7 @@
         }
     ],
     "paths": {
-        "/v1/eval-tasks/{eval_task_id}": {
+        "/v1/eval-tasks/{benchmark_id}": {
             "get": {
                 "responses": {
                     "200": {
@@ -50,7 +50,7 @@
                                 "schema": {
                                     "oneOf": [
                                         {
-                                            "$ref": "#/components/schemas/EvalTask"
+                                            "$ref": "#/components/schemas/Benchmark"
                                         },
                                         {
                                             "type": "null"
@@ -62,12 +62,12 @@
                     }
                 },
                 "tags": [
-                    "EvalTasks"
+                    "Benchmarks"
                 ],
                 "description": "",
                 "parameters": [
                     {
-                        "name": "eval_task_id",
+                        "name": "benchmark_id",
                         "in": "path",
                         "required": true,
                         "schema": {
@@ -86,14 +86,14 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ListEvalTasksResponse"
+                                    "$ref": "#/components/schemas/ListBenchmarksResponse"
                                 }
                             }
                         }
                     }
                 },
                 "tags": [
-                    "EvalTasks"
+                    "Benchmarks"
                 ],
                 "description": "",
                 "parameters": [],
@@ -106,7 +106,7 @@
                     }
                 },
                 "tags": [
-                    "EvalTasks"
+                    "Benchmarks"
                 ],
                 "description": "",
                 "parameters": [],
@@ -114,7 +114,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/DeprecatedRegisterEvalTaskRequest"
+                                "$ref": "#/components/schemas/DeprecatedRegisterBenchmarkRequest"
                             }
                         }
                     },
@@ -821,7 +821,7 @@
                                 "schema": {
                                     "oneOf": [
                                         {
-                                            "$ref": "#/components/schemas/EvalTask"
+                                            "$ref": "#/components/schemas/Benchmark"
                                         },
                                         {
                                             "type": "null"
@@ -833,7 +833,7 @@
                     }
                 },
                 "tags": [
-                    "EvalTasks"
+                    "Benchmarks"
                 ],
                 "description": "",
                 "parameters": [
@@ -1594,14 +1594,14 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ListEvalTasksResponse"
+                                    "$ref": "#/components/schemas/ListBenchmarksResponse"
                                 }
                             }
                         }
                     }
                 },
                 "tags": [
-                    "EvalTasks"
+                    "Benchmarks"
                 ],
                 "description": "",
                 "parameters": []
@@ -1613,7 +1613,7 @@
                     }
                 },
                 "tags": [
-                    "EvalTasks"
+                    "Benchmarks"
                 ],
                 "description": "",
                 "parameters": [],
@@ -1621,7 +1621,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/RegisterEvalTaskRequest"
+                                "$ref": "#/components/schemas/RegisterBenchmarkRequest"
                             }
                         }
                     },
@@ -2448,7 +2448,7 @@
     "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
     "components": {
         "schemas": {
-            "EvalTask": {
+            "Benchmark": {
                 "type": "object",
                 "properties": {
                     "identifier": {
@@ -2462,8 +2462,8 @@
                     },
                     "type": {
                         "type": "string",
-                        "const": "eval_task",
-                        "default": "eval_task"
+                        "const": "benchmark",
+                        "default": "benchmark"
                     },
                     "dataset_id": {
                         "type": "string"
@@ -2511,13 +2511,13 @@
                     "metadata"
                 ]
             },
-            "ListEvalTasksResponse": {
+            "ListBenchmarksResponse": {
                 "type": "object",
                 "properties": {
                     "data": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/EvalTask"
+                            "$ref": "#/components/schemas/Benchmark"
                         }
                     }
                 },
@@ -2526,10 +2526,10 @@
                     "data"
                 ]
             },
-            "DeprecatedRegisterEvalTaskRequest": {
+            "DeprecatedRegisterBenchmarkRequest": {
                 "type": "object",
                 "properties": {
-                    "eval_task_id": {
+                    "benchmark_id": {
                         "type": "string"
                     },
                     "dataset_id": {
@@ -2541,7 +2541,7 @@
                             "type": "string"
                         }
                     },
-                    "provider_eval_task_id": {
+                    "provider_benchmark_id": {
                         "type": "string"
                     },
                     "provider_id": {
@@ -2575,7 +2575,7 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "eval_task_id",
+                    "benchmark_id",
                     "dataset_id",
                     "scoring_functions"
                 ]
@@ -4745,7 +4745,7 @@
                     "accuracy"
                 ]
             },
-            "AppEvalTaskConfig": {
+            "AppBenchmarkConfig": {
                 "type": "object",
                 "properties": {
                     "type": {
@@ -4793,7 +4793,7 @@
                     "type"
                 ]
             },
-            "BenchmarkEvalTaskConfig": {
+            "BenchmarkBenchmarkConfig": {
                 "type": "object",
                 "properties": {
                     "type": {
@@ -4831,20 +4831,20 @@
                     }
                 }
             },
-            "EvalTaskConfig": {
+            "BenchmarkConfig": {
                 "oneOf": [
                     {
-                        "$ref": "#/components/schemas/BenchmarkEvalTaskConfig"
+                        "$ref": "#/components/schemas/BenchmarkBenchmarkConfig"
                     },
                     {
-                        "$ref": "#/components/schemas/AppEvalTaskConfig"
+                        "$ref": "#/components/schemas/AppBenchmarkConfig"
                     }
                 ],
                 "discriminator": {
                     "propertyName": "type",
                     "mapping": {
-                        "benchmark": "#/components/schemas/BenchmarkEvalTaskConfig",
-                        "app": "#/components/schemas/AppEvalTaskConfig"
+                        "benchmark": "#/components/schemas/BenchmarkBenchmarkConfig",
+                        "app": "#/components/schemas/AppBenchmarkConfig"
                     }
                 }
             },
@@ -4991,7 +4991,7 @@
                         }
                     },
                     "task_config": {
-                        "$ref": "#/components/schemas/EvalTaskConfig"
+                        "$ref": "#/components/schemas/BenchmarkConfig"
                     }
                 },
                 "additionalProperties": false,
@@ -7358,7 +7358,7 @@
                     "url"
                 ]
             },
-            "RegisterEvalTaskRequest": {
+            "RegisterBenchmarkRequest": {
                 "type": "object",
                 "properties": {
                     "task_id": {
@@ -7373,7 +7373,7 @@
                             "type": "string"
                         }
                     },
-                    "provider_eval_task_id": {
+                    "provider_benchmark_id": {
                         "type": "string"
                     },
                     "provider_id": {
@@ -7603,7 +7603,7 @@
                 "type": "object",
                 "properties": {
                     "task_config": {
-                        "$ref": "#/components/schemas/EvalTaskConfig"
+                        "$ref": "#/components/schemas/BenchmarkConfig"
                     }
                 },
                 "additionalProperties": false,
@@ -8115,7 +8115,7 @@
             "name": "Eval"
         },
         {
-            "name": "EvalTasks"
+            "name": "Benchmarks"
         },
         {
             "name": "Inference",
@@ -8171,7 +8171,7 @@
                 "DatasetIO",
                 "Datasets",
                 "Eval",
-                "EvalTasks",
+                "Benchmarks",
                 "Inference",
                 "Inspect",
                 "Models",

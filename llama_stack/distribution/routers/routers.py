@@ -9,9 +9,9 @@ from typing import Any, AsyncGenerator, Dict, List, Optional
 from llama_stack.apis.common.content_types import InterleavedContent, URL
 from llama_stack.apis.datasetio import DatasetIO, PaginatedRowsResult
 from llama_stack.apis.eval import (
-    AppEvalTaskConfig,
+    AppBenchmarkConfig,
+    BenchmarkConfig,
     Eval,
-    EvalTaskConfig,
     EvaluateResponse,
     Job,
     JobStatus,
@@ -348,7 +348,7 @@ class EvalRouter(Eval):
     async def run_eval(
         self,
         task_id: str,
-        task_config: AppEvalTaskConfig,
+        task_config: AppBenchmarkConfig,
     ) -> Job:
         return await self.routing_table.get_provider_impl(task_id).run_eval(
             task_id=task_id,
@@ -360,7 +360,7 @@ class EvalRouter(Eval):
         task_id: str,
         input_rows: List[Dict[str, Any]],
         scoring_functions: List[str],
-        task_config: EvalTaskConfig,
+        task_config: BenchmarkConfig,
     ) -> EvaluateResponse:
         return await self.routing_table.get_provider_impl(task_id).evaluate_rows(
             task_id=task_id,

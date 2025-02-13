@@ -38,7 +38,7 @@ EvalCandidate = register_schema(
 
 
 @json_schema_type
-class BenchmarkEvalTaskConfig(BaseModel):
+class BenchmarkBenchmarkConfig(BaseModel):
     type: Literal["benchmark"] = "benchmark"
     eval_candidate: EvalCandidate
     num_examples: Optional[int] = Field(
@@ -48,7 +48,7 @@ class BenchmarkEvalTaskConfig(BaseModel):
 
 
 @json_schema_type
-class AppEvalTaskConfig(BaseModel):
+class AppBenchmarkConfig(BaseModel):
     type: Literal["app"] = "app"
     eval_candidate: EvalCandidate
     scoring_params: Dict[str, ScoringFnParams] = Field(
@@ -62,9 +62,9 @@ class AppEvalTaskConfig(BaseModel):
     # we could optinally add any specific dataset config here
 
 
-EvalTaskConfig = register_schema(
-    Annotated[Union[BenchmarkEvalTaskConfig, AppEvalTaskConfig], Field(discriminator="type")],
-    name="EvalTaskConfig",
+BenchmarkConfig = register_schema(
+    Annotated[Union[BenchmarkBenchmarkConfig, AppBenchmarkConfig], Field(discriminator="type")],
+    name="BenchmarkConfig",
 )
 
 
@@ -80,7 +80,7 @@ class Eval(Protocol):
     async def run_eval(
         self,
         task_id: str,
-        task_config: EvalTaskConfig,
+        task_config: BenchmarkConfig,
     ) -> Job: ...
 
     @webmethod(route="/eval/tasks/{task_id}/evaluations", method="POST")
@@ -89,7 +89,7 @@ class Eval(Protocol):
         task_id: str,
         input_rows: List[Dict[str, Any]],
         scoring_functions: List[str],
-        task_config: EvalTaskConfig,
+        task_config: BenchmarkConfig,
     ) -> EvaluateResponse: ...
 
     @webmethod(route="/eval/tasks/{task_id}/jobs/{job_id}", method="GET")

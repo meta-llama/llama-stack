@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field
 from llama_stack.apis.resource import Resource, ResourceType
 
 
-class CommonEvalTaskFields(BaseModel):
+class CommonBenchmarkFields(BaseModel):
     dataset_id: str
     scoring_functions: List[str]
     metadata: Dict[str, Any] = Field(
@@ -21,66 +21,66 @@ class CommonEvalTaskFields(BaseModel):
 
 
 @json_schema_type
-class EvalTask(CommonEvalTaskFields, Resource):
-    type: Literal[ResourceType.eval_task.value] = ResourceType.eval_task.value
+class Benchmark(CommonBenchmarkFields, Resource):
+    type: Literal[ResourceType.benchmark.value] = ResourceType.benchmark.value
 
     @property
     def task_id(self) -> str:
         return self.identifier
 
     @property
-    def provider_eval_task_id(self) -> str:
+    def provider_benchmark_id(self) -> str:
         return self.provider_resource_id
 
 
-class EvalTaskInput(CommonEvalTaskFields, BaseModel):
+class BenchmarkInput(CommonBenchmarkFields, BaseModel):
     task_id: str
     provider_id: Optional[str] = None
-    provider_eval_task_id: Optional[str] = None
+    provider_benchmark_id: Optional[str] = None
 
 
-class ListEvalTasksResponse(BaseModel):
-    data: List[EvalTask]
+class ListBenchmarksResponse(BaseModel):
+    data: List[Benchmark]
 
 
 @runtime_checkable
-class EvalTasks(Protocol):
+class Benchmarks(Protocol):
     @webmethod(route="/eval/tasks", method="GET")
-    async def list_eval_tasks(self) -> ListEvalTasksResponse: ...
+    async def list_benchmarks(self) -> ListBenchmarksResponse: ...
 
     @webmethod(route="/eval/tasks/{task_id}", method="GET")
-    async def get_eval_task(
+    async def get_benchmark(
         self,
         task_id: str,
-    ) -> Optional[EvalTask]: ...
+    ) -> Optional[Benchmark]: ...
 
     @webmethod(route="/eval/tasks", method="POST")
-    async def register_eval_task(
+    async def register_benchmark(
         self,
         task_id: str,
         dataset_id: str,
         scoring_functions: List[str],
-        provider_eval_task_id: Optional[str] = None,
+        provider_benchmark_id: Optional[str] = None,
         provider_id: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None,
     ) -> None: ...
 
     @webmethod(route="/eval-tasks", method="GET")
-    async def DEPRECATED_list_eval_tasks(self) -> ListEvalTasksResponse: ...
+    async def DEPRECATED_list_benchmarks(self) -> ListBenchmarksResponse: ...
 
-    @webmethod(route="/eval-tasks/{eval_task_id}", method="GET")
-    async def DEPRECATED_get_eval_task(
+    @webmethod(route="/eval-tasks/{benchmark_id}", method="GET")
+    async def DEPRECATED_get_benchmark(
         self,
-        eval_task_id: str,
-    ) -> Optional[EvalTask]: ...
+        benchmark_id: str,
+    ) -> Optional[Benchmark]: ...
 
     @webmethod(route="/eval-tasks", method="POST")
-    async def DEPRECATED_register_eval_task(
+    async def DEPRECATED_register_benchmark(
         self,
-        eval_task_id: str,
+        benchmark_id: str,
         dataset_id: str,
         scoring_functions: List[str],
-        provider_eval_task_id: Optional[str] = None,
+        provider_benchmark_id: Optional[str] = None,
         provider_id: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None,
     ) -> None: ...

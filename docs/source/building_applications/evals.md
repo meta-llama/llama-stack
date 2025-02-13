@@ -41,8 +41,8 @@ system_message = {
     "content": SYSTEM_PROMPT_TEMPLATE,
 }
 
-client.eval_tasks.register(
-    eval_task_id="meta-reference::mmmu",
+client.benchmarks.register(
+    benchmark_id="meta-reference::mmmu",
     dataset_id=f"mmmu-{subset}-{split}",
     scoring_functions=["basic::regex_parser_multiple_choice_answer"],
 )
@@ -99,8 +99,8 @@ eval_rows = client.datasetio.get_rows_paginated(
 ```
 
 ```python
-client.eval_tasks.register(
-    eval_task_id="meta-reference::simpleqa",
+client.benchmarks.register(
+    benchmark_id="meta-reference::simpleqa",
     dataset_id=simpleqa_dataset_id,
     scoring_functions=["llm-as-judge::405b-simpleqa"],
 )

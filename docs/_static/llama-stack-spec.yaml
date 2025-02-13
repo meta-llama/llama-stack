@@ -10,7 +10,7 @@ info:
 servers:
   - url: http://any-hosted-llama-stack.com
 paths:
-  /v1/eval-tasks/{eval_task_id}:
+  /v1/eval-tasks/{benchmark_id}:
     get:
       responses:
         '200':
@@ -19,13 +19,13 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/EvalTask'
+                  - $ref: '#/components/schemas/Benchmark'
                   - type: 'null'
       tags:
-        - EvalTasks
+        - Benchmarks
       description: ''
       parameters:
-        - name: eval_task_id
+        - name: benchmark_id
           in: path
           required: true
           schema:
@@ -39,9 +39,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ListEvalTasksResponse'
+                $ref: '#/components/schemas/ListBenchmarksResponse'
       tags:
-        - EvalTasks
+        - Benchmarks
       description: ''
       parameters: []
       deprecated: true
@@ -50,14 +50,14 @@ paths:
         '200':
           description: OK
       tags:
-        - EvalTasks
+        - Benchmarks
       description: ''
       parameters: []
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DeprecatedRegisterEvalTaskRequest'
+              $ref: '#/components/schemas/DeprecatedRegisterBenchmarkRequest'
         required: true
       deprecated: true
   /v1/datasetio/rows:
@@ -499,10 +499,10 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/EvalTask'
+                  - $ref: '#/components/schemas/Benchmark'
                   - type: 'null'
       tags:
-        - EvalTasks
+        - Benchmarks
       description: ''
       parameters:
         - name: task_id
@@ -953,9 +953,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ListEvalTasksResponse'
+                $ref: '#/components/schemas/ListBenchmarksResponse'
       tags:
-        - EvalTasks
+        - Benchmarks
       description: ''
       parameters: []
     post:
@@ -963,14 +963,14 @@ paths:
         '200':
           description: OK
       tags:
-        - EvalTasks
+        - Benchmarks
       description: ''
       parameters: []
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RegisterEvalTaskRequest'
+              $ref: '#/components/schemas/RegisterBenchmarkRequest'
         required: true
   /v1/models:
     get:
@@ -1479,7 +1479,7 @@ jsonSchemaDialect: >-
   https://json-schema.org/draft/2020-12/schema
 components:
   schemas:
-    EvalTask:
+    Benchmark:
       type: object
       properties:
         identifier:
@@ -1490,8 +1490,8 @@ components:
           type: string
         type:
           type: string
-          const: eval_task
-          default: eval_task
+          const: benchmark
+          default: benchmark
         dataset_id:
           type: string
         scoring_functions:
@@ -1517,20 +1517,20 @@ components:
         - dataset_id
         - scoring_functions
         - metadata
-    ListEvalTasksResponse:
+    ListBenchmarksResponse:
       type: object
       properties:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/EvalTask'
+            $ref: '#/components/schemas/Benchmark'
       additionalProperties: false
       required:
         - data
-    DeprecatedRegisterEvalTaskRequest:
+    DeprecatedRegisterBenchmarkRequest:
       type: object
       properties:
-        eval_task_id:
+        benchmark_id:
           type: string
         dataset_id:
           type: string
@@ -1538,7 +1538,7 @@ components:
           type: array
           items:
             type: string
-        provider_eval_task_id:
+        provider_benchmark_id:
           type: string
         provider_id:
           type: string
@@ -1554,7 +1554,7 @@ components:
               - type: object
       additionalProperties: false
       required:
-        - eval_task_id
+        - benchmark_id
         - dataset_id
         - scoring_functions
     AppendRowsRequest:
@@ -3063,7 +3063,7 @@ components:
         - median
         - categorical_count
         - accuracy
-    AppEvalTaskConfig:
+    AppBenchmarkConfig:
       type: object
       properties:
         type:
@@ -3097,7 +3097,7 @@ components:
       additionalProperties: false
       required:
         - type
-    BenchmarkEvalTaskConfig:
+    BenchmarkBenchmarkConfig:
       type: object
       properties:
         type:
@@ -3121,15 +3121,15 @@ components:
         mapping:
           model: '#/components/schemas/ModelCandidate'
           agent: '#/components/schemas/AgentCandidate'
-    EvalTaskConfig:
+    BenchmarkConfig:
       oneOf:
-        - $ref: '#/components/schemas/BenchmarkEvalTaskConfig'
-        - $ref: '#/components/schemas/AppEvalTaskConfig'
+        - $ref: '#/components/schemas/BenchmarkBenchmarkConfig'
+        - $ref: '#/components/schemas/AppBenchmarkConfig'
       discriminator:
         propertyName: type
         mapping:
-          benchmark: '#/components/schemas/BenchmarkEvalTaskConfig'
-          app: '#/components/schemas/AppEvalTaskConfig'
+          benchmark: '#/components/schemas/BenchmarkBenchmarkConfig'
+          app: '#/components/schemas/AppBenchmarkConfig'
     LLMAsJudgeScoringFnParams:
       type: object
       properties:
@@ -3220,7 +3220,7 @@ components:
           items:
             type: string
         task_config:
-          $ref: '#/components/schemas/EvalTaskConfig'
+          $ref: '#/components/schemas/BenchmarkConfig'
       additionalProperties: false
       required:
         - input_rows
@@ -4675,7 +4675,7 @@ components:
         - dataset_id
         - dataset_schema
         - url
-    RegisterEvalTaskRequest:
+    RegisterBenchmarkRequest:
       type: object
       properties:
         task_id:
@@ -4686,7 +4686,7 @@ components:
           type: array
           items:
             type: string
-        provider_eval_task_id:
+        provider_benchmark_id:
           type: string
         provider_id:
           type: string
@@ -4815,7 +4815,7 @@ components:
       type: object
       properties:
         task_config:
-          $ref: '#/components/schemas/EvalTaskConfig'
+          $ref: '#/components/schemas/BenchmarkConfig'
       additionalProperties: false
       required:
         - task_config
@@ -5128,7 +5128,7 @@ tags:
   - name: DatasetIO
   - name: Datasets
   - name: Eval
-  - name: EvalTasks
+  - name: Benchmarks
   - name: Inference
     description: >-
       This API provides the raw interface to the underlying models. Two kinds of models
@@ -5162,7 +5162,7 @@ x-tagGroups:
       - DatasetIO
       - Datasets
       - Eval
-      - EvalTasks
+      - Benchmarks
       - Inference
       - Inspect
       - Models

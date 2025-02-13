@@ -8,13 +8,13 @@ from typing import Any, Dict, List, Optional
 from tqdm import tqdm
 
 from llama_stack.apis.agents import Agents, StepType
+from llama_stack.apis.benchmarks import Benchmark
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
-from llama_stack.apis.eval_tasks import EvalTask
 from llama_stack.apis.inference import Inference, UserMessage
 from llama_stack.apis.scoring import Scoring
 from llama_stack.distribution.datatypes import Api
-from llama_stack.providers.datatypes import EvalTasksProtocolPrivate
+from llama_stack.providers.datatypes import BenchmarksProtocolPrivate
 
 from llama_stack.providers.inline.agents.meta_reference.agent_instance import (
     MEMORY_QUERY_TOOL,
@@ -27,16 +27,16 @@ from llama_stack.providers.utils.common.data_schema_validator import (
 from llama_stack.providers.utils.kvstore import kvstore_impl
 
 from .....apis.common.job_types import Job
-from .....apis.eval.eval import Eval, EvalTaskConfig, EvaluateResponse, JobStatus
+from .....apis.eval.eval import BenchmarkConfig, Eval, EvaluateResponse, JobStatus
 
 from .config import MetaReferenceEvalConfig
 
-EVAL_TASKS_PREFIX = "eval_tasks:"
+EVAL_TASKS_PREFIX = "benchmarks:"
 
 
 class MetaReferenceEvalImpl(
     Eval,
-    EvalTasksProtocolPrivate,
+    BenchmarksProtocolPrivate,
 ):
     def __init__(
         self,
@@ -57,36 +57,36 @@ class MetaReferenceEvalImpl(
         # TODO: assume sync job, will need jobs API for async scheduling
         self.jobs = {}
 
-        self.eval_tasks = {}
+        self.benchmarks = {}
 
     async def initialize(self) -> None:
         self.kvstore = await kvstore_impl(self.config.kvstore)
-        # Load existing eval_tasks from kvstore
+        # Load existing benchmarks from kvstore
         start_key = EVAL_TASKS_PREFIX
         end_key = f"{EVAL_TASKS_PREFIX}\xff"
-        stored_eval_tasks = await self.kvstore.range(start_key, end_key)
+        stored_benchmarks = await self.kvstore.range(start_key, end_key)
 
-        for eval_task in stored_eval_tasks:
-            eval_task = EvalTask.model_validate_json(eval_task)
-            self.eval_tasks[eval_task.identifier] = eval_task
+        for benchmark in stored_benchmarks:
+            benchmark = Benchmark.model_validate_json(benchmark)
+            self.benchmarks[benchmark.identifier] = benchmark
 
     async def shutdown(self) -> None: ...
 
-    async def register_eval_task(self, task_def: EvalTask) -> None:
+    async def register_benchmark(self, task_def: Benchmark) -> None:
         # Store in kvstore
         key = f"{EVAL_TASKS_PREFIX}{task_def.identifier}"
         await self.kvstore.set(
             key=key,
             value=task_def.model_dump_json(),
         )
-        self.eval_tasks[task_def.identifier] = task_def
+        self.benchmarks[task_def.identifier] = task_def
 
     async def run_eval(
         self,
         task_id: str,
-        task_config: EvalTaskConfig,
+        task_config: BenchmarkConfig,
     ) -> Job:
-        task_def = self.eval_tasks[task_id]
+        task_def = self.benchmarks[task_id]
         dataset_id = task_def.dataset_id
         candidate = task_config.eval_candidate
         scoring_functions = task_def.scoring_functions
@@ -110,7 +110,7 @@ class MetaReferenceEvalImpl(
         return Job(job_id=job_id)
 
     async def _run_agent_generation(
-        self, input_rows: List[Dict[str, Any]], task_config: EvalTaskConfig
+        self, input_rows: List[Dict[str, Any]], task_config: BenchmarkConfig
     ) -> List[Dict[str, Any]]:
         candidate = task_config.eval_candidate
         create_response = await self.agents_api.create_agent(candidate.config)
@@ -153,7 +153,7 @@ class MetaReferenceEvalImpl(
         return generations
 
     async def _run_model_generation(
-        self, input_rows: List[Dict[str, Any]], task_config: EvalTaskConfig
+        self, input_rows: List[Dict[str, Any]], task_config: BenchmarkConfig
     ) -> List[Dict[str, Any]]:
         candidate = task_config.eval_candidate
         assert candidate.sampling_params.max_tokens is not None, "SamplingParams.max_tokens must be provided"
@@ -192,7 +192,7 @@ class MetaReferenceEvalImpl(
         task_id: str,
         input_rows: List[Dict[str, Any]],
         scoring_functions: List[str],
-        task_config: EvalTaskConfig,
+        task_config: BenchmarkConfig,
     ) -> EvaluateResponse:
         candidate = task_config.eval_candidate
         if candidate.type == "agent":

@@ -10,8 +10,8 @@ Here's how to set up basic evaluation:
 
 ```python
 # Create an evaluation task
-response = client.eval_tasks.register(
-    eval_task_id="my_eval",
+response = client.benchmarks.register(
+    benchmark_id="my_eval",
     dataset_id="my_dataset",
     scoring_functions=["accuracy", "relevance"],
 )
