@@ -41,7 +41,6 @@ from llama_stack.apis.tools import (
     ToolInvocationResult,
 )
 from llama_stack.apis.vector_io import QueryChunksResponse
-
 from llama_stack.providers.inline.agents.meta_reference.agent_instance import (
     MEMORY_QUERY_TOOL,
 )

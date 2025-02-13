@@ -11,7 +11,6 @@ from llama_stack.apis.scoring_functions import (
     ScoringFn,
 )
 
-
 factuality_fn_def = ScoringFn(
     identifier="braintrust::factuality",
     description=(

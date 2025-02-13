@@ -42,10 +42,10 @@ from llama_stack.apis.agents import (
     Turn,
 )
 from llama_stack.apis.common.content_types import (
+    URL,
     TextContentItem,
     ToolCallDelta,
     ToolCallParseStatus,
-    URL,
 )
 from llama_stack.apis.inference import (
     ChatCompletionResponseEventType,

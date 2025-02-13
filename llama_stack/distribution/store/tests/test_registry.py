@@ -8,9 +8,9 @@ import os
 
 import pytest
 import pytest_asyncio
+
 from llama_stack.apis.inference import Model
 from llama_stack.apis.vector_dbs import VectorDB
-
 from llama_stack.distribution.store.registry import (
     CachedDiskDistributionRegistry,
     DiskDistributionRegistry,

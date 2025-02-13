@@ -7,7 +7,6 @@
 import random
 
 import pytest
-
 from llama_stack_client.types import Document
 
 

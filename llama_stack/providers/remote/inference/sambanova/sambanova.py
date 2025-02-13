@@ -24,8 +24,8 @@ from llama_stack.apis.common.content_types import (
 )
 from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.providers.utils.inference.model_registry import (
-    build_model_alias,
     ModelRegistryHelper,
+    build_model_alias,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
     process_chat_completion_stream_response,

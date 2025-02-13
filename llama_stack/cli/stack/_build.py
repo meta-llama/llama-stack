@@ -21,12 +21,11 @@ from prompt_toolkit.validation import Validator
 from termcolor import cprint
 
 from llama_stack.cli.table import print_table
-
 from llama_stack.distribution.build import (
+    SERVER_DEPENDENCIES,
+    ImageType,
     build_image,
     get_provider_dependencies,
-    ImageType,
-    SERVER_DEPENDENCIES,
 )
 from llama_stack.distribution.datatypes import (
     BuildConfig,

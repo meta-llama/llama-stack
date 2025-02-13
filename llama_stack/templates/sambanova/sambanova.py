@@ -16,7 +16,6 @@ from llama_stack.distribution.datatypes import (
 )
 from llama_stack.providers.remote.inference.sambanova import SambaNovaImplConfig
 from llama_stack.providers.remote.inference.sambanova.sambanova import MODEL_ALIASES
-
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
 

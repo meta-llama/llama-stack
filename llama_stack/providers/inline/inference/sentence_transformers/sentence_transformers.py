@@ -15,9 +15,9 @@ from llama_stack.apis.inference import (
     ResponseFormat,
     SamplingParams,
     ToolChoice,
+    ToolConfig,
     ToolDefinition,
     ToolPromptFormat,
-    ToolConfig,
 )
 from llama_stack.providers.datatypes import Model, ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.embedding_mixin import (

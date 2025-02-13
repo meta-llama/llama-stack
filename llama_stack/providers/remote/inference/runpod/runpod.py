@@ -8,14 +8,12 @@ from typing import AsyncGenerator
 from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.datatypes import Message
 from llama_models.llama3.api.tokenizer import Tokenizer
-
 from openai import OpenAI
 
 from llama_stack.apis.inference import *  # noqa: F403
 
 # from llama_stack.providers.datatypes import ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
-
 from llama_stack.providers.utils.inference.openai_compat import (
     get_sampling_options,
     process_chat_completion_response,

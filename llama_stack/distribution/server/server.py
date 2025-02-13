@@ -7,9 +7,9 @@
 import argparse
 import asyncio
 import functools
-import logging
 import inspect
 import json
+import logging
 import os
 import signal
 import sys
@@ -21,7 +21,8 @@ from pathlib import Path
 from typing import Any, List, Union
 
 import yaml
-from fastapi import Body, FastAPI, HTTPException, Path as FastapiPath, Request
+from fastapi import Body, FastAPI, HTTPException, Request
+from fastapi import Path as FastapiPath
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, ValidationError

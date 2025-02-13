@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 import re
-
 from string import Template
 from typing import Any, Dict, List, Optional
 
@@ -25,17 +24,14 @@ from llama_stack.apis.safety import (
     SafetyViolation,
     ViolationLevel,
 )
-
 from llama_stack.apis.shields import Shield
 from llama_stack.distribution.datatypes import Api
-
 from llama_stack.providers.datatypes import ShieldsProtocolPrivate
 from llama_stack.providers.utils.inference.prompt_adapter import (
     interleaved_content_as_str,
 )
 
 from .config import LlamaGuardConfig
-
 
 CANNED_RESPONSE_TEXT = "I can't answer that. Can I help with something else?"
 

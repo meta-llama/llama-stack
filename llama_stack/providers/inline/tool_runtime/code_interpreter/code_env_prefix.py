@@ -82,7 +82,11 @@ import sys as _sys
 # them with linters - they're used in code_execution.py
 from contextlib import (  # noqa
     contextmanager as _contextmanager,
+)
+from contextlib import (
     redirect_stderr as _redirect_stderr,
+)
+from contextlib import (
     redirect_stdout as _redirect_stdout,
 )
 from multiprocessing.connection import Connection as _Connection

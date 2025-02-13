@@ -12,8 +12,8 @@ from typing import (
     Literal,
     Optional,
     Protocol,
-    runtime_checkable,
     Union,
+    runtime_checkable,
 )
 
 from llama_models.schema_utils import json_schema_type, register_schema, webmethod

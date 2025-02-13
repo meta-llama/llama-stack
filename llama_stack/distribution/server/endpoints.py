@@ -10,11 +10,8 @@ from typing import Dict, List
 from pydantic import BaseModel
 
 from llama_stack.apis.tools import RAGToolRuntime, SpecialToolGroup
-
 from llama_stack.apis.version import LLAMA_STACK_API_VERSION
-
 from llama_stack.distribution.resolver import api_protocol_map
-
 from llama_stack.providers.datatypes import Api
 
 

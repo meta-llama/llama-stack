@@ -8,7 +8,6 @@ import argparse
 import json
 
 from llama_models.sku_list import resolve_model
-
 from termcolor import colored
 
 from llama_stack.cli.subcommand import Subcommand

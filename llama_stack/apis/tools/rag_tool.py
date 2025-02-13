@@ -11,7 +11,7 @@ from llama_models.schema_utils import json_schema_type, register_schema, webmeth
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated, Protocol, runtime_checkable
 
-from llama_stack.apis.common.content_types import InterleavedContent, URL
+from llama_stack.apis.common.content_types import URL, InterleavedContent
 from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
 
 

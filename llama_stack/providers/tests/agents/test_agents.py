@@ -23,7 +23,6 @@ from llama_stack.apis.agents import (
     ToolExecutionStep,
     Turn,
 )
-
 from llama_stack.apis.inference import CompletionMessage, UserMessage
 from llama_stack.apis.safety import ViolationLevel
 from llama_stack.providers.datatypes import Api

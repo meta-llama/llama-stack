@@ -7,10 +7,8 @@
 import pytest
 
 from ..conftest import get_provider_fixture_overrides
-
 from ..inference.fixtures import INFERENCE_FIXTURES
 from .fixtures import SAFETY_FIXTURES
-
 
 DEFAULT_PROVIDER_COMBINATIONS = [
     pytest.param(

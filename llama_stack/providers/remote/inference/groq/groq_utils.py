@@ -24,9 +24,7 @@ from groq.types.chat.chat_completion_user_message_param import (
 )
 from groq.types.chat.completion_create_params import CompletionCreateParams
 from groq.types.shared.function_definition import FunctionDefinition
-
 from llama_models.llama3.api.datatypes import ToolParamDefinition
-
 
 from llama_stack.apis.common.content_types import (
     TextDelta,
@@ -47,9 +45,9 @@ from llama_stack.apis.inference import (
     ToolPromptFormat,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
-    get_sampling_strategy_options,
-    convert_tool_call,
     UnparseableToolCall,
+    convert_tool_call,
+    get_sampling_strategy_options,
 )
 
 

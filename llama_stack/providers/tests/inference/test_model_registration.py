@@ -8,7 +8,6 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-
 # How to run this test:
 #
 # torchrun $CONDA_PREFIX/bin/pytest -v -s -k "meta_reference" --inference-model="Llama3.1-8B-Instruct"

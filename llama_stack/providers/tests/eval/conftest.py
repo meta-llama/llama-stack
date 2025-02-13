@@ -7,16 +7,14 @@
 import pytest
 
 from ..agents.fixtures import AGENTS_FIXTURES
-
 from ..conftest import get_provider_fixture_overrides
-
 from ..datasetio.fixtures import DATASETIO_FIXTURES
 from ..inference.fixtures import INFERENCE_FIXTURES
 from ..safety.fixtures import SAFETY_FIXTURES
 from ..scoring.fixtures import SCORING_FIXTURES
 from ..tools.fixtures import TOOL_RUNTIME_FIXTURES
-from .fixtures import EVAL_FIXTURES
 from ..vector_io.fixtures import VECTOR_IO_FIXTURES
+from .fixtures import EVAL_FIXTURES
 
 DEFAULT_PROVIDER_COMBINATIONS = [
     pytest.param(

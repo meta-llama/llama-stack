@@ -31,13 +31,13 @@ from llama_stack.apis.inference import (
 from llama_stack.providers.remote.inference.bedrock.config import BedrockConfig
 from llama_stack.providers.utils.bedrock.client import create_bedrock_client
 from llama_stack.providers.utils.inference.model_registry import (
-    build_model_alias,
     ModelRegistryHelper,
+    build_model_alias,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
-    get_sampling_strategy_options,
     OpenAICompatCompletionChoice,
     OpenAICompatCompletionResponse,
+    get_sampling_strategy_options,
     process_chat_completion_response,
     process_chat_completion_stream_response,
 )

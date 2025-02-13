@@ -7,7 +7,6 @@
 import os
 from pathlib import Path
 
-
 LLAMA_STACK_CONFIG_DIR = Path(os.getenv("LLAMA_STACK_CONFIG_DIR", os.path.expanduser("~/.llama/")))
 
 DISTRIBS_BASE_DIR = LLAMA_STACK_CONFIG_DIR / "distributions"

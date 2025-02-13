@@ -6,6 +6,7 @@
 
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.models import Model
+
 from .config import SampleConfig
 
 

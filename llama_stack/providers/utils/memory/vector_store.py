@@ -15,13 +15,14 @@ from urllib.parse import unquote
 import chardet
 import httpx
 import numpy as np
-
 from llama_models.llama3.api.tokenizer import Tokenizer
+from numpy.typing import NDArray
+from pypdf import PdfReader
 
 from llama_stack.apis.common.content_types import (
+    URL,
     InterleavedContent,
     TextContentItem,
-    URL,
 )
 from llama_stack.apis.tools import RAGDocument
 from llama_stack.apis.vector_dbs import VectorDB
@@ -30,9 +31,6 @@ from llama_stack.providers.datatypes import Api
 from llama_stack.providers.utils.inference.prompt_adapter import (
     interleaved_content_as_str,
 )
-from numpy.typing import NDArray
-
-from pypdf import PdfReader
 
 log = logging.getLogger(__name__)
 

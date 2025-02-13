@@ -8,7 +8,6 @@ from typing import Any, Dict
 
 from pydantic import BaseModel
 
-
 DEFAULT_OLLAMA_URL = "http://localhost:11434"
 
 

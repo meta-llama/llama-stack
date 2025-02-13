@@ -12,7 +12,6 @@ import pytest_asyncio
 
 from llama_stack.apis.models import ModelInput, ModelType
 from llama_stack.distribution.datatypes import Api, Provider
-
 from llama_stack.providers.inline.vector_io.chroma import ChromaInlineImplConfig
 from llama_stack.providers.inline.vector_io.faiss import FaissImplConfig
 from llama_stack.providers.inline.vector_io.sqlite_vec import SQLiteVectorIOConfig

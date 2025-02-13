@@ -8,7 +8,6 @@
 # This software may be used and distributed in accordance with the terms of the Llama 3 Community License Agreement.
 
 import collections
-
 import logging
 from typing import Optional, Type
 
@@ -23,7 +22,7 @@ except ImportError:
     raise
 
 import torch
-from torch import nn, Tensor
+from torch import Tensor, nn
 
 
 class Fp8ScaledWeights:

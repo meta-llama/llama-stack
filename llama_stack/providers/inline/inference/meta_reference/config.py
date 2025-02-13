@@ -9,7 +9,6 @@ from typing import Any, Dict, Optional
 from pydantic import BaseModel, field_validator
 
 from llama_stack.apis.inference import QuantizationConfig
-
 from llama_stack.providers.utils.inference import supported_inference_models
 
 

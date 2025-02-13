@@ -10,10 +10,12 @@ import pytest
 from groq.types.chat.chat_completion import ChatCompletion, Choice
 from groq.types.chat.chat_completion_chunk import (
     ChatCompletionChunk,
-    Choice as StreamChoice,
     ChoiceDelta,
     ChoiceDeltaToolCall,
     ChoiceDeltaToolCallFunction,
+)
+from groq.types.chat.chat_completion_chunk import (
+    Choice as StreamChoice,
 )
 from groq.types.chat.chat_completion_message import ChatCompletionMessage
 from groq.types.chat.chat_completion_message_tool_call import (
@@ -23,6 +25,7 @@ from groq.types.chat.chat_completion_message_tool_call import (
 from groq.types.shared.function_definition import FunctionDefinition
 from llama_models.datatypes import GreedySamplingStrategy, TopPSamplingStrategy
 from llama_models.llama3.api.datatypes import ToolParamDefinition
+
 from llama_stack.apis.common.content_types import ToolCallParseStatus
 from llama_stack.apis.inference import (
     ChatCompletionRequest,

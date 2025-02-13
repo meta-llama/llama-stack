@@ -13,7 +13,6 @@ from llama_models.datatypes import (
     TopKSamplingStrategy,
     TopPSamplingStrategy,
 )
-
 from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.datatypes import StopReason, ToolCall
 from openai.types.chat import ChatCompletionMessageToolCall
@@ -26,7 +25,6 @@ from llama_stack.apis.common.content_types import (
     ToolCallDelta,
     ToolCallParseStatus,
 )
-
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
     ChatCompletionResponse,
@@ -39,7 +37,6 @@ from llama_stack.apis.inference import (
     Message,
     TokenLogProbs,
 )
-
 from llama_stack.providers.utils.inference.prompt_adapter import (
     convert_image_content_to_url,
 )

@@ -12,8 +12,7 @@ from pathlib import Path
 import pytest
 
 from llama_stack.apis.tools import RAGDocument
-
-from llama_stack.providers.utils.memory.vector_store import content_from_doc, URL
+from llama_stack.providers.utils.memory.vector_store import URL, content_from_doc
 
 DUMMY_PDF_PATH = Path(os.path.abspath(__file__)).parent / "fixtures" / "dummy.pdf"
 

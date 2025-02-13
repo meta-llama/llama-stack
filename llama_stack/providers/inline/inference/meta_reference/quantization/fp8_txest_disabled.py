@@ -10,9 +10,9 @@
 import unittest
 
 import torch
-
-from fp8_impls import ffn_swiglu_fp8_dynamic, FfnQuantizeMode, quantize_fp8
-from hypothesis import given, settings, strategies as st
+from fp8_impls import FfnQuantizeMode, ffn_swiglu_fp8_dynamic, quantize_fp8
+from hypothesis import given, settings
+from hypothesis import strategies as st
 from torch import Tensor
 
 

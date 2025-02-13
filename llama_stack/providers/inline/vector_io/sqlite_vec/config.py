@@ -5,8 +5,9 @@
 # the root directory of this source tree.
 
 # config.py
-from pydantic import BaseModel
 from typing import Any, Dict
+
+from pydantic import BaseModel
 
 from llama_stack.providers.utils.kvstore.config import (
     KVStoreConfig,

@@ -11,9 +11,9 @@ import string
 from typing import Any, Dict, List, Optional
 
 from llama_stack.apis.common.content_types import (
+    URL,
     InterleavedContent,
     TextContentItem,
-    URL,
 )
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.tools import (

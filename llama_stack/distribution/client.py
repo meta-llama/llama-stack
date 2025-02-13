@@ -5,18 +5,16 @@
 # the root directory of this source tree.
 
 import inspect
-
 import json
 from collections.abc import AsyncIterator
 from enum import Enum
-from typing import Any, get_args, get_origin, Type, Union
+from typing import Any, Type, Union, get_args, get_origin
 
 import httpx
 from pydantic import BaseModel, parse_obj_as
 from termcolor import cprint
 
 from llama_stack.apis.version import LLAMA_STACK_API_VERSION
-
 from llama_stack.providers.datatypes import RemoteProviderConfig
 
 _CLIENT_CLASSES = {}

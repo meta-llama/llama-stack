@@ -8,7 +8,6 @@ import logging
 from typing import Any, Dict, List
 
 import torch
-
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 from llama_stack.apis.inference import Message
@@ -19,7 +18,6 @@ from llama_stack.apis.safety import (
     ViolationLevel,
 )
 from llama_stack.apis.shields import Shield
-
 from llama_stack.distribution.utils.model_utils import model_local_dir
 from llama_stack.providers.datatypes import ShieldsProtocolPrivate
 from llama_stack.providers.utils.inference.prompt_adapter import (

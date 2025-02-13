@@ -31,9 +31,9 @@ from llama_stack.apis.inference import (
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.providers.remote.inference.groq.config import GroqConfig
 from llama_stack.providers.utils.inference.model_registry import (
+    ModelRegistryHelper,
     build_model_alias,
     build_model_alias_with_just_provider_model_id,
-    ModelRegistryHelper,
 )
 
 from .groq_utils import (

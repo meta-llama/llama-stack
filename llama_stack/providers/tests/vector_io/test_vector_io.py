@@ -9,10 +9,8 @@ import uuid
 import pytest
 
 from llama_stack.apis.tools import RAGDocument
-
 from llama_stack.apis.vector_dbs import ListVectorDBsResponse, VectorDB
 from llama_stack.apis.vector_io import QueryChunksResponse
-
 from llama_stack.providers.utils.memory.vector_store import make_overlapped_chunks
 
 # How to run this test:

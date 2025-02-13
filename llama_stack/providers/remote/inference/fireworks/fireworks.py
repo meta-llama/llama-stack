@@ -31,8 +31,8 @@ from llama_stack.apis.inference import (
 )
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.providers.utils.inference.model_registry import (
-    build_model_alias,
     ModelRegistryHelper,
+    build_model_alias,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
     convert_message_to_openai_dict,

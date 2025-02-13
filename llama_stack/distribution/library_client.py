@@ -13,10 +13,21 @@ import re
 from concurrent.futures import ThreadPoolExecutor
 from enum import Enum
 from pathlib import Path
-from typing import Any, get_args, get_origin, Optional, TypeVar
+from typing import Any, Optional, TypeVar, get_args, get_origin
 
 import httpx
 import yaml
+from llama_stack_client import (
+    NOT_GIVEN,
+    APIResponse,
+    AsyncAPIResponse,
+    AsyncLlamaStackClient,
+    AsyncStream,
+    LlamaStackClient,
+)
+from pydantic import BaseModel, TypeAdapter
+from rich.console import Console
+from termcolor import cprint
 
 from llama_stack.distribution.build import print_pip_install_help
 from llama_stack.distribution.configure import parse_and_maybe_upgrade_config
@@ -35,17 +46,6 @@ from llama_stack.providers.utils.telemetry.tracing import (
     setup_logger,
     start_trace,
 )
-from llama_stack_client import (
-    APIResponse,
-    AsyncAPIResponse,
-    AsyncLlamaStackClient,
-    AsyncStream,
-    LlamaStackClient,
-    NOT_GIVEN,
-)
-from pydantic import BaseModel, TypeAdapter
-from rich.console import Console
-from termcolor import cprint
 
 T = TypeVar("T")
 

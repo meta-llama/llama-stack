@@ -5,11 +5,11 @@
 # the root directory of this source tree.
 
 import pytest
+
 from llama_stack.apis.inference import Inference
 from llama_stack.providers.remote.inference.groq import get_adapter_impl
 from llama_stack.providers.remote.inference.groq.config import GroqConfig
 from llama_stack.providers.remote.inference.groq.groq import GroqInferenceAdapter
-
 from llama_stack.providers.remote.inference.ollama import OllamaImplConfig
 
 

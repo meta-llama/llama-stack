@@ -7,7 +7,6 @@
 from typing import Any, Dict
 
 from llama_stack.distribution.datatypes import RoutedProtocol
-
 from llama_stack.distribution.store import DistributionRegistry
 from llama_stack.providers.datatypes import Api, RoutingTable
 

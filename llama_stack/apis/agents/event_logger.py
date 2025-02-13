@@ -13,7 +13,6 @@ from termcolor import cprint
 from llama_stack.apis.agents import AgentTurnResponseEventType, StepType
 from llama_stack.apis.common.content_types import ToolCallParseStatus
 from llama_stack.apis.inference import ToolResponseMessage
-
 from llama_stack.providers.utils.inference.prompt_adapter import (
     interleaved_content_as_str,
 )

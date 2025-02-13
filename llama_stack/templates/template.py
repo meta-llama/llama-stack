@@ -9,6 +9,7 @@ from typing import Dict, List, Literal, Optional, Tuple
 
 import jinja2
 import yaml
+from pydantic import BaseModel, Field
 
 from llama_stack.apis.models.models import ModelType
 from llama_stack.distribution.datatypes import (
@@ -24,7 +25,6 @@ from llama_stack.distribution.datatypes import (
 from llama_stack.distribution.distribution import get_provider_registry
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
 from llama_stack.providers.utils.kvstore.config import SqliteKVStoreConfig
-from pydantic import BaseModel, Field
 
 
 class RunConfigSettings(BaseModel):
