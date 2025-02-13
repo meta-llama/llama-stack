@@ -3498,7 +3498,17 @@
             "ScoringResult": {
                 "type": "object",
                 "properties": {
-                    "score_rows": {
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricEvent"
+                        }
+                    },
+                    "completion_message": {
+                        "$ref": "#/components/schemas/CompletionMessage",
+                        "description": "The complete response message"
+                    },
+                    "logprobs": {
                         "type": "array",
                         "items": {
                             "type": "object",
@@ -3558,7 +3568,75 @@
                     "aggregated_results"
                 ]
             },
-            "Benchmark": {
+            "MetricEvent": {
+                "type": "object",
+                "properties": {
+                    "trace_id": {
+                        "type": "string"
+                    },
+                    "span_id": {
+                        "type": "string"
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "attributes": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "integer"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ]
+                        }
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "metric",
+                        "default": "metric"
+                    },
+                    "metric": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "oneOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "number"
+                            }
+                        ]
+                    },
+                    "unit": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "trace_id",
+                    "span_id",
+                    "timestamp",
+                    "type",
+                    "metric",
+                    "value",
+                    "unit"
+                ]
+            },
+            "TokenLogProbs": {
                 "type": "object",
                 "properties": {
                     "identifier": {
@@ -6736,77 +6814,6 @@
                     "critical"
                 ]
             },
-            "MetricEvent": {
-                "type": "object",
-                "properties": {
-                    "trace_id": {
-                        "type": "string"
-                    },
-                    "span_id": {
-                        "type": "string"
-                    },
-                    "timestamp": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "attributes": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    },
-                    "type": {
-                        "type": "string",
-                        "const": "metric",
-                        "default": "metric"
-                    },
-                    "metric": {
-                        "type": "string"
-                    },
-                    "value": {
-                        "oneOf": [
-                            {
-                                "type": "integer"
-                            },
-                            {
-                                "type": "number"
-                            }
-                        ]
-                    },
-                    "unit": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "trace_id",
-                    "span_id",
-                    "timestamp",
-                    "type",
-                    "metric",
-                    "value",
-                    "unit"
-                ]
-            },
             "SpanEndPayload": {
                 "type": "object",
                 "properties": {
@@ -6864,22 +6871,19 @@
                         "additionalProperties": {
                             "oneOf": [
                                 {
-                                    "type": "null"
+                                    "type": "string"
                                 },
                                 {
-                                    "type": "boolean"
+                                    "type": "integer"
                                 },
                                 {
                                     "type": "number"
                                 },
                                 {
-                                    "type": "string"
+                                    "type": "boolean"
                                 },
                                 {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
+                                    "type": "null"
                                 }
                             ]
                         }
@@ -6937,22 +6941,19 @@
                         "additionalProperties": {
                             "oneOf": [
                                 {
-                                    "type": "null"
+                                    "type": "string"
                                 },
                                 {
-                                    "type": "boolean"
+                                    "type": "integer"
                                 },
                                 {
                                     "type": "number"
                                 },
                                 {
-                                    "type": "string"
+                                    "type": "boolean"
                                 },
                                 {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
+                                    "type": "null"
                                 }
                             ]
                         }

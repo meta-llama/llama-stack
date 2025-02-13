@@ -26,6 +26,8 @@ class ModelParser(Subcommand):
             description="Work with llama models",
         )
 
+        self.parser.set_defaults(func=lambda args: self.parser.print_help())
+
         subparsers = self.parser.add_subparsers(title="model_subcommands")
 
         # Add sub-commands

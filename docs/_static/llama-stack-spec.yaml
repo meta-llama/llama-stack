@@ -2569,6 +2569,10 @@ components:
     ChatCompletionResponse:
       type: object
       properties:
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
         completion_message:
           $ref: '#/components/schemas/CompletionMessage'
           description: The complete response message
@@ -2582,6 +2586,46 @@ components:
       required:
         - completion_message
       description: Response from a chat completion request.
+    MetricEvent:
+      type: object
+      properties:
+        trace_id:
+          type: string
+        span_id:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        attributes:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: string
+              - type: integer
+              - type: number
+              - type: boolean
+              - type: 'null'
+        type:
+          type: string
+          const: metric
+          default: metric
+        metric:
+          type: string
+        value:
+          oneOf:
+            - type: integer
+            - type: number
+        unit:
+          type: string
+      additionalProperties: false
+      required:
+        - trace_id
+        - span_id
+        - timestamp
+        - type
+        - metric
+        - value
+        - unit
     TokenLogProbs:
       type: object
       properties:
@@ -2777,6 +2821,10 @@ components:
     ChatCompletionResponseStreamChunk:
       type: object
       properties:
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
         event:
           $ref: '#/components/schemas/ChatCompletionResponseEvent'
           description: The event containing the new content
@@ -2811,6 +2859,185 @@ components:
         - type
         - image
     TextDelta:
+      type: object
+      properties:
+        type:
+          type: string
+          const: text
+          default: text
+        text:
+          type: string
+      additionalProperties: false
+      required:
+        - type
+        - text
+    ToolCallDelta:
+      type: object
+      properties:
+        type:
+          type: string
+          const: tool_call
+          default: tool_call
+        tool_call:
+          oneOf:
+            - type: string
+            - $ref: '#/components/schemas/ToolCall'
+        parse_status:
+          type: string
+          enum:
+            - started
+            - in_progress
+            - failed
+            - succeeded
+      additionalProperties: false
+      required:
+        - type
+        - tool_call
+        - parse_status
+    CompletionRequest:
+      type: object
+      properties:
+        model_id:
+          type: string
+          description: >-
+            The identifier of the model to use. The model must be registered with
+            Llama Stack and available via the /models endpoint.
+        content:
+          $ref: '#/components/schemas/InterleavedContent'
+          description: The content to generate a completion for
+        sampling_params:
+          $ref: '#/components/schemas/SamplingParams'
+          description: >-
+            (Optional) Parameters to control the sampling strategy
+        response_format:
+          $ref: '#/components/schemas/ResponseFormat'
+          description: >-
+            (Optional) Grammar specification for guided (structured) decoding
+        stream:
+          type: boolean
+          description: >-
+            (Optional) If True, generate an SSE event stream of the response. Defaults
+            to False.
+        logprobs:
+          type: object
+          properties:
+            top_k:
+              type: integer
+              default: 0
+              description: >-
+                How many tokens (for each position) to return log probabilities for.
+          additionalProperties: false
+          description: >-
+            (Optional) If specified, log probabilities for each token position will
+            be returned.
+      additionalProperties: false
+      required:
+        - model_id
+        - content
+    CompletionResponseStreamChunk:
+      type: object
+      properties:
+        delta:
+          type: string
+          description: >-
+            New content generated since last chunk. This can be one or more tokens.
+        stop_reason:
+          type: string
+          enum:
+            - end_of_turn
+            - end_of_message
+            - out_of_tokens
+          description: >-
+            Optional reason why generation stopped, if complete
+        logprobs:
+          type: array
+          items:
+            $ref: '#/components/schemas/TokenLogProbs'
+          description: >-
+            Optional log probabilities for generated tokens
+      additionalProperties: false
+      required:
+        - delta
+      description: >-
+        A chunk of a streamed completion response.
+    AgentConfig:
+      type: object
+      properties:
+        sampling_params:
+          $ref: '#/components/schemas/SamplingParams'
+        input_shields:
+          type: array
+          items:
+            type: string
+        output_shields:
+          type: array
+          items:
+            type: string
+        toolgroups:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentTool'
+        client_tools:
+          type: array
+          items:
+            $ref: '#/components/schemas/ToolDef'
+        tool_choice:
+          type: string
+          enum:
+            - auto
+            - required
+          description: >-
+            Whether tool use is required or automatic. This is a hint to the model
+            which may not be followed. It depends on the Instruction Following capabilities
+            of the model.
+        tool_prompt_format:
+          type: string
+          enum:
+            - json
+            - function_tag
+            - python_list
+          description: >-
+            Prompt format for calling custom / zero shot tools.
+        tool_config:
+          $ref: '#/components/schemas/ToolConfig'
+        max_infer_iters:
+          type: integer
+          default: 10
+        model:
+          type: string
+        instructions:
+          type: string
+        enable_session_persistence:
+          type: boolean
+        response_format:
+          $ref: '#/components/schemas/ResponseFormat'
+      additionalProperties: false
+      required:
+        - model
+        - instructions
+        - enable_session_persistence
+    AgentTool:
+      oneOf:
+        - type: string
+        - type: object
+          properties:
+            name:
+              type: string
+            args:
+              type: object
+              additionalProperties:
+                oneOf:
+                  - type: 'null'
+                  - type: boolean
+                  - type: number
+                  - type: string
+                  - type: array
+                  - type: object
+          additionalProperties: false
+          required:
+            - name
+            - args
+    ToolDef:
       type: object
       properties:
         type:
@@ -4282,47 +4509,6 @@ components:
         - warn
         - error
         - critical
-    MetricEvent:
-      type: object
-      properties:
-        trace_id:
-          type: string
-        span_id:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-        attributes:
-          type: object
-          additionalProperties:
-            oneOf:
-              - type: 'null'
-              - type: boolean
-              - type: number
-              - type: string
-              - type: array
-              - type: object
-        type:
-          type: string
-          const: metric
-          default: metric
-        metric:
-          type: string
-        value:
-          oneOf:
-            - type: integer
-            - type: number
-        unit:
-          type: string
-      additionalProperties: false
-      required:
-        - trace_id
-        - span_id
-        - timestamp
-        - type
-        - metric
-        - value
-        - unit
     SpanEndPayload:
       type: object
       properties:
@@ -4365,12 +4551,11 @@ components:
           type: object
           additionalProperties:
             oneOf:
-              - type: 'null'
-              - type: boolean
-              - type: number
               - type: string
-              - type: array
-              - type: object
+              - type: integer
+              - type: number
+              - type: boolean
+              - type: 'null'
         type:
           type: string
           const: structured_log
@@ -4407,12 +4592,11 @@ components:
           type: object
           additionalProperties:
             oneOf:
-              - type: 'null'
-              - type: boolean
-              - type: number
               - type: string
-              - type: array
-              - type: object
+              - type: integer
+              - type: number
+              - type: boolean
+              - type: 'null'
         type:
           type: string
           const: unstructured_log
