@@ -318,7 +318,7 @@ class Agents(Protocol):
         agent_config: AgentConfig,
     ) -> AgentCreateResponse: ...
 
-    @webmethod(route="/agents/{agent_id:path}/session/{session_id:path}/turn", method="POST")
+    @webmethod(route="/agents/{agent_id}/session/{session_id}/turn", method="POST")
     async def create_agent_turn(
         self,
         agent_id: str,
@@ -336,7 +336,7 @@ class Agents(Protocol):
     ) -> Union[Turn, AsyncIterator[AgentTurnResponseStreamChunk]]: ...
 
     @webmethod(
-        route="/agents/{agent_id:path}/session/{session_id:path}/turn/{turn_id:path}",
+        route="/agents/{agent_id}/session/{session_id}/turn/{turn_id}",
         method="GET",
     )
     async def get_agents_turn(
@@ -347,7 +347,7 @@ class Agents(Protocol):
     ) -> Turn: ...
 
     @webmethod(
-        route="/agents/{agent_id:path}/session/{session_id:path}/turn/{turn_id:path}/step/{step_id:path}",
+        route="/agents/{agent_id}/session/{session_id}/turn/{turn_id}/step/{step_id}",
         method="GET",
     )
     async def get_agents_step(
@@ -358,14 +358,14 @@ class Agents(Protocol):
         step_id: str,
     ) -> AgentStepResponse: ...
 
-    @webmethod(route="/agents/{agent_id:path}/session", method="POST")
+    @webmethod(route="/agents/{agent_id}/session", method="POST")
     async def create_agent_session(
         self,
         agent_id: str,
         session_name: str,
     ) -> AgentSessionCreateResponse: ...
 
-    @webmethod(route="/agents/{agent_id:path}/session/{session_id:path}", method="GET")
+    @webmethod(route="/agents/{agent_id}/session/{session_id}", method="GET")
     async def get_agents_session(
         self,
         session_id: str,
@@ -373,14 +373,14 @@ class Agents(Protocol):
         turn_ids: Optional[List[str]] = None,
     ) -> Session: ...
 
-    @webmethod(route="/agents/{agent_id:path}/session/{session_id:path}", method="DELETE")
+    @webmethod(route="/agents/{agent_id}/session/{session_id}", method="DELETE")
     async def delete_agents_session(
         self,
         session_id: str,
         agent_id: str,
     ) -> None: ...
 
-    @webmethod(route="/agents/{agent_id:path}", method="DELETE")
+    @webmethod(route="/agents/{agent_id}", method="DELETE")
     async def delete_agent(
         self,
         agent_id: str,
