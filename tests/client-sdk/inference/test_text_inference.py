@@ -14,13 +14,7 @@ PROVIDER_TOOL_PROMPT_FORMAT = {
     "remote::vllm": "json",
 }
 
-PROVIDER_LOGPROBS_TOP_K = set(
-    {
-        "remote::together",
-        "remote::fireworks",
-        # "remote:vllm"
-    }
-)
+PROVIDER_LOGPROBS_TOP_K = {"remote::together", "remote::fireworks", "remote::vllm"}
 
 
 @pytest.fixture(scope="session")
