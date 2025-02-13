@@ -46,8 +46,8 @@ from llama_stack.providers.utils.inference.embedding_mixin import (
     SentenceTransformerEmbeddingMixin,
 )
 from llama_stack.providers.utils.inference.model_registry import (
-    build_model_alias,
     ModelRegistryHelper,
+    build_model_alias,
 )
 from llama_stack.providers.utils.inference.prompt_adapter import (
     augment_content_with_response_format_prompt,

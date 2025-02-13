@@ -26,8 +26,8 @@ from llama_stack.apis.inference import (
     ToolPromptFormat,
 )
 from llama_stack.providers.utils.inference.model_registry import (
-    build_model_alias,
     ModelRegistryHelper,
+    build_model_alias,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
     get_sampling_options,

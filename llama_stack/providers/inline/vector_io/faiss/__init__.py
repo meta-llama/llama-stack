@@ -7,6 +7,7 @@
 from typing import Dict
 
 from llama_stack.providers.datatypes import Api, ProviderSpec
+
 from .config import FaissImplConfig
 
 

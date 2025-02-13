@@ -21,6 +21,7 @@ from llama_stack.providers.utils.memory.vector_store import (
     EmbeddingIndex,
     VectorDBWithIndex,
 )
+
 from .config import ChromaRemoteImplConfig
 
 log = logging.getLogger(__name__)

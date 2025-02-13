@@ -16,11 +16,9 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 import httpx
-
 from llama_models.datatypes import Model
 from llama_models.sku_list import LlamaDownloadInfo
 from pydantic import BaseModel, ConfigDict
-
 from rich.console import Console
 from rich.progress import (
     BarColumn,

@@ -11,7 +11,6 @@ from llama_stack.cli.model.download import ModelDownload
 from llama_stack.cli.model.list import ModelList
 from llama_stack.cli.model.prompt_format import ModelPromptFormat
 from llama_stack.cli.model.verify_download import ModelVerifyDownload
-
 from llama_stack.cli.subcommand import Subcommand
 
 

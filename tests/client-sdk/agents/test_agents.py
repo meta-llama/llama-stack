@@ -13,12 +13,14 @@ from llama_stack_client.lib.agents.agent import Agent
 from llama_stack_client.lib.agents.client_tool import ClientTool
 from llama_stack_client.lib.agents.event_logger import EventLogger
 from llama_stack_client.types import ToolResponseMessage
-from llama_stack_client.types.shared_params.agent_config import AgentConfig, ToolConfig
 from llama_stack_client.types.agents.turn_create_params import Document as AgentDocument
 from llama_stack_client.types.memory_insert_params import Document
 from llama_stack_client.types.shared.completion_message import CompletionMessage
+from llama_stack_client.types.shared_params.agent_config import AgentConfig, ToolConfig
 from llama_stack_client.types.tool_def_param import Parameter
-from llama_stack.apis.agents.agents import AgentConfig as Server__AgentConfig, ToolChoice
+
+from llama_stack.apis.agents.agents import AgentConfig as Server__AgentConfig
+from llama_stack.apis.agents.agents import ToolChoice
 
 
 class TestClientTool(ClientTool):

@@ -10,7 +10,6 @@ from page.distribution.models import models
 from page.distribution.scoring_functions import scoring_functions
 from page.distribution.shields import shields
 from page.distribution.vector_dbs import vector_dbs
-
 from streamlit_option_menu import option_menu
 
 

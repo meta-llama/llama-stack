@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 import json
 import logging
-
 from typing import Any, Dict, List, Optional
 
 import weaviate
