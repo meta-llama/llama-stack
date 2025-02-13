@@ -14,7 +14,7 @@ from modules.api import llama_stack_api
 
 
 def select_benchmark_1():
-    # Select Eval Tasks
+    # Select Benchmarks
     st.subheader("1. Choose An Eval Task")
     benchmarks = llama_stack_api.client.benchmarks.list()
     benchmarks = {et.identifier: et for et in benchmarks}

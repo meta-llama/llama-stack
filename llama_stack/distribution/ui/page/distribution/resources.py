@@ -21,7 +21,7 @@ def resources_page():
         "Shields",
         "Scoring Functions",
         "Datasets",
-        "Eval Tasks",
+        "Benchmarks",
     ]
     icons = ["magic", "memory", "shield", "file-bar-graph", "database", "list-task"]
     selected_resource = option_menu(
@@ -35,7 +35,7 @@ def resources_page():
             },
         },
     )
-    if selected_resource == "Eval Tasks":
+    if selected_resource == "Benchmarks":
         benchmarks()
     elif selected_resource == "Vector Databases":
         vector_dbs()

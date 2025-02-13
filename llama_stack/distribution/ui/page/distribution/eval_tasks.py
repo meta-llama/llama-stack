@@ -9,8 +9,8 @@ from modules.api import llama_stack_api
 
 
 def benchmarks():
-    # Eval Tasks Section
-    st.header("Eval Tasks")
+    # Benchmarks Section
+    st.header("Benchmarks")
 
     benchmarks_info = {d.identifier: d.to_dict() for d in llama_stack_api.client.benchmarks.list()}
 
