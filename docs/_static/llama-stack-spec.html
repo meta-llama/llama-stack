@@ -2665,15 +2665,6 @@
             "EvalTask": {
                 "type": "object",
                 "properties": {
-                    "identifier": {
-                        "type": "string"
-                    },
-                    "provider_resource_id": {
-                        "type": "string"
-                    },
-                    "provider_id": {
-                        "type": "string"
-                    },
                     "type": {
                         "type": "string",
                         "const": "eval_task",
@@ -2682,53 +2673,23 @@
                     "dataset_id": {
                         "type": "string"
                     },
-                    "scoring_functions": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "metadata": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
+                    "config": {
+                        "$ref": "#/components/schemas/AgentConfig"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "identifier",
-                    "provider_resource_id",
-                    "provider_id",
                     "type",
-                    "dataset_id",
-                    "scoring_functions",
-                    "metadata"
+                    "config"
                 ]
             },
             "ListEvalTasksResponse": {
                 "type": "object",
                 "properties": {
-                    "data": {
+                    "sampling_params": {
+                        "$ref": "#/components/schemas/SamplingParams"
+                    },
+                    "input_shields": {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/EvalTask"
@@ -2768,7 +2729,7 @@
                     "input_shields": {
                         "type": "array",
                         "items": {
-                            "type": "string"
+                            "$ref": "#/components/schemas/ToolDef"
                         }
                     },
                     "output_shields": {
