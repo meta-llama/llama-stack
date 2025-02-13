@@ -15,8 +15,8 @@ providers:
   - provider_id: nvidia
     provider_type: remote::nvidia
     config:
-      url: https://integrate.api.nvidia.com
-      api_key: ${env.NVIDIA_API_KEY}
+      url: ${env.NVIDIA_BASE_URL:https://integrate.api.nvidia.com}
+      api_key: ${env.NVIDIA_API_KEY:}
   vector_io:
   - provider_id: faiss
     provider_type: inline::faiss
@@ -147,3 +147,5 @@ tool_groups:
   provider_id: rag-runtime
 - toolgroup_id: builtin::code_interpreter
   provider_id: code-interpreter
+server:
+  port: 8321

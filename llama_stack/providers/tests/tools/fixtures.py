@@ -96,9 +96,7 @@ async def tools_stack(
             )
         if fixture.provider_data:
             provider_data.update(fixture.provider_data)
-    inference_models = (
-        inference_model if isinstance(inference_model, list) else [inference_model]
-    )
+    inference_models = inference_model if isinstance(inference_model, list) else [inference_model]
     models = [
         ModelInput(
             model_id=model,

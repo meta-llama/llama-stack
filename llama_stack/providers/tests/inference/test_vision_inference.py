@@ -4,12 +4,12 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import base64
 from pathlib import Path
 
 import pytest
 
-from llama_stack.apis.common.content_types import ImageContentItem, TextContentItem, URL
-
+from llama_stack.apis.common.content_types import URL, ImageContentItem, TextContentItem
 from llama_stack.apis.inference import (
     ChatCompletionResponse,
     ChatCompletionResponseEventType,
@@ -23,7 +23,7 @@ from .utils import group_chunks
 THIS_DIR = Path(__file__).parent
 
 with open(THIS_DIR / "pasta.jpeg", "rb") as f:
-    PASTA_IMAGE = f.read()
+    PASTA_IMAGE = base64.b64encode(f.read()).decode("utf-8")
 
 
 class TestVisionModelInference:
@@ -39,7 +39,7 @@ class TestVisionModelInference:
                 ImageContentItem(
                     image=dict(
                         url=URL(
-                            uri="https://www.healthypawspetinsurance.com/Images/V3/DogAndPuppyInsurance/Dog_CTA_Desktop_HeroImage.jpg"
+                            uri="https://raw.githubusercontent.com/meta-llama/llama-stack/main/tests/client-sdk/inference/dog.png"
                         )
                     )
                 ),
@@ -73,16 +73,14 @@ class TestVisionModelInference:
             assert expected_string in response.completion_message.content
 
     @pytest.mark.asyncio
-    async def test_vision_chat_completion_streaming(
-        self, inference_model, inference_stack
-    ):
+    async def test_vision_chat_completion_streaming(self, inference_model, inference_stack):
         inference_impl, _ = inference_stack
 
         images = [
             ImageContentItem(
                 image=dict(
                     url=URL(
-                        uri="https://www.healthypawspetinsurance.com/Images/V3/DogAndPuppyInsurance/Dog_CTA_Desktop_HeroImage.jpg"
+                        uri="https://raw.githubusercontent.com/meta-llama/llama-stack/main/tests/client-sdk/inference/dog.png"
                     )
                 )
             ),
@@ -100,9 +98,7 @@ class TestVisionModelInference:
                         UserMessage(
                             content=[
                                 image,
-                                TextContentItem(
-                                    text="Describe this image in two sentences."
-                                ),
+                                TextContentItem(text="Describe this image in two sentences."),
                             ]
                         ),
                     ],
@@ -112,18 +108,12 @@ class TestVisionModelInference:
             ]
 
             assert len(response) > 0
-            assert all(
-                isinstance(chunk, ChatCompletionResponseStreamChunk)
-                for chunk in response
-            )
+            assert all(isinstance(chunk, ChatCompletionResponseStreamChunk) for chunk in response)
             grouped = group_chunks(response)
             assert len(grouped[ChatCompletionResponseEventType.start]) == 1
             assert len(grouped[ChatCompletionResponseEventType.progress]) > 0
             assert len(grouped[ChatCompletionResponseEventType.complete]) == 1
 
-            content = "".join(
-                chunk.event.delta.text
-                for chunk in grouped[ChatCompletionResponseEventType.progress]
-            )
+            content = "".join(chunk.event.delta.text for chunk in grouped[ChatCompletionResponseEventType.progress])
             for expected_string in expected_strings:
                 assert expected_string in content

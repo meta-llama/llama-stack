@@ -13,7 +13,6 @@ from termcolor import cprint
 from llama_stack.apis.agents import AgentTurnResponseEventType, StepType
 from llama_stack.apis.common.content_types import ToolCallParseStatus
 from llama_stack.apis.inference import ToolResponseMessage
-
 from llama_stack.providers.utils.inference.prompt_adapter import (
     interleaved_content_as_str,
 )
@@ -63,9 +62,7 @@ class EventLogger:
                 if isinstance(chunk, ToolResponseMessage):
                     yield (
                         chunk,
-                        LogEvent(
-                            role="CustomTool", content=chunk.content, color="grey"
-                        ),
+                        LogEvent(role="CustomTool", content=chunk.content, color="grey"),
                     )
                 continue
 
@@ -81,17 +78,12 @@ class EventLogger:
 
             step_type = event.payload.step_type
             # handle safety
-            if (
-                step_type == StepType.shield_call
-                and event_type == EventType.step_complete.value
-            ):
+            if step_type == StepType.shield_call and event_type == EventType.step_complete.value:
                 violation = event.payload.step_details.violation
                 if not violation:
                     yield (
                         event,
-                        LogEvent(
-                            role=step_type, content="No Violation", color="magenta"
-                        ),
+                        LogEvent(role=step_type, content="No Violation", color="magenta"),
                     )
                 else:
                     yield (
@@ -110,9 +102,7 @@ class EventLogger:
                         # TODO: Currently this event is never received
                         yield (
                             event,
-                            LogEvent(
-                                role=step_type, content="", end="", color="yellow"
-                            ),
+                            LogEvent(role=step_type, content="", end="", color="yellow"),
                         )
                     elif event_type == EventType.step_progress.value:
                         # HACK: if previous was not step/event was not inference's step_progress
@@ -125,9 +115,7 @@ class EventLogger:
                         ):
                             yield (
                                 event,
-                                LogEvent(
-                                    role=step_type, content="", end="", color="yellow"
-                                ),
+                                LogEvent(role=step_type, content="", end="", color="yellow"),
                             )
 
                         delta = event.payload.delta
@@ -161,9 +149,7 @@ class EventLogger:
                     if event_type == EventType.step_complete.value:
                         response = event.payload.step_details.model_response
                         if response.tool_calls:
-                            content = ToolUtils.encode_tool_call(
-                                response.tool_calls[0], tool_prompt_format
-                            )
+                            content = ToolUtils.encode_tool_call(response.tool_calls[0], tool_prompt_format)
                         else:
                             content = response.content
                         yield (
@@ -202,10 +188,7 @@ class EventLogger:
                         ),
                     )
 
-            if (
-                step_type == StepType.memory_retrieval
-                and event_type == EventType.step_complete.value
-            ):
+            if step_type == StepType.memory_retrieval and event_type == EventType.step_complete.value:
                 details = event.payload.step_details
                 inserted_context = interleaved_content_as_str(details.inserted_context)
                 content = f"fetched {len(inserted_context)} bytes from {details.vector_db_ids}"

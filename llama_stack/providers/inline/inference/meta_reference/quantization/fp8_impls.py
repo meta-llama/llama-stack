@@ -8,7 +8,6 @@
 # This software may be used and distributed in accordance with the terms of the Llama 3 Community License Agreement.
 
 import collections
-
 import logging
 from typing import Optional, Type
 
@@ -19,13 +18,11 @@ try:
 
     log.info("Using efficient FP8 operators in FBGEMM.")
 except ImportError:
-    log.error(
-        "No efficient FP8 operators. Please install FBGEMM in fp8_requirements.txt."
-    )
+    log.error("No efficient FP8 operators. Please install FBGEMM in fp8_requirements.txt.")
     raise
 
 import torch
-from torch import nn, Tensor
+from torch import Tensor, nn
 
 
 class Fp8ScaledWeights:
@@ -60,14 +57,8 @@ def ffn_swiglu(
     num_tokens: Optional[Tensor] = None,
     is_memory_bounded: bool = False,
 ) -> Tensor:
-    if (
-        isinstance(w1, Fp8ScaledWeights)
-        and isinstance(w3, Fp8ScaledWeights)
-        and isinstance(w2, Fp8ScaledWeights)
-    ):
-        return ffn_swiglu_fp8_dynamic(
-            x, w1, w3, w2, w1.activation_scale_ub, num_tokens, is_memory_bounded
-        )
+    if isinstance(w1, Fp8ScaledWeights) and isinstance(w3, Fp8ScaledWeights) and isinstance(w2, Fp8ScaledWeights):
+        return ffn_swiglu_fp8_dynamic(x, w1, w3, w2, w1.activation_scale_ub, num_tokens, is_memory_bounded)
 
     (B, T, D) = x.shape  # noqa: N806
     (HD_L, D_) = w1.shape  # noqa: N806
@@ -146,12 +137,8 @@ def fc_fp8_dynamic(
     Single w8a8 fc layer with dynamic row-wise scaling.
     """
     if isinstance(w, Fp8RowwiseWeights):
-        xq, x_scale = torch.ops.fbgemm.quantize_fp8_per_row(
-            x, num_tokens, activation_scale_ub
-        )
-        y = torch.ops.fbgemm.f8f8bf16_rowwise(
-            xq, w.weight, x_scale, w.scale, use_fast_accum=True
-        )
+        xq, x_scale = torch.ops.fbgemm.quantize_fp8_per_row(x, num_tokens, activation_scale_ub)
+        y = torch.ops.fbgemm.f8f8bf16_rowwise(xq, w.weight, x_scale, w.scale, use_fast_accum=True)
     del xq
     return y
 

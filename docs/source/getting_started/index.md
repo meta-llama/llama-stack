@@ -1,6 +1,6 @@
 # Quick Start
 
-In this guide, we'll walk through how you can use the Llama Stack (server and client SDK ) to test a simple RAG agent.
+In this guide, we'll walk through how you can use the Llama Stack (server and client SDK) to test a simple RAG agent.
 
 A Llama Stack agent is a simple integrated system that can perform tasks by combining a Llama model for reasoning with tools (e.g., RAG, web search, code execution, etc.) for taking actions.
 
@@ -15,8 +15,11 @@ ollama run llama3.2:3b-instruct-fp16 --keepalive 60m
 
 By default, Ollama keeps the model loaded in memory for 5 minutes which can be too short. We set the `--keepalive` flag to 60 minutes to ensure the model remains loaded for sometime.
 
-NOTE: If you do not have ollama, you can install it from [here](https://ollama.ai/docs/installation).
+```{admonition} Note
+:class: tip
 
+If you do not have ollama, you can install it from [here](https://ollama.com/download).
+```
 
 
 ### 2. Pick a client environment
@@ -35,15 +38,20 @@ The API is **exactly identical** for both clients.
 :::{dropdown} Starting up the Llama Stack server
 The Llama Stack server can be configured flexibly so you can mix-and-match various providers for its individual API components -- beyond Inference, these include Vector IO, Agents, Telemetry, Evals, Post Training, etc.
 
-To get started quickly, we provide various Docker images for the server component that work with different inference providers out of the box. For this guide, we will use `llamastack/distribution-ollama` as the Docker image.
+To get started quickly, we provide various container images for the server component that work with different inference providers out of the box. For this guide, we will use `llamastack/distribution-ollama` as the container image.
 
 Lets setup some environment variables that we will use in the rest of the guide.
 ```bash
-INFERENCE_MODEL="meta-llama/Llama-3.2-3B-Instruct"
-LLAMA_STACK_PORT=8321
+export INFERENCE_MODEL="meta-llama/Llama-3.2-3B-Instruct"
+export LLAMA_STACK_PORT=8321
 ```
 
-You can start the server using the following command:
+Next you can create a local directory to mount into the container’s file system.
+```bash
+mkdir -p ~/.llama
+```
+
+Then you can start the server using the container tool of your choice.  For example, if you are running Docker you can use the following command:
 ```bash
 docker run -it \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
@@ -53,7 +61,27 @@ docker run -it \
   --env INFERENCE_MODEL=$INFERENCE_MODEL \
   --env OLLAMA_URL=http://host.docker.internal:11434
 ```
+
+As another example, to start the container with Podman, you can do the same but replace `docker` at the start of the command with `podman`. If you are using `podman` older than `4.7.0`, please also replace `host.docker.internal` in the `OLLAMA_URL` with `host.containers.internal`.
+
 Configuration for this is available at `distributions/ollama/run.yaml`.
+
+```{admonition} Note
+:class: note
+
+Docker containers run in their own isolated network namespaces on Linux. To allow the container to communicate with services running on the host via `localhost`, you need `--network=host`. This makes the container use the host’s network directly so it can connect to Ollama running on `localhost:11434`.
+
+Linux users having issues running the above command should instead try the following:
+```bash
+docker run -it \
+  -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
+  -v ~/.llama:/root/.llama \
+  --network=host \
+  llamastack/distribution-ollama \
+  --port $LLAMA_STACK_PORT \
+  --env INFERENCE_MODEL=$INFERENCE_MODEL \
+  --env OLLAMA_URL=http://localhost:11434
+```
 
 :::
 
@@ -71,8 +99,10 @@ pip install llama-stack-client
 Let's use the `llama-stack-client` CLI to check the connectivity to the server.
 
 ```bash
-llama-stack-client configure --endpoint http://localhost:$LLAMA_STACK_PORT
-llama-stack-client models list
+$ llama-stack-client configure --endpoint http://localhost:$LLAMA_STACK_PORT
+> Enter the API key (leave empty if no key is needed):
+Done! You can now use the Llama Stack Client CLI with endpoint http://localhost:8321
+$ llama-stack-client models list
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━┓
 ┃ identifier                       ┃ provider_id ┃ provider_resource_id      ┃ metadata ┃
 ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━┩
@@ -95,19 +125,30 @@ llama-stack-client \
 Here is a simple example to perform chat completions using the SDK.
 ```python
 import os
+import sys
+
 
 def create_http_client():
     from llama_stack_client import LlamaStackClient
-    return LlamaStackClient(base_url=f"http://localhost:{os.environ['LLAMA_STACK_PORT']}")
+
+    return LlamaStackClient(
+        base_url=f"http://localhost:{os.environ['LLAMA_STACK_PORT']}"
+    )
+
 
 def create_library_client(template="ollama"):
     from llama_stack import LlamaStackAsLibraryClient
+
     client = LlamaStackAsLibraryClient(template)
-    client.initialize()
+    if not client.initialize():
+        print("llama stack not built properly")
+        sys.exit(1)
     return client
 
 
-client = create_library_client()  # or create_http_client() depending on the environment you picked
+client = (
+    create_library_client()
+)  # or create_http_client() depending on the environment you picked
 
 # List available models
 models = client.models.list()
@@ -120,8 +161,8 @@ response = client.inference.chat_completion(
     model_id=os.environ["INFERENCE_MODEL"],
     messages=[
         {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": "Write a haiku about coding"}
-    ]
+        {"role": "user", "content": "Write a haiku about coding"},
+    ],
 )
 print(response.completion_message.content)
 ```
@@ -132,6 +173,7 @@ Here is an example of a simple RAG (Retrieval Augmented Generation) chatbot agen
 
 ```python
 import os
+import uuid
 from termcolor import cprint
 
 from llama_stack_client.lib.agents.agent import Agent
@@ -139,10 +181,29 @@ from llama_stack_client.lib.agents.event_logger import EventLogger
 from llama_stack_client.types.agent_create_params import AgentConfig
 from llama_stack_client.types import Document
 
-client = create_library_client()  # or create_http_client() depending on the environment you picked
+
+def create_http_client():
+    from llama_stack_client import LlamaStackClient
+
+    return LlamaStackClient(
+        base_url=f"http://localhost:{os.environ['LLAMA_STACK_PORT']}"
+    )
+
+
+def create_library_client(template="ollama"):
+    from llama_stack import LlamaStackAsLibraryClient
+
+    client = LlamaStackAsLibraryClient(template)
+    client.initialize()
+    return client
+
+
+client = (
+    create_library_client()
+)  # or create_http_client() depending on the environment you picked
 
 # Documents to be used for RAG
-urls = ["chat.rst", "llama3.rst", "datasets.rst", "lora_finetune.rst"]
+urls = ["chat.rst", "llama3.rst", "memory_optimizations.rst", "lora_finetune.rst"]
 documents = [
     Document(
         document_id=f"num-{i}",
@@ -154,7 +215,7 @@ documents = [
 ]
 
 # Register a vector database
-vector_db_id = "test-vector-db"
+vector_db_id = f"test-vector-db-{uuid.uuid4().hex}"
 client.vector_dbs.register(
     vector_db_id=vector_db_id,
     embedding_model="all-MiniLM-L6-v2",
@@ -174,12 +235,12 @@ agent_config = AgentConfig(
     instructions="You are a helpful assistant",
     enable_session_persistence=False,
     # Define tools available to the agent
-    toolgroups = [
+    toolgroups=[
         {
-          "name": "builtin::rag",
-          "args" : {
-            "vector_db_ids": [vector_db_id],
-          }
+            "name": "builtin::rag",
+            "args": {
+                "vector_db_ids": [vector_db_id],
+            },
         }
     ],
 )
@@ -193,7 +254,7 @@ user_prompts = [
 
 # Run the agent loop by calling the `create_turn` method
 for prompt in user_prompts:
-    cprint(f'User> {prompt}', 'green')
+    cprint(f"User> {prompt}", "green")
     response = rag_agent.create_turn(
         messages=[{"role": "user", "content": prompt}],
         session_id=session_id,

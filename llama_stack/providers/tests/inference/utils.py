@@ -10,7 +10,5 @@ import itertools
 def group_chunks(response):
     return {
         event_type: list(group)
-        for event_type, group in itertools.groupby(
-            response, key=lambda chunk: chunk.event.event_type
-        )
+        for event_type, group in itertools.groupby(response, key=lambda chunk: chunk.event.event_type)
     }

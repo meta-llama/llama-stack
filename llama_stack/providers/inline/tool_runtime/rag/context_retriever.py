@@ -9,7 +9,6 @@ from jinja2 import Template
 
 from llama_stack.apis.common.content_types import InterleavedContent
 from llama_stack.apis.inference import UserMessage
-
 from llama_stack.apis.tools.rag_tool import (
     DefaultRAGQueryGeneratorConfig,
     LLMRAGQueryGeneratorConfig,

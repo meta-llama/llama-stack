@@ -25,9 +25,7 @@ class RedisKVStoreImpl(KVStore):
             return key
         return f"{self.config.namespace}:{key}"
 
-    async def set(
-        self, key: str, value: str, expiration: Optional[datetime] = None
-    ) -> None:
+    async def set(self, key: str, value: str, expiration: Optional[datetime] = None) -> None:
         key = self._namespaced_key(key)
         await self.redis.set(key, value)
         if expiration:
@@ -66,9 +64,7 @@ class RedisKVStoreImpl(KVStore):
         if matching_keys:
             values = await self.redis.mget(matching_keys)
             return [
-                value.decode("utf-8") if isinstance(value, bytes) else value
-                for value in values
-                if value is not None
+                value.decode("utf-8") if isinstance(value, bytes) else value for value in values if value is not None
             ]
 
         return []

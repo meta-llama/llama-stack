@@ -4,18 +4,18 @@ You can run llama stack integration tests on either a Llama Stack Library or a L
 To test on a Llama Stack library with certain configuration, run
 ```bash
 LLAMA_STACK_CONFIG=./llama_stack/templates/cerebras/run.yaml
-pytest -s -v tests/client-sdk/inference/test_inference.py
+pytest -s -v tests/client-sdk/inference/
 ```
 or just the template name
 ```bash
 LLAMA_STACK_CONFIG=together
-pytest -s -v tests/client-sdk/inference/test_inference.py
+pytest -s -v tests/client-sdk/inference/
 ```
 
 To test on a Llama Stack endpoint, run
 ```bash
 LLAMA_STACK_BASE_URL=http//localhost:8089
-pytest -s -v tests/client-sdk/inference/test_inference.py
+pytest -s -v tests/client-sdk/inference
 ```
 
 ## Report Generation

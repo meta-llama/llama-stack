@@ -8,24 +8,16 @@ The telemetry system supports three main types of events:
 - **Unstructured Log Events**: Free-form log messages with severity levels
 ```python
 unstructured_log_event = UnstructuredLogEvent(
-    message="This is a log message",
-    severity=LogSeverity.INFO
+    message="This is a log message", severity=LogSeverity.INFO
 )
 ```
 - **Metric Events**: Numerical measurements with units
 ```python
-metric_event = MetricEvent(
-    metric="my_metric",
-    value=10,
-    unit="count"
-)
+metric_event = MetricEvent(metric="my_metric", value=10, unit="count")
 ```
 - **Structured Log Events**: System events like span start/end. Extensible to add more structured log types.
 ```python
-structured_log_event = SpanStartPayload(
-    name="my_span",
-    parent_span_id="parent_span_id"
-)
+structured_log_event = SpanStartPayload(name="my_span", parent_span_id="parent_span_id")
 ```
 
 ### Spans and Traces

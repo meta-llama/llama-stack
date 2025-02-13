@@ -30,7 +30,7 @@ EMBEDDING_DEPS = [
     # we need a better way to do this to identify potential conflicts, etc.
     # for now, this lets us significantly reduce the size of the container which
     # does not have any "local" inference code (and hence does not need GPU-enabled torch)
-    "torch --index-url https://download.pytorch.org/whl/cpu",
+    "torch torchvision --index-url https://download.pytorch.org/whl/cpu",
     "sentence-transformers --no-deps",
 ]
 
@@ -52,6 +52,14 @@ def available_providers() -> List[ProviderSpec]:
             pip_packages=EMBEDDING_DEPS + ["faiss-cpu"],
             module="llama_stack.providers.inline.vector_io.faiss",
             config_class="llama_stack.providers.inline.vector_io.faiss.FaissImplConfig",
+            api_dependencies=[Api.inference],
+        ),
+        InlineProviderSpec(
+            api=Api.vector_io,
+            provider_type="inline::sqlite_vec",
+            pip_packages=EMBEDDING_DEPS + ["sqlite-vec"],
+            module="llama_stack.providers.inline.vector_io.sqlite_vec",
+            config_class="llama_stack.providers.inline.vector_io.sqlite_vec.SQLiteVectorIOConfig",
             api_dependencies=[Api.inference],
         ),
         remote_provider_spec(

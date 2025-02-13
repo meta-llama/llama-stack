@@ -11,7 +11,6 @@ from llama_models.schema_utils import json_schema_type
 from pydantic import BaseModel, Field
 
 from llama_stack.apis.datasets import Dataset
-
 from llama_stack.apis.datatypes import Api
 from llama_stack.apis.eval_tasks import EvalTask
 from llama_stack.apis.models import Model
@@ -85,6 +84,10 @@ class ProviderSpec(BaseModel):
 
     # used internally by the resolver; this is a hack for now
     deps__: List[str] = Field(default_factory=list)
+
+    @property
+    def is_sample(self) -> bool:
+        return self.provider_type in ("sample", "remote::sample")
 
 
 class RoutingTable(Protocol):

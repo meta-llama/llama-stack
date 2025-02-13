@@ -130,6 +130,8 @@ class _FormatParameterExtractor:
 
 def _get_route_parameters(route: str) -> List[str]:
     extractor = _FormatParameterExtractor()
+    # Replace all occurrences of ":path" with empty string
+    route = route.replace(":path", "")
     route.format_map(extractor)
     return extractor.keys
 

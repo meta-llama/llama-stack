@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 import re
-
 from string import Template
 from typing import Any, Dict, List, Optional
 
@@ -25,17 +24,14 @@ from llama_stack.apis.safety import (
     SafetyViolation,
     ViolationLevel,
 )
-
 from llama_stack.apis.shields import Shield
 from llama_stack.distribution.datatypes import Api
-
 from llama_stack.providers.datatypes import ShieldsProtocolPrivate
 from llama_stack.providers.utils.inference.prompt_adapter import (
     interleaved_content_as_str,
 )
 
 from .config import LlamaGuardConfig
-
 
 CANNED_RESPONSE_TEXT = "I can't answer that. Can I help with something else?"
 
@@ -102,8 +98,7 @@ LLAMA_GUARD_MODEL_IDS = {
 }
 
 MODEL_TO_SAFETY_CATEGORIES_MAP = {
-    "meta-llama/Llama-Guard-3-8B": DEFAULT_LG_V3_SAFETY_CATEGORIES
-    + [CAT_CODE_INTERPRETER_ABUSE],
+    "meta-llama/Llama-Guard-3-8B": DEFAULT_LG_V3_SAFETY_CATEGORIES + [CAT_CODE_INTERPRETER_ABUSE],
     "meta-llama/Llama-Guard-3-1B": DEFAULT_LG_V3_SAFETY_CATEGORIES,
     "meta-llama/Llama-Guard-3-11B-Vision": DEFAULT_LG_V3_SAFETY_CATEGORIES,
 }
@@ -133,9 +128,7 @@ Provide your safety assessment for ONLY THE LAST $agent_type message in the abov
  - If unsafe, a second line must include a comma-separated list of violated categories."""
 
 
-PROMPT_TEMPLATE = Template(
-    f"{PROMPT_TASK}{SAFETY_CATEGORIES}{PROMPT_CONVERSATION}{PROMPT_INSTRUCTIONS}"
-)
+PROMPT_TEMPLATE = Template(f"{PROMPT_TASK}{SAFETY_CATEGORIES}{PROMPT_CONVERSATION}{PROMPT_INSTRUCTIONS}")
 
 
 class LlamaGuardSafetyImpl(Safety, ShieldsProtocolPrivate):
@@ -233,9 +226,7 @@ class LlamaGuardShield:
         if messages[0].role != Role.user.value:
             raise ValueError("Messages must start with user")
 
-        if len(messages) >= 2 and (
-            messages[0].role == Role.user.value and messages[1].role == Role.user.value
-        ):
+        if len(messages) >= 2 and (messages[0].role == Role.user.value and messages[1].role == Role.user.value):
             messages = messages[1:]
 
         for i in range(1, len(messages)):
@@ -263,10 +254,7 @@ class LlamaGuardShield:
             stream=True,
         ):
             event = chunk.event
-            if (
-                event.event_type == ChatCompletionResponseEventType.progress
-                and event.delta.type == "text"
-            ):
+            if event.event_type == ChatCompletionResponseEventType.progress and event.delta.type == "text":
                 content += event.delta.text
 
         content = content.strip()
@@ -313,10 +301,7 @@ class LlamaGuardShield:
         categories = self.get_safety_categories()
         categories_str = "\n".join(categories)
         conversations_str = "\n\n".join(
-            [
-                f"{m.role.capitalize()}: {interleaved_content_as_str(m.content)}"
-                for m in messages
-            ]
+            [f"{m.role.capitalize()}: {interleaved_content_as_str(m.content)}" for m in messages]
         )
         return PROMPT_TEMPLATE.substitute(
             agent_type=messages[-1].role.capitalize(),

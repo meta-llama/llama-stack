@@ -10,9 +10,7 @@ from typing import List, Optional, Protocol
 
 class KVStore(Protocol):
     # TODO: make the value type bytes instead of str
-    async def set(
-        self, key: str, value: str, expiration: Optional[datetime] = None
-    ) -> None: ...
+    async def set(self, key: str, value: str, expiration: Optional[datetime] = None) -> None: ...
 
     async def get(self, key: str) -> Optional[str]: ...
 

@@ -55,6 +55,23 @@ class StackRun(Subcommand):
             default=[],
             metavar="KEY=VALUE",
         )
+        self.parser.add_argument(
+            "--tls-keyfile",
+            type=str,
+            help="Path to TLS key file for HTTPS",
+        )
+        self.parser.add_argument(
+            "--tls-certfile",
+            type=str,
+            help="Path to TLS certificate file for HTTPS",
+        )
+        self.parser.add_argument(
+            "--image-type",
+            type=str,
+            help="Image Type used during the build. This can be either conda or container or venv.",
+            choices=["conda", "container", "venv"],
+            default="conda",
+        )
 
     def _run_stack_run_cmd(self, args: argparse.Namespace) -> None:
         import importlib.resources
@@ -82,31 +99,21 @@ class StackRun(Subcommand):
 
         if not config_file.exists() and not has_yaml_suffix:
             # check if this is a template
-            config_file = (
-                Path(REPO_ROOT) / "llama_stack" / "templates" / args.config / "run.yaml"
-            )
+            config_file = Path(REPO_ROOT) / "llama_stack" / "templates" / args.config / "run.yaml"
             if config_file.exists():
                 template_name = args.config
 
         if not config_file.exists() and not has_yaml_suffix:
             # check if it's a build config saved to conda dir
-            config_file = Path(
-                BUILDS_BASE_DIR / ImageType.conda.value / f"{args.config}-run.yaml"
-            )
+            config_file = Path(BUILDS_BASE_DIR / ImageType.conda.value / f"{args.config}-run.yaml")
 
         if not config_file.exists() and not has_yaml_suffix:
             # check if it's a build config saved to container dir
-            config_file = Path(
-                BUILDS_BASE_DIR / ImageType.container.value / f"{args.config}-run.yaml"
-            )
+            config_file = Path(BUILDS_BASE_DIR / ImageType.container.value / f"{args.config}-run.yaml")
 
         if not config_file.exists() and not has_yaml_suffix:
             # check if it's a build config saved to ~/.llama dir
-            config_file = Path(
-                DISTRIBS_BASE_DIR
-                / f"llamastack-{args.config}"
-                / f"{args.config}-run.yaml"
-            )
+            config_file = Path(DISTRIBS_BASE_DIR / f"llamastack-{args.config}" / f"{args.config}-run.yaml")
 
         if not config_file.exists():
             self.parser.error(
@@ -118,18 +125,11 @@ class StackRun(Subcommand):
         config_dict = yaml.safe_load(config_file.read_text())
         config = parse_and_maybe_upgrade_config(config_dict)
 
-        if config.container_image:
-            script = (
-                importlib.resources.files("llama_stack")
-                / "distribution/start_container.sh"
-            )
-            image_name = (
-                f"distribution-{template_name}"
-                if template_name
-                else config.container_image
-            )
+        if args.image_type == ImageType.container.value or config.container_image:
+            script = importlib.resources.files("llama_stack") / "distribution/start_container.sh"
+            image_name = f"distribution-{template_name}" if template_name else config.container_image
             run_args = [script, image_name]
-        else:
+        elif args.image_type == ImageType.conda.value:
             current_conda_env = os.environ.get("CONDA_DEFAULT_ENV")
             image_name = args.image_name or current_conda_env
             if not image_name:
@@ -140,12 +140,12 @@ class StackRun(Subcommand):
                 return
 
             def get_conda_prefix(env_name):
+                # Conda "base" environment does not end with "base" in the
+                # prefix, so should be handled separately.
+                if env_name == "base":
+                    return os.environ.get("CONDA_PREFIX")
                 # Get conda environments info
-                conda_env_info = json.loads(
-                    subprocess.check_output(
-                        ["conda", "info", "--envs", "--json"]
-                    ).decode()
-                )
+                conda_env_info = json.loads(subprocess.check_output(["conda", "info", "--envs", "--json"]).decode())
                 envs = conda_env_info["envs"]
                 for envpath in envs:
                     if envpath.endswith(env_name):
@@ -169,13 +169,19 @@ class StackRun(Subcommand):
                 )
                 return
 
-            script = (
-                importlib.resources.files("llama_stack")
-                / "distribution/start_conda_env.sh"
-            )
+            script = importlib.resources.files("llama_stack") / "distribution/start_conda_env.sh"
             run_args = [
                 script,
                 image_name,
+            ]
+        else:
+            # else must be venv since that is the only valid option left.
+            current_venv = os.environ.get("VIRTUAL_ENV")
+            venv = args.image_name or current_venv
+            script = importlib.resources.files("llama_stack") / "distribution/start_venv.sh"
+            run_args = [
+                script,
+                venv,
             ]
 
         run_args.extend([str(config_file), str(args.port)])
@@ -197,5 +203,8 @@ class StackRun(Subcommand):
                 )
                 return
             run_args.extend(["--env", f"{key}={value}"])
+
+        if args.tls_keyfile and args.tls_certfile:
+            run_args.extend(["--tls-keyfile", args.tls_keyfile, "--tls-certfile", args.tls_certfile])
 
         run_with_pty(run_args)

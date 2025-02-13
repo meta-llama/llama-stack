@@ -68,6 +68,7 @@ myst_substitutions = {
     "docker_hub": "https://hub.docker.com/repository/docker/llamastack",
 }
 
+suppress_warnings = ['myst.header']
 
 # Copy button settings
 copybutton_prompt_text = "$ "  # for bash prompts
@@ -93,22 +94,6 @@ html_theme_options = {
 html_static_path = ["../_static"]
 # html_logo = "../_static/llama-stack-logo.png"
 html_style = "../_static/css/my_theme.css"
-
-redoc = [
-    {
-        "name": "Llama Stack API",
-        "page": "references/api_reference/index",
-        "spec": "../resources/llama-stack-spec.yaml",
-        "opts": {
-            "suppress-warnings": True,
-            # "expand-responses": ["200", "201"],
-        },
-        "embed": True,
-    },
-]
-
-redoc_uri = "https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"
-
 
 def setup(app):
     def dockerhub_role(name, rawtext, text, lineno, inliner, options={}, content=[]):

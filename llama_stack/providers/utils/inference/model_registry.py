@@ -11,7 +11,6 @@ from llama_models.sku_list import all_registered_models
 
 from llama_stack.apis.models.models import ModelType
 from llama_stack.providers.datatypes import Model, ModelsProtocolPrivate
-
 from llama_stack.providers.utils.inference import (
     ALL_HUGGINGFACE_REPOS_TO_MODEL_DESCRIPTOR,
 )
@@ -36,9 +35,7 @@ def build_model_alias(provider_model_id: str, model_descriptor: str) -> ModelAli
     )
 
 
-def build_model_alias_with_just_provider_model_id(
-    provider_model_id: str, model_descriptor: str
-) -> ModelAlias:
+def build_model_alias_with_just_provider_model_id(provider_model_id: str, model_descriptor: str) -> ModelAlias:
     return ModelAlias(
         provider_model_id=provider_model_id,
         aliases=[],
@@ -54,37 +51,23 @@ class ModelRegistryHelper(ModelsProtocolPrivate):
             for alias in alias_obj.aliases:
                 self.alias_to_provider_id_map[alias] = alias_obj.provider_model_id
             # also add a mapping from provider model id to itself for easy lookup
-            self.alias_to_provider_id_map[alias_obj.provider_model_id] = (
-                alias_obj.provider_model_id
-            )
+            self.alias_to_provider_id_map[alias_obj.provider_model_id] = alias_obj.provider_model_id
             # ensure we can go from llama model to provider model id
-            self.alias_to_provider_id_map[alias_obj.llama_model] = (
-                alias_obj.provider_model_id
-            )
-            self.provider_id_to_llama_model_map[alias_obj.provider_model_id] = (
-                alias_obj.llama_model
-            )
+            self.alias_to_provider_id_map[alias_obj.llama_model] = alias_obj.provider_model_id
+            self.provider_id_to_llama_model_map[alias_obj.provider_model_id] = alias_obj.llama_model
 
-    def get_provider_model_id(self, identifier: str) -> str:
-        if identifier in self.alias_to_provider_id_map:
-            return self.alias_to_provider_id_map[identifier]
-        else:
-            return None
+    def get_provider_model_id(self, identifier: str) -> Optional[str]:
+        return self.alias_to_provider_id_map.get(identifier, None)
 
-    def get_llama_model(self, provider_model_id: str) -> str:
-        if provider_model_id in self.provider_id_to_llama_model_map:
-            return self.provider_id_to_llama_model_map[provider_model_id]
-        else:
-            return None
+    def get_llama_model(self, provider_model_id: str) -> Optional[str]:
+        return self.provider_id_to_llama_model_map.get(provider_model_id, None)
 
     async def register_model(self, model: Model) -> Model:
         if model.model_type == ModelType.embedding:
             # embedding models are always registered by their provider model id and does not need to be mapped to a llama model
             provider_resource_id = model.provider_resource_id
         else:
-            provider_resource_id = self.get_provider_model_id(
-                model.provider_resource_id
-            )
+            provider_resource_id = self.get_provider_model_id(model.provider_resource_id)
         if provider_resource_id:
             model.provider_resource_id = provider_resource_id
         else:
@@ -100,18 +83,13 @@ class ModelRegistryHelper(ModelsProtocolPrivate):
                         f"Provider model id '{model.provider_resource_id}' is already registered to a different llama model: '{existing_llama_model}'"
                     )
             else:
-                if (
-                    model.metadata["llama_model"]
-                    not in ALL_HUGGINGFACE_REPOS_TO_MODEL_DESCRIPTOR
-                ):
+                if model.metadata["llama_model"] not in ALL_HUGGINGFACE_REPOS_TO_MODEL_DESCRIPTOR:
                     raise ValueError(
                         f"Invalid llama_model '{model.metadata['llama_model']}' specified in metadata. "
                         f"Must be one of: {', '.join(ALL_HUGGINGFACE_REPOS_TO_MODEL_DESCRIPTOR.keys())}"
                     )
                 self.provider_id_to_llama_model_map[model.provider_resource_id] = (
-                    ALL_HUGGINGFACE_REPOS_TO_MODEL_DESCRIPTOR[
-                        model.metadata["llama_model"]
-                    ]
+                    ALL_HUGGINGFACE_REPOS_TO_MODEL_DESCRIPTOR[model.metadata["llama_model"]]
                 )
 
         return model

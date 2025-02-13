@@ -6,7 +6,7 @@
 
 import json
 import warnings
-from typing import Any, AsyncGenerator, Dict, Generator, List, Optional
+from typing import Any, AsyncGenerator, Dict, Generator, Iterable, List, Optional, Union
 
 from llama_models.datatypes import (
     GreedySamplingStrategy,
@@ -22,16 +22,39 @@ from llama_models.llama3.api.datatypes import (
 from openai import AsyncStream
 from openai.types.chat import (
     ChatCompletionAssistantMessageParam as OpenAIChatCompletionAssistantMessage,
+)
+from openai.types.chat import (
     ChatCompletionChunk as OpenAIChatCompletionChunk,
+)
+from openai.types.chat import (
+    ChatCompletionContentPartImageParam as OpenAIChatCompletionContentPartImageParam,
+)
+from openai.types.chat import (
+    ChatCompletionContentPartParam as OpenAIChatCompletionContentPartParam,
+)
+from openai.types.chat import (
     ChatCompletionMessageParam as OpenAIChatCompletionMessage,
+)
+from openai.types.chat import (
     ChatCompletionMessageToolCallParam as OpenAIChatCompletionMessageToolCall,
+)
+from openai.types.chat import (
     ChatCompletionSystemMessageParam as OpenAIChatCompletionSystemMessage,
+)
+from openai.types.chat import (
     ChatCompletionToolMessageParam as OpenAIChatCompletionToolMessage,
+)
+from openai.types.chat import (
     ChatCompletionUserMessageParam as OpenAIChatCompletionUserMessage,
 )
 from openai.types.chat.chat_completion import (
     Choice as OpenAIChoice,
+)
+from openai.types.chat.chat_completion import (
     ChoiceLogprobs as OpenAIChoiceLogprobs,  # same as chat_completion_chunk ChoiceLogprobs
+)
+from openai.types.chat.chat_completion_content_part_image_param import (
+    ImageURL as OpenAIImageURL,
 )
 from openai.types.chat.chat_completion_message_tool_call_param import (
     Function as OpenAIFunction,
@@ -40,6 +63,9 @@ from openai.types.completion import Completion as OpenAICompletion
 from openai.types.completion_choice import Logprobs as OpenAICompletionLogprobs
 
 from llama_stack.apis.common.content_types import (
+    ImageContentItem,
+    InterleavedContent,
+    TextContentItem,
     TextDelta,
     ToolCallDelta,
     ToolCallParseStatus,
@@ -60,6 +86,9 @@ from llama_stack.apis.inference import (
     TokenLogProbs,
     ToolResponseMessage,
     UserMessage,
+)
+from llama_stack.providers.utils.inference.prompt_adapter import (
+    convert_image_content_to_url,
 )
 
 
@@ -139,7 +168,7 @@ def _convert_tooldef_to_openai_tool(tool: ToolDefinition) -> dict:
     return out
 
 
-def _convert_message(message: Message | Dict) -> OpenAIChatCompletionMessage:
+async def _convert_message(message: Message | Dict) -> OpenAIChatCompletionMessage:
     """
     Convert a Message to an OpenAI API-compatible dictionary.
     """
@@ -159,11 +188,33 @@ def _convert_message(message: Message | Dict) -> OpenAIChatCompletionMessage:
         else:
             raise ValueError(f"Unsupported message role: {message['role']}")
 
+    # Map Llama Stack spec to OpenAI spec -
+    #  str -> str
+    #  {"type": "text", "text": ...} -> {"type": "text", "text": ...}
+    #  {"type": "image", "image": {"url": {"uri": ...}}} -> {"type": "image_url", "image_url": {"url": ...}}
+    #  {"type": "image", "image": {"data": ...}} -> {"type": "image_url", "image_url": {"url": "data:image/?;base64,..."}}
+    #  List[...] -> List[...]
+    async def _convert_user_message_content(
+        content: InterleavedContent,
+    ) -> Union[str, Iterable[OpenAIChatCompletionContentPartParam]]:
+        # Llama Stack and OpenAI spec match for str and text input
+        if isinstance(content, str) or isinstance(content, TextContentItem):
+            return content
+        elif isinstance(content, ImageContentItem):
+            return OpenAIChatCompletionContentPartImageParam(
+                image_url=OpenAIImageURL(url=await convert_image_content_to_url(content)),
+                type="image_url",
+            )
+        elif isinstance(content, List):
+            return [await _convert_user_message_content(item) for item in content]
+        else:
+            raise ValueError(f"Unsupported content type: {type(content)}")
+
     out: OpenAIChatCompletionMessage = None
     if isinstance(message, UserMessage):
         out = OpenAIChatCompletionUserMessage(
             role="user",
-            content=message.content,  # TODO(mf): handle image content
+            content=await _convert_user_message_content(message.content),
         )
     elif isinstance(message, CompletionMessage):
         out = OpenAIChatCompletionAssistantMessage(
@@ -198,7 +249,7 @@ def _convert_message(message: Message | Dict) -> OpenAIChatCompletionMessage:
     return out
 
 
-def convert_chat_completion_request(
+async def convert_chat_completion_request(
     request: ChatCompletionRequest,
     n: int = 1,
 ) -> dict:
@@ -224,18 +275,15 @@ def convert_chat_completion_request(
     # stream -> stream
     # logprobs -> logprobs
 
-    if request.response_format and not isinstance(
-        request.response_format, JsonSchemaResponseFormat
-    ):
+    if request.response_format and not isinstance(request.response_format, JsonSchemaResponseFormat):
         raise ValueError(
-            f"Unsupported response format: {request.response_format}. "
-            "Only JsonSchemaResponseFormat is supported."
+            f"Unsupported response format: {request.response_format}. Only JsonSchemaResponseFormat is supported."
         )
 
     nvext = {}
     payload: Dict[str, Any] = dict(
         model=request.model,
-        messages=[_convert_message(message) for message in request.messages],
+        messages=[await _convert_message(message) for message in request.messages],
         stream=request.stream,
         n=n,
         extra_body=dict(nvext=nvext),
@@ -250,12 +298,10 @@ def convert_chat_completion_request(
         nvext.update(guided_json=request.response_format.json_schema)
 
     if request.tools:
-        payload.update(
-            tools=[_convert_tooldef_to_openai_tool(tool) for tool in request.tools]
-        )
-        if request.tool_choice:
+        payload.update(tools=[_convert_tooldef_to_openai_tool(tool) for tool in request.tools])
+        if request.tool_config.tool_choice:
             payload.update(
-                tool_choice=request.tool_choice.value
+                tool_choice=request.tool_config.tool_choice.value
             )  # we cannot include tool_choice w/o tools, server will complain
 
     if request.logprobs:
@@ -374,11 +420,7 @@ def _convert_openai_logprobs(
         return None
 
     return [
-        TokenLogProbs(
-            logprobs_by_token={
-                logprobs.token: logprobs.logprob for logprobs in content.top_logprobs
-            }
-        )
+        TokenLogProbs(logprobs_by_token={logprobs.token: logprobs.logprob for logprobs in content.top_logprobs})
         for content in logprobs.content
     ]
 
@@ -416,17 +458,14 @@ def convert_openai_chat_completion_choice(
         end_of_message = "end_of_message"
         out_of_tokens = "out_of_tokens"
     """
-    assert (
-        hasattr(choice, "message") and choice.message
-    ), "error in server response: message not found"
-    assert (
-        hasattr(choice, "finish_reason") and choice.finish_reason
-    ), "error in server response: finish_reason not found"
+    assert hasattr(choice, "message") and choice.message, "error in server response: message not found"
+    assert hasattr(choice, "finish_reason") and choice.finish_reason, (
+        "error in server response: finish_reason not found"
+    )
 
     return ChatCompletionResponse(
         completion_message=CompletionMessage(
-            content=choice.message.content
-            or "",  # CompletionMessage content is not optional
+            content=choice.message.content or "",  # CompletionMessage content is not optional
             stop_reason=_convert_openai_finish_reason(choice.finish_reason),
             tool_calls=_convert_openai_tool_calls(choice.message.tool_calls),
         ),
@@ -443,9 +482,7 @@ async def convert_openai_chat_completion_stream(
     """
 
     # generate a stream of ChatCompletionResponseEventType: start -> progress -> progress -> ...
-    def _event_type_generator() -> (
-        Generator[ChatCompletionResponseEventType, None, None]
-    ):
+    def _event_type_generator() -> Generator[ChatCompletionResponseEventType, None, None]:
         yield ChatCompletionResponseEventType.start
         while True:
             yield ChatCompletionResponseEventType.progress
@@ -496,18 +533,14 @@ async def convert_openai_chat_completion_stream(
             # it is possible to have parallel tool calls in stream, but
             # ChatCompletionResponseEvent only supports one per stream
             if len(choice.delta.tool_calls) > 1:
-                warnings.warn(
-                    "multiple tool calls found in a single delta, using the first, ignoring the rest"
-                )
+                warnings.warn("multiple tool calls found in a single delta, using the first, ignoring the rest")
 
             # NIM only produces fully formed tool calls, so we can assume success
             yield ChatCompletionResponseStreamChunk(
                 event=ChatCompletionResponseEvent(
                     event_type=next(event_type),
                     delta=ToolCallDelta(
-                        tool_call=_convert_openai_tool_calls(choice.delta.tool_calls)[
-                            0
-                        ],
+                        tool_call=_convert_openai_tool_calls(choice.delta.tool_calls)[0],
                         parse_status=ToolCallParseStatus.succeeded,
                     ),
                     logprobs=_convert_openai_logprobs(choice.logprobs),
@@ -582,10 +615,7 @@ def convert_completion_request(
             nvext.update(top_k=-1)
             payload.update(top_p=request.sampling_params.top_p)
         elif request.sampling_params.strategy == "top_k":
-            if (
-                request.sampling_params.top_k != -1
-                and request.sampling_params.top_k < 1
-            ):
+            if request.sampling_params.top_k != -1 and request.sampling_params.top_k < 1:
                 warnings.warn("top_k must be -1 or >= 1")
             nvext.update(top_k=request.sampling_params.top_k)
         elif request.sampling_params.strategy == "greedy":
@@ -604,9 +634,7 @@ def _convert_openai_completion_logprobs(
     if not logprobs:
         return None
 
-    return [
-        TokenLogProbs(logprobs_by_token=logprobs) for logprobs in logprobs.top_logprobs
-    ]
+    return [TokenLogProbs(logprobs_by_token=logprobs) for logprobs in logprobs.top_logprobs]
 
 
 def convert_openai_completion_choice(
@@ -632,7 +660,7 @@ async def convert_openai_completion_stream(
     async for chunk in stream:
         choice = chunk.choices[0]
         yield CompletionResponseStreamChunk(
-            delta=TextDelta(text=choice.text),
+            delta=choice.text,
             stop_reason=_convert_openai_finish_reason(choice.finish_reason),
             logprobs=_convert_openai_completion_logprobs(choice.logprobs),
         )

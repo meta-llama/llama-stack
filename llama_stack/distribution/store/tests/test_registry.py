@@ -8,9 +8,9 @@ import os
 
 import pytest
 import pytest_asyncio
+
 from llama_stack.apis.inference import Model
 from llama_stack.apis.vector_dbs import VectorDB
-
 from llama_stack.distribution.store.registry import (
     CachedDiskDistributionRegistry,
     DiskDistributionRegistry,
@@ -161,9 +161,7 @@ async def test_duplicate_provider_registration(config):
 
     result = await cached_registry.get("vector_db", "test_vector_db_2")
     assert result is not None
-    assert (
-        result.embedding_model == original_vector_db.embedding_model
-    )  # Original values preserved
+    assert result.embedding_model == original_vector_db.embedding_model  # Original values preserved
 
 
 @pytest.mark.asyncio
@@ -193,14 +191,9 @@ async def test_get_all_objects(config):
 
     # Verify each vector_db was stored correctly
     for original_vector_db in test_vector_dbs:
-        matching_vector_dbs = [
-            v for v in all_results if v.identifier == original_vector_db.identifier
-        ]
+        matching_vector_dbs = [v for v in all_results if v.identifier == original_vector_db.identifier]
         assert len(matching_vector_dbs) == 1
         stored_vector_db = matching_vector_dbs[0]
         assert stored_vector_db.embedding_model == original_vector_db.embedding_model
         assert stored_vector_db.provider_id == original_vector_db.provider_id
-        assert (
-            stored_vector_db.embedding_dimension
-            == original_vector_db.embedding_dimension
-        )
+        assert stored_vector_db.embedding_dimension == original_vector_db.embedding_dimension

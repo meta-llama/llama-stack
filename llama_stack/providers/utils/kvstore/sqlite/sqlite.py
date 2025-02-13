@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 import os
-
 from datetime import datetime
 from typing import List, Optional
 
@@ -34,9 +33,7 @@ class SqliteKVStoreImpl(KVStore):
             )
             await db.commit()
 
-    async def set(
-        self, key: str, value: str, expiration: Optional[datetime] = None
-    ) -> None:
+    async def set(self, key: str, value: str, expiration: Optional[datetime] = None) -> None:
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute(
                 f"INSERT OR REPLACE INTO {self.table_name} (key, value, expiration) VALUES (?, ?, ?)",
@@ -46,9 +43,7 @@ class SqliteKVStoreImpl(KVStore):
 
     async def get(self, key: str) -> Optional[str]:
         async with aiosqlite.connect(self.db_path) as db:
-            async with db.execute(
-                f"SELECT value, expiration FROM {self.table_name} WHERE key = ?", (key,)
-            ) as cursor:
+            async with db.execute(f"SELECT value, expiration FROM {self.table_name} WHERE key = ?", (key,)) as cursor:
                 row = await cursor.fetchone()
                 if row is None:
                     return None

@@ -10,11 +10,8 @@ from typing import Dict, List
 from pydantic import BaseModel
 
 from llama_stack.apis.tools import RAGToolRuntime, SpecialToolGroup
-
 from llama_stack.apis.version import LLAMA_STACK_API_VERSION
-
 from llama_stack.distribution.resolver import api_protocol_map
-
 from llama_stack.providers.datatypes import Api
 
 
@@ -43,9 +40,7 @@ def get_all_api_endpoints() -> Dict[Api, List[ApiEndpoint]]:
         if api == Api.tool_runtime:
             for tool_group in SpecialToolGroup:
                 sub_protocol = toolgroup_protocols[tool_group]
-                sub_protocol_methods = inspect.getmembers(
-                    sub_protocol, predicate=inspect.isfunction
-                )
+                sub_protocol_methods = inspect.getmembers(sub_protocol, predicate=inspect.isfunction)
                 for name, method in sub_protocol_methods:
                     if not hasattr(method, "__webmethod__"):
                         continue

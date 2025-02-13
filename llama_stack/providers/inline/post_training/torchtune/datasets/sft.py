@@ -13,7 +13,6 @@
 from typing import Any, Dict, List, Mapping
 
 import numpy as np
-
 from torch.utils.data import Dataset
 from torchtune.data._common import CROSS_ENTROPY_IGNORE_IDX
 from torchtune.data._messages import validate_messages
@@ -61,8 +60,7 @@ class SFTDataset(Dataset):
         if not ("tokens" in tokenized_dict and "mask" in tokenized_dict):
             keys_str = ", ".join(tokenized_dict.keys())
             error_message = (
-                "model_transform returned the following keys: "
-                f"{keys_str}. Must return 'tokens' and 'mask' as keys."
+                f"model_transform returned the following keys: {keys_str}. Must return 'tokens' and 'mask' as keys."
             )
             raise ValueError(error_message)
 

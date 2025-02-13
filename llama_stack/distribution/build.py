@@ -8,7 +8,6 @@ import importlib.resources
 import logging
 import sys
 from enum import Enum
-
 from pathlib import Path
 from typing import Dict, List
 
@@ -16,11 +15,8 @@ from pydantic import BaseModel
 from termcolor import cprint
 
 from llama_stack.distribution.datatypes import BuildConfig, Provider
-
 from llama_stack.distribution.distribution import get_provider_registry
-
 from llama_stack.distribution.utils.config_dirs import BUILDS_BASE_DIR
-
 from llama_stack.distribution.utils.exec import run_command, run_with_pty
 from llama_stack.providers.datatypes import Api
 
@@ -58,22 +54,14 @@ def get_provider_dependencies(
     for api_str, provider_or_providers in config_providers.items():
         providers_for_api = all_providers[Api(api_str)]
 
-        providers = (
-            provider_or_providers
-            if isinstance(provider_or_providers, list)
-            else [provider_or_providers]
-        )
+        providers = provider_or_providers if isinstance(provider_or_providers, list) else [provider_or_providers]
 
         for provider in providers:
             # Providers from BuildConfig and RunConfig are subtly different – not great
-            provider_type = (
-                provider if isinstance(provider, str) else provider.provider_type
-            )
+            provider_type = provider if isinstance(provider, str) else provider.provider_type
 
             if provider_type not in providers_for_api:
-                raise ValueError(
-                    f"Provider `{provider}` is not available for API `{api_str}`"
-                )
+                raise ValueError(f"Provider `{provider}` is not available for API `{api_str}`")
 
             provider_spec = providers_for_api[provider_type]
             deps.extend(provider_spec.pip_packages)
@@ -95,11 +83,11 @@ def print_pip_install_help(providers: Dict[str, List[Provider]]):
     normal_deps, special_deps = get_provider_dependencies(providers)
 
     cprint(
-        f"Please install needed dependencies using the following commands:\n\npip install {' '.join(normal_deps)}",
+        f"Please install needed dependencies using the following commands:\n\nuv pip install {' '.join(normal_deps)}",
         "yellow",
     )
     for special_dep in special_deps:
-        cprint(f"pip install {special_dep}", "yellow")
+        cprint(f"uv pip install {special_dep}", "yellow")
     print()
 
 
@@ -109,19 +97,13 @@ def build_image(
     image_name: str,
     template_or_config: str,
 ):
-    container_base = (
-        build_config.distribution_spec.container_image or "python:3.10-slim"
-    )
+    container_base = build_config.distribution_spec.container_image or "python:3.10-slim"
 
-    normal_deps, special_deps = get_provider_dependencies(
-        build_config.distribution_spec.providers
-    )
+    normal_deps, special_deps = get_provider_dependencies(build_config.distribution_spec.providers)
     normal_deps += SERVER_DEPENDENCIES
 
     if build_config.image_type == ImageType.container.value:
-        script = str(
-            importlib.resources.files("llama_stack") / "distribution/build_container.sh"
-        )
+        script = str(importlib.resources.files("llama_stack") / "distribution/build_container.sh")
         args = [
             script,
             template_or_config,
@@ -132,9 +114,7 @@ def build_image(
             " ".join(normal_deps),
         ]
     elif build_config.image_type == ImageType.conda.value:
-        script = str(
-            importlib.resources.files("llama_stack") / "distribution/build_conda_env.sh"
-        )
+        script = str(importlib.resources.files("llama_stack") / "distribution/build_conda_env.sh")
         args = [
             script,
             str(image_name),
@@ -142,9 +122,7 @@ def build_image(
             " ".join(normal_deps),
         ]
     elif build_config.image_type == ImageType.venv.value:
-        script = str(
-            importlib.resources.files("llama_stack") / "distribution/build_venv.sh"
-        )
+        script = str(importlib.resources.files("llama_stack") / "distribution/build_venv.sh")
         args = [
             script,
             str(image_name),

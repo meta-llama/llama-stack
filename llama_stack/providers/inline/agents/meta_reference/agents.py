@@ -25,7 +25,12 @@ from llama_stack.apis.agents import (
     Session,
     Turn,
 )
-from llama_stack.apis.inference import Inference, ToolResponseMessage, UserMessage
+from llama_stack.apis.inference import (
+    Inference,
+    ToolConfig,
+    ToolResponseMessage,
+    UserMessage,
+)
 from llama_stack.apis.safety import Safety
 from llama_stack.apis.tools import ToolGroups, ToolRuntime
 from llama_stack.apis.vector_io import VectorIO
@@ -94,16 +99,12 @@ class MetaReferenceAgentsImpl(Agents):
         try:
             agent_config = json.loads(agent_config)
         except json.JSONDecodeError as e:
-            raise ValueError(
-                f"Could not JSON decode agent config for {agent_id}"
-            ) from e
+            raise ValueError(f"Could not JSON decode agent config for {agent_id}") from e
 
         try:
             agent_config = AgentConfig(**agent_config)
         except Exception as e:
-            raise ValueError(
-                f"Could not validate(?) agent config for {agent_id}"
-            ) from e
+            raise ValueError(f"Could not validate(?) agent config for {agent_id}") from e
 
         return ChatAgent(
             agent_id=agent_id,
@@ -115,9 +116,7 @@ class MetaReferenceAgentsImpl(Agents):
             tool_runtime_api=self.tool_runtime_api,
             tool_groups_api=self.tool_groups_api,
             persistence_store=(
-                self.persistence_store
-                if agent_config.enable_session_persistence
-                else self.in_memory_store
+                self.persistence_store if agent_config.enable_session_persistence else self.in_memory_store
             ),
         )
 
@@ -146,6 +145,7 @@ class MetaReferenceAgentsImpl(Agents):
         toolgroups: Optional[List[AgentToolGroup]] = None,
         documents: Optional[List[Document]] = None,
         stream: Optional[bool] = False,
+        tool_config: Optional[ToolConfig] = None,
     ) -> AsyncGenerator:
         request = AgentTurnCreateRequest(
             agent_id=agent_id,
@@ -154,6 +154,7 @@ class MetaReferenceAgentsImpl(Agents):
             stream=True,
             toolgroups=toolgroups,
             documents=documents,
+            tool_config=tool_config,
         )
         if stream:
             return self._create_agent_turn_streaming(request)
@@ -168,22 +169,14 @@ class MetaReferenceAgentsImpl(Agents):
         async for event in agent.create_and_execute_turn(request):
             yield event
 
-    async def get_agents_turn(
-        self, agent_id: str, session_id: str, turn_id: str
-    ) -> Turn:
-        turn = await self.persistence_store.get(
-            f"session:{agent_id}:{session_id}:{turn_id}"
-        )
+    async def get_agents_turn(self, agent_id: str, session_id: str, turn_id: str) -> Turn:
+        turn = await self.persistence_store.get(f"session:{agent_id}:{session_id}:{turn_id}")
         turn = json.loads(turn)
         turn = Turn(**turn)
         return turn
 
-    async def get_agents_step(
-        self, agent_id: str, session_id: str, turn_id: str, step_id: str
-    ) -> AgentStepResponse:
-        turn = await self.persistence_store.get(
-            f"session:{agent_id}:{session_id}:{turn_id}"
-        )
+    async def get_agents_step(self, agent_id: str, session_id: str, turn_id: str, step_id: str) -> AgentStepResponse:
+        turn = await self.persistence_store.get(f"session:{agent_id}:{session_id}:{turn_id}")
         turn = json.loads(turn)
         turn = Turn(**turn)
         steps = turn.steps
@@ -203,9 +196,7 @@ class MetaReferenceAgentsImpl(Agents):
         turns = []
         if turn_ids:
             for turn_id in turn_ids:
-                turn = await self.persistence_store.get(
-                    f"session:{agent_id}:{session_id}:{turn_id}"
-                )
+                turn = await self.persistence_store.get(f"session:{agent_id}:{session_id}:{turn_id}")
                 turn = json.loads(turn)
                 turn = Turn(**turn)
                 turns.append(turn)
@@ -221,3 +212,6 @@ class MetaReferenceAgentsImpl(Agents):
 
     async def delete_agent(self, agent_id: str) -> None:
         await self.persistence_store.delete(f"agent:{agent_id}")
+
+    async def shutdown(self) -> None:
+        pass

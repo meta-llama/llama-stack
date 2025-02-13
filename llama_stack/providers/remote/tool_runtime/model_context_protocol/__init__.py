@@ -7,7 +7,6 @@
 from pydantic import BaseModel
 
 from .config import ModelContextProtocolConfig
-
 from .model_context_protocol import ModelContextProtocolToolRuntimeImpl
 
 

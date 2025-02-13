@@ -12,7 +12,6 @@ from llama_stack.apis.common.type_system import (
     CompletionInputType,
     StringType,
 )
-
 from llama_stack.distribution.datatypes import Api
 
 
@@ -68,9 +67,7 @@ def validate_dataset_schema(
     expected_schemas: List[Dict[str, Any]],
 ):
     if dataset_schema not in expected_schemas:
-        raise ValueError(
-            f"Dataset {dataset_schema} does not have a correct input schema in {expected_schemas}"
-        )
+        raise ValueError(f"Dataset {dataset_schema} does not have a correct input schema in {expected_schemas}")
 
 
 def validate_row_schema(
@@ -81,6 +78,4 @@ def validate_row_schema(
         if all(key in input_row for key in schema):
             return
 
-    raise ValueError(
-        f"Input row {input_row} does not match any of the expected schemas in {expected_schemas}"
-    )
+    raise ValueError(f"Input row {input_row} does not match any of the expected schemas in {expected_schemas}")

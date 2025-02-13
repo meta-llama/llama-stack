@@ -28,8 +28,7 @@ class BedrockBaseConfig(BaseModel):
     )
     profile_name: Optional[str] = Field(
         default=None,
-        description="The profile name that contains credentials to use."
-        "Default use environment variable: AWS_PROFILE",
+        description="The profile name that contains credentials to use.Default use environment variable: AWS_PROFILE",
     )
     total_max_attempts: Optional[int] = Field(
         default=None,

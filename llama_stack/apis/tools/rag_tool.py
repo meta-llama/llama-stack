@@ -11,7 +11,7 @@ from llama_models.schema_utils import json_schema_type, register_schema, webmeth
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated, Protocol, runtime_checkable
 
-from llama_stack.apis.common.content_types import InterleavedContent, URL
+from llama_stack.apis.common.content_types import URL, InterleavedContent
 from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
 
 
@@ -64,9 +64,7 @@ RAGQueryGeneratorConfig = register_schema(
 class RAGQueryConfig(BaseModel):
     # This config defines how a query is generated using the messages
     # for memory bank retrieval.
-    query_generator_config: RAGQueryGeneratorConfig = Field(
-        default=DefaultRAGQueryGeneratorConfig()
-    )
+    query_generator_config: RAGQueryGeneratorConfig = Field(default=DefaultRAGQueryGeneratorConfig())
     max_tokens_in_context: int = 4096
     max_chunks: int = 5
 

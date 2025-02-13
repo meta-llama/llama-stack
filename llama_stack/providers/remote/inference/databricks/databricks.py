@@ -26,8 +26,8 @@ from llama_stack.apis.inference import (
     ToolPromptFormat,
 )
 from llama_stack.providers.utils.inference.model_registry import (
-    build_model_alias,
     ModelRegistryHelper,
+    build_model_alias,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
     get_sampling_options,
@@ -89,16 +89,16 @@ class DatabricksInferenceAdapter(ModelRegistryHelper, Inference):
         tool_prompt_format: Optional[ToolPromptFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
+        tool_config: Optional[ToolConfig] = None,
     ) -> AsyncGenerator:
         request = ChatCompletionRequest(
             model=model,
             messages=messages,
             sampling_params=sampling_params,
             tools=tools or [],
-            tool_choice=tool_choice,
-            tool_prompt_format=tool_prompt_format,
             stream=stream,
             logprobs=logprobs,
+            tool_config=tool_config,
         )
 
         client = OpenAI(base_url=self.config.url, api_key=self.config.api_token)
@@ -112,11 +112,9 @@ class DatabricksInferenceAdapter(ModelRegistryHelper, Inference):
     ) -> ChatCompletionResponse:
         params = self._get_params(request)
         r = client.completions.create(**params)
-        return process_chat_completion_response(r, self.formatter)
+        return process_chat_completion_response(r, self.formatter, request)
 
-    async def _stream_chat_completion(
-        self, request: ChatCompletionRequest, client: OpenAI
-    ) -> AsyncGenerator:
+    async def _stream_chat_completion(self, request: ChatCompletionRequest, client: OpenAI) -> AsyncGenerator:
         params = self._get_params(request)
 
         async def _to_async_generator():
@@ -125,17 +123,13 @@ class DatabricksInferenceAdapter(ModelRegistryHelper, Inference):
                 yield chunk
 
         stream = _to_async_generator()
-        async for chunk in process_chat_completion_stream_response(
-            stream, self.formatter
-        ):
+        async for chunk in process_chat_completion_stream_response(stream, self.formatter, request):
             yield chunk
 
     def _get_params(self, request: ChatCompletionRequest) -> dict:
         return {
             "model": request.model,
-            "prompt": chat_completion_request_to_prompt(
-                request, self.get_llama_model(request.model), self.formatter
-            ),
+            "prompt": chat_completion_request_to_prompt(request, self.get_llama_model(request.model), self.formatter),
             "stream": request.stream,
             **get_sampling_options(request.sampling_params),
         }

@@ -10,8 +10,6 @@ async def create_agent_session(agents_impl, agent_config):
     agent_id = create_response.agent_id
 
     # Create a session
-    session_create_response = await agents_impl.create_agent_session(
-        agent_id, "Test Session"
-    )
+    session_create_response = await agents_impl.create_agent_session(agent_id, "Test Session")
     session_id = session_create_response.session_id
     return agent_id, session_id

@@ -4,10 +4,10 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import collections
 import hashlib
 import ipaddress
 import typing
+from dataclasses import make_dataclass
 from typing import Any, Dict, Set, Union
 
 from ..strong_typing.core import JsonType
@@ -177,20 +177,37 @@ class ContentBuilder:
     ) -> Dict[str, MediaType]:
         "Creates the content subtree for a request or response."
 
-        def has_iterator_type(t):
-            if typing.get_origin(t) is typing.Union:
-                return any(has_iterator_type(a) for a in typing.get_args(t))
+        def is_iterator_type(t):
+            return "StreamChunk" in str(t)
+
+        def get_media_type(t):
+            if is_generic_list(t):
+                return "application/jsonl"
+            elif is_iterator_type(t):
+                return "text/event-stream"
             else:
-                # TODO: needs a proper fix where we let all types correctly flow upwards
-                # and then test against AsyncIterator
-                return "StreamChunk" in str(t)
+                return "application/json"
+
+        if typing.get_origin(payload_type) is typing.Union:
+            media_types = []
+            item_types = []
+            for x in typing.get_args(payload_type):
+                media_types.append(get_media_type(x))
+                item_types.append(x)
+
+            if len(set(media_types)) == 1:
+                # all types have the same media type
+                return {media_types[0]: self.build_media_type(payload_type, examples)}
+            else:
+                # different types have different media types
+                return {
+                    media_type: self.build_media_type(item_type, examples)
+                    for media_type, item_type in zip(media_types, item_types)
+                }
 
         if is_generic_list(payload_type):
             media_type = "application/jsonl"
             item_type = unwrap_generic_list(payload_type)
-        elif has_iterator_type(payload_type):
-            item_type = payload_type
-            media_type = "text/event-stream"
         else:
             media_type = "application/json"
             item_type = payload_type
@@ -233,7 +250,9 @@ class ContentBuilder:
             value = sample_transformer(object_to_json(example))
 
             hash_string = (
-                hashlib.md5(json_dump_string(value).encode("utf-8")).digest().hex()
+                hashlib.sha256(json_dump_string(value).encode("utf-8"))
+                .digest()
+                .hex()[:16]
             )
             name = f"ex-{hash_string}"
 
@@ -274,6 +293,20 @@ class StatusResponse:
     status_code: str
     types: List[type] = dataclasses.field(default_factory=list)
     examples: List[Any] = dataclasses.field(default_factory=list)
+
+
+def create_docstring_for_request(
+    request_name: str, fields: List[Tuple[str, type, Any]], doc_params: Dict[str, str]
+) -> str:
+    """Creates a ReST-style docstring for a dynamically generated request dataclass."""
+    lines = ["\n"]  # Short description
+
+    # Add parameter documentation in ReST format
+    for name, type_ in fields:
+        desc = doc_params.get(name, "")
+        lines.append(f":param {name}: {desc}")
+
+    return "\n".join(lines)
 
 
 class ResponseBuilder:
@@ -493,11 +526,24 @@ class Generator:
             first = next(iter(op.request_params))
             request_name, request_type = first
 
-            from dataclasses import make_dataclass
-
             op_name = "".join(word.capitalize() for word in op.name.split("_"))
             request_name = f"{op_name}Request"
-            request_type = make_dataclass(request_name, op.request_params)
+            fields = [
+                (
+                    name,
+                    type_,
+                )
+                for name, type_ in op.request_params
+            ]
+            request_type = make_dataclass(
+                request_name,
+                fields,
+                namespace={
+                    "__doc__": create_docstring_for_request(
+                        request_name, fields, doc_params
+                    )
+                },
+            )
 
             requestBody = RequestBody(
                 content={
@@ -598,10 +644,14 @@ class Generator:
         else:
             callbacks = None
 
+        description = "\n".join(
+            filter(None, [doc_string.short_description, doc_string.long_description])
+        )
         return Operation(
             tags=[op.defining_class.__name__],
-            summary=doc_string.short_description,
-            description=doc_string.long_description,
+            summary=None,
+            # summary=doc_string.short_description,
+            description=description,
             parameters=parameters,
             requestBody=requestBody,
             responses=responses,
@@ -633,6 +683,7 @@ class Generator:
                 raise NotImplementedError(f"unknown HTTP method: {op.http_method}")
 
             route = op.get_route()
+            route = route.replace(":path", "")
             print(f"route: {route}")
             if route in paths:
                 paths[route].update(pathItem)
@@ -649,12 +700,6 @@ class Generator:
                     displayName=doc_string.short_description,
                 )
             )
-
-        # types that are produced/consumed by operations
-        type_tags = [
-            self._build_type_tag(ref, schema)
-            for ref, schema in self.schema_builder.schemas.items()
-        ]
 
         # types that are emitted by events
         event_tags: List[Tag] = []
@@ -682,7 +727,6 @@ class Generator:
         # list all operations and types
         tags: List[Tag] = []
         tags.extend(operation_tags)
-        tags.extend(type_tags)
         tags.extend(event_tags)
         for extra_tag_group in extra_tag_groups.values():
             tags.extend(extra_tag_group)
@@ -695,13 +739,6 @@ class Generator:
                 TagGroup(
                     name=self.options.map("Operations"),
                     tags=sorted(tag.name for tag in operation_tags),
-                )
-            )
-        if type_tags:
-            tag_groups.append(
-                TagGroup(
-                    name=self.options.map("Types"),
-                    tags=sorted(tag.name for tag in type_tags),
                 )
             )
         if event_tags:

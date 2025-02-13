@@ -6,11 +6,11 @@
 import os
 
 import pytest
+from llama_stack_client import LlamaStackClient
+from report import Report
 
 from llama_stack import LlamaStackAsLibraryClient
 from llama_stack.providers.tests.env import get_env_or_fail
-from llama_stack_client import LlamaStackClient
-from report import Report
 
 
 def pytest_configure(config):
@@ -51,6 +51,12 @@ def pytest_addoption(parser):
         action="store",
         default=VISION_MODEL,
         help="Specify the vision inference model to use for testing",
+    )
+    parser.addoption(
+        "--safety-shield",
+        action="store",
+        default="meta-llama/Llama-Guard-3-1B",
+        help="Specify the safety shield model to use for testing",
     )
 
 

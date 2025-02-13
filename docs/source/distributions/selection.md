@@ -23,7 +23,7 @@ Which templates / distributions to choose depends on the hardware you have for r
   - {dockerhub}`distribution-together` ([Guide](self_hosted_distro/together))
   - {dockerhub}`distribution-fireworks` ([Guide](self_hosted_distro/fireworks))
 
-- **Do you want to run Llama Stack inference on your iOS / Android device**  Lastly, we also provide templates for running Llama Stack inference on your iOS / Android device:
+- **Do you want to run Llama Stack inference on your iOS / Android device?**  Lastly, we also provide templates for running Llama Stack inference on your iOS / Android device:
   - [iOS SDK](ondevice_distro/ios_sdk)
   - [Android](ondevice_distro/android_sdk)
 
@@ -43,7 +43,6 @@ self_hosted_distro/nvidia
 self_hosted_distro/ollama
 self_hosted_distro/together
 self_hosted_distro/fireworks
-ondevice_distro/index
 ```
 
 ### On-Device Distributions

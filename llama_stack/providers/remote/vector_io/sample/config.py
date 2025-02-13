@@ -7,6 +7,6 @@
 from pydantic import BaseModel
 
 
-class SampleConfig(BaseModel):
+class SampleVectorIOConfig(BaseModel):
     host: str = "localhost"
     port: int = 9999

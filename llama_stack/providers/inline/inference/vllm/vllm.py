@@ -30,15 +30,16 @@ from llama_stack.apis.inference import (
     ResponseFormat,
     SamplingParams,
     ToolChoice,
+    ToolConfig,
     ToolDefinition,
     ToolPromptFormat,
 )
 from llama_stack.apis.models import Model
 from llama_stack.providers.datatypes import ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.openai_compat import (
-    get_sampling_options,
     OpenAICompatCompletionChoice,
     OpenAICompatCompletionResponse,
+    get_sampling_options,
     process_chat_completion_response,
     process_chat_completion_stream_response,
 )
@@ -159,6 +160,7 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
+        tool_config: Optional[ToolConfig] = None,
     ) -> ChatCompletionResponse | ChatCompletionResponseStreamChunk:
         assert self.engine is not None
 
@@ -167,22 +169,17 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
             messages=messages,
             sampling_params=sampling_params,
             tools=tools or [],
-            tool_choice=tool_choice,
-            tool_prompt_format=tool_prompt_format,
             stream=stream,
             logprobs=logprobs,
+            tool_config=tool_config,
         )
 
         log.info("Sampling params: %s", sampling_params)
         request_id = _random_uuid()
 
-        prompt = await chat_completion_request_to_prompt(
-            request, self.config.model, self.formatter
-        )
+        prompt = await chat_completion_request_to_prompt(request, self.config.model, self.formatter)
         vllm_sampling_params = self._sampling_params(request.sampling_params)
-        results_generator = self.engine.generate(
-            prompt, vllm_sampling_params, request_id
-        )
+        results_generator = self.engine.generate(prompt, vllm_sampling_params, request_id)
         if stream:
             return self._stream_chat_completion(request, results_generator)
         else:
@@ -204,7 +201,7 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         response = OpenAICompatCompletionResponse(
             choices=[choice],
         )
-        return process_chat_completion_response(response, self.formatter)
+        return process_chat_completion_response(response, self.formatter, request)
 
     async def _stream_chat_completion(
         self, request: ChatCompletionRequest, results_generator: AsyncGenerator
@@ -230,12 +227,8 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
                 )
 
         stream = _generate_and_convert_to_openai_compat()
-        async for chunk in process_chat_completion_stream_response(
-            stream, self.formatter
-        ):
+        async for chunk in process_chat_completion_stream_response(stream, self.formatter, request):
             yield chunk
 
-    async def embeddings(
-        self, model_id: str, contents: List[InterleavedContent]
-    ) -> EmbeddingsResponse:
+    async def embeddings(self, model_id: str, contents: List[InterleavedContent]) -> EmbeddingsResponse:
         raise NotImplementedError()

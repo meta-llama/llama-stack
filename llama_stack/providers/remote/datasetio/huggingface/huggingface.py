@@ -9,7 +9,6 @@ import datasets as hf_datasets
 
 from llama_stack.apis.datasetio import DatasetIO, PaginatedRowsResult
 from llama_stack.apis.datasets import Dataset
-
 from llama_stack.providers.datatypes import DatasetsProtocolPrivate
 from llama_stack.providers.utils.datasetio.url_utils import get_dataframe_from_url
 from llama_stack.providers.utils.kvstore import kvstore_impl
@@ -114,13 +113,9 @@ class HuggingfaceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
         new_dataset = hf_datasets.Dataset.from_list(rows)
 
         # Concatenate the new rows with existing dataset
-        updated_dataset = hf_datasets.concatenate_datasets(
-            [loaded_dataset, new_dataset]
-        )
+        updated_dataset = hf_datasets.concatenate_datasets([loaded_dataset, new_dataset])
 
         if dataset_def.metadata.get("path", None):
             updated_dataset.push_to_hub(dataset_def.metadata["path"])
         else:
-            raise NotImplementedError(
-                "Uploading to URL-based datasets is not supported yet"
-            )
+            raise NotImplementedError("Uploading to URL-based datasets is not supported yet")

@@ -35,9 +35,7 @@ class NVIDIAConfig(BaseModel):
     """
 
     url: str = Field(
-        default_factory=lambda: os.getenv(
-            "NVIDIA_BASE_URL", "https://integrate.api.nvidia.com"
-        ),
+        default_factory=lambda: os.getenv("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com"),
         description="A base url for accessing the NVIDIA NIM",
     )
     api_key: Optional[SecretStr] = Field(
@@ -52,6 +50,6 @@ class NVIDIAConfig(BaseModel):
     @classmethod
     def sample_run_config(cls, **kwargs) -> Dict[str, Any]:
         return {
-            "url": "https://integrate.api.nvidia.com",
-            "api_key": "${env.NVIDIA_API_KEY}",
+            "url": "${env.NVIDIA_BASE_URL:https://integrate.api.nvidia.com}",
+            "api_key": "${env.NVIDIA_API_KEY:}",
         }

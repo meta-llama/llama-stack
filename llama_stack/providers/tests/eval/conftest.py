@@ -7,15 +7,13 @@
 import pytest
 
 from ..agents.fixtures import AGENTS_FIXTURES
-
 from ..conftest import get_provider_fixture_overrides
-
 from ..datasetio.fixtures import DATASETIO_FIXTURES
 from ..inference.fixtures import INFERENCE_FIXTURES
-from ..memory.fixtures import MEMORY_FIXTURES
 from ..safety.fixtures import SAFETY_FIXTURES
 from ..scoring.fixtures import SCORING_FIXTURES
 from ..tools.fixtures import TOOL_RUNTIME_FIXTURES
+from ..vector_io.fixtures import VECTOR_IO_FIXTURES
 from .fixtures import EVAL_FIXTURES
 
 DEFAULT_PROVIDER_COMBINATIONS = [
@@ -27,7 +25,7 @@ DEFAULT_PROVIDER_COMBINATIONS = [
             "inference": "fireworks",
             "agents": "meta_reference",
             "safety": "llama_guard",
-            "memory": "faiss",
+            "vector_io": "faiss",
             "tool_runtime": "memory_and_search",
         },
         id="meta_reference_eval_fireworks_inference",
@@ -41,7 +39,7 @@ DEFAULT_PROVIDER_COMBINATIONS = [
             "inference": "together",
             "agents": "meta_reference",
             "safety": "llama_guard",
-            "memory": "faiss",
+            "vector_io": "faiss",
             "tool_runtime": "memory_and_search",
         },
         id="meta_reference_eval_together_inference",
@@ -55,7 +53,7 @@ DEFAULT_PROVIDER_COMBINATIONS = [
             "inference": "together",
             "agents": "meta_reference",
             "safety": "llama_guard",
-            "memory": "faiss",
+            "vector_io": "faiss",
             "tool_runtime": "memory_and_search",
         },
         id="meta_reference_eval_together_inference_huggingface_datasetio",
@@ -85,11 +83,10 @@ def pytest_generate_tests(metafunc):
             "inference": INFERENCE_FIXTURES,
             "agents": AGENTS_FIXTURES,
             "safety": SAFETY_FIXTURES,
-            "memory": MEMORY_FIXTURES,
+            "vector_io": VECTOR_IO_FIXTURES,
             "tool_runtime": TOOL_RUNTIME_FIXTURES,
         }
         combinations = (
-            get_provider_fixture_overrides(metafunc.config, available_fixtures)
-            or DEFAULT_PROVIDER_COMBINATIONS
+            get_provider_fixture_overrides(metafunc.config, available_fixtures) or DEFAULT_PROVIDER_COMBINATIONS
         )
         metafunc.parametrize("eval_stack", combinations, indirect=True)

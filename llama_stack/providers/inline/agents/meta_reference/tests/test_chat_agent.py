@@ -41,7 +41,6 @@ from llama_stack.apis.tools import (
     ToolInvocationResult,
 )
 from llama_stack.apis.vector_io import QueryChunksResponse
-
 from llama_stack.providers.inline.agents.meta_reference.agent_instance import (
     MEMORY_QUERY_TOOL,
 )
@@ -64,9 +63,7 @@ class MockInferenceAPI:
         tool_prompt_format: Optional[ToolPromptFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
-    ) -> Union[
-        ChatCompletionResponse, AsyncIterator[ChatCompletionResponseStreamChunk]
-    ]:
+    ) -> Union[ChatCompletionResponse, AsyncIterator[ChatCompletionResponseStreamChunk]]:
         async def stream_response():
             yield ChatCompletionResponseStreamChunk(
                 event=ChatCompletionResponseEvent(
@@ -104,9 +101,7 @@ class MockInferenceAPI:
 
 
 class MockSafetyAPI:
-    async def run_shield(
-        self, shield_id: str, messages: List[Message]
-    ) -> RunShieldResponse:
+    async def run_shield(self, shield_id: str, messages: List[Message]) -> RunShieldResponse:
         return RunShieldResponse(violation=None)
 
 
@@ -129,9 +124,7 @@ class MockVectorIOAPI:
 
 
 class MockToolGroupsAPI:
-    async def register_tool_group(
-        self, toolgroup_id: str, provider_id: str, mcp_endpoint=None, args=None
-    ) -> None:
+    async def register_tool_group(self, toolgroup_id: str, provider_id: str, mcp_endpoint=None, args=None) -> None:
         pass
 
     async def get_tool_group(self, toolgroup_id: str) -> ToolGroup:
@@ -341,26 +334,21 @@ async def test_chat_agent_complex_turn(get_chat_agent):
     assert len(responses) > 0
 
     step_types = [
-        response.event.payload.step_type
-        for response in responses
-        if hasattr(response.event.payload, "step_type")
+        response.event.payload.step_type for response in responses if hasattr(response.event.payload, "step_type")
     ]
 
     assert StepType.shield_call in step_types, "Shield call step is missing"
     assert StepType.inference in step_types, "Inference step is missing"
 
     event_types = [
-        response.event.payload.event_type
-        for response in responses
-        if hasattr(response.event.payload, "event_type")
+        response.event.payload.event_type for response in responses if hasattr(response.event.payload, "event_type")
     ]
     assert "turn_start" in event_types, "Start event is missing"
     assert "turn_complete" in event_types, "Complete event is missing"
 
-    assert any(
-        isinstance(response.event.payload, AgentTurnResponseTurnCompletePayload)
-        for response in responses
-    ), "Turn complete event is missing"
+    assert any(isinstance(response.event.payload, AgentTurnResponseTurnCompletePayload) for response in responses), (
+        "Turn complete event is missing"
+    )
     turn_complete_payload = next(
         response.event.payload
         for response in responses
@@ -380,9 +368,7 @@ async def test_chat_agent_complex_turn(get_chat_agent):
         ([MEMORY_TOOLGROUP, CODE_INTERPRETER_TOOLGROUP], True, True),  # all tools
     ],
 )
-async def test_chat_agent_tools(
-    get_agents_impl, toolgroups, expected_memory, expected_code_interpreter
-):
+async def test_chat_agent_tools(get_agents_impl, toolgroups, expected_memory, expected_code_interpreter):
     impl = await get_agents_impl
     agent_config = AgentConfig(
         model="test_model",

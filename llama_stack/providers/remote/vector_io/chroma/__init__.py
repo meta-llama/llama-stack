@@ -8,12 +8,10 @@ from typing import Dict
 
 from llama_stack.providers.datatypes import Api, ProviderSpec
 
-from .config import ChromaRemoteImplConfig
+from .config import ChromaVectorIOConfig
 
 
-async def get_adapter_impl(
-    config: ChromaRemoteImplConfig, deps: Dict[Api, ProviderSpec]
-):
+async def get_adapter_impl(config: ChromaVectorIOConfig, deps: Dict[Api, ProviderSpec]):
     from .chroma import ChromaVectorIOAdapter
 
     impl = ChromaVectorIOAdapter(config, deps[Api.inference])

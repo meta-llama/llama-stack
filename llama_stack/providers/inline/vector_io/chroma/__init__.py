@@ -8,12 +8,10 @@ from typing import Dict
 
 from llama_stack.providers.datatypes import Api, ProviderSpec
 
-from .config import ChromaInlineImplConfig
+from .config import ChromaVectorIOConfig
 
 
-async def get_provider_impl(
-    config: ChromaInlineImplConfig, deps: Dict[Api, ProviderSpec]
-):
+async def get_provider_impl(config: ChromaVectorIOConfig, deps: Dict[Api, ProviderSpec]):
     from llama_stack.providers.remote.vector_io.chroma.chroma import (
         ChromaVectorIOAdapter,
     )

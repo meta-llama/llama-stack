@@ -1,3 +1,78 @@
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "llama_stack"
+version = "0.1.2"
+authors = [{ name = "Meta Llama", email = "llama-oss@meta.com" }]
+description = "Llama Stack"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { "text" = "MIT" }
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+]
+dependencies = [
+    "blobfile",
+    "fire",
+    "httpx",
+    "huggingface-hub",
+    "llama-models>=0.1.2",
+    "llama-stack-client>=0.1.2",
+    "prompt-toolkit",
+    "python-dotenv",
+    "pydantic>=2",
+    "requests",
+    "rich",
+    "setuptools",
+    "termcolor",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+    "nbval",            # For notebook testing
+    "black",
+    "ruff",
+    "types-requests",
+    "types-setuptools",
+    "pre-commit",
+    "uvicorn",
+    "fastapi",
+]
+docs = [
+    "sphinx-autobuild",
+    "myst-parser",
+    "sphinx-rtd-theme",
+    "sphinx-copybutton",
+    "sphinx-tabs",
+    "sphinx-design",
+    "sphinxcontrib.redoc",
+    "sphinxcontrib.video",
+    "sphinxcontrib.mermaid",
+]
+
+[project.urls]
+Homepage = "https://github.com/meta-llama/llama-stack"
+
+[project.scripts]
+llama = "llama_stack.cli.llama:main"
+install-wheel-from-presigned = "llama_stack.cli.scripts.run:install_wheel_from_presigned"
+
+[tool.setuptools]
+packages = { find = {} }
+license-files = []
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true

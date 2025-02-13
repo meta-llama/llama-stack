@@ -31,6 +31,8 @@ class StackParser(Subcommand):
             version=f"{version('llama-stack')}",
         )
 
+        self.parser.set_defaults(func=lambda args: self.parser.print_help())
+
         subparsers = self.parser.add_subparsers(title="stack_subcommands")
 
         # Add sub-commands

@@ -9,7 +9,6 @@ from llama_stack_client.lib.agents.agent import Agent
 from llama_stack_client.lib.agents.event_logger import EventLogger
 from llama_stack_client.types.agent_create_params import AgentConfig
 from llama_stack_client.types.memory_insert_params import Document
-
 from modules.api import llama_stack_api
 from modules.utils import data_url_from_file
 
@@ -74,9 +73,7 @@ def rag_chat_page():
         )
 
         available_models = llama_stack_api.client.models.list()
-        available_models = [
-            model.identifier for model in available_models if model.model_type == "llm"
-        ]
+        available_models = [model.identifier for model in available_models if model.model_type == "llm"]
         selected_model = st.selectbox(
             "Choose a model",
             available_models,
@@ -137,9 +134,7 @@ def rag_chat_page():
             dict(
                 name="builtin::rag",
                 args={
-                    "vector_db_ids": [
-                        vector_db_id for vector_db_id in selected_vector_dbs
-                    ],
+                    "vector_db_ids": [vector_db_id for vector_db_id in selected_vector_dbs],
                 },
             )
         ],
@@ -186,9 +181,7 @@ def rag_chat_page():
                     message_placeholder.markdown(full_response + "▌")
             message_placeholder.markdown(full_response)
 
-            st.session_state.messages.append(
-                {"role": "assistant", "content": full_response}
-            )
+            st.session_state.messages.append({"role": "assistant", "content": full_response})
 
 
 rag_chat_page()

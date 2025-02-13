@@ -7,13 +7,15 @@
 from typing import List, Optional, Protocol, runtime_checkable
 
 from llama_models.schema_utils import json_schema_type, webmethod
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from llama_stack.apis.inference import (
-    CompletionMessage,
+    ChatCompletionResponse,
+    CompletionResponse,
     InterleavedContent,
     LogProbConfig,
     Message,
+    ResponseFormat,
     SamplingParams,
     ToolChoice,
     ToolDefinition,
@@ -22,34 +24,13 @@ from llama_stack.apis.inference import (
 
 
 @json_schema_type
-class BatchCompletionRequest(BaseModel):
-    model: str
-    content_batch: List[InterleavedContent]
-    sampling_params: Optional[SamplingParams] = SamplingParams()
-    logprobs: Optional[LogProbConfig] = None
-
-
-@json_schema_type
 class BatchCompletionResponse(BaseModel):
-    completion_message_batch: List[CompletionMessage]
-
-
-@json_schema_type
-class BatchChatCompletionRequest(BaseModel):
-    model: str
-    messages_batch: List[List[Message]]
-    sampling_params: Optional[SamplingParams] = SamplingParams()
-
-    # zero-shot tool definitions as input to the model
-    tools: Optional[List[ToolDefinition]] = Field(default_factory=list)
-    tool_choice: Optional[ToolChoice] = Field(default=ToolChoice.auto)
-    tool_prompt_format: Optional[ToolPromptFormat] = Field(default=None)
-    logprobs: Optional[LogProbConfig] = None
+    batch: List[CompletionResponse]
 
 
 @json_schema_type
 class BatchChatCompletionResponse(BaseModel):
-    completion_message_batch: List[CompletionMessage]
+    batch: List[ChatCompletionResponse]
 
 
 @runtime_checkable
@@ -60,6 +41,7 @@ class BatchInference(Protocol):
         model: str,
         content_batch: List[InterleavedContent],
         sampling_params: Optional[SamplingParams] = SamplingParams(),
+        response_format: Optional[ResponseFormat] = None,
         logprobs: Optional[LogProbConfig] = None,
     ) -> BatchCompletionResponse: ...
 
@@ -73,5 +55,6 @@ class BatchInference(Protocol):
         tools: Optional[List[ToolDefinition]] = list,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
         tool_prompt_format: Optional[ToolPromptFormat] = None,
+        response_format: Optional[ResponseFormat] = None,
         logprobs: Optional[LogProbConfig] = None,
     ) -> BatchChatCompletionResponse: ...

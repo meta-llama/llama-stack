@@ -29,9 +29,7 @@ from llama_stack.apis.scoring import (
     ScoringResultRow,
 )
 from llama_stack.apis.scoring_functions import ScoringFn, ScoringFnParams
-
 from llama_stack.distribution.datatypes import Api
-
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.providers.datatypes import ScoringFunctionsProtocolPrivate
 from llama_stack.providers.utils.common.data_schema_validator import (
@@ -39,8 +37,8 @@ from llama_stack.providers.utils.common.data_schema_validator import (
     validate_dataset_schema,
     validate_row_schema,
 )
-
 from llama_stack.providers.utils.scoring.aggregation_utils import aggregate_metrics
+
 from .config import BraintrustScoringConfig
 from .scoring_fn.fn_defs.answer_correctness import answer_correctness_fn_def
 from .scoring_fn.fn_defs.answer_relevancy import answer_relevancy_fn_def
@@ -124,12 +122,10 @@ class BraintrustScoringImpl(
         self.datasets_api = datasets_api
 
         self.braintrust_evaluators = {
-            entry.identifier: entry.evaluator
-            for entry in SUPPORTED_BRAINTRUST_SCORING_FN_ENTRY
+            entry.identifier: entry.evaluator for entry in SUPPORTED_BRAINTRUST_SCORING_FN_ENTRY
         }
         self.supported_fn_defs_registry = {
-            entry.identifier: entry.fn_def
-            for entry in SUPPORTED_BRAINTRUST_SCORING_FN_ENTRY
+            entry.identifier: entry.fn_def for entry in SUPPORTED_BRAINTRUST_SCORING_FN_ENTRY
         }
 
     async def initialize(self) -> None: ...
@@ -139,16 +135,14 @@ class BraintrustScoringImpl(
     async def list_scoring_functions(self) -> List[ScoringFn]:
         scoring_fn_defs_list = [x for x in self.supported_fn_defs_registry.values()]
         for f in scoring_fn_defs_list:
-            assert f.identifier.startswith(
-                "braintrust"
-            ), "All braintrust scoring fn must have identifier prefixed with 'braintrust'! "
+            assert f.identifier.startswith("braintrust"), (
+                "All braintrust scoring fn must have identifier prefixed with 'braintrust'! "
+            )
 
         return scoring_fn_defs_list
 
     async def register_scoring_function(self, scoring_fn: ScoringFn) -> None:
-        raise NotImplementedError(
-            "Registering scoring function not allowed for braintrust provider"
-        )
+        raise NotImplementedError("Registering scoring function not allowed for braintrust provider")
 
     async def set_api_key(self) -> None:
         # api key is in the request headers
@@ -171,17 +165,13 @@ class BraintrustScoringImpl(
         await self.set_api_key()
 
         dataset_def = await self.datasets_api.get_dataset(dataset_id=dataset_id)
-        validate_dataset_schema(
-            dataset_def.dataset_schema, get_valid_schemas(Api.scoring.value)
-        )
+        validate_dataset_schema(dataset_def.dataset_schema, get_valid_schemas(Api.scoring.value))
 
         all_rows = await self.datasetio_api.get_rows_paginated(
             dataset_id=dataset_id,
             rows_in_page=-1,
         )
-        res = await self.score(
-            input_rows=all_rows.rows, scoring_functions=scoring_functions
-        )
+        res = await self.score(input_rows=all_rows.rows, scoring_functions=scoring_functions)
         if save_results_dataset:
             # TODO: persist and register dataset on to server for reading
             # self.datasets_api.register_dataset()
@@ -222,13 +212,8 @@ class BraintrustScoringImpl(
             if scoring_fn_id not in self.supported_fn_defs_registry:
                 raise ValueError(f"Scoring function {scoring_fn_id} is not supported.")
 
-            score_results = [
-                await self.score_row(input_row, scoring_fn_id)
-                for input_row in input_rows
-            ]
-            aggregation_functions = self.supported_fn_defs_registry[
-                scoring_fn_id
-            ].params.aggregation_functions
+            score_results = [await self.score_row(input_row, scoring_fn_id) for input_row in input_rows]
+            aggregation_functions = self.supported_fn_defs_registry[scoring_fn_id].params.aggregation_functions
 
             # override scoring_fn params if provided
             if scoring_functions[scoring_fn_id] is not None:

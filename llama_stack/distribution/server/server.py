@@ -9,6 +9,7 @@ import asyncio
 import functools
 import inspect
 import json
+import logging
 import os
 import signal
 import sys
@@ -20,7 +21,8 @@ from pathlib import Path
 from typing import Any, List, Union
 
 import yaml
-from fastapi import Body, FastAPI, HTTPException, Path as FastapiPath, Request
+from fastapi import Body, FastAPI, HTTPException, Request
+from fastapi import Path as FastapiPath
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, ValidationError
@@ -52,6 +54,9 @@ from .endpoints import get_all_api_endpoints
 
 REPO_ROOT = Path(__file__).parent.parent.parent.parent
 
+logging.basicConfig(level=logging.INFO, format="%(levelname)s %(asctime)s %(name)s:%(lineno)d: %(message)s")
+logger = logging.getLogger(__name__)
+
 
 def warn_with_traceback(message, category, filename, lineno, file=None, line=None):
     log = file if hasattr(file, "write") else sys.stderr
@@ -76,9 +81,7 @@ async def global_exception_handler(request: Request, exc: Exception):
     traceback.print_exception(exc)
     http_exc = translate_exception(exc)
 
-    return JSONResponse(
-        status_code=http_exc.status_code, content={"error": {"detail": http_exc.detail}}
-    )
+    return JSONResponse(status_code=http_exc.status_code, content={"error": {"detail": http_exc.detail}})
 
 
 def translate_exception(exc: Exception) -> Union[HTTPException, RequestValidationError]:
@@ -114,21 +117,69 @@ def translate_exception(exc: Exception) -> Union[HTTPException, RequestValidatio
         )
 
 
-def handle_sigint(app, *args, **kwargs):
-    print("SIGINT or CTRL-C detected. Exiting gracefully...")
+def handle_signal(app, signum, _) -> None:
+    """
+    Handle incoming signals and initiate a graceful shutdown of the application.
 
-    async def run_shutdown():
-        for impl in app.__llama_stack_impls__.values():
-            print(f"Shutting down {impl}")
-            await impl.shutdown()
+    This function is intended to be used as a signal handler for various signals
+    (e.g., SIGINT, SIGTERM). Upon receiving a signal, it will print a message
+    indicating the received signal and initiate a shutdown process.
 
-    asyncio.run(run_shutdown())
+    Args:
+        app: The application instance containing implementations to be shut down.
+        signum (int): The signal number received.
+        frame: The current stack frame (not used in this function).
 
-    loop = asyncio.get_event_loop()
-    for task in asyncio.all_tasks(loop):
-        task.cancel()
+    The shutdown process involves:
+        - Shutting down all implementations registered in the application.
+        - Gathering all running asyncio tasks.
+        - Cancelling all gathered tasks.
+        - Waiting for all tasks to finish.
+        - Stopping the event loop.
 
-    loop.stop()
+    Note:
+        This function schedules the shutdown process as an asyncio task and does
+        not block the current execution.
+    """
+    signame = signal.Signals(signum).name
+    print(f"Received signal {signame} ({signum}). Exiting gracefully...")
+
+    async def shutdown():
+        try:
+            # Gracefully shut down implementations
+            for impl in app.__llama_stack_impls__.values():
+                impl_name = impl.__class__.__name__
+                logger.info("Shutting down %s", impl_name)
+                try:
+                    if hasattr(impl, "shutdown"):
+                        await asyncio.wait_for(impl.shutdown(), timeout=5)
+                    else:
+                        logger.warning("No shutdown method for %s", impl_name)
+                except asyncio.TimeoutError:
+                    logger.exception("Shutdown timeout for %s ", impl_name, exc_info=True)
+                except Exception as e:
+                    logger.exception("Failed to shutdown %s: %s", impl_name, {e})
+
+            # Gather all running tasks
+            loop = asyncio.get_running_loop()
+            tasks = [task for task in asyncio.all_tasks(loop) if task is not asyncio.current_task()]
+
+            # Cancel all tasks
+            for task in tasks:
+                task.cancel()
+
+            # Wait for all tasks to finish
+            try:
+                await asyncio.wait_for(asyncio.gather(*tasks, return_exceptions=True), timeout=10)
+            except asyncio.TimeoutError:
+                logger.exception("Timeout while waiting for tasks to finish")
+        except asyncio.CancelledError:
+            pass
+        finally:
+            loop.stop()
+
+    loop = asyncio.get_running_loop()
+    loop.create_task(shutdown())
 
 
 @asynccontextmanager
@@ -178,9 +229,7 @@ def create_dynamic_typed_route(func: Any, method: str, route: str):
         is_streaming = is_streaming_request(func.__name__, request, **kwargs)
         try:
             if is_streaming:
-                return StreamingResponse(
-                    sse_generator(func(**kwargs)), media_type="text/event-stream"
-                )
+                return StreamingResponse(sse_generator(func(**kwargs)), media_type="text/event-stream")
             else:
                 value = func(**kwargs)
                 return await maybe_await(value)
@@ -190,11 +239,7 @@ def create_dynamic_typed_route(func: Any, method: str, route: str):
 
     sig = inspect.signature(func)
 
-    new_params = [
-        inspect.Parameter(
-            "request", inspect.Parameter.POSITIONAL_OR_KEYWORD, annotation=Request
-        )
-    ]
+    new_params = [inspect.Parameter("request", inspect.Parameter.POSITIONAL_OR_KEYWORD, annotation=Request)]
     new_params.extend(sig.parameters.values())
 
     path_params = extract_path_params(route)
@@ -202,15 +247,9 @@ def create_dynamic_typed_route(func: Any, method: str, route: str):
         # Annotate parameters that are in the path with Path(...) and others with Body(...)
         new_params = [new_params[0]] + [
             (
-                param.replace(
-                    annotation=Annotated[
-                        param.annotation, FastapiPath(..., title=param.name)
-                    ]
-                )
+                param.replace(annotation=Annotated[param.annotation, FastapiPath(..., title=param.name)])
                 if param.name in path_params
-                else param.replace(
-                    annotation=Annotated[param.annotation, Body(..., embed=True)]
-                )
+                else param.replace(annotation=Annotated[param.annotation, Body(..., embed=True)])
             )
             for param in new_params[1:]
         ]
@@ -244,12 +283,8 @@ class ClientVersionMiddleware:
             client_version = headers.get(b"x-llamastack-client-version", b"").decode()
             if client_version:
                 try:
-                    client_version_parts = tuple(
-                        map(int, client_version.split(".")[:2])
-                    )
-                    server_version_parts = tuple(
-                        map(int, self.server_version.split(".")[:2])
-                    )
+                    client_version_parts = tuple(map(int, client_version.split(".")[:2]))
+                    server_version_parts = tuple(map(int, self.server_version.split(".")[:2]))
                     if client_version_parts != server_version_parts:
 
                         async def send_version_error(send):
@@ -267,9 +302,7 @@ class ClientVersionMiddleware:
                                     }
                                 }
                             ).encode()
-                            await send(
-                                {"type": "http.response.body", "body": error_msg}
-                            )
+                            await send({"type": "http.response.body", "body": error_msg})
 
                         return await send_version_error(send)
                 except (ValueError, IndexError):
@@ -296,16 +329,25 @@ def main():
         default=int(os.getenv("LLAMA_STACK_PORT", 8321)),
         help="Port to listen on",
     )
-    parser.add_argument(
-        "--disable-ipv6", action="store_true", help="Whether to disable IPv6 support"
-    )
+    parser.add_argument("--disable-ipv6", action="store_true", help="Whether to disable IPv6 support")
     parser.add_argument(
         "--env",
         action="append",
         help="Environment variables in KEY=value format. Can be specified multiple times.",
     )
+    parser.add_argument(
+        "--tls-keyfile",
+        help="Path to TLS key file for HTTPS",
+        required="--tls-certfile" in sys.argv,
+    )
+    parser.add_argument(
+        "--tls-certfile",
+        help="Path to TLS certificate file for HTTPS",
+        required="--tls-keyfile" in sys.argv,
+    )
 
     args = parser.parse_args()
+
     if args.env:
         for env_pair in args.env:
             try:
@@ -323,9 +365,7 @@ def main():
             raise ValueError(f"Config file {config_file} does not exist")
         print(f"Using config file: {config_file}")
     elif args.template:
-        config_file = (
-            Path(REPO_ROOT) / "llama_stack" / "templates" / args.template / "run.yaml"
-        )
+        config_file = Path(REPO_ROOT) / "llama_stack" / "templates" / args.template / "run.yaml"
         if not config_file.exists():
             raise ValueError(f"Template {args.template} does not exist")
         print(f"Using template {args.template} config file: {config_file}")
@@ -383,9 +423,7 @@ def main():
             impl_method = getattr(impl, endpoint.name)
 
             with warnings.catch_warnings():
-                warnings.filterwarnings(
-                    "ignore", category=UserWarning, module="pydantic._internal._fields"
-                )
+                warnings.filterwarnings("ignore", category=UserWarning, module="pydantic._internal._fields")
                 getattr(app, endpoint.method)(endpoint.route, response_model=None)(
                     create_dynamic_typed_route(
                         impl_method,
@@ -401,24 +439,48 @@ def main():
     print("")
     app.exception_handler(RequestValidationError)(global_exception_handler)
     app.exception_handler(Exception)(global_exception_handler)
-    signal.signal(signal.SIGINT, functools.partial(handle_sigint, app))
+    signal.signal(signal.SIGINT, functools.partial(handle_signal, app))
+    signal.signal(signal.SIGTERM, functools.partial(handle_signal, app))
 
     app.__llama_stack_impls__ = impls
 
     import uvicorn
 
-    # FYI this does not do hot-reloads
+    # Configure SSL if certificates are provided
+    port = args.port or config.server.port
+
+    ssl_config = None
+    if args.tls_keyfile:
+        keyfile = args.tls_keyfile
+        certfile = args.tls_certfile
+    else:
+        keyfile = config.server.tls_keyfile
+        certfile = config.server.tls_certfile
+
+    if keyfile and certfile:
+        ssl_config = {
+            "ssl_keyfile": keyfile,
+            "ssl_certfile": certfile,
+        }
+        print(f"HTTPS enabled with certificates:\n  Key: {keyfile}\n  Cert: {certfile}")
 
     listen_host = ["::", "0.0.0.0"] if not args.disable_ipv6 else "0.0.0.0"
-    print(f"Listening on {listen_host}:{args.port}")
-    uvicorn.run(app, host=listen_host, port=args.port)
+    print(f"Listening on {listen_host}:{port}")
+
+    uvicorn_config = {
+        "app": app,
+        "host": listen_host,
+        "port": port,
+    }
+    if ssl_config:
+        uvicorn_config.update(ssl_config)
+
+    uvicorn.run(**uvicorn_config)
 
 
 def extract_path_params(route: str) -> List[str]:
     segments = route.split("/")
-    params = [
-        seg[1:-1] for seg in segments if seg.startswith("{") and seg.endswith("}")
-    ]
+    params = [seg[1:-1] for seg in segments if seg.startswith("{") and seg.endswith("}")]
     return params
 
 

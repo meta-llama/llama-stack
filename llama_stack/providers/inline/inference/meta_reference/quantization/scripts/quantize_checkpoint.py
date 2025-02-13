@@ -16,14 +16,12 @@ from pathlib import Path
 from typing import Optional
 
 import fire
-
 import torch
 from fairscale.nn.model_parallel.initialize import (
     get_model_parallel_rank,
     initialize_model_parallel,
     model_parallel_is_initialized,
 )
-
 from llama_models.llama3.api.args import ModelArgs
 from llama_models.llama3.api.tokenizer import Tokenizer
 from llama_models.llama3.reference_impl.model import Transformer, TransformerBlock
@@ -76,9 +74,9 @@ def main(
 
         checkpoints = sorted(Path(ckpt_dir).glob("*.pth"))
         assert len(checkpoints) > 0, f"no checkpoint files found in {ckpt_dir}"
-        assert model_parallel_size == len(
-            checkpoints
-        ), f"Loading a checkpoint for MP={len(checkpoints)} but world size is {model_parallel_size}"
+        assert model_parallel_size == len(checkpoints), (
+            f"Loading a checkpoint for MP={len(checkpoints)} but world size is {model_parallel_size}"
+        )
         ckpt_path = checkpoints[get_model_parallel_rank()]
         checkpoint = torch.load(ckpt_path, map_location="cpu", weights_only=True)
         with open(Path(ckpt_dir) / "params.json", "r") as f:
@@ -90,9 +88,9 @@ def main(
             **params,
         )
         tokenizer = Tokenizer(model_path=tokenizer_path)
-        assert (
-            model_args.vocab_size == tokenizer.n_words
-        ), f"model_args vocab = {model_args.vocab_size} but tokenizer vocab = {tokenizer.n_words}"
+        assert model_args.vocab_size == tokenizer.n_words, (
+            f"model_args vocab = {model_args.vocab_size} but tokenizer vocab = {tokenizer.n_words}"
+        )
 
         # load on CPU in bf16 so that fp8 conversion does not find an unexpected (fp32, e.g.) datatype
         torch.set_default_tensor_type(torch.BFloat16Tensor)
@@ -106,9 +104,7 @@ def main(
             torch.set_default_tensor_type(torch.cuda.HalfTensor)
 
         log.info(ckpt_path)
-        assert (
-            quantized_ckpt_dir is not None
-        ), "QUantized checkpoint directory should not be None"
+        assert quantized_ckpt_dir is not None, "QUantized checkpoint directory should not be None"
         fp8_scales = {}
         for block in model.layers:
             if isinstance(block, TransformerBlock):
@@ -122,9 +118,7 @@ def main(
                 )
                 with torch.inference_mode():
                     block.feed_forward.w1.weight = Parameter(fp8_weight.weight)
-                fp8_scales[
-                    f"{block.layer_id}_feed_forward.w1_{get_model_parallel_rank()}"
-                ] = fp8_weight.scale
+                fp8_scales[f"{block.layer_id}_feed_forward.w1_{get_model_parallel_rank()}"] = fp8_weight.scale
 
                 fp8_weight = quantize_fp8(
                     block.feed_forward.w3.weight,
@@ -133,9 +127,7 @@ def main(
                 )
                 with torch.inference_mode():
                     block.feed_forward.w3.weight = Parameter(fp8_weight.weight)
-                fp8_scales[
-                    f"{block.layer_id}_feed_forward.w3_{get_model_parallel_rank()}"
-                ] = fp8_weight.scale
+                fp8_scales[f"{block.layer_id}_feed_forward.w3_{get_model_parallel_rank()}"] = fp8_weight.scale
 
                 fp8_weight = quantize_fp8(
                     block.feed_forward.w2.weight,
@@ -144,13 +136,9 @@ def main(
                 )
                 with torch.inference_mode():
                     block.feed_forward.w2.weight = Parameter(fp8_weight.weight)
-                fp8_scales[
-                    f"{block.layer_id}_feed_forward.w2_{get_model_parallel_rank()}"
-                ] = fp8_weight.scale
+                fp8_scales[f"{block.layer_id}_feed_forward.w2_{get_model_parallel_rank()}"] = fp8_weight.scale
 
-        fp8_scales_path = os.path.join(
-            quantized_ckpt_dir, f"fp8_scales_{get_model_parallel_rank()}.pt"
-        )
+        fp8_scales_path = os.path.join(quantized_ckpt_dir, f"fp8_scales_{get_model_parallel_rank()}.pt")
         torch.save(fp8_scales, fp8_scales_path)
 
         ckpt_path = os.path.join(

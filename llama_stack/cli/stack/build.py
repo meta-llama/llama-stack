@@ -63,10 +63,16 @@ environment is active, you must specify a name.
             ),
             default=None,
         )
+        self.parser.add_argument(
+            "--print-deps-only",
+            default=False,
+            action="store_true",
+            help="Print the dependencies for the stack only, without building the stack",
+        )
 
     def _run_stack_build_command(self, args: argparse.Namespace) -> None:
         # always keep implementation completely silo-ed away from CLI so CLI
         # can be fast to load and reduces dependencies
         from ._build import run_stack_build_command
 
-        return run_stack_build_command(self.parser, args)
+        return run_stack_build_command(args)

@@ -1,6 +1,6 @@
 name: 🚀 Feature request
 description: Request a new llama-stack feature
-
+labels: ["enhancement"]
 body:
 - type: textarea
   id: feature-pitch

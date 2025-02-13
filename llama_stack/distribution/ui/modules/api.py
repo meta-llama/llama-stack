@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 import os
-
 from typing import Optional
 
 from llama_stack_client import LlamaStackClient
@@ -23,15 +22,11 @@ class LlamaStackApi:
             },
         )
 
-    def run_scoring(
-        self, row, scoring_function_ids: list[str], scoring_params: Optional[dict]
-    ):
+    def run_scoring(self, row, scoring_function_ids: list[str], scoring_params: Optional[dict]):
         """Run scoring on a single row"""
         if not scoring_params:
             scoring_params = {fn_id: None for fn_id in scoring_function_ids}
-        return self.client.scoring.score(
-            input_rows=[row], scoring_functions=scoring_params
-        )
+        return self.client.scoring.score(input_rows=[row], scoring_functions=scoring_params)
 
 
 llama_stack_api = LlamaStackApi()

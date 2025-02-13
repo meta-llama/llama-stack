@@ -63,9 +63,7 @@ class AppEvalTaskConfig(BaseModel):
 
 
 EvalTaskConfig = register_schema(
-    Annotated[
-        Union[BenchmarkEvalTaskConfig, AppEvalTaskConfig], Field(discriminator="type")
-    ],
+    Annotated[Union[BenchmarkEvalTaskConfig, AppEvalTaskConfig], Field(discriminator="type")],
     name="EvalTaskConfig",
 )
 

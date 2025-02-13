@@ -64,8 +64,7 @@ class TelemetryDatasetMixin:
 
             for span in spans_by_id_resp.data.values():
                 if span.attributes and all(
-                    attr in span.attributes and span.attributes[attr] is not None
-                    for attr in attributes_to_return
+                    attr in span.attributes and span.attributes[attr] is not None for attr in attributes_to_return
                 ):
                     spans.append(
                         Span(

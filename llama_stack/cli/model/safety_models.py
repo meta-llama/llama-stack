@@ -9,7 +9,6 @@ from typing import Any, Dict, Optional
 from llama_models.datatypes import CheckpointQuantizationFormat
 from llama_models.llama3.api.datatypes import SamplingParams
 from llama_models.sku_list import LlamaDownloadInfo
-
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -17,16 +16,12 @@ class PromptGuardModel(BaseModel):
     """Make a 'fake' Model-like object for Prompt Guard. Eventually this will be removed."""
 
     model_id: str = "Prompt-Guard-86M"
-    description: str = (
-        "Prompt Guard. NOTE: this model will not be provided via `llama` CLI soon."
-    )
+    description: str = "Prompt Guard. NOTE: this model will not be provided via `llama` CLI soon."
     is_featured: bool = False
     huggingface_repo: str = "meta-llama/Prompt-Guard-86M"
     max_seq_length: int = 2048
     is_instruct_model: bool = False
-    quantization_format: CheckpointQuantizationFormat = (
-        CheckpointQuantizationFormat.bf16
-    )
+    quantization_format: CheckpointQuantizationFormat = CheckpointQuantizationFormat.bf16
     arch_args: Dict[str, Any] = Field(default_factory=dict)
     recommended_sampling_params: Optional[SamplingParams] = None
 

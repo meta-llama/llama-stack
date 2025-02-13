@@ -11,13 +11,11 @@ import pytest_asyncio
 
 from llama_stack.apis.models import ModelInput, ModelType
 from llama_stack.distribution.datatypes import Api, Provider
-
 from llama_stack.providers.inline.inference.meta_reference import (
     MetaReferenceInferenceConfig,
 )
 from llama_stack.providers.inline.inference.vllm import VLLMConfig
 from llama_stack.providers.remote.inference.bedrock import BedrockConfig
-
 from llama_stack.providers.remote.inference.cerebras import CerebrasImplConfig
 from llama_stack.providers.remote.inference.fireworks import FireworksImplConfig
 from llama_stack.providers.remote.inference.groq import GroqConfig
@@ -47,9 +45,7 @@ def inference_remote() -> ProviderFixture:
 
 @pytest.fixture(scope="session")
 def inference_meta_reference(inference_model) -> ProviderFixture:
-    inference_model = (
-        [inference_model] if isinstance(inference_model, str) else inference_model
-    )
+    inference_model = [inference_model] if isinstance(inference_model, str) else inference_model
     # If embedding dimension is set, use the 8B model for testing
     if os.getenv("EMBEDDING_DIMENSION"):
         inference_model = ["meta-llama/Llama-3.1-8B-Instruct"]
@@ -88,9 +84,7 @@ def inference_cerebras() -> ProviderFixture:
 
 @pytest.fixture(scope="session")
 def inference_ollama(inference_model) -> ProviderFixture:
-    inference_model = (
-        [inference_model] if isinstance(inference_model, str) else inference_model
-    )
+    inference_model = [inference_model] if isinstance(inference_model, str) else inference_model
     if inference_model and "Llama3.1-8B-Instruct" in inference_model:
         pytest.skip("Ollama only supports Llama3.2-3B-Instruct for testing")
 
@@ -99,9 +93,7 @@ def inference_ollama(inference_model) -> ProviderFixture:
             Provider(
                 provider_id="ollama",
                 provider_type="remote::ollama",
-                config=OllamaImplConfig(
-                    host="localhost", port=os.getenv("OLLAMA_PORT", 11434)
-                ).model_dump(),
+                config=OllamaImplConfig(host="localhost", port=os.getenv("OLLAMA_PORT", 11434)).model_dump(),
             )
         ],
     )
@@ -109,9 +101,7 @@ def inference_ollama(inference_model) -> ProviderFixture:
 
 @pytest_asyncio.fixture(scope="session")
 def inference_vllm(inference_model) -> ProviderFixture:
-    inference_model = (
-        [inference_model] if isinstance(inference_model, str) else inference_model
-    )
+    inference_model = [inference_model] if isinstance(inference_model, str) else inference_model
     return ProviderFixture(
         providers=[
             Provider(

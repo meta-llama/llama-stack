@@ -8,14 +8,12 @@ from typing import AsyncGenerator
 from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.datatypes import Message
 from llama_models.llama3.api.tokenizer import Tokenizer
-
 from openai import OpenAI
 
 from llama_stack.apis.inference import *  # noqa: F403
 
 # from llama_stack.providers.datatypes import ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
-
 from llama_stack.providers.utils.inference.openai_compat import (
     get_sampling_options,
     process_chat_completion_response,
@@ -45,9 +43,7 @@ RUNPOD_SUPPORTED_MODELS = {
 
 class RunpodInferenceAdapter(ModelRegistryHelper, Inference):
     def __init__(self, config: RunpodImplConfig) -> None:
-        ModelRegistryHelper.__init__(
-            self, stack_to_provider_models_map=RUNPOD_SUPPORTED_MODELS
-        )
+        ModelRegistryHelper.__init__(self, stack_to_provider_models_map=RUNPOD_SUPPORTED_MODELS)
         self.config = config
         self.formatter = ChatFormat(Tokenizer.get_instance())
 
@@ -85,10 +81,9 @@ class RunpodInferenceAdapter(ModelRegistryHelper, Inference):
             messages=messages,
             sampling_params=sampling_params,
             tools=tools or [],
-            tool_choice=tool_choice,
-            tool_prompt_format=tool_prompt_format,
             stream=stream,
             logprobs=logprobs,
+            tool_config=tool_config,
         )
 
         client = OpenAI(base_url=self.config.url, api_key=self.config.api_token)
@@ -102,11 +97,9 @@ class RunpodInferenceAdapter(ModelRegistryHelper, Inference):
     ) -> ChatCompletionResponse:
         params = self._get_params(request)
         r = client.completions.create(**params)
-        return process_chat_completion_response(r, self.formatter)
+        return process_chat_completion_response(r, self.formatter, request)
 
-    async def _stream_chat_completion(
-        self, request: ChatCompletionRequest, client: OpenAI
-    ) -> AsyncGenerator:
+    async def _stream_chat_completion(self, request: ChatCompletionRequest, client: OpenAI) -> AsyncGenerator:
         params = self._get_params(request)
 
         async def _to_async_generator():
@@ -115,9 +108,7 @@ class RunpodInferenceAdapter(ModelRegistryHelper, Inference):
                 yield chunk
 
         stream = _to_async_generator()
-        async for chunk in process_chat_completion_stream_response(
-            stream, self.formatter
-        ):
+        async for chunk in process_chat_completion_stream_response(stream, self.formatter, request):
             yield chunk
 
     def _get_params(self, request: ChatCompletionRequest) -> dict:

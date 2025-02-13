@@ -118,10 +118,7 @@ class SQLiteTraceStore(TraceStore):
         # Build the attributes selection
         attributes_select = "s.attributes"
         if attributes_to_return:
-            json_object = ", ".join(
-                f"'{key}', json_extract(s.attributes, '$.{key}')"
-                for key in attributes_to_return
-            )
+            json_object = ", ".join(f"'{key}', json_extract(s.attributes, '$.{key}')" for key in attributes_to_return)
             attributes_select = f"json_object({json_object})"
 
         # SQLite CTE query with filtered attributes

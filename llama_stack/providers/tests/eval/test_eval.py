@@ -9,7 +9,6 @@ import pytest
 
 from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.common.type_system import ChatCompletionInputType, StringType
-
 from llama_stack.apis.eval.eval import (
     AppEvalTaskConfig,
     BenchmarkEvalTaskConfig,
@@ -19,6 +18,7 @@ from llama_stack.apis.inference import SamplingParams
 from llama_stack.apis.scoring_functions import LLMAsJudgeScoringFnParams
 from llama_stack.distribution.datatypes import Api
 from llama_stack.providers.tests.datasetio.test_datasetio import register_dataset
+
 from .constants import JUDGE_PROMPT
 
 # How to run this test:
@@ -47,9 +47,7 @@ class Testeval:
             eval_stack[Api.models],
         )
 
-        await register_dataset(
-            datasets_impl, for_generation=True, dataset_id="test_dataset_for_eval"
-        )
+        await register_dataset(datasets_impl, for_generation=True, dataset_id="test_dataset_for_eval")
         response = await datasets_impl.list_datasets()
 
         rows = await datasetio_impl.get_rows_paginated(
@@ -101,9 +99,7 @@ class Testeval:
             eval_stack[Api.models],
         )
 
-        await register_dataset(
-            datasets_impl, for_generation=True, dataset_id="test_dataset_for_eval"
-        )
+        await register_dataset(datasets_impl, for_generation=True, dataset_id="test_dataset_for_eval")
 
         scoring_functions = [
             "basic::subset_of",
@@ -145,9 +141,7 @@ class Testeval:
         response = await datasets_impl.list_datasets()
         assert len(response) > 0
         if response[0].provider_id != "huggingface":
-            pytest.skip(
-                "Only huggingface provider supports pre-registered remote datasets"
-            )
+            pytest.skip("Only huggingface provider supports pre-registered remote datasets")
 
         await datasets_impl.register_dataset(
             dataset_id="mmlu",

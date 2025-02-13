@@ -21,8 +21,12 @@ from prompt_toolkit.validation import Validator
 from termcolor import cprint
 
 from llama_stack.cli.table import print_table
-
-from llama_stack.distribution.build import build_image, ImageType
+from llama_stack.distribution.build import (
+    SERVER_DEPENDENCIES,
+    ImageType,
+    build_image,
+    get_provider_dependencies,
+)
 from llama_stack.distribution.datatypes import (
     BuildConfig,
     DistributionSpec,
@@ -34,7 +38,6 @@ from llama_stack.distribution.resolver import InvalidProviderError
 from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
 from llama_stack.providers.datatypes import Api
-
 
 TEMPLATES_PATH = Path(__file__).parent.parent.parent / "templates"
 
@@ -52,9 +55,7 @@ def available_templates_specs() -> Dict[str, BuildConfig]:
     return template_specs
 
 
-def run_stack_build_command(
-    parser: argparse.ArgumentParser, args: argparse.Namespace
-) -> None:
+def run_stack_build_command(args: argparse.Namespace) -> None:
     if args.list_templates:
         return _run_template_list_cmd()
 
@@ -74,18 +75,11 @@ def run_stack_build_command(
             build_config.image_type = args.image_type
         else:
             cprint(
-                f"Please specify a image-type (docker | conda | venv) for {args.template}",
+                f"Please specify a image-type (container | conda | venv) for {args.template}",
                 color="red",
             )
             return
-        _run_stack_build_command_from_build_config(
-            build_config,
-            image_name=image_name,
-            template_name=args.template,
-        )
-        return
-
-    if not args.config and not args.template:
+    elif not args.config and not args.template:
         name = prompt(
             "> Enter a name for your Llama Stack (e.g. my-local-stack): ",
             validator=Validator.from_callable(
@@ -95,10 +89,10 @@ def run_stack_build_command(
         )
 
         image_type = prompt(
-            "> Enter the image type you want your Llama Stack to be built as (docker or conda or venv): ",
+            "> Enter the image type you want your Llama Stack to be built as (container or conda or venv): ",
             validator=Validator.from_callable(
-                lambda x: x in ["docker", "conda", "venv"],
-                error_message="Invalid image type, please enter conda or docker or venv",
+                lambda x: x in ["container", "conda", "venv"],
+                error_message="Invalid image type, please enter conda or container or venv",
             ),
             default="conda",
         )
@@ -132,11 +126,7 @@ def run_stack_build_command(
 
         providers = dict()
         for api, providers_for_api in get_provider_registry().items():
-            available_providers = [
-                x
-                for x in providers_for_api.keys()
-                if x not in ("remote", "remote::sample")
-            ]
+            available_providers = [x for x in providers_for_api.keys() if x not in ("remote", "remote::sample")]
             api_provider = prompt(
                 "> Enter provider for API {}: ".format(api.value),
                 completer=WordCompleter(available_providers),
@@ -159,9 +149,7 @@ def run_stack_build_command(
             description=description,
         )
 
-        build_config = BuildConfig(
-            image_type=image_type, distribution_spec=distribution_spec
-        )
+        build_config = BuildConfig(image_type=image_type, distribution_spec=distribution_spec)
     else:
         with open(args.config, "r") as f:
             try:
@@ -180,8 +168,20 @@ def run_stack_build_command(
             )
             return
 
+    if args.print_deps_only:
+        print(f"# Dependencies for {args.template or args.config or image_name}")
+        normal_deps, special_deps = get_provider_dependencies(build_config.distribution_spec.providers)
+        normal_deps += SERVER_DEPENDENCIES
+        print(f"uv pip install {' '.join(normal_deps)}")
+        for special_dep in special_deps:
+            print(f"uv pip install {special_dep}")
+        return
+
     _run_stack_build_command_from_build_config(
-        build_config, image_name=image_name, config_path=args.config
+        build_config,
+        image_name=image_name,
+        config_path=args.config,
+        template_name=args.template,
     )
 
 
@@ -195,9 +195,7 @@ def _generate_run_config(
     """
     apis = list(build_config.distribution_spec.providers.keys())
     run_config = StackRunConfig(
-        container_image=(
-            image_name if build_config.image_type == ImageType.container.value else None
-        ),
+        container_image=(image_name if build_config.image_type == ImageType.container.value else None),
         image_name=image_name,
         apis=apis,
         providers={},
@@ -217,13 +215,9 @@ def _generate_run_config(
             if p.deprecation_error:
                 raise InvalidProviderError(p.deprecation_error)
 
-            config_type = instantiate_class_type(
-                provider_registry[Api(api)][provider_type].config_class
-            )
+            config_type = instantiate_class_type(provider_registry[Api(api)][provider_type].config_class)
             if hasattr(config_type, "sample_run_config"):
-                config = config_type.sample_run_config(
-                    __distro_dir__=f"distributions/{image_name}"
-                )
+                config = config_type.sample_run_config(__distro_dir__=f"distributions/{image_name}")
             else:
                 config = {}
 
@@ -258,9 +252,7 @@ def _run_stack_build_command_from_build_config(
             image_name = f"distribution-{template_name}"
         else:
             if not image_name:
-                raise ValueError(
-                    "Please specify an image name when building a docker image without a template"
-                )
+                raise ValueError("Please specify an image name when building a container image without a template")
     elif build_config.image_type == ImageType.conda.value:
         if not image_name:
             raise ValueError("Please specify an image name when building a conda image")
@@ -288,10 +280,7 @@ def _run_stack_build_command_from_build_config(
 
     if template_name:
         # copy run.yaml from template to build_dir instead of generating it again
-        template_path = (
-            importlib.resources.files("llama_stack")
-            / f"templates/{template_name}/run.yaml"
-        )
+        template_path = importlib.resources.files("llama_stack") / f"templates/{template_name}/run.yaml"
         with importlib.resources.as_file(template_path) as path:
             run_config_file = build_dir / f"{template_name}-run.yaml"
             shutil.copy(path, run_config_file)
