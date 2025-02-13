@@ -108,6 +108,7 @@ class GroqInferenceAdapter(Inference, ModelRegistryHelper, NeedsRequestProviderD
                 "Groq only contains a preview version for llama-3.2-3b-instruct. "
                 "Preview models aren't recommended for production use. "
                 "They can be discontinued on short notice."
+                "More details: https://console.groq.com/docs/models"
             )
 
         request = convert_chat_completion_request(
