@@ -71,13 +71,13 @@ class Benchmarks(Protocol):
     @webmethod(route="/eval-tasks/{task_id}", method="GET")
     async def DEPRECATED_get_eval_task(
         self,
-        task_id: str,
+        eval_task_id: str,
     ) -> Optional[Benchmark]: ...
 
     @webmethod(route="/eval-tasks", method="POST")
     async def DEPRECATED_register_eval_task(
         self,
-        task_id: str,
+        eval_task_id: str,
         dataset_id: str,
         scoring_functions: List[str],
         provider_benchmark_id: Optional[str] = None,

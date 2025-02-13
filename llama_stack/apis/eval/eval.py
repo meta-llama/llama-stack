@@ -39,6 +39,7 @@ EvalCandidate = register_schema(
 
 @json_schema_type
 class BenchmarkConfig(BaseModel):
+    type: Literal["benchmark"] = "benchmark"
     eval_candidate: EvalCandidate
     scoring_params: Dict[str, ScoringFnParams] = Field(
         description="Map between scoring function id and parameters for each scoring function you want to run",

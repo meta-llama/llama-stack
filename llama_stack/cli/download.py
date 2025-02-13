@@ -105,7 +105,7 @@ class DownloadTask:
     output_file: str
     total_size: int = 0
     downloaded_size: int = 0
-    benchmark_id: Optional[int] = None
+    task_id: Optional[int] = None
     retries: int = 0
     max_retries: int = 3
 
@@ -183,8 +183,8 @@ class ParallelDownloader:
                 )
 
             # Update the progress bar's total size once we know it
-            if task.benchmark_id is not None:
-                self.progress.update(task.benchmark_id, total=task.total_size)
+            if task.task_id is not None:
+                self.progress.update(task.task_id, total=task.total_size)
 
         except httpx.HTTPError as e:
             self.console.print(f"[red]Error getting file info: {str(e)}[/red]")
@@ -207,7 +207,7 @@ class ParallelDownloader:
                         file.write(chunk)
                         task.downloaded_size += len(chunk)
                         self.progress.update(
-                            task.benchmark_id,
+                            task.task_id,
                             completed=task.downloaded_size,
                         )
 
@@ -234,7 +234,7 @@ class ParallelDownloader:
                 if os.path.exists(task.output_file):
                     if self.verify_file_integrity(task):
                         self.console.print(f"[green]Already downloaded {task.output_file}[/green]")
-                        self.progress.update(task.benchmark_id, completed=task.total_size)
+                        self.progress.update(task.task_id, completed=task.total_size)
                         return
 
                 await self.prepare_download(task)
@@ -258,7 +258,7 @@ class ParallelDownloader:
                     raise DownloadError(f"Download failed: {str(e)}") from e
 
         except Exception as e:
-            self.progress.update(task.benchmark_id, description=f"[red]Failed: {task.output_file}[/red]")
+            self.progress.update(task.task_id, description=f"[red]Failed: {task.output_file}[/red]")
             raise DownloadError(f"Download failed for {task.output_file}: {str(e)}") from e
 
     def has_disk_space(self, tasks: List[DownloadTask]) -> bool:
@@ -293,7 +293,7 @@ class ParallelDownloader:
         with self.progress:
             for task in tasks:
                 desc = f"Downloading {Path(task.output_file).name}"
-                task.benchmark_id = self.progress.add_task(desc, total=task.total_size, completed=task.downloaded_size)
+                task.task_id = self.progress.add_task(desc, total=task.total_size, completed=task.downloaded_size)
 
             semaphore = asyncio.Semaphore(self.max_concurrent_downloads)
 

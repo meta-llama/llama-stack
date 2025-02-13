@@ -59,14 +59,14 @@ class Testeval:
         scoring_functions = [
             "basic::equality",
         ]
-        task_id = "meta-reference::app_eval"
+        benchmark_id = "meta-reference::app_eval"
         await benchmarks_impl.register_benchmark(
-            benchmark_id=task_id,
+            benchmark_id=benchmark_id,
             dataset_id="test_dataset_for_eval",
             scoring_functions=scoring_functions,
         )
         response = await eval_impl.evaluate_rows(
-            task_id=task_id,
+            benchmark_id=benchmark_id,
             input_rows=rows.rows,
             scoring_functions=scoring_functions,
             task_config=AppBenchmarkConfig(
@@ -105,14 +105,14 @@ class Testeval:
             "basic::subset_of",
         ]
 
-        task_id = "meta-reference::app_eval-2"
+        benchmark_id = "meta-reference::app_eval-2"
         await benchmarks_impl.register_benchmark(
-            benchmark_id=task_id,
+            benchmark_id=benchmark_id,
             dataset_id="test_dataset_for_eval",
             scoring_functions=scoring_functions,
         )
         response = await eval_impl.run_eval(
-            task_id=task_id,
+            benchmark_id=benchmark_id,
             task_config=AppBenchmarkConfig(
                 eval_candidate=ModelCandidate(
                     model=inference_model,
@@ -121,9 +121,9 @@ class Testeval:
             ),
         )
         assert response.job_id == "0"
-        job_status = await eval_impl.job_status(task_id, response.job_id)
+        job_status = await eval_impl.job_status(benchmark_id, response.job_id)
         assert job_status and job_status.value == "completed"
-        eval_response = await eval_impl.job_result(task_id, response.job_id)
+        eval_response = await eval_impl.job_result(benchmark_id, response.job_id)
 
         assert eval_response is not None
         assert len(eval_response.generations) == 5
@@ -171,7 +171,7 @@ class Testeval:
 
         benchmark_id = "meta-reference-mmlu"
         response = await eval_impl.run_eval(
-            task_id=benchmark_id,
+            benchmark_id=benchmark_id,
             task_config=BenchmarkBenchmarkConfig(
                 eval_candidate=ModelCandidate(
                     model=inference_model,

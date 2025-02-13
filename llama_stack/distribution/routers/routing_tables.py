@@ -475,14 +475,14 @@ class BenchmarksRoutingTable(CommonRoutingTableImpl, Benchmarks):
 
     async def DEPRECATED_get_eval_task(
         self,
-        task_id: str,
+        eval_task_id: str,
     ) -> Optional[Benchmark]:
         logger.warning("DEPRECATED: Use /eval/benchmarks instead")
-        return await self.get_benchmark(task_id)
+        return await self.get_benchmark(eval_task_id)
 
     async def DEPRECATED_register_eval_task(
         self,
-        task_id: str,
+        eval_task_id: str,
         dataset_id: str,
         scoring_functions: List[str],
         provider_benchmark_id: Optional[str] = None,
@@ -491,7 +491,7 @@ class BenchmarksRoutingTable(CommonRoutingTableImpl, Benchmarks):
     ) -> None:
         logger.warning("DEPRECATED: Use /eval/benchmarks instead")
         return await self.register_benchmark(
-            benchmark_id=task_id,
+            benchmark_id=eval_task_id,
             dataset_id=dataset_id,
             scoring_functions=scoring_functions,
             metadata=metadata,

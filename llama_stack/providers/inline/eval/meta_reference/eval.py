@@ -205,7 +205,7 @@ class MetaReferenceEvalImpl(
         # scoring with generated_answer
         score_input_rows = [input_r | generated_r for input_r, generated_r in zip(input_rows, generations)]
 
-        if task_config.type == "app" and task_config.scoring_params is not None:
+        if task_config.scoring_params is not None:
             scoring_functions_dict = {
                 scoring_fn_id: task_config.scoring_params.get(scoring_fn_id, None)
                 for scoring_fn_id in scoring_functions

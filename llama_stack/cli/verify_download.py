@@ -82,7 +82,7 @@ def verify_files(model_dir: Path, checksums: Dict[str, str], console: Console) -
     ) as progress:
         for filepath, expected_hash in checksums.items():
             full_path = model_dir / filepath
-            benchmark_id = progress.add_task(f"Verifying {filepath}...", total=None)
+            task_id = progress.add_task(f"Verifying {filepath}...", total=None)
 
             exists = full_path.exists()
             actual_hash = None
@@ -102,7 +102,7 @@ def verify_files(model_dir: Path, checksums: Dict[str, str], console: Console) -
                 )
             )
 
-            progress.remove_task(benchmark_id)
+            progress.remove_task(task_id)
 
     return results
 

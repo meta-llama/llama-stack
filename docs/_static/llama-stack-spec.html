@@ -108,8 +108,8 @@
                 "description": "",
                 "parameters": [
                     {
-                        "name": "task_id",
-                        "in": "path",
+                        "name": "eval_task_id",
+                        "in": "query",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -3726,7 +3726,7 @@
             "DeprecatedRegisterEvalTaskRequest": {
                 "type": "object",
                 "properties": {
-                    "task_id": {
+                    "eval_task_id": {
                         "type": "string"
                     },
                     "dataset_id": {
@@ -3772,7 +3772,7 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "task_id",
+                    "eval_task_id",
                     "dataset_id",
                     "scoring_functions"
                 ]

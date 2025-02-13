@@ -50,8 +50,8 @@ paths:
         - Benchmarks
       description: ''
       parameters:
-        - name: task_id
-          in: path
+        - name: eval_task_id
+          in: query
           required: true
           schema:
             type: string
@@ -2248,7 +2248,7 @@ components:
     DeprecatedRegisterEvalTaskRequest:
       type: object
       properties:
-        task_id:
+        eval_task_id:
           type: string
         dataset_id:
           type: string
@@ -2272,7 +2272,7 @@ components:
               - type: object
       additionalProperties: false
       required:
-        - task_id
+        - eval_task_id
         - dataset_id
         - scoring_functions
     DeprecatedRunEvalRequest:
