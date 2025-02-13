@@ -8,12 +8,12 @@ import streamlit as st
 from modules.api import llama_stack_api
 
 
-def eval_tasks():
-    # Eval Tasks Section
-    st.header("Eval Tasks")
+def benchmarks():
+    # Benchmarks Section
+    st.header("Benchmarks")
 
-    eval_tasks_info = {d.identifier: d.to_dict() for d in llama_stack_api.client.eval_tasks.list()}
+    benchmarks_info = {d.identifier: d.to_dict() for d in llama_stack_api.client.benchmarks.list()}
 
-    if len(eval_tasks_info) > 0:
-        selected_eval_task = st.selectbox("Select an eval task", list(eval_tasks_info.keys()), key="eval_task_inspect")
-        st.json(eval_tasks_info[selected_eval_task], expanded=True)
+    if len(benchmarks_info) > 0:
+        selected_benchmark = st.selectbox("Select an eval task", list(benchmarks_info.keys()), key="benchmark_inspect")
+        st.json(benchmarks_info[selected_benchmark], expanded=True)

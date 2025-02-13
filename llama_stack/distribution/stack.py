@@ -15,10 +15,10 @@ from termcolor import colored
 
 from llama_stack.apis.agents import Agents
 from llama_stack.apis.batch_inference import BatchInference
+from llama_stack.apis.benchmarks import Benchmarks
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
 from llama_stack.apis.eval import Eval
-from llama_stack.apis.eval_tasks import EvalTasks
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.inspect import Inspect
 from llama_stack.apis.models import Models
@@ -53,7 +53,7 @@ class LlamaStack(
     PostTraining,
     VectorIO,
     Eval,
-    EvalTasks,
+    Benchmarks,
     Scoring,
     ScoringFunctions,
     DatasetIO,
@@ -78,7 +78,7 @@ RESOURCES = [
         "register_scoring_function",
         "list_scoring_functions",
     ),
-    ("eval_tasks", Api.eval_tasks, "register_eval_task", "list_eval_tasks"),
+    ("benchmarks", Api.benchmarks, "register_benchmark", "list_benchmarks"),
     ("tool_groups", Api.tool_groups, "register_tool_group", "list_tool_groups"),
 ]
 
