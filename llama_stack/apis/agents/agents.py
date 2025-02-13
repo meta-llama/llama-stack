@@ -29,11 +29,11 @@ from llama_stack.apis.inference import (
     SamplingParams,
     ToolCall,
     ToolChoice,
+    ToolConfig,
     ToolPromptFormat,
     ToolResponse,
     ToolResponseMessage,
     UserMessage,
-    ToolConfig,
 )
 from llama_stack.apis.safety import SafetyViolation
 from llama_stack.apis.tools import ToolDef
@@ -318,7 +318,7 @@ class Agents(Protocol):
         agent_config: AgentConfig,
     ) -> AgentCreateResponse: ...
 
-    @webmethod(route="/agents/{agent_id}/session/{session_id}/turn", method="POST")
+    @webmethod(route="/agents/{agent_id:path}/session/{session_id:path}/turn", method="POST")
     async def create_agent_turn(
         self,
         agent_id: str,
@@ -335,7 +335,10 @@ class Agents(Protocol):
         tool_config: Optional[ToolConfig] = None,
     ) -> Union[Turn, AsyncIterator[AgentTurnResponseStreamChunk]]: ...
 
-    @webmethod(route="/agents/{agent_id}/session/{session_id}/turn/{turn_id}", method="GET")
+    @webmethod(
+        route="/agents/{agent_id:path}/session/{session_id:path}/turn/{turn_id:path}",
+        method="GET",
+    )
     async def get_agents_turn(
         self,
         agent_id: str,
@@ -344,7 +347,7 @@ class Agents(Protocol):
     ) -> Turn: ...
 
     @webmethod(
-        route="/agents/{agent_id}/session/{session_id}/turn/{turn_id}/step/{step_id}",
+        route="/agents/{agent_id:path}/session/{session_id:path}/turn/{turn_id:path}/step/{step_id:path}",
         method="GET",
     )
     async def get_agents_step(
@@ -355,14 +358,14 @@ class Agents(Protocol):
         step_id: str,
     ) -> AgentStepResponse: ...
 
-    @webmethod(route="/agents/{agent_id}/session", method="POST")
+    @webmethod(route="/agents/{agent_id:path}/session", method="POST")
     async def create_agent_session(
         self,
         agent_id: str,
         session_name: str,
     ) -> AgentSessionCreateResponse: ...
 
-    @webmethod(route="/agents/{agent_id}/session/{session_id}", method="GET")
+    @webmethod(route="/agents/{agent_id:path}/session/{session_id:path}", method="GET")
     async def get_agents_session(
         self,
         session_id: str,
@@ -370,14 +373,14 @@ class Agents(Protocol):
         turn_ids: Optional[List[str]] = None,
     ) -> Session: ...
 
-    @webmethod(route="/agents/{agent_id}/session/{session_id}", method="DELETE")
+    @webmethod(route="/agents/{agent_id:path}/session/{session_id:path}", method="DELETE")
     async def delete_agents_session(
         self,
         session_id: str,
         agent_id: str,
     ) -> None: ...
 
-    @webmethod(route="/agents/{agent_id}", method="DELETE")
+    @webmethod(route="/agents/{agent_id:path}", method="DELETE")
     async def delete_agent(
         self,
         agent_id: str,

@@ -13,8 +13,8 @@ from typing import (
     Literal,
     Optional,
     Protocol,
-    Union,
     runtime_checkable,
+    Union,
 )
 
 from llama_models.llama3.api.datatypes import Primitive
@@ -224,13 +224,13 @@ class Telemetry(Protocol):
         order_by: Optional[List[str]] = None,
     ) -> QueryTracesResponse: ...
 
-    @webmethod(route="/telemetry/traces/{trace_id}", method="GET")
+    @webmethod(route="/telemetry/traces/{trace_id:path}", method="GET")
     async def get_trace(self, trace_id: str) -> Trace: ...
 
-    @webmethod(route="/telemetry/traces/{trace_id}/spans/{span_id}", method="GET")
+    @webmethod(route="/telemetry/traces/{trace_id:path}/spans/{span_id:path}", method="GET")
     async def get_span(self, trace_id: str, span_id: str) -> Span: ...
 
-    @webmethod(route="/telemetry/spans/{span_id}/tree", method="GET")
+    @webmethod(route="/telemetry/spans/{span_id:path}/tree", method="GET")
     async def get_span_tree(
         self,
         span_id: str,
