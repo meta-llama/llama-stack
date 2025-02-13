@@ -40,12 +40,23 @@ dependencies = [
 dev = [
     "pytest",
     "pytest-asyncio",
+    "pytest-html",
     "nbval",            # For notebook testing
     "black",
     "ruff",
     "types-requests",
     "types-setuptools",
     "pre-commit",
+]
+test = [
+    "openai",
+    "aiosqlite",
+    "ollama",
+    "torch>=2.6.0",
+    "fairscale>=0.4.13",
+    "torchvision>=0.21.0",
+    "lm-format-enforcer>=0.10.9",
+    "groq",
 ]
 docs = [
     "sphinx-autobuild",
@@ -74,3 +85,7 @@ license-files = []
 name = "pytorch-cpu"
 url = "https://download.pytorch.org/whl/cpu"
 explicit = true
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu" }]
+torchvision = [{ index = "pytorch-cpu" }]
