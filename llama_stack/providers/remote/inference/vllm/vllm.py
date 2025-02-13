@@ -345,6 +345,9 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
             else:
                 raise ValueError(f"Unknown response format {fmt.type}")
 
+        if request.logprobs and request.logprobs.top_k:
+            input_dict["logprobs"] = request.logprobs.top_k
+
         return {
             "model": request.model,
             **input_dict,
