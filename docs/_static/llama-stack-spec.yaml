@@ -1412,6 +1412,81 @@ paths:
             schema:
               $ref: '#/components/schemas/SyntheticDataGenerateRequest'
         required: true
+  /v1/uploads:
+    post:
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadResponse'
+      tags:
+        - Uploads
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                bucket:
+                  type: string
+                key:
+                  type: string
+                mime_type:
+                  type: string
+                  format: binary
+        required: true
+  /v1/uploads/{id}:
+    post:
+      responses:
+        '202':
+          description: Accepted
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileResponse'
+      tags:
+        - Uploads
+      requestBody:
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+        required: true
+  /v1/files/{bucket}:
+    get:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListFileInfo'
+      tags:
+        - Files
+  /v1/files/{bucket}/{key}:
+    get:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileResponse'
+    delete:
+      responses:
+        '410':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileResponse'
+      tags:
+        - Files
   /v1/version:
     get:
       responses:
@@ -5018,6 +5093,50 @@ components:
       description: >-
         Response from the synthetic data generation. Batch of (prompt, response, score)
         tuples that pass the threshold.
+    UploadResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        url:
+          type: string
+      additionalProperties: false
+      required:
+        - id
+        - url
+    FileResponse:
+      type: object
+      properties:
+        key:
+          type: string
+        bucket:
+          type: string
+        mime_type:
+          type: string
+        url:
+          type: string
+        bytes:
+          type: integer
+        created_at:
+          type: integer
+      additionalProperties: false
+      required:
+        - key
+        - bucket
+        - mime_type
+        - url
+        - bytes
+        - created_at
+    ListFileInfo:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/FileResponse'
+      additionalProperties: false
+      required:
+        - data
     VersionInfo:
       type: object
       properties:
