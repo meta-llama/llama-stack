@@ -37,9 +37,9 @@ from llama_stack.apis.inference import (
 from llama_stack.apis.models import Model
 from llama_stack.providers.datatypes import ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.openai_compat import (
-    get_sampling_options,
     OpenAICompatCompletionChoice,
     OpenAICompatCompletionResponse,
+    get_sampling_options,
     process_chat_completion_response,
     process_chat_completion_stream_response,
 )
@@ -201,7 +201,7 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         response = OpenAICompatCompletionResponse(
             choices=[choice],
         )
-        return process_chat_completion_response(response, self.formatter)
+        return process_chat_completion_response(response, self.formatter, request)
 
     async def _stream_chat_completion(
         self, request: ChatCompletionRequest, results_generator: AsyncGenerator
@@ -227,7 +227,7 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
                 )
 
         stream = _generate_and_convert_to_openai_compat()
-        async for chunk in process_chat_completion_stream_response(stream, self.formatter):
+        async for chunk in process_chat_completion_stream_response(stream, self.formatter, request):
             yield chunk
 
     async def embeddings(self, model_id: str, contents: List[InterleavedContent]) -> EmbeddingsResponse:

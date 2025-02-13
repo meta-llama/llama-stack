@@ -11,10 +11,8 @@ from ..conftest import (
     get_provider_fixture_overrides_from_test_config,
     get_test_config_for_api,
 )
-
 from ..inference.fixtures import INFERENCE_FIXTURES
 from .fixtures import VECTOR_IO_FIXTURES
-
 
 DEFAULT_PROVIDER_COMBINATIONS = [
     pytest.param(
@@ -39,6 +37,14 @@ DEFAULT_PROVIDER_COMBINATIONS = [
             "vector_io": "faiss",
         },
         id="ollama",
+        marks=pytest.mark.ollama,
+    ),
+    pytest.param(
+        {
+            "inference": "ollama",
+            "vector_io": "sqlite_vec",
+        },
+        id="sqlite_vec",
         marks=pytest.mark.ollama,
     ),
     pytest.param(

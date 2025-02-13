@@ -46,6 +46,8 @@ dev = [
     "types-requests",
     "types-setuptools",
     "pre-commit",
+    "uvicorn",
+    "fastapi",
 ]
 docs = [
     "sphinx-autobuild",

@@ -6,7 +6,6 @@
 
 
 import pytest
-
 from llama_models.llama3.api.datatypes import (
     SamplingParams,
     StopReason,
@@ -15,7 +14,6 @@ from llama_models.llama3.api.datatypes import (
     ToolParamDefinition,
     ToolPromptFormat,
 )
-
 from pydantic import BaseModel, ValidationError
 
 from llama_stack.apis.common.content_types import ToolCallParseStatus
@@ -34,7 +32,6 @@ from llama_stack.apis.inference import (
 from llama_stack.apis.models import ListModelsResponse, Model
 
 from .utils import group_chunks
-
 
 # How to run this test:
 #
@@ -175,7 +172,7 @@ class TestInference:
             1 <= len(chunks) <= 6
         )  # why 6 and not 5? the response may have an extra closing chunk, e.g. for usage or stop_reason
         for chunk in chunks:
-            if chunk.delta.type == "text" and chunk.delta.text:  # if there's a token, we expect logprobs
+            if chunk.delta:  # if there's a token, we expect logprobs
                 assert chunk.logprobs, "Logprobs should not be empty"
                 assert all(len(logprob.logprobs_by_token) == 3 for logprob in chunk.logprobs)
             else:  # no token, no logprobs

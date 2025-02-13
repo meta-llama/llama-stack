@@ -48,7 +48,7 @@ class Shields(Protocol):
     @webmethod(route="/shields", method="GET")
     async def list_shields(self) -> ListShieldsResponse: ...
 
-    @webmethod(route="/shields/{identifier}", method="GET")
+    @webmethod(route="/shields/{identifier:path}", method="GET")
     async def get_shield(self, identifier: str) -> Optional[Shield]: ...
 
     @webmethod(route="/shields", method="POST")

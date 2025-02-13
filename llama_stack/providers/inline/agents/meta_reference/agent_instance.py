@@ -42,10 +42,10 @@ from llama_stack.apis.agents import (
     Turn,
 )
 from llama_stack.apis.common.content_types import (
+    URL,
     TextContentItem,
     ToolCallDelta,
     ToolCallParseStatus,
-    URL,
 )
 from llama_stack.apis.inference import (
     ChatCompletionResponseEventType,
@@ -513,6 +513,9 @@ class ChatAgent(ShieldRunnerMixin):
                     if delta.type == "tool_call":
                         if delta.parse_status == ToolCallParseStatus.succeeded:
                             tool_calls.append(delta.tool_call)
+                        elif delta.parse_status == ToolCallParseStatus.failed:
+                            # If we cannot parse the tools, set the content to the unparsed raw text
+                            content = delta.tool_call
                         if stream:
                             yield AgentTurnResponseStreamChunk(
                                 event=AgentTurnResponseEvent(

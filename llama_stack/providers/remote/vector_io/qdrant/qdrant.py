@@ -20,7 +20,8 @@ from llama_stack.providers.utils.memory.vector_store import (
     EmbeddingIndex,
     VectorDBWithIndex,
 )
-from .config import QdrantConfig
+
+from .config import QdrantVectorIOConfig
 
 log = logging.getLogger(__name__)
 CHUNK_ID_KEY = "_chunk_id"
@@ -97,8 +98,8 @@ class QdrantIndex(EmbeddingIndex):
         await self.client.delete_collection(collection_name=self.collection_name)
 
 
-class QdrantVectorDBAdapter(VectorIO, VectorDBsProtocolPrivate):
-    def __init__(self, config: QdrantConfig, inference_api: Api.inference) -> None:
+class QdrantVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
+    def __init__(self, config: QdrantVectorIOConfig, inference_api: Api.inference) -> None:
         self.config = config
         self.client = AsyncQdrantClient(**self.config.model_dump(exclude_none=True))
         self.cache = {}

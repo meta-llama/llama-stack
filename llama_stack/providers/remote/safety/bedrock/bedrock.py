@@ -6,11 +6,9 @@
 
 import json
 import logging
-
 from typing import Any, Dict, List
 
 from llama_stack.apis.inference import Message
-
 from llama_stack.apis.safety import (
     RunShieldResponse,
     Safety,
@@ -22,7 +20,6 @@ from llama_stack.providers.datatypes import ShieldsProtocolPrivate
 from llama_stack.providers.utils.bedrock.client import create_bedrock_client
 
 from .config import BedrockSafetyConfig
-
 
 logger = logging.getLogger(__name__)
 

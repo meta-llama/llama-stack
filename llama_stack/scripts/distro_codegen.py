@@ -16,10 +16,9 @@ from typing import Iterator
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from llama_stack.distribution.build import (
-    get_provider_dependencies,
     SERVER_DEPENDENCIES,
+    get_provider_dependencies,
 )
-
 
 REPO_ROOT = Path(__file__).parent.parent.parent
 

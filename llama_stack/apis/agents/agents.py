@@ -15,25 +15,25 @@ from typing import (
     Literal,
     Optional,
     Protocol,
-    runtime_checkable,
     Union,
+    runtime_checkable,
 )
 
 from llama_models.schema_utils import json_schema_type, register_schema, webmethod
 from pydantic import BaseModel, ConfigDict, Field
 
-from llama_stack.apis.common.content_types import ContentDelta, InterleavedContent, URL
+from llama_stack.apis.common.content_types import URL, ContentDelta, InterleavedContent
 from llama_stack.apis.inference import (
     CompletionMessage,
     ResponseFormat,
     SamplingParams,
     ToolCall,
     ToolChoice,
+    ToolConfig,
     ToolPromptFormat,
     ToolResponse,
     ToolResponseMessage,
     UserMessage,
-    ToolConfig,
 )
 from llama_stack.apis.safety import SafetyViolation
 from llama_stack.apis.tools import ToolDef
@@ -154,7 +154,7 @@ class AgentConfigCommon(BaseModel):
     output_shields: Optional[List[str]] = Field(default_factory=list)
     toolgroups: Optional[List[AgentToolGroup]] = Field(default_factory=list)
     client_tools: Optional[List[ToolDef]] = Field(default_factory=list)
-    tool_choice: Optional[ToolChoice] = Field(default=ToolChoice.auto, deprecated="use tool_config instead")
+    tool_choice: Optional[ToolChoice] = Field(default=None, deprecated="use tool_config instead")
     tool_prompt_format: Optional[ToolPromptFormat] = Field(default=None, deprecated="use tool_config instead")
     tool_config: Optional[ToolConfig] = Field(default=None)
 
@@ -166,11 +166,13 @@ class AgentConfigCommon(BaseModel):
                 raise ValueError("tool_choice is deprecated. Use tool_choice in tool_config instead.")
             if self.tool_prompt_format and self.tool_config.tool_prompt_format != self.tool_prompt_format:
                 raise ValueError("tool_prompt_format is deprecated. Use tool_prompt_format in tool_config instead.")
-        if self.tool_config is None:
-            self.tool_config = ToolConfig(
-                tool_choice=self.tool_choice,
-                tool_prompt_format=self.tool_prompt_format,
-            )
+        else:
+            params = {}
+            if self.tool_choice:
+                params["tool_choice"] = self.tool_choice
+            if self.tool_prompt_format:
+                params["tool_prompt_format"] = self.tool_prompt_format
+            self.tool_config = ToolConfig(**params)
 
 
 @json_schema_type
@@ -333,7 +335,10 @@ class Agents(Protocol):
         tool_config: Optional[ToolConfig] = None,
     ) -> Union[Turn, AsyncIterator[AgentTurnResponseStreamChunk]]: ...
 
-    @webmethod(route="/agents/{agent_id}/session/{session_id}/turn/{turn_id}", method="GET")
+    @webmethod(
+        route="/agents/{agent_id}/session/{session_id}/turn/{turn_id}",
+        method="GET",
+    )
     async def get_agents_turn(
         self,
         agent_id: str,

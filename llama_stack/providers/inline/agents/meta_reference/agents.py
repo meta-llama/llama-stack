@@ -81,12 +81,6 @@ class MetaReferenceAgentsImpl(Agents):
     ) -> AgentCreateResponse:
         agent_id = str(uuid.uuid4())
 
-        if agent_config.tool_config is None:
-            agent_config.tool_config = ToolConfig(
-                tool_choice=agent_config.tool_choice,
-                tool_prompt_format=agent_config.tool_prompt_format,
-            )
-
         await self.persistence_store.set(
             key=f"agent:{agent_id}",
             value=agent_config.model_dump_json(),
@@ -218,3 +212,6 @@ class MetaReferenceAgentsImpl(Agents):
 
     async def delete_agent(self, agent_id: str) -> None:
         await self.persistence_store.delete(f"agent:{agent_id}")
+
+    async def shutdown(self) -> None:
+        pass

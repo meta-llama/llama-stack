@@ -16,7 +16,8 @@ from llama_stack.distribution.datatypes import (
 from llama_stack.providers.inline.inference.sentence_transformers import (
     SentenceTransformersInferenceConfig,
 )
-from llama_stack.providers.inline.vector_io.faiss.config import FaissImplConfig
+from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOConfig
+from llama_stack.providers.inline.vector_io.sqlite_vec.config import SQLiteVectorIOConfig
 from llama_stack.providers.remote.inference.ollama import OllamaImplConfig
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
@@ -49,10 +50,15 @@ def get_distribution_template() -> DistributionTemplate:
         provider_type="inline::sentence-transformers",
         config=SentenceTransformersInferenceConfig.sample_run_config(),
     )
-    vector_io_provider = Provider(
+    vector_io_provider_faiss = Provider(
         provider_id="faiss",
         provider_type="inline::faiss",
-        config=FaissImplConfig.sample_run_config(f"distributions/{name}"),
+        config=FaissVectorIOConfig.sample_run_config(f"distributions/{name}"),
+    )
+    vector_io_provider_sqlite = Provider(
+        provider_id="sqlite_vec",
+        provider_type="inline::sqlite_vec",
+        config=SQLiteVectorIOConfig.sample_run_config(f"distributions/{name}"),
     )
 
     inference_model = ModelInput(
@@ -98,7 +104,7 @@ def get_distribution_template() -> DistributionTemplate:
             "run.yaml": RunConfigSettings(
                 provider_overrides={
                     "inference": [inference_provider, embedding_provider],
-                    "vector_io": [vector_io_provider],
+                    "vector_io": [vector_io_provider_faiss, vector_io_provider_sqlite],
                 },
                 default_models=[inference_model, embedding_model],
                 default_tool_groups=default_tool_groups,
@@ -109,7 +115,7 @@ def get_distribution_template() -> DistributionTemplate:
                         inference_provider,
                         embedding_provider,
                     ],
-                    "vector_io": [vector_io_provider],
+                    "vector_io": [vector_io_provider_faiss, vector_io_provider_faiss],
                     "safety": [
                         Provider(
                             provider_id="llama-guard",

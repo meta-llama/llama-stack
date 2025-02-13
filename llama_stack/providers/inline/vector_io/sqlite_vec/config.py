@@ -4,9 +4,9 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+# config.py
 from typing import Any, Dict
 
-from llama_models.schema_utils import json_schema_type
 from pydantic import BaseModel
 
 from llama_stack.providers.utils.kvstore.config import (
@@ -15,8 +15,8 @@ from llama_stack.providers.utils.kvstore.config import (
 )
 
 
-@json_schema_type
-class FaissVectorIOConfig(BaseModel):
+class SQLiteVectorIOConfig(BaseModel):
+    db_path: str
     kvstore: KVStoreConfig
 
     @classmethod
@@ -24,6 +24,6 @@ class FaissVectorIOConfig(BaseModel):
         return {
             "kvstore": SqliteKVStoreConfig.sample_run_config(
                 __distro_dir__=__distro_dir__,
-                db_name="faiss_store.db",
+                db_name="sqlite_vec.db",
             )
         }

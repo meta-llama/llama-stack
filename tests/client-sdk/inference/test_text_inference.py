@@ -14,13 +14,7 @@ PROVIDER_TOOL_PROMPT_FORMAT = {
     "remote::vllm": "json",
 }
 
-PROVIDER_LOGPROBS_TOP_K = set(
-    {
-        "remote::together",
-        "remote::fireworks",
-        # "remote:vllm"
-    }
-)
+PROVIDER_LOGPROBS_TOP_K = {"remote::together", "remote::fireworks", "remote::vllm"}
 
 
 @pytest.fixture(scope="session")
@@ -158,7 +152,10 @@ def test_text_completion_structured_output(llama_stack_client, text_model_id, in
     "question,expected",
     [
         ("Which planet do humans live on?", "Earth"),
-        ("Which planet has rings around it with a name starting with letter S?", "Saturn"),
+        (
+            "Which planet has rings around it with a name starting with letter S?",
+            "Saturn",
+        ),
     ],
 )
 def test_text_chat_completion_non_streaming(llama_stack_client, text_model_id, question, expected):
@@ -280,3 +277,82 @@ def test_text_chat_completion_structured_output(llama_stack_client, text_model_i
     assert answer.last_name == "Jordan"
     assert answer.year_of_birth == 1963
     assert answer.num_seasons_in_nba == 15
+
+
+@pytest.mark.parametrize(
+    "streaming",
+    [
+        True,
+        False,
+    ],
+)
+def test_text_chat_completion_tool_calling_tools_not_in_request(llama_stack_client, text_model_id, streaming):
+    # TODO: more dynamic lookup on tool_prompt_format for model family
+    tool_prompt_format = "json" if "3.1" in text_model_id else "python_list"
+    request = {
+        "model_id": text_model_id,
+        "messages": [
+            {"role": "system", "content": "You are a helpful assistant."},
+            {
+                "role": "user",
+                "content": "What pods are in the namespace openshift-lightspeed?",
+            },
+            {
+                "role": "assistant",
+                "content": "",
+                "stop_reason": "end_of_turn",
+                "tool_calls": [
+                    {
+                        "call_id": "1",
+                        "tool_name": "get_object_namespace_list",
+                        "arguments": {
+                            "kind": "pod",
+                            "namespace": "openshift-lightspeed",
+                        },
+                    }
+                ],
+            },
+            {
+                "role": "tool",
+                "call_id": "1",
+                "tool_name": "get_object_namespace_list",
+                "content": "the objects are pod1, pod2, pod3",
+            },
+        ],
+        "tools": [
+            {
+                "tool_name": "get_object_namespace_list",
+                "description": "Get the list of objects in a namespace",
+                "parameters": {
+                    "kind": {
+                        "param_type": "string",
+                        "description": "the type of object",
+                        "required": True,
+                    },
+                    "namespace": {
+                        "param_type": "string",
+                        "description": "the name of the namespace",
+                        "required": True,
+                    },
+                },
+            }
+        ],
+        "tool_choice": "auto",
+        "tool_prompt_format": tool_prompt_format,
+        "stream": streaming,
+    }
+
+    response = llama_stack_client.inference.chat_completion(**request)
+
+    if streaming:
+        for chunk in response:
+            delta = chunk.event.delta
+            if delta.type == "tool_call" and delta.parse_status == "succeeded":
+                assert delta.tool_call.tool_name == "get_object_namespace_list"
+            if delta.type == "tool_call" and delta.parse_status == "failed":
+                # expect raw message that failed to parse in tool_call
+                assert type(delta.tool_call) == str
+                assert len(delta.tool_call) > 0
+    else:
+        for tc in response.completion_message.tool_calls:
+            assert tc.tool_name == "get_object_namespace_list"

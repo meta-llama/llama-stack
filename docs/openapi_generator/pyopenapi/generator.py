@@ -644,7 +644,9 @@ class Generator:
         else:
             callbacks = None
 
-        description = "\n".join(filter(None, [doc_string.short_description, doc_string.long_description]))
+        description = "\n".join(
+            filter(None, [doc_string.short_description, doc_string.long_description])
+        )
         return Operation(
             tags=[op.defining_class.__name__],
             summary=None,
@@ -681,6 +683,7 @@ class Generator:
                 raise NotImplementedError(f"unknown HTTP method: {op.http_method}")
 
             route = op.get_route()
+            route = route.replace(":path", "")
             print(f"route: {route}")
             if route in paths:
                 paths[route].update(pathItem)

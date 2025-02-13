@@ -40,6 +40,7 @@ If you need help or guidance, comment on the issue. Issues that are extra friend
 3. Ensure the test suite passes.
 4. Make sure your code lints using `pre-commit`.
 5. If you haven't already, complete the Contributor License Agreement ("CLA").
+6. Ensure your pull request follows the [conventional commits format](https://www.conventionalcommits.org/en/v1.0.0/).
 
 ## Contributor License Agreement ("CLA")
 In order to accept your pull request, we need you to submit a CLA. You only need
@@ -98,7 +99,8 @@ $ uv sync
 ```
 
 ## Coding Style
-* 2 spaces for indentation rather than tabs
+
+* 4 spaces for indentation rather than tabs
 * 80 character line length
 * ...
 

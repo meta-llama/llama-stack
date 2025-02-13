@@ -432,6 +432,20 @@ wheels = [
 ]
 
 [[package]]
+name = "fastapi"
+version = "0.115.8"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pydantic" },
+    { name = "starlette" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/a2/b2/5a5dc4affdb6661dea100324e19a7721d5dc524b464fe8e366c093fd7d87/fastapi-0.115.8.tar.gz", hash = "sha256:0ce9111231720190473e222cdf0f07f7206ad7e53ea02beb1d2dc36e2f0741e9", size = 295403 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/8f/7d/2d6ce181d7a5f51dedb8c06206cbf0ec026a99bf145edd309f9e17c3282f/fastapi-0.115.8-py3-none-any.whl", hash = "sha256:753a96dd7e036b34eeef8babdfcfe3f28ff79648f86551eb36bfc1b0bf4a8cbf", size = 94814 },
+]
+
+[[package]]
 name = "fastjsonschema"
 version = "2.21.1"
 source = { registry = "https://pypi.org/simple" }
@@ -724,6 +738,7 @@ dependencies = [
 [package.optional-dependencies]
 dev = [
     { name = "black" },
+    { name = "fastapi" },
     { name = "nbval" },
     { name = "pre-commit" },
     { name = "pytest" },
@@ -731,6 +746,7 @@ dev = [
     { name = "ruff" },
     { name = "types-requests" },
     { name = "types-setuptools" },
+    { name = "uvicorn" },
 ]
 docs = [
     { name = "myst-parser" },
@@ -748,6 +764,7 @@ docs = [
 requires-dist = [
     { name = "black", marker = "extra == 'dev'" },
     { name = "blobfile" },
+    { name = "fastapi", marker = "extra == 'dev'" },
     { name = "fire" },
     { name = "httpx" },
     { name = "huggingface-hub" },
@@ -776,6 +793,7 @@ requires-dist = [
     { name = "termcolor" },
     { name = "types-requests", marker = "extra == 'dev'" },
     { name = "types-setuptools", marker = "extra == 'dev'" },
+    { name = "uvicorn", marker = "extra == 'dev'" },
 ]
 
 [[package]]

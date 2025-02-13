@@ -22,17 +22,35 @@ from llama_models.llama3.api.datatypes import (
 from openai import AsyncStream
 from openai.types.chat import (
     ChatCompletionAssistantMessageParam as OpenAIChatCompletionAssistantMessage,
+)
+from openai.types.chat import (
     ChatCompletionChunk as OpenAIChatCompletionChunk,
+)
+from openai.types.chat import (
     ChatCompletionContentPartImageParam as OpenAIChatCompletionContentPartImageParam,
+)
+from openai.types.chat import (
     ChatCompletionContentPartParam as OpenAIChatCompletionContentPartParam,
+)
+from openai.types.chat import (
     ChatCompletionMessageParam as OpenAIChatCompletionMessage,
+)
+from openai.types.chat import (
     ChatCompletionMessageToolCallParam as OpenAIChatCompletionMessageToolCall,
+)
+from openai.types.chat import (
     ChatCompletionSystemMessageParam as OpenAIChatCompletionSystemMessage,
+)
+from openai.types.chat import (
     ChatCompletionToolMessageParam as OpenAIChatCompletionToolMessage,
+)
+from openai.types.chat import (
     ChatCompletionUserMessageParam as OpenAIChatCompletionUserMessage,
 )
 from openai.types.chat.chat_completion import (
     Choice as OpenAIChoice,
+)
+from openai.types.chat.chat_completion import (
     ChoiceLogprobs as OpenAIChoiceLogprobs,  # same as chat_completion_chunk ChoiceLogprobs
 )
 from openai.types.chat.chat_completion_content_part_image_param import (
@@ -69,7 +87,6 @@ from llama_stack.apis.inference import (
     ToolResponseMessage,
     UserMessage,
 )
-
 from llama_stack.providers.utils.inference.prompt_adapter import (
     convert_image_content_to_url,
 )

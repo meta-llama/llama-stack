@@ -13,11 +13,14 @@ from llama_stack_client.lib.agents.agent import Agent
 from llama_stack_client.lib.agents.client_tool import ClientTool
 from llama_stack_client.lib.agents.event_logger import EventLogger
 from llama_stack_client.types import ToolResponseMessage
-from llama_stack_client.types.agent_create_params import AgentConfig
 from llama_stack_client.types.agents.turn_create_params import Document as AgentDocument
 from llama_stack_client.types.memory_insert_params import Document
 from llama_stack_client.types.shared.completion_message import CompletionMessage
+from llama_stack_client.types.shared_params.agent_config import AgentConfig, ToolConfig
 from llama_stack_client.types.tool_def_param import Parameter
+
+from llama_stack.apis.agents.agents import AgentConfig as Server__AgentConfig
+from llama_stack.apis.agents.agents import ToolChoice
 
 
 class TestClientTool(ClientTool):
@@ -139,6 +142,62 @@ def test_agent_simple(llama_stack_client, agent_config):
         logs = [str(log) for log in EventLogger().log(bomb_response) if log is not None]
         logs_str = "".join(logs)
         assert "I can't" in logs_str
+
+
+def test_tool_config(llama_stack_client, agent_config):
+    common_params = dict(
+        model="meta-llama/Llama-3.2-3B-Instruct",
+        instructions="You are a helpful assistant",
+        sampling_params={
+            "strategy": {
+                "type": "top_p",
+                "temperature": 1.0,
+                "top_p": 0.9,
+            },
+        },
+        toolgroups=[],
+        enable_session_persistence=False,
+    )
+    agent_config = AgentConfig(
+        **common_params,
+    )
+    Server__AgentConfig(**agent_config)
+
+    agent_config = AgentConfig(
+        **common_params,
+        tool_choice="auto",
+    )
+    server_config = Server__AgentConfig(**agent_config)
+    assert server_config.tool_config.tool_choice == ToolChoice.auto
+
+    agent_config = AgentConfig(
+        **common_params,
+        tool_choice="auto",
+        tool_config=ToolConfig(
+            tool_choice="auto",
+        ),
+    )
+    server_config = Server__AgentConfig(**agent_config)
+    assert server_config.tool_config.tool_choice == ToolChoice.auto
+
+    agent_config = AgentConfig(
+        **common_params,
+        tool_config=ToolConfig(
+            tool_choice="required",
+        ),
+    )
+    server_config = Server__AgentConfig(**agent_config)
+    assert server_config.tool_config.tool_choice == ToolChoice.required
+
+    agent_config = AgentConfig(
+        **common_params,
+        tool_choice="required",
+        tool_config=ToolConfig(
+            tool_choice="auto",
+        ),
+    )
+    with pytest.raises(ValueError, match="tool_choice is deprecated"):
+        Server__AgentConfig(**agent_config)
 
 
 def test_builtin_tool_web_search(llama_stack_client, agent_config):

@@ -22,16 +22,13 @@ from typing import Callable, Generator, Literal, Optional, Union
 
 import torch
 import zmq
-
 from fairscale.nn.model_parallel.initialize import (
     get_model_parallel_group,
     get_model_parallel_rank,
     get_model_parallel_src_rank,
 )
-
 from pydantic import BaseModel, Field
-
-from torch.distributed.launcher.api import elastic_launch, LaunchConfig
+from torch.distributed.launcher.api import LaunchConfig, elastic_launch
 from typing_extensions import Annotated
 
 from llama_stack.providers.utils.inference.prompt_adapter import (

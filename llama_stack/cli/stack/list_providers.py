@@ -21,15 +21,19 @@ class StackListProviders(Subcommand):
         self._add_arguments()
         self.parser.set_defaults(func=self._run_providers_list_cmd)
 
-    def _add_arguments(self):
+    @property
+    def providable_apis(self):
         from llama_stack.distribution.distribution import providable_apis
 
-        api_values = [api.value for api in providable_apis()]
+        return [api.value for api in providable_apis()]
+
+    def _add_arguments(self):
         self.parser.add_argument(
             "api",
             type=str,
-            choices=api_values,
-            help="API to list providers for (one of: {})".format(api_values),
+            choices=self.providable_apis,
+            nargs="?",
+            help="API to list providers for. List all if not specified.",
         )
 
     def _run_providers_list_cmd(self, args: argparse.Namespace) -> None:
@@ -37,20 +41,29 @@ class StackListProviders(Subcommand):
         from llama_stack.distribution.distribution import Api, get_provider_registry
 
         all_providers = get_provider_registry()
-        providers_for_api = all_providers[Api(args.api)]
+        if args.api:
+            providers = [(args.api, all_providers[Api(args.api)])]
+        else:
+            providers = [(k.value, prov) for k, prov in all_providers.items()]
+
+        providers = [p for api, p in providers if api in self.providable_apis]
 
         # eventually, this should query a registry at llama.meta.com/llamastack/distributions
         headers = [
+            "API Type",
             "Provider Type",
             "PIP Package Dependencies",
         ]
 
         rows = []
-        for spec in providers_for_api.values():
-            if spec.provider_type == "sample":
+
+        specs = [spec for p in providers for spec in p.values()]
+        for spec in specs:
+            if spec.is_sample:
                 continue
             rows.append(
                 [
+                    spec.api.value,
                     spec.provider_type,
                     ",".join(spec.pip_packages),
                 ]
@@ -59,4 +72,5 @@ class StackListProviders(Subcommand):
             rows,
             headers,
             separate_rows=True,
+            sort_by=(0, 1),
         )

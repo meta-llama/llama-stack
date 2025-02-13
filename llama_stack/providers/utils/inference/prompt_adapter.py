@@ -13,7 +13,7 @@ import re
 from typing import List, Optional, Tuple, Union
 
 import httpx
-from llama_models.datatypes import is_multimodal, ModelFamily
+from llama_models.datatypes import ModelFamily, is_multimodal
 from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.datatypes import (
     RawContent,
@@ -47,9 +47,9 @@ from llama_stack.apis.inference import (
     ResponseFormat,
     ResponseFormatType,
     SystemMessage,
+    SystemMessageBehavior,
     ToolChoice,
     UserMessage,
-    SystemMessageBehavior,
 )
 from llama_stack.providers.utils.inference import supported_inference_models
 

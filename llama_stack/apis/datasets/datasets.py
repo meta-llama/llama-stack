@@ -58,7 +58,7 @@ class Datasets(Protocol):
         metadata: Optional[Dict[str, Any]] = None,
     ) -> None: ...
 
-    @webmethod(route="/datasets/{dataset_id}", method="GET")
+    @webmethod(route="/datasets/{dataset_id:path}", method="GET")
     async def get_dataset(
         self,
         dataset_id: str,
@@ -67,7 +67,7 @@ class Datasets(Protocol):
     @webmethod(route="/datasets", method="GET")
     async def list_datasets(self) -> ListDatasetsResponse: ...
 
-    @webmethod(route="/datasets/{dataset_id}", method="DELETE")
+    @webmethod(route="/datasets/{dataset_id:path}", method="DELETE")
     async def unregister_dataset(
         self,
         dataset_id: str,

@@ -9,6 +9,7 @@ import asyncio
 import functools
 import inspect
 import json
+import logging
 import os
 import signal
 import sys
@@ -20,7 +21,8 @@ from pathlib import Path
 from typing import Any, List, Union
 
 import yaml
-from fastapi import Body, FastAPI, HTTPException, Path as FastapiPath, Request
+from fastapi import Body, FastAPI, HTTPException, Request
+from fastapi import Path as FastapiPath
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, ValidationError
@@ -51,6 +53,9 @@ from llama_stack.providers.utils.telemetry.tracing import (
 from .endpoints import get_all_api_endpoints
 
 REPO_ROOT = Path(__file__).parent.parent.parent.parent
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s %(asctime)s %(name)s:%(lineno)d: %(message)s")
+logger = logging.getLogger(__name__)
 
 
 def warn_with_traceback(message, category, filename, lineno, file=None, line=None):
@@ -112,21 +117,69 @@ def translate_exception(exc: Exception) -> Union[HTTPException, RequestValidatio
         )
 
 
-def handle_sigint(app, *args, **kwargs):
-    print("SIGINT or CTRL-C detected. Exiting gracefully...")
+def handle_signal(app, signum, _) -> None:
+    """
+    Handle incoming signals and initiate a graceful shutdown of the application.
 
-    async def run_shutdown():
-        for impl in app.__llama_stack_impls__.values():
-            print(f"Shutting down {impl}")
-            await impl.shutdown()
+    This function is intended to be used as a signal handler for various signals
+    (e.g., SIGINT, SIGTERM). Upon receiving a signal, it will print a message
+    indicating the received signal and initiate a shutdown process.
 
-    asyncio.run(run_shutdown())
+    Args:
+        app: The application instance containing implementations to be shut down.
+        signum (int): The signal number received.
+        frame: The current stack frame (not used in this function).
 
-    loop = asyncio.get_event_loop()
-    for task in asyncio.all_tasks(loop):
-        task.cancel()
+    The shutdown process involves:
+        - Shutting down all implementations registered in the application.
+        - Gathering all running asyncio tasks.
+        - Cancelling all gathered tasks.
+        - Waiting for all tasks to finish.
+        - Stopping the event loop.
 
-    loop.stop()
+    Note:
+        This function schedules the shutdown process as an asyncio task and does
+        not block the current execution.
+    """
+    signame = signal.Signals(signum).name
+    print(f"Received signal {signame} ({signum}). Exiting gracefully...")
+
+    async def shutdown():
+        try:
+            # Gracefully shut down implementations
+            for impl in app.__llama_stack_impls__.values():
+                impl_name = impl.__class__.__name__
+                logger.info("Shutting down %s", impl_name)
+                try:
+                    if hasattr(impl, "shutdown"):
+                        await asyncio.wait_for(impl.shutdown(), timeout=5)
+                    else:
+                        logger.warning("No shutdown method for %s", impl_name)
+                except asyncio.TimeoutError:
+                    logger.exception("Shutdown timeout for %s ", impl_name, exc_info=True)
+                except Exception as e:
+                    logger.exception("Failed to shutdown %s: %s", impl_name, {e})
+
+            # Gather all running tasks
+            loop = asyncio.get_running_loop()
+            tasks = [task for task in asyncio.all_tasks(loop) if task is not asyncio.current_task()]
+
+            # Cancel all tasks
+            for task in tasks:
+                task.cancel()
+
+            # Wait for all tasks to finish
+            try:
+                await asyncio.wait_for(asyncio.gather(*tasks, return_exceptions=True), timeout=10)
+            except asyncio.TimeoutError:
+                logger.exception("Timeout while waiting for tasks to finish")
+        except asyncio.CancelledError:
+            pass
+        finally:
+            loop.stop()
+
+    loop = asyncio.get_running_loop()
+    loop.create_task(shutdown())
 
 
 @asynccontextmanager
@@ -386,7 +439,8 @@ def main():
     print("")
     app.exception_handler(RequestValidationError)(global_exception_handler)
     app.exception_handler(Exception)(global_exception_handler)
-    signal.signal(signal.SIGINT, functools.partial(handle_sigint, app))
+    signal.signal(signal.SIGINT, functools.partial(handle_signal, app))
+    signal.signal(signal.SIGTERM, functools.partial(handle_signal, app))
 
     app.__llama_stack_impls__ = impls
 
