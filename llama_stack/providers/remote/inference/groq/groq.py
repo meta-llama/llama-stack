@@ -65,7 +65,7 @@ _MODEL_ALIASES = [
     # TODO(aidand): Replace this with a stable model once Groq supports it
     build_model_alias(
         "llama-3.2-3b-preview",
-        CoreModelId.llama3_2_3b.value,
+        CoreModelId.llama3_2_3b_instruct.value,
     ),
 ]
 
@@ -105,9 +105,10 @@ class GroqInferenceAdapter(Inference, ModelRegistryHelper, NeedsRequestProviderD
         model_id = self.get_provider_model_id(model_id)
         if model_id == "llama-3.2-3b-preview":
             warnings.warn(
-                "Groq only contains a preview version for llama-3.2-3b. "
+                "Groq only contains a preview version for llama-3.2-3b-instruct. "
                 "Preview models aren't recommended for production use. "
                 "They can be discontinued on short notice."
+                "More details: https://console.groq.com/docs/models"
             )
 
         request = convert_chat_completion_request(
