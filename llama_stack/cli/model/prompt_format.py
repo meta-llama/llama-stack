@@ -38,8 +38,8 @@ class ModelPromptFormat(Subcommand):
             "-m",
             "--model-name",
             type=str,
-            default="llama3_1",
-            help="Model Family (llama3_1, llama3_X, etc.)",
+            help="Example: Llama3.1-8B or Llama3.2-11B-Vision, etc\n"
+            "(Run `llama model list` to see a list of valid model names)",
         )
 
     def _run_model_template_cmd(self, args: argparse.Namespace) -> None:
@@ -53,10 +53,16 @@ class ModelPromptFormat(Subcommand):
         try:
             model_id = CoreModelId(args.model_name)
         except ValueError:
-            self.parser.error(f"{args.model_name} is not a valid Model. Choose one from --\n{model_str}")
+            self.parser.error(
+                f"{args.model_name} is not a valid Model. Choose one from the list of valid models. "
+                f"Run `llama model list` to see the valid model names."
+            )
 
         if model_id not in supported_model_ids:
-            self.parser.error(f"{model_id} is not a valid Model. Choose one from --\n {model_str}")
+            self.parser.error(
+                f"{model_id} is not a valid Model. Choose one from the list of valid models. "
+                f"Run `llama model list` to see the valid model names."
+            )
 
         llama_3_1_file = importlib.resources.files("llama_models") / "llama3_1/prompt_format.md"
         llama_3_2_text_file = importlib.resources.files("llama_models") / "llama3_2/text_prompt_format.md"
