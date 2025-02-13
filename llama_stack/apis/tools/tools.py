@@ -101,7 +101,7 @@ class ToolGroups(Protocol):
         """Register a tool group"""
         ...
 
-    @webmethod(route="/toolgroups/{toolgroup_id}", method="GET")
+    @webmethod(route="/toolgroups/{toolgroup_id:path}", method="GET")
     async def get_tool_group(
         self,
         toolgroup_id: str,
@@ -117,13 +117,13 @@ class ToolGroups(Protocol):
         """List tools with optional tool group"""
         ...
 
-    @webmethod(route="/tools/{tool_name}", method="GET")
+    @webmethod(route="/tools/{tool_name:path}", method="GET")
     async def get_tool(
         self,
         tool_name: str,
     ) -> Tool: ...
 
-    @webmethod(route="/toolgroups/{toolgroup_id}", method="DELETE")
+    @webmethod(route="/toolgroups/{toolgroup_id:path}", method="DELETE")
     async def unregister_toolgroup(
         self,
         toolgroup_id: str,

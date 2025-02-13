@@ -46,7 +46,7 @@ class VectorDBs(Protocol):
     @webmethod(route="/vector-dbs", method="GET")
     async def list_vector_dbs(self) -> ListVectorDBsResponse: ...
 
-    @webmethod(route="/vector-dbs/{vector_db_id}", method="GET")
+    @webmethod(route="/vector-dbs/{vector_db_id:path}", method="GET")
     async def get_vector_db(
         self,
         vector_db_id: str,
@@ -62,5 +62,5 @@ class VectorDBs(Protocol):
         provider_vector_db_id: Optional[str] = None,
     ) -> VectorDB: ...
 
-    @webmethod(route="/vector-dbs/{vector_db_id}", method="DELETE")
+    @webmethod(route="/vector-dbs/{vector_db_id:path}", method="DELETE")
     async def unregister_vector_db(self, vector_db_id: str) -> None: ...
