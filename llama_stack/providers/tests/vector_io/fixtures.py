@@ -147,7 +147,8 @@ def vector_io_qdrant() -> ProviderFixture:
     )
 
 
-VECTOR_IO_FIXTURES = ["faiss", "pgvector", "weaviate", "chroma", "qdrant". "sqlite_vec"]
+VECTOR_IO_FIXTURES = ["faiss", "pgvector", "weaviate", "chroma", "qdrant", "sqlite_vec"]
+
 
 @pytest_asyncio.fixture(scope="session")
 async def vector_io_stack(embedding_model, request):
