@@ -42,7 +42,7 @@ def available_providers() -> List[ProviderSpec]:
             provider_type="inline::meta-reference",
             pip_packages=EMBEDDING_DEPS + ["faiss-cpu"],
             module="llama_stack.providers.inline.vector_io.faiss",
-            config_class="llama_stack.providers.inline.vector_io.faiss.FaissImplConfig",
+            config_class="llama_stack.providers.inline.vector_io.faiss.FaissVectorIOConfig",
             deprecation_warning="Please use the `inline::faiss` provider instead.",
             api_dependencies=[Api.inference],
         ),
@@ -51,7 +51,7 @@ def available_providers() -> List[ProviderSpec]:
             provider_type="inline::faiss",
             pip_packages=EMBEDDING_DEPS + ["faiss-cpu"],
             module="llama_stack.providers.inline.vector_io.faiss",
-            config_class="llama_stack.providers.inline.vector_io.faiss.FaissImplConfig",
+            config_class="llama_stack.providers.inline.vector_io.faiss.FaissVectorIOConfig",
             api_dependencies=[Api.inference],
         ),
         InlineProviderSpec(
