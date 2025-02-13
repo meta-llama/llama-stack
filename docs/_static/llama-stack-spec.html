@@ -2699,8 +2699,7 @@
                             "auto",
                             "required"
                         ],
-                        "description": "Whether tool use is required or automatic. This is a hint to the model which may not be followed. It depends on the Instruction Following capabilities of the model.",
-                        "default": "auto"
+                        "description": "Whether tool use is required or automatic. This is a hint to the model which may not be followed. It depends on the Instruction Following capabilities of the model."
                     },
                     "tool_prompt_format": {
                         "type": "string",
@@ -2815,6 +2814,11 @@
             "BenchmarkConfig": {
                 "type": "object",
                 "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "benchmark",
+                        "default": "benchmark"
+                    },
                     "eval_candidate": {
                         "$ref": "#/components/schemas/EvalCandidate"
                     },
@@ -2830,6 +2834,7 @@
                 },
                 "additionalProperties": false,
                 "required": [
+                    "type",
                     "eval_candidate",
                     "scoring_params"
                 ]
@@ -3498,17 +3503,7 @@
             "ScoringResult": {
                 "type": "object",
                 "properties": {
-                    "metrics": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/MetricEvent"
-                        }
-                    },
-                    "completion_message": {
-                        "$ref": "#/components/schemas/CompletionMessage",
-                        "description": "The complete response message"
-                    },
-                    "logprobs": {
+                    "score_rows": {
                         "type": "array",
                         "items": {
                             "type": "object",
@@ -3568,75 +3563,7 @@
                     "aggregated_results"
                 ]
             },
-            "MetricEvent": {
-                "type": "object",
-                "properties": {
-                    "trace_id": {
-                        "type": "string"
-                    },
-                    "span_id": {
-                        "type": "string"
-                    },
-                    "timestamp": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "attributes": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "integer"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "null"
-                                }
-                            ]
-                        }
-                    },
-                    "type": {
-                        "type": "string",
-                        "const": "metric",
-                        "default": "metric"
-                    },
-                    "metric": {
-                        "type": "string"
-                    },
-                    "value": {
-                        "oneOf": [
-                            {
-                                "type": "integer"
-                            },
-                            {
-                                "type": "number"
-                            }
-                        ]
-                    },
-                    "unit": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "trace_id",
-                    "span_id",
-                    "timestamp",
-                    "type",
-                    "metric",
-                    "value",
-                    "unit"
-                ]
-            },
-            "TokenLogProbs": {
+            "Benchmark": {
                 "type": "object",
                 "properties": {
                     "identifier": {
@@ -4225,6 +4152,12 @@
             "ChatCompletionResponse": {
                 "type": "object",
                 "properties": {
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricEvent"
+                        }
+                    },
                     "completion_message": {
                         "$ref": "#/components/schemas/CompletionMessage",
                         "description": "The complete response message"
@@ -4242,6 +4175,74 @@
                     "completion_message"
                 ],
                 "description": "Response from a chat completion request."
+            },
+            "MetricEvent": {
+                "type": "object",
+                "properties": {
+                    "trace_id": {
+                        "type": "string"
+                    },
+                    "span_id": {
+                        "type": "string"
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "attributes": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "integer"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ]
+                        }
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "metric",
+                        "default": "metric"
+                    },
+                    "metric": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "oneOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "number"
+                            }
+                        ]
+                    },
+                    "unit": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "trace_id",
+                    "span_id",
+                    "timestamp",
+                    "type",
+                    "metric",
+                    "value",
+                    "unit"
+                ]
             },
             "TokenLogProbs": {
                 "type": "object",
@@ -4470,6 +4471,12 @@
             "ChatCompletionResponseStreamChunk": {
                 "type": "object",
                 "properties": {
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricEvent"
+                        }
+                    },
                     "event": {
                         "$ref": "#/components/schemas/ChatCompletionResponseEvent",
                         "description": "The event containing the new content"
