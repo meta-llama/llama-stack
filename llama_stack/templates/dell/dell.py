@@ -15,7 +15,6 @@ from llama_stack.distribution.datatypes import (
 from llama_stack.providers.inline.inference.sentence_transformers import (
     SentenceTransformersInferenceConfig,
 )
-
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
 

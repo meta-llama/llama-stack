@@ -4,13 +4,14 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import sqlite3
-import sqlite_vec
-import struct
 import logging
+import sqlite3
+import struct
+from typing import Any, Dict, List, Optional
+
 import numpy as np
+import sqlite_vec
 from numpy.typing import NDArray
-from typing import List, Optional, Dict, Any
 
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import Chunk, QueryChunksResponse, VectorIO

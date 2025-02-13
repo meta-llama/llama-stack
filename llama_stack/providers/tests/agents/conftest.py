@@ -13,7 +13,6 @@ from ..conftest import (
 )
 from ..inference.fixtures import INFERENCE_FIXTURES
 from ..safety.fixtures import SAFETY_FIXTURES, safety_model_from_shield
-
 from ..tools.fixtures import TOOL_RUNTIME_FIXTURES
 from ..vector_io.fixtures import VECTOR_IO_FIXTURES
 from .fixtures import AGENTS_FIXTURES

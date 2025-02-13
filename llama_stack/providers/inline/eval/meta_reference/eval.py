@@ -28,7 +28,6 @@ from llama_stack.providers.utils.kvstore import kvstore_impl
 
 from .....apis.common.job_types import Job
 from .....apis.eval.eval import BenchmarkConfig, Eval, EvaluateResponse, JobStatus
-
 from .config import MetaReferenceEvalConfig
 
 EVAL_TASKS_PREFIX = "benchmarks:"

@@ -22,14 +22,12 @@ from llama_models.sku_list import (
     llama3_instruct_models,
     safety_models,
 )
+from metadata import API_MAPS
+from pytest import CollectReport
+from termcolor import cprint
 
 from llama_stack.providers.datatypes import Api
 from llama_stack.providers.tests.env import get_env_or_fail
-
-from metadata import API_MAPS
-
-from pytest import CollectReport
-from termcolor import cprint
 
 
 def featured_models():

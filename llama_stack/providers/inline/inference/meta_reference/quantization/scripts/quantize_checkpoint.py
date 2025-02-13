@@ -16,14 +16,12 @@ from pathlib import Path
 from typing import Optional
 
 import fire
-
 import torch
 from fairscale.nn.model_parallel.initialize import (
     get_model_parallel_rank,
     initialize_model_parallel,
     model_parallel_is_initialized,
 )
-
 from llama_models.llama3.api.args import ModelArgs
 from llama_models.llama3.api.tokenizer import Tokenizer
 from llama_models.llama3.reference_impl.model import Transformer, TransformerBlock

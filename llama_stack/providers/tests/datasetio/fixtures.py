@@ -8,7 +8,6 @@ import pytest
 import pytest_asyncio
 
 from llama_stack.distribution.datatypes import Api, Provider
-
 from llama_stack.providers.tests.resolver import construct_stack_for_test
 
 from ..conftest import ProviderFixture, remote_stack_fixture

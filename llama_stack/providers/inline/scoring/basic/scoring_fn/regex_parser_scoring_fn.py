@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 import re
-
 from typing import Any, Dict, Optional
 
 from llama_stack.apis.scoring import ScoringResultRow
