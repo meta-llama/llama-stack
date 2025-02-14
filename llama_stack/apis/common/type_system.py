@@ -6,9 +6,10 @@
 
 from typing import Literal, Union
 
-from llama_models.schema_utils import json_schema_type, register_schema
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
+
+from llama_stack.schema_utils import json_schema_type, register_schema
 
 
 @json_schema_type

@@ -6,8 +6,8 @@
 
 from typing import List
 
-from llama_models.datatypes import *  # noqa: F403
-from llama_models.sku_list import all_registered_models
+from llama_stack.models.llama.datatypes import *  # noqa: F403
+from llama_stack.models.llama.sku_list import all_registered_models
 
 
 def is_supported_safety_model(model: Model) -> bool:

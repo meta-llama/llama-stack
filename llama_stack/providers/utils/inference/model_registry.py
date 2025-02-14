@@ -7,9 +7,8 @@
 from collections import namedtuple
 from typing import List, Optional
 
-from llama_models.sku_list import all_registered_models
-
 from llama_stack.apis.models.models import ModelType
+from llama_stack.models.llama.sku_list import all_registered_models
 from llama_stack.providers.datatypes import Model, ModelsProtocolPrivate
 from llama_stack.providers.utils.inference import (
     ALL_HUGGINGFACE_REPOS_TO_MODEL_DESCRIPTOR,

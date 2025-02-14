@@ -16,12 +16,12 @@ from typing import (
     runtime_checkable,
 )
 
-from llama_models.schema_utils import json_schema_type, register_schema, webmethod
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
 from llama_stack.apis.common.type_system import ParamType
 from llama_stack.apis.resource import Resource, ResourceType
+from llama_stack.schema_utils import json_schema_type, register_schema, webmethod
 
 
 # Perhaps more structure can be imposed on these functions. Maybe they could be associated

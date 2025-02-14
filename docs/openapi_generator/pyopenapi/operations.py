@@ -15,7 +15,7 @@ from llama_stack.apis.version import LLAMA_STACK_API_VERSION
 
 from termcolor import colored
 
-from ..strong_typing.inspection import get_signature
+from llama_stack.strong_typing.inspection import get_signature
 
 
 def split_prefix(

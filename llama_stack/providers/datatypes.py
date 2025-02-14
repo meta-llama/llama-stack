@@ -7,7 +7,6 @@
 from typing import Any, List, Optional, Protocol
 from urllib.parse import urlparse
 
-from llama_models.schema_utils import json_schema_type
 from pydantic import BaseModel, Field
 
 from llama_stack.apis.benchmarks import Benchmark
@@ -18,6 +17,7 @@ from llama_stack.apis.scoring_functions import ScoringFn
 from llama_stack.apis.shields import Shield
 from llama_stack.apis.tools import Tool
 from llama_stack.apis.vector_dbs import VectorDB
+from llama_stack.schema_utils import json_schema_type
 
 
 class ModelsProtocolPrivate(Protocol):

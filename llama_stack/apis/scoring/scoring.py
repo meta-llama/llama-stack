@@ -6,10 +6,10 @@
 
 from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
 
-from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel
 
 from llama_stack.apis.scoring_functions import ScoringFn, ScoringFnParams
+from llama_stack.schema_utils import json_schema_type, webmethod
 
 # mapping of metric to value
 ScoringResultRow = Dict[str, Any]

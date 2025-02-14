@@ -8,7 +8,6 @@ import logging
 from typing import AsyncGenerator, List, Optional, Union
 
 import httpx
-from llama_models.datatypes import CoreModelId
 from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.tokenizer import Tokenizer
 from ollama import AsyncClient
@@ -34,6 +33,7 @@ from llama_stack.apis.inference import (
     ToolPromptFormat,
 )
 from llama_stack.apis.models import Model, ModelType
+from llama_stack.models.llama.datatypes import CoreModelId
 from llama_stack.providers.datatypes import ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,

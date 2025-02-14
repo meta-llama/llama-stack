@@ -5,10 +5,10 @@
 # the root directory of this source tree.
 from typing import Any, Dict, List, Literal, Optional, Protocol, runtime_checkable
 
-from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel, Field
 
 from llama_stack.apis.resource import Resource, ResourceType
+from llama_stack.schema_utils import json_schema_type, webmethod
 
 
 class CommonBenchmarkFields(BaseModel):

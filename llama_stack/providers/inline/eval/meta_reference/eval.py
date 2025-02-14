@@ -201,7 +201,9 @@ class MetaReferenceEvalImpl(
             raise ValueError(f"Invalid candidate type: {candidate.type}")
 
         # scoring with generated_answer
-        score_input_rows = [input_r | generated_r for input_r, generated_r in zip(input_rows, generations)]
+        score_input_rows = [
+            input_r | generated_r for input_r, generated_r in zip(input_rows, generations, strict=False)
+        ]
 
         if task_config.scoring_params is not None:
             scoring_functions_dict = {

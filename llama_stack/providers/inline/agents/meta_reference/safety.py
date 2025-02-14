@@ -41,7 +41,7 @@ class ShieldRunnerMixin:
                 for identifier in identifiers
             ]
         )
-        for identifier, response in zip(identifiers, responses):
+        for identifier, response in zip(identifiers, responses, strict=False):
             if not response.violation:
                 continue
 

@@ -118,7 +118,7 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
             return RAGQueryResult(content=None)
 
         # sort by score
-        chunks, scores = zip(*sorted(zip(chunks, scores), key=lambda x: x[1], reverse=True))
+        chunks, scores = zip(*sorted(zip(chunks, scores, strict=False), key=lambda x: x[1], reverse=True), strict=False)
 
         tokens = 0
         picked = []

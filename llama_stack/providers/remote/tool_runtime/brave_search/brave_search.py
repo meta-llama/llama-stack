@@ -7,7 +7,6 @@
 from typing import Any, Dict, List, Optional
 
 import requests
-from llama_models.llama3.api.datatypes import BuiltinTool
 
 from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.tools import (
@@ -18,6 +17,7 @@ from llama_stack.apis.tools import (
     ToolRuntime,
 )
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
+from llama_stack.models.llama.datatypes import BuiltinTool
 from llama_stack.providers.datatypes import ToolsProtocolPrivate
 
 from .config import BraveSearchToolConfig

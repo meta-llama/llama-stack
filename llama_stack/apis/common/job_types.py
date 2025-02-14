@@ -5,8 +5,9 @@
 # the root directory of this source tree.
 from enum import Enum
 
-from llama_models.schema_utils import json_schema_type
 from pydantic import BaseModel
+
+from llama_stack.schema_utils import json_schema_type
 
 
 @json_schema_type

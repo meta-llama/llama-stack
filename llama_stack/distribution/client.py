@@ -186,33 +186,3 @@ def extract_async_iterator_type(type_hint):
                 inner_args = get_args(arg)
                 return inner_args[0]
     return None
-
-
-async def example(model: str = None):
-    from llama_stack.apis.inference import Inference, UserMessage  # noqa: F403
-    from llama_stack.apis.inference.event_logger import EventLogger
-
-    client_class = create_api_client_class(Inference)
-    client = client_class("http://localhost:5003")
-
-    if not model:
-        model = "Llama3.2-3B-Instruct"
-
-    message = UserMessage(content="hello world, write me a 2 sentence poem about the moon")
-    cprint(f"User>{message.content}", "green")
-
-    stream = True
-    iterator = await client.chat_completion(
-        model=model,
-        messages=[message],
-        stream=stream,
-    )
-
-    async for log in EventLogger().log(iterator):
-        log.print()
-
-
-if __name__ == "__main__":
-    import asyncio
-
-    asyncio.run(example())

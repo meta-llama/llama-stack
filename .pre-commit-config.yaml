@@ -29,13 +29,8 @@ repos:
 -   repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.9.4
     hooks:
-    # Run the linter with import sorting.
     -   id: ruff
-        args: [
-            --fix,
-            --exit-non-zero-on-fix,
-            --select, I,
-        ]
+        exclude: ^llama_stack/strong_typing/.*$
     -   id: ruff-format
 
 -   repo: https://github.com/adamchainz/blacken-docs
@@ -49,7 +44,13 @@ repos:
     rev: 0.5.26
     hooks:
     -   id: uv-export
-        args: ["--frozen", "--no-hashes", "--no-emit-project"]
+        args: [
+            "--frozen", 
+            "--no-hashes", 
+            "--no-emit-project", 
+            "--output-file=requirements.txt"
+        ]
+        files: ^pyproject\.toml$
     -   id: uv-sync
 
 # -   repo: https://github.com/pre-commit/mirrors-mypy

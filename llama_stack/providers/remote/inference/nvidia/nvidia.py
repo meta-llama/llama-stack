@@ -7,9 +7,6 @@
 import warnings
 from typing import AsyncIterator, List, Optional, Union
 
-from llama_models.datatypes import SamplingParams
-from llama_models.llama3.api.datatypes import ToolDefinition, ToolPromptFormat
-from llama_models.sku_list import CoreModelId
 from openai import APIConnectionError, AsyncOpenAI
 
 from llama_stack.apis.inference import (
@@ -28,6 +25,7 @@ from llama_stack.apis.inference import (
     ToolChoice,
     ToolConfig,
 )
+from llama_stack.models.llama.datatypes import CoreModelId, SamplingParams, ToolDefinition, ToolPromptFormat
 from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
     build_model_alias,
