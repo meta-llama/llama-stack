@@ -79,9 +79,10 @@ class SQLiteVecIndex(EmbeddingIndex):
         try:
             # Start transaction
             cur.execute("BEGIN TRANSACTION")
+            # Serialize and insert the chunk metadata.
             chunk_data = [(chunk.model_dump_json(),) for chunk in chunks]
             cur.executemany(f"INSERT INTO {self.metadata_table} (chunk) VALUES (?)", chunk_data)
-            # Fetch the last N inserted row IDs
+            # Fetch the last *n* inserted row_ids -- note: this is more reliable than `row_id = cur.lastrowid`
             cur.execute(f"SELECT rowid FROM {self.metadata_table} ORDER BY rowid DESC LIMIT {len(chunks)}")
             row_ids = [row[0] for row in cur.fetchall()]
             row_ids.reverse()  # Reverse to maintain the correct order of insertion
