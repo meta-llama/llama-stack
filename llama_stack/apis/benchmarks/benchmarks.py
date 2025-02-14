@@ -68,7 +68,7 @@ class Benchmarks(Protocol):
     @webmethod(route="/eval-tasks", method="GET")
     async def DEPRECATED_list_eval_tasks(self) -> ListBenchmarksResponse: ...
 
-    @webmethod(route="/eval-tasks/{task_id}", method="GET")
+    @webmethod(route="/eval-tasks/{eval_task_id}", method="GET")
     async def DEPRECATED_get_eval_task(
         self,
         eval_task_id: str,

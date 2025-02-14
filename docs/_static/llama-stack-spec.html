@@ -81,7 +81,7 @@
                 "deprecated": true
             }
         },
-        "/v1/eval-tasks/{task_id}": {
+        "/v1/eval-tasks/{eval_task_id}": {
             "get": {
                 "responses": {
                     "200": {
@@ -109,7 +109,7 @@
                 "parameters": [
                     {
                         "name": "eval_task_id",
-                        "in": "query",
+                        "in": "path",
                         "required": true,
                         "schema": {
                             "type": "string"
