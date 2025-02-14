@@ -7,8 +7,6 @@
 from typing import AsyncGenerator, List, Optional, Union
 
 from cerebras.cloud.sdk import AsyncCerebras
-from llama_models.llama3.api.chat_format import ChatFormat
-from llama_models.llama3.api.tokenizer import Tokenizer
 
 from llama_stack.apis.common.content_types import InterleavedContent
 from llama_stack.apis.inference import (
@@ -64,7 +62,6 @@ class CerebrasInferenceAdapter(ModelRegistryHelper, Inference):
             model_aliases=model_aliases,
         )
         self.config = config
-        self.formatter = ChatFormat(Tokenizer.get_instance())
 
         self.client = AsyncCerebras(
             base_url=self.config.base_url,
@@ -107,14 +104,14 @@ class CerebrasInferenceAdapter(ModelRegistryHelper, Inference):
 
         r = await self.client.completions.create(**params)
 
-        return process_completion_response(r, self.formatter)
+        return process_completion_response(r)
 
     async def _stream_completion(self, request: CompletionRequest) -> AsyncGenerator:
         params = await self._get_params(request)
 
         stream = await self.client.completions.create(**params)
 
-        async for chunk in process_completion_stream_response(stream, self.formatter):
+        async for chunk in process_completion_stream_response(stream):
             yield chunk
 
     async def chat_completion(
@@ -154,14 +151,14 @@ class CerebrasInferenceAdapter(ModelRegistryHelper, Inference):
 
         r = await self.client.completions.create(**params)
 
-        return process_chat_completion_response(r, self.formatter, request)
+        return process_chat_completion_response(r, request)
 
     async def _stream_chat_completion(self, request: CompletionRequest) -> AsyncGenerator:
         params = await self._get_params(request)
 
         stream = await self.client.completions.create(**params)
 
-        async for chunk in process_chat_completion_stream_response(stream, self.formatter, request):
+        async for chunk in process_chat_completion_stream_response(stream, request):
             yield chunk
 
     async def _get_params(self, request: Union[ChatCompletionRequest, CompletionRequest]) -> dict:
@@ -170,11 +167,9 @@ class CerebrasInferenceAdapter(ModelRegistryHelper, Inference):
 
         prompt = ""
         if isinstance(request, ChatCompletionRequest):
-            prompt = await chat_completion_request_to_prompt(
-                request, self.get_llama_model(request.model), self.formatter
-            )
+            prompt = await chat_completion_request_to_prompt(request, self.get_llama_model(request.model))
         elif isinstance(request, CompletionRequest):
-            prompt = await completion_request_to_prompt(request, self.formatter)
+            prompt = await completion_request_to_prompt(request)
         else:
             raise ValueError(f"Unknown request type {type(request)}")
 

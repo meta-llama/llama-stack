@@ -7,8 +7,6 @@
 from typing import AsyncGenerator, List, Optional, Union
 
 from fireworks.client import Fireworks
-from llama_models.llama3.api.chat_format import ChatFormat
-from llama_models.llama3.api.tokenizer import Tokenizer
 
 from llama_stack.apis.common.content_types import InterleavedContent
 from llama_stack.apis.inference import (
@@ -100,7 +98,6 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProv
     def __init__(self, config: FireworksImplConfig) -> None:
         ModelRegistryHelper.__init__(self, MODEL_ALIASES)
         self.config = config
-        self.formatter = ChatFormat(Tokenizer.get_instance())
 
     async def initialize(self) -> None:
         pass
@@ -149,7 +146,7 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProv
     async def _nonstream_completion(self, request: CompletionRequest) -> CompletionResponse:
         params = await self._get_params(request)
         r = await self._get_client().completion.acreate(**params)
-        return process_completion_response(r, self.formatter)
+        return process_completion_response(r)
 
     async def _stream_completion(self, request: CompletionRequest) -> AsyncGenerator:
         params = await self._get_params(request)
@@ -161,7 +158,7 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProv
                 yield chunk
 
         stream = _to_async_generator()
-        async for chunk in process_completion_stream_response(stream, self.formatter):
+        async for chunk in process_completion_stream_response(stream):
             yield chunk
 
     def _build_options(
@@ -230,7 +227,7 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProv
             r = await self._get_client().chat.completions.acreate(**params)
         else:
             r = await self._get_client().completion.acreate(**params)
-        return process_chat_completion_response(r, self.formatter, request)
+        return process_chat_completion_response(r, request)
 
     async def _stream_chat_completion(self, request: ChatCompletionRequest) -> AsyncGenerator:
         params = await self._get_params(request)
@@ -244,7 +241,7 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProv
                 yield chunk
 
         stream = _to_async_generator()
-        async for chunk in process_chat_completion_stream_response(stream, self.formatter, request):
+        async for chunk in process_chat_completion_stream_response(stream, request):
             yield chunk
 
     async def _get_params(self, request: Union[ChatCompletionRequest, CompletionRequest]) -> dict:
@@ -258,11 +255,11 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProv
                 ]
             else:
                 input_dict["prompt"] = await chat_completion_request_to_prompt(
-                    request, self.get_llama_model(request.model), self.formatter
+                    request, self.get_llama_model(request.model)
                 )
         else:
             assert not media_present, "Fireworks does not support media for Completion requests"
-            input_dict["prompt"] = await completion_request_to_prompt(request, self.formatter)
+            input_dict["prompt"] = await completion_request_to_prompt(request)
 
         # Fireworks always prepends with BOS
         if "prompt" in input_dict:
