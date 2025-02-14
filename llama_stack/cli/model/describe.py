@@ -34,6 +34,7 @@ class ModelDescribe(Subcommand):
             "--model-id",
             type=str,
             required=True,
+            help="See `llama model list` or `llama model list --show-all` for the list of available models",
         )
 
     def _run_model_describe_cmd(self, args: argparse.Namespace) -> None:
