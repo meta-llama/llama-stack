@@ -14,7 +14,6 @@ from llama_models.datatypes import (
     TopPSamplingStrategy,
 )
 from llama_models.llama3.api.chat_format import ChatFormat
-from llama_models.llama3.api.datatypes import StopReason, ToolCall
 from openai.types.chat import ChatCompletionMessageToolCall
 from pydantic import BaseModel
 
@@ -37,6 +36,7 @@ from llama_stack.apis.inference import (
     Message,
     TokenLogProbs,
 )
+from llama_stack.models.llama.datatypes import StopReason, ToolCall
 from llama_stack.providers.utils.inference.prompt_adapter import (
     convert_image_content_to_url,
 )

@@ -7,9 +7,9 @@
 from enum import Enum
 from typing import Annotated, List, Literal, Optional, Union
 
-from llama_models.llama3.api.datatypes import ToolCall
 from pydantic import BaseModel, Field, model_validator
 
+from llama_stack.models.llama.datatypes import ToolCall
 from llama_stack.schema_utils import json_schema_type, register_schema
 
 

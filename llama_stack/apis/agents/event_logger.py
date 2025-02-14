@@ -6,13 +6,13 @@
 
 from typing import Optional
 
-from llama_models.llama3.api.datatypes import ToolPromptFormat
 from llama_models.llama3.api.tool_utils import ToolUtils
 from termcolor import cprint
 
 from llama_stack.apis.agents import AgentTurnResponseEventType, StepType
 from llama_stack.apis.common.content_types import ToolCallParseStatus
 from llama_stack.apis.inference import ToolResponseMessage
+from llama_stack.models.llama.datatypes import ToolPromptFormat
 from llama_stack.providers.utils.inference.prompt_adapter import (
     interleaved_content_as_str,
 )

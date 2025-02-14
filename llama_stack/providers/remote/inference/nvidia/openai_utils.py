@@ -13,12 +13,6 @@ from llama_models.datatypes import (
     TopKSamplingStrategy,
     TopPSamplingStrategy,
 )
-from llama_models.llama3.api.datatypes import (
-    BuiltinTool,
-    StopReason,
-    ToolCall,
-    ToolDefinition,
-)
 from openai import AsyncStream
 from openai.types.chat import (
     ChatCompletionAssistantMessageParam as OpenAIChatCompletionAssistantMessage,
@@ -86,6 +80,12 @@ from llama_stack.apis.inference import (
     TokenLogProbs,
     ToolResponseMessage,
     UserMessage,
+)
+from llama_stack.models.llama.datatypes import (
+    BuiltinTool,
+    StopReason,
+    ToolCall,
+    ToolDefinition,
 )
 from llama_stack.providers.utils.inference.prompt_adapter import (
     convert_image_content_to_url,

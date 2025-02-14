@@ -9,8 +9,9 @@ import inspect
 from functools import wraps
 from typing import Any, AsyncGenerator, Callable, Type, TypeVar
 
-from llama_models.llama3.api.datatypes import Primitive
 from pydantic import BaseModel
+
+from llama_stack.models.llama.datatypes import Primitive
 
 T = TypeVar("T")
 

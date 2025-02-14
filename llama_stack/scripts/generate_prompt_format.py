@@ -17,7 +17,7 @@ from typing import Optional
 
 import fire
 
-# from llama_models.llama3.api.datatypes import *  # noqa: F403
+# from llama_stack.models.llama.datatypes import *  # noqa: F403
 from llama_models.llama3.reference_impl.generation import Llama
 
 THIS_DIR = Path(__file__).parent.resolve()

@@ -9,7 +9,6 @@ from typing import AsyncGenerator, List, Optional, Union
 from cerebras.cloud.sdk import AsyncCerebras
 from llama_models.datatypes import CoreModelId
 from llama_models.llama3.api.chat_format import ChatFormat
-from llama_models.llama3.api.datatypes import TopKSamplingStrategy
 from llama_models.llama3.api.tokenizer import Tokenizer
 
 from llama_stack.apis.common.content_types import InterleavedContent
@@ -28,6 +27,7 @@ from llama_stack.apis.inference import (
     ToolDefinition,
     ToolPromptFormat,
 )
+from llama_stack.models.llama.datatypes import TopKSamplingStrategy
 from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
     build_model_alias,

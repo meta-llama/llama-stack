@@ -17,7 +17,13 @@ from typing import (
     runtime_checkable,
 )
 
-from llama_models.llama3.api.datatypes import (
+from pydantic import BaseModel, Field, field_validator
+from typing_extensions import Annotated
+
+from llama_stack.apis.common.content_types import ContentDelta, InterleavedContent
+from llama_stack.apis.models import Model
+from llama_stack.apis.telemetry.telemetry import MetricResponseMixin
+from llama_stack.models.llama.datatypes import (
     BuiltinTool,
     SamplingParams,
     StopReason,
@@ -25,12 +31,6 @@ from llama_models.llama3.api.datatypes import (
     ToolDefinition,
     ToolPromptFormat,
 )
-from pydantic import BaseModel, Field, field_validator
-from typing_extensions import Annotated
-
-from llama_stack.apis.common.content_types import ContentDelta, InterleavedContent
-from llama_stack.apis.models import Model
-from llama_stack.apis.telemetry.telemetry import MetricResponseMixin
 from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
 from llama_stack.schema_utils import json_schema_type, register_schema, webmethod
 

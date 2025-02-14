@@ -17,10 +17,10 @@ from typing import (
     runtime_checkable,
 )
 
-from llama_models.llama3.api.datatypes import Primitive
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
+from llama_stack.models.llama.datatypes import Primitive
 from llama_stack.schema_utils import json_schema_type, register_schema, webmethod
 
 # Add this constant near the top of the file, after the imports

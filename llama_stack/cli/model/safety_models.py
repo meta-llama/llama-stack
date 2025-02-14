@@ -7,9 +7,10 @@
 from typing import Any, Dict, Optional
 
 from llama_models.datatypes import CheckpointQuantizationFormat
-from llama_models.llama3.api.datatypes import SamplingParams
 from llama_models.sku_list import LlamaDownloadInfo
 from pydantic import BaseModel, ConfigDict, Field
+
+from llama_stack.models.llama.datatypes import SamplingParams
 
 
 class PromptGuardModel(BaseModel):
