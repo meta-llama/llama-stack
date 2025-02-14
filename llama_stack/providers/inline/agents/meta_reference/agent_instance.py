@@ -17,7 +17,6 @@ from typing import Any, AsyncGenerator, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 
 import httpx
-from llama_models.llama3.api.datatypes import BuiltinTool, ToolCall, ToolParamDefinition
 from pydantic import TypeAdapter
 
 from llama_stack.apis.agents import (
@@ -63,6 +62,7 @@ from llama_stack.apis.inference import (
 from llama_stack.apis.safety import Safety
 from llama_stack.apis.tools import RAGDocument, RAGQueryConfig, ToolGroups, ToolRuntime
 from llama_stack.apis.vector_io import VectorIO
+from llama_stack.models.llama.datatypes import BuiltinTool, ToolCall, ToolParamDefinition
 from llama_stack.providers.utils.kvstore import KVStore
 from llama_stack.providers.utils.memory.vector_store import concat_interleaved_content
 from llama_stack.providers.utils.telemetry import tracing

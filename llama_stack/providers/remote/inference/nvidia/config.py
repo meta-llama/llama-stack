@@ -7,8 +7,9 @@
 import os
 from typing import Any, Dict, Optional
 
-from llama_models.schema_utils import json_schema_type
 from pydantic import BaseModel, Field, SecretStr
+
+from llama_stack.schema_utils import json_schema_type
 
 
 @json_schema_type

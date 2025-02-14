@@ -25,6 +25,7 @@ dependencies = [
     "fire",
     "httpx",
     "huggingface-hub",
+    "jsonschema",
     "llama-models>=0.1.2",
     "llama-stack-client>=0.1.2",
     "prompt-toolkit",

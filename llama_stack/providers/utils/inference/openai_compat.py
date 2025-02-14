@@ -7,14 +7,7 @@ import json
 import logging
 from typing import AsyncGenerator, Dict, List, Optional, Union
 
-from llama_models.datatypes import (
-    GreedySamplingStrategy,
-    SamplingParams,
-    TopKSamplingStrategy,
-    TopPSamplingStrategy,
-)
 from llama_models.llama3.api.chat_format import ChatFormat
-from llama_models.llama3.api.datatypes import StopReason, ToolCall
 from openai.types.chat import ChatCompletionMessageToolCall
 from pydantic import BaseModel
 
@@ -36,6 +29,14 @@ from llama_stack.apis.inference import (
     CompletionResponseStreamChunk,
     Message,
     TokenLogProbs,
+)
+from llama_stack.models.llama.datatypes import (
+    GreedySamplingStrategy,
+    SamplingParams,
+    StopReason,
+    ToolCall,
+    TopKSamplingStrategy,
+    TopPSamplingStrategy,
 )
 from llama_stack.providers.utils.inference.prompt_adapter import (
     convert_image_content_to_url,

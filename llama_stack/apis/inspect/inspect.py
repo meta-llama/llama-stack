@@ -6,8 +6,9 @@
 
 from typing import List, Protocol, runtime_checkable
 
-from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel
+
+from llama_stack.schema_utils import json_schema_type, webmethod
 
 
 @json_schema_type

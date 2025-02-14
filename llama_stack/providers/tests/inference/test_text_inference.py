@@ -6,14 +6,6 @@
 
 
 import pytest
-from llama_models.llama3.api.datatypes import (
-    SamplingParams,
-    StopReason,
-    ToolCall,
-    ToolDefinition,
-    ToolParamDefinition,
-    ToolPromptFormat,
-)
 from pydantic import BaseModel, ValidationError
 
 from llama_stack.apis.common.content_types import ToolCallParseStatus
@@ -30,6 +22,14 @@ from llama_stack.apis.inference import (
     UserMessage,
 )
 from llama_stack.apis.models import ListModelsResponse, Model
+from llama_stack.models.llama.datatypes import (
+    SamplingParams,
+    StopReason,
+    ToolCall,
+    ToolDefinition,
+    ToolParamDefinition,
+    ToolPromptFormat,
+)
 
 from .utils import group_chunks
 

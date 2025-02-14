@@ -8,7 +8,6 @@ import json
 from typing import AsyncGenerator, AsyncIterator, Dict, List, Optional, Union
 
 from botocore.client import BaseClient
-from llama_models.datatypes import CoreModelId
 from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.tokenizer import Tokenizer
 
@@ -28,6 +27,7 @@ from llama_stack.apis.inference import (
     ToolDefinition,
     ToolPromptFormat,
 )
+from llama_stack.models.llama.datatypes import CoreModelId
 from llama_stack.providers.remote.inference.bedrock.config import BedrockConfig
 from llama_stack.providers.utils.bedrock.client import create_bedrock_client
 from llama_stack.providers.utils.inference.model_registry import (
