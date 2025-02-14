@@ -6,7 +6,6 @@
 
 from typing import Any, Dict, List, Literal, Optional, Protocol, Union
 
-from llama_models.schema_utils import json_schema_type, register_schema, webmethod
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
@@ -15,6 +14,7 @@ from llama_stack.apis.common.job_types import Job, JobStatus
 from llama_stack.apis.inference import SamplingParams, SystemMessage
 from llama_stack.apis.scoring import ScoringResult
 from llama_stack.apis.scoring_functions import ScoringFnParams
+from llama_stack.schema_utils import json_schema_type, register_schema, webmethod
 
 
 @json_schema_type

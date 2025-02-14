@@ -25,7 +25,6 @@ from llama_models.llama3.api.datatypes import (
     ToolDefinition,
     ToolPromptFormat,
 )
-from llama_models.schema_utils import json_schema_type, register_schema, webmethod
 from pydantic import BaseModel, Field, field_validator
 from typing_extensions import Annotated
 
@@ -33,6 +32,7 @@ from llama_stack.apis.common.content_types import ContentDelta, InterleavedConte
 from llama_stack.apis.models import Model
 from llama_stack.apis.telemetry.telemetry import MetricResponseMixin
 from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
+from llama_stack.schema_utils import json_schema_type, register_schema, webmethod
 
 
 class LogProbConfig(BaseModel):

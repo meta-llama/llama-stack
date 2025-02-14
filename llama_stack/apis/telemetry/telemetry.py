@@ -18,9 +18,10 @@ from typing import (
 )
 
 from llama_models.llama3.api.datatypes import Primitive
-from llama_models.schema_utils import json_schema_type, register_schema, webmethod
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
+
+from llama_stack.schema_utils import json_schema_type, register_schema, webmethod
 
 # Add this constant near the top of the file, after the imports
 DEFAULT_TTL_DAYS = 7

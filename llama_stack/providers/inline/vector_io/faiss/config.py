@@ -6,13 +6,13 @@
 
 from typing import Any, Dict
 
-from llama_models.schema_utils import json_schema_type
 from pydantic import BaseModel
 
 from llama_stack.providers.utils.kvstore.config import (
     KVStoreConfig,
     SqliteKVStoreConfig,
 )
+from llama_stack.schema_utils import json_schema_type
 
 
 @json_schema_type
