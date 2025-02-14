@@ -16,6 +16,7 @@ from llama_stack.providers.inline.safety.llama_guard import LlamaGuardConfig
 from llama_stack.providers.inline.safety.prompt_guard import PromptGuardConfig
 from llama_stack.providers.remote.safety.bedrock import BedrockSafetyConfig
 
+from llama_stack.providers.remote.safety.fiddlecube.config import FiddlecubeSafetyConfig
 from llama_stack.providers.tests.resolver import construct_stack_for_test
 
 from ..conftest import ProviderFixture, remote_stack_fixture
@@ -98,7 +99,20 @@ def safety_bedrock() -> ProviderFixture:
     )
 
 
-SAFETY_FIXTURES = ["llama_guard", "bedrock", "remote"]
+@pytest.fixture(scope="session")
+def safety_fiddlecube() -> ProviderFixture:
+    return ProviderFixture(
+        providers=[
+            Provider(
+                provider_id="fiddlecube",
+                provider_type="remote::fiddlecube",
+                config=FiddlecubeSafetyConfig().model_dump(),
+            )
+        ],
+    )
+
+
+SAFETY_FIXTURES = ["llama_guard", "bedrock", "remote", "fiddlecube"]
 
 
 @pytest_asyncio.fixture(scope="session")

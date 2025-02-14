@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import json
 import logging
 
 from typing import Any, Dict, List
@@ -57,18 +56,12 @@ class FiddlecubeSafetyAdapter(Safety, ShieldsProtocolPrivate):
                 headers=headers,
             )
 
-            logger.debug("Response:::", response.status_code)
-
-        # Check if the response is successful
         if response.status_code != 200:
             logger.error(f"FiddleCube API error: {response.status_code} - {response.text}")
             raise RuntimeError("Failed to run shield with FiddleCube API")
 
-        # Convert the response into the format RunShieldResponse expects
         response_data = response.json()
-        logger.debug("Response data: %s", json.dumps(response_data, indent=2))
 
-        # Check if there's a violation based on the response structure
         if response_data.get("action") == "GUARDRAIL_INTERVENED":
             user_message = ""
             metadata = {}
