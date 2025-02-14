@@ -227,6 +227,7 @@ client.tool_runtime.rag_tool.insert(
     documents=documents,
     vector_db_id=vector_db_id,
     chunk_size_in_tokens=512,
+    provider_id="faiss"
 )
 
 agent_config = AgentConfig(
