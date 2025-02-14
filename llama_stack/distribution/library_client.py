@@ -231,7 +231,13 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
 
         def _convert_path_to_regex(path: str) -> str:
             # Convert {param} to named capture groups
-            pattern = re.sub(r"{(\w+)}", r"(?P<\1>[^/]+)", path)
+            # handle {param:path} as well which allows for forward slashes in the param value
+            pattern = re.sub(
+                r"{(\w+)(?::path)?}",
+                lambda m: f"(?P<{m.group(1)}>{'[^/]+' if not m.group(0).endswith(':path') else '.+'})",
+                path,
+            )
+
             return f"^{pattern}$"
 
         for api, api_endpoints in endpoints.items():
