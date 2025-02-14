@@ -545,7 +545,7 @@ def test_create_turn_response(llama_stack_client, agent_config):
         messages=[
             {
                 "role": "user",
-                "content": "What is the boiling point of polyjuice?",
+                "content": "Call get_boiling_point and answer What is the boiling point of polyjuice?",
             },
         ],
         session_id=session_id,
@@ -557,3 +557,12 @@ def test_create_turn_response(llama_stack_client, agent_config):
     assert steps[1].step_type == "tool_execution"
     assert steps[1].tool_calls[0].tool_name == "get_boiling_point"
     assert steps[2].step_type == "inference"
+
+    last_step_completed_at = None
+    for step in steps:
+        if last_step_completed_at is None:
+            last_step_completed_at = step.completed_at
+        else:
+            assert last_step_completed_at < step.started_at
+            assert step.started_at < step.completed_at
+            last_step_completed_at = step.completed_at
