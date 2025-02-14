@@ -30,7 +30,6 @@ from llama_models.llama3.reference_impl.model import Transformer
 from llama_models.llama3.reference_impl.multimodal.model import (
     CrossAttentionTransformer,
 )
-from llama_models.sku_list import resolve_model
 from lmformatenforcer import JsonSchemaParser, TokenEnforcer, TokenEnforcerTokenizerData
 from pydantic import BaseModel
 
@@ -47,6 +46,7 @@ from llama_stack.models.llama.datatypes import (
     SamplingParams,
     TopPSamplingStrategy,
 )
+from llama_stack.models.llama.sku_list import resolve_model
 from llama_stack.providers.utils.inference.prompt_adapter import (
     ChatCompletionRequestWithRawContent,
     CompletionRequestWithRawContent,

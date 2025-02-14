@@ -8,8 +8,6 @@ import asyncio
 import logging
 from typing import AsyncGenerator, List, Optional, Union
 
-from llama_models.sku_list import resolve_model
-
 from llama_stack.apis.common.content_types import (
     TextDelta,
     ToolCallDelta,
@@ -41,6 +39,7 @@ from llama_stack.models.llama.datatypes import (
     ToolDefinition,
     ToolPromptFormat,
 )
+from llama_stack.models.llama.sku_list import resolve_model
 from llama_stack.providers.datatypes import ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.embedding_mixin import (
     SentenceTransformerEmbeddingMixin,

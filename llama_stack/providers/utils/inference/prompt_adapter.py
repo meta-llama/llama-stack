@@ -21,7 +21,6 @@ from llama_models.llama3.prompt_templates import (
     PythonListCustomToolGenerator,
     SystemDefaultGenerator,
 )
-from llama_models.sku_list import resolve_model
 from PIL import Image as PIL_Image
 
 from llama_stack.apis.common.content_types import (
@@ -52,6 +51,7 @@ from llama_stack.models.llama.datatypes import (
     ToolPromptFormat,
     is_multimodal,
 )
+from llama_stack.models.llama.sku_list import resolve_model
 from llama_stack.providers.utils.inference import supported_inference_models
 
 log = logging.getLogger(__name__)
