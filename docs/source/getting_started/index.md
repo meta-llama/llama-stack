@@ -227,7 +227,17 @@ client.tool_runtime.rag_tool.insert(
     documents=documents,
     vector_db_id=vector_db_id,
     chunk_size_in_tokens=512,
-    provider_id="faiss"
+vector_providers = [
+    provider for provider in client.providers.list() if provider.api == "vector_io"
+]
+
+vector_db_id = uuid.uuid4().hex
+vector_db_register_response = client.vector_dbs.register(
+    vector_db_id=vector_db_id,
+    embedding_model="all-MiniLM-L6-v2",
+    embedding_dimension=384,
+    provider_id=vector_providers[0].provider_id,
+)
 )
 
 agent_config = AgentConfig(
