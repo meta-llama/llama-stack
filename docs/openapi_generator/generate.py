@@ -16,12 +16,11 @@ from pathlib import Path
 import fire
 import ruamel.yaml as yaml
 
-from llama_models import schema_utils
+from llama_stack import schema_utils
 
 # We do some monkey-patching to ensure our definitions only use the minimal
-# (json_schema_type, webmethod) definitions from the llama_models package. For
-# generation though, we need the full definitions and implementations from the
-#  (json-strong-typing) package.
+# (json_schema_type, webmethod) definitions. For generation though, we need 
+# the full definitions and implementations from the (json-strong-typing) package.
 
 from .strong_typing.schema import json_schema_type, register_schema
 
