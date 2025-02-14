@@ -38,3 +38,8 @@ setup_cleanup_handlers() {
 
   conda deactivate
 }
+
+# check if a command is present
+is_command_available() {
+  command -v "$1" &>/dev/null
+}

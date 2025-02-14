@@ -56,9 +56,8 @@ class StackBuild(Subcommand):
             "--image-name",
             type=str,
             help=textwrap.dedent(
-                """[for image-type=conda] Name of the conda environment to use for the build. If
-not specified, currently active Conda environment will be used. If no Conda
-environment is active, you must specify a name.
+                """[for image-type=conda|venv] Name of the conda or virtual environment to use for
+the build. If not specified, currently active Conda environment will be used if found.
             """
             ),
             default=None,
