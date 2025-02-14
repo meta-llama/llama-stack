@@ -69,7 +69,7 @@ class ChromaIndex(EmbeddingIndex):
 
         chunks = []
         scores = []
-        for dist, doc in zip(distances, documents):
+        for dist, doc in zip(distances, documents, strict=False):
             try:
                 doc = json.loads(doc)
                 chunk = Chunk(**doc)
