@@ -647,6 +647,7 @@ class Generator:
         description = "\n".join(
             filter(None, [doc_string.short_description, doc_string.long_description])
         )
+
         return Operation(
             tags=[op.defining_class.__name__],
             summary=None,
@@ -656,6 +657,7 @@ class Generator:
             requestBody=requestBody,
             responses=responses,
             callbacks=callbacks,
+            deprecated=True if "DEPRECATED" in op.func_name else None,
             security=[] if op.public else None,
         )
 

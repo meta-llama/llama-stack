@@ -10,9 +10,9 @@ from urllib.parse import urlparse
 from llama_models.schema_utils import json_schema_type
 from pydantic import BaseModel, Field
 
+from llama_stack.apis.benchmarks import Benchmark
 from llama_stack.apis.datasets import Dataset
 from llama_stack.apis.datatypes import Api
-from llama_stack.apis.eval_tasks import EvalTask
 from llama_stack.apis.models import Model
 from llama_stack.apis.scoring_functions import ScoringFn
 from llama_stack.apis.shields import Shield
@@ -48,8 +48,8 @@ class ScoringFunctionsProtocolPrivate(Protocol):
     async def register_scoring_function(self, scoring_fn: ScoringFn) -> None: ...
 
 
-class EvalTasksProtocolPrivate(Protocol):
-    async def register_eval_task(self, eval_task: EvalTask) -> None: ...
+class BenchmarksProtocolPrivate(Protocol):
+    async def register_benchmark(self, benchmark: Benchmark) -> None: ...
 
 
 class ToolsProtocolPrivate(Protocol):

@@ -38,18 +38,8 @@ EvalCandidate = register_schema(
 
 
 @json_schema_type
-class BenchmarkEvalTaskConfig(BaseModel):
+class BenchmarkConfig(BaseModel):
     type: Literal["benchmark"] = "benchmark"
-    eval_candidate: EvalCandidate
-    num_examples: Optional[int] = Field(
-        description="Number of examples to evaluate (useful for testing), if not provided, all examples in the dataset will be evaluated",
-        default=None,
-    )
-
-
-@json_schema_type
-class AppEvalTaskConfig(BaseModel):
-    type: Literal["app"] = "app"
     eval_candidate: EvalCandidate
     scoring_params: Dict[str, ScoringFnParams] = Field(
         description="Map between scoring function id and parameters for each scoring function you want to run",
@@ -62,12 +52,6 @@ class AppEvalTaskConfig(BaseModel):
     # we could optinally add any specific dataset config here
 
 
-EvalTaskConfig = register_schema(
-    Annotated[Union[BenchmarkEvalTaskConfig, AppEvalTaskConfig], Field(discriminator="type")],
-    name="EvalTaskConfig",
-)
-
-
 @json_schema_type
 class EvaluateResponse(BaseModel):
     generations: List[Dict[str, Any]]
@@ -76,27 +60,52 @@ class EvaluateResponse(BaseModel):
 
 
 class Eval(Protocol):
-    @webmethod(route="/eval/tasks/{task_id}/jobs", method="POST")
+    @webmethod(route="/eval/benchmarks/{benchmark_id}/jobs", method="POST")
     async def run_eval(
         self,
+        benchmark_id: str,
+        task_config: BenchmarkConfig,
+    ) -> Job: ...
+
+    @webmethod(route="/eval/benchmarks/{benchmark_id}/evaluations", method="POST")
+    async def evaluate_rows(
+        self,
+        benchmark_id: str,
+        input_rows: List[Dict[str, Any]],
+        scoring_functions: List[str],
+        task_config: BenchmarkConfig,
+    ) -> EvaluateResponse: ...
+
+    @webmethod(route="/eval/benchmarks/{benchmark_id}/jobs/{job_id}", method="GET")
+    async def job_status(self, benchmark_id: str, job_id: str) -> Optional[JobStatus]: ...
+
+    @webmethod(route="/eval/benchmarks/{benchmark_id}/jobs/{job_id}", method="DELETE")
+    async def job_cancel(self, benchmark_id: str, job_id: str) -> None: ...
+
+    @webmethod(route="/eval/benchmarks/{benchmark_id}/jobs/{job_id}/result", method="GET")
+    async def job_result(self, benchmark_id: str, job_id: str) -> EvaluateResponse: ...
+
+    @webmethod(route="/eval/tasks/{task_id}/jobs", method="POST")
+    async def DEPRECATED_run_eval(
+        self,
         task_id: str,
-        task_config: EvalTaskConfig,
+        task_config: BenchmarkConfig,
     ) -> Job: ...
 
     @webmethod(route="/eval/tasks/{task_id}/evaluations", method="POST")
-    async def evaluate_rows(
+    async def DEPRECATED_evaluate_rows(
         self,
         task_id: str,
         input_rows: List[Dict[str, Any]],
         scoring_functions: List[str],
-        task_config: EvalTaskConfig,
+        task_config: BenchmarkConfig,
     ) -> EvaluateResponse: ...
 
     @webmethod(route="/eval/tasks/{task_id}/jobs/{job_id}", method="GET")
-    async def job_status(self, task_id: str, job_id: str) -> Optional[JobStatus]: ...
+    async def DEPRECATED_job_status(self, task_id: str, job_id: str) -> Optional[JobStatus]: ...
 
     @webmethod(route="/eval/tasks/{task_id}/jobs/{job_id}", method="DELETE")
-    async def job_cancel(self, task_id: str, job_id: str) -> None: ...
+    async def DEPRECATED_job_cancel(self, task_id: str, job_id: str) -> None: ...
 
     @webmethod(route="/eval/tasks/{task_id}/jobs/{job_id}/result", method="GET")
-    async def job_result(self, job_id: str, task_id: str) -> EvaluateResponse: ...
+    async def DEPRECATED_job_result(self, task_id: str, job_id: str) -> EvaluateResponse: ...

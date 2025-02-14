@@ -8,10 +8,10 @@ from typing import Annotated, Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field
 
+from llama_stack.apis.benchmarks import Benchmark, BenchmarkInput
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Dataset, DatasetInput
 from llama_stack.apis.eval import Eval
-from llama_stack.apis.eval_tasks import EvalTask, EvalTaskInput
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.models import Model, ModelInput
 from llama_stack.apis.safety import Safety
@@ -37,7 +37,7 @@ RoutableObject = Union[
     VectorDB,
     Dataset,
     ScoringFn,
-    EvalTask,
+    Benchmark,
     Tool,
     ToolGroup,
 ]
@@ -50,7 +50,7 @@ RoutableObjectWithProvider = Annotated[
         VectorDB,
         Dataset,
         ScoringFn,
-        EvalTask,
+        Benchmark,
         Tool,
         ToolGroup,
     ],
@@ -173,7 +173,7 @@ a default SQLite store will be used.""",
     vector_dbs: List[VectorDBInput] = Field(default_factory=list)
     datasets: List[DatasetInput] = Field(default_factory=list)
     scoring_fns: List[ScoringFnInput] = Field(default_factory=list)
-    eval_tasks: List[EvalTaskInput] = Field(default_factory=list)
+    benchmarks: List[BenchmarkInput] = Field(default_factory=list)
     tool_groups: List[ToolGroupInput] = Field(default_factory=list)
 
     server: ServerConfig = Field(

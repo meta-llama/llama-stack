@@ -117,6 +117,7 @@ class Operation:
     requestBody: Optional[RequestBody] = None
     callbacks: Optional[Dict[str, "Callback"]] = None
     security: Optional[List["SecurityRequirement"]] = None
+    deprecated: Optional[bool] = None
 
 
 @dataclass

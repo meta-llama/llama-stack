@@ -161,14 +161,14 @@ Options:
 
 ## Eval Task Management
 
-### `llama-stack-client eval_tasks list`
+### `llama-stack-client benchmarks list`
 ```bash
-$ llama-stack-client eval_tasks list
+$ llama-stack-client benchmarks list
 ```
 
-### `llama-stack-client eval_tasks register`
+### `llama-stack-client benchmarks register`
 ```bash
-$ llama-stack-client eval_tasks register --eval-task-id <eval-task-id> --dataset-id <dataset-id> --scoring-functions <function1> [<function2> ...] [--provider-id <provider-id>] [--provider-eval-task-id <provider-eval-task-id>] [--metadata <metadata>]
+$ llama-stack-client benchmarks register --eval-task-id <eval-task-id> --dataset-id <dataset-id> --scoring-functions <function1> [<function2> ...] [--provider-id <provider-id>] [--provider-eval-task-id <provider-eval-task-id>] [--metadata <metadata>]
 ```
 
 Options:
@@ -191,7 +191,7 @@ Options:
 - `--num-examples`: Optional. Number of examples to evaluate (useful for debugging)
 - `--visualize`: Optional flag. If set, visualizes evaluation results after completion
 
-Example eval_task_config.json:
+Example benchmark_config.json:
 ```json
 {
     "type": "benchmark",
