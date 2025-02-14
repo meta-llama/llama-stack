@@ -103,7 +103,7 @@ class FaissIndex(EmbeddingIndex):
 
         chunks = []
         scores = []
-        for d, i in zip(distances[0], indices[0]):
+        for d, i in zip(distances[0], indices[0], strict=False):
             if i < 0:
                 continue
             chunks.append(self.chunk_by_index[int(i)])

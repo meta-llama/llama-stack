@@ -132,7 +132,7 @@ def convert_openai_completion_logprobs(
     if logprobs.tokens and logprobs.token_logprobs:
         return [
             TokenLogProbs(logprobs_by_token={token: token_lp})
-            for token, token_lp in zip(logprobs.tokens, logprobs.token_logprobs)
+            for token, token_lp in zip(logprobs.tokens, logprobs.token_logprobs, strict=False)
         ]
     return None
 

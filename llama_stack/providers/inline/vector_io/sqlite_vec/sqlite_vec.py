@@ -80,7 +80,7 @@ class SQLiteVecIndex(EmbeddingIndex):
         try:
             # Start transaction
             cur.execute("BEGIN TRANSACTION")
-            for chunk, emb in zip(chunks, embeddings):
+            for chunk, emb in zip(chunks, embeddings, strict=False):
                 # Serialize and insert the chunk metadata.
                 chunk_json = chunk.model_dump_json()
                 cur.execute(f"INSERT INTO {self.metadata_table} (chunk) VALUES (?)", (chunk_json,))

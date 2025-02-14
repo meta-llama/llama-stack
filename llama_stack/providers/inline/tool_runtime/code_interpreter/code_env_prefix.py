@@ -83,12 +83,6 @@ import sys as _sys
 from contextlib import (  # noqa
     contextmanager as _contextmanager,
 )
-from contextlib import (
-    redirect_stderr as _redirect_stderr,
-)
-from contextlib import (
-    redirect_stdout as _redirect_stdout,
-)
 from multiprocessing.connection import Connection as _Connection
 
 # Mangle imports to avoid polluting model execution namespace.
