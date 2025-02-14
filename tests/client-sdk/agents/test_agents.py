@@ -98,7 +98,6 @@ def agent_config(llama_stack_client, text_model_id):
             },
         },
         toolgroups=[],
-        tool_choice="auto",
         input_shields=available_shields,
         output_shields=available_shields,
         enable_session_persistence=False,
@@ -320,6 +319,38 @@ def test_custom_tool(llama_stack_client, agent_config):
     logs_str = "".join(logs)
     assert "-100" in logs_str
     assert "get_boiling_point" in logs_str
+
+
+def test_tool_choice(llama_stack_client, agent_config):
+    data = [
+        ("required", '{"type": "function"'),
+        ("none", None),
+        ("get_boiling_point", '{"type": "function", "name": "get_boiling_point"'),
+    ]
+    client_tool = TestClientTool()
+    for tool_choice, expected_tool in data:
+        agent_config["tool_config"] = {"tool_choice": tool_choice}
+        agent_config["client_tools"] = [client_tool.get_tool_definition()]
+
+        agent = Agent(llama_stack_client, agent_config, client_tools=(client_tool,))
+        session_id = agent.create_session(f"test-session-{uuid4()}")
+
+        response = agent.create_turn(
+            messages=[
+                {
+                    "role": "user",
+                    "content": "What is the boiling point of polyjuice?",
+                },
+            ],
+            session_id=session_id,
+        )
+
+        logs = [str(log) for log in EventLogger().log(response) if log is not None]
+        logs_str = "".join(logs)
+        if expected_tool:
+            assert expected_tool in logs_str
+        else:
+            assert '{"type": "function"' not in logs_str
 
 
 # TODO: fix this flaky test
