@@ -51,6 +51,7 @@ repos:
             "--output-file",
             "requirements.txt"
         ]
+        files: ^pyproject\.toml$
 
 # -   repo: https://github.com/pre-commit/mirrors-mypy
 #     rev: v1.14.0
