@@ -17,7 +17,7 @@ from llama_stack.providers.inline.vector_io.faiss import FaissVectorIOConfig
 from llama_stack.providers.inline.vector_io.sqlite_vec import SQLiteVectorIOConfig
 from llama_stack.providers.remote.vector_io.chroma import ChromaVectorIOConfig
 from llama_stack.providers.remote.vector_io.pgvector import PGVectorVectorIOConfig
-from llama_stack.providers.remote.vector_io.qdrant import QdrantConfig
+from llama_stack.providers.remote.vector_io.qdrant import QdrantVectorIOConfig
 from llama_stack.providers.remote.vector_io.weaviate import WeaviateVectorIOConfig
 from llama_stack.providers.tests.resolver import construct_stack_for_test
 from llama_stack.providers.utils.kvstore.config import SqliteKVStoreConfig
@@ -132,7 +132,7 @@ def vector_io_chroma() -> ProviderFixture:
 def vector_io_qdrant() -> ProviderFixture:
     url = os.getenv("QDRANT_URL")
     if url:
-        config = QdrantConfig(url=url)
+        config = QdrantVectorIOConfig(url=url)
         provider_type = "remote::qdrant"
     else:
         raise ValueError("QDRANT_URL must be set")
