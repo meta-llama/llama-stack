@@ -83,8 +83,7 @@ def setup_download_parser(parser: argparse.ArgumentParser) -> None:
         type=str,
         required=False,
         default="*.safetensors",
-        help="""
-For source=huggingface, files matching any of the patterns are not downloaded. Defaults to ignoring
+        help="""For source=huggingface, files matching any of the patterns are not downloaded. Defaults to ignoring
 safetensors files to avoid downloading duplicate weights.
 """,
     )
