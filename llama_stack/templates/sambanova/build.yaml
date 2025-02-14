@@ -9,7 +9,7 @@ distribution_spec:
     - remote::chromadb
     - remote::pgvector
     safety:
-    - remote::fiddlecube
+    - inline::llama-guard
     agents:
     - inline::meta-reference
     telemetry:

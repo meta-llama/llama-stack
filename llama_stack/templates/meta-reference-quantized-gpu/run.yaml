@@ -32,8 +32,8 @@ providers:
         namespace: null
         db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/meta-reference-quantized-gpu}/faiss_store.db
   safety:
-  - provider_id: fiddlecube
-    provider_type: remote::fiddlecube
+  - provider_id: llama-guard
+    provider_type: inline::llama-guard
     config: {}
   agents:
   - provider_id: meta-reference
