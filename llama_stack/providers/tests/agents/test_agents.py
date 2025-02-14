@@ -7,7 +7,6 @@
 import os
 
 import pytest
-from llama_models.datatypes import SamplingParams, TopPSamplingStrategy
 
 from llama_stack.apis.agents import (
     AgentConfig,
@@ -24,7 +23,7 @@ from llama_stack.apis.agents import (
 )
 from llama_stack.apis.inference import CompletionMessage, UserMessage
 from llama_stack.apis.safety import ViolationLevel
-from llama_stack.models.llama.datatypes import BuiltinTool
+from llama_stack.models.llama.datatypes import BuiltinTool, SamplingParams, TopPSamplingStrategy
 from llama_stack.providers.datatypes import Api
 
 # How to run this test:

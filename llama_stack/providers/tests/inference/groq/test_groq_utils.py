@@ -23,7 +23,6 @@ from groq.types.chat.chat_completion_message_tool_call import (
     Function,
 )
 from groq.types.shared.function_definition import FunctionDefinition
-from llama_models.datatypes import GreedySamplingStrategy, TopPSamplingStrategy
 
 from llama_stack.apis.common.content_types import ToolCallParseStatus
 from llama_stack.apis.inference import (
@@ -37,7 +36,7 @@ from llama_stack.apis.inference import (
     ToolDefinition,
     UserMessage,
 )
-from llama_stack.models.llama.datatypes import ToolParamDefinition
+from llama_stack.models.llama.datatypes import GreedySamplingStrategy, ToolParamDefinition, TopPSamplingStrategy
 from llama_stack.providers.remote.inference.groq.groq_utils import (
     convert_chat_completion_request,
     convert_chat_completion_response,

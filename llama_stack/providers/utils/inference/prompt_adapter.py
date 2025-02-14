@@ -13,7 +13,6 @@ import re
 from typing import List, Optional, Tuple, Union
 
 import httpx
-from llama_models.datatypes import ModelFamily, is_multimodal
 from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.prompt_templates import (
     BuiltinToolGenerator,
@@ -43,6 +42,7 @@ from llama_stack.apis.inference import (
     UserMessage,
 )
 from llama_stack.models.llama.datatypes import (
+    ModelFamily,
     RawContent,
     RawContentItem,
     RawMediaItem,
@@ -50,6 +50,7 @@ from llama_stack.models.llama.datatypes import (
     RawTextItem,
     Role,
     ToolPromptFormat,
+    is_multimodal,
 )
 from llama_stack.providers.utils.inference import supported_inference_models
 

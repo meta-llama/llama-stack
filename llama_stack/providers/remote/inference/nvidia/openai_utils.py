@@ -8,11 +8,6 @@ import json
 import warnings
 from typing import Any, AsyncGenerator, Dict, Generator, Iterable, List, Optional, Union
 
-from llama_models.datatypes import (
-    GreedySamplingStrategy,
-    TopKSamplingStrategy,
-    TopPSamplingStrategy,
-)
 from openai import AsyncStream
 from openai.types.chat import (
     ChatCompletionAssistantMessageParam as OpenAIChatCompletionAssistantMessage,
@@ -83,9 +78,12 @@ from llama_stack.apis.inference import (
 )
 from llama_stack.models.llama.datatypes import (
     BuiltinTool,
+    GreedySamplingStrategy,
     StopReason,
     ToolCall,
     ToolDefinition,
+    TopKSamplingStrategy,
+    TopPSamplingStrategy,
 )
 from llama_stack.providers.utils.inference.prompt_adapter import (
     convert_image_content_to_url,

@@ -7,12 +7,6 @@
 import json
 from typing import AsyncGenerator
 
-from llama_models.datatypes import (
-    CoreModelId,
-    GreedySamplingStrategy,
-    TopKSamplingStrategy,
-    TopPSamplingStrategy,
-)
 from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.tokenizer import Tokenizer
 from openai import OpenAI
@@ -23,6 +17,12 @@ from llama_stack.apis.common.content_types import (
     TextContentItem,
 )
 from llama_stack.apis.inference import *  # noqa: F403
+from llama_stack.models.llama.datatypes import (
+    CoreModelId,
+    GreedySamplingStrategy,
+    TopKSamplingStrategy,
+    TopPSamplingStrategy,
+)
 from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
     build_model_alias,

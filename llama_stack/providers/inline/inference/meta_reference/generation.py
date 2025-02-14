@@ -23,11 +23,6 @@ from fairscale.nn.model_parallel.initialize import (
     initialize_model_parallel,
     model_parallel_is_initialized,
 )
-from llama_models.datatypes import (
-    GreedySamplingStrategy,
-    SamplingParams,
-    TopPSamplingStrategy,
-)
 from llama_models.llama3.api.args import ModelArgs
 from llama_models.llama3.api.chat_format import ChatFormat, LLMInput
 from llama_models.llama3.api.tokenizer import Tokenizer
@@ -46,7 +41,12 @@ from llama_stack.apis.inference import (
     ResponseFormatType,
 )
 from llama_stack.distribution.utils.model_utils import model_local_dir
-from llama_stack.models.llama.datatypes import Model
+from llama_stack.models.llama.datatypes import (
+    GreedySamplingStrategy,
+    Model,
+    SamplingParams,
+    TopPSamplingStrategy,
+)
 from llama_stack.providers.utils.inference.prompt_adapter import (
     ChatCompletionRequestWithRawContent,
     CompletionRequestWithRawContent,

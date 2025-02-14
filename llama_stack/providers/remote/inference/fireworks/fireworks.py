@@ -7,7 +7,6 @@
 from typing import AsyncGenerator, List, Optional, Union
 
 from fireworks.client import Fireworks
-from llama_models.datatypes import CoreModelId
 from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.tokenizer import Tokenizer
 
@@ -30,6 +29,7 @@ from llama_stack.apis.inference import (
     ToolPromptFormat,
 )
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
+from llama_stack.models.llama.datatypes import CoreModelId
 from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
     build_model_alias,

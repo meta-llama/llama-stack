@@ -14,7 +14,6 @@ from typing import Any, Dict, List, Optional
 import torch
 from fairscale.nn.model_parallel.layers import ColumnParallelLinear, RowParallelLinear
 from fairscale.nn.model_parallel.mappings import reduce_from_model_parallel_region
-from llama_models.datatypes import CheckpointQuantizationFormat
 from llama_models.llama3.api.args import ModelArgs
 from llama_models.llama3.reference_impl.model import Transformer, TransformerBlock
 from llama_models.sku_list import resolve_model
@@ -22,6 +21,7 @@ from torch import Tensor, nn
 from torchao.quantization.GPTQ import Int8DynActInt4WeightLinear
 
 from llama_stack.apis.inference import QuantizationType
+from llama_stack.models.llama.datatypes import CheckpointQuantizationFormat
 
 from ..config import MetaReferenceQuantizedInferenceConfig
 

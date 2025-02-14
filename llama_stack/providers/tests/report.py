@@ -9,10 +9,11 @@ from collections import defaultdict
 from pathlib import Path
 
 import pytest
-from llama_models.datatypes import CoreModelId
 from llama_models.sku_list import all_registered_models
 from pytest import ExitCode
 from pytest_html.basereport import _process_outcome
+
+from llama_stack.models.llama.datatypes import CoreModelId
 
 INFERENCE_APIS = ["chat_completion"]
 FUNCTIONALITIES = ["streaming", "structured_output", "tool_calling"]
