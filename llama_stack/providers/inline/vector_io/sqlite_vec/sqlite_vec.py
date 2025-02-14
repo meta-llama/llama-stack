@@ -81,14 +81,15 @@ class SQLiteVecIndex(EmbeddingIndex):
             cur.execute("BEGIN TRANSACTION")
             chunk_data = [(chunk.model_dump_json(),) for chunk in chunks]
             cur.executemany(f"INSERT INTO {self.metadata_table} (chunk) VALUES (?)", chunk_data)
-            # Get the starting rowid for the batch
-            start_rowid = cur.lastrowid - len(chunks) + 1
-            # Prepare embedding data with rowids
+            # Fetch the last N inserted row IDs
+            cur.execute(f"SELECT rowid FROM {self.metadata_table} ORDER BY rowid DESC LIMIT {len(chunks)}")
+            row_ids = [row[0] for row in cur.fetchall()]
+            row_ids.reverse()  # Reverse to maintain the correct order of insertion
+            # Insert embeddings using the retrieved row IDs
             embedding_data = [
-                (start_rowid + i, serialize_vector(emb.tolist() if isinstance(emb, np.ndarray) else list(emb)))
-                for i, emb in enumerate(embeddings)
+                (row_id, serialize_vector(emb.tolist() if isinstance(emb, np.ndarray) else list(emb)))
+                for row_id, emb in zip(row_ids, embeddings)
             ]
-            # Batch insert embeddings
             cur.executemany(f"INSERT INTO {self.vector_table} (rowid, embedding) VALUES (?, ?)", embedding_data)
             # Commit transaction if all inserts succeed
             self.connection.commit()
