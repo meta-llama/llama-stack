@@ -14,13 +14,6 @@ from typing import List, Optional, Tuple, Union
 
 import httpx
 from llama_models.llama3.api.chat_format import ChatFormat
-from llama_models.llama3.prompt_templates import (
-    BuiltinToolGenerator,
-    FunctionTagCustomToolGenerator,
-    JsonCustomToolGenerator,
-    PythonListCustomToolGenerator,
-    SystemDefaultGenerator,
-)
 from PIL import Image as PIL_Image
 
 from llama_stack.apis.common.content_types import (
@@ -50,6 +43,13 @@ from llama_stack.models.llama.datatypes import (
     Role,
     ToolPromptFormat,
     is_multimodal,
+)
+from llama_stack.models.llama.llama3.prompt_templates import (
+    BuiltinToolGenerator,
+    FunctionTagCustomToolGenerator,
+    JsonCustomToolGenerator,
+    PythonListCustomToolGenerator,
+    SystemDefaultGenerator,
 )
 from llama_stack.models.llama.sku_list import resolve_model
 from llama_stack.providers.utils.inference import supported_inference_models
