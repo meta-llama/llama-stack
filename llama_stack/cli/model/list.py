@@ -36,8 +36,8 @@ class ModelList(Subcommand):
         from .safety_models import prompt_guard_model_sku
 
         headers = [
-            "Model Descriptor",
-            "Model ID",
+            "Model Descriptor(ID)",
+            "Hugging Face Repo",
             "Context Length",
         ]
 
