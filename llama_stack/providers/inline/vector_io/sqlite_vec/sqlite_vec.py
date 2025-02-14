@@ -72,8 +72,9 @@ class SQLiteVecIndex(EmbeddingIndex):
     async def add_chunks(self, chunks: List[Chunk], embeddings: NDArray):
         """
         Add new chunks along with their embeddings using batch inserts.
-        First inserts all chunk metadata in a batch, then inserts all embeddings in a batch,
-        using the assigned rowids. If any insert fails, the transaction is rolled back.
+        For each chunk, we insert its JSON into the metadata table and then insert its
+        embedding (serialized to raw bytes) into the virtual table using the assigned rowid.
+        If any insert fails, the transaction is rolled back.
         """
         cur = self.connection.cursor()
         try:
@@ -89,7 +90,7 @@ class SQLiteVecIndex(EmbeddingIndex):
             # Insert embeddings using the retrieved row IDs
             embedding_data = [
                 (row_id, serialize_vector(emb.tolist() if isinstance(emb, np.ndarray) else list(emb)))
-                for row_id, emb in zip(row_ids, embeddings)
+                for row_id, emb in zip(row_ids, embeddings, strict=True)
             ]
             cur.executemany(f"INSERT INTO {self.vector_table} (rowid, embedding) VALUES (?, ?)", embedding_data)
             # Commit transaction if all inserts succeed
