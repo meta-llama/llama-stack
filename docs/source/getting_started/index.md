@@ -199,7 +199,8 @@ def create_library_client(template="ollama"):
 
 
 client = (
-    create_library_client()
+    #create_library_client()
+    create_http_client()
 )  # or create_http_client() depending on the environment you picked
 
 # Documents to be used for RAG
@@ -214,10 +215,17 @@ documents = [
     for i, url in enumerate(urls)
 ]
 
+vector_providers = [
+    provider for provider in client.providers.list() 
+    if provider.api == "vector_io"
+]
+provider_id = vector_providers[0].provider_id  # Use first available vector provider
+
 # Register a vector database
 vector_db_id = f"test-vector-db-{uuid.uuid4().hex}"
 client.vector_dbs.register(
     vector_db_id=vector_db_id,
+    provider_id=provider_id,
     embedding_model="all-MiniLM-L6-v2",
     embedding_dimension=384,
 )
@@ -227,17 +235,6 @@ client.tool_runtime.rag_tool.insert(
     documents=documents,
     vector_db_id=vector_db_id,
     chunk_size_in_tokens=512,
-vector_providers = [
-    provider for provider in client.providers.list() if provider.api == "vector_io"
-]
-
-vector_db_id = uuid.uuid4().hex
-vector_db_register_response = client.vector_dbs.register(
-    vector_db_id=vector_db_id,
-    embedding_model="all-MiniLM-L6-v2",
-    embedding_dimension=384,
-    provider_id=vector_providers[0].provider_id,
-)
 )
 
 agent_config = AgentConfig(
