@@ -7,7 +7,6 @@
 from pydantic import BaseModel
 
 from .config import ModelContextProtocolConfig
-from .model_context_protocol import ModelContextProtocolToolRuntimeImpl
 
 
 class ModelContextProtocolToolProviderDataValidator(BaseModel):
@@ -15,6 +14,8 @@ class ModelContextProtocolToolProviderDataValidator(BaseModel):
 
 
 async def get_adapter_impl(config: ModelContextProtocolConfig, _deps):
+    from .model_context_protocol import ModelContextProtocolToolRuntimeImpl
+
     impl = ModelContextProtocolToolRuntimeImpl(config)
     await impl.initialize()
     return impl
