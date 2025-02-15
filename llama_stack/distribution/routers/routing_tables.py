@@ -236,8 +236,6 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
             metadata = {}
         if model_type is None:
             model_type = ModelType.llm
-        if "embedding_dimension" not in metadata and model_type == ModelType.embedding:
-            raise ValueError("Embedding model must have an embedding dimension in its metadata")
         model = Model(
             identifier=model_id,
             provider_resource_id=provider_model_id,
