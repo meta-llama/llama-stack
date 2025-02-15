@@ -199,8 +199,7 @@ def create_library_client(template="ollama"):
 
 
 client = (
-    #create_library_client()
-    create_http_client()
+    create_library_client()
 )  # or create_http_client() depending on the environment you picked
 
 # Documents to be used for RAG
@@ -219,7 +218,7 @@ vector_providers = [
     provider for provider in client.providers.list() 
     if provider.api == "vector_io"
 ]
-provider_id = vector_providers[0].provider_id  # Use first available vector provider
+provider_id = vector_providers[0].provider_id  # Use the first available vector provider
 
 # Register a vector database
 vector_db_id = f"test-vector-db-{uuid.uuid4().hex}"
