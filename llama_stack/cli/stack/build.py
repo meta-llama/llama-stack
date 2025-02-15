@@ -38,9 +38,8 @@ class StackBuild(Subcommand):
 
         self.parser.add_argument(
             "--list-templates",
-            type=bool,
+            action="store_true",
             default=False,
-            action=argparse.BooleanOptionalAction,
             help="Show the available templates for building a Llama Stack distribution",
         )
 
