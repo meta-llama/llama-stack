@@ -451,12 +451,12 @@ def test_rag_agent(llama_stack_client, agent_config):
     session_id = rag_agent.create_session(f"test-session-{uuid4()}")
     user_prompts = [
         (
-            "What is main changes between Llama2-7B and Llama3-8B models on how attention is used?",
-            "grouped",
+            "What term is used to refer to the underlying data type used to represent the model and optimizer parameters.",
+            "precision",
         ),
         (
-            "What `tune` command to use for getting access to Llama3-8B-Instruct model?",
-            "download",
+            "What models is LoRA is most commonly applied to?",
+            "transformer",
         ),
     ]
     for prompt, expected_kw in user_prompts:
