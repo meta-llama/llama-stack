@@ -10,7 +10,7 @@ conda_env: ollama
 apis:
 - agents
 - inference
-- memory
+- vector_io
 - safety
 - telemetry
 providers:
@@ -19,7 +19,7 @@ providers:
     provider_type: remote::ollama
     config:
       url: ${env.OLLAMA_URL:http://localhost:11434}
-  memory:
+  vector_io:
   - provider_id: faiss
     provider_type: inline::faiss
     config:

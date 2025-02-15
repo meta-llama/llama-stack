@@ -13,6 +13,7 @@ A Llama Stack API is described as a collection of REST endpoints. We currently s
 - **DatasetIO**: interface with datasets and data loaders
 - **Scoring**: evaluate outputs of the system
 - **Eval**: generate outputs (via Inference or Agents) and perform scoring
+- **VectorIO**: perform operations on vector stores, such as adding documents, searching, and deleting documents
 - **Telemetry**: collect telemetry data from the system
 
 We are working on adding a few more APIs to complete the application lifecycle. These will include:
@@ -41,6 +42,7 @@ Some of these APIs are associated with a set of **Resources**. Here is the mappi
 - **Safety** is associated with `Shield` resources.
 - **Tool Runtime** is associated with `ToolGroup` resources.
 - **DatasetIO** is associated with `Dataset` resources.
+- **VectorIO** is associated with `VectorDB` resources.
 - **Scoring** is associated with `ScoringFunction` resources.
 - **Eval** is associated with `Model` and `Benchmark` resources.
 

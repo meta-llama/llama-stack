@@ -175,7 +175,7 @@ class Report:
                 "|:-----|:-----|:-----|:-----|:-----|",
             ]
             provider = [p for p in providers if p.api == str(api_group.name)]
-            provider_str = provider[0].provider_type if provider else ""
+            provider_str = ",".join(provider) if provider else ""
             for api, capa_map in API_MAPS[api_group].items():
                 for capa, tests in capa_map.items():
                     for test_name in tests:
