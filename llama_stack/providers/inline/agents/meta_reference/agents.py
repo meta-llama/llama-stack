@@ -31,6 +31,7 @@ from llama_stack.apis.inference import (
     ToolResponseMessage,
     UserMessage,
 )
+from llama_stack.apis.models import Models
 from llama_stack.apis.safety import Safety
 from llama_stack.apis.tools import ToolGroups, ToolRuntime
 from llama_stack.apis.vector_io import VectorIO
@@ -52,6 +53,7 @@ class MetaReferenceAgentsImpl(Agents):
         safety_api: Safety,
         tool_runtime_api: ToolRuntime,
         tool_groups_api: ToolGroups,
+        models_api: Models,
     ):
         self.config = config
         self.inference_api = inference_api
@@ -59,6 +61,7 @@ class MetaReferenceAgentsImpl(Agents):
         self.safety_api = safety_api
         self.tool_runtime_api = tool_runtime_api
         self.tool_groups_api = tool_groups_api
+        self.models_api = models_api
 
         self.in_memory_store = InmemoryKVStoreImpl()
         self.tempdir = tempfile.mkdtemp()
@@ -115,6 +118,7 @@ class MetaReferenceAgentsImpl(Agents):
             vector_io_api=self.vector_io_api,
             tool_runtime_api=self.tool_runtime_api,
             tool_groups_api=self.tool_groups_api,
+            models_api=self.models_api,
             persistence_store=(
                 self.persistence_store if agent_config.enable_session_persistence else self.in_memory_store
             ),
