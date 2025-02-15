@@ -19,7 +19,7 @@ class StackRun(Subcommand):
         self.parser = subparsers.add_parser(
             "run",
             prog="llama stack run",
-            description="""start the server for a Llama Stack Distribution. You should have already built (or downloaded) and configured the distribution.""",
+            description="""Start the server for a Llama Stack Distribution. You should have already built (or downloaded) and configured the distribution.""",
             formatter_class=argparse.RawTextHelpFormatter,
         )
         self._add_arguments()
