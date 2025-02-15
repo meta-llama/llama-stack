@@ -82,12 +82,11 @@ def get_distribution_template() -> DistributionTemplate:
         ),
     ]
     embedding_model = ModelInput(
-        model_id="all-MiniLM-L6-v2",
-        provider_id="sentence-transformers",
+        model_id="togethercomputer/m2-bert-80M-8k-retrieval",
+        provider_id="together",
         model_type=ModelType.embedding,
-        metadata={
-            "embedding_dimension": 384,
-        },
+        provider_model_id="togethercomputer/m2-bert-80M-8k-retrieval",
+        metadata={},
     )
 
     return DistributionTemplate(
