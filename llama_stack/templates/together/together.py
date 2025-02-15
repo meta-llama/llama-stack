@@ -90,38 +90,10 @@ def get_distribution_template() -> DistributionTemplate:
             metadata={"embedding_dimension": 768},
         ),
         ModelInput(
-            model_id="togethercomputer/m2-bert-80M-2k-retrieval",
-            provider_id="together",
-            model_type=ModelType.embedding,
-            provider_model_id="togethercomputer/m2-bert-80M-2k-retrieval",
-            metadata={"embedding_dimension": 768},
-        ),
-        ModelInput(
             model_id="togethercomputer/m2-bert-80M-32k-retrieval",
             provider_id="together",
             model_type=ModelType.embedding,
             provider_model_id="togethercomputer/m2-bert-80M-32k-retrieval",
-            metadata={"embedding_dimension": 768},
-        ),
-        ModelInput(
-            model_id="WhereIsAI/UAE-Large-V1",
-            provider_id="together",
-            model_type=ModelType.embedding,
-            provider_model_id="WhereIsAI/UAE-Large-V1",
-            metadata={"embedding_dimension": 1024},
-        ),
-        ModelInput(
-            model_id="BAAI/bge-large-en-v1.5",
-            provider_id="together",
-            model_type=ModelType.embedding,
-            provider_model_id="BAAI/bge-large-en-v1.5",
-            metadata={"embedding_dimension": 1024},
-        ),
-        ModelInput(
-            model_id="BAAI/bge-base-en-v1.5",
-            provider_id="together",
-            model_type=ModelType.embedding,
-            provider_model_id="BAAI/bge-base-en-v1.5",
             metadata={"embedding_dimension": 768},
         ),
     ]
