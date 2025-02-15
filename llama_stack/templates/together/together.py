@@ -81,13 +81,50 @@ def get_distribution_template() -> DistributionTemplate:
             provider_id="code-interpreter",
         ),
     ]
-    embedding_model = ModelInput(
-        model_id="togethercomputer/m2-bert-80M-8k-retrieval",
-        provider_id="together",
-        model_type=ModelType.embedding,
-        provider_model_id="togethercomputer/m2-bert-80M-8k-retrieval",
-        metadata={"embedding_dimension": 768},
-    )
+    embedding_models = [
+        ModelInput(
+            model_id="togethercomputer/m2-bert-80M-8k-retrieval",
+            provider_id="together",
+            model_type=ModelType.embedding,
+            provider_model_id="togethercomputer/m2-bert-80M-8k-retrieval",
+            metadata={"embedding_dimension": 768},
+        ),
+        ModelInput(
+            model_id="togethercomputer/m2-bert-80M-2k-retrieval",
+            provider_id="together",
+            model_type=ModelType.embedding,
+            provider_model_id="togethercomputer/m2-bert-80M-2k-retrieval",
+            metadata={"embedding_dimension": 768},
+        ),
+        ModelInput(
+            model_id="togethercomputer/m2-bert-80M-32k-retrieval",
+            provider_id="together",
+            model_type=ModelType.embedding,
+            provider_model_id="togethercomputer/m2-bert-80M-32k-retrieval",
+            metadata={"embedding_dimension": 768},
+        ),
+        ModelInput(
+            model_id="WhereIsAI/UAE-Large-V1",
+            provider_id="together",
+            model_type=ModelType.embedding,
+            provider_model_id="WhereIsAI/UAE-Large-V1",
+            metadata={"embedding_dimension": 1024},
+        ),
+        ModelInput(
+            model_id="BAAI/bge-large-en-v1.5",
+            provider_id="together",
+            model_type=ModelType.embedding,
+            provider_model_id="BAAI/bge-large-en-v1.5",
+            metadata={"embedding_dimension": 1024},
+        ),
+        ModelInput(
+            model_id="BAAI/bge-base-en-v1.5",
+            provider_id="together",
+            model_type=ModelType.embedding,
+            provider_model_id="BAAI/bge-base-en-v1.5",
+            metadata={"embedding_dimension": 768},
+        ),
+    ]
 
     return DistributionTemplate(
         name=name,
@@ -103,7 +140,7 @@ def get_distribution_template() -> DistributionTemplate:
                     "inference": [inference_provider, embedding_provider],
                     "vector_io": [vector_io_provider],
                 },
-                default_models=default_models + [embedding_model],
+                default_models=default_models + embedding_models,
                 default_tool_groups=default_tool_groups,
                 default_shields=[ShieldInput(shield_id="meta-llama/Llama-Guard-3-8B")],
             ),
@@ -134,7 +171,7 @@ def get_distribution_template() -> DistributionTemplate:
                 },
                 default_models=[
                     *default_models,
-                    embedding_model,
+                    *embedding_models,
                 ],
                 default_shields=[
                     ShieldInput(
