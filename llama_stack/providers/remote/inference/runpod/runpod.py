@@ -5,8 +5,6 @@
 # the root directory of this source tree.
 from typing import AsyncGenerator
 
-from llama_models.llama3.api.chat_format import ChatFormat
-from llama_models.llama3.api.tokenizer import Tokenizer
 from openai import OpenAI
 
 from llama_stack.apis.inference import *  # noqa: F403
@@ -45,7 +43,6 @@ class RunpodInferenceAdapter(ModelRegistryHelper, Inference):
     def __init__(self, config: RunpodImplConfig) -> None:
         ModelRegistryHelper.__init__(self, stack_to_provider_models_map=RUNPOD_SUPPORTED_MODELS)
         self.config = config
-        self.formatter = ChatFormat(Tokenizer.get_instance())
 
     async def initialize(self) -> None:
         return
@@ -56,7 +53,7 @@ class RunpodInferenceAdapter(ModelRegistryHelper, Inference):
     async def completion(
         self,
         model: str,
-        content: InterleavedTextMedia,
+        content: InterleavedContent,
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
@@ -97,7 +94,7 @@ class RunpodInferenceAdapter(ModelRegistryHelper, Inference):
     ) -> ChatCompletionResponse:
         params = self._get_params(request)
         r = client.completions.create(**params)
-        return process_chat_completion_response(r, self.formatter, request)
+        return process_chat_completion_response(r, request)
 
     async def _stream_chat_completion(self, request: ChatCompletionRequest, client: OpenAI) -> AsyncGenerator:
         params = self._get_params(request)
@@ -108,13 +105,13 @@ class RunpodInferenceAdapter(ModelRegistryHelper, Inference):
                 yield chunk
 
         stream = _to_async_generator()
-        async for chunk in process_chat_completion_stream_response(stream, self.formatter, request):
+        async for chunk in process_chat_completion_stream_response(stream, request):
             yield chunk
 
     def _get_params(self, request: ChatCompletionRequest) -> dict:
         return {
             "model": self.map_to_provider_model(request.model),
-            "prompt": chat_completion_request_to_prompt(request, self.formatter),
+            "prompt": chat_completion_request_to_prompt(request),
             "stream": request.stream,
             **get_sampling_options(request.sampling_params),
         }
@@ -122,6 +119,6 @@ class RunpodInferenceAdapter(ModelRegistryHelper, Inference):
     async def embeddings(
         self,
         model: str,
-        contents: List[InterleavedTextMedia],
+        contents: List[InterleavedContent],
     ) -> EmbeddingsResponse:
         raise NotImplementedError()

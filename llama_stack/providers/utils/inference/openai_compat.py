@@ -7,7 +7,6 @@ import json
 import logging
 from typing import AsyncGenerator, Dict, List, Optional, Union
 
-from llama_models.llama3.api.chat_format import ChatFormat
 from openai.types.chat import ChatCompletionMessageToolCall
 from pydantic import BaseModel
 
@@ -40,6 +39,7 @@ from llama_stack.models.llama.datatypes import (
 )
 from llama_stack.providers.utils.inference.prompt_adapter import (
     convert_image_content_to_url,
+    decode_assistant_message,
 )
 
 logger = logging.getLogger(__name__)
@@ -149,7 +149,7 @@ def convert_openai_completion_logprobs_stream(text: str, logprobs: Optional[Unio
     return None
 
 
-def process_completion_response(response: OpenAICompatCompletionResponse, formatter: ChatFormat) -> CompletionResponse:
+def process_completion_response(response: OpenAICompatCompletionResponse) -> CompletionResponse:
     choice = response.choices[0]
     # drop suffix <eot_id> if present and return stop reason as end of turn
     if choice.text.endswith("<|eot_id|>"):
@@ -174,16 +174,13 @@ def process_completion_response(response: OpenAICompatCompletionResponse, format
 
 def process_chat_completion_response(
     response: OpenAICompatCompletionResponse,
-    formatter: ChatFormat,
     request: ChatCompletionRequest,
 ) -> ChatCompletionResponse:
     choice = response.choices[0]
 
     # TODO: This does not work well with tool calls for vLLM remote provider
     #   Ref: https://github.com/meta-llama/llama-stack/issues/1058
-    raw_message = formatter.decode_assistant_message_from_content(
-        text_from_choice(choice), get_stop_reason(choice.finish_reason)
-    )
+    raw_message = decode_assistant_message(text_from_choice(choice), get_stop_reason(choice.finish_reason))
 
     # NOTE: If we do not set tools in chat-completion request, we should not
     # expect the ToolCall in the response. Instead, we should return the raw
@@ -217,7 +214,7 @@ def process_chat_completion_response(
 
 
 async def process_completion_stream_response(
-    stream: AsyncGenerator[OpenAICompatCompletionResponse, None], formatter: ChatFormat
+    stream: AsyncGenerator[OpenAICompatCompletionResponse, None],
 ) -> AsyncGenerator:
     stop_reason = None
 
@@ -254,7 +251,6 @@ async def process_completion_stream_response(
 
 async def process_chat_completion_stream_response(
     stream: AsyncGenerator[OpenAICompatCompletionResponse, None],
-    formatter: ChatFormat,
     request: ChatCompletionRequest,
 ) -> AsyncGenerator:
     yield ChatCompletionResponseStreamChunk(
@@ -333,7 +329,7 @@ async def process_chat_completion_stream_response(
             )
 
     # parse tool calls and report errors
-    message = formatter.decode_assistant_message_from_content(buffer, stop_reason)
+    message = decode_assistant_message(buffer, stop_reason)
 
     parsed_tool_calls = len(message.tool_calls) > 0
     if ipython and not parsed_tool_calls:

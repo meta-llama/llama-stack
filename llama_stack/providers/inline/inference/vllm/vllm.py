@@ -9,7 +9,6 @@ import os
 import uuid
 from typing import AsyncGenerator, List, Optional
 
-from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.tokenizer import Tokenizer
 from vllm.engine.arg_utils import AsyncEngineArgs
 from vllm.engine.async_llm_engine import AsyncLLMEngine
@@ -62,7 +61,6 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
     def __init__(self, config: VLLMConfig):
         self.config = config
         self.engine = None
-        self.formatter = ChatFormat(Tokenizer.get_instance())
 
     async def initialize(self):
         log.info("Initializing vLLM inference provider.")
@@ -177,7 +175,7 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         log.info("Sampling params: %s", sampling_params)
         request_id = _random_uuid()
 
-        prompt = await chat_completion_request_to_prompt(request, self.config.model, self.formatter)
+        prompt = await chat_completion_request_to_prompt(request, self.config.model)
         vllm_sampling_params = self._sampling_params(request.sampling_params)
         results_generator = self.engine.generate(prompt, vllm_sampling_params, request_id)
         if stream:
@@ -201,11 +199,13 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         response = OpenAICompatCompletionResponse(
             choices=[choice],
         )
-        return process_chat_completion_response(response, self.formatter, request)
+        return process_chat_completion_response(response, request)
 
     async def _stream_chat_completion(
         self, request: ChatCompletionRequest, results_generator: AsyncGenerator
     ) -> AsyncGenerator:
+        tokenizer = Tokenizer.get_instance()
+
         async def _generate_and_convert_to_openai_compat():
             cur = []
             async for chunk in results_generator:
@@ -216,7 +216,7 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
                 output = chunk.outputs[-1]
 
                 new_tokens = output.token_ids[len(cur) :]
-                text = self.formatter.tokenizer.decode(new_tokens)
+                text = tokenizer.decode(new_tokens)
                 cur.extend(new_tokens)
                 choice = OpenAICompatCompletionChoice(
                     finish_reason=output.finish_reason,
@@ -227,7 +227,7 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
                 )
 
         stream = _generate_and_convert_to_openai_compat()
-        async for chunk in process_chat_completion_stream_response(stream, self.formatter, request):
+        async for chunk in process_chat_completion_stream_response(stream, request):
             yield chunk
 
     async def embeddings(self, model_id: str, contents: List[InterleavedContent]) -> EmbeddingsResponse:

@@ -6,8 +6,6 @@
 
 from typing import AsyncGenerator, List, Optional, Union
 
-from llama_models.llama3.api.chat_format import ChatFormat
-from llama_models.llama3.api.tokenizer import Tokenizer
 from together import Together
 
 from llama_stack.apis.common.content_types import InterleavedContent
@@ -95,7 +93,6 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
     def __init__(self, config: TogetherImplConfig) -> None:
         ModelRegistryHelper.__init__(self, MODEL_ALIASES)
         self.config = config
-        self.formatter = ChatFormat(Tokenizer.get_instance())
 
     async def initialize(self) -> None:
         pass
@@ -142,7 +139,7 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
     async def _nonstream_completion(self, request: CompletionRequest) -> ChatCompletionResponse:
         params = await self._get_params(request)
         r = self._get_client().completions.create(**params)
-        return process_completion_response(r, self.formatter)
+        return process_completion_response(r)
 
     async def _stream_completion(self, request: CompletionRequest) -> AsyncGenerator:
         params = await self._get_params(request)
@@ -154,7 +151,7 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
                 yield chunk
 
         stream = _to_async_generator()
-        async for chunk in process_completion_stream_response(stream, self.formatter):
+        async for chunk in process_completion_stream_response(stream):
             yield chunk
 
     def _build_options(
@@ -220,7 +217,7 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
             r = self._get_client().chat.completions.create(**params)
         else:
             r = self._get_client().completions.create(**params)
-        return process_chat_completion_response(r, self.formatter, request)
+        return process_chat_completion_response(r, request)
 
     async def _stream_chat_completion(self, request: ChatCompletionRequest) -> AsyncGenerator:
         params = await self._get_params(request)
@@ -235,7 +232,7 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
                 yield chunk
 
         stream = _to_async_generator()
-        async for chunk in process_chat_completion_stream_response(stream, self.formatter, request):
+        async for chunk in process_chat_completion_stream_response(stream, request):
             yield chunk
 
     async def _get_params(self, request: Union[ChatCompletionRequest, CompletionRequest]) -> dict:
@@ -246,11 +243,11 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
                 input_dict["messages"] = [await convert_message_to_openai_dict(m) for m in request.messages]
             else:
                 input_dict["prompt"] = await chat_completion_request_to_prompt(
-                    request, self.get_llama_model(request.model), self.formatter
+                    request, self.get_llama_model(request.model)
                 )
         else:
             assert not media_present, "Together does not support media for Completion requests"
-            input_dict["prompt"] = await completion_request_to_prompt(request, self.formatter)
+            input_dict["prompt"] = await completion_request_to_prompt(request)
 
         return {
             "model": request.model,

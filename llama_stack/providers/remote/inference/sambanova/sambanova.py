@@ -7,8 +7,6 @@
 import json
 from typing import AsyncGenerator
 
-from llama_models.llama3.api.chat_format import ChatFormat
-from llama_models.llama3.api.tokenizer import Tokenizer
 from openai import OpenAI
 
 from llama_stack.apis.common.content_types import (
@@ -78,13 +76,8 @@ MODEL_ALIASES = [
 
 class SambaNovaInferenceAdapter(ModelRegistryHelper, Inference):
     def __init__(self, config: SambaNovaImplConfig) -> None:
-        ModelRegistryHelper.__init__(
-            self,
-            model_aliases=MODEL_ALIASES,
-        )
-
+        ModelRegistryHelper.__init__(self, model_aliases=MODEL_ALIASES)
         self.config = config
-        self.formatter = ChatFormat(Tokenizer.get_instance())
 
     async def initialize(self) -> None:
         return
@@ -160,7 +153,7 @@ class SambaNovaInferenceAdapter(ModelRegistryHelper, Inference):
                 yield chunk
 
         stream = _to_async_generator()
-        async for chunk in process_chat_completion_stream_response(stream, self.formatter, request):
+        async for chunk in process_chat_completion_stream_response(stream, request):
             yield chunk
 
     async def embeddings(
