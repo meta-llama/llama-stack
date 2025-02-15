@@ -484,10 +484,12 @@ def test_rag_and_code_agent(llama_stack_client, agent_config):
         for i, url in enumerate(urls)
     ]
     vector_db_id = f"test-vector-db-{uuid4()}"
+    embdding_models = [x for x in llama_stack_client.models.list() if x.model_type == "embedding"]
+    embedding_model = embdding_models[0]
     llama_stack_client.vector_dbs.register(
         vector_db_id=vector_db_id,
-        embedding_model="all-MiniLM-L6-v2",
-        embedding_dimension=384,
+        embedding_model=embedding_model.identifier,
+        embedding_dimension=embedding_model.metadata["embedding_dimension"],
     )
     llama_stack_client.tool_runtime.rag_tool.insert(
         documents=documents,
