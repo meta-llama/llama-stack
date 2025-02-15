@@ -19,7 +19,6 @@ from llama_stack.apis.inference import (
     ToolDefinition,
     ToolPromptFormat,
 )
-from llama_stack.apis.models import ModelType
 from llama_stack.providers.datatypes import Model, ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.embedding_mixin import (
     SentenceTransformerEmbeddingMixin,
@@ -45,8 +44,6 @@ class SentenceTransformersInferenceImpl(
         pass
 
     async def register_model(self, model: Model) -> None:
-        if "embedding_dimension" not in model.metadata and model.model_type == ModelType.embedding:
-            raise ValueError("Embedding model must have an embedding dimension in its metadata")
         _ = self._load_sentence_transformer_model(model.provider_resource_id)
         return model
 

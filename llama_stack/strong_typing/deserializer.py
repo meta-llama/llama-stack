@@ -325,7 +325,7 @@ class TupleDeserializer(Deserializer[Tuple[Any, ...]]):
                     f"type `{self.container_type}` expects a JSON `array` of length {count} but received length {len(data)}"
                 )
 
-        return tuple(item_parser.parse(item) for item_parser, item in zip(self.item_parsers, data))
+        return tuple(item_parser.parse(item) for item_parser, item in zip(self.item_parsers, data, strict=False))
 
 
 class UnionDeserializer(Deserializer):

@@ -86,7 +86,7 @@ def get_distribution_template() -> DistributionTemplate:
         provider_id="together",
         model_type=ModelType.embedding,
         provider_model_id="togethercomputer/m2-bert-80M-8k-retrieval",
-        metadata={},
+        metadata={"embedding_dimension": 768},
     )
 
     return DistributionTemplate(

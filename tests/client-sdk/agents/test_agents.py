@@ -19,8 +19,12 @@ from llama_stack_client.types.shared.completion_message import CompletionMessage
 from llama_stack_client.types.shared_params.agent_config import AgentConfig, ToolConfig
 from llama_stack_client.types.tool_def_param import Parameter
 
-from llama_stack.apis.agents.agents import AgentConfig as Server__AgentConfig
-from llama_stack.apis.agents.agents import ToolChoice
+from llama_stack.apis.agents.agents import (
+    AgentConfig as Server__AgentConfig,
+)
+from llama_stack.apis.agents.agents import (
+    ToolChoice,
+)
 
 
 class TestClientTool(ClientTool):
@@ -417,11 +421,14 @@ def test_rag_agent(llama_stack_client, agent_config):
         )
         for i, url in enumerate(urls)
     ]
+    embdding_models = [x for x in llama_stack_client.models.list() if x.model_type == "embedding"]
+    embedding_model = embdding_models[0]
     vector_db_id = f"test-vector-db-{uuid4()}"
+
     llama_stack_client.vector_dbs.register(
         vector_db_id=vector_db_id,
-        embedding_model="all-MiniLM-L6-v2",
-        embedding_dimension=384,
+        embedding_model=embedding_model.identifier,
+        embedding_dimension=embedding_model.metadata["embedding_dimension"],
     )
     llama_stack_client.tool_runtime.rag_tool.insert(
         documents=documents,
@@ -444,11 +451,11 @@ def test_rag_agent(llama_stack_client, agent_config):
     session_id = rag_agent.create_session(f"test-session-{uuid4()}")
     user_prompts = [
         (
-            "Instead of the standard multi-head attention, what attention type does Llama3-8B use?",
+            "What is main changes between Llama2-7B and Llama3-8B models on how attention is used?",
             "grouped",
         ),
         (
-            "What `tune` command to use for getting access to Llama3-8B-Instruct ?",
+            "What `tune` command to use for getting access to Llama3-8B-Instruct model?",
             "download",
         ),
     ]
@@ -458,6 +465,7 @@ def test_rag_agent(llama_stack_client, agent_config):
             messages=[{"role": "user", "content": prompt}],
             session_id=session_id,
         )
+
         logs = [str(log) for log in EventLogger().log(response) if log is not None]
         logs_str = "".join(logs)
         assert "Tool:query_from_memory" in logs_str

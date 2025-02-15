@@ -138,7 +138,8 @@ models:
   provider_id: together
   provider_model_id: meta-llama/Llama-Guard-3-11B-Vision-Turbo
   model_type: llm
-- metadata: {}
+- metadata:
+    embedding_dimension: 768
   model_id: togethercomputer/m2-bert-80M-8k-retrieval
   provider_id: together
   provider_model_id: togethercomputer/m2-bert-80M-8k-retrieval
