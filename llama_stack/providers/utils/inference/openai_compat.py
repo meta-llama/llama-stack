@@ -427,10 +427,14 @@ def convert_tool_call(
     """
     Convert a ChatCompletionMessageToolCall tool call to either a
     ToolCall or UnparseableToolCall. Returns an UnparseableToolCall
-    if the tool call is not valid JSON.
+    if the tool call is not valid ToolCall.
     """
     try:
-        arguments = json.loads(tool_call.function.arguments)
+        valid_tool_call = ToolCall(
+            call_id=tool_call.id,
+            tool_name=tool_call.function.name,
+            arguments=json.loads(tool_call.function.arguments),
+        )
     except Exception as e:
         return UnparseableToolCall(
             call_id=tool_call.id or "",
@@ -438,8 +442,4 @@ def convert_tool_call(
             arguments=tool_call.function.arguments or "",
         )
 
-    return ToolCall(
-        call_id=tool_call.id,
-        tool_name=tool_call.function.name,
-        arguments=arguments,
-    )
+    return valid_tool_call
