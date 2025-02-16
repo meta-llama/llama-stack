@@ -122,3 +122,20 @@ response = agent.create_turn(
     session_id=session_id,
 )
 ```
+
+### Unregistering Vector DBs
+
+If you need to clean up and unregister vector databases, you can do so as follows:
+
+```python
+# Unregister a specified vector database
+vector_db_id = "my_vector_db_id"
+print(f"Unregistering vector database: {vector_db_id}")
+client.vector_dbs.unregister(vector_db_id=vector_db_id)
+
+
+# Unregister all vector databases
+for vector_db_id in client.vector_dbs.list():
+    print(f"Unregistering vector database: {vector_db_id.identifier}")
+    client.vector_dbs.unregister(vector_db_id=vector_db_id.identifier)
+```
