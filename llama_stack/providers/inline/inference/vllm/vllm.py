@@ -263,7 +263,7 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
             # Load from Hugging Face repo into default local cache dir
             resolved_model_id = resolved_llama_model.huggingface_repo
 
-            # Detect a geniune Meta Llama model to trigger Meta-specific preprocessing.
+            # Detect a genuine Meta Llama model to trigger Meta-specific preprocessing.
             # Don't set self.is_meta_llama_model until we actually load the model.
             is_meta_llama_model = True
         else:  # if resolved_llama_model is None
