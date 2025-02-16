@@ -18,7 +18,7 @@ import warnings
 from contextlib import asynccontextmanager
 from importlib.metadata import version as parse_version
 from pathlib import Path
-from typing import Any, List, Union
+from typing import Any, List, Optional, Union
 
 import yaml
 from fastapi import Body, FastAPI, HTTPException, Request
@@ -53,6 +53,7 @@ from llama_stack.providers.utils.telemetry.tracing import (
 from .endpoints import get_all_api_endpoints
 
 REPO_ROOT = Path(__file__).parent.parent.parent.parent
+LLAMA_STACK_PORT = "8321"
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(asctime)s %(name)s:%(lineno)d: %(message)s")
 logger = logging.getLogger(__name__)
@@ -326,7 +327,7 @@ def main():
     parser.add_argument(
         "--port",
         type=int,
-        default=int(os.getenv("LLAMA_STACK_PORT", 8321)),
+        default=LLAMA_STACK_PORT,
         help="Port to listen on",
     )
     parser.add_argument("--disable-ipv6", action="store_true", help="Whether to disable IPv6 support")
@@ -347,6 +348,7 @@ def main():
     )
 
     args = parser.parse_args()
+    default_args = parser.parse_args([])
 
     if args.env:
         for env_pair in args.env:
@@ -447,8 +449,6 @@ def main():
     import uvicorn
 
     # Configure SSL if certificates are provided
-    port = args.port or config.server.port
-
     ssl_config = None
     if args.tls_keyfile:
         keyfile = args.tls_keyfile
@@ -465,12 +465,13 @@ def main():
         print(f"HTTPS enabled with certificates:\n  Key: {keyfile}\n  Cert: {certfile}")
 
     listen_host = ["::", "0.0.0.0"] if not args.disable_ipv6 else "0.0.0.0"
+    port = return_flag_value("port", args, default_args, config.server.port, "LLAMA_STACK_PORT")
     print(f"Listening on {listen_host}:{port}")
 
     uvicorn_config = {
         "app": app,
         "host": listen_host,
-        "port": port,
+        "port": int(port),
     }
     if ssl_config:
         uvicorn_config.update(ssl_config)
@@ -482,6 +483,48 @@ def extract_path_params(route: str) -> List[str]:
     segments = route.split("/")
     params = [seg[1:-1] for seg in segments if seg.startswith("{") and seg.endswith("}")]
     return params
+
+
+def is_flag_set(flag: str, args: List[str], default_args: argparse.Namespace) -> bool:
+    """
+    Checks if a specific flag is set in the provided arguments.
+
+    Args:
+        flag (str): The name of the flag to check.
+        args (List[str]): The list of arguments to check against.
+        default_args (argparse.Namespace): The default arguments to compare with.
+
+    Returns:
+        bool: True if the flag is set in the provided arguments, False otherwise.
+    """
+    return vars(default_args)[flag] != vars(args)[flag]
+
+
+def return_flag_value(
+    flag: str,
+    args: argparse.Namespace,
+    default_args: argparse.Namespace,
+    config_file_value: Optional[str],
+    env_var: Optional[str] = None,
+) -> str:
+    """
+    Determine the final value for a flag based on priority:
+    1. Environment Variable (ENV_VAR) → Highest priority
+    2. Command-line Flag (--option)   → Medium priority
+    3. Config File Option             → Lowest priority
+    4. Default Argument               → Fallback when nothing else is set
+    """
+
+    # Get values from different sources
+    env_value = os.environ.get(env_var) if env_var else None
+    cli_value = vars(args).get(flag)
+    default_value = vars(default_args).get(flag)
+
+    # Check if the CLI flag was explicitly set
+    user_set_flag = is_flag_set(flag, args, default_args)
+
+    # Apply priority order: ENV > CLI > Config > Default
+    return env_value or (cli_value if user_set_flag else config_file_value or default_value)
 
 
 if __name__ == "__main__":
