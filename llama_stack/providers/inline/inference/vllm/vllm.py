@@ -257,40 +257,45 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         resolved_llama_model = resolve_model(model.provider_model_id)
         if resolved_llama_model is not None:
             # Load from Hugging Face repo into default local cache dir
-            resolved_model_id = resolved_llama_model.huggingface_repo
+            model_id_for_vllm = resolved_llama_model.huggingface_repo
 
             # Detect a genuine Meta Llama model to trigger Meta-specific preprocessing.
             # Don't set self.is_meta_llama_model until we actually load the model.
             is_meta_llama_model = True
         else:  # if resolved_llama_model is None
             # Not a Llama model name. Pass the model id through to vLLM's loader
-            resolved_model_id = model.provider_model_id
+            model_id_for_vllm = model.provider_model_id
             is_meta_llama_model = False
 
-        logger.info(f"Model id {model} resolved to {resolved_model_id}")
-
         if self.resolved_model_id is not None:
-            if resolved_model_id != self.resolved_model_id:
+            if model_id_for_vllm != self.resolved_model_id:
                 raise ValueError(
                     f"Attempted to serve two LLMs (ids '{self.resolved_model_id}') and "
-                    f"'{resolved_model_id}') from one copy of provider '{self}'. Use multiple "
+                    f"'{model_id_for_vllm}') from one copy of provider '{self}'. Use multiple "
                     f"copies of the provider instead."
                 )
             else:
                 # Model already loaded
+                logger.info(
+                    f"Requested id {model} resolves to {model_id_for_vllm}, "
+                    f"which is already loaded. Continuing."
+                )
                 self.model_ids.add(model.model_id)
                 return model
 
+        logger.info(
+            f"Requested id {model} resolves to {model_id_for_vllm}. Loading "
+            f"{model_id_for_vllm}."
+        )
         if is_meta_llama_model:
-            logger.info(f"Model {resolved_model_id} is a Meta Llama model.")
+            logger.info(f"Model {model_id_for_vllm} is a Meta Llama model.")
         self.is_meta_llama_model = is_meta_llama_model
-        logger.info(f"Preloading model: {resolved_model_id}")
 
         # If we get here, this is the first time registering a model.
         # Preload so that the first inference request won't time out.
         engine_args = AsyncEngineArgs(
-            model=resolved_model_id,
-            tokenizer=resolved_model_id,
+            model=model_id_for_vllm,
+            tokenizer=model_id_for_vllm,
             tensor_parallel_size=self.config.tensor_parallel_size,
             enforce_eager=self.config.enforce_eager,
             gpu_memory_utilization=self.config.gpu_memory_utilization,
@@ -324,7 +329,7 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
                 model_config=model_config,
                 base_model_paths=[
                     # The layer below us will only see resolved model IDs
-                    BaseModelPath(resolved_model_id, resolved_model_id)
+                    BaseModelPath(model_id_for_vllm, model_id_for_vllm)
                 ],
             ),
             response_role="assistant",
@@ -334,10 +339,10 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
             tool_parser=tool_parser,
             chat_template_content_format="auto",
         )
-        self.resolved_model_id = resolved_model_id
+        self.resolved_model_id = model_id_for_vllm
         self.model_ids.add(model.model_id)
 
-        logger.info(f"Finished preloading model: {resolved_model_id}")
+        logger.info(f"Finished preloading model: {model_id_for_vllm}")
 
         return model
 
