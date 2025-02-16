@@ -228,10 +228,6 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         pass
 
     async def shutdown(self) -> None:
-        """
-        Callback that apparently is invoked when shutting down the Llama Stack server. Not sure how
-        to shut down a Llama Stack server in such a way as to trigger this callback.
-        """
         logger.info(f"Shutting down inline vLLM inference provider {self}.")
         if self.engine is not None:
             self.engine.shutdown_background_loop()
