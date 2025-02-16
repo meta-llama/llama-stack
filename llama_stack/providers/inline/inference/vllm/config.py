@@ -26,7 +26,7 @@ class VLLMConfig(BaseModel):
         description="Maximum number of tokens to generate.",
     )
     max_model_len: int = Field(default=4096, description="Maximum context length to use during serving.")
-    max_num_seqs: int = Field(default=4, description="Maximum parallel batch size for generation")
+    max_num_seqs: int = Field(default=4, description="Maximum parallel batch size for generation.")
     enforce_eager: bool = Field(
         default=False,
         description="Whether to use eager mode for inference (otherwise cuda graphs are used).",
