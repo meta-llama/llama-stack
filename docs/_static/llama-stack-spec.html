@@ -2697,7 +2697,8 @@
                         "type": "string",
                         "enum": [
                             "auto",
-                            "required"
+                            "required",
+                            "none"
                         ],
                         "description": "Whether tool use is required or automatic. This is a hint to the model which may not be followed. It depends on the Instruction Following capabilities of the model."
                     },
@@ -3231,13 +3232,22 @@
                 "type": "object",
                 "properties": {
                     "tool_choice": {
-                        "type": "string",
-                        "enum": [
-                            "auto",
-                            "required"
+                        "oneOf": [
+                            {
+                                "type": "string",
+                                "enum": [
+                                    "auto",
+                                    "required",
+                                    "none"
+                                ],
+                                "description": "Whether tool use is required or automatic. This is a hint to the model which may not be followed. It depends on the Instruction Following capabilities of the model."
+                            },
+                            {
+                                "type": "string"
+                            }
                         ],
-                        "description": "(Optional) Whether tool use is required or automatic. Defaults to ToolChoice.auto.",
-                        "default": "auto"
+                        "default": "auto",
+                        "description": "(Optional) Whether tool use is automatic, required, or none. Can also specify a tool name to use a specific tool. Defaults to ToolChoice.auto."
                     },
                     "tool_prompt_format": {
                         "type": "string",
@@ -3259,9 +3269,6 @@
                     }
                 },
                 "additionalProperties": false,
-                "required": [
-                    "system_message_behavior"
-                ],
                 "description": "Configuration for tool use."
             },
             "ToolDef": {
@@ -4100,7 +4107,8 @@
                         "type": "string",
                         "enum": [
                             "auto",
-                            "required"
+                            "required",
+                            "none"
                         ],
                         "description": "Whether tool use is required or automatic. This is a hint to the model which may not be followed. It depends on the Instruction Following capabilities of the model."
                     },
@@ -4384,7 +4392,8 @@
                         "type": "string",
                         "enum": [
                             "auto",
-                            "required"
+                            "required",
+                            "none"
                         ],
                         "description": "(Optional) Whether tool use is required or automatic. Defaults to ToolChoice.auto. .. deprecated:: Use tool_config instead."
                     },
