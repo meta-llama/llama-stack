@@ -26,10 +26,9 @@ from llama_stack.apis.inference import (
     ToolDefinition,
     ToolPromptFormat,
 )
-from llama_stack.models.llama.datatypes import CoreModelId, TopKSamplingStrategy
+from llama_stack.models.llama.datatypes import TopKSamplingStrategy
 from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
-    build_model_alias,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
     get_sampling_options,
@@ -44,17 +43,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 )
 
 from .config import CerebrasImplConfig
-
-model_aliases = [
-    build_model_alias(
-        "llama3.1-8b",
-        CoreModelId.llama3_1_8b_instruct.value,
-    ),
-    build_model_alias(
-        "llama-3.3-70b",
-        CoreModelId.llama3_3_70b_instruct.value,
-    ),
-]
+from .models import model_aliases
 
 
 class CerebrasInferenceAdapter(ModelRegistryHelper, Inference):

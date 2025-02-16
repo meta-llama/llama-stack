@@ -14,7 +14,7 @@ from llama_stack.distribution.datatypes import (
 )
 from llama_stack.models.llama.sku_list import all_registered_models
 from llama_stack.providers.remote.inference.sambanova import SambaNovaImplConfig
-from llama_stack.providers.remote.inference.sambanova.sambanova import MODEL_ALIASES
+from llama_stack.providers.remote.inference.sambanova.models import MODEL_ALIASES
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
 

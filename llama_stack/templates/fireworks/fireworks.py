@@ -19,7 +19,7 @@ from llama_stack.providers.inline.inference.sentence_transformers import (
 )
 from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOConfig
 from llama_stack.providers.remote.inference.fireworks import FireworksImplConfig
-from llama_stack.providers.remote.inference.fireworks.fireworks import MODEL_ALIASES
+from llama_stack.providers.remote.inference.fireworks.models import MODEL_ALIASES
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
 
