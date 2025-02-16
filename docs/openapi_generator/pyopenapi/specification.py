@@ -78,7 +78,7 @@ class MediaType:
 
 @dataclass
 class RequestBody:
-    content: Dict[str, MediaType]
+    content: Dict[str, MediaType | Dict[str, Any]]
     description: Optional[str] = None
     required: Optional[bool] = None
 

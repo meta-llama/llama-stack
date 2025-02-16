@@ -477,6 +477,7 @@ class Generator:
             "SyntheticDataGeneration",
             "PostTraining",
             "BatchInference",
+            "Files",
         ]:
             op.defining_class.__name__ = f"{op.defining_class.__name__} (Coming Soon)"
             print(op.defining_class.__name__)
@@ -520,8 +521,30 @@ class Generator:
         # parameters passed anywhere
         parameters = path_parameters + query_parameters
 
-        # data passed in payload
-        if op.request_params:
+        webmethod = getattr(op.func_ref, "__webmethod__", None)
+        raw_bytes_request_body = False
+        if webmethod:
+            raw_bytes_request_body = getattr(webmethod, "raw_bytes_request_body", False)
+
+        # data passed in request body as raw bytes cannot have request parameters
+        if raw_bytes_request_body and op.request_params:
+            raise ValueError("Cannot have both raw bytes request body and request parameters")
+
+        # data passed in request body as raw bytes
+        if raw_bytes_request_body:
+            requestBody = RequestBody(
+                content={
+                    "application/octet-stream": {
+                        "schema": {
+                            "type": "string",
+                            "format": "binary",
+                        }
+                    }
+                },
+                required=True,
+            )
+        # data passed in payload as JSON and mapped to request parameters
+        elif op.request_params:
             builder = ContentBuilder(self.schema_builder)
             first = next(iter(op.request_params))
             request_name, request_type = first

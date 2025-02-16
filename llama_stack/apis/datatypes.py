@@ -31,5 +31,7 @@ class Api(Enum):
     benchmarks = "benchmarks"
     tool_groups = "tool_groups"
 
+    files = "files"
+
     # built-in API
     inspect = "inspect"

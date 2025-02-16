@@ -678,6 +678,37 @@
                 }
             }
         },
+        "/v1/files": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FileUploadResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Files (Coming Soon)"
+                ],
+                "description": "Create a new upload session for a file identified by a bucket and key.",
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateUploadSessionRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/v1/agents/{agent_id}": {
             "delete": {
                 "responses": {
@@ -771,6 +802,84 @@
                     {
                         "name": "agent_id",
                         "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/v1/files/{bucket}/{key}": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FileResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Files (Coming Soon)"
+                ],
+                "description": "Get a file info identified by a bucket and key.",
+                "parameters": [
+                    {
+                        "name": "bucket",
+                        "in": "path",
+                        "description": "Bucket name (valid chars: a-zA-Z0-9_-)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "key",
+                        "in": "path",
+                        "description": "Key under which the file is stored (valid chars: a-zA-Z0-9_-/.)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            },
+            "delete": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FileResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Files (Coming Soon)"
+                ],
+                "description": "Delete a file identified by a bucket and key.",
+                "parameters": [
+                    {
+                        "name": "bucket",
+                        "in": "path",
+                        "description": "Bucket name (valid chars: a-zA-Z0-9_-)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "key",
+                        "in": "path",
+                        "description": "Key under which the file is stored (valid chars: a-zA-Z0-9_-/.)",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1783,6 +1892,37 @@
                 }
             }
         },
+        "/v1/files/{bucket}": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ListFileResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Files (Coming Soon)"
+                ],
+                "description": "List all files in a bucket.",
+                "parameters": [
+                    {
+                        "name": "bucket",
+                        "in": "path",
+                        "description": "Bucket name (valid chars: a-zA-Z0-9_-)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
         "/v1/datasets": {
             "get": {
                 "responses": {
@@ -2613,6 +2753,55 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/SyntheticDataGenerateRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/v1/files/{upload_id}": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/FileResponse"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Files (Coming Soon)"
+                ],
+                "description": "Upload file content to an existing upload session. On the server, request body will have the raw bytes that are uploaded.",
+                "parameters": [
+                    {
+                        "name": "upload_id",
+                        "in": "path",
+                        "description": "ID of the upload session",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/octet-stream": {
+                            "schema": {
+                                "type": "string",
+                                "format": "binary"
                             }
                         }
                     },
@@ -5338,6 +5527,87 @@
                     "turn_id"
                 ]
             },
+            "CreateUploadSessionRequest": {
+                "type": "object",
+                "properties": {
+                    "bucket": {
+                        "type": "string",
+                        "description": "Bucket under which the file is stored (valid chars: a-zA-Z0-9_-)"
+                    },
+                    "key": {
+                        "type": "string",
+                        "description": "Key under which the file is stored (valid chars: a-zA-Z0-9_-/.)"
+                    },
+                    "mime_type": {
+                        "type": "string",
+                        "description": "MIME type of the file"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "bucket",
+                    "key",
+                    "mime_type"
+                ]
+            },
+            "FileUploadResponse": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "ID of the upload session"
+                    },
+                    "url": {
+                        "type": "string",
+                        "description": "Upload URL for the file or file parts"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "id",
+                    "url"
+                ],
+                "description": "Response after initiating a file upload session."
+            },
+            "FileResponse": {
+                "type": "object",
+                "properties": {
+                    "bucket": {
+                        "type": "string",
+                        "description": "Bucket under which the file is stored (valid chars: a-zA-Z0-9_-)"
+                    },
+                    "key": {
+                        "type": "string",
+                        "description": "Key under which the file is stored (valid chars: a-zA-Z0-9_-/.)"
+                    },
+                    "mime_type": {
+                        "type": "string",
+                        "description": "MIME type of the file"
+                    },
+                    "url": {
+                        "type": "string",
+                        "description": "Upload URL for the file contents"
+                    },
+                    "bytes": {
+                        "type": "integer",
+                        "description": "Size of the file in bytes"
+                    },
+                    "created_at": {
+                        "type": "integer",
+                        "description": "Timestamp of when the file was created"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "bucket",
+                    "key",
+                    "mime_type",
+                    "url",
+                    "bytes",
+                    "created_at"
+                ],
+                "description": "Response representing a file entry."
+            },
             "EmbeddingsRequest": {
                 "type": "object",
                 "properties": {
@@ -6610,6 +6880,23 @@
                 "required": [
                     "content"
                 ]
+            },
+            "ListFileResponse": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/FileResponse"
+                        },
+                        "description": "List of FileResponse entries"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "data"
+                ],
+                "description": "Response representing a list of file entries."
             },
             "ListDatasetsResponse": {
                 "type": "object",
@@ -8339,6 +8626,9 @@
             "name": "Eval"
         },
         {
+            "name": "Files (Coming Soon)"
+        },
+        {
             "name": "Inference",
             "description": "This API provides the raw interface to the underlying models. Two kinds of models are supported:\n- LLM models: these models generate \"raw\" and \"chat\" (conversational) completions.\n- Embedding models: these models generate embeddings to be used for semantic search.",
             "x-displayName": "Llama Stack Inference API for generating completions, chat completions, and embeddings."
@@ -8393,6 +8683,7 @@
                 "DatasetIO",
                 "Datasets",
                 "Eval",
+                "Files (Coming Soon)",
                 "Inference",
                 "Inspect",
                 "Models",

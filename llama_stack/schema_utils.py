@@ -19,6 +19,7 @@ class WebMethod:
     request_examples: Optional[List[Any]] = None
     response_examples: Optional[List[Any]] = None
     method: Optional[str] = None
+    raw_bytes_request_body: Optional[bool] = False
 
 
 def webmethod(
@@ -27,6 +28,7 @@ def webmethod(
     public: Optional[bool] = False,
     request_examples: Optional[List[Any]] = None,
     response_examples: Optional[List[Any]] = None,
+    raw_bytes_request_body: Optional[bool] = False,
 ) -> Callable[[T], T]:
     """
     Decorator that supplies additional metadata to an endpoint operation function.
@@ -44,6 +46,7 @@ def webmethod(
             public=public or False,
             request_examples=request_examples,
             response_examples=response_examples,
+            raw_bytes_request_body=raw_bytes_request_body,
         )
         return cls
 
