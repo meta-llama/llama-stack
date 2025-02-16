@@ -17,7 +17,9 @@ from llama_stack.providers.inline.inference.sentence_transformers import (
     SentenceTransformersInferenceConfig,
 )
 from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOConfig
-from llama_stack.providers.inline.vector_io.sqlite_vec.config import SQLiteVectorIOConfig
+from llama_stack.providers.inline.vector_io.sqlite_vec.config import (
+    SQLiteVectorIOConfig,
+)
 from llama_stack.providers.remote.inference.ollama import OllamaImplConfig
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
@@ -115,7 +117,7 @@ def get_distribution_template() -> DistributionTemplate:
                         inference_provider,
                         embedding_provider,
                     ],
-                    "vector_io": [vector_io_provider_faiss, vector_io_provider_faiss],
+                    "vector_io": [vector_io_provider_faiss, vector_io_provider_sqlite],
                     "safety": [
                         Provider(
                             provider_id="llama-guard",

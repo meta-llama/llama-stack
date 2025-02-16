@@ -263,8 +263,8 @@ def extend_enum(
         enum_class: Type[enum.Enum] = enum.Enum(extend.__name__, values)  # type: ignore
 
         # assign the newly created type to the same module where the extending class is defined
-        setattr(enum_class, "__module__", extend.__module__)
-        setattr(enum_class, "__doc__", extend.__doc__)
+        enum_class.__module__ = extend.__module__
+        enum_class.__doc__ = extend.__doc__
         setattr(sys.modules[extend.__module__], extend.__name__, enum_class)
 
         return enum.unique(enum_class)
@@ -874,6 +874,7 @@ def is_generic_instance(obj: Any, typ: TypeLike) -> bool:
             for tuple_item_type, item in zip(
                 (tuple_item_type for tuple_item_type in typing.get_args(typ)),
                 (item for item in obj),
+                strict=False,
             )
         )
     elif origin_type is Union:
@@ -954,6 +955,7 @@ class RecursiveChecker:
                 for tuple_item_type, item in zip(
                     (tuple_item_type for tuple_item_type in typing.get_args(typ)),
                     (item for item in obj),
+                    strict=False,
                 )
             )
         elif origin_type is Union:

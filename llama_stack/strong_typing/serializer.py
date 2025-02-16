@@ -216,7 +216,7 @@ class TypedTupleSerializer(Serializer[tuple]):
         self.item_generators = tuple(_get_serializer(item_type, context) for item_type in item_types)
 
     def generate(self, obj: tuple) -> List[JsonType]:
-        return [item_generator.generate(item) for item_generator, item in zip(self.item_generators, obj)]
+        return [item_generator.generate(item) for item_generator, item in zip(self.item_generators, obj, strict=False)]
 
 
 class CustomSerializer(Serializer):

@@ -37,6 +37,7 @@ def available_providers() -> List[ProviderSpec]:
                 Api.vector_dbs,
                 Api.tool_runtime,
                 Api.tool_groups,
+                Api.models,
             ],
         ),
         remote_provider_spec(
