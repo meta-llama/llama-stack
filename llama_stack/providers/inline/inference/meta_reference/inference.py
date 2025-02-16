@@ -9,6 +9,8 @@ import logging
 from typing import AsyncGenerator, List, Optional, Union
 
 from llama_stack.apis.common.content_types import (
+    FinalToolCallDelta,
+    InProgressToolCallDelta,
     TextDelta,
     ToolCallDelta,
     ToolCallParseStatus,
@@ -341,12 +343,22 @@ class MetaReferenceInferenceImpl(
 
                 if not ipython and token_result.text.startswith("<|python_tag|>"):
                     ipython = True
+                    # send the deprecated delta
                     yield ChatCompletionResponseStreamChunk(
                         event=ChatCompletionResponseEvent(
                             event_type=ChatCompletionResponseEventType.progress,
                             delta=ToolCallDelta(
                                 tool_call="",
                                 parse_status=ToolCallParseStatus.started,
+                            ),
+                        )
+                    )
+                    # send the new delta
+                    yield ChatCompletionResponseStreamChunk(
+                        event=ChatCompletionResponseEvent(
+                            event_type=ChatCompletionResponseEventType.progress,
+                            delta=InProgressToolCallDelta(
+                                tool_call="",
                             ),
                         )
                     )
@@ -362,10 +374,7 @@ class MetaReferenceInferenceImpl(
                     text = token_result.text
 
                 if ipython:
-                    delta = ToolCallDelta(
-                        tool_call=text,
-                        parse_status=ToolCallParseStatus.in_progress,
-                    )
+                    delta = InProgressToolCallDelta(tool_call=text)
                 else:
                     delta = TextDelta(text=text)
 
@@ -374,6 +383,21 @@ class MetaReferenceInferenceImpl(
                         assert len(token_result.logprobs) == 1
 
                         logprobs.append(TokenLogProbs(logprobs_by_token={token_result.text: token_result.logprobs[0]}))
+
+                    if isinstance(delta, InProgressToolCallDelta):
+                        deprecated_delta = ToolCallDelta(
+                            tool_call=delta.tool_call,
+                            parse_status=ToolCallParseStatus.in_progress,
+                        )
+                        yield ChatCompletionResponseStreamChunk(
+                            event=ChatCompletionResponseEvent(
+                                event_type=ChatCompletionResponseEventType.progress,
+                                delta=deprecated_delta,
+                                stop_reason=stop_reason,
+                                logprobs=logprobs if request.logprobs else None,
+                            )
+                        )
+
                     yield ChatCompletionResponseStreamChunk(
                         event=ChatCompletionResponseEvent(
                             event_type=ChatCompletionResponseEventType.progress,
@@ -390,6 +414,7 @@ class MetaReferenceInferenceImpl(
 
             parsed_tool_calls = len(message.tool_calls) > 0
             if ipython and not parsed_tool_calls:
+                # send the deprecated delta
                 yield ChatCompletionResponseStreamChunk(
                     event=ChatCompletionResponseEvent(
                         event_type=ChatCompletionResponseEventType.progress,
@@ -400,8 +425,15 @@ class MetaReferenceInferenceImpl(
                         stop_reason=stop_reason,
                     )
                 )
-
+                # send the new delta
+                yield ChatCompletionResponseStreamChunk(
+                    event=ChatCompletionResponseEvent(
+                        event_type=ChatCompletionResponseEventType.progress,
+                        delta=FinalToolCallDelta(tool_call=None),
+                    )
+                )
             for tool_call in message.tool_calls:
+                # send the deprecated delta
                 yield ChatCompletionResponseStreamChunk(
                     event=ChatCompletionResponseEvent(
                         event_type=ChatCompletionResponseEventType.progress,
@@ -410,6 +442,13 @@ class MetaReferenceInferenceImpl(
                             parse_status=ToolCallParseStatus.succeeded,
                         ),
                         stop_reason=stop_reason,
+                    )
+                )
+                # send the new delta
+                yield ChatCompletionResponseStreamChunk(
+                    event=ChatCompletionResponseEvent(
+                        event_type=ChatCompletionResponseEventType.progress,
+                        delta=FinalToolCallDelta(tool_call=tool_call),
                     )
                 )
 
