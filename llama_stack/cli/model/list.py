@@ -31,6 +31,13 @@ class ModelList(Subcommand):
             action="store_true",
             help="Show all models (not just defaults)",
         )
+        self.parser.add_argument(
+            "-s",
+            "--search",
+            type=str,
+            required=False,
+            help="Search for the input string as a substring in the model descriptor(ID)",
+        )
 
     def _run_model_list_cmd(self, args: argparse.Namespace) -> None:
         from .safety_models import prompt_guard_model_sku
@@ -47,15 +54,28 @@ class ModelList(Subcommand):
                 continue
 
             descriptor = model.descriptor()
-            rows.append(
-                [
-                    descriptor,
-                    model.huggingface_repo,
-                    f"{model.max_seq_length // 1024}K",
-                ]
+            if args.search:
+                if args.search.lower() in descriptor.lower():
+                    rows.append(
+                        [
+                            descriptor,
+                            model.huggingface_repo,
+                            f"{model.max_seq_length // 1024}K",
+                        ]
+                    )
+            else:
+                rows.append(
+                    [
+                        descriptor,
+                        model.huggingface_repo,
+                        f"{model.max_seq_length // 1024}K",
+                    ]
+                )
+        if len(rows) == 0:
+            print("Not found for search.")
+        else:
+            print_table(
+                rows,
+                headers,
+                separate_rows=True,
             )
-        print_table(
-            rows,
-            headers,
-            separate_rows=True,
-        )
