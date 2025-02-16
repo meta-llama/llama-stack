@@ -16,6 +16,7 @@ from llama_stack.apis.common.content_types import (
     ImageContentItem,
     InterleavedContent,
     TextContentItem,
+    TextDelta,
 )
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
@@ -31,6 +32,9 @@ from llama_stack.apis.inference import (
     ToolConfig,
     ToolDefinition,
     ToolPromptFormat,
+    ChatCompletionResponseEvent,
+    ChatCompletionResponseEventType,
+    ChatCompletionResponseStreamChunk,
 )
 from llama_stack.apis.models import Model, ModelType
 from llama_stack.models.llama.datatypes import CoreModelId
@@ -308,6 +312,14 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
 
     async def _stream_chat_completion(self, request: ChatCompletionRequest) -> AsyncGenerator:
         params = await self._get_params(request)
+        yield ChatCompletionResponseStreamChunk(
+            event=ChatCompletionResponseEvent(
+                delta=TextDelta(text=""),
+                event_type=ChatCompletionResponseEventType.prepare,
+                input_prompt=params.get("prompt", None),
+                input_messages=params.get("messages", None),
+            )
+        )
 
         async def _generate_and_convert_to_openai_compat():
             if "messages" in params:
