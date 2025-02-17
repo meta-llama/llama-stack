@@ -22,6 +22,9 @@ jobs:
             **/requirements*.txt
             .pre-commit-config.yaml
 
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v5
+
       - uses: pre-commit/action@v3.0.1
 
       - name: Verify if there are any diff files after pre-commit
