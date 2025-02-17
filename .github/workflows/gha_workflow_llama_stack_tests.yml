@@ -11,6 +11,10 @@ on:
   #    - 'llama_stack/**/*.py'
   #    - 'tests/**/*.py'
 
+  # Schedule cron job at 2:30 am EST every day of the week.
+  # Will run a manual workflow off of 'main' branch.
+  schedule:
+    - cron: '30 7 * * *'
   workflow_dispatch:
     inputs:
       runner:
@@ -87,7 +91,7 @@ jobs:
     defaults:
       run:
         shell: bash
-    runs-on: ${{ inputs.runner != '' && inputs.runner || 'llama-stack-gha-runner-gpu' }}
+    runs-on: ${{ inputs.runner != '' && inputs.runner || github.repository_owner == 'meta-llama' && 'llama-stack-gha-runner-gpu' || 'llama-stack-fork-gha-runner-gpu' }}
     if: always()
     steps:
 
@@ -142,7 +146,7 @@ jobs:
         id: checkout_repo
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.branch }}
+          ref: ${{ inputs.checkout_reference }}
 
       - name: "[DEBUG] Content of the repository after checkout"
         id: debug_content_after_checkout
@@ -206,11 +210,6 @@ jobs:
           sudo apt update -y
           sudo apt install -y python3 python3-pip npm wget
 
-      - name: "Installing packages with 'curl'"
-        id: install_curl
-        run: |
-          curl -fsSL https://ollama.com/install.sh | sh
-
       - name: "Installing packages with 'wget'"
         id: install_wget
         run: |
@@ -234,11 +233,12 @@ jobs:
           pip install -e .
           pip install -U \
             torch torchvision \
-            pytest pytest_asyncio \
+            pytest pytest_asyncio pytest_html \
             fairscale lm-format-enforcer \
             zmq chardet pypdf \
             pandas sentence_transformers together \
-            aiosqlite
+            aiosqlite \
+            openai
       - name: "Installing packages with conda"
         id: install_conda_generic
         run: |
@@ -310,7 +310,7 @@ jobs:
       - name: "PR - Upload Test Summary"
         id: pr_test_summary_upload
         if: github.event_name == 'pull_request_target'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-summary
           path: test-summary.md
@@ -333,7 +333,7 @@ jobs:
       - name: "Manual - Run Tests: Prep"
         id: manual_run_tests
         working-directory: "${{ github.workspace }}"
-        if: github.event_name == 'workflow_dispatch'
+        if: contains(fromJSON('["workflow_dispatch", "schedule"]'), github.event_name)
         run: |
           echo "[STEP] Running PyTest tests at 'GITHUB_WORKSPACE' path: ${{ github.workspace }}"
 
@@ -345,11 +345,16 @@ jobs:
           # Merge test results with 'merged-test-results.xml' from above.
           # junit-merge <new-test-results> merged-test-results.xml
 
+
+      #####################
+      #### ALL TESTING ####
+      #####################
+
       #### Create test summary ####
 
       - name: "Manual - Test Summary"
         id: manual_test_summary
-        if: always() && github.event_name == 'workflow_dispatch'
+        if: always()
         uses: test-summary/action@v2
         with:
           paths: "${{ github.workspace }}/merged-test-results.xml"
