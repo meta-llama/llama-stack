@@ -27,6 +27,14 @@ logger = logging.getLogger(__name__)
 
 
 class FiddlecubeSafetyAdapter(Safety, ShieldsProtocolPrivate):
+    """
+    Implementation of the Fiddlecube Safety API.
+
+    Accepts a list of messages for content moderation.
+    Optionally, a list of `excluded_categories` can be provided to exclude certain categories from moderation.
+    Category name strings map to the llama-guard risk taxonomy.
+    """
+
     def __init__(self, config: FiddlecubeSafetyConfig) -> None:
         self.config = config
         self.registered_shields = []
