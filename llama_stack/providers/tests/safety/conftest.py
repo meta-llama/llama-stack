@@ -55,7 +55,7 @@ DEFAULT_PROVIDER_COMBINATIONS = [
     ),
     pytest.param(
         {
-            "inference": "bedrock",
+            "inference": "together",
             "safety": "fiddlecube",
         },
         id="fiddlecube",
