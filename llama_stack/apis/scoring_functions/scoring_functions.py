@@ -12,16 +12,16 @@ from typing import (
     Literal,
     Optional,
     Protocol,
-    runtime_checkable,
     Union,
+    runtime_checkable,
 )
 
-from llama_models.schema_utils import json_schema_type, register_schema, webmethod
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
 from llama_stack.apis.common.type_system import ParamType
 from llama_stack.apis.resource import Resource, ResourceType
+from llama_stack.schema_utils import json_schema_type, register_schema, webmethod
 
 
 # Perhaps more structure can be imposed on these functions. Maybe they could be associated
@@ -134,7 +134,7 @@ class ScoringFunctions(Protocol):
     @webmethod(route="/scoring-functions", method="GET")
     async def list_scoring_functions(self) -> ListScoringFunctionsResponse: ...
 
-    @webmethod(route="/scoring-functions/{scoring_fn_id}", method="GET")
+    @webmethod(route="/scoring-functions/{scoring_fn_id:path}", method="GET")
     async def get_scoring_function(self, scoring_fn_id: str, /) -> Optional[ScoringFn]: ...
 
     @webmethod(route="/scoring-functions", method="POST")

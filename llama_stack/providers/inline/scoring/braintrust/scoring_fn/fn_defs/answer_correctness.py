@@ -11,7 +11,6 @@ from llama_stack.apis.scoring_functions import (
     ScoringFn,
 )
 
-
 answer_correctness_fn_def = ScoringFn(
     identifier="braintrust::answer-correctness",
     description=(

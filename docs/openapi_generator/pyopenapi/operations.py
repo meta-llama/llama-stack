@@ -15,7 +15,7 @@ from llama_stack.apis.version import LLAMA_STACK_API_VERSION
 
 from termcolor import colored
 
-from ..strong_typing.inspection import get_signature
+from llama_stack.strong_typing.inspection import get_signature
 
 
 def split_prefix(
@@ -130,6 +130,8 @@ class _FormatParameterExtractor:
 
 def _get_route_parameters(route: str) -> List[str]:
     extractor = _FormatParameterExtractor()
+    # Replace all occurrences of ":path" with empty string
+    route = route.replace(":path", "")
     route.format_map(extractor)
     return extractor.keys
 

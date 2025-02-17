@@ -11,10 +11,12 @@ from typing import Any, AsyncGenerator, Callable, Type, TypeVar
 
 from pydantic import BaseModel
 
+from llama_stack.models.llama.datatypes import Primitive
+
 T = TypeVar("T")
 
 
-def serialize_value(value: Any) -> Any:
+def serialize_value(value: Any) -> Primitive:
     """Serialize a single value into JSON-compatible format."""
     if value is None:
         return ""
@@ -24,10 +26,6 @@ def serialize_value(value: Any) -> Any:
         return value._name_
     elif isinstance(value, BaseModel):
         return value.model_dump_json()
-    elif isinstance(value, (list, tuple, set)):
-        return [serialize_value(item) for item in value]
-    elif isinstance(value, dict):
-        return {str(k): serialize_value(v) for k, v in value.items()}
     else:
         return str(value)
 

@@ -6,11 +6,10 @@
 
 from pathlib import Path
 
-from llama_models.sku_list import all_registered_models
-
 from llama_stack.apis.models import ModelInput
 from llama_stack.distribution.datatypes import Provider, ToolGroupInput
-from llama_stack.providers.inline.vector_io.faiss.config import FaissImplConfig
+from llama_stack.models.llama.sku_list import all_registered_models
+from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOConfig
 from llama_stack.providers.remote.inference.bedrock.bedrock import MODEL_ALIASES
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
@@ -37,7 +36,7 @@ def get_distribution_template() -> DistributionTemplate:
     vector_io_provider = Provider(
         provider_id="faiss",
         provider_type="inline::faiss",
-        config=FaissImplConfig.sample_run_config(f"distributions/{name}"),
+        config=FaissVectorIOConfig.sample_run_config(f"distributions/{name}"),
     )
 
     core_model_to_hf_repo = {m.descriptor(): m.huggingface_repo for m in all_registered_models()}

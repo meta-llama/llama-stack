@@ -19,7 +19,7 @@ class StackRun(Subcommand):
         self.parser = subparsers.add_parser(
             "run",
             prog="llama stack run",
-            description="""start the server for a Llama Stack Distribution. You should have already built (or downloaded) and configured the distribution.""",
+            description="""Start the server for a Llama Stack Distribution. You should have already built (or downloaded) and configured the distribution.""",
             formatter_class=argparse.RawTextHelpFormatter,
         )
         self._add_arguments()
@@ -64,6 +64,13 @@ class StackRun(Subcommand):
             "--tls-certfile",
             type=str,
             help="Path to TLS certificate file for HTTPS",
+        )
+        self.parser.add_argument(
+            "--image-type",
+            type=str,
+            help="Image Type used during the build. This can be either conda or container or venv.",
+            choices=["conda", "container", "venv"],
+            default="conda",
         )
 
     def _run_stack_run_cmd(self, args: argparse.Namespace) -> None:
@@ -118,11 +125,11 @@ class StackRun(Subcommand):
         config_dict = yaml.safe_load(config_file.read_text())
         config = parse_and_maybe_upgrade_config(config_dict)
 
-        if config.container_image:
+        if args.image_type == ImageType.container.value or config.container_image:
             script = importlib.resources.files("llama_stack") / "distribution/start_container.sh"
             image_name = f"distribution-{template_name}" if template_name else config.container_image
             run_args = [script, image_name]
-        else:
+        elif args.image_type == ImageType.conda.value:
             current_conda_env = os.environ.get("CONDA_DEFAULT_ENV")
             image_name = args.image_name or current_conda_env
             if not image_name:
@@ -166,6 +173,15 @@ class StackRun(Subcommand):
             run_args = [
                 script,
                 image_name,
+            ]
+        else:
+            # else must be venv since that is the only valid option left.
+            current_venv = os.environ.get("VIRTUAL_ENV")
+            venv = args.image_name or current_venv
+            script = importlib.resources.files("llama_stack") / "distribution/start_venv.sh"
+            run_args = [
+                script,
+                venv,
             ]
 
         run_args.extend([str(config_file), str(args.port)])

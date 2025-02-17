@@ -7,11 +7,11 @@
 from enum import Enum
 from typing import Any, Dict, List, Literal, Optional, Protocol, runtime_checkable
 
-from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel, ConfigDict, Field
 
 from llama_stack.apis.resource import Resource, ResourceType
 from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
+from llama_stack.schema_utils import json_schema_type, webmethod
 
 
 class CommonModelFields(BaseModel):
@@ -62,7 +62,7 @@ class Models(Protocol):
     @webmethod(route="/models", method="GET")
     async def list_models(self) -> ListModelsResponse: ...
 
-    @webmethod(route="/models/{model_id}", method="GET")
+    @webmethod(route="/models/{model_id:path}", method="GET")
     async def get_model(
         self,
         model_id: str,
@@ -78,7 +78,7 @@ class Models(Protocol):
         model_type: Optional[ModelType] = None,
     ) -> Model: ...
 
-    @webmethod(route="/models/{model_id}", method="DELETE")
+    @webmethod(route="/models/{model_id:path}", method="DELETE")
     async def unregister_model(
         self,
         model_id: str,

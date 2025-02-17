@@ -11,7 +11,6 @@ from llama_stack.apis.scoring_functions import (
     ScoringFn,
 )
 
-
 equality = ScoringFn(
     identifier="basic::equality",
     description="Returns 1.0 if the input is equal to the target, 0.0 otherwise.",

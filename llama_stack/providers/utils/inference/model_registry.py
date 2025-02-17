@@ -7,11 +7,9 @@
 from collections import namedtuple
 from typing import List, Optional
 
-from llama_models.sku_list import all_registered_models
-
 from llama_stack.apis.models.models import ModelType
+from llama_stack.models.llama.sku_list import all_registered_models
 from llama_stack.providers.datatypes import Model, ModelsProtocolPrivate
-
 from llama_stack.providers.utils.inference import (
     ALL_HUGGINGFACE_REPOS_TO_MODEL_DESCRIPTOR,
 )
@@ -57,17 +55,11 @@ class ModelRegistryHelper(ModelsProtocolPrivate):
             self.alias_to_provider_id_map[alias_obj.llama_model] = alias_obj.provider_model_id
             self.provider_id_to_llama_model_map[alias_obj.provider_model_id] = alias_obj.llama_model
 
-    def get_provider_model_id(self, identifier: str) -> str:
-        if identifier in self.alias_to_provider_id_map:
-            return self.alias_to_provider_id_map[identifier]
-        else:
-            return None
+    def get_provider_model_id(self, identifier: str) -> Optional[str]:
+        return self.alias_to_provider_id_map.get(identifier, None)
 
-    def get_llama_model(self, provider_model_id: str) -> str:
-        if provider_model_id in self.provider_id_to_llama_model_map:
-            return self.provider_id_to_llama_model_map[provider_model_id]
-        else:
-            return None
+    def get_llama_model(self, provider_model_id: str) -> Optional[str]:
+        return self.provider_id_to_llama_model_map.get(provider_model_id, None)
 
     async def register_model(self, model: Model) -> Model:
         if model.model_type == ModelType.embedding:

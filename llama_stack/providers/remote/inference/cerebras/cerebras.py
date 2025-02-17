@@ -7,9 +7,7 @@
 from typing import AsyncGenerator, List, Optional, Union
 
 from cerebras.cloud.sdk import AsyncCerebras
-from llama_models.datatypes import CoreModelId
 from llama_models.llama3.api.chat_format import ChatFormat
-from llama_models.llama3.api.datatypes import TopKSamplingStrategy
 from llama_models.llama3.api.tokenizer import Tokenizer
 
 from llama_stack.apis.common.content_types import InterleavedContent
@@ -28,9 +26,10 @@ from llama_stack.apis.inference import (
     ToolDefinition,
     ToolPromptFormat,
 )
+from llama_stack.models.llama.datatypes import CoreModelId, TopKSamplingStrategy
 from llama_stack.providers.utils.inference.model_registry import (
-    build_model_alias,
     ModelRegistryHelper,
+    build_model_alias,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
     get_sampling_options,
@@ -155,14 +154,14 @@ class CerebrasInferenceAdapter(ModelRegistryHelper, Inference):
 
         r = await self.client.completions.create(**params)
 
-        return process_chat_completion_response(r, self.formatter)
+        return process_chat_completion_response(r, self.formatter, request)
 
     async def _stream_chat_completion(self, request: CompletionRequest) -> AsyncGenerator:
         params = await self._get_params(request)
 
         stream = await self.client.completions.create(**params)
 
-        async for chunk in process_chat_completion_stream_response(stream, self.formatter):
+        async for chunk in process_chat_completion_stream_response(stream, self.formatter, request):
             yield chunk
 
     async def _get_params(self, request: Union[ChatCompletionRequest, CompletionRequest]) -> dict:

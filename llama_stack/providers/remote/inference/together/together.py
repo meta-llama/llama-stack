@@ -6,7 +6,6 @@
 
 from typing import AsyncGenerator, List, Optional, Union
 
-from llama_models.datatypes import CoreModelId
 from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.tokenizer import Tokenizer
 from together import Together
@@ -29,9 +28,10 @@ from llama_stack.apis.inference import (
     ToolPromptFormat,
 )
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
+from llama_stack.models.llama.datatypes import CoreModelId
 from llama_stack.providers.utils.inference.model_registry import (
-    build_model_alias,
     ModelRegistryHelper,
+    build_model_alias,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
     convert_message_to_openai_dict,
@@ -220,7 +220,7 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
             r = self._get_client().chat.completions.create(**params)
         else:
             r = self._get_client().completions.create(**params)
-        return process_chat_completion_response(r, self.formatter)
+        return process_chat_completion_response(r, self.formatter, request)
 
     async def _stream_chat_completion(self, request: ChatCompletionRequest) -> AsyncGenerator:
         params = await self._get_params(request)
@@ -235,7 +235,7 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
                 yield chunk
 
         stream = _to_async_generator()
-        async for chunk in process_chat_completion_stream_response(stream, self.formatter):
+        async for chunk in process_chat_completion_stream_response(stream, self.formatter, request):
             yield chunk
 
     async def _get_params(self, request: Union[ChatCompletionRequest, CompletionRequest]) -> dict:

@@ -8,13 +8,11 @@ import inspect
 import json
 import logging
 from enum import Enum
-
-from typing import Any, get_args, get_origin, List, Literal, Optional, Type, Union
+from typing import Any, List, Literal, Optional, Type, Union, get_args, get_origin
 
 from pydantic import BaseModel
 from pydantic.fields import FieldInfo
 from pydantic_core import PydanticUndefinedType
-
 from typing_extensions import Annotated
 
 log = logging.getLogger(__name__)

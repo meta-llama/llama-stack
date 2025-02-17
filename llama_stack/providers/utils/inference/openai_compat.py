@@ -3,18 +3,12 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-
+import json
+import logging
 from typing import AsyncGenerator, Dict, List, Optional, Union
 
-from llama_models.datatypes import (
-    GreedySamplingStrategy,
-    SamplingParams,
-    TopKSamplingStrategy,
-    TopPSamplingStrategy,
-)
-
 from llama_models.llama3.api.chat_format import ChatFormat
-from llama_models.llama3.api.datatypes import StopReason
+from openai.types.chat import ChatCompletionMessageToolCall
 from pydantic import BaseModel
 
 from llama_stack.apis.common.content_types import (
@@ -24,8 +18,8 @@ from llama_stack.apis.common.content_types import (
     ToolCallDelta,
     ToolCallParseStatus,
 )
-
 from llama_stack.apis.inference import (
+    ChatCompletionRequest,
     ChatCompletionResponse,
     ChatCompletionResponseEvent,
     ChatCompletionResponseEventType,
@@ -36,10 +30,19 @@ from llama_stack.apis.inference import (
     Message,
     TokenLogProbs,
 )
-
+from llama_stack.models.llama.datatypes import (
+    GreedySamplingStrategy,
+    SamplingParams,
+    StopReason,
+    ToolCall,
+    TopKSamplingStrategy,
+    TopPSamplingStrategy,
+)
 from llama_stack.providers.utils.inference.prompt_adapter import (
     convert_image_content_to_url,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class OpenAICompatCompletionChoiceDelta(BaseModel):
@@ -130,7 +133,7 @@ def convert_openai_completion_logprobs(
     if logprobs.tokens and logprobs.token_logprobs:
         return [
             TokenLogProbs(logprobs_by_token={token: token_lp})
-            for token, token_lp in zip(logprobs.tokens, logprobs.token_logprobs)
+            for token, token_lp in zip(logprobs.tokens, logprobs.token_logprobs, strict=False)
         ]
     return None
 
@@ -170,13 +173,39 @@ def process_completion_response(response: OpenAICompatCompletionResponse, format
 
 
 def process_chat_completion_response(
-    response: OpenAICompatCompletionResponse, formatter: ChatFormat
+    response: OpenAICompatCompletionResponse,
+    formatter: ChatFormat,
+    request: ChatCompletionRequest,
 ) -> ChatCompletionResponse:
     choice = response.choices[0]
 
+    # TODO: This does not work well with tool calls for vLLM remote provider
+    #   Ref: https://github.com/meta-llama/llama-stack/issues/1058
     raw_message = formatter.decode_assistant_message_from_content(
         text_from_choice(choice), get_stop_reason(choice.finish_reason)
     )
+
+    # NOTE: If we do not set tools in chat-completion request, we should not
+    # expect the ToolCall in the response. Instead, we should return the raw
+    # response from the model.
+    if raw_message.tool_calls:
+        if not request.tools:
+            raw_message.tool_calls = []
+            raw_message.content = text_from_choice(choice)
+        else:
+            # only return tool_calls if provided in the request
+            new_tool_calls = []
+            request_tools = {t.tool_name: t for t in request.tools}
+            for t in raw_message.tool_calls:
+                if t.tool_name in request_tools:
+                    new_tool_calls.append(t)
+                else:
+                    logger.warning(f"Tool {t.tool_name} not found in request tools")
+
+            if len(new_tool_calls) < len(raw_message.tool_calls):
+                raw_message.tool_calls = new_tool_calls
+                raw_message.content = text_from_choice(choice)
+
     return ChatCompletionResponse(
         completion_message=CompletionMessage(
             content=raw_message.content,
@@ -224,7 +253,9 @@ async def process_completion_stream_response(
 
 
 async def process_chat_completion_stream_response(
-    stream: AsyncGenerator[OpenAICompatCompletionResponse, None], formatter: ChatFormat
+    stream: AsyncGenerator[OpenAICompatCompletionResponse, None],
+    formatter: ChatFormat,
+    request: ChatCompletionRequest,
 ) -> AsyncGenerator:
     yield ChatCompletionResponseStreamChunk(
         event=ChatCompletionResponseEvent(
@@ -303,6 +334,7 @@ async def process_chat_completion_stream_response(
 
     # parse tool calls and report errors
     message = formatter.decode_assistant_message_from_content(buffer, stop_reason)
+
     parsed_tool_calls = len(message.tool_calls) > 0
     if ipython and not parsed_tool_calls:
         yield ChatCompletionResponseStreamChunk(
@@ -316,17 +348,33 @@ async def process_chat_completion_stream_response(
             )
         )
 
+    request_tools = {t.tool_name: t for t in request.tools}
     for tool_call in message.tool_calls:
-        yield ChatCompletionResponseStreamChunk(
-            event=ChatCompletionResponseEvent(
-                event_type=ChatCompletionResponseEventType.progress,
-                delta=ToolCallDelta(
-                    tool_call=tool_call,
-                    parse_status=ToolCallParseStatus.succeeded,
-                ),
-                stop_reason=stop_reason,
+        if tool_call.tool_name in request_tools:
+            yield ChatCompletionResponseStreamChunk(
+                event=ChatCompletionResponseEvent(
+                    event_type=ChatCompletionResponseEventType.progress,
+                    delta=ToolCallDelta(
+                        tool_call=tool_call,
+                        parse_status=ToolCallParseStatus.succeeded,
+                    ),
+                    stop_reason=stop_reason,
+                )
             )
-        )
+        else:
+            logger.warning(f"Tool {tool_call.tool_name} not found in request tools")
+            yield ChatCompletionResponseStreamChunk(
+                event=ChatCompletionResponseEvent(
+                    event_type=ChatCompletionResponseEventType.progress,
+                    delta=ToolCallDelta(
+                        # Parsing tool call failed due to tool call not being found in request tools,
+                        # We still add the raw message text inside tool_call for responding back to the user
+                        tool_call=buffer,
+                        parse_status=ToolCallParseStatus.failed,
+                    ),
+                    stop_reason=stop_reason,
+                )
+            )
 
     yield ChatCompletionResponseStreamChunk(
         event=ChatCompletionResponseEvent(
@@ -360,3 +408,38 @@ async def convert_message_to_openai_dict(message: Message, download: bool = Fals
         "role": message.role,
         "content": content,
     }
+
+
+class UnparseableToolCall(BaseModel):
+    """
+    A ToolCall with arguments that are not valid JSON.
+    Mirrors the ToolCall schema, but with arguments as a string.
+    """
+
+    call_id: str = ""
+    tool_name: str = ""
+    arguments: str = ""
+
+
+def convert_tool_call(
+    tool_call: ChatCompletionMessageToolCall,
+) -> Union[ToolCall, UnparseableToolCall]:
+    """
+    Convert a ChatCompletionMessageToolCall tool call to either a
+    ToolCall or UnparseableToolCall. Returns an UnparseableToolCall
+    if the tool call is not valid ToolCall.
+    """
+    try:
+        valid_tool_call = ToolCall(
+            call_id=tool_call.id,
+            tool_name=tool_call.function.name,
+            arguments=json.loads(tool_call.function.arguments),
+        )
+    except Exception as e:
+        return UnparseableToolCall(
+            call_id=tool_call.id or "",
+            tool_name=tool_call.function.name or "",
+            arguments=tool_call.function.arguments or "",
+        )
+
+    return valid_tool_call

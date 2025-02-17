@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "llama_stack"
-version = "0.1.2"
+version = "0.1.3"
 authors = [{ name = "Meta Llama", email = "llama-oss@meta.com" }]
 description = "Llama Stack"
 readme = "README.md"
@@ -25,8 +25,9 @@ dependencies = [
     "fire",
     "httpx",
     "huggingface-hub",
-    "llama-models>=0.1.2",
-    "llama-stack-client>=0.1.2",
+    "jsonschema",
+    "llama-models>=0.1.3",
+    "llama-stack-client>=0.1.3",
     "prompt-toolkit",
     "python-dotenv",
     "pydantic>=2",
@@ -46,6 +47,8 @@ dev = [
     "types-requests",
     "types-setuptools",
     "pre-commit",
+    "uvicorn",
+    "fastapi",
 ]
 docs = [
     "sphinx-autobuild",
@@ -74,3 +77,66 @@ license-files = []
 name = "pytorch-cpu"
 url = "https://download.pytorch.org/whl/cpu"
 explicit = true
+
+[tool.ruff]
+line-length = 120
+exclude = [
+    "./.git",
+    "./docs/*",
+    "./build",
+    "./scripts",
+    "./venv",
+    "*.pyi",
+    ".pre-commit-config.yaml",
+    "*.md",
+    ".flake8",
+]
+
+[tool.ruff.lint]
+select = [
+    "B",  # flake8-bugbear
+    "B9", # flake8-bugbear subset
+    "C",  # comprehensions
+    "E",  # pycodestyle
+    "F",  # Pyflakes
+    "N",  # Naming
+    "W",  # Warnings
+    "I",  # isort
+]
+ignore = [
+    "E203",
+    "E305",
+    "E402",
+    "E501", # line too long
+    "E721",
+    "E741",
+    "F405",
+    "F821",
+    "F841",
+    "C408", # ignored because we like the dict keyword argument syntax
+    "E302",
+    "W291",
+    "E303",
+    "N812", # ignored because import torch.nn.functional as F is PyTorch convention
+    "N817", # ignored because importing using acronyms is convention (DistributedDataParallel as DDP)
+    "E731", # allow usage of assigning lambda expressions
+    # These are the additional ones we started ignoring after moving to ruff. We should look into each one of them later.
+    "C901",
+    "C405",
+    "C414",
+    "N803",
+    "N999",
+    "C403",
+    "C416",
+    "B028",
+    "C419",
+    "C401",
+    "B023",
+    # shebang has extra meaning in fbcode lints, so I think it's not worth trying
+    # to line this up with executable bit
+    "EXE001",
+    "N802",   # random naming hints don't need
+    # these ignores are from flake8-bugbear; please fix!
+    "B007",
+    "B008",
+]

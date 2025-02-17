@@ -9,9 +9,6 @@ from typing import AsyncIterator, List, Optional, Union
 
 import groq
 from groq import Groq
-from llama_models.datatypes import SamplingParams
-from llama_models.llama3.api.datatypes import ToolDefinition, ToolPromptFormat
-from llama_models.sku_list import CoreModelId
 
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
@@ -29,11 +26,13 @@ from llama_stack.apis.inference import (
     ToolConfig,
 )
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
+from llama_stack.models.llama.datatypes import SamplingParams, ToolDefinition, ToolPromptFormat
+from llama_stack.models.llama.sku_list import CoreModelId
 from llama_stack.providers.remote.inference.groq.config import GroqConfig
 from llama_stack.providers.utils.inference.model_registry import (
+    ModelRegistryHelper,
     build_model_alias,
     build_model_alias_with_just_provider_model_id,
-    ModelRegistryHelper,
 )
 
 from .groq_utils import (
@@ -108,6 +107,7 @@ class GroqInferenceAdapter(Inference, ModelRegistryHelper, NeedsRequestProviderD
                 "Groq only contains a preview version for llama-3.2-3b-instruct. "
                 "Preview models aren't recommended for production use. "
                 "They can be discontinued on short notice."
+                "More details: https://console.groq.com/docs/models"
             )
 
         request = convert_chat_completion_request(

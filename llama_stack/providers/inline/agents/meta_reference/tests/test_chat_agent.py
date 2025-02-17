@@ -8,7 +8,6 @@ import tempfile
 from typing import AsyncIterator, List, Optional, Union
 
 import pytest
-from llama_models.llama3.api.datatypes import BuiltinTool
 
 from llama_stack.apis.agents import (
     AgentConfig,
@@ -41,7 +40,7 @@ from llama_stack.apis.tools import (
     ToolInvocationResult,
 )
 from llama_stack.apis.vector_io import QueryChunksResponse
-
+from llama_stack.models.llama.datatypes import BuiltinTool
 from llama_stack.providers.inline.agents.meta_reference.agent_instance import (
     MEMORY_QUERY_TOOL,
 )

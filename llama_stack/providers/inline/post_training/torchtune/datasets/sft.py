@@ -13,7 +13,6 @@
 from typing import Any, Dict, List, Mapping
 
 import numpy as np
-
 from torch.utils.data import Dataset
 from torchtune.data._common import CROSS_ENTROPY_IGNORE_IDX
 from torchtune.data._messages import validate_messages

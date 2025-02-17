@@ -8,7 +8,6 @@ import json
 from typing import AsyncGenerator, AsyncIterator, Dict, List, Optional, Union
 
 from botocore.client import BaseClient
-from llama_models.datatypes import CoreModelId
 from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.tokenizer import Tokenizer
 
@@ -28,16 +27,17 @@ from llama_stack.apis.inference import (
     ToolDefinition,
     ToolPromptFormat,
 )
+from llama_stack.models.llama.datatypes import CoreModelId
 from llama_stack.providers.remote.inference.bedrock.config import BedrockConfig
 from llama_stack.providers.utils.bedrock.client import create_bedrock_client
 from llama_stack.providers.utils.inference.model_registry import (
-    build_model_alias,
     ModelRegistryHelper,
+    build_model_alias,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
-    get_sampling_strategy_options,
     OpenAICompatCompletionChoice,
     OpenAICompatCompletionResponse,
+    get_sampling_strategy_options,
     process_chat_completion_response,
     process_chat_completion_stream_response,
 )
@@ -134,7 +134,7 @@ class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
         )
 
         response = OpenAICompatCompletionResponse(choices=[choice])
-        return process_chat_completion_response(response, self.formatter)
+        return process_chat_completion_response(response, self.formatter, request)
 
     async def _stream_chat_completion(self, request: ChatCompletionRequest) -> AsyncGenerator:
         params = await self._get_params_for_chat_completion(request)
@@ -152,7 +152,7 @@ class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
                 yield OpenAICompatCompletionResponse(choices=[choice])
 
         stream = _generate_and_convert_to_openai_compat()
-        async for chunk in process_chat_completion_stream_response(stream, self.formatter):
+        async for chunk in process_chat_completion_stream_response(stream, self.formatter, request):
             yield chunk
 
     async def _get_params_for_chat_completion(self, request: ChatCompletionRequest) -> Dict:

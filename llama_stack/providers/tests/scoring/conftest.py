@@ -7,7 +7,6 @@
 import pytest
 
 from ..conftest import get_provider_fixture_overrides
-
 from ..datasetio.fixtures import DATASETIO_FIXTURES
 from ..inference.fixtures import INFERENCE_FIXTURES
 from .fixtures import SCORING_FIXTURES

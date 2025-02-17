@@ -6,11 +6,9 @@
 
 import asyncio
 import logging
-
 from typing import List
 
 from llama_stack.apis.inference import Message
-
 from llama_stack.apis.safety import Safety, SafetyViolation, ViolationLevel
 
 log = logging.getLogger(__name__)
@@ -43,7 +41,7 @@ class ShieldRunnerMixin:
                 for identifier in identifiers
             ]
         )
-        for identifier, response in zip(identifiers, responses):
+        for identifier, response in zip(identifiers, responses, strict=False):
             if not response.violation:
                 continue
 

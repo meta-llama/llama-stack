@@ -13,13 +13,15 @@ from typing import (
     Literal,
     Optional,
     Protocol,
-    runtime_checkable,
     Union,
+    runtime_checkable,
 )
 
-from llama_models.schema_utils import json_schema_type, register_schema, webmethod
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
+
+from llama_stack.models.llama.datatypes import Primitive
+from llama_stack.schema_utils import json_schema_type, register_schema, webmethod
 
 # Add this constant near the top of the file, after the imports
 DEFAULT_TTL_DAYS = 7
@@ -76,7 +78,7 @@ class EventCommon(BaseModel):
     trace_id: str
     span_id: str
     timestamp: datetime
-    attributes: Optional[Dict[str, Any]] = Field(default_factory=dict)
+    attributes: Optional[Dict[str, Primitive]] = Field(default_factory=dict)
 
 
 @json_schema_type
@@ -92,6 +94,30 @@ class MetricEvent(EventCommon):
     metric: str  # this would be an enum
     value: Union[int, float]
     unit: str
+
+
+# This is a short term solution to allow inference API to return metrics
+# The ideal way to do this is to have a way for all response types to include metrics
+# and all metric events logged to the telemetry API to be inlcuded with the response
+# To do this, we will need to augment all response types with a metrics field.
+# We have hit a blocker from stainless SDK that prevents us from doing this.
+# The blocker is that if we were to augment the response types that have a data field
+# in them like so
+# class ListModelsResponse(BaseModel):
+# metrics: Optional[List[MetricEvent]] = None
+# data: List[Models]
+# ...
+# The client SDK will need to access the data by using a .data field, which is not
+# ergonomic. Stainless SDK does support unwrapping the response type, but it
+# requires that the response type to only have a single field.
+
+# We will need a way in the client SDK to signal that the metrics are needed
+# and if they are needed, the client SDK has to return the full response type
+# without unwrapping it.
+
+
+class MetricResponseMixin(BaseModel):
+    metrics: Optional[List[MetricEvent]] = None
 
 
 @json_schema_type
@@ -199,13 +225,13 @@ class Telemetry(Protocol):
         order_by: Optional[List[str]] = None,
     ) -> QueryTracesResponse: ...
 
-    @webmethod(route="/telemetry/traces/{trace_id}", method="GET")
+    @webmethod(route="/telemetry/traces/{trace_id:path}", method="GET")
     async def get_trace(self, trace_id: str) -> Trace: ...
 
-    @webmethod(route="/telemetry/traces/{trace_id}/spans/{span_id}", method="GET")
+    @webmethod(route="/telemetry/traces/{trace_id:path}/spans/{span_id:path}", method="GET")
     async def get_span(self, trace_id: str, span_id: str) -> Span: ...
 
-    @webmethod(route="/telemetry/spans/{span_id}/tree", method="GET")
+    @webmethod(route="/telemetry/spans/{span_id:path}/tree", method="GET")
     async def get_span_tree(
         self,
         span_id: str,

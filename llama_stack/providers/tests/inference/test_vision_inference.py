@@ -39,7 +39,7 @@ class TestVisionModelInference:
                 ImageContentItem(
                     image=dict(
                         url=URL(
-                            uri="https://www.healthypawspetinsurance.com/Images/V3/DogAndPuppyInsurance/Dog_CTA_Desktop_HeroImage.jpg"
+                            uri="https://raw.githubusercontent.com/meta-llama/llama-stack/main/tests/client-sdk/inference/dog.png"
                         )
                     )
                 ),
@@ -80,7 +80,7 @@ class TestVisionModelInference:
             ImageContentItem(
                 image=dict(
                     url=URL(
-                        uri="https://www.healthypawspetinsurance.com/Images/V3/DogAndPuppyInsurance/Dog_CTA_Desktop_HeroImage.jpg"
+                        uri="https://raw.githubusercontent.com/meta-llama/llama-stack/main/tests/client-sdk/inference/dog.png"
                     )
                 )
             ),
@@ -88,7 +88,7 @@ class TestVisionModelInference:
         expected_strings_to_check = [
             ["puppy"],
         ]
-        for image, expected_strings in zip(images, expected_strings_to_check):
+        for image, expected_strings in zip(images, expected_strings_to_check, strict=False):
             response = [
                 r
                 async for r in await inference_impl.chat_completion(

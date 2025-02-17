@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 import os
-
 from datetime import datetime
 from typing import List, Optional
 

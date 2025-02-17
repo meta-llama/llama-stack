@@ -7,18 +7,17 @@
 from typing import Any, List, Optional, Protocol
 from urllib.parse import urlparse
 
-from llama_models.schema_utils import json_schema_type
 from pydantic import BaseModel, Field
 
+from llama_stack.apis.benchmarks import Benchmark
 from llama_stack.apis.datasets import Dataset
-
 from llama_stack.apis.datatypes import Api
-from llama_stack.apis.eval_tasks import EvalTask
 from llama_stack.apis.models import Model
 from llama_stack.apis.scoring_functions import ScoringFn
 from llama_stack.apis.shields import Shield
 from llama_stack.apis.tools import Tool
 from llama_stack.apis.vector_dbs import VectorDB
+from llama_stack.schema_utils import json_schema_type
 
 
 class ModelsProtocolPrivate(Protocol):
@@ -49,8 +48,8 @@ class ScoringFunctionsProtocolPrivate(Protocol):
     async def register_scoring_function(self, scoring_fn: ScoringFn) -> None: ...
 
 
-class EvalTasksProtocolPrivate(Protocol):
-    async def register_eval_task(self, eval_task: EvalTask) -> None: ...
+class BenchmarksProtocolPrivate(Protocol):
+    async def register_benchmark(self, benchmark: Benchmark) -> None: ...
 
 
 class ToolsProtocolPrivate(Protocol):
@@ -85,6 +84,10 @@ class ProviderSpec(BaseModel):
 
     # used internally by the resolver; this is a hack for now
     deps__: List[str] = Field(default_factory=list)
+
+    @property
+    def is_sample(self) -> bool:
+        return self.provider_type in ("sample", "remote::sample")
 
 
 class RoutingTable(Protocol):

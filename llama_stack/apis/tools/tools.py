@@ -7,13 +7,13 @@
 from enum import Enum
 from typing import Any, Dict, List, Literal, Optional
 
-from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel, Field
 from typing_extensions import Protocol, runtime_checkable
 
-from llama_stack.apis.common.content_types import InterleavedContent, URL
+from llama_stack.apis.common.content_types import URL, InterleavedContent
 from llama_stack.apis.resource import Resource, ResourceType
 from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
+from llama_stack.schema_utils import json_schema_type, webmethod
 
 from .rag_tool import RAGToolRuntime
 
@@ -101,7 +101,7 @@ class ToolGroups(Protocol):
         """Register a tool group"""
         ...
 
-    @webmethod(route="/toolgroups/{toolgroup_id}", method="GET")
+    @webmethod(route="/toolgroups/{toolgroup_id:path}", method="GET")
     async def get_tool_group(
         self,
         toolgroup_id: str,
@@ -117,13 +117,13 @@ class ToolGroups(Protocol):
         """List tools with optional tool group"""
         ...
 
-    @webmethod(route="/tools/{tool_name}", method="GET")
+    @webmethod(route="/tools/{tool_name:path}", method="GET")
     async def get_tool(
         self,
         tool_name: str,
     ) -> Tool: ...
 
-    @webmethod(route="/toolgroups/{toolgroup_id}", method="DELETE")
+    @webmethod(route="/toolgroups/{toolgroup_id:path}", method="DELETE")
     async def unregister_toolgroup(
         self,
         toolgroup_id: str,

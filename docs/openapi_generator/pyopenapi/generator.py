@@ -10,9 +10,9 @@ import typing
 from dataclasses import make_dataclass
 from typing import Any, Dict, Set, Union
 
-from ..strong_typing.core import JsonType
-from ..strong_typing.docstring import Docstring, parse_type
-from ..strong_typing.inspection import (
+from llama_stack.strong_typing.core import JsonType
+from llama_stack.strong_typing.docstring import Docstring, parse_type
+from llama_stack.strong_typing.inspection import (
     is_generic_list,
     is_type_optional,
     is_type_union,
@@ -20,15 +20,15 @@ from ..strong_typing.inspection import (
     unwrap_optional_type,
     unwrap_union_types,
 )
-from ..strong_typing.name import python_type_to_name
-from ..strong_typing.schema import (
+from llama_stack.strong_typing.name import python_type_to_name
+from llama_stack.strong_typing.schema import (
     get_schema_identifier,
     JsonSchemaGenerator,
     register_schema,
     Schema,
     SchemaOptions,
 )
-from ..strong_typing.serialization import json_dump_string, object_to_json
+from llama_stack.strong_typing.serialization import json_dump_string, object_to_json
 
 from .operations import (
     EndpointOperation,
@@ -644,7 +644,10 @@ class Generator:
         else:
             callbacks = None
 
-        description = "\n".join(filter(None, [doc_string.short_description, doc_string.long_description]))
+        description = "\n".join(
+            filter(None, [doc_string.short_description, doc_string.long_description])
+        )
+
         return Operation(
             tags=[op.defining_class.__name__],
             summary=None,
@@ -654,6 +657,7 @@ class Generator:
             requestBody=requestBody,
             responses=responses,
             callbacks=callbacks,
+            deprecated=True if "DEPRECATED" in op.func_name else None,
             security=[] if op.public else None,
         )
 
@@ -681,6 +685,7 @@ class Generator:
                 raise NotImplementedError(f"unknown HTTP method: {op.http_method}")
 
             route = op.get_route()
+            route = route.replace(":path", "")
             print(f"route: {route}")
             if route in paths:
                 paths[route].update(pathItem)

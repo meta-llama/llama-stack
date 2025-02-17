@@ -3,19 +3,23 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-
+import json
 import logging
 from typing import AsyncGenerator, List, Optional, Union
 
+from llama_models.datatypes import StopReason, ToolCall
 from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.tokenizer import Tokenizer
-from llama_models.sku_list import all_registered_models
 from openai import OpenAI
 
-from llama_stack.apis.common.content_types import InterleavedContent
+from llama_stack.apis.common.content_types import InterleavedContent, TextDelta, ToolCallDelta, ToolCallParseStatus
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
     ChatCompletionResponse,
+    ChatCompletionResponseEvent,
+    ChatCompletionResponseEventType,
+    ChatCompletionResponseStreamChunk,
+    CompletionMessage,
     CompletionRequest,
     CompletionResponse,
     CompletionResponseStreamChunk,
@@ -32,15 +36,18 @@ from llama_stack.apis.inference import (
     ToolPromptFormat,
 )
 from llama_stack.apis.models import Model, ModelType
+from llama_stack.models.llama.sku_list import all_registered_models
 from llama_stack.providers.datatypes import ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.model_registry import (
-    build_model_alias,
     ModelRegistryHelper,
+    build_model_alias,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
+    OpenAICompatCompletionResponse,
+    UnparseableToolCall,
     convert_message_to_openai_dict,
+    convert_tool_call,
     get_sampling_options,
-    process_chat_completion_response,
     process_chat_completion_stream_response,
     process_completion_response,
     process_completion_stream_response,
@@ -66,6 +73,118 @@ def build_model_aliases():
         for model in all_registered_models()
         if model.huggingface_repo
     ]
+
+
+def _convert_to_vllm_tool_calls_in_response(
+    tool_calls,
+) -> List[ToolCall]:
+    if not tool_calls:
+        return []
+
+    call_function_arguments = None
+    for call in tool_calls:
+        call_function_arguments = json.loads(call.function.arguments)
+
+    return [
+        ToolCall(
+            call_id=call.id,
+            tool_name=call.function.name,
+            arguments=call_function_arguments,
+        )
+        for call in tool_calls
+    ]
+
+
+def _convert_to_vllm_tools_in_request(tools: List[ToolDefinition]) -> List[dict]:
+    if tools is None:
+        return tools
+
+    compat_tools = []
+
+    for tool in tools:
+        properties = {}
+        compat_required = []
+        if tool.parameters:
+            for tool_key, tool_param in tool.parameters.items():
+                properties[tool_key] = {"type": tool_param.param_type}
+                if tool_param.description:
+                    properties[tool_key]["description"] = tool_param.description
+                if tool_param.default:
+                    properties[tool_key]["default"] = tool_param.default
+                if tool_param.required:
+                    compat_required.append(tool_key)
+
+        compat_tool = {
+            "type": "function",
+            "function": {
+                "name": tool.tool_name,
+                "description": tool.description,
+                "parameters": {
+                    "type": "object",
+                    "properties": properties,
+                    "required": compat_required,
+                },
+            },
+        }
+
+        compat_tools.append(compat_tool)
+
+    if len(compat_tools) > 0:
+        return compat_tools
+    return None
+
+
+def _convert_to_vllm_finish_reason(finish_reason: str) -> StopReason:
+    return {
+        "stop": StopReason.end_of_turn,
+        "length": StopReason.out_of_tokens,
+        "tool_calls": StopReason.end_of_message,
+    }.get(finish_reason, StopReason.end_of_turn)
+
+
+async def _process_vllm_chat_completion_stream_response(
+    stream: AsyncGenerator[OpenAICompatCompletionResponse, None],
+) -> AsyncGenerator:
+    event_type = ChatCompletionResponseEventType.start
+    tool_call_buf = UnparseableToolCall()
+    async for chunk in stream:
+        choice = chunk.choices[0]
+        if choice.finish_reason:
+            yield ChatCompletionResponseStreamChunk(
+                event=ChatCompletionResponseEvent(
+                    event_type=event_type,
+                    delta=ToolCallDelta(
+                        tool_call=ToolCall(
+                            call_id=tool_call_buf.call_id,
+                            tool_name=tool_call_buf.tool_name,
+                            arguments=json.loads(tool_call_buf.arguments),
+                        ),
+                        parse_status=ToolCallParseStatus.succeeded,
+                    ),
+                )
+            )
+            yield ChatCompletionResponseStreamChunk(
+                event=ChatCompletionResponseEvent(
+                    event_type=ChatCompletionResponseEventType.complete,
+                    delta=TextDelta(text=choice.delta.content or ""),
+                    logprobs=None,
+                    stop_reason=_convert_to_vllm_finish_reason(choice.finish_reason),
+                )
+            )
+        elif choice.delta.tool_calls:
+            tool_call = convert_tool_call(choice.delta.tool_calls[0])
+            tool_call_buf.tool_name += tool_call.tool_name
+            tool_call_buf.call_id += tool_call.call_id
+            tool_call_buf.arguments += tool_call.arguments
+        else:
+            yield ChatCompletionResponseStreamChunk(
+                event=ChatCompletionResponseEvent(
+                    event_type=event_type,
+                    delta=TextDelta(text=choice.delta.content or ""),
+                    logprobs=None,
+                )
+            )
+            event_type = ChatCompletionResponseEventType.progress
 
 
 class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
@@ -142,7 +261,16 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
     ) -> ChatCompletionResponse:
         params = await self._get_params(request)
         r = client.chat.completions.create(**params)
-        return process_chat_completion_response(r, self.formatter)
+        choice = r.choices[0]
+        result = ChatCompletionResponse(
+            completion_message=CompletionMessage(
+                content=choice.message.content or "",
+                stop_reason=_convert_to_vllm_finish_reason(choice.finish_reason),
+                tool_calls=_convert_to_vllm_tool_calls_in_response(choice.message.tool_calls),
+            ),
+            logprobs=None,
+        )
+        return result
 
     async def _stream_chat_completion(self, request: ChatCompletionRequest, client: OpenAI) -> AsyncGenerator:
         params = await self._get_params(request)
@@ -155,7 +283,11 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
                 yield chunk
 
         stream = _to_async_generator()
-        async for chunk in process_chat_completion_stream_response(stream, self.formatter):
+        if len(request.tools) > 0:
+            res = _process_vllm_chat_completion_stream_response(stream)
+        else:
+            res = process_chat_completion_stream_response(stream, self.formatter, request)
+        async for chunk in res:
             yield chunk
 
     async def _nonstream_completion(self, request: CompletionRequest) -> CompletionResponse:
@@ -193,6 +325,8 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
             options["max_tokens"] = self.config.max_tokens
 
         input_dict = {}
+        if isinstance(request, ChatCompletionRequest) and request.tools is not None:
+            input_dict = {"tools": _convert_to_vllm_tools_in_request(request.tools)}
 
         if isinstance(request, ChatCompletionRequest):
             input_dict["messages"] = [await convert_message_to_openai_dict(m, download=True) for m in request.messages]
@@ -210,6 +344,9 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
                 raise NotImplementedError("Grammar response format not supported yet")
             else:
                 raise ValueError(f"Unknown response format {fmt.type}")
+
+        if request.logprobs and request.logprobs.top_k:
+            input_dict["logprobs"] = request.logprobs.top_k
 
         return {
             "model": request.model,

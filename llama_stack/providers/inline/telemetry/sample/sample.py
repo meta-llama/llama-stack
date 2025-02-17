@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 from llama_stack.apis.telemetry import Telemetry
+
 from .config import SampleConfig
 
 

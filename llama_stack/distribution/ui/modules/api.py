@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 import os
-
 from typing import Optional
 
 from llama_stack_client import LlamaStackClient

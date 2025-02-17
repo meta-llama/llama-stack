@@ -8,7 +8,6 @@ import importlib.resources
 import logging
 import sys
 from enum import Enum
-
 from pathlib import Path
 from typing import Dict, List
 
@@ -16,11 +15,8 @@ from pydantic import BaseModel
 from termcolor import cprint
 
 from llama_stack.distribution.datatypes import BuildConfig, Provider
-
 from llama_stack.distribution.distribution import get_provider_registry
-
 from llama_stack.distribution.utils.config_dirs import BUILDS_BASE_DIR
-
 from llama_stack.distribution.utils.exec import run_command, run_with_pty
 from llama_stack.providers.datatypes import Api
 
@@ -130,7 +126,6 @@ def build_image(
         args = [
             script,
             str(image_name),
-            str(build_file_path),
             " ".join(normal_deps),
         ]
 

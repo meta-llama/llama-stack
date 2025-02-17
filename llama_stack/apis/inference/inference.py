@@ -13,11 +13,17 @@ from typing import (
     Literal,
     Optional,
     Protocol,
-    runtime_checkable,
     Union,
+    runtime_checkable,
 )
 
-from llama_models.llama3.api.datatypes import (
+from pydantic import BaseModel, Field, field_validator
+from typing_extensions import Annotated
+
+from llama_stack.apis.common.content_types import ContentDelta, InterleavedContent
+from llama_stack.apis.models import Model
+from llama_stack.apis.telemetry.telemetry import MetricResponseMixin
+from llama_stack.models.llama.datatypes import (
     BuiltinTool,
     SamplingParams,
     StopReason,
@@ -25,13 +31,8 @@ from llama_models.llama3.api.datatypes import (
     ToolDefinition,
     ToolPromptFormat,
 )
-from llama_models.schema_utils import json_schema_type, register_schema, webmethod
-from pydantic import BaseModel, Field, field_validator
-from typing_extensions import Annotated
-
-from llama_stack.apis.common.content_types import ContentDelta, InterleavedContent
-from llama_stack.apis.models import Model
 from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
+from llama_stack.schema_utils import json_schema_type, register_schema, webmethod
 
 
 class LogProbConfig(BaseModel):
@@ -357,7 +358,7 @@ class ChatCompletionRequest(BaseModel):
 
 
 @json_schema_type
-class ChatCompletionResponseStreamChunk(BaseModel):
+class ChatCompletionResponseStreamChunk(MetricResponseMixin, BaseModel):
     """A chunk of a streamed chat completion response.
 
     :param event: The event containing the new content
@@ -367,7 +368,7 @@ class ChatCompletionResponseStreamChunk(BaseModel):
 
 
 @json_schema_type
-class ChatCompletionResponse(BaseModel):
+class ChatCompletionResponse(MetricResponseMixin, BaseModel):
     """Response from a chat completion request.
 
     :param completion_message: The complete response message

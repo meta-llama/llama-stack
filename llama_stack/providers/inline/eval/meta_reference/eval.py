@@ -8,14 +8,13 @@ from typing import Any, Dict, List, Optional
 from tqdm import tqdm
 
 from llama_stack.apis.agents import Agents, StepType
+from llama_stack.apis.benchmarks import Benchmark
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
-from llama_stack.apis.eval_tasks import EvalTask
 from llama_stack.apis.inference import Inference, UserMessage
 from llama_stack.apis.scoring import Scoring
 from llama_stack.distribution.datatypes import Api
-from llama_stack.providers.datatypes import EvalTasksProtocolPrivate
-
+from llama_stack.providers.datatypes import BenchmarksProtocolPrivate
 from llama_stack.providers.inline.agents.meta_reference.agent_instance import (
     MEMORY_QUERY_TOOL,
 )
@@ -27,16 +26,15 @@ from llama_stack.providers.utils.common.data_schema_validator import (
 from llama_stack.providers.utils.kvstore import kvstore_impl
 
 from .....apis.common.job_types import Job
-from .....apis.eval.eval import Eval, EvalTaskConfig, EvaluateResponse, JobStatus
-
+from .....apis.eval.eval import BenchmarkConfig, Eval, EvaluateResponse, JobStatus
 from .config import MetaReferenceEvalConfig
 
-EVAL_TASKS_PREFIX = "eval_tasks:"
+EVAL_TASKS_PREFIX = "benchmarks:"
 
 
 class MetaReferenceEvalImpl(
     Eval,
-    EvalTasksProtocolPrivate,
+    BenchmarksProtocolPrivate,
 ):
     def __init__(
         self,
@@ -57,36 +55,36 @@ class MetaReferenceEvalImpl(
         # TODO: assume sync job, will need jobs API for async scheduling
         self.jobs = {}
 
-        self.eval_tasks = {}
+        self.benchmarks = {}
 
     async def initialize(self) -> None:
         self.kvstore = await kvstore_impl(self.config.kvstore)
-        # Load existing eval_tasks from kvstore
+        # Load existing benchmarks from kvstore
         start_key = EVAL_TASKS_PREFIX
         end_key = f"{EVAL_TASKS_PREFIX}\xff"
-        stored_eval_tasks = await self.kvstore.range(start_key, end_key)
+        stored_benchmarks = await self.kvstore.range(start_key, end_key)
 
-        for eval_task in stored_eval_tasks:
-            eval_task = EvalTask.model_validate_json(eval_task)
-            self.eval_tasks[eval_task.identifier] = eval_task
+        for benchmark in stored_benchmarks:
+            benchmark = Benchmark.model_validate_json(benchmark)
+            self.benchmarks[benchmark.identifier] = benchmark
 
     async def shutdown(self) -> None: ...
 
-    async def register_eval_task(self, task_def: EvalTask) -> None:
+    async def register_benchmark(self, task_def: Benchmark) -> None:
         # Store in kvstore
         key = f"{EVAL_TASKS_PREFIX}{task_def.identifier}"
         await self.kvstore.set(
             key=key,
             value=task_def.model_dump_json(),
         )
-        self.eval_tasks[task_def.identifier] = task_def
+        self.benchmarks[task_def.identifier] = task_def
 
     async def run_eval(
         self,
-        task_id: str,
-        task_config: EvalTaskConfig,
+        benchmark_id: str,
+        task_config: BenchmarkConfig,
     ) -> Job:
-        task_def = self.eval_tasks[task_id]
+        task_def = self.benchmarks[benchmark_id]
         dataset_id = task_def.dataset_id
         candidate = task_config.eval_candidate
         scoring_functions = task_def.scoring_functions
@@ -97,7 +95,7 @@ class MetaReferenceEvalImpl(
             rows_in_page=(-1 if task_config.num_examples is None else task_config.num_examples),
         )
         res = await self.evaluate_rows(
-            task_id=task_id,
+            benchmark_id=benchmark_id,
             input_rows=all_rows.rows,
             scoring_functions=scoring_functions,
             task_config=task_config,
@@ -110,7 +108,7 @@ class MetaReferenceEvalImpl(
         return Job(job_id=job_id)
 
     async def _run_agent_generation(
-        self, input_rows: List[Dict[str, Any]], task_config: EvalTaskConfig
+        self, input_rows: List[Dict[str, Any]], task_config: BenchmarkConfig
     ) -> List[Dict[str, Any]]:
         candidate = task_config.eval_candidate
         create_response = await self.agents_api.create_agent(candidate.config)
@@ -153,7 +151,7 @@ class MetaReferenceEvalImpl(
         return generations
 
     async def _run_model_generation(
-        self, input_rows: List[Dict[str, Any]], task_config: EvalTaskConfig
+        self, input_rows: List[Dict[str, Any]], task_config: BenchmarkConfig
     ) -> List[Dict[str, Any]]:
         candidate = task_config.eval_candidate
         assert candidate.sampling_params.max_tokens is not None, "SamplingParams.max_tokens must be provided"
@@ -189,10 +187,10 @@ class MetaReferenceEvalImpl(
 
     async def evaluate_rows(
         self,
-        task_id: str,
+        benchmark_id: str,
         input_rows: List[Dict[str, Any]],
         scoring_functions: List[str],
-        task_config: EvalTaskConfig,
+        task_config: BenchmarkConfig,
     ) -> EvaluateResponse:
         candidate = task_config.eval_candidate
         if candidate.type == "agent":
@@ -203,9 +201,11 @@ class MetaReferenceEvalImpl(
             raise ValueError(f"Invalid candidate type: {candidate.type}")
 
         # scoring with generated_answer
-        score_input_rows = [input_r | generated_r for input_r, generated_r in zip(input_rows, generations)]
+        score_input_rows = [
+            input_r | generated_r for input_r, generated_r in zip(input_rows, generations, strict=False)
+        ]
 
-        if task_config.type == "app" and task_config.scoring_params is not None:
+        if task_config.scoring_params is not None:
             scoring_functions_dict = {
                 scoring_fn_id: task_config.scoring_params.get(scoring_fn_id, None)
                 for scoring_fn_id in scoring_functions
@@ -219,18 +219,60 @@ class MetaReferenceEvalImpl(
 
         return EvaluateResponse(generations=generations, scores=score_response.results)
 
-    async def job_status(self, task_id: str, job_id: str) -> Optional[JobStatus]:
+    async def job_status(self, benchmark_id: str, job_id: str) -> Optional[JobStatus]:
         if job_id in self.jobs:
             return JobStatus.completed
 
         return None
 
-    async def job_cancel(self, task_id: str, job_id: str) -> None:
+    async def job_cancel(self, benchmark_id: str, job_id: str) -> None:
         raise NotImplementedError("Job cancel is not implemented yet")
 
-    async def job_result(self, task_id: str, job_id: str) -> EvaluateResponse:
-        status = await self.job_status(task_id, job_id)
+    async def job_result(self, benchmark_id: str, job_id: str) -> EvaluateResponse:
+        status = await self.job_status(benchmark_id, job_id)
         if not status or status != JobStatus.completed:
             raise ValueError(f"Job is not completed, Status: {status.value}")
 
         return self.jobs[job_id]
+
+    async def DEPRECATED_run_eval(
+        self,
+        task_id: str,
+        task_config: BenchmarkConfig,
+    ) -> Job:
+        return await self.run_eval(benchmark_id=task_id, task_config=task_config)
+
+    async def DEPRECATED_evaluate_rows(
+        self,
+        task_id: str,
+        input_rows: List[Dict[str, Any]],
+        scoring_functions: List[str],
+        task_config: BenchmarkConfig,
+    ) -> EvaluateResponse:
+        return await self.evaluate_rows(
+            benchmark_id=task_id,
+            input_rows=input_rows,
+            scoring_functions=scoring_functions,
+            task_config=task_config,
+        )
+
+    async def DEPRECATED_job_status(
+        self,
+        task_id: str,
+        job_id: str,
+    ) -> Optional[JobStatus]:
+        return await self.job_status(benchmark_id=task_id, job_id=job_id)
+
+    async def DEPRECATED_job_cancel(
+        self,
+        task_id: str,
+        job_id: str,
+    ) -> None:
+        return await self.job_cancel(benchmark_id=task_id, job_id=job_id)
+
+    async def DEPRECATED_job_result(
+        self,
+        task_id: str,
+        job_id: str,
+    ) -> EvaluateResponse:
+        return await self.job_result(benchmark_id=task_id, job_id=job_id)

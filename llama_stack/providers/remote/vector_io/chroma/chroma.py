@@ -16,12 +16,13 @@ from llama_stack.apis.inference import InterleavedContent
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import Chunk, QueryChunksResponse, VectorIO
 from llama_stack.providers.datatypes import Api, VectorDBsProtocolPrivate
-from llama_stack.providers.inline.vector_io.chroma import ChromaInlineImplConfig
+from llama_stack.providers.inline.vector_io.chroma import ChromaVectorIOConfig as InlineChromaVectorIOConfig
 from llama_stack.providers.utils.memory.vector_store import (
     EmbeddingIndex,
     VectorDBWithIndex,
 )
-from .config import ChromaRemoteImplConfig
+
+from .config import ChromaVectorIOConfig as RemoteChromaVectorIOConfig
 
 log = logging.getLogger(__name__)
 
@@ -68,7 +69,7 @@ class ChromaIndex(EmbeddingIndex):
 
         chunks = []
         scores = []
-        for dist, doc in zip(distances, documents):
+        for dist, doc in zip(distances, documents, strict=False):
             try:
                 doc = json.loads(doc)
                 chunk = Chunk(**doc)
@@ -88,7 +89,7 @@ class ChromaIndex(EmbeddingIndex):
 class ChromaVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
     def __init__(
         self,
-        config: Union[ChromaRemoteImplConfig, ChromaInlineImplConfig],
+        config: Union[RemoteChromaVectorIOConfig, InlineChromaVectorIOConfig],
         inference_api: Api.inference,
     ) -> None:
         log.info(f"Initializing ChromaVectorIOAdapter with url: {config}")
@@ -99,7 +100,7 @@ class ChromaVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
         self.cache = {}
 
     async def initialize(self) -> None:
-        if isinstance(self.config, ChromaRemoteImplConfig):
+        if isinstance(self.config, RemoteChromaVectorIOConfig):
             log.info(f"Connecting to Chroma server at: {self.config.url}")
             url = self.config.url.rstrip("/")
             parsed = urlparse(url)

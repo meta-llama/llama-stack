@@ -8,9 +8,8 @@ import argparse
 import textwrap
 from io import StringIO
 
-from llama_models.datatypes import CoreModelId, is_multimodal, model_family, ModelFamily
-
 from llama_stack.cli.subcommand import Subcommand
+from llama_stack.models.llama.datatypes import CoreModelId, ModelFamily, is_multimodal, model_family
 
 
 class ModelPromptFormat(Subcommand):

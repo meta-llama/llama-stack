@@ -9,10 +9,10 @@ import logging
 from typing import Any, Dict, List, Set
 
 from llama_stack.apis.agents import Agents
+from llama_stack.apis.benchmarks import Benchmarks
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
 from llama_stack.apis.eval import Eval
-from llama_stack.apis.eval_tasks import EvalTasks
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.inspect import Inspect
 from llama_stack.apis.models import Models
@@ -37,8 +37,8 @@ from llama_stack.distribution.store import DistributionRegistry
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
 from llama_stack.providers.datatypes import (
     Api,
+    BenchmarksProtocolPrivate,
     DatasetsProtocolPrivate,
-    EvalTasksProtocolPrivate,
     InlineProviderSpec,
     ModelsProtocolPrivate,
     ProviderSpec,
@@ -73,7 +73,7 @@ def api_protocol_map() -> Dict[Api, Any]:
         Api.scoring: Scoring,
         Api.scoring_functions: ScoringFunctions,
         Api.eval: Eval,
-        Api.eval_tasks: EvalTasks,
+        Api.benchmarks: Benchmarks,
         Api.post_training: PostTraining,
         Api.tool_groups: ToolGroups,
         Api.tool_runtime: ToolRuntime,
@@ -92,7 +92,7 @@ def additional_protocols_map() -> Dict[Api, Any]:
             ScoringFunctions,
             Api.scoring_functions,
         ),
-        Api.eval: (EvalTasksProtocolPrivate, EvalTasks, Api.eval_tasks),
+        Api.eval: (BenchmarksProtocolPrivate, Benchmarks, Api.benchmarks),
     }
 
 

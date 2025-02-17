@@ -10,21 +10,19 @@ from typing import Any, Dict, List, Optional, Tuple
 import psycopg2
 from numpy.typing import NDArray
 from psycopg2 import sql
-from psycopg2.extras import execute_values, Json
-
+from psycopg2.extras import Json, execute_values
 from pydantic import BaseModel, TypeAdapter
 
 from llama_stack.apis.inference import InterleavedContent
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import Chunk, QueryChunksResponse, VectorIO
 from llama_stack.providers.datatypes import Api, VectorDBsProtocolPrivate
-
 from llama_stack.providers.utils.memory.vector_store import (
     EmbeddingIndex,
     VectorDBWithIndex,
 )
 
-from .config import PGVectorConfig
+from .config import PGVectorVectorIOConfig
 
 log = logging.getLogger(__name__)
 
@@ -123,8 +121,8 @@ class PGVectorIndex(EmbeddingIndex):
             cur.execute(f"DROP TABLE IF EXISTS {self.table_name}")
 
 
-class PGVectorVectorDBAdapter(VectorIO, VectorDBsProtocolPrivate):
-    def __init__(self, config: PGVectorConfig, inference_api: Api.inference) -> None:
+class PGVectorVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
+    def __init__(self, config: PGVectorVectorIOConfig, inference_api: Api.inference) -> None:
         self.config = config
         self.inference_api = inference_api
         self.conn = None

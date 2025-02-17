@@ -6,7 +6,7 @@
 
 from enum import Enum
 
-from llama_models.schema_utils import json_schema_type
+from llama_stack.schema_utils import json_schema_type
 
 
 @json_schema_type
@@ -28,7 +28,7 @@ class Api(Enum):
     vector_dbs = "vector_dbs"
     datasets = "datasets"
     scoring_functions = "scoring_functions"
-    eval_tasks = "eval_tasks"
+    benchmarks = "benchmarks"
     tool_groups = "tool_groups"
 
     # built-in API

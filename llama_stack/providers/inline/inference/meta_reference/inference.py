@@ -8,14 +8,6 @@ import asyncio
 import logging
 from typing import AsyncGenerator, List, Optional, Union
 
-from llama_models.llama3.api.datatypes import (
-    SamplingParams,
-    StopReason,
-    ToolDefinition,
-    ToolPromptFormat,
-)
-from llama_models.sku_list import resolve_model
-
 from llama_stack.apis.common.content_types import (
     TextDelta,
     ToolCallDelta,
@@ -41,13 +33,20 @@ from llama_stack.apis.inference import (
     ToolConfig,
 )
 from llama_stack.apis.models import Model, ModelType
+from llama_stack.models.llama.datatypes import (
+    SamplingParams,
+    StopReason,
+    ToolDefinition,
+    ToolPromptFormat,
+)
+from llama_stack.models.llama.sku_list import resolve_model
 from llama_stack.providers.datatypes import ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.embedding_mixin import (
     SentenceTransformerEmbeddingMixin,
 )
 from llama_stack.providers.utils.inference.model_registry import (
-    build_model_alias,
     ModelRegistryHelper,
+    build_model_alias,
 )
 from llama_stack.providers.utils.inference.prompt_adapter import (
     augment_content_with_response_format_prompt,
