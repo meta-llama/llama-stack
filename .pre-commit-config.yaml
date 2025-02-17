@@ -53,15 +53,12 @@ repos:
         files: ^pyproject\.toml$
     -   id: uv-sync
 
-# -   repo: https://github.com/pre-commit/mirrors-mypy
-#     rev: v1.14.0
-#     hooks:
-#     -   id: mypy
-#         additional_dependencies:
-#           - types-requests
-#           - types-setuptools
-#           - pydantic
-#         args: [--ignore-missing-imports]
+-   repo: local
+    hooks:
+    -   id: mypy
+        name: mypy
+        entry: bash -c 'uv sync --extra dev && uv run mypy'
+        language: system
 
 # - repo: https://github.com/jsh9/pydoclint
 #   rev: d88180a8632bb1602a4d81344085cf320f288c5a
