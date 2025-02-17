@@ -51,11 +51,19 @@ DEFAULT_PROVIDER_COMBINATIONS = [
         id="remote",
         marks=pytest.mark.remote,
     ),
+    pytest.param(
+        {
+            "inference": "together",
+            "safety": "fiddlecube",
+        },
+        id="fiddlecube",
+        marks=pytest.mark.fiddlecube,
+    ),
 ]
 
 
 def pytest_configure(config):
-    for mark in ["meta_reference", "ollama", "together", "remote", "bedrock"]:
+    for mark in ["meta_reference", "ollama", "together", "remote", "bedrock", "fiddlecube"]:
         config.addinivalue_line(
             "markers",
             f"{mark}: marks tests as {mark} specific",
