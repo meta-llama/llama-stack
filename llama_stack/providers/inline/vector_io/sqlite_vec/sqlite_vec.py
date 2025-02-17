@@ -100,7 +100,7 @@ class SQLiteVecIndex(EmbeddingIndex):
             logger.error(f"Error inserting into {self.vector_table}: {e}")
 
         finally:
-            cur.close()  # Ensure cursor is closed
+            cur.close()
 
     async def query(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
         """
