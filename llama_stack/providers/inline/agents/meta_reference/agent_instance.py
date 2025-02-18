@@ -63,7 +63,11 @@ from llama_stack.apis.models import Models
 from llama_stack.apis.safety import Safety
 from llama_stack.apis.tools import RAGDocument, RAGQueryConfig, ToolGroups, ToolRuntime
 from llama_stack.apis.vector_io import VectorIO
-from llama_stack.models.llama.datatypes import BuiltinTool, ToolCall, ToolParamDefinition
+from llama_stack.models.llama.datatypes import (
+    BuiltinTool,
+    ToolCall,
+    ToolParamDefinition,
+)
 from llama_stack.providers.utils.kvstore import KVStore
 from llama_stack.providers.utils.memory.vector_store import concat_interleaved_content
 from llama_stack.providers.utils.telemetry import tracing
@@ -829,11 +833,11 @@ class ChatAgent(ShieldRunnerMixin):
             # so we need to fix it if we expect the agent to create a new vector db
             # for each session
             list_models_response = await self.models_api.list_models()
-            embdding_models = [x for x in list_models_response.data if x.model_type == "embedding"]
+            embedding_models = [x for x in list_models_response.data if x.model_type == "embedding"]
             await self.vector_io_api.register_vector_db(
                 vector_db_id=vector_db_id,
-                embedding_model=embdding_models[0].identifier,
-                embedding_dimension=embdding_models[0].metadata["embedding_dimension"],
+                embedding_model=embedding_models[0].identifier,
+                embedding_dimension=embedding_models[0].metadata["embedding_dimension"],
             )
             await self.storage.add_vector_db_to_session(session_id, vector_db_id)
         else:
