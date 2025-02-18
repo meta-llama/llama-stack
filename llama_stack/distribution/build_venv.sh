@@ -44,7 +44,7 @@ NC='\033[0m' # No Color
 # this is set if we actually create a new conda in which case we need to clean up
 ENVNAME=""
 
-SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 source "$SCRIPT_DIR/common.sh"
 
 # pre-run checks to make sure we can proceed with the installation
