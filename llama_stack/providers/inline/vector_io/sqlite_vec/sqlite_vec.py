@@ -59,7 +59,7 @@ class SQLiteVecIndex(EmbeddingIndex):
         # Create the virtual table for embeddings.
         cur.execute(f"""
             CREATE VIRTUAL TABLE IF NOT EXISTS {self.vector_table}
-            USING vec0(embedding FLOAT[{self.dimension}]);
+            USING vec0(embedding FLOAT[{self.dimension}], id TEXT);
         """)
         self.connection.commit()
 
@@ -77,6 +77,7 @@ class SQLiteVecIndex(EmbeddingIndex):
         If any insert fails, the transaction is rolled back to maintain consistency.
         """
         cur = self.connection.cursor()
+        print(f"inserting {len(chunks)} chunks: {chunks}")
         try:
             # Start transaction
             cur.execute("BEGIN TRANSACTION")
@@ -91,9 +92,9 @@ class SQLiteVecIndex(EmbeddingIndex):
                 # Insert metadata (ON CONFLICT to avoid duplicates)
                 cur.executemany(
                     f"""
-                    INSERT INTO {self.metadata_table} (id, document)
+                    INSERT INTO {self.metadata_table} (id, chunk)
                     VALUES (?, ?)
-                    ON CONFLICT(id) DO UPDATE SET document = excluded.document;
+                    ON CONFLICT(id) DO UPDATE SET chunk = excluded.chunk;
                     """,
                     metadata_data,
                 )
@@ -103,7 +104,7 @@ class SQLiteVecIndex(EmbeddingIndex):
                     for j, (chunk, emb) in enumerate(zip(batch_chunks, batch_embeddings, strict=True))
                 ]
                 # Insert embeddings in batch
-                cur.executemany(f"INSERT INTO {self.vector_table} (rowid, embedding) VALUES (?, ?);", embedding_data)
+                cur.executemany(f"INSERT INTO {self.vector_table} (id, embedding) VALUES (?, ?);", embedding_data)
             self.connection.commit()
 
         except sqlite3.Error as e:
@@ -124,7 +125,7 @@ class SQLiteVecIndex(EmbeddingIndex):
         query_sql = f"""
             SELECT m.id, m.chunk, v.distance
             FROM {self.vector_table} AS v
-            JOIN {self.metadata_table} AS m ON m.id = v.rowid
+            JOIN {self.metadata_table} AS m ON m.id = v.id
             WHERE v.embedding MATCH ? AND k = ?
             ORDER BY v.distance;
         """
