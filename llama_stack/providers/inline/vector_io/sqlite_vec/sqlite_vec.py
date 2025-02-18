@@ -77,7 +77,6 @@ class SQLiteVecIndex(EmbeddingIndex):
         If any insert fails, the transaction is rolled back to maintain consistency.
         """
         cur = self.connection.cursor()
-        print(f"inserting {len(chunks)} chunks: {chunks}")
         try:
             # Start transaction
             cur.execute("BEGIN TRANSACTION")
