@@ -32,7 +32,7 @@ Llama Stack standardizes the core building blocks that simplify AI application d
 By reducing friction and complexity, Llama Stack empowers developers to focus on what they do best: building transformative generative AI applications.
 
 ### API Providers
-Here is a list of the various API providers and available distributions that can help developers get started easily with Llama Stack. 
+Here is a list of the various API providers and available distributions that can help developers get started easily with Llama Stack.
 
 | **API Provider Builder** |    **Environments**    | **Agents** | **Inference** | **Memory** | **Safety** | **Telemetry** |
 |:------------------------:|:----------------------:|:----------:|:-------------:|:----------:|:----------:|:-------------:|
@@ -67,30 +67,6 @@ A Llama Stack Distribution (or "distro") is a pre-configured bundle of provider 
 |                   Fireworks                   |                    [llamastack/distribution-fireworks](https://hub.docker.com/repository/docker/llamastack/distribution-fireworks/general)                    |          [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/fireworks.html)           |
 | vLLM |                  [llamastack/distribution-remote-vllm](https://hub.docker.com/repository/docker/llamastack/distribution-remote-vllm/general)                  |         [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/remote-vllm.html)          |
 
-### Installation
-
-You have two ways to install this repository:
-
-* **Install as a package**:
-   You can install the repository directly from [PyPI](https://pypi.org/project/llama-stack/) by running the following command:
-   ```bash
-   pip install llama-stack
-   ```
-
-* **Install from source**:
-   If you prefer to install from the source code, make sure you have [conda installed](https://docs.conda.io/projects/conda/en/stable).
-   Then, run the following commands:
-   ```bash
-    mkdir -p ~/local
-    cd ~/local
-    git clone git@github.com:meta-llama/llama-stack.git
-
-    conda create -n stack python=3.10
-    conda activate stack
-
-    cd llama-stack
-    pip install -e .
-   ```
 
 ### Documentation
 
