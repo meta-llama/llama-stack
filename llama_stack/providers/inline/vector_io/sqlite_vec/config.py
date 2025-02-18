@@ -18,7 +18,6 @@ from llama_stack.providers.utils.kvstore.config import (
 class SQLiteVectorIOConfig(BaseModel):
     db_path: str
     kvstore: KVStoreConfig
-    batch_size: bool = 500
 
     @classmethod
     def sample_run_config(cls, __distro_dir__: str) -> Dict[str, Any]:
