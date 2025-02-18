@@ -34,6 +34,7 @@ def _run_with_pty_unix(command):
     original_sigint = signal.getsignal(signal.SIGINT)
 
     ctrl_c_pressed = False
+    process = None
 
     def sigint_handler(signum, frame):
         nonlocal ctrl_c_pressed
@@ -98,7 +99,7 @@ def _run_with_pty_unix(command):
         signal.signal(signal.SIGINT, original_sigint)
 
         os.close(master)
-        if process.poll() is None:
+        if process and process.poll() is None:
             process.terminate()
             process.wait()
 
