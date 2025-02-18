@@ -119,9 +119,7 @@ class TorchtunePostTrainingImpl:
 
     @webmethod(route="/post-training/job/status")
     async def get_training_job_status(self, job_uuid: str) -> Optional[PostTrainingJobStatusResponse]:
-        if job_uuid in self.jobs_status:
-            return self.jobs_status[job_uuid]
-        return None
+        return self.jobs_status.get(job_uuid, None)
 
     @webmethod(route="/post-training/job/cancel")
     async def cancel_training_job(self, job_uuid: str) -> None:
