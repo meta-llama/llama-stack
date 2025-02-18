@@ -56,7 +56,7 @@ def setup_download_parser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--model-id",
         required=False,
-        help="See `llama model list` or `llama model list --show-all` for the list of available models",
+        help="See `llama model list` or `llama model list --show-all` for the list of available models. Specify multiple model IDs with commas, e.g. --model-id Llama3.2-1B,Llama3.2-3B",
     )
     parser.add_argument(
         "--hf-token",
