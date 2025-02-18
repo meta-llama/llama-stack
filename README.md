@@ -31,42 +31,6 @@ Llama Stack standardizes the core building blocks that simplify AI application d
 
 By reducing friction and complexity, Llama Stack empowers developers to focus on what they do best: building transformative generative AI applications.
 
-### API Providers
-Here is a list of the various API providers and available distributions that can help developers get started easily with Llama Stack. 
-
-| **API Provider Builder** |    **Environments**    | **Agents** | **Inference** | **Memory** | **Safety** | **Telemetry** |
-|:------------------------:|:----------------------:|:----------:|:-------------:|:----------:|:----------:|:-------------:|
-|      Meta Reference      |      Single Node       |     ✅      |       ✅       |     ✅      |     ✅      |       ✅       |
-|        SambaNova         |         Hosted         |            |       ✅       |            |            |               |
-|         Cerebras         |         Hosted         |            |       ✅       |            |            |               |
-|        Fireworks         |         Hosted         |     ✅      |       ✅       |     ✅      |            |               |
-|       AWS Bedrock        |         Hosted         |            |       ✅       |            |     ✅      |               |
-|         Together         |         Hosted         |     ✅      |       ✅       |            |     ✅      |               |
-|           Groq           |         Hosted         |            |       ✅       |            |            |               |
-|          Ollama          |      Single Node       |            |       ✅       |            |            |               |
-|           TGI            | Hosted and Single Node |            |       ✅       |            |            |               |
-|        NVIDIA NIM        | Hosted and Single Node |            |       ✅       |            |            |               |
-|          Chroma          |      Single Node       |            |               |     ✅      |            |               |
-|        PG Vector         |      Single Node       |            |               |     ✅      |            |               |
-|    PyTorch ExecuTorch    |     On-device iOS      |     ✅      |       ✅       |            |            |               |
-|           vLLM           | Hosted and Single Node |            |       ✅       |            |            |               |
-
-### Distributions
-
-A Llama Stack Distribution (or "distro") is a pre-configured bundle of provider implementations for each API component. Distributions make it easy to get started with a specific deployment scenario - you can begin with a local development setup (eg. ollama) and seamlessly transition to production (eg. Fireworks) without changing your application code. Here are some of the distributions we support:
-
-|               **Distribution**                |                                                                    **Llama Stack Docker**                                                                     |                                                 Start This Distribution                                                  |
-|:---------------------------------------------:|:-------------------------------------------------------------------------------------------------------------------------------------------------------------:|:------------------------------------------------------------------------------------------------------------------------:|
-|                Meta Reference                 |           [llamastack/distribution-meta-reference-gpu](https://hub.docker.com/repository/docker/llamastack/distribution-meta-reference-gpu/general)           |      [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/meta-reference-gpu.html)      |
-|           Meta Reference Quantized            | [llamastack/distribution-meta-reference-quantized-gpu](https://hub.docker.com/repository/docker/llamastack/distribution-meta-reference-quantized-gpu/general) | [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/meta-reference-quantized-gpu.html) |
-|                   SambaNova                   |                     [llamastack/distribution-sambanova](https://hub.docker.com/repository/docker/llamastack/distribution-sambanova/general)                     |   [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/sambanova.html)   |
-|                   Cerebras                    |                     [llamastack/distribution-cerebras](https://hub.docker.com/repository/docker/llamastack/distribution-cerebras/general)                     |   [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/cerebras.html)   |
-|                    Ollama                     |                       [llamastack/distribution-ollama](https://hub.docker.com/repository/docker/llamastack/distribution-ollama/general)                       |            [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/ollama.html)            |
-|                      TGI                      |                          [llamastack/distribution-tgi](https://hub.docker.com/repository/docker/llamastack/distribution-tgi/general)                          |             [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/tgi.html)              |
-|                   Together                    |                     [llamastack/distribution-together](https://hub.docker.com/repository/docker/llamastack/distribution-together/general)                     |           [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/together.html)           |
-|                   Fireworks                   |                    [llamastack/distribution-fireworks](https://hub.docker.com/repository/docker/llamastack/distribution-fireworks/general)                    |          [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/fireworks.html)           |
-| vLLM |                  [llamastack/distribution-remote-vllm](https://hub.docker.com/repository/docker/llamastack/distribution-remote-vllm/general)                  |         [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/remote-vllm.html)          |
-
 ### Installation
 
 You have two ways to install this repository:

@@ -47,38 +47,30 @@ We have a number of client-side SDKs available for different languages.
 
 A number of "adapters" are available for some popular Inference and Vector Store providers. For other APIs (particularly Safety and Agents), we provide *reference implementations* you can use to get started. We expect this list to grow over time. We are slowly onboarding more providers to the ecosystem as we get more confidence in the APIs.
 
-**Inference API**
-|  **Provider** |  **Environments** |
-| :----: | :----: |
-|  Meta Reference  |  Single Node |
-|  Ollama  | Single Node   |
-|  Fireworks  |  Hosted  |
-|  Together  |  Hosted  |
-|  NVIDIA NIM  |  Hosted and Single Node  |
-|  vLLM  | Hosted and Single Node |
-|  TGI  |  Hosted and Single Node  |
-|  AWS Bedrock  |  Hosted  |
-|  Cerebras  |  Hosted  |
-|  Groq  |  Hosted  |
-|  SambaNova  |  Hosted  |
-| PyTorch ExecuTorch | On-device iOS, Android |
+Here is a list of the various API providers and available distributions that can help developers get started easily with Llama Stack.
 
-**Vector IO API**
-|  **Provider** |  **Environments** |
-| :----: | :----: |
-|  FAISS | Single Node |
-|  SQLite-Vec| Single Node |
-|  Chroma | Hosted and Single Node |
-|  Postgres (PGVector) | Hosted and Single Node |
-|  Weaviate | Hosted |
-
-**Safety API**
-|  **Provider** |  **Environments** |
-| :----: | :----: |
-|  Llama Guard | Depends on Inference Provider |
-|  Prompt Guard | Single Node |
-|  Code Scanner | Single Node |
-|  AWS Bedrock | Hosted |
+| **API Provider Builder** |    **Environments**           | **Agents** | **Inference** | **Vector IO** | **Safety** | **Telemetry** |
+|:------------------------:|:-----------------------------:|:----------:|:-------------:|:-------------:|:----------:|:-------------:|
+|      Meta Reference      |      Single Node              |     ✅     |       ✅      |     ✅        |     ✅     |       ✅      |
+|        SambaNova         |         Hosted                |            |       ✅      |               |            |               |
+|         Cerebras         |         Hosted                |            |       ✅      |               |            |               |
+|        Fireworks         |         Hosted                |     ✅     |       ✅      |     ✅        |            |               |
+|       AWS Bedrock        |         Hosted                |            |       ✅      |               |     ✅     |               |
+|         Together         |         Hosted                |     ✅     |       ✅      |               |     ✅     |               |
+|           Groq           |         Hosted                |            |       ✅      |               |            |               |
+|          Ollama          |      Single Node              |            |       ✅      |               |            |               |
+|           TGI            | Hosted and Single Node        |            |       ✅      |               |            |               |
+|        NVIDIA NIM        | Hosted and Single Node        |            |       ✅      |               |            |               |
+|          Chroma          | Hosted and Single Node        |            |               |     ✅        |            |               |
+|        PG Vector         |      Single Node              |            |               |     ✅        |            |               |
+|    PyTorch ExecuTorch    |     On-device iOS             |     ✅     |       ✅      |               |            |               |
+|           vLLM           | Hosted and Single Node        |            |       ✅      |               |            |               |
+|          Weaviate        |         Hosted                |            |       ✅      |               |            |               |
+|          FAISS           |      Single Node              |            |       ✅      |               |            |               |
+|    Postgres (PGVector)   | Hosted and Single Node        |            |       ✅      |               |            |               |
+|    Code Scanner          |      Single Node              |            |               |               |     ✅     |               |
+|    Prompt Guard          |      Single Node              |            |               |               |     ✅     |               |
+|    Llama Guard           | Depends on Inference Provider |            |               |               |     ✅     |               |
 
 
 ```{toctree}

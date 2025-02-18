@@ -13,8 +13,11 @@ Which templates / distributions to choose depends on the hardware you have for r
 - **Do you have access to machines with GPUs?** If you wish to run Llama Stack locally or on a cloud instance and host your own Llama Stack endpoint, we suggest:
   - {dockerhub}`distribution-remote-vllm` ([Guide](self_hosted_distro/remote-vllm))
   - {dockerhub}`distribution-meta-reference-gpu` ([Guide](self_hosted_distro/meta-reference-gpu))
+  - {dockerhub}`distribution-meta-reference-quantized-gpu` ([Guide](self_hosted_distro/meta-reference-quantized-gpu))
   - {dockerhub}`distribution-tgi` ([Guide](self_hosted_distro/tgi))
   - {dockerhub}`distribution-nvidia` ([Guide](self_hosted_distro/nvidia))
+  - {dockerhub}`distribution-sambanova` ([Guide](self_hosted_distro/sambanova))
+  - {dockerhub}`distribution-cerebras` ([Guide](self_hosted_distro/cerebras))
 
 - **Are you running on a "regular" desktop or laptop ?** We suggest using the ollama template for quick prototyping and get started without having to worry about needing GPUs.
   - {dockerhub}`distribution-ollama` ([Guide](self_hosted_distro/ollama))
