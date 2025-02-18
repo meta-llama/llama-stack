@@ -203,7 +203,7 @@ def schema_to_type(schema: Schema, *, module: types.ModuleType, class_name: str)
             if type_def.default is not dataclasses.MISSING:
                 raise TypeError("disallowed: `default` for top-level type definitions")
 
-            setattr(type_def.type, "__module__", module.__name__)
+            type_def.type.__module__ = module.__name__
             setattr(module, type_name, type_def.type)
 
     return node_to_typedef(module, class_name, top_node).type
