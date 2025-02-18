@@ -215,8 +215,7 @@ documents = [
 ]
 
 vector_providers = [
-    provider for provider in client.providers.list() 
-    if provider.api == "vector_io"
+    provider for provider in client.providers.list() if provider.api == "vector_io"
 ]
 provider_id = vector_providers[0].provider_id  # Use the first available vector provider
 
