@@ -28,7 +28,6 @@ class RouteInfo(BaseModel):
 @json_schema_type
 class HealthInfo(BaseModel):
     status: str
-    # TODO: add a provider level status
 
 
 @json_schema_type

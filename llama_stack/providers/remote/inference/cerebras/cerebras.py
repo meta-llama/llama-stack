@@ -16,6 +16,7 @@ from llama_stack.apis.inference import (
     CompletionRequest,
     CompletionResponse,
     EmbeddingsResponse,
+    HealthResponse,
     Inference,
     LogProbConfig,
     Message,
@@ -190,4 +191,9 @@ class CerebrasInferenceAdapter(ModelRegistryHelper, Inference):
         model_id: str,
         contents: List[InterleavedContent],
     ) -> EmbeddingsResponse:
+        raise NotImplementedError()
+
+    async def get_health(
+        self,
+    ) -> HealthResponse:
         raise NotImplementedError()

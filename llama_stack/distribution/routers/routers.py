@@ -17,6 +17,8 @@ from llama_stack.apis.eval import (
 )
 from llama_stack.apis.inference import (
     EmbeddingsResponse,
+    HealthResponse,
+    HealthStatus,
     Inference,
     LogProbConfig,
     Message,
@@ -209,6 +211,17 @@ class InferenceRouter(Inference):
             model_id=model_id,
             contents=contents,
         )
+
+    async def get_health(self) -> HealthResponse:
+        health_statuses = {}
+        for provider_id, impl in self.routing_table.impls_by_provider_id.items():
+            try:
+                health_statuses[provider_id] = await impl.health()
+            except NotImplementedError:
+                health_statuses[provider_id] = HealthResponse(health={"status": HealthStatus.NOT_IMPLEMENTED})
+            except Exception as e:
+                health_statuses[provider_id] = HealthResponse(health={"status": HealthStatus.ERROR, "message": str(e)})
+        return health_statuses
 
 
 class SafetyRouter(Safety):

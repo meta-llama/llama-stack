@@ -17,6 +17,7 @@ from llama_stack.apis.inference import (
     CompletionResponse,
     CompletionResponseStreamChunk,
     EmbeddingsResponse,
+    HealthResponse,
     Inference,
     InterleavedContent,
     LogProbConfig,
@@ -201,3 +202,8 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
         else:
             # we pass n=1 to get only one completion
             return convert_openai_chat_completion_choice(response.choices[0])
+
+    async def get_health(
+        self,
+    ) -> HealthResponse:
+        raise NotImplementedError()

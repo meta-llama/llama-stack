@@ -17,6 +17,7 @@ from llama_stack.apis.inference import (
     CompletionRequest,
     CompletionResponse,
     EmbeddingsResponse,
+    HealthResponse,
     Inference,
     LogProbConfig,
     Message,
@@ -297,3 +298,8 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProv
 
         embeddings = [data.embedding for data in response.data]
         return EmbeddingsResponse(embeddings=embeddings)
+
+    async def get_health(
+        self,
+    ) -> HealthResponse:
+        raise NotImplementedError()

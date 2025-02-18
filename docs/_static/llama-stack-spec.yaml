@@ -629,6 +629,21 @@ paths:
           required: true
           schema:
             type: string
+  /v1/inference/health:
+    get:
+      responses:
+        '200':
+          description: >-
+            A dictionary containing the health status of the inference service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+      tags:
+        - Inference
+      description: >-
+        Retrieve the health status of the inference service.
+      parameters: []
   /v1/models/{model_id}:
     get:
       responses:
@@ -3673,6 +3688,24 @@ components:
       additionalProperties: false
       required:
         - type
+    HealthResponse:
+      type: object
+      properties:
+        health:
+          type: object
+          additionalProperties:
+            type: string
+            enum:
+              - OK
+              - Error
+              - Not Implemented
+      additionalProperties: false
+      required:
+        - health
+      description: >-
+        HealthResponse is a model representing the health status response.
+
+        param health: A dictionary containing health information.
     Model:
       type: object
       properties:

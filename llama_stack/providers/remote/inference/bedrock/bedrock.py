@@ -17,6 +17,7 @@ from llama_stack.apis.inference import (
     ChatCompletionResponse,
     ChatCompletionResponseStreamChunk,
     EmbeddingsResponse,
+    HealthResponse,
     Inference,
     LogProbConfig,
     Message,
@@ -198,3 +199,8 @@ class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
             response_body = json.loads(response.get("body").read())
             embeddings.append(response_body.get("embedding"))
         return EmbeddingsResponse(embeddings=embeddings)
+
+    async def get_health(
+        self,
+    ) -> HealthResponse:
+        raise NotImplementedError()

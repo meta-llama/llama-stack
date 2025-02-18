@@ -326,3 +326,8 @@ class SambaNovaInferenceAdapter(ModelRegistryHelper, Inference):
         ]
 
         return compitable_tool_calls
+
+    async def get_health(
+        self,
+    ) -> HealthResponse:
+        raise NotImplementedError()

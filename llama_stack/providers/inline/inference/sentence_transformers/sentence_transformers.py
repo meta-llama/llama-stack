@@ -9,6 +9,7 @@ from typing import AsyncGenerator, List, Optional, Union
 
 from llama_stack.apis.inference import (
     CompletionResponse,
+    HealthResponse,
     Inference,
     LogProbConfig,
     Message,
@@ -75,3 +76,8 @@ class SentenceTransformersInferenceImpl(
         tool_config: Optional[ToolConfig] = None,
     ) -> AsyncGenerator:
         raise ValueError("Sentence transformers don't support chat completion")
+
+    async def get_health(
+        self,
+    ) -> HealthResponse:
+        raise NotImplementedError()

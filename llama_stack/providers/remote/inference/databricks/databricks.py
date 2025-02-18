@@ -15,6 +15,7 @@ from llama_stack.apis.inference import (
     ChatCompletionRequest,
     ChatCompletionResponse,
     EmbeddingsResponse,
+    HealthResponse,
     Inference,
     LogProbConfig,
     Message,
@@ -139,4 +140,9 @@ class DatabricksInferenceAdapter(ModelRegistryHelper, Inference):
         model: str,
         contents: List[InterleavedContent],
     ) -> EmbeddingsResponse:
+        raise NotImplementedError()
+
+    async def get_health(
+        self,
+    ) -> HealthResponse:
         raise NotImplementedError()

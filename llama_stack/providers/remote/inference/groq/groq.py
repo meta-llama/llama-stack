@@ -17,6 +17,7 @@ from llama_stack.apis.inference import (
     CompletionResponse,
     CompletionResponseStreamChunk,
     EmbeddingsResponse,
+    HealthResponse,
     Inference,
     InterleavedContent,
     LogProbConfig,
@@ -154,3 +155,8 @@ class GroqInferenceAdapter(Inference, ModelRegistryHelper, NeedsRequestProviderD
                     'Pass Groq API Key in the header X-LlamaStack-Provider-Data as { "groq_api_key": "<your api key>" }'
                 )
             return Groq(api_key=provider_data.groq_api_key)
+
+    async def get_health(
+        self,
+    ) -> HealthResponse:
+        raise NotImplementedError()

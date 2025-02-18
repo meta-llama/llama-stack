@@ -389,6 +389,30 @@ class EmbeddingsResponse(BaseModel):
     embeddings: List[List[float]]
 
 
+class HealthStatus(str, Enum):
+    OK = "OK"
+    ERROR = "Error"
+    NOT_IMPLEMENTED = "Not Implemented"
+
+
+@json_schema_type
+class HealthResponse(BaseModel):
+    """
+    HealthResponse is a model representing the health status response.
+
+    param health: A dictionary containing health information.
+    """
+
+    health: Dict[str, HealthStatus]
+
+    @field_validator("health")
+    @classmethod
+    def check_status_present(cls, v):
+        if "status" not in v:
+            raise ValueError("'status' must be present in the health dictionary.")
+        return v
+
+
 class ModelStore(Protocol):
     def get_model(self, identifier: str) -> Model: ...
 
@@ -479,5 +503,13 @@ class Inference(Protocol):
         :param model_id: The identifier of the model to use. The model must be an embedding model registered with Llama Stack and available via the /models endpoint.
         :param contents: List of contents to generate embeddings for. Note that content can be multimodal. The behavior depends on the model and provider. Some models may only support text.
         :returns: An array of embeddings, one for each content. Each embedding is a list of floats. The dimensionality of the embedding is model-specific; you can check model metadata using /models/{model_id}
+        """
+        ...
+
+    @webmethod(route="/inference/health", method="GET")
+    async def get_health(self) -> HealthResponse:
+        """Retrieve the health status of the inference service.
+
+        :returns: A dictionary containing the health status of the inference service.
         """
         ...

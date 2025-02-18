@@ -24,6 +24,7 @@ from llama_stack.apis.inference import (
     CompletionResponse,
     CompletionResponseStreamChunk,
     EmbeddingsResponse,
+    HealthResponse,
     Inference,
     LogProbConfig,
     Message,
@@ -375,3 +376,8 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
 
         embeddings = [data.embedding for data in response.data]
         return EmbeddingsResponse(embeddings=embeddings)
+
+    async def get_health(
+        self,
+    ) -> HealthResponse:
+        raise NotImplementedError()

@@ -16,6 +16,7 @@ from llama_stack.apis.inference import (
     ChatCompletionResponse,
     CompletionRequest,
     EmbeddingsResponse,
+    HealthResponse,
     Inference,
     LogProbConfig,
     Message,
@@ -274,3 +275,8 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
         )
         embeddings = [item.embedding for item in r.data]
         return EmbeddingsResponse(embeddings=embeddings)
+
+    async def get_health(
+        self,
+    ) -> HealthResponse:
+        raise NotImplementedError()
