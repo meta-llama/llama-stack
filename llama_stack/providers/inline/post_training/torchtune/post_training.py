@@ -65,6 +65,7 @@ class TorchtunePostTrainingImpl:
             status=JobStatus.scheduled,
             scheduled_at=datetime.now(),
         )
+        self.jobs_status[job_uuid] = job_status_response
 
         self.jobs_list.append(post_training_job)
         if isinstance(algorithm_config, LoraFinetuningConfig):
@@ -99,8 +100,6 @@ class TorchtunePostTrainingImpl:
                 raise
         else:
             raise NotImplementedError()
-
-        self.jobs_status[job_uuid] = job_status_response
 
         return post_training_job
 
