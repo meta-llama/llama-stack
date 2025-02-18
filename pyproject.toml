@@ -49,6 +49,7 @@ dev = [
     "pre-commit",
     "uvicorn",
     "fastapi",
+    "ruamel.yaml",      # needed for openai generator
 ]
 docs = [
     "sphinx-autobuild",
