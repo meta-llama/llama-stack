@@ -103,7 +103,7 @@ Features:
 
 MCP tools are special tools that can interact with llama stack over model context protocol. These tools are dynamically discovered from an MCP endpoint and can be used to extend the agent's capabilities.
 
-Refer to https://github.com/modelcontextprotocol/server for available MCP servers.
+Refer to https://github.com/modelcontextprotocol/servers for available MCP servers.
 
 ```python
 # Register MCP tools
