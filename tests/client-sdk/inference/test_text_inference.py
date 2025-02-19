@@ -250,8 +250,6 @@ def test_text_chat_completion_with_tool_calling_and_streaming(
 def test_text_chat_completion_with_tool_choice_required(
     llama_stack_client, text_model_id, get_weather_tool_definition, provider_tool_format, inference_provider_type
 ):
-    if inference_provider_type == "remote::vllm":
-        pytest.xfail("vllm-project/vllm#13002")
     response = llama_stack_client.inference.chat_completion(
         model_id=text_model_id,
         messages=[
