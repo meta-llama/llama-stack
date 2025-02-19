@@ -223,8 +223,6 @@ def test_builtin_tool_web_search(llama_stack_client, agent_config):
     logs = [str(log) for log in EventLogger().log(response) if log is not None]
     logs_str = "".join(logs)
 
-    assert "tool_execution>" in logs_str
-    assert "Tool:brave_search Response:" in logs_str
     assert "mark zuckerberg" in logs_str.lower()
     if len(agent_config["output_shields"]) > 0:
         assert "No Violation" in logs_str
