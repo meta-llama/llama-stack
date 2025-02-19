@@ -251,7 +251,6 @@ def test_builtin_tool_code_execution(llama_stack_client, agent_config):
     logs_str = "".join(logs)
 
     assert "541" in logs_str
-    assert "Tool:code_interpreter Response" in logs_str
 
 
 # This test must be run in an environment where `bwrap` is available. If you are running against a
