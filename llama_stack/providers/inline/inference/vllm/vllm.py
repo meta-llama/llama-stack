@@ -23,6 +23,7 @@ from llama_stack.apis.inference import (
     CompletionResponse,
     CompletionResponseStreamChunk,
     EmbeddingsResponse,
+    HealthResponse,
     Inference,
     LogProbConfig,
     Message,
@@ -229,6 +230,11 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         stream = _generate_and_convert_to_openai_compat()
         async for chunk in process_chat_completion_stream_response(stream, self.formatter, request):
             yield chunk
+
+    async def get_health(
+        self,
+    ) -> HealthResponse:
+        raise NotImplementedError()
 
     async def embeddings(self, model_id: str, contents: List[InterleavedContent]) -> EmbeddingsResponse:
         raise NotImplementedError()

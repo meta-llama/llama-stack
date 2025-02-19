@@ -23,6 +23,7 @@ from llama_stack.apis.inference import (
     CompletionRequest,
     CompletionResponse,
     CompletionResponseStreamChunk,
+    HealthResponse,
     Inference,
     InterleavedContent,
     LogProbConfig,
@@ -428,3 +429,8 @@ class MetaReferenceInferenceImpl(
         else:
             for x in impl():
                 yield x
+
+    async def get_health(
+        self,
+    ) -> HealthResponse:
+        raise NotImplementedError()

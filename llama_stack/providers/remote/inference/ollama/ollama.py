@@ -22,6 +22,8 @@ from llama_stack.apis.inference import (
     ChatCompletionResponse,
     CompletionRequest,
     EmbeddingsResponse,
+    HealthResponse,
+    HealthStatus,
     Inference,
     LogProbConfig,
     Message,
@@ -368,6 +370,22 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         await check_model_availability(model.provider_resource_id)
 
         return model
+
+    async def get_health(self) -> HealthResponse:
+        """
+        Performs a health check by initializing the service.
+
+        This method is used by the inspect API endpoint to verify that the service is running
+        correctly.
+
+        Returns:
+            HealthResponse: A dictionary containing the health status.
+        """
+        try:
+            await self.initialize()
+            return HealthResponse(health={"status": HealthStatus.OK})
+        except ConnectionError as e:
+            return HealthResponse(health={"status": HealthStatus.ERROR, "message": str(e)})
 
 
 async def convert_message_to_openai_dict_for_ollama(message: Message) -> List[dict]:

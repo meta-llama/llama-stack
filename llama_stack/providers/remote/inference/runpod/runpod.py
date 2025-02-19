@@ -125,3 +125,8 @@ class RunpodInferenceAdapter(ModelRegistryHelper, Inference):
         contents: List[InterleavedTextMedia],
     ) -> EmbeddingsResponse:
         raise NotImplementedError()
+
+    async def get_health(
+        self,
+    ) -> HealthResponse:
+        raise NotImplementedError()

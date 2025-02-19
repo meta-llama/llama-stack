@@ -18,6 +18,7 @@ from llama_stack.apis.inference import (
     ChatCompletionResponse,
     CompletionRequest,
     EmbeddingsResponse,
+    HealthResponse,
     Inference,
     LogProbConfig,
     Message,
@@ -308,3 +309,8 @@ class InferenceEndpointAdapter(_HfAdapter):
         self.client = endpoint.async_client
         self.model_id = endpoint.repository
         self.max_tokens = int(endpoint.raw["model"]["image"]["custom"]["env"]["MAX_TOTAL_TOKENS"])
+
+    async def get_health(
+        self,
+    ) -> HealthResponse:
+        raise NotImplementedError()
