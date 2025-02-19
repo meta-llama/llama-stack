@@ -6,8 +6,15 @@
 
 from pathlib import Path
 
+<<<<<<< Updated upstream
 from llama_stack.distribution.datatypes import ModelInput, Provider, ToolGroupInput
 from llama_stack.models.llama.sku_list import all_registered_models
+=======
+from llama_models.sku_list import all_registered_models
+
+from llama_stack.distribution.datatypes import ModelInput, Provider, ShieldInput, ToolGroupInput
+from llama_stack.providers.remote.safety.nvidia import NVIDIASafetyConfig
+>>>>>>> Stashed changes
 from llama_stack.providers.remote.inference.nvidia import NVIDIAConfig
 from llama_stack.providers.remote.inference.nvidia.nvidia import _MODEL_ALIASES
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
@@ -36,6 +43,19 @@ def get_distribution_template() -> DistributionTemplate:
         provider_id="nvidia",
         provider_type="remote::nvidia",
         config=NVIDIAConfig.sample_run_config(),
+    )
+    safety_provider = Provider(
+        provider_id="nvidia",
+        provider_type="remote::nvidia",
+        config=NVIDIASafetyConfig.sample_run_config(),
+    )
+    inference_model = ModelInput(
+        model_id="${env.INFERENCE_MODEL}",
+        provider_id="nvidia",
+    )
+    safety_model = ModelInput(
+        model_id="${env.SAFETY_MODEL}",
+        provider_id="nvidia",
     )
 
     core_model_to_hf_repo = {m.descriptor(): m.huggingface_repo for m in all_registered_models()}
@@ -78,15 +98,34 @@ def get_distribution_template() -> DistributionTemplate:
                 default_models=default_models,
                 default_tool_groups=default_tool_groups,
             ),
+            "run-with-safety.yaml": RunConfigSettings(
+                provider_overrides={
+                    "inference": [
+                        inference_provider,
+                        safety_provider,
+                    ]
+                },
+                default_models=[inference_model, safety_model],
+                default_shields=[ShieldInput(shield_id="${env.SAFETY_MODEL}")],
+                default_tool_groups=default_tool_groups,
+            ),
         },
         run_config_env_vars={
-            "LLAMASTACK_PORT": (
-                "5001",
-                "Port for the Llama Stack distribution server",
-            ),
             "NVIDIA_API_KEY": (
                 "",
                 "NVIDIA API Key",
+            ),
+            "GUARDRAILS_SERVICE_URL": (
+                "http://0.0.0.0:7331",
+                "URL for the NeMo Guardrails Service",
+            ),
+            "INFERENCE_MODEL": (
+                "Llama3.1-8B-Instruct",
+                "Inference model",
+            ),
+            "SAFETY_MODEL": (
+                "meta/llama-3.1-8b-instruct",
+                "Name of the model to use for safety",
             ),
         },
     )
