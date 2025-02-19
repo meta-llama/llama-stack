@@ -314,6 +314,17 @@ class JsonSchemaGenerator:
         force_expand: bool = False,
         json_schema_extra: Optional[dict] = None,
     ) -> Schema:
+        common_info = {}
+        if json_schema_extra and "deprecated" in json_schema_extra:
+            common_info["deprecated"] = json_schema_extra["deprecated"]
+        return self._type_to_schema(data_type, force_expand, json_schema_extra) | common_info
+
+    def _type_to_schema(
+        self,
+        data_type: TypeLike,
+        force_expand: bool = False,
+        json_schema_extra: Optional[dict] = None,
+    ) -> Schema:
         """
         Returns the JSON schema associated with a type.
 
@@ -489,7 +500,11 @@ class JsonSchemaGenerator:
             if "model_fields" in members:
                 f = members["model_fields"]
                 defaults = {k: finfo.default for k, finfo in f.items()}
-                json_schema_extra = f.get(output_name, None).json_schema_extra
+                if output_name in f:
+                    finfo = f[output_name]
+                    json_schema_extra = finfo.json_schema_extra or {}
+                    if finfo.deprecated:
+                        json_schema_extra["deprecated"] = True
 
             if is_type_optional(property_type):
                 optional_type: type = unwrap_optional_type(property_type)
