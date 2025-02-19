@@ -49,8 +49,6 @@ class NVIDIASafetyAdapter(Safety, ShieldsProtocolPrivate):
         self.shield = NeMoGuardrails(self.config, shield.provider_resource_id)
         return await self.shield.run(messages)
         
-        
-
 
 class NeMoGuardrails:
     def __init__(

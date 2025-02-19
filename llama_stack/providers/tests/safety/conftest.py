@@ -51,11 +51,19 @@ DEFAULT_PROVIDER_COMBINATIONS = [
         id="remote",
         marks=pytest.mark.remote,
     ),
+    pytest.param(
+        {
+            "inference": "nvidia",
+            "safety": "nvidia",
+        },
+        id="nvidia",
+        marks=pytest.mark.meta_reference,
+    ),
 ]
 
 
 def pytest_configure(config):
-    for mark in ["meta_reference", "ollama", "together", "remote", "bedrock"]:
+    for mark in ["meta_reference", "ollama", "together", "remote", "bedrock", "nvidia"]:
         config.addinivalue_line(
             "markers",
             f"{mark}: marks tests as {mark} specific",
