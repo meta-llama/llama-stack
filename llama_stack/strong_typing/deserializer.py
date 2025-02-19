@@ -40,6 +40,7 @@ from typing import (
 from .core import JsonType
 from .exception import JsonKeyError, JsonTypeError, JsonValueError
 from .inspection import (
+    TypeLike,
     create_object,
     enum_value_types,
     evaluate_type,
@@ -52,7 +53,6 @@ from .inspection import (
     is_type_annotated,
     is_type_literal,
     is_type_optional,
-    TypeLike,
     unwrap_annotated_type,
     unwrap_literal_values,
     unwrap_optional_type,
@@ -92,9 +92,7 @@ class NoneDeserializer(Deserializer[None]):
 
     def parse(self, data: JsonType) -> None:
         if data is not None:
-            raise JsonTypeError(
-                f"`None` type expects JSON `null` but instead received: {data}"
-            )
+            raise JsonTypeError(f"`None` type expects JSON `null` but instead received: {data}")
         return None
 
 
@@ -103,9 +101,7 @@ class BoolDeserializer(Deserializer[bool]):
 
     def parse(self, data: JsonType) -> bool:
         if not isinstance(data, bool):
-            raise JsonTypeError(
-                f"`bool` type expects JSON `boolean` data but instead received: {data}"
-            )
+            raise JsonTypeError(f"`bool` type expects JSON `boolean` data but instead received: {data}")
         return bool(data)
 
 
@@ -114,9 +110,7 @@ class IntDeserializer(Deserializer[int]):
 
     def parse(self, data: JsonType) -> int:
         if not isinstance(data, int):
-            raise JsonTypeError(
-                f"`int` type expects integer data as JSON `number` but instead received: {data}"
-            )
+            raise JsonTypeError(f"`int` type expects integer data as JSON `number` but instead received: {data}")
         return int(data)
 
 
@@ -125,9 +119,7 @@ class FloatDeserializer(Deserializer[float]):
 
     def parse(self, data: JsonType) -> float:
         if not isinstance(data, float) and not isinstance(data, int):
-            raise JsonTypeError(
-                f"`int` type expects data as JSON `number` but instead received: {data}"
-            )
+            raise JsonTypeError(f"`int` type expects data as JSON `number` but instead received: {data}")
         return float(data)
 
 
@@ -136,9 +128,7 @@ class StringDeserializer(Deserializer[str]):
 
     def parse(self, data: JsonType) -> str:
         if not isinstance(data, str):
-            raise JsonTypeError(
-                f"`str` type expects JSON `string` data but instead received: {data}"
-            )
+            raise JsonTypeError(f"`str` type expects JSON `string` data but instead received: {data}")
         return str(data)
 
 
@@ -147,9 +137,7 @@ class BytesDeserializer(Deserializer[bytes]):
 
     def parse(self, data: JsonType) -> bytes:
         if not isinstance(data, str):
-            raise JsonTypeError(
-                f"`bytes` type expects JSON `string` data but instead received: {data}"
-            )
+            raise JsonTypeError(f"`bytes` type expects JSON `string` data but instead received: {data}")
         return base64.b64decode(data, validate=True)
 
 
@@ -158,17 +146,13 @@ class DateTimeDeserializer(Deserializer[datetime.datetime]):
 
     def parse(self, data: JsonType) -> datetime.datetime:
         if not isinstance(data, str):
-            raise JsonTypeError(
-                f"`datetime` type expects JSON `string` data but instead received: {data}"
-            )
+            raise JsonTypeError(f"`datetime` type expects JSON `string` data but instead received: {data}")
 
         if data.endswith("Z"):
             data = f"{data[:-1]}+00:00"  # Python's isoformat() does not support military time zones like "Zulu" for UTC
         timestamp = datetime.datetime.fromisoformat(data)
         if timestamp.tzinfo is None:
-            raise JsonValueError(
-                f"timestamp lacks explicit time zone designator: {data}"
-            )
+            raise JsonValueError(f"timestamp lacks explicit time zone designator: {data}")
         return timestamp
 
 
@@ -177,9 +161,7 @@ class DateDeserializer(Deserializer[datetime.date]):
 
     def parse(self, data: JsonType) -> datetime.date:
         if not isinstance(data, str):
-            raise JsonTypeError(
-                f"`date` type expects JSON `string` data but instead received: {data}"
-            )
+            raise JsonTypeError(f"`date` type expects JSON `string` data but instead received: {data}")
 
         return datetime.date.fromisoformat(data)
 
@@ -189,9 +171,7 @@ class TimeDeserializer(Deserializer[datetime.time]):
 
     def parse(self, data: JsonType) -> datetime.time:
         if not isinstance(data, str):
-            raise JsonTypeError(
-                f"`time` type expects JSON `string` data but instead received: {data}"
-            )
+            raise JsonTypeError(f"`time` type expects JSON `string` data but instead received: {data}")
 
         return datetime.time.fromisoformat(data)
 
@@ -201,9 +181,7 @@ class UUIDDeserializer(Deserializer[uuid.UUID]):
 
     def parse(self, data: JsonType) -> uuid.UUID:
         if not isinstance(data, str):
-            raise JsonTypeError(
-                f"`UUID` type expects JSON `string` data but instead received: {data}"
-            )
+            raise JsonTypeError(f"`UUID` type expects JSON `string` data but instead received: {data}")
         return uuid.UUID(data)
 
 
@@ -212,9 +190,7 @@ class IPv4Deserializer(Deserializer[ipaddress.IPv4Address]):
 
     def parse(self, data: JsonType) -> ipaddress.IPv4Address:
         if not isinstance(data, str):
-            raise JsonTypeError(
-                f"`IPv4Address` type expects JSON `string` data but instead received: {data}"
-            )
+            raise JsonTypeError(f"`IPv4Address` type expects JSON `string` data but instead received: {data}")
         return ipaddress.IPv4Address(data)
 
 
@@ -223,9 +199,7 @@ class IPv6Deserializer(Deserializer[ipaddress.IPv6Address]):
 
     def parse(self, data: JsonType) -> ipaddress.IPv6Address:
         if not isinstance(data, str):
-            raise JsonTypeError(
-                f"`IPv6Address` type expects JSON `string` data but instead received: {data}"
-            )
+            raise JsonTypeError(f"`IPv6Address` type expects JSON `string` data but instead received: {data}")
         return ipaddress.IPv6Address(data)
 
 
@@ -244,9 +218,7 @@ class ListDeserializer(Deserializer[List[T]]):
     def parse(self, data: JsonType) -> List[T]:
         if not isinstance(data, list):
             type_name = python_type_to_str(self.item_type)
-            raise JsonTypeError(
-                f"type `List[{type_name}]` expects JSON `array` data but instead received: {data}"
-            )
+            raise JsonTypeError(f"type `List[{type_name}]` expects JSON `array` data but instead received: {data}")
 
         return [self.item_parser.parse(item) for item in data]
 
@@ -319,9 +291,7 @@ class SetDeserializer(Deserializer[Set[T]]):
     def parse(self, data: JsonType) -> Set[T]:
         if not isinstance(data, list):
             type_name = python_type_to_str(self.member_type)
-            raise JsonTypeError(
-                f"type `Set[{type_name}]` expects JSON `array` data but instead received: {data}"
-            )
+            raise JsonTypeError(f"type `Set[{type_name}]` expects JSON `array` data but instead received: {data}")
 
         return set(self.member_parser.parse(item) for item in data)
 
@@ -336,15 +306,11 @@ class TupleDeserializer(Deserializer[Tuple[Any, ...]]):
         self.item_types = item_types
 
     def build(self, context: Optional[ModuleType]) -> None:
-        self.item_parsers = tuple(
-            _get_deserializer(item_type, context) for item_type in self.item_types
-        )
+        self.item_parsers = tuple(_get_deserializer(item_type, context) for item_type in self.item_types)
 
     @property
     def container_type(self) -> str:
-        type_names = ", ".join(
-            python_type_to_str(item_type) for item_type in self.item_types
-        )
+        type_names = ", ".join(python_type_to_str(item_type) for item_type in self.item_types)
         return f"Tuple[{type_names}]"
 
     def parse(self, data: JsonType) -> Tuple[Any, ...]:
@@ -359,10 +325,7 @@ class TupleDeserializer(Deserializer[Tuple[Any, ...]]):
                     f"type `{self.container_type}` expects a JSON `array` of length {count} but received length {len(data)}"
                 )
 
-        return tuple(
-            item_parser.parse(item)
-            for item_parser, item in zip(self.item_parsers, data)
-        )
+        return tuple(item_parser.parse(item) for item_parser, item in zip(self.item_parsers, data, strict=False))
 
 
 class UnionDeserializer(Deserializer):
@@ -375,9 +338,7 @@ class UnionDeserializer(Deserializer):
         self.member_types = member_types
 
     def build(self, context: Optional[ModuleType]) -> None:
-        self.member_parsers = tuple(
-            _get_deserializer(member_type, context) for member_type in self.member_types
-        )
+        self.member_parsers = tuple(_get_deserializer(member_type, context) for member_type in self.member_types)
 
     def parse(self, data: JsonType) -> Any:
         for member_parser in self.member_parsers:
@@ -389,21 +350,15 @@ class UnionDeserializer(Deserializer):
                 # i.e. we don't have the type that we are looking for
                 continue
 
-        type_names = ", ".join(
-            python_type_to_str(member_type) for member_type in self.member_types
-        )
-        raise JsonKeyError(
-            f"type `Union[{type_names}]` could not be instantiated from: {data}"
-        )
+        type_names = ", ".join(python_type_to_str(member_type) for member_type in self.member_types)
+        raise JsonKeyError(f"type `Union[{type_names}]` could not be instantiated from: {data}")
 
 
 def get_literal_properties(typ: type) -> Set[str]:
     "Returns the names of all properties in a class that are of a literal type."
 
     return set(
-        property_name
-        for property_name, property_type in get_class_properties(typ)
-        if is_type_literal(property_type)
+        property_name for property_name, property_type in get_class_properties(typ) if is_type_literal(property_type)
     )
 
 
@@ -450,9 +405,7 @@ class TaggedUnionDeserializer(Deserializer):
 
     @property
     def union_type(self) -> str:
-        type_names = ", ".join(
-            python_type_to_str(member_type) for member_type in self.member_types
-        )
+        type_names = ", ".join(python_type_to_str(member_type) for member_type in self.member_types)
         return f"Union[{type_names}]"
 
     def parse(self, data: JsonType) -> Any:
@@ -466,9 +419,7 @@ class TaggedUnionDeserializer(Deserializer):
             if disambiguating_value is None:
                 continue
 
-            member_parser = self.member_parsers.get(
-                (property_name, disambiguating_value)
-            )
+            member_parser = self.member_parsers.get((property_name, disambiguating_value))
             if member_parser is None:
                 raise JsonTypeError(
                     f"disambiguating property value is invalid for tagged union type `{self.union_type}`: {data}"
@@ -506,9 +457,7 @@ class LiteralDeserializer(Deserializer):
         value = self.parser.parse(data)
         if value not in self.values:
             value_names = ", ".join(repr(value) for value in self.values)
-            raise JsonTypeError(
-                f"type `Literal[{value_names}]` could not be instantiated from: {data}"
-            )
+            raise JsonTypeError(f"type `Literal[{value_names}]` could not be instantiated from: {data}")
         return value
 
 
@@ -549,9 +498,7 @@ class FieldDeserializer(abc.ABC, Generic[T, R]):
     field_name: str
     parser: Deserializer[T]
 
-    def __init__(
-        self, property_name: str, field_name: str, parser: Deserializer[T]
-    ) -> None:
+    def __init__(self, property_name: str, field_name: str, parser: Deserializer[T]) -> None:
         self.property_name = property_name
         self.field_name = field_name
         self.parser = parser
@@ -565,9 +512,7 @@ class RequiredFieldDeserializer(FieldDeserializer[T, T]):
 
     def parse_field(self, data: Dict[str, JsonType]) -> T:
         if self.property_name not in data:
-            raise JsonKeyError(
-                f"missing required property `{self.property_name}` from JSON object: {data}"
-            )
+            raise JsonKeyError(f"missing required property `{self.property_name}` from JSON object: {data}")
 
         return self.parser.parse(data[self.property_name])
 
@@ -641,32 +586,22 @@ class ClassDeserializer(Deserializer[T]):
 
     def assign(self, property_parsers: List[FieldDeserializer]) -> None:
         self.property_parsers = property_parsers
-        self.property_fields = set(
-            property_parser.property_name for property_parser in property_parsers
-        )
+        self.property_fields = set(property_parser.property_name for property_parser in property_parsers)
 
     def parse(self, data: JsonType) -> T:
         if not isinstance(data, dict):
             type_name = python_type_to_str(self.class_type)
-            raise JsonTypeError(
-                f"`type `{type_name}` expects JSON `object` data but instead received: {data}"
-            )
+            raise JsonTypeError(f"`type `{type_name}` expects JSON `object` data but instead received: {data}")
 
         object_data: Dict[str, JsonType] = typing.cast(Dict[str, JsonType], data)
 
         field_values = {}
         for property_parser in self.property_parsers:
-            field_values[property_parser.field_name] = property_parser.parse_field(
-                object_data
-            )
+            field_values[property_parser.field_name] = property_parser.parse_field(object_data)
 
         if not self.property_fields.issuperset(object_data):
-            unassigned_names = [
-                name for name in object_data if name not in self.property_fields
-            ]
-            raise JsonKeyError(
-                f"unrecognized fields in JSON object: {unassigned_names}"
-            )
+            unassigned_names = [name for name in object_data if name not in self.property_fields]
+            raise JsonKeyError(f"unrecognized fields in JSON object: {unassigned_names}")
 
         return self.create(**field_values)
 
@@ -686,9 +621,7 @@ class NamedTupleDeserializer(ClassDeserializer[NamedTuple]):
 
     def build(self, context: Optional[ModuleType]) -> None:
         property_parsers: List[FieldDeserializer] = [
-            RequiredFieldDeserializer(
-                field_name, field_name, _get_deserializer(field_type, context)
-            )
+            RequiredFieldDeserializer(field_name, field_name, _get_deserializer(field_type, context))
             for field_name, field_type in get_resolved_hints(self.class_type).items()
         ]
         super().assign(property_parsers)
@@ -729,17 +662,11 @@ class DataclassDeserializer(ClassDeserializer[T]):
                 )
             elif has_default_factory:
                 default_factory = typing.cast(Callable[[], Any], field.default_factory)
-                field_parser = DefaultFactoryFieldDeserializer(
-                    property_name, field.name, parser, default_factory
-                )
+                field_parser = DefaultFactoryFieldDeserializer(property_name, field.name, parser, default_factory)
             elif is_optional:
-                field_parser = OptionalFieldDeserializer(
-                    property_name, field.name, parser
-                )
+                field_parser = OptionalFieldDeserializer(property_name, field.name, parser)
             else:
-                field_parser = RequiredFieldDeserializer(
-                    property_name, field.name, parser
-                )
+                field_parser = RequiredFieldDeserializer(property_name, field.name, parser)
 
             property_parsers.append(field_parser)
 
@@ -778,22 +705,16 @@ class TypedClassDeserializer(ClassDeserializer[T]):
             parser = _get_deserializer(required_type, context)
 
             if is_optional:
-                field_parser: FieldDeserializer = OptionalFieldDeserializer(
-                    property_name, field_name, parser
-                )
+                field_parser: FieldDeserializer = OptionalFieldDeserializer(property_name, field_name, parser)
             else:
-                field_parser = RequiredFieldDeserializer(
-                    property_name, field_name, parser
-                )
+                field_parser = RequiredFieldDeserializer(property_name, field_name, parser)
 
             property_parsers.append(field_parser)
 
         super().assign(property_parsers)
 
 
-def create_deserializer(
-    typ: TypeLike, context: Optional[ModuleType] = None
-) -> Deserializer:
+def create_deserializer(typ: TypeLike, context: Optional[ModuleType] = None) -> Deserializer:
     """
     Creates a de-serializer engine to produce a Python object from an object obtained from a JSON string.
 
@@ -900,15 +821,11 @@ def _create_deserializer(typ: TypeLike) -> Deserializer:
     if typ is list:
         raise TypeError("explicit item type required: use `List[T]` instead of `list`")
     if typ is dict:
-        raise TypeError(
-            "explicit key and value types required: use `Dict[K, V]` instead of `dict`"
-        )
+        raise TypeError("explicit key and value types required: use `Dict[K, V]` instead of `dict`")
     if typ is set:
         raise TypeError("explicit member type required: use `Set[T]` instead of `set`")
     if typ is tuple:
-        raise TypeError(
-            "explicit item type list required: use `Tuple[T, ...]` instead of `tuple`"
-        )
+        raise TypeError("explicit item type list required: use `Tuple[T, ...]` instead of `tuple`")
 
     # generic types (e.g. list, dict, set, etc.)
     origin_type = typing.get_origin(typ)

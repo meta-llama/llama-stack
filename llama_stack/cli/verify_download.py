@@ -44,7 +44,7 @@ def setup_verify_download_parser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--model-id",
         required=True,
-        help="Model ID to verify",
+        help="Model ID to verify (only for models downloaded from Meta)",
     )
     parser.set_defaults(func=partial(run_verify_cmd, parser=parser))
 

@@ -32,12 +32,12 @@ from typing import (
     NamedTuple,
     Optional,
     Protocol,
-    runtime_checkable,
     Set,
     Tuple,
     Type,
     TypeVar,
     Union,
+    runtime_checkable,
 )
 
 if sys.version_info >= (3, 9):
@@ -161,9 +161,7 @@ class DataclassField:
     type: Any
     default: Any
 
-    def __init__(
-        self, name: str, type: Any, default: Any = dataclasses.MISSING
-    ) -> None:
+    def __init__(self, name: str, type: Any, default: Any = dataclasses.MISSING) -> None:
         self.name = name
         self.type = type
         self.default = default
@@ -173,9 +171,7 @@ def dataclass_fields(cls: Type[DataclassInstance]) -> Iterable[DataclassField]:
     "Generates the fields of a data-class resolving forward references."
 
     for field in dataclasses.fields(cls):
-        yield DataclassField(
-            field.name, evaluate_member_type(field.type, cls), field.default
-        )
+        yield DataclassField(field.name, evaluate_member_type(field.type, cls), field.default)
 
 
 def dataclass_field_by_name(cls: Type[DataclassInstance], name: str) -> DataclassField:
@@ -267,8 +263,8 @@ def extend_enum(
         enum_class: Type[enum.Enum] = enum.Enum(extend.__name__, values)  # type: ignore
 
         # assign the newly created type to the same module where the extending class is defined
-        setattr(enum_class, "__module__", extend.__module__)
-        setattr(enum_class, "__doc__", extend.__doc__)
+        enum_class.__module__ = extend.__module__
+        enum_class.__doc__ = extend.__doc__
         setattr(sys.modules[extend.__module__], extend.__name__, enum_class)
 
         return enum.unique(enum_class)
@@ -291,9 +287,7 @@ else:
         return typing.get_origin(typ) is Union
 
 
-def is_type_optional(
-    typ: object, strict: bool = False
-) -> TypeGuard[Type[Optional[Any]]]:
+def is_type_optional(typ: object, strict: bool = False) -> TypeGuard[Type[Optional[Any]]]:
     """
     True if the type annotation corresponds to an optional type (e.g. `Optional[T]` or `Union[T1,T2,None]`).
 
@@ -525,9 +519,7 @@ def unwrap_annotated_type(typ: T) -> T:
         return typ
 
 
-def rewrap_annotated_type(
-    transform: Callable[[Type[S]], Type[T]], typ: Type[S]
-) -> Type[T]:
+def rewrap_annotated_type(transform: Callable[[Type[S]], Type[T]], typ: Type[S]) -> Type[T]:
     """
     Un-boxes, transforms and re-boxes an optionally annotated type.
 
@@ -595,9 +587,7 @@ class _ROOT:
     pass
 
 
-def get_referenced_types(
-    typ: TypeLike, module: Optional[types.ModuleType] = None
-) -> Set[type]:
+def get_referenced_types(typ: TypeLike, module: Optional[types.ModuleType] = None) -> Set[type]:
     """
     Extracts types directly or indirectly referenced by this type.
 
@@ -867,8 +857,7 @@ def is_generic_instance(obj: Any, typ: TypeLike) -> bool:
         key_type, value_type = typing.get_args(typ)
         dict_obj: dict = obj
         return all(
-            is_generic_instance(key, key_type)
-            and is_generic_instance(value, value_type)
+            is_generic_instance(key, key_type) and is_generic_instance(value, value_type)
             for key, value in dict_obj.items()
         )
     elif origin_type is set:
@@ -885,13 +874,11 @@ def is_generic_instance(obj: Any, typ: TypeLike) -> bool:
             for tuple_item_type, item in zip(
                 (tuple_item_type for tuple_item_type in typing.get_args(typ)),
                 (item for item in obj),
+                strict=False,
             )
         )
     elif origin_type is Union:
-        return any(
-            is_generic_instance(obj, member_type)
-            for member_type in typing.get_args(typ)
-        )
+        return any(is_generic_instance(obj, member_type) for member_type in typing.get_args(typ))
     elif isinstance(typ, type):
         return isinstance(obj, typ)
     else:
@@ -968,6 +955,7 @@ class RecursiveChecker:
                 for tuple_item_type, item in zip(
                     (tuple_item_type for tuple_item_type in typing.get_args(typ)),
                     (item for item in obj),
+                    strict=False,
                 )
             )
         elif origin_type is Union:
@@ -995,8 +983,7 @@ class RecursiveChecker:
                 raise TypeError(f"expected `{typ}` but got: {obj}")
             resolved_hints = get_resolved_hints(typ)
             return all(
-                self.check(resolved_hints[field.name], getattr(obj, field.name))
-                for field in dataclasses.fields(typ)
+                self.check(resolved_hints[field.name], getattr(obj, field.name)) for field in dataclasses.fields(typ)
             )
         else:
             if not isinstance(obj, typ):
@@ -1027,9 +1014,7 @@ def check_recursive(
 
     if type_pred is not None and value_pred is not None:
         if pred is not None:
-            raise TypeError(
-                "filter predicate not permitted when type and value predicates are present"
-            )
+            raise TypeError("filter predicate not permitted when type and value predicates are present")
 
         type_p: Callable[[Type[T]], bool] = type_pred
         value_p: Callable[[T], bool] = value_pred
@@ -1037,9 +1022,7 @@ def check_recursive(
 
     elif value_pred is not None:
         if pred is not None:
-            raise TypeError(
-                "filter predicate not permitted when value predicate is present"
-            )
+            raise TypeError("filter predicate not permitted when value predicate is present")
 
         value_only_p: Callable[[T], bool] = value_pred
         pred = lambda typ, obj: value_only_p(obj)  # noqa: E731

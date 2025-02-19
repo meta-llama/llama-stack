@@ -17,9 +17,7 @@ from .auxiliary import Alias
 from .inspection import get_annotation
 
 
-def python_field_to_json_property(
-    python_id: str, python_type: Optional[object] = None
-) -> str:
+def python_field_to_json_property(python_id: str, python_type: Optional[object] = None) -> str:
     """
     Map a Python field identifier to a JSON property name.
 

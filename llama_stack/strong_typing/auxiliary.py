@@ -13,7 +13,7 @@ Type-safe data interchange for Python data classes.
 import dataclasses
 import sys
 from dataclasses import is_dataclass
-from typing import Callable, Dict, Optional, overload, Type, TypeVar, Union
+from typing import Callable, Dict, Optional, Type, TypeVar, Union, overload
 
 if sys.version_info >= (3, 9):
     from typing import Annotated as Annotated
@@ -42,9 +42,7 @@ def _compact_dataclass_repr(obj: object) -> str:
     """
 
     if is_dataclass(obj):
-        arglist = ", ".join(
-            repr(getattr(obj, field.name)) for field in dataclasses.fields(obj)
-        )
+        arglist = ", ".join(repr(getattr(obj, field.name)) for field in dataclasses.fields(obj))
         return f"{obj.__class__.__name__}({arglist})"
     else:
         return obj.__class__.__name__
@@ -62,9 +60,7 @@ def typeannotation(cls: Type[T], /) -> Type[T]: ...
 
 
 @overload
-def typeannotation(
-    cls: None, *, eq: bool = True, order: bool = False
-) -> Callable[[Type[T]], Type[T]]: ...
+def typeannotation(cls: None, *, eq: bool = True, order: bool = False) -> Callable[[Type[T]], Type[T]]: ...
 
 
 @dataclass_transform(eq_default=True, order_default=False)
@@ -81,7 +77,7 @@ def typeannotation(
     """
 
     def wrap(cls: Type[T]) -> Type[T]:
-        setattr(cls, "__repr__", _compact_dataclass_repr)
+        cls.__repr__ = _compact_dataclass_repr
         if not dataclasses.is_dataclass(cls):
             cls = dataclasses.dataclass(  # type: ignore[call-overload]
                 cls,

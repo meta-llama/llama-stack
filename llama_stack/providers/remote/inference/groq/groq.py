@@ -9,9 +9,6 @@ from typing import AsyncIterator, List, Optional, Union
 
 import groq
 from groq import Groq
-from llama_models.datatypes import SamplingParams
-from llama_models.llama3.api.datatypes import ToolDefinition, ToolPromptFormat
-from llama_models.sku_list import CoreModelId
 
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
@@ -29,6 +26,8 @@ from llama_stack.apis.inference import (
     ToolConfig,
 )
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
+from llama_stack.models.llama.datatypes import SamplingParams, ToolDefinition, ToolPromptFormat
+from llama_stack.models.llama.sku_list import CoreModelId
 from llama_stack.providers.remote.inference.groq.config import GroqConfig
 from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,

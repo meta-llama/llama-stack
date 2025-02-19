@@ -14,7 +14,6 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import torch
-from llama_models.sku_list import resolve_model
 from torch import nn
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader, DistributedSampler
@@ -46,6 +45,7 @@ from llama_stack.apis.post_training import (
 )
 from llama_stack.distribution.utils.config_dirs import DEFAULT_CHECKPOINT_DIR
 from llama_stack.distribution.utils.model_utils import model_local_dir
+from llama_stack.models.llama.sku_list import resolve_model
 from llama_stack.providers.inline.post_training.common.validator import (
     validate_input_dataset_schema,
 )

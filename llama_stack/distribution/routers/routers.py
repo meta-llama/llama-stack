@@ -9,9 +9,8 @@ from typing import Any, AsyncGenerator, Dict, List, Optional
 from llama_stack.apis.common.content_types import URL, InterleavedContent
 from llama_stack.apis.datasetio import DatasetIO, PaginatedRowsResult
 from llama_stack.apis.eval import (
-    AppEvalTaskConfig,
+    BenchmarkConfig,
     Eval,
-    EvalTaskConfig,
     EvaluateResponse,
     Job,
     JobStatus,
@@ -129,7 +128,7 @@ class InferenceRouter(Inference):
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
         tools: Optional[List[ToolDefinition]] = None,
-        tool_choice: Optional[ToolChoice] = ToolChoice.auto,
+        tool_choice: Optional[ToolChoice] = None,
         tool_prompt_format: Optional[ToolPromptFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
@@ -141,20 +140,36 @@ class InferenceRouter(Inference):
         if model.model_type == ModelType.embedding:
             raise ValueError(f"Model '{model_id}' is an embedding model and does not support chat completions")
         if tool_config:
-            if tool_choice != tool_config.tool_choice:
+            if tool_choice and tool_choice != tool_config.tool_choice:
                 raise ValueError("tool_choice and tool_config.tool_choice must match")
-            if tool_prompt_format != tool_config.tool_prompt_format:
+            if tool_prompt_format and tool_prompt_format != tool_config.tool_prompt_format:
                 raise ValueError("tool_prompt_format and tool_config.tool_prompt_format must match")
         else:
-            tool_config = ToolConfig(
-                tool_choice=tool_choice,
-                tool_prompt_format=tool_prompt_format,
-            )
+            params = {}
+            if tool_choice:
+                params["tool_choice"] = tool_choice
+            if tool_prompt_format:
+                params["tool_prompt_format"] = tool_prompt_format
+            tool_config = ToolConfig(**params)
+
+        tools = tools or []
+        if tool_config.tool_choice == ToolChoice.none:
+            tools = []
+        elif tool_config.tool_choice == ToolChoice.auto:
+            pass
+        elif tool_config.tool_choice == ToolChoice.required:
+            pass
+        else:
+            # verify tool_choice is one of the tools
+            tool_names = [t.tool_name if isinstance(t.tool_name, str) else t.tool_name.value for t in tools]
+            if tool_config.tool_choice not in tool_names:
+                raise ValueError(f"Tool choice {tool_config.tool_choice} is not one of the tools: {tool_names}")
+
         params = dict(
             model_id=model_id,
             messages=messages,
             sampling_params=sampling_params,
-            tools=tools or [],
+            tools=tools,
             tool_choice=tool_choice,
             tool_prompt_format=tool_prompt_format,
             response_format=response_format,
@@ -347,23 +362,23 @@ class EvalRouter(Eval):
 
     async def run_eval(
         self,
-        task_id: str,
-        task_config: AppEvalTaskConfig,
+        benchmark_id: str,
+        task_config: BenchmarkConfig,
     ) -> Job:
-        return await self.routing_table.get_provider_impl(task_id).run_eval(
-            task_id=task_id,
+        return await self.routing_table.get_provider_impl(benchmark_id).run_eval(
+            benchmark_id=benchmark_id,
             task_config=task_config,
         )
 
     async def evaluate_rows(
         self,
-        task_id: str,
+        benchmark_id: str,
         input_rows: List[Dict[str, Any]],
         scoring_functions: List[str],
-        task_config: EvalTaskConfig,
+        task_config: BenchmarkConfig,
     ) -> EvaluateResponse:
-        return await self.routing_table.get_provider_impl(task_id).evaluate_rows(
-            task_id=task_id,
+        return await self.routing_table.get_provider_impl(benchmark_id).evaluate_rows(
+            benchmark_id=benchmark_id,
             input_rows=input_rows,
             scoring_functions=scoring_functions,
             task_config=task_config,
@@ -371,30 +386,72 @@ class EvalRouter(Eval):
 
     async def job_status(
         self,
-        task_id: str,
+        benchmark_id: str,
         job_id: str,
     ) -> Optional[JobStatus]:
-        return await self.routing_table.get_provider_impl(task_id).job_status(task_id, job_id)
+        return await self.routing_table.get_provider_impl(benchmark_id).job_status(benchmark_id, job_id)
 
     async def job_cancel(
         self,
-        task_id: str,
+        benchmark_id: str,
         job_id: str,
     ) -> None:
-        await self.routing_table.get_provider_impl(task_id).job_cancel(
-            task_id,
+        await self.routing_table.get_provider_impl(benchmark_id).job_cancel(
+            benchmark_id,
             job_id,
         )
 
     async def job_result(
         self,
+        benchmark_id: str,
+        job_id: str,
+    ) -> EvaluateResponse:
+        return await self.routing_table.get_provider_impl(benchmark_id).job_result(
+            benchmark_id,
+            job_id,
+        )
+
+    async def DEPRECATED_run_eval(
+        self,
+        task_id: str,
+        task_config: BenchmarkConfig,
+    ) -> Job:
+        return await self.run_eval(benchmark_id=task_id, task_config=task_config)
+
+    async def DEPRECATED_evaluate_rows(
+        self,
+        task_id: str,
+        input_rows: List[Dict[str, Any]],
+        scoring_functions: List[str],
+        task_config: BenchmarkConfig,
+    ) -> EvaluateResponse:
+        return await self.evaluate_rows(
+            benchmark_id=task_id,
+            input_rows=input_rows,
+            scoring_functions=scoring_functions,
+            task_config=task_config,
+        )
+
+    async def DEPRECATED_job_status(
+        self,
+        task_id: str,
+        job_id: str,
+    ) -> Optional[JobStatus]:
+        return await self.job_status(benchmark_id=task_id, job_id=job_id)
+
+    async def DEPRECATED_job_cancel(
+        self,
+        task_id: str,
+        job_id: str,
+    ) -> None:
+        return await self.job_cancel(benchmark_id=task_id, job_id=job_id)
+
+    async def DEPRECATED_job_result(
+        self,
         task_id: str,
         job_id: str,
     ) -> EvaluateResponse:
-        return await self.routing_table.get_provider_impl(task_id).job_result(
-            task_id,
-            job_id,
-        )
+        return await self.job_result(benchmark_id=task_id, job_id=job_id)
 
 
 class ToolRuntimeRouter(ToolRuntime):

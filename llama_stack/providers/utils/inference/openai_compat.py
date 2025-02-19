@@ -7,14 +7,7 @@ import json
 import logging
 from typing import AsyncGenerator, Dict, List, Optional, Union
 
-from llama_models.datatypes import (
-    GreedySamplingStrategy,
-    SamplingParams,
-    TopKSamplingStrategy,
-    TopPSamplingStrategy,
-)
 from llama_models.llama3.api.chat_format import ChatFormat
-from llama_models.llama3.api.datatypes import StopReason, ToolCall
 from openai.types.chat import ChatCompletionMessageToolCall
 from pydantic import BaseModel
 
@@ -36,6 +29,14 @@ from llama_stack.apis.inference import (
     CompletionResponseStreamChunk,
     Message,
     TokenLogProbs,
+)
+from llama_stack.models.llama.datatypes import (
+    GreedySamplingStrategy,
+    SamplingParams,
+    StopReason,
+    ToolCall,
+    TopKSamplingStrategy,
+    TopPSamplingStrategy,
 )
 from llama_stack.providers.utils.inference.prompt_adapter import (
     convert_image_content_to_url,
@@ -132,7 +133,7 @@ def convert_openai_completion_logprobs(
     if logprobs.tokens and logprobs.token_logprobs:
         return [
             TokenLogProbs(logprobs_by_token={token: token_lp})
-            for token, token_lp in zip(logprobs.tokens, logprobs.token_logprobs)
+            for token, token_lp in zip(logprobs.tokens, logprobs.token_logprobs, strict=False)
         ]
     return None
 
@@ -426,10 +427,14 @@ def convert_tool_call(
     """
     Convert a ChatCompletionMessageToolCall tool call to either a
     ToolCall or UnparseableToolCall. Returns an UnparseableToolCall
-    if the tool call is not valid JSON.
+    if the tool call is not valid ToolCall.
     """
     try:
-        arguments = json.loads(tool_call.function.arguments)
+        valid_tool_call = ToolCall(
+            call_id=tool_call.id,
+            tool_name=tool_call.function.name,
+            arguments=json.loads(tool_call.function.arguments),
+        )
     except Exception as e:
         return UnparseableToolCall(
             call_id=tool_call.id or "",
@@ -437,8 +442,4 @@ def convert_tool_call(
             arguments=tool_call.function.arguments or "",
         )
 
-    return ToolCall(
-        call_id=tool_call.id,
-        tool_name=tool_call.function.name,
-        arguments=arguments,
-    )
+    return valid_tool_call

@@ -6,7 +6,6 @@
 
 from typing import List, Optional, Protocol, runtime_checkable
 
-from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel
 
 from llama_stack.apis.inference import (
@@ -21,6 +20,7 @@ from llama_stack.apis.inference import (
     ToolDefinition,
     ToolPromptFormat,
 )
+from llama_stack.schema_utils import json_schema_type, webmethod
 
 
 @json_schema_type

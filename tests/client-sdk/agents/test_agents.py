@@ -98,7 +98,6 @@ def agent_config(llama_stack_client, text_model_id):
             },
         },
         toolgroups=[],
-        tool_choice="auto",
         input_shields=available_shields,
         output_shields=available_shields,
         enable_session_persistence=False,
@@ -319,7 +318,39 @@ def test_custom_tool(llama_stack_client, agent_config):
     logs = [str(log) for log in EventLogger().log(response) if log is not None]
     logs_str = "".join(logs)
     assert "-100" in logs_str
-    assert "CustomTool" in logs_str
+    assert "get_boiling_point" in logs_str
+
+
+def test_tool_choice(llama_stack_client, agent_config):
+    data = [
+        ("required", '{"type": "function"'),
+        ("none", None),
+        ("get_boiling_point", '{"type": "function", "name": "get_boiling_point"'),
+    ]
+    client_tool = TestClientTool()
+    for tool_choice, expected_tool in data:
+        agent_config["tool_config"] = {"tool_choice": tool_choice}
+        agent_config["client_tools"] = [client_tool.get_tool_definition()]
+
+        agent = Agent(llama_stack_client, agent_config, client_tools=(client_tool,))
+        session_id = agent.create_session(f"test-session-{uuid4()}")
+
+        response = agent.create_turn(
+            messages=[
+                {
+                    "role": "user",
+                    "content": "What is the boiling point of polyjuice?",
+                },
+            ],
+            session_id=session_id,
+        )
+
+        logs = [str(log) for log in EventLogger().log(response) if log is not None]
+        logs_str = "".join(logs)
+        if expected_tool:
+            assert expected_tool in logs_str
+        else:
+            assert '{"type": "function"' not in logs_str
 
 
 # TODO: fix this flaky test
@@ -403,7 +434,7 @@ def xtest_override_system_message_behavior(llama_stack_client, agent_config):
     logs_str = "".join(logs)
     print(logs_str)
     assert "-100" in logs_str
-    assert "CustomTool" in logs_str
+    assert "get_boiling_point" in logs_str
 
 
 def test_rag_agent(llama_stack_client, agent_config):
@@ -527,3 +558,42 @@ def test_rag_and_code_agent(llama_stack_client, agent_config):
         logs = [str(log) for log in EventLogger().log(response) if log is not None]
         logs_str = "".join(logs)
         assert f"Tool:{tool_name}" in logs_str
+
+
+def test_create_turn_response(llama_stack_client, agent_config):
+    client_tool = TestClientTool()
+    agent_config = {
+        **agent_config,
+        "input_shields": [],
+        "output_shields": [],
+        "client_tools": [client_tool.get_tool_definition()],
+    }
+
+    agent = Agent(llama_stack_client, agent_config, client_tools=(client_tool,))
+    session_id = agent.create_session(f"test-session-{uuid4()}")
+
+    response = agent.create_turn(
+        messages=[
+            {
+                "role": "user",
+                "content": "Call get_boiling_point and answer What is the boiling point of polyjuice?",
+            },
+        ],
+        session_id=session_id,
+        stream=False,
+    )
+    steps = response.steps
+    assert len(steps) == 3
+    assert steps[0].step_type == "inference"
+    assert steps[1].step_type == "tool_execution"
+    assert steps[1].tool_calls[0].tool_name == "get_boiling_point"
+    assert steps[2].step_type == "inference"
+
+    last_step_completed_at = None
+    for step in steps:
+        if last_step_completed_at is None:
+            last_step_completed_at = step.completed_at
+        else:
+            assert last_step_completed_at < step.started_at
+            assert step.started_at < step.completed_at
+            last_step_completed_at = step.completed_at

@@ -6,8 +6,6 @@
 from datetime import datetime
 from typing import Any, Dict, Optional
 
-from llama_models.schema_utils import webmethod
-
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
 from llama_stack.apis.post_training import (
@@ -27,6 +25,7 @@ from llama_stack.providers.inline.post_training.torchtune.config import (
 from llama_stack.providers.inline.post_training.torchtune.recipes.lora_finetuning_single_device import (
     LoraFinetuningSingleDevice,
 )
+from llama_stack.schema_utils import webmethod
 
 
 class TorchtunePostTrainingImpl:

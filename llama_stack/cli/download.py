@@ -16,8 +16,6 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 import httpx
-from llama_models.datatypes import Model
-from llama_models.sku_list import LlamaDownloadInfo
 from pydantic import BaseModel, ConfigDict
 from rich.console import Console
 from rich.progress import (
@@ -31,6 +29,8 @@ from rich.progress import (
 from termcolor import cprint
 
 from llama_stack.cli.subcommand import Subcommand
+from llama_stack.models.llama.datatypes import Model
+from llama_stack.models.llama.sku_list import LlamaDownloadInfo
 
 
 class Download(Subcommand):
@@ -56,7 +56,7 @@ def setup_download_parser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--model-id",
         required=False,
-        help="See `llama model list` or `llama model list --show-all` for the list of available models",
+        help="See `llama model list` or `llama model list --show-all` for the list of available models. Specify multiple model IDs with commas, e.g. --model-id Llama3.2-1B,Llama3.2-3B",
     )
     parser.add_argument(
         "--hf-token",
@@ -83,8 +83,7 @@ def setup_download_parser(parser: argparse.ArgumentParser) -> None:
         type=str,
         required=False,
         default="*.safetensors",
-        help="""
-For source=huggingface, files matching any of the patterns are not downloaded. Defaults to ignoring
+        help="""For source=huggingface, files matching any of the patterns are not downloaded. Defaults to ignoring
 safetensors files to avoid downloading duplicate weights.
 """,
     )
@@ -454,7 +453,7 @@ def run_download_cmd(args: argparse.Namespace, parser: argparse.ArgumentParser):
         # Handle comma-separated model IDs
         model_ids = [model_id.strip() for model_id in args.model_id.split(",")]
 
-        from llama_models.sku_list import llama_meta_net_info, resolve_model
+        from llama_stack.models.llama.sku_list import llama_meta_net_info, resolve_model
 
         from .model.safety_models import (
             prompt_guard_download_info,

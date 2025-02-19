@@ -17,7 +17,7 @@ class StackConfigure(Subcommand):
         self.parser = subparsers.add_parser(
             "configure",
             prog="llama stack configure",
-            description="configure a llama stack distribution",
+            description="Configure a llama stack distribution",
             formatter_class=argparse.RawTextHelpFormatter,
         )
         self._add_arguments()

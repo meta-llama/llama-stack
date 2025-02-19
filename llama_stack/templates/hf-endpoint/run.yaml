@@ -106,7 +106,7 @@ shields: []
 vector_dbs: []
 datasets: []
 scoring_fns: []
-eval_tasks: []
+benchmarks: []
 tool_groups:
 - toolgroup_id: builtin::websearch
   provider_id: tavily-search

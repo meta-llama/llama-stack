@@ -10,9 +10,7 @@ T = TypeVar("T")
 
 
 class SlotsMeta(type):
-    def __new__(
-        cls: Type[T], name: str, bases: Tuple[type, ...], ns: Dict[str, Any]
-    ) -> T:
+    def __new__(cls: Type[T], name: str, bases: Tuple[type, ...], ns: Dict[str, Any]) -> T:
         # caller may have already provided slots, in which case just retain them and keep going
         slots: Tuple[str, ...] = ns.get("__slots__", ())
 

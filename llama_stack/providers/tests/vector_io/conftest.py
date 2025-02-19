@@ -57,7 +57,7 @@ DEFAULT_PROVIDER_COMBINATIONS = [
     ),
     pytest.param(
         {
-            "inference": "bedrock",
+            "inference": "ollama",
             "vector_io": "qdrant",
         },
         id="qdrant",

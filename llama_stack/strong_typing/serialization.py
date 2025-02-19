@@ -42,9 +42,7 @@ def object_to_json(obj: Any) -> JsonType:
     return generator.generate(obj)
 
 
-def json_to_object(
-    typ: TypeLike, data: JsonType, *, context: Optional[ModuleType] = None
-) -> object:
+def json_to_object(typ: TypeLike, data: JsonType, *, context: Optional[ModuleType] = None) -> object:
     """
     Creates an object from a representation that has been de-serialized from JSON.
 
@@ -85,9 +83,7 @@ def json_to_object(
 def json_dump_string(json_object: JsonType) -> str:
     "Dump an object as a JSON string with a compact representation."
 
-    return json.dumps(
-        json_object, ensure_ascii=False, check_circular=False, separators=(",", ":")
-    )
+    return json.dumps(json_object, ensure_ascii=False, check_circular=False, separators=(",", ":"))
 
 
 def json_dump(json_object: JsonType, file: TextIO) -> None:

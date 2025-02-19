@@ -10,8 +10,8 @@ import pytest
 from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.common.type_system import ChatCompletionInputType, StringType
 from llama_stack.apis.eval.eval import (
-    AppEvalTaskConfig,
-    BenchmarkEvalTaskConfig,
+    AppBenchmarkConfig,
+    BenchmarkBenchmarkConfig,
     ModelCandidate,
 )
 from llama_stack.apis.inference import SamplingParams
@@ -30,18 +30,18 @@ from .constants import JUDGE_PROMPT
 
 class Testeval:
     @pytest.mark.asyncio
-    async def test_eval_tasks_list(self, eval_stack):
+    async def test_benchmarks_list(self, eval_stack):
         # NOTE: this needs you to ensure that you are starting from a clean state
         # but so far we don't have an unregister API unfortunately, so be careful
-        eval_tasks_impl = eval_stack[Api.eval_tasks]
-        response = await eval_tasks_impl.list_eval_tasks()
+        benchmarks_impl = eval_stack[Api.benchmarks]
+        response = await benchmarks_impl.list_benchmarks()
         assert isinstance(response, list)
 
     @pytest.mark.asyncio
     async def test_eval_evaluate_rows(self, eval_stack, inference_model, judge_model):
-        eval_impl, eval_tasks_impl, datasetio_impl, datasets_impl, models_impl = (
+        eval_impl, benchmarks_impl, datasetio_impl, datasets_impl, models_impl = (
             eval_stack[Api.eval],
-            eval_stack[Api.eval_tasks],
+            eval_stack[Api.benchmarks],
             eval_stack[Api.datasetio],
             eval_stack[Api.datasets],
             eval_stack[Api.models],
@@ -59,17 +59,17 @@ class Testeval:
         scoring_functions = [
             "basic::equality",
         ]
-        task_id = "meta-reference::app_eval"
-        await eval_tasks_impl.register_eval_task(
-            eval_task_id=task_id,
+        benchmark_id = "meta-reference::app_eval"
+        await benchmarks_impl.register_benchmark(
+            benchmark_id=benchmark_id,
             dataset_id="test_dataset_for_eval",
             scoring_functions=scoring_functions,
         )
         response = await eval_impl.evaluate_rows(
-            task_id=task_id,
+            benchmark_id=benchmark_id,
             input_rows=rows.rows,
             scoring_functions=scoring_functions,
-            task_config=AppEvalTaskConfig(
+            task_config=AppBenchmarkConfig(
                 eval_candidate=ModelCandidate(
                     model=inference_model,
                     sampling_params=SamplingParams(),
@@ -92,9 +92,9 @@ class Testeval:
 
     @pytest.mark.asyncio
     async def test_eval_run_eval(self, eval_stack, inference_model, judge_model):
-        eval_impl, eval_tasks_impl, datasets_impl, models_impl = (
+        eval_impl, benchmarks_impl, datasets_impl, models_impl = (
             eval_stack[Api.eval],
-            eval_stack[Api.eval_tasks],
+            eval_stack[Api.benchmarks],
             eval_stack[Api.datasets],
             eval_stack[Api.models],
         )
@@ -105,15 +105,15 @@ class Testeval:
             "basic::subset_of",
         ]
 
-        task_id = "meta-reference::app_eval-2"
-        await eval_tasks_impl.register_eval_task(
-            eval_task_id=task_id,
+        benchmark_id = "meta-reference::app_eval-2"
+        await benchmarks_impl.register_benchmark(
+            benchmark_id=benchmark_id,
             dataset_id="test_dataset_for_eval",
             scoring_functions=scoring_functions,
         )
         response = await eval_impl.run_eval(
-            task_id=task_id,
-            task_config=AppEvalTaskConfig(
+            benchmark_id=benchmark_id,
+            task_config=AppBenchmarkConfig(
                 eval_candidate=ModelCandidate(
                     model=inference_model,
                     sampling_params=SamplingParams(),
@@ -121,9 +121,9 @@ class Testeval:
             ),
         )
         assert response.job_id == "0"
-        job_status = await eval_impl.job_status(task_id, response.job_id)
+        job_status = await eval_impl.job_status(benchmark_id, response.job_id)
         assert job_status and job_status.value == "completed"
-        eval_response = await eval_impl.job_result(task_id, response.job_id)
+        eval_response = await eval_impl.job_result(benchmark_id, response.job_id)
 
         assert eval_response is not None
         assert len(eval_response.generations) == 5
@@ -131,9 +131,9 @@ class Testeval:
 
     @pytest.mark.asyncio
     async def test_eval_run_benchmark_eval(self, eval_stack, inference_model):
-        eval_impl, eval_tasks_impl, datasets_impl, models_impl = (
+        eval_impl, benchmarks_impl, datasets_impl, models_impl = (
             eval_stack[Api.eval],
-            eval_stack[Api.eval_tasks],
+            eval_stack[Api.benchmarks],
             eval_stack[Api.datasets],
             eval_stack[Api.models],
         )
@@ -159,20 +159,20 @@ class Testeval:
         )
 
         # register eval task
-        await eval_tasks_impl.register_eval_task(
-            eval_task_id="meta-reference-mmlu",
+        await benchmarks_impl.register_benchmark(
+            benchmark_id="meta-reference-mmlu",
             dataset_id="mmlu",
             scoring_functions=["basic::regex_parser_multiple_choice_answer"],
         )
 
         # list benchmarks
-        response = await eval_tasks_impl.list_eval_tasks()
+        response = await benchmarks_impl.list_benchmarks()
         assert len(response) > 0
 
         benchmark_id = "meta-reference-mmlu"
         response = await eval_impl.run_eval(
-            task_id=benchmark_id,
-            task_config=BenchmarkEvalTaskConfig(
+            benchmark_id=benchmark_id,
+            task_config=BenchmarkBenchmarkConfig(
                 eval_candidate=ModelCandidate(
                     model=inference_model,
                     sampling_params=SamplingParams(),

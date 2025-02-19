@@ -10,8 +10,8 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel
 
+from llama_stack.apis.benchmarks import BenchmarkInput
 from llama_stack.apis.datasets import DatasetInput
-from llama_stack.apis.eval_tasks import EvalTaskInput
 from llama_stack.apis.models import ModelInput
 from llama_stack.apis.scoring_functions import ScoringFnInput
 from llama_stack.apis.shields import ShieldInput
@@ -42,7 +42,7 @@ async def construct_stack_for_test(
     vector_dbs: Optional[List[VectorDBInput]] = None,
     datasets: Optional[List[DatasetInput]] = None,
     scoring_fns: Optional[List[ScoringFnInput]] = None,
-    eval_tasks: Optional[List[EvalTaskInput]] = None,
+    benchmarks: Optional[List[BenchmarkInput]] = None,
     tool_groups: Optional[List[ToolGroupInput]] = None,
 ) -> TestStack:
     sqlite_file = tempfile.NamedTemporaryFile(delete=False, suffix=".db")
@@ -56,7 +56,7 @@ async def construct_stack_for_test(
         vector_dbs=vector_dbs or [],
         datasets=datasets or [],
         scoring_fns=scoring_fns or [],
-        eval_tasks=eval_tasks or [],
+        benchmarks=benchmarks or [],
         tool_groups=tool_groups or [],
     )
     run_config = parse_and_maybe_upgrade_config(run_config)

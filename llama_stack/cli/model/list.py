@@ -6,10 +6,9 @@
 
 import argparse
 
-from llama_models.sku_list import all_registered_models
-
 from llama_stack.cli.subcommand import Subcommand
 from llama_stack.cli.table import print_table
+from llama_stack.models.llama.sku_list import all_registered_models
 
 
 class ModelList(Subcommand):
@@ -37,8 +36,8 @@ class ModelList(Subcommand):
         from .safety_models import prompt_guard_model_sku
 
         headers = [
-            "Model Descriptor",
-            "Model ID",
+            "Model Descriptor(ID)",
+            "Hugging Face Repo",
             "Context Length",
         ]
 

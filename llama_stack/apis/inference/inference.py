@@ -17,7 +17,13 @@ from typing import (
     runtime_checkable,
 )
 
-from llama_models.llama3.api.datatypes import (
+from pydantic import BaseModel, Field, field_validator
+from typing_extensions import Annotated
+
+from llama_stack.apis.common.content_types import ContentDelta, InterleavedContent
+from llama_stack.apis.models import Model
+from llama_stack.apis.telemetry.telemetry import MetricResponseMixin
+from llama_stack.models.llama.datatypes import (
     BuiltinTool,
     SamplingParams,
     StopReason,
@@ -25,14 +31,8 @@ from llama_models.llama3.api.datatypes import (
     ToolDefinition,
     ToolPromptFormat,
 )
-from llama_models.schema_utils import json_schema_type, register_schema, webmethod
-from pydantic import BaseModel, Field, field_validator
-from typing_extensions import Annotated
-
-from llama_stack.apis.common.content_types import ContentDelta, InterleavedContent
-from llama_stack.apis.models import Model
-from llama_stack.apis.telemetry.telemetry import MetricResponseMixin
 from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
+from llama_stack.schema_utils import json_schema_type, register_schema, webmethod
 
 
 class LogProbConfig(BaseModel):
@@ -182,10 +182,12 @@ class ToolChoice(Enum):
 
     :cvar auto: The model may use tools if it determines that is appropriate.
     :cvar required: The model must use tools.
+    :cvar none: The model must not use tools.
     """
 
     auto = "auto"
     required = "required"
+    none = "none"
 
 
 @json_schema_type
@@ -326,7 +328,7 @@ class SystemMessageBehavior(Enum):
 class ToolConfig(BaseModel):
     """Configuration for tool use.
 
-    :param tool_choice: (Optional) Whether tool use is required or automatic. Defaults to ToolChoice.auto.
+    :param tool_choice: (Optional) Whether tool use is automatic, required, or none. Can also specify a tool name to use a specific tool. Defaults to ToolChoice.auto.
     :param tool_prompt_format: (Optional) Instructs the model how to format tool calls. By default, Llama Stack will attempt to use a format that is best adapted to the model.
         - `ToolPromptFormat.json`: The tool calls are formatted as a JSON object.
         - `ToolPromptFormat.function_tag`: The tool calls are enclosed in a <function=function_name> tag.
@@ -337,9 +339,16 @@ class ToolConfig(BaseModel):
             '{{function_definitions}}' to indicate where the function definitions should be inserted.
     """
 
-    tool_choice: Optional[ToolChoice] = Field(default=ToolChoice.auto)
+    tool_choice: Optional[ToolChoice | str] = Field(default=ToolChoice.auto)
     tool_prompt_format: Optional[ToolPromptFormat] = Field(default=None)
-    system_message_behavior: SystemMessageBehavior = Field(default=SystemMessageBehavior.append)
+    system_message_behavior: Optional[SystemMessageBehavior] = Field(default=SystemMessageBehavior.append)
+
+    def model_post_init(self, __context: Any) -> None:
+        if isinstance(self.tool_choice, str):
+            try:
+                self.tool_choice = ToolChoice[self.tool_choice]
+            except KeyError:
+                pass
 
 
 # This is an internally used class

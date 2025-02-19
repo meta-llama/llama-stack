@@ -4,14 +4,15 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import logging
 from typing import Any, Dict, List, Optional
 
 from pydantic import TypeAdapter
 
+from llama_stack.apis.benchmarks import Benchmark, Benchmarks, ListBenchmarksResponse
 from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.common.type_system import ParamType
 from llama_stack.apis.datasets import Dataset, Datasets, ListDatasetsResponse
-from llama_stack.apis.eval_tasks import EvalTask, EvalTasks, ListEvalTasksResponse
 from llama_stack.apis.models import ListModelsResponse, Model, Models, ModelType
 from llama_stack.apis.resource import ResourceType
 from llama_stack.apis.scoring_functions import (
@@ -38,6 +39,8 @@ from llama_stack.distribution.datatypes import (
 from llama_stack.distribution.store import DistributionRegistry
 from llama_stack.providers.datatypes import Api, RoutingTable
 
+logger = logging.getLogger(__name__)
+
 
 def get_impl_api(p: Any) -> Api:
     return p.__provider_spec__.api
@@ -60,7 +63,7 @@ async def register_object_with_provider(obj: RoutableObject, p: Any) -> Routable
     elif api == Api.scoring:
         return await p.register_scoring_function(obj)
     elif api == Api.eval:
-        return await p.register_eval_task(obj)
+        return await p.register_benchmark(obj)
     elif api == Api.tool_runtime:
         return await p.register_tool(obj)
     else:
@@ -121,7 +124,7 @@ class CommonRoutingTableImpl(RoutingTable):
                 scoring_functions = await p.list_scoring_functions()
                 await add_objects(scoring_functions, pid, ScoringFn)
             elif api == Api.eval:
-                p.eval_task_store = self
+                p.benchmark_store = self
             elif api == Api.tool_runtime:
                 p.tool_store = self
 
@@ -141,8 +144,8 @@ class CommonRoutingTableImpl(RoutingTable):
                 return ("DatasetIO", "dataset")
             elif isinstance(self, ScoringFunctionsRoutingTable):
                 return ("Scoring", "scoring_function")
-            elif isinstance(self, EvalTasksRoutingTable):
-                return ("Eval", "eval_task")
+            elif isinstance(self, BenchmarksRoutingTable):
+                return ("Eval", "benchmark")
             elif isinstance(self, ToolGroupsRoutingTable):
                 return ("Tools", "tool")
             else:
@@ -428,20 +431,20 @@ class ScoringFunctionsRoutingTable(CommonRoutingTableImpl, ScoringFunctions):
         await self.register_object(scoring_fn)
 
 
-class EvalTasksRoutingTable(CommonRoutingTableImpl, EvalTasks):
-    async def list_eval_tasks(self) -> ListEvalTasksResponse:
-        return ListEvalTasksResponse(data=await self.get_all_with_type("eval_task"))
+class BenchmarksRoutingTable(CommonRoutingTableImpl, Benchmarks):
+    async def list_benchmarks(self) -> ListBenchmarksResponse:
+        return ListBenchmarksResponse(data=await self.get_all_with_type("benchmark"))
 
-    async def get_eval_task(self, eval_task_id: str) -> Optional[EvalTask]:
-        return await self.get_object_by_identifier("eval_task", eval_task_id)
+    async def get_benchmark(self, benchmark_id: str) -> Optional[Benchmark]:
+        return await self.get_object_by_identifier("benchmark", benchmark_id)
 
-    async def register_eval_task(
+    async def register_benchmark(
         self,
-        eval_task_id: str,
+        benchmark_id: str,
         dataset_id: str,
         scoring_functions: List[str],
         metadata: Optional[Dict[str, Any]] = None,
-        provider_eval_task_id: Optional[str] = None,
+        provider_benchmark_id: Optional[str] = None,
         provider_id: Optional[str] = None,
     ) -> None:
         if metadata is None:
@@ -453,17 +456,46 @@ class EvalTasksRoutingTable(CommonRoutingTableImpl, EvalTasks):
                 raise ValueError(
                     "No provider specified and multiple providers available. Please specify a provider_id."
                 )
-        if provider_eval_task_id is None:
-            provider_eval_task_id = eval_task_id
-        eval_task = EvalTask(
-            identifier=eval_task_id,
+        if provider_benchmark_id is None:
+            provider_benchmark_id = benchmark_id
+        benchmark = Benchmark(
+            identifier=benchmark_id,
             dataset_id=dataset_id,
             scoring_functions=scoring_functions,
             metadata=metadata,
             provider_id=provider_id,
-            provider_resource_id=provider_eval_task_id,
+            provider_resource_id=provider_benchmark_id,
         )
-        await self.register_object(eval_task)
+        await self.register_object(benchmark)
+
+    async def DEPRECATED_list_eval_tasks(self) -> ListBenchmarksResponse:
+        logger.warning("DEPRECATED: Use /eval/benchmarks instead")
+        return await self.list_benchmarks()
+
+    async def DEPRECATED_get_eval_task(
+        self,
+        eval_task_id: str,
+    ) -> Optional[Benchmark]:
+        logger.warning("DEPRECATED: Use /eval/benchmarks instead")
+        return await self.get_benchmark(eval_task_id)
+
+    async def DEPRECATED_register_eval_task(
+        self,
+        eval_task_id: str,
+        dataset_id: str,
+        scoring_functions: List[str],
+        provider_benchmark_id: Optional[str] = None,
+        provider_id: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        logger.warning("DEPRECATED: Use /eval/benchmarks instead")
+        return await self.register_benchmark(
+            benchmark_id=eval_task_id,
+            dataset_id=dataset_id,
+            scoring_functions=scoring_functions,
+            metadata=metadata,
+            provider_benchmark_id=provider_benchmark_id,
+        )
 
 
 class ToolGroupsRoutingTable(CommonRoutingTableImpl, ToolGroups):

@@ -126,7 +126,6 @@ def build_image(
         args = [
             script,
             str(image_name),
-            str(build_file_path),
             " ".join(normal_deps),
         ]
 

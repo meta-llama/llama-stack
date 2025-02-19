@@ -17,7 +17,6 @@ from typing import Any, AsyncGenerator, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 
 import httpx
-from llama_models.llama3.api.datatypes import BuiltinTool, ToolCall, ToolParamDefinition
 from pydantic import TypeAdapter
 
 from llama_stack.apis.agents import (
@@ -63,6 +62,7 @@ from llama_stack.apis.inference import (
 from llama_stack.apis.safety import Safety
 from llama_stack.apis.tools import RAGDocument, RAGQueryConfig, ToolGroups, ToolRuntime
 from llama_stack.apis.vector_io import VectorIO
+from llama_stack.models.llama.datatypes import BuiltinTool, ToolCall, ToolParamDefinition
 from llama_stack.providers.utils.kvstore import KVStore
 from llama_stack.providers.utils.memory.vector_store import concat_interleaved_content
 from llama_stack.providers.utils.telemetry import tracing
@@ -301,6 +301,7 @@ class ChatAgent(ShieldRunnerMixin):
                 return
 
             step_id = str(uuid.uuid4())
+            shield_call_start_time = datetime.now()
             try:
                 yield AgentTurnResponseStreamChunk(
                     event=AgentTurnResponseEvent(
@@ -323,6 +324,8 @@ class ChatAgent(ShieldRunnerMixin):
                                 step_id=step_id,
                                 turn_id=turn_id,
                                 violation=e.violation,
+                                started_at=shield_call_start_time,
+                                completed_at=datetime.now(),
                             ),
                         )
                     )
@@ -344,6 +347,8 @@ class ChatAgent(ShieldRunnerMixin):
                             step_id=step_id,
                             turn_id=turn_id,
                             violation=None,
+                            started_at=shield_call_start_time,
+                            completed_at=datetime.now(),
                         ),
                     )
                 )
@@ -476,6 +481,7 @@ class ChatAgent(ShieldRunnerMixin):
             client_tools[tool.name] = tool
         while True:
             step_id = str(uuid.uuid4())
+            inference_start_time = datetime.now()
             yield AgentTurnResponseStreamChunk(
                 event=AgentTurnResponseEvent(
                     payload=AgentTurnResponseStepStartPayload(
@@ -574,6 +580,8 @@ class ChatAgent(ShieldRunnerMixin):
                             step_id=step_id,
                             turn_id=turn_id,
                             model_response=copy.deepcopy(message),
+                            started_at=inference_start_time,
+                            completed_at=datetime.now(),
                         ),
                     )
                 )
@@ -641,6 +649,7 @@ class ChatAgent(ShieldRunnerMixin):
                         "input": message.model_dump_json(),
                     },
                 ) as span:
+                    tool_execution_start_time = datetime.now()
                     result_messages = await execute_tool_call_maybe(
                         self.tool_runtime_api,
                         session_id,
@@ -668,6 +677,8 @@ class ChatAgent(ShieldRunnerMixin):
                                         content=result_message.content,
                                     )
                                 ],
+                                started_at=tool_execution_start_time,
+                                completed_at=datetime.now(),
                             ),
                         )
                     )

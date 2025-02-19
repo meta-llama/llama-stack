@@ -13,25 +13,7 @@ import re
 from typing import List, Optional, Tuple, Union
 
 import httpx
-from llama_models.datatypes import ModelFamily, is_multimodal
 from llama_models.llama3.api.chat_format import ChatFormat
-from llama_models.llama3.api.datatypes import (
-    RawContent,
-    RawContentItem,
-    RawMediaItem,
-    RawMessage,
-    RawTextItem,
-    Role,
-    ToolPromptFormat,
-)
-from llama_models.llama3.prompt_templates import (
-    BuiltinToolGenerator,
-    FunctionTagCustomToolGenerator,
-    JsonCustomToolGenerator,
-    PythonListCustomToolGenerator,
-    SystemDefaultGenerator,
-)
-from llama_models.sku_list import resolve_model
 from PIL import Image as PIL_Image
 
 from llama_stack.apis.common.content_types import (
@@ -49,8 +31,28 @@ from llama_stack.apis.inference import (
     SystemMessage,
     SystemMessageBehavior,
     ToolChoice,
+    ToolDefinition,
     UserMessage,
 )
+from llama_stack.models.llama.datatypes import (
+    ModelFamily,
+    RawContent,
+    RawContentItem,
+    RawMediaItem,
+    RawMessage,
+    RawTextItem,
+    Role,
+    ToolPromptFormat,
+    is_multimodal,
+)
+from llama_stack.models.llama.llama3.prompt_templates import (
+    BuiltinToolGenerator,
+    FunctionTagCustomToolGenerator,
+    JsonCustomToolGenerator,
+    PythonListCustomToolGenerator,
+    SystemDefaultGenerator,
+)
+from llama_stack.models.llama.sku_list import resolve_model
 from llama_stack.providers.utils.inference import supported_inference_models
 
 log = logging.getLogger(__name__)
@@ -310,8 +312,6 @@ def response_format_prompt(fmt: Optional[ResponseFormat]):
 def augment_messages_for_tools_llama_3_1(
     request: ChatCompletionRequest,
 ) -> List[Message]:
-    assert request.tool_config.tool_choice == ToolChoice.auto, "Only `ToolChoice.auto` supported"
-
     existing_messages = request.messages
     existing_system_message = None
     if existing_messages[0].role == Role.system.value:
@@ -351,6 +351,10 @@ def augment_messages_for_tools_llama_3_1(
         elif isinstance(existing_system_message.content, list):
             sys_content += "\n".join([_process(c) for c in existing_system_message.content])
 
+    tool_choice_prompt = _get_tool_choice_prompt(request.tool_config.tool_choice, request.tools)
+    if tool_choice_prompt:
+        sys_content += "\n" + tool_choice_prompt
+
     messages.append(SystemMessage(content=sys_content))
 
     has_custom_tools = any(isinstance(dfn.tool_name, str) for dfn in request.tools)
@@ -376,8 +380,6 @@ def augment_messages_for_tools_llama_3_1(
 def augment_messages_for_tools_llama_3_2(
     request: ChatCompletionRequest,
 ) -> List[Message]:
-    assert request.tool_config.tool_choice == ToolChoice.auto, "Only `ToolChoice.auto` supported"
-
     existing_messages = request.messages
     existing_system_message = None
     if existing_messages[0].role == Role.system.value:
@@ -385,7 +387,6 @@ def augment_messages_for_tools_llama_3_2(
 
     assert existing_messages[0].role != Role.system.value, "Should only have 1 system message"
 
-    messages = []
     sys_content = ""
     custom_tools, builtin_tools = [], []
     for t in request.tools:
@@ -394,7 +395,6 @@ def augment_messages_for_tools_llama_3_2(
         else:
             builtin_tools.append(t)
 
-    tool_template = None
     if builtin_tools:
         tool_gen = BuiltinToolGenerator()
         tool_template = tool_gen.gen(builtin_tools)
@@ -422,8 +422,22 @@ def augment_messages_for_tools_llama_3_2(
     ):
         sys_content += interleaved_content_as_str(existing_system_message.content, sep="\n")
 
-    messages.append(SystemMessage(content=sys_content.strip("\n")))
+    tool_choice_prompt = _get_tool_choice_prompt(request.tool_config.tool_choice, request.tools)
+    if tool_choice_prompt:
+        sys_content += "\n" + tool_choice_prompt
 
-    # Add back existing messages from the request
-    messages += existing_messages
+    messages = [SystemMessage(content=sys_content.strip("\n")), *existing_messages]
     return messages
+
+
+def _get_tool_choice_prompt(tool_choice: ToolChoice | str, tools: List[ToolDefinition]) -> str:
+    if tool_choice == ToolChoice.auto:
+        return ""
+    elif tool_choice == ToolChoice.required:
+        return "You MUST use one of the provided functions/tools to answer the user query."
+    elif tool_choice == ToolChoice.none:
+        # tools are already not passed in
+        return ""
+    else:
+        # specific tool
+        return f"You MUST use the tool `{tool_choice}` to answer the user query."

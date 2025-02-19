@@ -11,8 +11,8 @@ from llama_stack.distribution.store import DistributionRegistry
 from llama_stack.providers.datatypes import Api, RoutingTable
 
 from .routing_tables import (
+    BenchmarksRoutingTable,
     DatasetsRoutingTable,
-    EvalTasksRoutingTable,
     ModelsRoutingTable,
     ScoringFunctionsRoutingTable,
     ShieldsRoutingTable,
@@ -33,7 +33,7 @@ async def get_routing_table_impl(
         "shields": ShieldsRoutingTable,
         "datasets": DatasetsRoutingTable,
         "scoring_functions": ScoringFunctionsRoutingTable,
-        "eval_tasks": EvalTasksRoutingTable,
+        "benchmarks": BenchmarksRoutingTable,
         "tool_groups": ToolGroupsRoutingTable,
     }
 

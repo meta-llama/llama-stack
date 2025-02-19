@@ -28,11 +28,11 @@ from typing import (
     List,
     Literal,
     Optional,
-    overload,
     Tuple,
     Type,
     TypeVar,
     Union,
+    overload,
 )
 
 import jsonschema
@@ -41,21 +41,21 @@ from typing_extensions import Annotated
 from . import docstring
 from .auxiliary import (
     Alias,
-    get_auxiliary_format,
     IntegerRange,
     MaxLength,
     MinLength,
     Precision,
+    get_auxiliary_format,
 )
 from .core import JsonArray, JsonObject, JsonType, Schema, StrictJsonType
 from .inspection import (
+    TypeLike,
     enum_value_types,
     get_annotation,
     get_class_properties,
     is_type_enum,
     is_type_like,
     is_type_optional,
-    TypeLike,
     unwrap_optional_type,
 )
 from .name import python_type_to_name
@@ -108,7 +108,9 @@ def get_class_property_docstrings(
 
 def docstring_to_schema(data_type: type) -> Schema:
     short_description, long_description = get_class_docstrings(data_type)
-    schema: Schema = {}
+    schema: Schema = {
+        "title": python_type_to_name(data_type),
+    }
 
     description = "\n".join(filter(None, [short_description, long_description]))
     if description:
@@ -240,17 +242,13 @@ class JsonSchemaGenerator:
     def _(self, arg: MaxLength) -> Schema:
         return {"maxLength": arg.value}
 
-    def _with_metadata(
-        self, type_schema: Schema, metadata: Optional[Tuple[Any, ...]]
-    ) -> Schema:
+    def _with_metadata(self, type_schema: Schema, metadata: Optional[Tuple[Any, ...]]) -> Schema:
         if metadata:
             for m in metadata:
                 type_schema.update(self._metadata_to_schema(m))
         return type_schema
 
-    def _simple_type_to_schema(
-        self, typ: TypeLike, json_schema_extra: Optional[dict] = None
-    ) -> Optional[Schema]:
+    def _simple_type_to_schema(self, typ: TypeLike, json_schema_extra: Optional[dict] = None) -> Optional[Schema]:
         """
         Returns the JSON schema associated with a simple, unrestricted type.
 
@@ -311,6 +309,17 @@ class JsonSchemaGenerator:
             return None
 
     def type_to_schema(
+        self,
+        data_type: TypeLike,
+        force_expand: bool = False,
+        json_schema_extra: Optional[dict] = None,
+    ) -> Schema:
+        common_info = {}
+        if json_schema_extra and "deprecated" in json_schema_extra:
+            common_info["deprecated"] = json_schema_extra["deprecated"]
+        return self._type_to_schema(data_type, force_expand, json_schema_extra) | common_info
+
+    def _type_to_schema(
         self,
         data_type: TypeLike,
         force_expand: bool = False,
@@ -379,12 +388,7 @@ class JsonSchemaGenerator:
             enum_value_type = value_types.pop()
 
             enum_schema: Schema
-            if (
-                enum_value_type is bool
-                or enum_value_type is int
-                or enum_value_type is float
-                or enum_value_type is str
-            ):
+            if enum_value_type is bool or enum_value_type is int or enum_value_type is float or enum_value_type is str:
                 if enum_value_type is bool:
                     enum_schema_type = "boolean"
                 elif enum_value_type is int:
@@ -414,9 +418,7 @@ class JsonSchemaGenerator:
         elif origin_type is dict:
             key_type, value_type = typing.get_args(typ)
             if not (key_type is str or key_type is int or is_type_enum(key_type)):
-                raise ValueError(
-                    "`dict` with key type not coercible to `str` is not supported"
-                )
+                raise ValueError("`dict` with key type not coercible to `str` is not supported")
 
             dict_schema: Schema
             value_schema = self.type_to_schema(value_type)
@@ -424,9 +426,7 @@ class JsonSchemaGenerator:
                 enum_values = [str(e.value) for e in key_type]
                 if len(enum_values) > OBJECT_ENUM_EXPANSION_LIMIT:
                     dict_schema = {
-                        "propertyNames": {
-                            "pattern": "^(" + "|".join(enum_values) + ")$"
-                        },
+                        "propertyNames": {"pattern": "^(" + "|".join(enum_values) + ")$"},
                         "additionalProperties": value_schema,
                     }
                 else:
@@ -453,30 +453,19 @@ class JsonSchemaGenerator:
                 "type": "array",
                 "minItems": len(args),
                 "maxItems": len(args),
-                "prefixItems": [
-                    self.type_to_schema(member_type) for member_type in args
-                ],
+                "prefixItems": [self.type_to_schema(member_type) for member_type in args],
             }
         elif origin_type is Union:
             discriminator = None
             if typing.get_origin(data_type) is Annotated:
                 discriminator = typing.get_args(data_type)[1].discriminator
-            ret = {
-                "oneOf": [
-                    self.type_to_schema(union_type)
-                    for union_type in typing.get_args(typ)
-                ]
-            }
+            ret = {"oneOf": [self.type_to_schema(union_type) for union_type in typing.get_args(typ)]}
             if discriminator:
                 # for each union type, we need to read the value of the discriminator
                 mapping = {}
                 for union_type in typing.get_args(typ):
-                    props = self.type_to_schema(union_type, force_expand=True)[
-                        "properties"
-                    ]
-                    mapping[props[discriminator]["default"]] = self.type_to_schema(
-                        union_type
-                    )["$ref"]
+                    props = self.type_to_schema(union_type, force_expand=True)["properties"]
+                    mapping[props[discriminator]["default"]] = self.type_to_schema(union_type)["$ref"]
 
                 ret["discriminator"] = {
                     "propertyName": discriminator,
@@ -495,9 +484,7 @@ class JsonSchemaGenerator:
         # dictionary of class attributes
         members = dict(inspect.getmembers(typ, lambda a: not inspect.isroutine(a)))
 
-        property_docstrings = get_class_property_docstrings(
-            typ, self.options.property_description_fun
-        )
+        property_docstrings = get_class_property_docstrings(typ, self.options.property_description_fun)
         properties: Dict[str, Schema] = {}
         required: List[str] = []
         for property_name, property_type in get_class_properties(typ):
@@ -513,17 +500,17 @@ class JsonSchemaGenerator:
             if "model_fields" in members:
                 f = members["model_fields"]
                 defaults = {k: finfo.default for k, finfo in f.items()}
-                json_schema_extra = f.get(output_name, None).json_schema_extra
+                if output_name in f:
+                    finfo = f[output_name]
+                    json_schema_extra = finfo.json_schema_extra or {}
+                    if finfo.deprecated:
+                        json_schema_extra["deprecated"] = True
 
             if is_type_optional(property_type):
                 optional_type: type = unwrap_optional_type(property_type)
-                property_def = self.type_to_schema(
-                    optional_type, json_schema_extra=json_schema_extra
-                )
+                property_def = self.type_to_schema(optional_type, json_schema_extra=json_schema_extra)
             else:
-                property_def = self.type_to_schema(
-                    property_type, json_schema_extra=json_schema_extra
-                )
+                property_def = self.type_to_schema(property_type, json_schema_extra=json_schema_extra)
                 required.append(output_name)
 
             # check if attribute has a default value initializer
@@ -580,9 +567,7 @@ class JsonSchemaGenerator:
 
         # add descriptive text (if present)
         if self.options.use_descriptions:
-            if isinstance(data_type, type) and not isinstance(
-                data_type, typing.ForwardRef
-            ):
+            if isinstance(data_type, type) and not isinstance(data_type, typing.ForwardRef):
                 type_schema.update(docstring_to_schema(data_type))
 
         # add example (if present)
@@ -591,9 +576,7 @@ class JsonSchemaGenerator:
 
         return type_schema
 
-    def classdef_to_schema(
-        self, data_type: TypeLike, force_expand: bool = False
-    ) -> Tuple[Schema, Dict[str, Schema]]:
+    def classdef_to_schema(self, data_type: TypeLike, force_expand: bool = False) -> Tuple[Schema, Dict[str, Schema]]:
         """
         Returns the JSON schema associated with a type and any nested types.
 
@@ -668,9 +651,7 @@ def classdef_to_schema(
     try:
         validator.value.check_schema(class_schema)
     except jsonschema.exceptions.SchemaError:
-        raise TypeError(
-            f"schema does not validate against meta-schema <{validator_id}>"
-        )
+        raise TypeError(f"schema does not validate against meta-schema <{validator_id}>")
 
     schema = {"$schema": validator_id}
     schema.update(class_schema)
@@ -687,9 +668,7 @@ def validate_object(data_type: TypeLike, json_dict: JsonType) -> None:
     """
 
     schema_dict = classdef_to_schema(data_type)
-    jsonschema.validate(
-        json_dict, schema_dict, format_checker=jsonschema.FormatChecker()
-    )
+    jsonschema.validate(json_dict, schema_dict, format_checker=jsonschema.FormatChecker())
 
 
 def print_schema(data_type: type) -> None:
@@ -735,9 +714,7 @@ def json_schema_type(cls: Type[T], /) -> Type[T]: ...
 
 
 @overload
-def json_schema_type(
-    cls: None, *, schema: Optional[Schema] = None
-) -> Callable[[Type[T]], Type[T]]: ...
+def json_schema_type(cls: None, *, schema: Optional[Schema] = None) -> Callable[[Type[T]], Type[T]]: ...
 
 
 def json_schema_type(

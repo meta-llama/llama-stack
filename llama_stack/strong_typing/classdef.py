@@ -22,13 +22,13 @@ from typing import Any, Dict, List, Literal, Optional, Tuple, Type, TypeVar, Uni
 from .auxiliary import (
     Alias,
     Annotated,
+    MaxLength,
+    Precision,
     float32,
     float64,
     int16,
     int32,
     int64,
-    MaxLength,
-    Precision,
 )
 from .core import JsonType, Schema
 from .docstring import Docstring, DocstringParam
@@ -181,17 +181,13 @@ def enum_values_to_type(
 
     # assign the newly created type to the same module where the defining class is
     enum_class.__module__ = module.__name__
-    enum_class.__doc__ = str(
-        Docstring(short_description=title, long_description=description)
-    )
+    enum_class.__doc__ = str(Docstring(short_description=title, long_description=description))
     setattr(module, name, enum_class)
 
     return enum.unique(enum_class)
 
 
-def schema_to_type(
-    schema: Schema, *, module: types.ModuleType, class_name: str
-) -> TypeLike:
+def schema_to_type(schema: Schema, *, module: types.ModuleType, class_name: str) -> TypeLike:
     """
     Creates a Python type from a JSON schema.
 
@@ -200,16 +196,14 @@ def schema_to_type(
     :param class_name: The name assigned to the top-level class.
     """
 
-    top_node = typing.cast(
-        JsonSchemaTopLevelObject, json_to_object(JsonSchemaTopLevelObject, schema)
-    )
+    top_node = typing.cast(JsonSchemaTopLevelObject, json_to_object(JsonSchemaTopLevelObject, schema))
     if top_node.definitions is not None:
         for type_name, type_node in top_node.definitions.items():
             type_def = node_to_typedef(module, type_name, type_node)
             if type_def.default is not dataclasses.MISSING:
                 raise TypeError("disallowed: `default` for top-level type definitions")
 
-            setattr(type_def.type, "__module__", module.__name__)
+            type_def.type.__module__ = module.__name__
             setattr(module, type_name, type_def.type)
 
     return node_to_typedef(module, class_name, top_node).type
@@ -228,9 +222,7 @@ def json_to_value(target_type: TypeLike, data: JsonType) -> Any:
         return dataclasses.MISSING
 
 
-def node_to_typedef(
-    module: types.ModuleType, context: str, node: JsonSchemaNode
-) -> TypeDef:
+def node_to_typedef(module: types.ModuleType, context: str, node: JsonSchemaNode) -> TypeDef:
     if isinstance(node, JsonSchemaRef):
         match_obj = re.match(r"^#/definitions/(\w+)$", node.ref)
         if not match_obj:
@@ -360,22 +352,16 @@ def node_to_typedef(
                 prop_type = type_def.type
             else:
                 prop_type = Union[(None, type_def.type)]
-            fields.append(
-                (prop_name, prop_type, dataclasses.field(default=type_def.default))
-            )
+            fields.append((prop_name, prop_type, dataclasses.field(default=type_def.default)))
             prop_desc = prop_node.title or prop_node.description
             if prop_desc is not None:
                 params[prop_name] = DocstringParam(prop_name, prop_desc)
 
         fields.sort(key=lambda t: t[2].default is not dataclasses.MISSING)
         if sys.version_info >= (3, 12):
-            class_type = dataclasses.make_dataclass(
-                class_name, fields, module=module.__name__
-            )
+            class_type = dataclasses.make_dataclass(class_name, fields, module=module.__name__)
         else:
-            class_type = dataclasses.make_dataclass(
-                class_name, fields, namespace={"__module__": module.__name__}
-            )
+            class_type = dataclasses.make_dataclass(class_name, fields, namespace={"__module__": module.__name__})
         class_type.__doc__ = str(
             Docstring(
                 short_description=node.title,
@@ -402,12 +388,8 @@ class SchemaFlatteningOptions:
     recursive: bool = False
 
 
-def flatten_schema(
-    schema: Schema, *, options: Optional[SchemaFlatteningOptions] = None
-) -> Schema:
-    top_node = typing.cast(
-        JsonSchemaTopLevelObject, json_to_object(JsonSchemaTopLevelObject, schema)
-    )
+def flatten_schema(schema: Schema, *, options: Optional[SchemaFlatteningOptions] = None) -> Schema:
+    top_node = typing.cast(JsonSchemaTopLevelObject, json_to_object(JsonSchemaTopLevelObject, schema))
     flattener = SchemaFlattener(options)
     obj = flattener.flatten(top_node)
     return typing.cast(Schema, object_to_json(obj))
@@ -442,9 +424,7 @@ class SchemaFlattener:
                 obj = prop
             if obj.properties is not None:
                 if self.options.qualified_names:
-                    target_props.update(
-                        (f"{name}.{n}", p) for n, p in obj.properties.items()
-                    )
+                    target_props.update((f"{name}.{n}", p) for n, p in obj.properties.items())
                 else:
                     target_props.update(obj.properties.items())
             if obj.required is not None:

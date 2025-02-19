@@ -15,11 +15,11 @@ from typing import Any, Literal, Optional, Tuple, Union
 
 from .auxiliary import _auxiliary_types
 from .inspection import (
+    TypeLike,
     is_generic_dict,
     is_generic_list,
     is_type_optional,
     is_type_union,
-    TypeLike,
     unwrap_generic_dict,
     unwrap_generic_list,
     unwrap_optional_type,
@@ -110,17 +110,13 @@ class TypeFormatter:
                 if arg is not auxiliary_arg:
                     continue
 
-                auxiliary_metatuple: Optional[Tuple[Any, ...]] = getattr(
-                    auxiliary_type, "__metadata__", None
-                )
+                auxiliary_metatuple: Optional[Tuple[Any, ...]] = getattr(auxiliary_type, "__metadata__", None)
                 if auxiliary_metatuple is None:
                     continue
 
                 if metaset.issuperset(auxiliary_metatuple):
                     # type is an auxiliary type with extra annotations
-                    auxiliary_args = ", ".join(
-                        repr(m) for m in metatuple if m not in auxiliary_metatuple
-                    )
+                    auxiliary_args = ", ".join(repr(m) for m in metatuple if m not in auxiliary_metatuple)
                     return f"Annotated[{auxiliary_name}, {auxiliary_args}]"
 
             # type is an annotated type
@@ -176,9 +172,7 @@ def python_type_to_name(data_type: TypeLike, force: bool = False) -> str:
             return f"Dict__{key_name}__{value_name}"
         elif is_type_union(data_type):
             member_types = unwrap_union_types(data_type)
-            member_names = "__".join(
-                python_type_to_name(member_type) for member_type in member_types
-            )
+            member_names = "__".join(python_type_to_name(member_type) for member_type in member_types)
             return f"Union__{member_names}"
 
     # named system or user-defined type

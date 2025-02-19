@@ -164,10 +164,7 @@ def is_exception(member: object) -> TypeGuard[Type[BaseException]]:
 def get_exceptions(module: types.ModuleType) -> Dict[str, Type[BaseException]]:
     "Returns all exception classes declared in a module."
 
-    return {
-        name: class_type
-        for name, class_type in inspect.getmembers(module, is_exception)
-    }
+    return {name: class_type for name, class_type in inspect.getmembers(module, is_exception)}
 
 
 class SupportsDoc(Protocol):
@@ -212,11 +209,7 @@ def parse_type(typ: SupportsDoc) -> Docstring:
         for exc_name, exc in docstring.raises.items():
             raise_type = context.get(exc_name)
             if raise_type is None:
-                type_name = (
-                    getattr(typ, "__qualname__", None)
-                    or getattr(typ, "__name__", None)
-                    or None
-                )
+                type_name = getattr(typ, "__qualname__", None) or getattr(typ, "__name__", None) or None
                 raise TypeError(
                     f"doc-string exception type `{exc_name}` is not an exception defined in the context of `{type_name}`"
                 )
@@ -262,9 +255,7 @@ def parse_text(text: str) -> Docstring:
     params: Dict[str, DocstringParam] = {}
     raises: Dict[str, DocstringRaises] = {}
     returns = None
-    for match in re.finditer(
-        r"(^:.*?)(?=^:|\Z)", meta_chunk, flags=re.DOTALL | re.MULTILINE
-    ):
+    for match in re.finditer(r"(^:.*?)(?=^:|\Z)", meta_chunk, flags=re.DOTALL | re.MULTILINE):
         chunk = match.group(0)
         if not chunk:
             continue
@@ -307,11 +298,7 @@ def has_default_docstring(typ: SupportsDoc) -> bool:
         return False
 
     if is_dataclass_type(typ):
-        return (
-            typ.__doc__ is not None
-            and re.match(f"^{re.escape(typ.__name__)}[(].*[)]$", typ.__doc__)
-            is not None
-        )
+        return typ.__doc__ is not None and re.match(f"^{re.escape(typ.__name__)}[(].*[)]$", typ.__doc__) is not None
 
     if is_type_enum(typ):
         return typ.__doc__ is not None and typ.__doc__ == "An enumeration."
@@ -338,9 +325,7 @@ def get_docstring(typ: SupportsDoc) -> Optional[str]:
     return typ.__doc__
 
 
-def check_docstring(
-    typ: SupportsDoc, docstring: Docstring, strict: bool = False
-) -> None:
+def check_docstring(typ: SupportsDoc, docstring: Docstring, strict: bool = False) -> None:
     """
     Verifies the doc-string of a type.
 
@@ -353,9 +338,7 @@ def check_docstring(
         check_function_docstring(typ, docstring, strict)
 
 
-def check_dataclass_docstring(
-    typ: Type[DataclassInstance], docstring: Docstring, strict: bool = False
-) -> None:
+def check_dataclass_docstring(typ: Type[DataclassInstance], docstring: Docstring, strict: bool = False) -> None:
     """
     Verifies the doc-string of a data-class type.
 
@@ -371,23 +354,17 @@ def check_dataclass_docstring(
 
     for name in docstring.params:
         if name not in properties:
-            raise TypeError(
-                f"doc-string parameter `{name}` is not a member of the data-class `{class_name}`"
-            )
+            raise TypeError(f"doc-string parameter `{name}` is not a member of the data-class `{class_name}`")
 
     if not strict:
         return
 
     for name in properties:
         if name not in docstring.params:
-            raise TypeError(
-                f"member `{name}` in data-class `{class_name}` is missing its doc-string"
-            )
+            raise TypeError(f"member `{name}` in data-class `{class_name}` is missing its doc-string")
 
 
-def check_function_docstring(
-    fn: Callable[..., Any], docstring: Docstring, strict: bool = False
-) -> None:
+def check_function_docstring(fn: Callable[..., Any], docstring: Docstring, strict: bool = False) -> None:
     """
     Verifies the doc-string of a function or member function.
 
@@ -400,17 +377,10 @@ def check_function_docstring(
 
     for name in docstring.params:
         if name not in signature.parameters:
-            raise TypeError(
-                f"doc-string parameter `{name}` is absent from signature of function `{func_name}`"
-            )
+            raise TypeError(f"doc-string parameter `{name}` is absent from signature of function `{func_name}`")
 
-    if (
-        docstring.returns is not None
-        and signature.return_annotation is inspect.Signature.empty
-    ):
-        raise TypeError(
-            f"doc-string has returns description in function `{func_name}` with no return type annotation"
-        )
+    if docstring.returns is not None and signature.return_annotation is inspect.Signature.empty:
+        raise TypeError(f"doc-string has returns description in function `{func_name}` with no return type annotation")
 
     if not strict:
         return
@@ -418,20 +388,12 @@ def check_function_docstring(
     for name, param in signature.parameters.items():
         # ignore `self` in member function signatures
         if name == "self" and (
-            param.kind is inspect.Parameter.POSITIONAL_ONLY
-            or param.kind is inspect.Parameter.POSITIONAL_OR_KEYWORD
+            param.kind is inspect.Parameter.POSITIONAL_ONLY or param.kind is inspect.Parameter.POSITIONAL_OR_KEYWORD
         ):
             continue
 
         if name not in docstring.params:
-            raise TypeError(
-                f"function parameter `{name}` in `{func_name}` is missing its doc-string"
-            )
+            raise TypeError(f"function parameter `{name}` in `{func_name}` is missing its doc-string")
 
-    if (
-        signature.return_annotation is not inspect.Signature.empty
-        and docstring.returns is None
-    ):
-        raise TypeError(
-            f"function `{func_name}` has no returns description in its doc-string"
-        )
+    if signature.return_annotation is not inspect.Signature.empty and docstring.returns is None:
+        raise TypeError(f"function `{func_name}` has no returns description in its doc-string")

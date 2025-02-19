@@ -26,7 +26,7 @@ $ llama-stack-client datasets register \
 ```
 
 ```bash
-$ llama-stack-client eval_tasks register \
+$ llama-stack-client benchmarks register \
 --eval-task-id meta-reference-mmlu \
 --provider-id meta-reference \
 --dataset-id mmlu \
