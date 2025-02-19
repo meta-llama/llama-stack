@@ -55,6 +55,13 @@ def available_templates_specs() -> Dict[str, BuildConfig]:
     return template_specs
 
 
+def _check_quit_input(user_input: str) -> bool:
+    if user_input.lower() == "quit" or user_input.lower() == "q":
+        cprint("Quit the build process.", color="yellow")
+        return True
+    return False
+
+
 def run_stack_build_command(args: argparse.Namespace) -> None:
     if args.list_templates:
         return _run_template_list_cmd()
@@ -80,6 +87,10 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
             )
             return
     elif not args.config and not args.template:
+        cprint("=" * 34, color="cyan")
+        cprint("Welcome to Llama Stack Build Setup", color="cyan", attrs=["bold"])
+        cprint("=" * 34, color="cyan")
+        cprint("Type 'quit' or 'q' to cancel at any time.", color="yellow")
         name = prompt(
             "> Enter a name for your Llama Stack (e.g. my-local-stack): ",
             validator=Validator.from_callable(
@@ -88,14 +99,20 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
             ),
         )
 
+        if _check_quit_input(name):
+            return
+
         image_type = prompt(
             "> Enter the image type you want your Llama Stack to be built as (container or conda or venv): ",
             validator=Validator.from_callable(
-                lambda x: x in ["container", "conda", "venv"],
+                lambda x: x in ["container", "conda", "venv", "q", "quit"],
                 error_message="Invalid image type, please enter conda or container or venv",
             ),
             default="conda",
         )
+
+        if _check_quit_input(image_type):
+            return
 
         if image_type == "conda":
             if not image_name:
@@ -127,6 +144,7 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
         providers = dict()
         for api, providers_for_api in get_provider_registry().items():
             available_providers = [x for x in providers_for_api.keys() if x not in ("remote", "remote::sample")]
+            available_providers += ["q", "quit"]
             api_provider = prompt(
                 "> Enter provider for API {}: ".format(api.value),
                 completer=WordCompleter(available_providers),
@@ -137,12 +155,18 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
                 ),
             )
 
+            if _check_quit_input(api_provider):
+                return
+
             providers[api.value] = api_provider
 
         description = prompt(
             "\n > (Optional) Enter a short description for your Llama Stack: ",
             default="",
         )
+
+        if _check_quit_input(description):
+            return
 
         distribution_spec = DistributionSpec(
             providers=providers,
