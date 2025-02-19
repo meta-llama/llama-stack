@@ -82,7 +82,7 @@ class SQLiteVecIndex(EmbeddingIndex):
         try:
             # Start transaction
             cur.execute("BEGIN TRANSACTION")
-            for k, i in enumerate(range(0, len(chunks), batch_size)):
+            for i in range(0, len(chunks), batch_size):
                 batch_chunks = chunks[i : i + batch_size]
                 batch_embeddings = embeddings[i : i + batch_size]
                 # Prepare metadata inserts
