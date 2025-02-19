@@ -7,7 +7,6 @@
 import importlib.resources
 import logging
 import sys
-from enum import Enum
 from pathlib import Path
 from typing import Dict, List
 
@@ -18,6 +17,7 @@ from llama_stack.distribution.datatypes import BuildConfig, Provider
 from llama_stack.distribution.distribution import get_provider_registry
 from llama_stack.distribution.utils.config_dirs import BUILDS_BASE_DIR
 from llama_stack.distribution.utils.exec import run_command, run_with_pty
+from llama_stack.distribution.utils.image_types import ImageType
 from llama_stack.providers.datatypes import Api
 
 log = logging.getLogger(__name__)
@@ -31,12 +31,6 @@ SERVER_DEPENDENCIES = [
     "httpx",
     "uvicorn",
 ]
-
-
-class ImageType(Enum):
-    container = "container"
-    conda = "conda"
-    venv = "venv"
 
 
 class ApiInput(BaseModel):

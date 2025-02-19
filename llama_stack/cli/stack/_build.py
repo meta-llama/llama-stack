@@ -23,10 +23,10 @@ from termcolor import cprint
 from llama_stack.cli.table import print_table
 from llama_stack.distribution.build import (
     SERVER_DEPENDENCIES,
-    ImageType,
     build_image,
     get_provider_dependencies,
 )
+from llama_stack.distribution.configure import parse_and_maybe_upgrade_config
 from llama_stack.distribution.datatypes import (
     BuildConfig,
     DistributionSpec,
@@ -37,7 +37,8 @@ from llama_stack.distribution.distribution import get_provider_registry
 from llama_stack.distribution.resolver import InvalidProviderError
 from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
-from llama_stack.distribution.utils.exec import in_notebook
+from llama_stack.distribution.utils.exec import formulate_run_args, in_notebook, run_with_pty
+from llama_stack.distribution.utils.image_types import ImageType
 from llama_stack.providers.datatypes import Api
 
 TEMPLATES_PATH = Path(__file__).parent.parent.parent / "templates"
@@ -186,19 +187,41 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
             print(f"uv pip install {special_dep}")
         return
 
-    _run_stack_build_command_from_build_config(
-        build_config,
-        image_name=image_name,
-        config_path=args.config,
-        template_name=args.template,
-    )
+    try:
+        run_config = _run_stack_build_command_from_build_config(
+            build_config,
+            image_name=image_name,
+            config_path=args.config,
+            template_name=args.template,
+        )
+
+    except Exception as exc:
+        cprint(
+            f"Error building stack: {exc}",
+            color="red",
+        )
+        return
+    if run_config is None:
+        cprint(
+            "Run config path is empty",
+            color="red",
+        )
+        return
+
+    if args.run:
+        run_config = Path(run_config)
+        config_dict = yaml.safe_load(run_config.read_text())
+        config = parse_and_maybe_upgrade_config(config_dict)
+        run_args = formulate_run_args(args.image_type, args.image_name, config, args.template)
+        run_args.extend([run_config, str(os.getenv("LLAMA_STACK_PORT", 8321))])
+        run_with_pty(run_args)
 
 
 def _generate_run_config(
     build_config: BuildConfig,
     build_dir: Path,
     image_name: str,
-) -> None:
+) -> str:
     """
     Generate a run.yaml template file for user to edit from a build.yaml file
     """
@@ -248,6 +271,7 @@ def _generate_run_config(
         f"You can now run your stack with `llama stack run {run_config_file}`",
         color="green",
     )
+    return run_config_file
 
 
 def _run_stack_build_command_from_build_config(
@@ -255,7 +279,7 @@ def _run_stack_build_command_from_build_config(
     image_name: Optional[str] = None,
     template_name: Optional[str] = None,
     config_path: Optional[str] = None,
-) -> None:
+) -> str:
     if build_config.image_type == ImageType.container.value:
         if template_name:
             image_name = f"distribution-{template_name}"
@@ -298,8 +322,9 @@ def _run_stack_build_command_from_build_config(
             shutil.copy(path, run_config_file)
 
         cprint("Build Successful!", color="green")
+        return template_path
     else:
-        _generate_run_config(build_config, build_dir, image_name)
+        return _generate_run_config(build_config, build_dir, image_name)
 
 
 def _run_template_list_cmd() -> None:
