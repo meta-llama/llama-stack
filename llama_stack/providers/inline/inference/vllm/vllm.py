@@ -503,8 +503,13 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         results_generator = self.engine.generate(content, sampling_params, request_id)
 
         # Need to know the model's EOS token ID for the conversion code below.
-        # This information is buried pretty deeply.
-        eos_token_id = self.engine.engine.tokenizer.tokenizer.eos_token_id
+        # AsyncLLMEngine is a wrapper around LLMEngine, and the tokenizer is only available if
+        # we drill down to the LLMEngine inside the AsyncLLMEngine.
+        # Similarly, the tokenizer in an LLMEngine is a wrapper around a BaseTokenizerGroup,
+        # and we need to drill down to the Hugging Face tokenizer inside the BaseTokenizerGroup.
+        llm_engine = self.engine.engine
+        tokenizer_group = llm_engine.tokenizer
+        eos_token_id = tokenizer_group.tokenizer.eos_token_id
 
         request_output: vllm.RequestOutput = None
         async for request_output in results_generator:
