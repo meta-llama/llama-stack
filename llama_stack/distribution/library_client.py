@@ -153,7 +153,7 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
 
         for handler in root_logger.handlers[:]:
             root_logger.removeHandler(handler)
-            logger.warning(f"Removed handler {handler.__class__.__name__} from root logger")
+            logger.info(f"Removed handler {handler.__class__.__name__} from root logger")
 
     def request(self, *args, **kwargs):
         if kwargs.get("stream"):
