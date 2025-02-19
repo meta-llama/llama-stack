@@ -48,6 +48,7 @@ Here is a list of the various API providers and available distributions that can
 |        NVIDIA NIM        | Hosted and Single Node |            |       ✅       |            |            |               |
 |          Chroma          |      Single Node       |            |               |     ✅      |            |               |
 |        PG Vector         |      Single Node       |            |               |     ✅      |            |               |
+|      MongoDB Atlas       |      Hosted            |            |               |     ✅      |            |               |
 |    PyTorch ExecuTorch    |     On-device iOS      |     ✅      |       ✅       |            |            |               |
 |           vLLM           | Hosted and Single Node |            |       ✅       |            |            |               |
 
