@@ -47,6 +47,8 @@ from llama_stack.providers.utils.telemetry.tracing import (
     start_trace,
 )
 
+logger = logging.getLogger(__name__)
+
 T = TypeVar("T")
 
 
@@ -87,7 +89,7 @@ def convert_to_pydantic(annotation: Any, value: Any) -> Any:
         try:
             return [convert_to_pydantic(item_type, item) for item in value]
         except Exception:
-            print(f"Error converting list {value} into {item_type}")
+            logger.error(f"Error converting list {value} into {item_type}")
             return value
 
     elif origin is dict:
@@ -95,7 +97,7 @@ def convert_to_pydantic(annotation: Any, value: Any) -> Any:
         try:
             return {k: convert_to_pydantic(val_type, v) for k, v in value.items()}
         except Exception:
-            print(f"Error converting dict {value} into {val_type}")
+            logger.error(f"Error converting dict {value} into {val_type}")
             return value
 
     try:
@@ -111,9 +113,8 @@ def convert_to_pydantic(annotation: Any, value: Any) -> Any:
                     return convert_to_pydantic(union_type, value)
                 except Exception:
                     continue
-            cprint(
+            logger.warning(
                 f"Warning: direct client failed to convert parameter {value} into {annotation}: {e}",
-                "yellow",
             )
         return value
 
@@ -152,7 +153,7 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
 
         for handler in root_logger.handlers[:]:
             root_logger.removeHandler(handler)
-            print(f"Removed handler {handler.__class__.__name__} from root logger")
+            logger.warning(f"Removed handler {handler.__class__.__name__} from root logger")
 
     def request(self, *args, **kwargs):
         if kwargs.get("stream"):
