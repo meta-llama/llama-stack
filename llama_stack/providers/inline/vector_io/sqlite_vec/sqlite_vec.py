@@ -4,9 +4,11 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import hashlib
 import logging
 import sqlite3
 import struct
+import uuid
 from typing import Any, Dict, List, Optional
 
 import numpy as np
@@ -80,13 +82,13 @@ class SQLiteVecIndex(EmbeddingIndex):
         try:
             # Start transaction
             cur.execute("BEGIN TRANSACTION")
-            for i in range(0, len(chunks), batch_size):
+            for k, i in enumerate(range(0, len(chunks), batch_size)):
                 batch_chunks = chunks[i : i + batch_size]
                 batch_embeddings = embeddings[i : i + batch_size]
                 # Prepare metadata inserts
                 metadata_data = [
-                    (f"{chunk.metadata['document_id']}:chunk-{j}", chunk.model_dump_json())
-                    for j, chunk in enumerate(batch_chunks)
+                    (generate_chunk_id(chunk.metadata["document_id"], chunk.content), chunk.model_dump_json())
+                    for chunk in batch_chunks
                 ]
                 # Insert metadata (ON CONFLICT to avoid duplicates)
                 cur.executemany(
@@ -99,8 +101,8 @@ class SQLiteVecIndex(EmbeddingIndex):
                 )
                 # Prepare embeddings inserts
                 embedding_data = [
-                    (f"{chunk.metadata['document_id']}:chunk-{j}", serialize_vector(emb.tolist()))
-                    for j, (chunk, emb) in enumerate(zip(batch_chunks, batch_embeddings, strict=True))
+                    (generate_chunk_id(chunk.metadata["document_id"], chunk.content), serialize_vector(emb.tolist()))
+                    for chunk, emb in zip(batch_chunks, batch_embeddings, strict=True)
                 ]
                 # Insert embeddings in batch
                 cur.executemany(f"INSERT INTO {self.vector_table} (id, embedding) VALUES (?, ?);", embedding_data)
@@ -227,3 +229,9 @@ class SQLiteVecVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
         if vector_db_id not in self.cache:
             raise ValueError(f"Vector DB {vector_db_id} not found")
         return await self.cache[vector_db_id].query_chunks(query, params)
+
+
+def generate_chunk_id(document_id: str, chunk_text: str) -> str:
+    """Generate a unique chunk ID using a hash of document ID and chunk text."""
+    hash_input = f"{document_id}:{chunk_text}".encode("utf-8")
+    return str(uuid.UUID(hashlib.md5(hash_input).hexdigest()))
