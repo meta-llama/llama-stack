@@ -96,7 +96,6 @@ def build_image(
     build_file_path: Path,
     image_name: str,
     template_or_config: str,
-    system_install: bool = False,
 ):
     container_base = build_config.distribution_spec.container_image or "python:3.10-slim"
 
