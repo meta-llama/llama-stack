@@ -33,7 +33,7 @@ from llama_stack.providers.utils.inference.model_registry import (
 from llama_stack.providers.utils.inference.prompt_adapter import content_has_media
 
 from . import NVIDIAConfig
-from .models import _MODEL_ALIASES
+from .models import _MODEL_ENTRIES
 from .openai_utils import (
     convert_chat_completion_request,
     convert_completion_request,
@@ -50,7 +50,7 @@ logger = logging.getLogger(__name__)
 class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
     def __init__(self, config: NVIDIAConfig) -> None:
         # TODO(mf): filter by available models
-        ModelRegistryHelper.__init__(self, model_aliases=_MODEL_ALIASES)
+        ModelRegistryHelper.__init__(self, model_entries=_MODEL_ENTRIES)
 
         logger.info(f"Initializing NVIDIAInferenceAdapter({config.url})...")
 

@@ -18,7 +18,7 @@ from llama_stack.providers.utils.inference import (
 
 # TODO: this class is more confusing than useful right now. We need to make it
 # more closer to the Model class.
-class ModelAlias(BaseModel):
+class ProviderModelEntry(BaseModel):
     provider_model_id: str
     aliases: List[str] = Field(default_factory=list)
     llama_model: Optional[str] = None
@@ -32,8 +32,8 @@ def get_huggingface_repo(model_descriptor: str) -> Optional[str]:
     return None
 
 
-def build_hf_repo_model_alias(provider_model_id: str, model_descriptor: str) -> ModelAlias:
-    return ModelAlias(
+def build_hf_repo_model_entry(provider_model_id: str, model_descriptor: str) -> ProviderModelEntry:
+    return ProviderModelEntry(
         provider_model_id=provider_model_id,
         aliases=[
             get_huggingface_repo(model_descriptor),
@@ -42,8 +42,8 @@ def build_hf_repo_model_alias(provider_model_id: str, model_descriptor: str) -> 
     )
 
 
-def build_model_alias(provider_model_id: str, model_descriptor: str) -> ModelAlias:
-    return ModelAlias(
+def build_model_entry(provider_model_id: str, model_descriptor: str) -> ProviderModelEntry:
+    return ProviderModelEntry(
         provider_model_id=provider_model_id,
         aliases=[],
         llama_model=model_descriptor,
@@ -51,10 +51,10 @@ def build_model_alias(provider_model_id: str, model_descriptor: str) -> ModelAli
 
 
 class ModelRegistryHelper(ModelsProtocolPrivate):
-    def __init__(self, model_aliases: List[ModelAlias]):
+    def __init__(self, model_entries: List[ProviderModelEntry]):
         self.alias_to_provider_id_map = {}
         self.provider_id_to_llama_model_map = {}
-        for alias_obj in model_aliases:
+        for alias_obj in model_entries:
             for alias in alias_obj.aliases:
                 self.alias_to_provider_id_map[alias] = alias_obj.provider_model_id
             # also add a mapping from provider model id to itself for easy lookup
