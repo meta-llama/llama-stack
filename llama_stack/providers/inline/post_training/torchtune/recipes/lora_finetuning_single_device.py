@@ -547,10 +547,11 @@ class LoraFinetuningSingleDevice:
             checkpoints.append(checkpoint)
 
         # clean up the memory after training finishes
-        self._model.to("cpu")
+        if self._device.type != "cpu":
+            self._model.to("cpu")
+            torch.cuda.empty_cache()
         del self._model
         gc.collect()
-        torch.cuda.empty_cache()
 
         return (memory_stats, checkpoints)
 
