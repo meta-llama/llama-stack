@@ -169,6 +169,15 @@ class MetaReferenceAgentsImpl(Agents):
         async for event in agent.create_and_execute_turn(request):
             yield event
 
+    async def submit_tool_response_messages(
+        self,
+        agent_id: str,
+        session_id: str,
+        turn_id: str,
+        tool_response_messages: List[ToolResponseMessage],
+    ) -> Union[Turn, AsyncIterator[AgentTurnResponseStreamChunk]]:
+        pass
+
     async def get_agents_turn(self, agent_id: str, session_id: str, turn_id: str) -> Turn:
         turn = await self.persistence_store.get(f"session:{agent_id}:{session_id}:{turn_id}")
         turn = json.loads(turn)
