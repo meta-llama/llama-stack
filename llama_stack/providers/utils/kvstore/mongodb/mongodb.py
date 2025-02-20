@@ -41,10 +41,7 @@ class MongoDBKVStoreImpl(KVStore):
             return key
         return f"{self.config.namespace}:{key}"
 
-    async def set(
-        self, key: str, value: str, expiration: Optional[datetime] = None
-    ) -> None:
-
+    async def set(self, key: str, value: str, expiration: Optional[datetime] = None) -> None:
         key = self._namespaced_key(key)
         update_query = {"$set": {"value": value, "expiration": expiration}}
         self.collection.update_one({"key": key}, update_query, upsert=True)
