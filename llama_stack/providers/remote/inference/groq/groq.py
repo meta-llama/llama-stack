@@ -19,6 +19,7 @@ from llama_stack.apis.inference import (
     EmbeddingsResponse,
     Inference,
     InterleavedContent,
+    InterleavedContentItem,
     LogProbConfig,
     Message,
     ResponseFormat,
@@ -140,7 +141,7 @@ class GroqInferenceAdapter(Inference, ModelRegistryHelper, NeedsRequestProviderD
     async def embeddings(
         self,
         model_id: str,
-        contents: List[InterleavedContent],
+        contents: List[str] | List[InterleavedContentItem],
     ) -> EmbeddingsResponse:
         raise NotImplementedError()
 

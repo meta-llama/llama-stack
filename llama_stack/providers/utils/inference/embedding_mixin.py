@@ -9,7 +9,7 @@ from typing import List
 
 from llama_stack.apis.inference import (
     EmbeddingsResponse,
-    InterleavedContent,
+    InterleavedContentItem,
     ModelStore,
 )
 
@@ -25,7 +25,7 @@ class SentenceTransformerEmbeddingMixin:
     async def embeddings(
         self,
         model_id: str,
-        contents: List[InterleavedContent],
+        contents: List[str] | List[InterleavedContentItem],
     ) -> EmbeddingsResponse:
         model = await self.model_store.get_model(model_id)
         embedding_model = self._load_sentence_transformer_model(model.provider_resource_id)

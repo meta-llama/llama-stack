@@ -13,6 +13,7 @@ from ollama import AsyncClient
 from llama_stack.apis.common.content_types import (
     ImageContentItem,
     InterleavedContent,
+    InterleavedContentItem,
     TextContentItem,
 )
 from llama_stack.apis.inference import (
@@ -258,7 +259,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
     async def embeddings(
         self,
         model_id: str,
-        contents: List[InterleavedContent],
+        contents: List[str] | List[InterleavedContentItem],
     ) -> EmbeddingsResponse:
         model = await self.model_store.get_model(model_id)
 
