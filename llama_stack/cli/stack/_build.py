@@ -182,7 +182,6 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
         image_name=image_name,
         config_path=args.config,
         template_name=args.template,
-        system_install=args.system_install,
     )
 
 
@@ -247,7 +246,6 @@ def _run_stack_build_command_from_build_config(
     image_name: Optional[str] = None,
     template_name: Optional[str] = None,
     config_path: Optional[str] = None,
-    system_install: bool = False,
 ) -> None:
     if build_config.image_type == ImageType.container.value:
         if template_name:
@@ -276,7 +274,6 @@ def _run_stack_build_command_from_build_config(
         build_file_path,
         image_name,
         template_or_config=template_name or config_path,
-        system_install=system_install,
     )
     if return_code != 0:
         return

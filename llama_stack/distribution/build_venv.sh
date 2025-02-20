@@ -37,9 +37,6 @@ build_name="$1"
 env_name="llamastack-$build_name"
 pip_dependencies="$2"
 
-# whether we want to install dependencies in current system python environment
-system_install="$3"
-
 # Define color codes
 RED='\033[0;31m'
 NC='\033[0m' # No Color
@@ -75,10 +72,9 @@ pre_run_checks() {
 run() {
   local env_name="$1"
   local pip_dependencies="$2"
-  local system_install="$3"
-  local special_pip_deps="$4"
+  local special_pip_deps="$3"
   
-  if [ "$system_install" = "True" ]; then
+  if [ "${UV_SYSTEM_PYTHON:-}" = "1" ]; then
     echo "Installing dependencies in system Python environment"
     UV_FLAGS="--system"
   else
@@ -149,4 +145,4 @@ run() {
 }
 
 pre_run_checks "$env_name"
-run "$env_name" "$pip_dependencies" "$system_install" "$special_pip_deps"
+run "$env_name" "$pip_dependencies" "$special_pip_deps"
