@@ -11,7 +11,7 @@ from .config import KVStoreConfig, KVStoreType
 
 
 def kvstore_dependencies():
-    return ["aiosqlite", "psycopg2-binary", "redis"]
+    return ["aiosqlite", "psycopg2-binary", "redis", "pymongo"]
 
 
 class InmemoryKVStoreImpl(KVStore):
@@ -44,6 +44,10 @@ async def kvstore_impl(config: KVStoreConfig) -> KVStore:
         from .postgres import PostgresKVStoreImpl
 
         impl = PostgresKVStoreImpl(config)
+    elif config.type == KVStoreType.mongodb.value:
+        from .mongodb import MongoDBKVStoreImpl
+
+        impl = MongoDBKVStoreImpl(config)
     else:
         raise ValueError(f"Unknown kvstore type {config.type}")
 
