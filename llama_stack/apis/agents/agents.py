@@ -194,7 +194,7 @@ class AgentTurnResponseEventType(Enum):
 
     turn_start = "turn_start"
     turn_complete = "turn_complete"
-    turn_pending = "turn_pending"
+    turn_awaiting_input = "turn_awaiting_input"
 
 
 @json_schema_type
@@ -344,15 +344,20 @@ class Agents(Protocol):
     ) -> Union[Turn, AsyncIterator[AgentTurnResponseStreamChunk]]: ...
 
     @webmethod(
-        route="/agents/{agent_id}/session/{session_id}/turn/{turn_id}/submit_tool_response_messages",
+        route="/agents/{agent_id}/session/{session_id}/turn/{turn_id}/continue",
         method="POST",
     )
-    async def submit_tool_response_messages(
+    async def continue_agent_turn(
         self,
         agent_id: str,
         session_id: str,
         turn_id: str,
-        tool_response_messages: List[ToolResponseMessage],
+        new_messages: List[
+            Union[
+                UserMessage,
+                ToolResponseMessage,
+            ]
+        ],
     ) -> Union[Turn, AsyncIterator[AgentTurnResponseStreamChunk]]: ...
 
     @webmethod(
