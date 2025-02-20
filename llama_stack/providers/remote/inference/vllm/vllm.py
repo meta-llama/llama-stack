@@ -216,7 +216,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         pass
 
     async def unregister_model(self, model_id: str) -> None:
-        pass
+        await self.register_helper.unregister_model(model_id)
 
     async def completion(
         self,
@@ -327,6 +327,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         res = self.client.models.list()
         available_models = [m.id for m in res]
         if model.provider_resource_id not in available_models:
+            await self.unregister_model(model.provider_resource_id)
             raise ValueError(
                 f"Model {model.provider_resource_id} is not being served by vLLM. "
                 f"Available models: {', '.join(available_models)}"
