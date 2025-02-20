@@ -148,8 +148,13 @@ async def _process_vllm_chat_completion_stream_response(
     async for chunk in stream:
         choice = chunk.choices[0]
         if choice.finish_reason:
+            args_str = tool_call_buf.arguments
+            args = None
             try:
-                args = {} if not tool_call_buf.arguments else json.loads(tool_call_buf.arguments)
+                args = {} if not args_str else json.loads(args_str)
+            except Exception as e:
+                log.warning(f"Failed to parse tool call buffer arguments: {args_str} \nError: {e}")
+            if args is not None:
                 yield ChatCompletionResponseStreamChunk(
                     event=ChatCompletionResponseEvent(
                         event_type=event_type,
@@ -163,12 +168,12 @@ async def _process_vllm_chat_completion_stream_response(
                         ),
                     )
                 )
-            except Exception as e:
+            else:
                 yield ChatCompletionResponseStreamChunk(
                     event=ChatCompletionResponseEvent(
                         event_type=ChatCompletionResponseEventType.progress,
                         delta=ToolCallDelta(
-                            tool_call=f"Failed to parse tool call buffer: {tool_call_buf}. Error: {e}",
+                            tool_call=str(tool_call_buf),
                             parse_status=ToolCallParseStatus.failed,
                         ),
                     )
