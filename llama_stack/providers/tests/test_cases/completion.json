@@ -1,0 +1,13 @@
+{
+    "01": {
+        "name": "structured output",
+        "data": {
+            "user_input": "Michael Jordan was born in 1963. He played basketball for the Chicago Bulls. He retired in 2003.",
+            "expected": {
+                "name": "Michael Jordan",
+                "year_born": "1963",
+                "year_retired": "2003"
+            }
+        }
+    }
+}

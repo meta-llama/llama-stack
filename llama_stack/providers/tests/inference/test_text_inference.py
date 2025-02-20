@@ -30,6 +30,7 @@ from llama_stack.models.llama.datatypes import (
     ToolParamDefinition,
     ToolPromptFormat,
 )
+from llama_stack.providers.tests.test_cases.test_case import TestCase
 
 from .utils import group_chunks
 
@@ -178,8 +179,9 @@ class TestInference:
             else:  # no token, no logprobs
                 assert not chunk.logprobs, "Logprobs should be empty"
 
+    @pytest.mark.parametrize("test_case", ["completion-01"])
     @pytest.mark.asyncio(loop_scope="session")
-    async def test_completion_structured_output(self, inference_model, inference_stack):
+    async def test_completion_structured_output(self, inference_model, inference_stack, test_case):
         inference_impl, _ = inference_stack
 
         class Output(BaseModel):
@@ -187,7 +189,9 @@ class TestInference:
             year_born: str
             year_retired: str
 
-        user_input = "Michael Jordan was born in 1963. He played basketball for the Chicago Bulls. He retired in 2003."
+        tc = TestCase(test_case)
+
+        user_input = tc["user_input"]
         response = await inference_impl.completion(
             model_id=inference_model,
             content=user_input,
@@ -203,9 +207,10 @@ class TestInference:
         assert isinstance(response.content, str)
 
         answer = Output.model_validate_json(response.content)
-        assert answer.name == "Michael Jordan"
-        assert answer.year_born == "1963"
-        assert answer.year_retired == "2003"
+        expected = tc["expected"]
+        assert answer.name == expected["name"]
+        assert answer.year_born == expected["year_born"]
+        assert answer.year_retired == expected["year_retired"]
 
     @pytest.mark.asyncio(loop_scope="session")
     async def test_chat_completion_non_streaming(
@@ -224,8 +229,9 @@ class TestInference:
         assert isinstance(response.completion_message.content, str)
         assert len(response.completion_message.content) > 0
 
+    @pytest.mark.parametrize("test_case", ["chat_completion-01"])
     @pytest.mark.asyncio(loop_scope="session")
-    async def test_structured_output(self, inference_model, inference_stack, common_params):
+    async def test_structured_output(self, inference_model, inference_stack, common_params, test_case):
         inference_impl, _ = inference_stack
 
         class AnswerFormat(BaseModel):
@@ -234,20 +240,12 @@ class TestInference:
             year_of_birth: int
             num_seasons_in_nba: int
 
+        tc = TestCase(test_case)
+        messages = [SystemMessage.parse_obj(tc["messages"][0]), UserMessage.parse_obj(tc["messages"][1])]
+
         response = await inference_impl.chat_completion(
             model_id=inference_model,
-            messages=[
-                # we include context about Michael Jordan in the prompt so that the test is
-                # focused on the funtionality of the model and not on the information embedded
-                # in the model. Llama 3.2 3B Instruct tends to think MJ played for 14 seasons.
-                SystemMessage(
-                    content=(
-                        "You are a helpful assistant.\n\n"
-                        "Michael Jordan was born in 1963. He played basketball for the Chicago Bulls for 15 seasons."
-                    )
-                ),
-                UserMessage(content="Please give me information about Michael Jordan."),
-            ],
+            messages=messages,
             stream=False,
             response_format=JsonSchemaResponseFormat(
                 json_schema=AnswerFormat.model_json_schema(),
@@ -260,10 +258,11 @@ class TestInference:
         assert isinstance(response.completion_message.content, str)
 
         answer = AnswerFormat.model_validate_json(response.completion_message.content)
-        assert answer.first_name == "Michael"
-        assert answer.last_name == "Jordan"
-        assert answer.year_of_birth == 1963
-        assert answer.num_seasons_in_nba == 15
+        expected = tc["expected"]
+        assert answer.first_name == expected["first_name"]
+        assert answer.last_name == expected["last_name"]
+        assert answer.year_of_birth == expected["year_of_birth"]
+        assert answer.num_seasons_in_nba == expected["num_seasons_in_nba"]
 
         response = await inference_impl.chat_completion(
             model_id=inference_model,
