@@ -22,7 +22,7 @@ class NVIDIASafetyConfig(BaseModel):
      Configuration for the NVIDIA Guardrail microservice endpoint.
 
     Attributes:
-        url (str): A base url for accessing the NVIDIA guardrail endpoint, e.g. http://localhost:8000
+        guardrails_service_url (str): A base url for accessing the NVIDIA guardrail endpoint, e.g. http://localhost:8000
         api_key (str): The access key for the hosted NIM endpoints
 
     There are two ways to access NVIDIA NIMs -

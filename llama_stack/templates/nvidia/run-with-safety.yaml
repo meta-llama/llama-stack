@@ -30,7 +30,7 @@ providers:
     provider_type: remote::nvidia
     config:
       url: ${env.GUARDRAILS_SERVICE_URL:http://localhost:7331}
-      config_id: 
+      config_id: self-check
   agents:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -139,6 +139,7 @@ models:
   model_type: llm
 shields:
 - shield_id: ${env.SAFETY_MODEL}
+  provider_id: nvidia
 vector_dbs: []
 datasets: []
 scoring_fns: []
