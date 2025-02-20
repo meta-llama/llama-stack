@@ -237,8 +237,10 @@ class AgentTurnResponseTurnCompletePayload(BaseModel):
 
 
 @json_schema_type
-class AgentTurnResponseTurnPendingPayload(BaseModel):
-    event_type: Literal[AgentTurnResponseEventType.turn_pending.value] = AgentTurnResponseEventType.turn_pending.value
+class AgentTurnResponseTurnAwaitingInputPayload(BaseModel):
+    event_type: Literal[AgentTurnResponseEventType.turn_awaiting_input.value] = (
+        AgentTurnResponseEventType.turn_awaiting_input.value
+    )
     turn: Turn
 
 
