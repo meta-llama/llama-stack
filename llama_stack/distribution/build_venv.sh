@@ -74,7 +74,7 @@ run() {
   local pip_dependencies="$2"
   local special_pip_deps="$3"
   
-  if [ "${UV_SYSTEM_PYTHON:-}" = "1" ]; then
+  if [ -n "${UV_SYSTEM_PYTHON:-}" ]; then 
     echo "Installing dependencies in system Python environment"
   else
     echo "Using virtual environment $env_name"
