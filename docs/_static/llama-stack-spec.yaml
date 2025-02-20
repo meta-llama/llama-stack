@@ -237,6 +237,43 @@ paths:
             schema:
               $ref: '#/components/schemas/CreateAgentTurnRequest'
         required: true
+  /v1/files:
+    get:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListBucketResponse'
+      tags:
+        - Files (Coming Soon)
+      description: List all buckets.
+      parameters:
+        - name: bucket
+          in: query
+          required: true
+          schema:
+            type: string
+    post:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileUploadResponse'
+      tags:
+        - Files (Coming Soon)
+      description: >-
+        Create a new upload session for a file identified by a bucket and key.
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUploadSessionRequest'
+        required: true
   /v1/agents/{agent_id}:
     delete:
       responses:
@@ -296,6 +333,59 @@ paths:
             type: string
         - name: agent_id
           in: path
+          required: true
+          schema:
+            type: string
+  /v1/files/{bucket}/{key}:
+    get:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileResponse'
+      tags:
+        - Files (Coming Soon)
+      description: >-
+        Get a file info identified by a bucket and key.
+      parameters:
+        - name: bucket
+          in: path
+          description: 'Bucket name (valid chars: a-zA-Z0-9_-)'
+          required: true
+          schema:
+            type: string
+        - name: key
+          in: path
+          description: >-
+            Key under which the file is stored (valid chars: a-zA-Z0-9_-/.)
+          required: true
+          schema:
+            type: string
+    delete:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileResponse'
+      tags:
+        - Files (Coming Soon)
+      description: >-
+        Delete a file identified by a bucket and key.
+      parameters:
+        - name: bucket
+          in: path
+          description: 'Bucket name (valid chars: a-zA-Z0-9_-)'
+          required: true
+          schema:
+            type: string
+        - name: key
+          in: path
+          description: >-
+            Key under which the file is stored (valid chars: a-zA-Z0-9_-/.)
           required: true
           schema:
             type: string
@@ -706,6 +796,57 @@ paths:
         - PostTraining (Coming Soon)
       description: ''
       parameters: []
+  /v1/files/session:{upload_id}:
+    get:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/FileUploadResponse'
+                  - type: 'null'
+      tags:
+        - Files (Coming Soon)
+      description: >-
+        Returns information about an existsing upload session
+      parameters:
+        - name: upload_id
+          in: path
+          description: ID of the upload session
+          required: true
+          schema:
+            type: string
+    post:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/FileResponse'
+                  - type: 'null'
+      tags:
+        - Files (Coming Soon)
+      description: >-
+        Upload file content to an existing upload session. On the server, request
+        body will have the raw bytes that are uploaded.
+      parameters:
+        - name: upload_id
+          in: path
+          description: ID of the upload session
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+        required: true
   /v1/vector-dbs/{vector_db_id}:
     get:
       responses:
@@ -922,6 +1063,25 @@ paths:
             schema:
               $ref: '#/components/schemas/RegisterDatasetRequest'
         required: true
+  /v1/files/{bucket}:
+    get:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListFileResponse'
+      tags:
+        - Files (Coming Soon)
+      description: List all files in a bucket.
+      parameters:
+        - name: bucket
+          in: path
+          description: 'Bucket name (valid chars: a-zA-Z0-9_-)'
+          required: true
+          schema:
+            type: string
   /v1/models:
     get:
       responses:
@@ -3011,6 +3171,87 @@ components:
         - event_type
         - turn_id
       title: AgentTurnResponseTurnStartPayload
+    CreateUploadSessionRequest:
+      type: object
+      properties:
+        bucket:
+          type: string
+          description: >-
+            Bucket under which the file is stored (valid chars: a-zA-Z0-9_-)
+        key:
+          type: string
+          description: >-
+            Key under which the file is stored (valid chars: a-zA-Z0-9_-/.)
+        mime_type:
+          type: string
+          description: MIME type of the file
+        size:
+          type: integer
+          description: File size in bytes
+      additionalProperties: false
+      required:
+        - bucket
+        - key
+        - mime_type
+        - size
+      title: CreateUploadSessionRequest
+    FileUploadResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID of the upload session
+        url:
+          type: string
+          description: Upload URL for the file or file parts
+        offset:
+          type: integer
+          description: Upload content offset
+        size:
+          type: integer
+          description: Upload content size
+      additionalProperties: false
+      required:
+        - id
+        - url
+        - offset
+        - size
+      title: FileUploadResponse
+      description: >-
+        Response after initiating a file upload session.
+    FileResponse:
+      type: object
+      properties:
+        bucket:
+          type: string
+          description: >-
+            Bucket under which the file is stored (valid chars: a-zA-Z0-9_-)
+        key:
+          type: string
+          description: >-
+            Key under which the file is stored (valid chars: a-zA-Z0-9_-/.)
+        mime_type:
+          type: string
+          description: MIME type of the file
+        url:
+          type: string
+          description: Upload URL for the file contents
+        bytes:
+          type: integer
+          description: Size of the file in bytes
+        created_at:
+          type: integer
+          description: Timestamp of when the file was created
+      additionalProperties: false
+      required:
+        - bucket
+        - key
+        - mime_type
+        - url
+        - bytes
+        - created_at
+      title: FileResponse
+      description: Response representing a file entry.
     EmbeddingsRequest:
       type: object
       properties:
@@ -4078,6 +4319,29 @@ components:
       required:
         - content
       title: ToolInvocationResult
+    BucketResponse:
+      type: object
+      properties:
+        name:
+          type: string
+      additionalProperties: false
+      required:
+        - name
+      title: BucketResponse
+    ListBucketResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/BucketResponse'
+          description: List of FileResponse entries
+      additionalProperties: false
+      required:
+        - data
+      title: ListBucketResponse
+      description: >-
+        Response representing a list of file entries.
     ListBenchmarksResponse:
       type: object
       properties:
@@ -4100,6 +4364,20 @@ components:
       required:
         - data
       title: ListDatasetsResponse
+    ListFileResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/FileResponse'
+          description: List of FileResponse entries
+      additionalProperties: false
+      required:
+        - data
+      title: ListFileResponse
+      description: >-
+        Response representing a list of file entries.
     ListModelsResponse:
       type: object
       properties:
@@ -5226,6 +5504,7 @@ tags:
   - name: DatasetIO
   - name: Datasets
   - name: Eval
+  - name: Files (Coming Soon)
   - name: Inference
     description: >-
       This API provides the raw interface to the underlying models. Two kinds of models
@@ -5260,6 +5539,7 @@ x-tagGroups:
       - DatasetIO
       - Datasets
       - Eval
+      - Files (Coming Soon)
       - Inference
       - Inspect
       - Models
