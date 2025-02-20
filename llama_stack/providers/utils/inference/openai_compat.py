@@ -431,7 +431,7 @@ def convert_tool_call(
             tool_name=tool_call.function.name,
             arguments=json.loads(tool_call.function.arguments),
         )
-    except Exception as e:
+    except Exception:
         return UnparseableToolCall(
             call_id=tool_call.id or "",
             tool_name=tool_call.function.name or "",

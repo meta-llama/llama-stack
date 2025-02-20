@@ -42,29 +42,27 @@ def featured_models():
 
 
 SUPPORTED_MODELS = {
-    "ollama": set(
-        [
-            CoreModelId.llama3_1_8b_instruct.value,
-            CoreModelId.llama3_1_8b_instruct.value,
-            CoreModelId.llama3_1_70b_instruct.value,
-            CoreModelId.llama3_1_70b_instruct.value,
-            CoreModelId.llama3_1_405b_instruct.value,
-            CoreModelId.llama3_1_405b_instruct.value,
-            CoreModelId.llama3_2_1b_instruct.value,
-            CoreModelId.llama3_2_1b_instruct.value,
-            CoreModelId.llama3_2_3b_instruct.value,
-            CoreModelId.llama3_2_3b_instruct.value,
-            CoreModelId.llama3_2_11b_vision_instruct.value,
-            CoreModelId.llama3_2_11b_vision_instruct.value,
-            CoreModelId.llama3_2_90b_vision_instruct.value,
-            CoreModelId.llama3_2_90b_vision_instruct.value,
-            CoreModelId.llama3_3_70b_instruct.value,
-            CoreModelId.llama_guard_3_8b.value,
-            CoreModelId.llama_guard_3_1b.value,
-        ]
-    ),
-    "tgi": set([model.core_model_id.value for model in all_registered_models() if model.huggingface_repo]),
-    "vllm": set([model.core_model_id.value for model in all_registered_models() if model.huggingface_repo]),
+    "ollama": {
+        CoreModelId.llama3_1_8b_instruct.value,
+        CoreModelId.llama3_1_8b_instruct.value,
+        CoreModelId.llama3_1_70b_instruct.value,
+        CoreModelId.llama3_1_70b_instruct.value,
+        CoreModelId.llama3_1_405b_instruct.value,
+        CoreModelId.llama3_1_405b_instruct.value,
+        CoreModelId.llama3_2_1b_instruct.value,
+        CoreModelId.llama3_2_1b_instruct.value,
+        CoreModelId.llama3_2_3b_instruct.value,
+        CoreModelId.llama3_2_3b_instruct.value,
+        CoreModelId.llama3_2_11b_vision_instruct.value,
+        CoreModelId.llama3_2_11b_vision_instruct.value,
+        CoreModelId.llama3_2_90b_vision_instruct.value,
+        CoreModelId.llama3_2_90b_vision_instruct.value,
+        CoreModelId.llama3_3_70b_instruct.value,
+        CoreModelId.llama_guard_3_8b.value,
+        CoreModelId.llama_guard_3_1b.value,
+    },
+    "tgi": {model.core_model_id.value for model in all_registered_models() if model.huggingface_repo},
+    "vllm": {model.core_model_id.value for model in all_registered_models() if model.huggingface_repo},
 }
 
 

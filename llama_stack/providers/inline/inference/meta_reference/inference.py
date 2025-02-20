@@ -208,7 +208,6 @@ class MetaReferenceInferenceImpl(
             logprobs = []
             stop_reason = None
 
-            tokenizer = self.generator.formatter.tokenizer
             for token_result in self.generator.completion(request):
                 tokens.append(token_result.token)
                 if token_result.text == "<|eot_id|>":
