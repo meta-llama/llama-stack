@@ -56,14 +56,16 @@ class ModelRegistryHelper(ModelsProtocolPrivate):
     def __init__(self, model_entries: List[ProviderModelEntry]):
         self.alias_to_provider_id_map = {}
         self.provider_id_to_llama_model_map = {}
-        for alias_obj in model_entries:
-            for alias in alias_obj.aliases:
-                self.alias_to_provider_id_map[alias] = alias_obj.provider_model_id
+        for entry in model_entries:
+            for alias in entry.aliases:
+                self.alias_to_provider_id_map[alias] = entry.provider_model_id
+
             # also add a mapping from provider model id to itself for easy lookup
-            self.alias_to_provider_id_map[alias_obj.provider_model_id] = alias_obj.provider_model_id
-            # ensure we can go from llama model to provider model id
-            self.alias_to_provider_id_map[alias_obj.llama_model] = alias_obj.provider_model_id
-            self.provider_id_to_llama_model_map[alias_obj.provider_model_id] = alias_obj.llama_model
+            self.alias_to_provider_id_map[entry.provider_model_id] = entry.provider_model_id
+
+            if entry.llama_model:
+                self.alias_to_provider_id_map[entry.llama_model] = entry.provider_model_id
+                self.provider_id_to_llama_model_map[entry.provider_model_id] = entry.llama_model
 
     def get_provider_model_id(self, identifier: str) -> Optional[str]:
         return self.alias_to_provider_id_map.get(identifier, None)
