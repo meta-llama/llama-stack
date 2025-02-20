@@ -45,13 +45,11 @@ class TestScoring:
             scoring_functions_impl,
             datasetio_impl,
             datasets_impl,
-            models_impl,
         ) = (
             scoring_stack[Api.scoring],
             scoring_stack[Api.scoring_functions],
             scoring_stack[Api.datasetio],
             scoring_stack[Api.datasets],
-            scoring_stack[Api.models],
         )
         scoring_fns_list = await scoring_functions_impl.list_scoring_functions()
         provider_id = scoring_fns_list[0].provider_id
@@ -102,13 +100,11 @@ class TestScoring:
             scoring_functions_impl,
             datasetio_impl,
             datasets_impl,
-            models_impl,
         ) = (
             scoring_stack[Api.scoring],
             scoring_stack[Api.scoring_functions],
             scoring_stack[Api.datasetio],
             scoring_stack[Api.datasets],
-            scoring_stack[Api.models],
         )
         await register_dataset(datasets_impl, for_rag=True)
         response = await datasets_impl.list_datasets()
@@ -163,13 +159,11 @@ class TestScoring:
             scoring_functions_impl,
             datasetio_impl,
             datasets_impl,
-            models_impl,
         ) = (
             scoring_stack[Api.scoring],
             scoring_stack[Api.scoring_functions],
             scoring_stack[Api.datasetio],
             scoring_stack[Api.datasets],
-            scoring_stack[Api.models],
         )
         await register_dataset(datasets_impl, for_rag=True)
         rows = await datasetio_impl.get_rows_paginated(

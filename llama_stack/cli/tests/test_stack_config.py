@@ -112,7 +112,7 @@ def test_parse_and_maybe_upgrade_config_old_format(old_config):
 
     inference_providers = result.providers["inference"]
     assert len(inference_providers) == 2
-    assert set(x.provider_id for x in inference_providers) == {
+    assert {x.provider_id for x in inference_providers} == {
         "remote::ollama-00",
         "meta-reference-01",
     }

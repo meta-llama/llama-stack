@@ -605,7 +605,7 @@ def convert_tool_call(
             tool_name=tool_call.function.name,
             arguments=json.loads(tool_call.function.arguments),
         )
-    except Exception as e:
+    except Exception:
         return UnparseableToolCall(
             call_id=tool_call.id or "",
             tool_name=tool_call.function.name or "",
@@ -876,7 +876,9 @@ async def convert_openai_chat_completion_stream(
             # it is possible to have parallel tool calls in stream, but
             # ChatCompletionResponseEvent only supports one per stream
             if len(choice.delta.tool_calls) > 1:
-                warnings.warn("multiple tool calls found in a single delta, using the first, ignoring the rest")
+                warnings.warn(
+                    "multiple tool calls found in a single delta, using the first, ignoring the rest", stacklevel=2
+                )
 
             if not enable_incremental_tool_calls:
                 yield ChatCompletionResponseStreamChunk(
