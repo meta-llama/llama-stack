@@ -73,11 +73,16 @@ run() {
   local env_name="$1"
   local pip_dependencies="$2"
   local special_pip_deps="$3"
+  
+  if [ -n "${UV_SYSTEM_PYTHON:-}" ]; then 
+    echo "Installing dependencies in system Python environment"
+  else
+    echo "Using virtual environment $env_name"
+    uv venv "$env_name"
+    # shellcheck source=/dev/null
+    source "$env_name/bin/activate"
+  fi
 
-  echo "Using virtual environment $env_name"
-  uv venv "$env_name"
-  # shellcheck source=/dev/null
-  source "$env_name/bin/activate"
   if [ -n "$TEST_PYPI_VERSION" ]; then
     # these packages are damaged in test-pypi, so install them first
     uv pip install fastapi libcst
