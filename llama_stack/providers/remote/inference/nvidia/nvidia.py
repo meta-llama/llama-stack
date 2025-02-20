@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import logging
 import warnings
 from typing import AsyncIterator, List, Optional, Union
 
@@ -49,7 +50,7 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
         # TODO(mf): filter by available models
         ModelRegistryHelper.__init__(self, model_aliases=_MODEL_ALIASES)
 
-        print(f"Initializing NVIDIAInferenceAdapter({config.url})...")
+        logger.info(f"Initializing NVIDIAInferenceAdapter({config.url})...")
 
         if _is_nvidia_hosted(config):
             if not config.api_key:
