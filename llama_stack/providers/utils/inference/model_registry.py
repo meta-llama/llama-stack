@@ -4,8 +4,9 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from collections import namedtuple
 from typing import List, Optional
+
+from pydantic import BaseModel, Field
 
 from llama_stack.apis.models.models import ModelType
 from llama_stack.models.llama.sku_list import all_registered_models
@@ -14,7 +15,14 @@ from llama_stack.providers.utils.inference import (
     ALL_HUGGINGFACE_REPOS_TO_MODEL_DESCRIPTOR,
 )
 
-ModelAlias = namedtuple("ModelAlias", ["provider_model_id", "aliases", "llama_model"])
+
+# TODO: this class is more confusing than useful right now. We need to make it
+# more closer to the Model class.
+class ModelAlias(BaseModel):
+    provider_model_id: str
+    aliases: List[str] = Field(default_factory=list)
+    llama_model: Optional[str] = None
+    model_type: ModelType = ModelType.llm
 
 
 def get_huggingface_repo(model_descriptor: str) -> Optional[str]:
