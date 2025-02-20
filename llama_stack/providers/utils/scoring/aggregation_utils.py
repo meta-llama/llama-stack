@@ -32,7 +32,7 @@ def aggregate_categorical_count(
     scoring_results: List[ScoringResultRow],
 ) -> Dict[str, Any]:
     scores = [str(r["score"]) for r in scoring_results]
-    unique_scores = sorted(list(set(scores)))
+    unique_scores = sorted(set(scores))
     return {"categorical_count": {s: scores.count(s) for s in unique_scores}}
 
 

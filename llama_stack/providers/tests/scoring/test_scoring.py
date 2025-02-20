@@ -45,7 +45,7 @@ class TestScoring:
             scoring_functions_impl,
             datasetio_impl,
             datasets_impl,
-            models_impl,
+            _,
         ) = (
             scoring_stack[Api.scoring],
             scoring_stack[Api.scoring_functions],
@@ -102,7 +102,7 @@ class TestScoring:
             scoring_functions_impl,
             datasetio_impl,
             datasets_impl,
-            models_impl,
+            _,
         ) = (
             scoring_stack[Api.scoring],
             scoring_stack[Api.scoring_functions],
@@ -163,7 +163,7 @@ class TestScoring:
             scoring_functions_impl,
             datasetio_impl,
             datasets_impl,
-            models_impl,
+            _,
         ) = (
             scoring_stack[Api.scoring],
             scoring_stack[Api.scoring_functions],

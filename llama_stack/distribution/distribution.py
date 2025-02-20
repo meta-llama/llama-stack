@@ -13,7 +13,7 @@ from llama_stack.providers.datatypes import Api, ProviderSpec
 
 
 def stack_apis() -> List[Api]:
-    return [v for v in Api]
+    return list(Api)
 
 
 class AutoRoutedApiInfo(BaseModel):
