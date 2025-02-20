@@ -80,19 +80,21 @@ run() {
   
   if [ "$system_install" = "True" ]; then
     echo "Installing dependencies in system Python environment"
+    UV_FLAGS="--system"
   else
     echo "Using virtual environment $env_name"
     uv venv "$env_name"
     # shellcheck source=/dev/null
     source "$env_name/bin/activate"
+    UV_FLAGS=""
   fi
 
   if [ -n "$TEST_PYPI_VERSION" ]; then
     # these packages are damaged in test-pypi, so install them first
-    uv pip install fastapi libcst
+    uv pip install $UV_FLAGS fastapi libcst
     # shellcheck disable=SC2086
     # we are building a command line so word splitting is expected
-    uv pip install --extra-index-url https://test.pypi.org/simple/ \
+    uv pip install $UV_FLAGS --extra-index-url https://test.pypi.org/simple/ \
       llama-models=="$TEST_PYPI_VERSION" llama-stack=="$TEST_PYPI_VERSION" \
       $pip_dependencies
     if [ -n "$special_pip_deps" ]; then
@@ -101,7 +103,7 @@ run() {
         echo "$part"
         # shellcheck disable=SC2086
         # we are building a command line so word splitting is expected
-        uv pip install $part
+        uv pip install $UV_FLAGS $part
       done
     fi
   else
@@ -113,9 +115,9 @@ run() {
       fi
 
       printf "Installing from LLAMA_STACK_DIR: %s\n"  "$LLAMA_STACK_DIR"
-      uv pip install --no-cache-dir -e "$LLAMA_STACK_DIR"
+      uv pip install $UV_FLAGS --no-cache-dir -e "$LLAMA_STACK_DIR"
     else
-      uv pip install --no-cache-dir llama-stack
+      uv pip install $UV_FLAGS --no-cache-dir llama-stack
     fi
 
     if [ -n "$LLAMA_MODELS_DIR" ]; then
@@ -126,21 +128,21 @@ run() {
 
       printf "Installing from LLAMA_MODELS_DIR: %s\n" "$LLAMA_MODELS_DIR"
       uv pip uninstall llama-models
-      uv pip install --no-cache-dir -e "$LLAMA_MODELS_DIR"
+      uv pip install $UV_FLAGS --no-cache-dir -e "$LLAMA_MODELS_DIR"
     fi
 
     # Install pip dependencies
     printf "Installing pip dependencies\n"
     # shellcheck disable=SC2086
     # we are building a command line so word splitting is expected
-    uv pip install $pip_dependencies
+    uv pip install $UV_FLAGS $pip_dependencies
     if [ -n "$special_pip_deps" ]; then
       IFS='#' read -ra parts <<<"$special_pip_deps"
       for part in "${parts[@]}"; do
         echo "$part"
         # shellcheck disable=SC2086
         # we are building a command line so word splitting is expected
-        uv pip install $part
+        uv pip install $UV_FLAGS $part
       done
     fi
   fi
