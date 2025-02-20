@@ -3954,23 +3954,16 @@
             "ContinueAgentTurnRequest": {
                 "type": "object",
                 "properties": {
-                    "new_messages": {
+                    "tool_responses": {
                         "type": "array",
                         "items": {
-                            "oneOf": [
-                                {
-                                    "$ref": "#/components/schemas/UserMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/ToolResponseMessage"
-                                }
-                            ]
+                            "$ref": "#/components/schemas/ToolResponseMessage"
                         }
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "new_messages"
+                    "tool_responses"
                 ],
                 "title": "ContinueAgentTurnRequest"
             },
