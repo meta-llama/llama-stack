@@ -85,14 +85,21 @@ class PassthroughInferenceAdapter(Inference):
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
         client = self._get_client()
-        return client.inference.completion(
-            model_id=model_id,
-            content=content,
-            sampling_params=sampling_params,
-            response_format=response_format,
-            stream=stream,
-            logprobs=logprobs,
-        )
+        model = await self.model_store.get_model(model_id)
+
+        params = {
+            "model_id": model.provider_resource_id,
+            "content": content,
+            "sampling_params": sampling_params,
+            "response_format": response_format,
+            "stream": stream,
+            "logprobs": logprobs,
+        }
+
+        params = {key: value for key, value in params.items() if value is not None}
+
+        # only pass through the not None params
+        return client.inference.completion(**params)
 
     async def chat_completion(
         self,
@@ -133,7 +140,9 @@ class PassthroughInferenceAdapter(Inference):
         contents: List[InterleavedContent],
     ) -> EmbeddingsResponse:
         client = self._get_client()
+        model = await self.model_store.get_model(model_id)
+
         return client.inference.embeddings(
-            model_id=model_id,
+            model_id=model.provider_resource_id,
             contents=contents,
         )
