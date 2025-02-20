@@ -30,6 +30,7 @@ repos:
     rev: v0.9.4
     hooks:
     -   id: ruff
+        args: [ --fix ]
         exclude: ^llama_stack/strong_typing/.*$
     -   id: ruff-format
 
@@ -45,9 +46,9 @@ repos:
     hooks:
     -   id: uv-export
         args: [
-            "--frozen", 
-            "--no-hashes", 
-            "--no-emit-project", 
+            "--frozen",
+            "--no-hashes",
+            "--no-emit-project",
             "--output-file=requirements.txt"
         ]
         files: ^pyproject\.toml$

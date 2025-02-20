@@ -63,8 +63,8 @@ SUPPORTED_MODELS = {
             CoreModelId.llama_guard_3_1b.value,
         ]
     ),
-    "tgi": set([model.core_model_id.value for model in all_registered_models() if model.huggingface_repo]),
-    "vllm": set([model.core_model_id.value for model in all_registered_models() if model.huggingface_repo]),
+    "tgi": {model.core_model_id.value for model in all_registered_models() if model.huggingface_repo},
+    "vllm": {model.core_model_id.value for model in all_registered_models() if model.huggingface_repo},
 }
 
 

@@ -416,7 +416,7 @@ class TestConvertStreamChatCompletionResponse:
     async def test_returns_stream(self):
         def chat_completion_stream():
             messages = ["Hello ", "World ", " !"]
-            for i, message in enumerate(messages):
+            for _i, message in enumerate(messages):
                 chunk = self._dummy_chat_completion_chunk()
                 chunk.choices[0].delta.content = message
                 yield chunk
@@ -465,7 +465,7 @@ class TestConvertStreamChatCompletionResponse:
                     arguments={"number": 10, "base": 2},
                 ),
             ]
-            for i, tool_call in enumerate(tool_calls):
+            for _i, tool_call in enumerate(tool_calls):
                 chunk = self._dummy_chat_completion_chunk_with_tool_call()
                 chunk.choices[0].delta.tool_calls = [
                     ChoiceDeltaToolCall(

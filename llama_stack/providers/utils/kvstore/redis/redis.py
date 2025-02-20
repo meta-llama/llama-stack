@@ -36,7 +36,7 @@ class RedisKVStoreImpl(KVStore):
         value = await self.redis.get(key)
         if value is None:
             return None
-        ttl = await self.redis.ttl(key)
+        await self.redis.ttl(key)
         return value
 
     async def delete(self, key: str) -> None:

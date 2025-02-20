@@ -86,7 +86,6 @@ class MetaReferenceEvalImpl(
     ) -> Job:
         task_def = self.benchmarks[benchmark_id]
         dataset_id = task_def.dataset_id
-        candidate = task_config.eval_candidate
         scoring_functions = task_def.scoring_functions
         dataset_def = await self.datasets_api.get_dataset(dataset_id=dataset_id)
         validate_dataset_schema(dataset_def.dataset_schema, get_valid_schemas(Api.eval.value))
