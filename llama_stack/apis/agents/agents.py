@@ -252,7 +252,7 @@ AgentTurnResponseEventPayload = register_schema(
             AgentTurnResponseStepCompletePayload,
             AgentTurnResponseTurnStartPayload,
             AgentTurnResponseTurnCompletePayload,
-            AgentTurnResponseTurnPendingPayload,
+            AgentTurnResponseTurnAwaitingInputPayload,
         ],
         Field(discriminator="event_type"),
     ],

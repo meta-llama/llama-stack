@@ -329,6 +329,45 @@ paths:
             schema:
               $ref: '#/components/schemas/CompletionRequest'
         required: true
+  /v1/agents/{agent_id}/session/{session_id}/turn/{turn_id}/continue:
+    post:
+      responses:
+        '200':
+          description: >-
+            A single turn in an interaction with an Agentic System. **OR** streamed
+            agent turn completion response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Turn'
+            text/event-stream:
+              schema:
+                $ref: '#/components/schemas/AgentTurnResponseStreamChunk'
+      tags:
+        - Agents
+      description: ''
+      parameters:
+        - name: agent_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: turn_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContinueAgentTurnRequest'
+        required: true
   /v1/agents:
     post:
       responses:
@@ -1702,45 +1741,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ScoreBatchRequest'
-        required: true
-  /v1/agents/{agent_id}/session/{session_id}/turn/{turn_id}/submit_tool_response_messages:
-    post:
-      responses:
-        '200':
-          description: >-
-            A single turn in an interaction with an Agentic System. **OR** streamed
-            agent turn completion response.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Turn'
-            text/event-stream:
-              schema:
-                $ref: '#/components/schemas/AgentTurnResponseStreamChunk'
-      tags:
-        - Agents
-      description: ''
-      parameters:
-        - name: agent_id
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: session_id
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: turn_id
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SubmitToolResponseMessagesRequest'
         required: true
   /v1/post-training/supervised-fine-tune:
     post:
@@ -3240,83 +3240,19 @@ components:
       title: CompletionResponseStreamChunk
       description: >-
         A chunk of a streamed completion response.
-    CreateAgentRequest:
+    ContinueAgentTurnRequest:
       type: object
       properties:
-        agent_config:
-          $ref: '#/components/schemas/AgentConfig'
-      additionalProperties: false
-      required:
-        - agent_config
-      title: CreateAgentRequest
-    AgentCreateResponse:
-      type: object
-      properties:
-        agent_id:
-          type: string
-      additionalProperties: false
-      required:
-        - agent_id
-      title: AgentCreateResponse
-    CreateAgentSessionRequest:
-      type: object
-      properties:
-        session_name:
-          type: string
-      additionalProperties: false
-      required:
-        - session_name
-      title: CreateAgentSessionRequest
-    AgentSessionCreateResponse:
-      type: object
-      properties:
-        session_id:
-          type: string
-      additionalProperties: false
-      required:
-        - session_id
-      title: AgentSessionCreateResponse
-    CreateAgentTurnRequest:
-      type: object
-      properties:
-        messages:
+        new_messages:
           type: array
           items:
             oneOf:
               - $ref: '#/components/schemas/UserMessage'
               - $ref: '#/components/schemas/ToolResponseMessage'
-        stream:
-          type: boolean
-        documents:
-          type: array
-          items:
-            type: object
-            properties:
-              content:
-                oneOf:
-                  - type: string
-                  - $ref: '#/components/schemas/InterleavedContentItem'
-                  - type: array
-                    items:
-                      $ref: '#/components/schemas/InterleavedContentItem'
-                  - $ref: '#/components/schemas/URL'
-              mime_type:
-                type: string
-            additionalProperties: false
-            required:
-              - content
-              - mime_type
-            title: Document
-        toolgroups:
-          type: array
-          items:
-            $ref: '#/components/schemas/AgentTool'
-        tool_config:
-          $ref: '#/components/schemas/ToolConfig'
       additionalProperties: false
       required:
-        - messages
-      title: CreateAgentTurnRequest
+        - new_messages
+      title: ContinueAgentTurnRequest
     InferenceStep:
       type: object
       properties:
@@ -3565,7 +3501,7 @@ components:
         - $ref: '#/components/schemas/AgentTurnResponseStepCompletePayload'
         - $ref: '#/components/schemas/AgentTurnResponseTurnStartPayload'
         - $ref: '#/components/schemas/AgentTurnResponseTurnCompletePayload'
-        - $ref: '#/components/schemas/AgentTurnResponseTurnPendingPayload'
+        - $ref: '#/components/schemas/AgentTurnResponseTurnAwaitingInputPayload'
       discriminator:
         propertyName: event_type
         mapping:
@@ -3574,7 +3510,7 @@ components:
           step_complete: '#/components/schemas/AgentTurnResponseStepCompletePayload'
           turn_start: '#/components/schemas/AgentTurnResponseTurnStartPayload'
           turn_complete: '#/components/schemas/AgentTurnResponseTurnCompletePayload'
-          turn_pending: '#/components/schemas/AgentTurnResponseTurnPendingPayload'
+          turn_awaiting_input: '#/components/schemas/AgentTurnResponseTurnAwaitingInputPayload'
     AgentTurnResponseStepCompletePayload:
       type: object
       properties:
@@ -3681,6 +3617,21 @@ components:
         - event
       title: AgentTurnResponseStreamChunk
       description: streamed agent turn completion response.
+    "AgentTurnResponseTurnAwaitingInputPayload":
+      type: object
+      properties:
+        event_type:
+          type: string
+          const: turn_awaiting_input
+          default: turn_awaiting_input
+        turn:
+          $ref: '#/components/schemas/Turn'
+      additionalProperties: false
+      required:
+        - event_type
+        - turn
+      title: >-
+        AgentTurnResponseTurnAwaitingInputPayload
     AgentTurnResponseTurnCompletePayload:
       type: object
       properties:
@@ -3695,20 +3646,6 @@ components:
         - event_type
         - turn
       title: AgentTurnResponseTurnCompletePayload
-    AgentTurnResponseTurnPendingPayload:
-      type: object
-      properties:
-        event_type:
-          type: string
-          const: turn_pending
-          default: turn_pending
-        turn:
-          $ref: '#/components/schemas/Turn'
-      additionalProperties: false
-      required:
-        - event_type
-        - turn
-      title: AgentTurnResponseTurnPendingPayload
     AgentTurnResponseTurnStartPayload:
       type: object
       properties:
@@ -3723,6 +3660,83 @@ components:
         - event_type
         - turn_id
       title: AgentTurnResponseTurnStartPayload
+    CreateAgentRequest:
+      type: object
+      properties:
+        agent_config:
+          $ref: '#/components/schemas/AgentConfig'
+      additionalProperties: false
+      required:
+        - agent_config
+      title: CreateAgentRequest
+    AgentCreateResponse:
+      type: object
+      properties:
+        agent_id:
+          type: string
+      additionalProperties: false
+      required:
+        - agent_id
+      title: AgentCreateResponse
+    CreateAgentSessionRequest:
+      type: object
+      properties:
+        session_name:
+          type: string
+      additionalProperties: false
+      required:
+        - session_name
+      title: CreateAgentSessionRequest
+    AgentSessionCreateResponse:
+      type: object
+      properties:
+        session_id:
+          type: string
+      additionalProperties: false
+      required:
+        - session_id
+      title: AgentSessionCreateResponse
+    CreateAgentTurnRequest:
+      type: object
+      properties:
+        messages:
+          type: array
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/UserMessage'
+              - $ref: '#/components/schemas/ToolResponseMessage'
+        stream:
+          type: boolean
+        documents:
+          type: array
+          items:
+            type: object
+            properties:
+              content:
+                oneOf:
+                  - type: string
+                  - $ref: '#/components/schemas/InterleavedContentItem'
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/InterleavedContentItem'
+                  - $ref: '#/components/schemas/URL'
+              mime_type:
+                type: string
+            additionalProperties: false
+            required:
+              - content
+              - mime_type
+            title: Document
+        toolgroups:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentTool'
+        tool_config:
+          $ref: '#/components/schemas/ToolConfig'
+      additionalProperties: false
+      required:
+        - messages
+      title: CreateAgentTurnRequest
     CreateUploadSessionRequest:
       type: object
       properties:
@@ -5606,17 +5620,6 @@ components:
       required:
         - results
       title: ScoreBatchResponse
-    SubmitToolResponseMessagesRequest:
-      type: object
-      properties:
-        tool_response_messages:
-          type: array
-          items:
-            $ref: '#/components/schemas/ToolResponseMessage'
-      additionalProperties: false
-      required:
-        - tool_response_messages
-      title: SubmitToolResponseMessagesRequest
     AlgorithmConfig:
       oneOf:
         - $ref: '#/components/schemas/LoraFinetuningConfig'
