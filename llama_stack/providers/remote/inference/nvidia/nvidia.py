@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import logging
 import warnings
 from typing import AsyncIterator, List, Optional, Union
 
@@ -42,6 +43,8 @@ from .openai_utils import (
     convert_openai_completion_stream,
 )
 from .utils import _is_nvidia_hosted, check_health
+
+logger = logging.getLogger(__name__)
 
 
 class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
