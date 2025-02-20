@@ -15,6 +15,7 @@ TEST_PYPI_VERSION=${TEST_PYPI_VERSION:-}
 # This timeout (in seconds) is necessary when installing PyTorch via uv since it's likely to time out
 # Reference: https://github.com/astral-sh/uv/pull/1694
 UV_HTTP_TIMEOUT=${UV_HTTP_TIMEOUT:-500}
+UV_SYSTEM_PYTHON=${UV_SYSTEM_PYTHON:-}
 
 if [ -n "$LLAMA_STACK_DIR" ]; then
   echo "Using llama-stack-dir=$LLAMA_STACK_DIR"
@@ -74,7 +75,7 @@ run() {
   local pip_dependencies="$2"
   local special_pip_deps="$3"
   
-  if [ -n "${UV_SYSTEM_PYTHON:-}" ]; then 
+  if [ -n "$UV_SYSTEM_PYTHON" ]; then 
     echo "Installing dependencies in system Python environment"
   else
     echo "Using virtual environment $env_name"
