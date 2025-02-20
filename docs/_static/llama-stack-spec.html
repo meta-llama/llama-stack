@@ -3951,228 +3951,7 @@
                 "title": "CompletionResponseStreamChunk",
                 "description": "A chunk of a streamed completion response."
             },
-            "AgentConfig": {
-                "type": "object",
-                "properties": {
-                    "sampling_params": {
-                        "$ref": "#/components/schemas/SamplingParams"
-                    },
-                    "input_shields": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "output_shields": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "toolgroups": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/AgentTool"
-                        }
-                    },
-                    "client_tools": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/ToolDef"
-                        }
-                    },
-                    "tool_choice": {
-                        "type": "string",
-                        "enum": [
-                            "auto",
-                            "required",
-                            "none"
-                        ],
-                        "title": "ToolChoice",
-                        "description": "Whether tool use is required or automatic. This is a hint to the model which may not be followed. It depends on the Instruction Following capabilities of the model.",
-                        "deprecated": true
-                    },
-                    "tool_prompt_format": {
-                        "type": "string",
-                        "enum": [
-                            "json",
-                            "function_tag",
-                            "python_list"
-                        ],
-                        "title": "ToolPromptFormat",
-                        "description": "Prompt format for calling custom / zero shot tools.",
-                        "deprecated": true
-                    },
-                    "tool_config": {
-                        "$ref": "#/components/schemas/ToolConfig"
-                    },
-                    "max_infer_iters": {
-                        "type": "integer",
-                        "default": 10
-                    },
-                    "model": {
-                        "type": "string"
-                    },
-                    "instructions": {
-                        "type": "string"
-                    },
-                    "enable_session_persistence": {
-                        "type": "boolean",
-                        "default": false
-                    },
-                    "response_format": {
-                        "$ref": "#/components/schemas/ResponseFormat"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "model",
-                    "instructions"
-                ],
-                "title": "AgentConfig"
-            },
-            "AgentTool": {
-                "oneOf": [
-                    {
-                        "type": "string"
-                    },
-                    {
-                        "type": "object",
-                        "properties": {
-                            "name": {
-                                "type": "string"
-                            },
-                            "args": {
-                                "type": "object",
-                                "additionalProperties": {
-                                    "oneOf": [
-                                        {
-                                            "type": "null"
-                                        },
-                                        {
-                                            "type": "boolean"
-                                        },
-                                        {
-                                            "type": "number"
-                                        },
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "type": "array"
-                                        },
-                                        {
-                                            "type": "object"
-                                        }
-                                    ]
-                                }
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "name",
-                            "args"
-                        ],
-                        "title": "AgentToolGroupWithArgs"
-                    }
-                ]
-            },
-            "ToolDef": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "description": {
-                        "type": "string"
-                    },
-                    "parameters": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/ToolParameter"
-                        }
-                    },
-                    "metadata": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "name"
-                ],
-                "title": "ToolDef"
-            },
-            "ToolParameter": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "parameter_type": {
-                        "type": "string"
-                    },
-                    "description": {
-                        "type": "string"
-                    },
-                    "required": {
-                        "type": "boolean",
-                        "default": true
-                    },
-                    "default": {
-                        "oneOf": [
-                            {
-                                "type": "null"
-                            },
-                            {
-                                "type": "boolean"
-                            },
-                            {
-                                "type": "number"
-                            },
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "type": "array"
-                            },
-                            {
-                                "type": "object"
-                            }
-                        ]
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "name",
-                    "parameter_type",
-                    "description",
-                    "required"
-                ],
-                "title": "ToolParameter"
-            },
-            "CreateAgentRequest": {
+            "ContinueAgentTurnRequest": {
                 "type": "object",
                 "properties": {
                     "new_messages": {
@@ -4805,6 +4584,227 @@
                     "turn_id"
                 ],
                 "title": "AgentTurnResponseTurnStartPayload"
+            },
+            "AgentConfig": {
+                "type": "object",
+                "properties": {
+                    "sampling_params": {
+                        "$ref": "#/components/schemas/SamplingParams"
+                    },
+                    "input_shields": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "output_shields": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "toolgroups": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AgentTool"
+                        }
+                    },
+                    "client_tools": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ToolDef"
+                        }
+                    },
+                    "tool_choice": {
+                        "type": "string",
+                        "enum": [
+                            "auto",
+                            "required",
+                            "none"
+                        ],
+                        "title": "ToolChoice",
+                        "description": "Whether tool use is required or automatic. This is a hint to the model which may not be followed. It depends on the Instruction Following capabilities of the model.",
+                        "deprecated": true
+                    },
+                    "tool_prompt_format": {
+                        "type": "string",
+                        "enum": [
+                            "json",
+                            "function_tag",
+                            "python_list"
+                        ],
+                        "title": "ToolPromptFormat",
+                        "description": "Prompt format for calling custom / zero shot tools.",
+                        "deprecated": true
+                    },
+                    "tool_config": {
+                        "$ref": "#/components/schemas/ToolConfig"
+                    },
+                    "max_infer_iters": {
+                        "type": "integer",
+                        "default": 10
+                    },
+                    "model": {
+                        "type": "string"
+                    },
+                    "instructions": {
+                        "type": "string"
+                    },
+                    "enable_session_persistence": {
+                        "type": "boolean",
+                        "default": false
+                    },
+                    "response_format": {
+                        "$ref": "#/components/schemas/ResponseFormat"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "model",
+                    "instructions"
+                ],
+                "title": "AgentConfig"
+            },
+            "AgentTool": {
+                "oneOf": [
+                    {
+                        "type": "string"
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "args": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "oneOf": [
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "type": "boolean"
+                                        },
+                                        {
+                                            "type": "number"
+                                        },
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "array"
+                                        },
+                                        {
+                                            "type": "object"
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "name",
+                            "args"
+                        ],
+                        "title": "AgentToolGroupWithArgs"
+                    }
+                ]
+            },
+            "ToolDef": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "parameters": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ToolParameter"
+                        }
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "name"
+                ],
+                "title": "ToolDef"
+            },
+            "ToolParameter": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "parameter_type": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "required": {
+                        "type": "boolean",
+                        "default": true
+                    },
+                    "default": {
+                        "oneOf": [
+                            {
+                                "type": "null"
+                            },
+                            {
+                                "type": "boolean"
+                            },
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array"
+                            },
+                            {
+                                "type": "object"
+                            }
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "name",
+                    "parameter_type",
+                    "description",
+                    "required"
+                ],
+                "title": "ToolParameter"
             },
             "CreateAgentRequest": {
                 "type": "object",
