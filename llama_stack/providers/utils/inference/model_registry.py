@@ -32,7 +32,7 @@ def get_huggingface_repo(model_descriptor: str) -> Optional[str]:
     return None
 
 
-def build_model_alias(provider_model_id: str, model_descriptor: str) -> ModelAlias:
+def build_hf_repo_model_alias(provider_model_id: str, model_descriptor: str) -> ModelAlias:
     return ModelAlias(
         provider_model_id=provider_model_id,
         aliases=[
@@ -42,7 +42,7 @@ def build_model_alias(provider_model_id: str, model_descriptor: str) -> ModelAli
     )
 
 
-def build_model_alias_with_just_provider_model_id(provider_model_id: str, model_descriptor: str) -> ModelAlias:
+def build_model_alias(provider_model_id: str, model_descriptor: str) -> ModelAlias:
     return ModelAlias(
         provider_model_id=provider_model_id,
         aliases=[],
