@@ -148,20 +148,31 @@ async def _process_vllm_chat_completion_stream_response(
     async for chunk in stream:
         choice = chunk.choices[0]
         if choice.finish_reason:
-            args = tool_call_buf.arguments
-            yield ChatCompletionResponseStreamChunk(
-                event=ChatCompletionResponseEvent(
-                    event_type=event_type,
-                    delta=ToolCallDelta(
-                        tool_call=ToolCall(
-                            call_id=tool_call_buf.call_id,
-                            tool_name=tool_call_buf.tool_name,
-                            arguments={} if not args else json.loads(args),
+            try:
+                args = {} if not tool_call_buf.arguments else json.loads(tool_call_buf.arguments)
+                yield ChatCompletionResponseStreamChunk(
+                    event=ChatCompletionResponseEvent(
+                        event_type=event_type,
+                        delta=ToolCallDelta(
+                            tool_call=ToolCall(
+                                call_id=tool_call_buf.call_id,
+                                tool_name=tool_call_buf.tool_name,
+                                arguments=args,
+                            ),
+                            parse_status=ToolCallParseStatus.succeeded,
                         ),
-                        parse_status=ToolCallParseStatus.succeeded,
-                    ),
+                    )
                 )
-            )
+            except Exception as e:
+                yield ChatCompletionResponseStreamChunk(
+                    event=ChatCompletionResponseEvent(
+                        event_type=ChatCompletionResponseEventType.progress,
+                        delta=ToolCallDelta(
+                            tool_call=f"Failed to parse tool call buffer: {tool_call_buf}. Error: {e}",
+                            parse_status=ToolCallParseStatus.failed,
+                        ),
+                    )
+                )
             yield ChatCompletionResponseStreamChunk(
                 event=ChatCompletionResponseEvent(
                     event_type=ChatCompletionResponseEventType.complete,
