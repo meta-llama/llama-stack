@@ -23,7 +23,7 @@ The `llamastack/distribution-groq` distribution consists of the following provid
 | scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |
 | telemetry | `inline::meta-reference` |
 | tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::code-interpreter`, `inline::rag-runtime` |
-| vector_io | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
+| vector_io | `inline::faiss` |
 
 
 ### Environment Variables

@@ -143,7 +143,6 @@
     "autoevals",
     "blobfile",
     "chardet",
-    "chromadb-client",
     "datasets",
     "faiss-cpu",
     "fastapi",

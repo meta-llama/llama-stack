@@ -6,8 +6,6 @@ distribution_spec:
     - remote::groq
     vector_io:
     - inline::faiss
-    - remote::chromadb
-    - remote::pgvector
     safety:
     - inline::llama-guard
     agents:
