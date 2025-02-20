@@ -5,3 +5,5 @@
 # the root directory of this source tree.
 
 from .mongodb import MongoDBKVStoreImpl
+
+__all__ = ["MongoDBKVStoreImpl"]
