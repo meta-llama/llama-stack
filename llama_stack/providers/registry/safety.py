@@ -85,4 +85,13 @@ Provider `inline::meta-reference` for API `safety` does not work with the latest
                 config_class="llama_stack.providers.remote.safety.bedrock.BedrockSafetyConfig",
             ),
         ),
+        remote_provider_spec(
+            api=Api.safety,
+            adapter=AdapterSpec(
+                adapter_type="nvidia",
+                pip_packages=[],
+                module="llama_stack.providers.remote.safety.nvidia",
+                config_class="llama_stack.providers.remote.safety.nvida.NVIDIASafetyConfig",
+            ),
+        ),
     ]
