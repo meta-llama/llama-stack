@@ -344,15 +344,15 @@ class Agents(Protocol):
     ) -> Union[Turn, AsyncIterator[AgentTurnResponseStreamChunk]]: ...
 
     @webmethod(
-        route="/agents/{agent_id}/session/{session_id}/turn/{turn_id}/update",
+        route="/agents/{agent_id}/session/{session_id}/turn/{turn_id}/submit_tool_response_messages",
         method="POST",
     )
-    async def update_agent_turn_with_tool_responses(
+    async def submit_tool_response_messages(
         self,
         agent_id: str,
         session_id: str,
         turn_id: str,
-        tool_messages: List[ToolResponseMessage],
+        tool_response_messages: List[ToolResponseMessage],
     ) -> Union[Turn, AsyncIterator[AgentTurnResponseStreamChunk]]: ...
 
     @webmethod(
