@@ -67,6 +67,12 @@ the build. If not specified, currently active Conda environment will be used if 
             action="store_true",
             help="Print the dependencies for the stack only, without building the stack",
         )
+        self.parser.add_argument(
+            "--system-install",
+            default=False,
+            action="store_true",
+            help="Install the dependencies in the same system Python environment. Used when image-type is venv. By default, a new virtual environment will be created.",
+        )
 
     def _run_stack_build_command(self, args: argparse.Namespace) -> None:
         # always keep implementation completely silo-ed away from CLI so CLI

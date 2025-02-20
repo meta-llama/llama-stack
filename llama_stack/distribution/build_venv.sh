@@ -29,7 +29,7 @@ if [ "$#" -lt 3 ]; then
   exit 1
 fi
 
-special_pip_deps="$3"
+special_pip_deps="$4"
 
 set -euo pipefail
 
@@ -38,7 +38,7 @@ env_name="llamastack-$build_name"
 pip_dependencies="$2"
 
 # whether we want to install dependencies in current system python environment
-system_install="$4"
+system_install="$3"
 
 # Define color codes
 RED='\033[0;31m'
@@ -75,10 +75,10 @@ pre_run_checks() {
 run() {
   local env_name="$1"
   local pip_dependencies="$2"
-  local special_pip_deps="$3"
-  local system_install="$4"
+  local system_install="$3"
+  local special_pip_deps="$4"
   
-  if [ "$SYSTEM_INSTALL" = true ]; then
+  if [ "$system_install" = "True" ]; then
     echo "Installing dependencies in system Python environment"
   else
     echo "Using virtual environment $env_name"
@@ -147,4 +147,4 @@ run() {
 }
 
 pre_run_checks "$env_name"
-run "$env_name" "$pip_dependencies" "$special_pip_deps"
+run "$env_name" "$pip_dependencies" "$system_install" "$special_pip_deps"

@@ -96,6 +96,7 @@ def build_image(
     build_file_path: Path,
     image_name: str,
     template_or_config: str,
+    system_install: bool = False,
 ):
     container_base = build_config.distribution_spec.container_image or "python:3.10-slim"
 
@@ -122,7 +123,6 @@ def build_image(
             " ".join(normal_deps),
         ]
     elif build_config.image_type == ImageType.venv.value:
-        system_install = True
         script = str(importlib.resources.files("llama_stack") / "distribution/build_venv.sh")
         args = [
             script,
