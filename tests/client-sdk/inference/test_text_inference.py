@@ -7,6 +7,8 @@
 import pytest
 from pydantic import BaseModel
 
+from llama_stack.providers.tests.test_cases.test_case import TestCase
+
 PROVIDER_TOOL_PROMPT_FORMAT = {
     "remote::ollama": "json",
     "remote::together": "json",
@@ -120,16 +122,16 @@ def test_completion_log_probs_streaming(llama_stack_client, text_model_id, infer
             assert not chunk.logprobs, "Logprobs should be empty"
 
 
-def test_text_completion_structured_output(llama_stack_client, text_model_id, inference_provider_type):
-    user_input = """
-    Michael Jordan was born in 1963. He played basketball for the Chicago Bulls. He retired in 2003.
-    """
-
+@pytest.mark.parametrize("test_case", ["completion-01"])
+def test_text_completion_structured_output(llama_stack_client, text_model_id, inference_provider_type, test_case):
     class AnswerFormat(BaseModel):
         name: str
         year_born: str
         year_retired: str
 
+    tc = TestCase(test_case)
+
+    user_input = tc["user_input"]
     response = llama_stack_client.inference.completion(
         model_id=text_model_id,
         content=user_input,
@@ -143,9 +145,10 @@ def test_text_completion_structured_output(llama_stack_client, text_model_id, in
         },
     )
     answer = AnswerFormat.model_validate_json(response.content)
-    assert answer.name == "Michael Jordan"
-    assert answer.year_born == "1963"
-    assert answer.year_retired == "2003"
+    expected = tc["expected"]
+    assert answer.name == expected["name"]
+    assert answer.year_born == expected["year_born"]
+    assert answer.year_retired == expected["year_retired"]
 
 
 @pytest.mark.parametrize(
@@ -247,6 +250,7 @@ def test_text_chat_completion_with_tool_calling_and_streaming(
     assert tool_invocation_content == "[get_weather, {'location': 'San Francisco, CA'}]"
 
 
+@pytest.mark.parametrize("test_case", ["chat_completion-01"])
 def test_text_chat_completion_with_tool_choice_required(
     llama_stack_client, text_model_id, get_weather_tool_definition, provider_tool_format, inference_provider_type
 ):
@@ -281,25 +285,18 @@ def test_text_chat_completion_with_tool_choice_none(
     assert tool_invocation_content == ""
 
 
-def test_text_chat_completion_structured_output(llama_stack_client, text_model_id, inference_provider_type):
+def test_text_chat_completion_structured_output(llama_stack_client, text_model_id, inference_provider_type, test_case):
     class AnswerFormat(BaseModel):
         first_name: str
         last_name: str
         year_of_birth: int
         num_seasons_in_nba: int
 
+    tc = TestCase(test_case)
+
     response = llama_stack_client.inference.chat_completion(
         model_id=text_model_id,
-        messages=[
-            {
-                "role": "system",
-                "content": "You are a helpful assistant. Michael Jordan was born in 1963. He played basketball for the Chicago Bulls for 15 seasons.",
-            },
-            {
-                "role": "user",
-                "content": "Please give me information about Michael Jordan.",
-            },
-        ],
+        messages=tc["messages"],
         response_format={
             "type": "json_schema",
             "json_schema": AnswerFormat.model_json_schema(),
@@ -307,10 +304,11 @@ def test_text_chat_completion_structured_output(llama_stack_client, text_model_i
         stream=False,
     )
     answer = AnswerFormat.model_validate_json(response.completion_message.content)
-    assert answer.first_name == "Michael"
-    assert answer.last_name == "Jordan"
-    assert answer.year_of_birth == 1963
-    assert answer.num_seasons_in_nba == 15
+    expected = tc["expected"]
+    assert answer.first_name == expected["first_name"]
+    assert answer.last_name == expected["last_name"]
+    assert answer.year_of_birth == expected["year_of_birth"]
+    assert answer.num_seasons_in_nba == expected["num_seasons_in_nba"]
 
 
 @pytest.mark.parametrize(

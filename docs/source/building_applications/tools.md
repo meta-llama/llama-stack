@@ -60,6 +60,11 @@ Features:
 - Disabled dangerous system operations
 - Configurable execution timeouts
 
+> ⚠️ Important: The code interpreter tool can operate in a controlled enviroment locally or on Podman containers. To ensure proper functionality in containerised environments:
+> - The container requires privileged access (e.g., --privileged).
+> - Users without sufficient permissions may encounter permission errors. (`bwrap: Can't mount devpts on /newroot/dev/pts: Permission denied`)
+> - 🔒 Security Warning: Privileged mode grants elevated access and bypasses security restrictions. Use only in local, isolated, or controlled environments.
+
 #### WolframAlpha
 
 The WolframAlpha tool provides access to computational knowledge through the WolframAlpha API.
@@ -103,7 +108,7 @@ Features:
 
 MCP tools are special tools that can interact with llama stack over model context protocol. These tools are dynamically discovered from an MCP endpoint and can be used to extend the agent's capabilities.
 
-Refer to https://github.com/modelcontextprotocol/server for available MCP servers.
+Refer to [https://github.com/modelcontextprotocol/servers](https://github.com/modelcontextprotocol/servers) for available MCP servers.
 
 ```python
 # Register MCP tools
@@ -190,4 +195,37 @@ all_tools = client.tools.list_tools()
 
 # List tools in a specific group
 group_tools = client.tools.list_tools(toolgroup_id="search_tools")
+```
+
+## Simple Example: Using an Agent with the Code-Interpreter Tool
+
+```python
+from llama_stack_client.lib.agents.agent import Agent
+from llama_stack_client.types.agent_create_params import AgentConfig
+
+# Configure the AI agent with necessary parameters
+agent_config = AgentConfig(
+    name="code-interpreter",
+    description="A code interpreter agent for executing Python code snippets",
+    instructions="""
+    You are a highly reliable, concise, and precise assistant.
+    Always show the generated code, never generate your own code, and never anticipate results.
+    """,
+    model="meta-llama/Llama-3.2-3B-Instruct",
+    toolgroups=["builtin::code_interpreter"],
+    max_infer_iters=5,
+    enable_session_persistence=False,
+)
+
+# Instantiate the AI agent with the given configuration
+agent = Agent(client, agent_config)
+
+# Start a session
+session_id = agent.create_session("tool_session")
+
+# Send a query to the AI agent for code execution
+response = agent.create_turn(
+    messages=[{"role": "user", "content": "Run this code: print(3 ** 4 - 5 * 2)"}],
+    session_id=session_id,
+)
 ```
