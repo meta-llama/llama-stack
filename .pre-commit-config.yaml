@@ -75,19 +75,19 @@ repos:
 #     - id: markdown-link-check
 #       args: ['--quiet']
 
-# -   repo: local
-#     hooks:
-#       - id: distro-codegen
-#         name: Distribution Template Codegen
-#         additional_dependencies:
-#           - rich
-#           - pydantic
-#         entry: python -m llama_stack.scripts.distro_codegen
-#         language: python
-#         pass_filenames: false
-#         require_serial: true
-#         files: ^llama_stack/templates/.*$
-#         stages: [manual]
+-   repo: local
+    hooks:
+      - id: distro-codegen
+        name: Distribution Template Codegen
+        additional_dependencies:
+          - rich
+          - pydantic
+          - uv==0.6.0
+        entry: uv run python -m llama_stack.scripts.distro_codegen
+        language: python
+        pass_filenames: false
+        require_serial: true
+        files: ^llama_stack/templates/.*$
 
 ci:
     autofix_commit_msg: 🎨 [pre-commit.ci] Auto format from pre-commit.com hooks

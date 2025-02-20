@@ -214,10 +214,16 @@ documents = [
     for i, url in enumerate(urls)
 ]
 
+vector_providers = [
+    provider for provider in client.providers.list() if provider.api == "vector_io"
+]
+provider_id = vector_providers[0].provider_id  # Use the first available vector provider
+
 # Register a vector database
 vector_db_id = f"test-vector-db-{uuid.uuid4().hex}"
 client.vector_dbs.register(
     vector_db_id=vector_db_id,
+    provider_id=provider_id,
     embedding_model="all-MiniLM-L6-v2",
     embedding_dimension=384,
 )

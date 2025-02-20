@@ -8,8 +8,6 @@ import logging
 from typing import AsyncGenerator, List, Optional, Union
 
 import httpx
-from llama_models.llama3.api.chat_format import ChatFormat
-from llama_models.llama3.api.tokenizer import Tokenizer
 from ollama import AsyncClient
 
 from llama_stack.apis.common.content_types import (
@@ -138,7 +136,6 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
     def __init__(self, url: str) -> None:
         self.register_helper = ModelRegistryHelper(model_aliases)
         self.url = url
-        self.formatter = ChatFormat(Tokenizer.get_instance())
 
     @property
     def client(self) -> AsyncClient:
@@ -197,7 +194,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
                 )
 
         stream = _generate_and_convert_to_openai_compat()
-        async for chunk in process_completion_stream_response(stream, self.formatter):
+        async for chunk in process_completion_stream_response(stream):
             yield chunk
 
     async def _nonstream_completion(self, request: CompletionRequest) -> AsyncGenerator:
@@ -212,7 +209,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
             choices=[choice],
         )
 
-        return process_completion_response(response, self.formatter)
+        return process_completion_response(response)
 
     async def chat_completion(
         self,
@@ -262,11 +259,10 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
                 input_dict["prompt"] = await chat_completion_request_to_prompt(
                     request,
                     self.register_helper.get_llama_model(request.model),
-                    self.formatter,
                 )
         else:
             assert not media_present, "Ollama does not support media for Completion requests"
-            input_dict["prompt"] = await completion_request_to_prompt(request, self.formatter)
+            input_dict["prompt"] = await completion_request_to_prompt(request)
             input_dict["raw"] = True
 
         if fmt := request.response_format:
@@ -304,7 +300,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         response = OpenAICompatCompletionResponse(
             choices=[choice],
         )
-        return process_chat_completion_response(response, self.formatter, request)
+        return process_chat_completion_response(response, request)
 
     async def _stream_chat_completion(self, request: ChatCompletionRequest) -> AsyncGenerator:
         params = await self._get_params(request)
@@ -330,7 +326,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
                 )
 
         stream = _generate_and_convert_to_openai_compat()
-        async for chunk in process_chat_completion_stream_response(stream, self.formatter, request):
+        async for chunk in process_chat_completion_stream_response(stream, request):
             yield chunk
 
     async def embeddings(

@@ -1,9 +1,9 @@
 version: '2'
 distribution_spec:
-  description: Use (an external) Ollama server for running LLM inference
+  description: Use for running LLM inference with the endpoint that compatible with Llama Stack API
   providers:
     inference:
-    - remote::ollama
+    - remote::passthrough
     vector_io:
     - inline::faiss
     - remote::chromadb
@@ -28,4 +28,5 @@ distribution_spec:
     - remote::tavily-search
     - inline::code-interpreter
     - inline::rag-runtime
+    - remote::model-context-protocol
 image_type: conda

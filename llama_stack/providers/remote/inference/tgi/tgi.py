@@ -9,8 +9,6 @@ import logging
 from typing import AsyncGenerator, List, Optional
 
 from huggingface_hub import AsyncInferenceClient, HfApi
-from llama_models.llama3.api.chat_format import ChatFormat
-from llama_models.llama3.api.tokenizer import Tokenizer
 
 from llama_stack.apis.common.content_types import InterleavedContent
 from llama_stack.apis.inference import (
@@ -72,7 +70,6 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
     model_id: str
 
     def __init__(self) -> None:
-        self.formatter = ChatFormat(Tokenizer.get_instance())
         self.register_helper = ModelRegistryHelper(build_model_aliases())
         self.huggingface_repo_to_llama_model_id = {
             model.huggingface_repo: model.descriptor() for model in all_registered_models() if model.huggingface_repo
@@ -149,7 +146,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
         return options
 
     async def _get_params_for_completion(self, request: CompletionRequest) -> dict:
-        prompt, input_tokens = await completion_request_to_prompt_model_input_info(request, self.formatter)
+        prompt, input_tokens = await completion_request_to_prompt_model_input_info(request)
 
         return dict(
             prompt=prompt,
@@ -177,7 +174,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
                 )
 
         stream = _generate_and_convert_to_openai_compat()
-        async for chunk in process_completion_stream_response(stream, self.formatter):
+        async for chunk in process_completion_stream_response(stream):
             yield chunk
 
     async def _nonstream_completion(self, request: CompletionRequest) -> AsyncGenerator:
@@ -193,7 +190,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
             choices=[choice],
         )
 
-        return process_completion_response(response, self.formatter)
+        return process_completion_response(response)
 
     async def chat_completion(
         self,
@@ -236,7 +233,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
         response = OpenAICompatCompletionResponse(
             choices=[choice],
         )
-        return process_chat_completion_response(response, self.formatter, request)
+        return process_chat_completion_response(response, request)
 
     async def _stream_chat_completion(self, request: ChatCompletionRequest) -> AsyncGenerator:
         params = await self._get_params(request)
@@ -252,12 +249,12 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
                 )
 
         stream = _generate_and_convert_to_openai_compat()
-        async for chunk in process_chat_completion_stream_response(stream, self.formatter, request):
+        async for chunk in process_chat_completion_stream_response(stream, request):
             yield chunk
 
     async def _get_params(self, request: ChatCompletionRequest) -> dict:
         prompt, input_tokens = await chat_completion_request_to_model_input_info(
-            request, self.register_helper.get_llama_model(request.model), self.formatter
+            request, self.register_helper.get_llama_model(request.model)
         )
         return dict(
             prompt=prompt,

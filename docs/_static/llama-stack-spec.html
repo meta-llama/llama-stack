@@ -2661,7 +2661,8 @@
                 "required": [
                     "type",
                     "config"
-                ]
+                ],
+                "title": "AgentCandidate"
             },
             "AgentConfig": {
                 "type": "object",
@@ -2700,7 +2701,9 @@
                             "required",
                             "none"
                         ],
-                        "description": "Whether tool use is required or automatic. This is a hint to the model which may not be followed. It depends on the Instruction Following capabilities of the model."
+                        "title": "ToolChoice",
+                        "description": "Whether tool use is required or automatic. This is a hint to the model which may not be followed. It depends on the Instruction Following capabilities of the model.",
+                        "deprecated": true
                     },
                     "tool_prompt_format": {
                         "type": "string",
@@ -2709,7 +2712,9 @@
                             "function_tag",
                             "python_list"
                         ],
-                        "description": "Prompt format for calling custom / zero shot tools."
+                        "title": "ToolPromptFormat",
+                        "description": "Prompt format for calling custom / zero shot tools.",
+                        "deprecated": true
                     },
                     "tool_config": {
                         "$ref": "#/components/schemas/ToolConfig"
@@ -2736,7 +2741,8 @@
                 "required": [
                     "model",
                     "instructions"
-                ]
+                ],
+                "title": "AgentConfig"
             },
             "AgentTool": {
                 "oneOf": [
@@ -2779,7 +2785,8 @@
                         "required": [
                             "name",
                             "args"
-                        ]
+                        ],
+                        "title": "AgentToolGroupWithArgs"
                     }
                 ]
             },
@@ -2790,7 +2797,8 @@
                     "median",
                     "categorical_count",
                     "accuracy"
-                ]
+                ],
+                "title": "AggregationFunctionType"
             },
             "BasicScoringFnParams": {
                 "type": "object",
@@ -2810,7 +2818,8 @@
                 "additionalProperties": false,
                 "required": [
                     "type"
-                ]
+                ],
+                "title": "BasicScoringFnParams"
             },
             "BenchmarkConfig": {
                 "type": "object",
@@ -2838,7 +2847,8 @@
                     "type",
                     "eval_candidate",
                     "scoring_params"
-                ]
+                ],
+                "title": "BenchmarkConfig"
             },
             "EvalCandidate": {
                 "oneOf": [
@@ -2898,6 +2908,7 @@
                     "type",
                     "bnf"
                 ],
+                "title": "GrammarResponseFormat",
                 "description": "Configuration for grammar-guided response generation."
             },
             "GreedySamplingStrategy": {
@@ -2912,7 +2923,8 @@
                 "additionalProperties": false,
                 "required": [
                     "type"
-                ]
+                ],
+                "title": "GreedySamplingStrategy"
             },
             "ImageContentItem": {
                 "type": "object",
@@ -2945,6 +2957,7 @@
                     "type",
                     "image"
                 ],
+                "title": "ImageContentItem",
                 "description": "A image content item"
             },
             "InterleavedContent": {
@@ -3021,6 +3034,7 @@
                     "type",
                     "json_schema"
                 ],
+                "title": "JsonSchemaResponseFormat",
                 "description": "Configuration for JSON schema-guided response generation."
             },
             "LLMAsJudgeScoringFnParams": {
@@ -3054,7 +3068,8 @@
                 "required": [
                     "type",
                     "judge_model"
-                ]
+                ],
+                "title": "LLMAsJudgeScoringFnParams"
             },
             "ModelCandidate": {
                 "type": "object",
@@ -3079,7 +3094,8 @@
                     "type",
                     "model",
                     "sampling_params"
-                ]
+                ],
+                "title": "ModelCandidate"
             },
             "RegexParserScoringFnParams": {
                 "type": "object",
@@ -3105,7 +3121,8 @@
                 "additionalProperties": false,
                 "required": [
                     "type"
-                ]
+                ],
+                "title": "RegexParserScoringFnParams"
             },
             "ResponseFormat": {
                 "oneOf": [
@@ -3142,7 +3159,8 @@
                 "additionalProperties": false,
                 "required": [
                     "strategy"
-                ]
+                ],
+                "title": "SamplingParams"
             },
             "SamplingStrategy": {
                 "oneOf": [
@@ -3205,6 +3223,7 @@
                     "role",
                     "content"
                 ],
+                "title": "SystemMessage",
                 "description": "A system message providing instructions or context to the model."
             },
             "TextContentItem": {
@@ -3226,6 +3245,7 @@
                     "type",
                     "text"
                 ],
+                "title": "TextContentItem",
                 "description": "A text content item"
             },
             "ToolConfig": {
@@ -3240,6 +3260,7 @@
                                     "required",
                                     "none"
                                 ],
+                                "title": "ToolChoice",
                                 "description": "Whether tool use is required or automatic. This is a hint to the model which may not be followed. It depends on the Instruction Following capabilities of the model."
                             },
                             {
@@ -3269,6 +3290,7 @@
                     }
                 },
                 "additionalProperties": false,
+                "title": "ToolConfig",
                 "description": "Configuration for tool use."
             },
             "ToolDef": {
@@ -3315,7 +3337,8 @@
                 "additionalProperties": false,
                 "required": [
                     "name"
-                ]
+                ],
+                "title": "ToolDef"
             },
             "ToolParameter": {
                 "type": "object",
@@ -3362,7 +3385,8 @@
                     "parameter_type",
                     "description",
                     "required"
-                ]
+                ],
+                "title": "ToolParameter"
             },
             "TopKSamplingStrategy": {
                 "type": "object",
@@ -3380,7 +3404,8 @@
                 "required": [
                     "type",
                     "top_k"
-                ]
+                ],
+                "title": "TopKSamplingStrategy"
             },
             "TopPSamplingStrategy": {
                 "type": "object",
@@ -3401,7 +3426,8 @@
                 "additionalProperties": false,
                 "required": [
                     "type"
-                ]
+                ],
+                "title": "TopPSamplingStrategy"
             },
             "URL": {
                 "type": "object",
@@ -3413,7 +3439,8 @@
                 "additionalProperties": false,
                 "required": [
                     "uri"
-                ]
+                ],
+                "title": "URL"
             },
             "DeprecatedEvaluateRowsRequest": {
                 "type": "object",
@@ -3461,7 +3488,8 @@
                     "input_rows",
                     "scoring_functions",
                     "task_config"
-                ]
+                ],
+                "title": "DeprecatedEvaluateRowsRequest"
             },
             "EvaluateResponse": {
                 "type": "object",
@@ -3505,7 +3533,8 @@
                 "required": [
                     "generations",
                     "scores"
-                ]
+                ],
+                "title": "EvaluateResponse"
             },
             "ScoringResult": {
                 "type": "object",
@@ -3568,7 +3597,8 @@
                 "required": [
                     "score_rows",
                     "aggregated_results"
-                ]
+                ],
+                "title": "ScoringResult"
             },
             "Benchmark": {
                 "type": "object",
@@ -3631,7 +3661,8 @@
                     "dataset_id",
                     "scoring_functions",
                     "metadata"
-                ]
+                ],
+                "title": "Benchmark"
             },
             "JobStatus": {
                 "type": "string",
@@ -3640,7 +3671,8 @@
                     "in_progress",
                     "failed",
                     "scheduled"
-                ]
+                ],
+                "title": "JobStatus"
             },
             "ListBenchmarksResponse": {
                 "type": "object",
@@ -3655,7 +3687,8 @@
                 "additionalProperties": false,
                 "required": [
                     "data"
-                ]
+                ],
+                "title": "ListBenchmarksResponse"
             },
             "DeprecatedRegisterEvalTaskRequest": {
                 "type": "object",
@@ -3709,7 +3742,8 @@
                     "eval_task_id",
                     "dataset_id",
                     "scoring_functions"
-                ]
+                ],
+                "title": "DeprecatedRegisterEvalTaskRequest"
             },
             "DeprecatedRunEvalRequest": {
                 "type": "object",
@@ -3721,7 +3755,8 @@
                 "additionalProperties": false,
                 "required": [
                     "task_config"
-                ]
+                ],
+                "title": "DeprecatedRunEvalRequest"
             },
             "Job": {
                 "type": "object",
@@ -3733,7 +3768,8 @@
                 "additionalProperties": false,
                 "required": [
                     "job_id"
-                ]
+                ],
+                "title": "Job"
             },
             "AppendRowsRequest": {
                 "type": "object",
@@ -3774,7 +3810,8 @@
                 "required": [
                     "dataset_id",
                     "rows"
-                ]
+                ],
+                "title": "AppendRowsRequest"
             },
             "CompletionMessage": {
                 "type": "object",
@@ -3812,6 +3849,7 @@
                     "content",
                     "stop_reason"
                 ],
+                "title": "CompletionMessage",
                 "description": "A message containing the model's (assistant) response in a chat conversation."
             },
             "Message": {
@@ -3854,7 +3892,8 @@
                                     "wolfram_alpha",
                                     "photogen",
                                     "code_interpreter"
-                                ]
+                                ],
+                                "title": "BuiltinTool"
                             },
                             {
                                 "type": "string"
@@ -3933,7 +3972,8 @@
                     "call_id",
                     "tool_name",
                     "arguments"
-                ]
+                ],
+                "title": "ToolCall"
             },
             "ToolDefinition": {
                 "type": "object",
@@ -3947,7 +3987,8 @@
                                     "wolfram_alpha",
                                     "photogen",
                                     "code_interpreter"
-                                ]
+                                ],
+                                "title": "BuiltinTool"
                             },
                             {
                                 "type": "string"
@@ -3967,7 +4008,8 @@
                 "additionalProperties": false,
                 "required": [
                     "tool_name"
-                ]
+                ],
+                "title": "ToolDefinition"
             },
             "ToolParamDefinition": {
                 "type": "object",
@@ -4008,7 +4050,8 @@
                 "additionalProperties": false,
                 "required": [
                     "param_type"
-                ]
+                ],
+                "title": "ToolParamDefinition"
             },
             "ToolResponseMessage": {
                 "type": "object",
@@ -4032,7 +4075,8 @@
                                     "wolfram_alpha",
                                     "photogen",
                                     "code_interpreter"
-                                ]
+                                ],
+                                "title": "BuiltinTool"
                             },
                             {
                                 "type": "string"
@@ -4052,6 +4096,7 @@
                     "tool_name",
                     "content"
                 ],
+                "title": "ToolResponseMessage",
                 "description": "A message representing the result of a tool invocation."
             },
             "UserMessage": {
@@ -4077,6 +4122,7 @@
                     "role",
                     "content"
                 ],
+                "title": "UserMessage",
                 "description": "A message from the user in a chat conversation."
             },
             "BatchChatCompletionRequest": {
@@ -4110,6 +4156,7 @@
                             "required",
                             "none"
                         ],
+                        "title": "ToolChoice",
                         "description": "Whether tool use is required or automatic. This is a hint to the model which may not be followed. It depends on the Instruction Following capabilities of the model."
                     },
                     "tool_prompt_format": {
@@ -4119,6 +4166,7 @@
                             "function_tag",
                             "python_list"
                         ],
+                        "title": "ToolPromptFormat",
                         "description": "Prompt format for calling custom / zero shot tools."
                     },
                     "response_format": {
@@ -4133,14 +4181,16 @@
                                 "description": "How many tokens (for each position) to return log probabilities for."
                             }
                         },
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "title": "LogProbConfig"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "model",
                     "messages_batch"
-                ]
+                ],
+                "title": "BatchChatCompletionRequest"
             },
             "BatchChatCompletionResponse": {
                 "type": "object",
@@ -4155,7 +4205,8 @@
                 "additionalProperties": false,
                 "required": [
                     "batch"
-                ]
+                ],
+                "title": "BatchChatCompletionResponse"
             },
             "ChatCompletionResponse": {
                 "type": "object",
@@ -4182,6 +4233,7 @@
                 "required": [
                     "completion_message"
                 ],
+                "title": "ChatCompletionResponse",
                 "description": "Response from a chat completion request."
             },
             "MetricEvent": {
@@ -4250,7 +4302,8 @@
                     "metric",
                     "value",
                     "unit"
-                ]
+                ],
+                "title": "MetricEvent"
             },
             "TokenLogProbs": {
                 "type": "object",
@@ -4267,6 +4320,7 @@
                 "required": [
                     "logprobs_by_token"
                 ],
+                "title": "TokenLogProbs",
                 "description": "Log probabilities for generated tokens."
             },
             "BatchCompletionRequest": {
@@ -4296,14 +4350,16 @@
                                 "description": "How many tokens (for each position) to return log probabilities for."
                             }
                         },
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "title": "LogProbConfig"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "model",
                     "content_batch"
-                ]
+                ],
+                "title": "BatchCompletionRequest"
             },
             "BatchCompletionResponse": {
                 "type": "object",
@@ -4318,7 +4374,8 @@
                 "additionalProperties": false,
                 "required": [
                     "batch"
-                ]
+                ],
+                "title": "BatchCompletionResponse"
             },
             "CompletionResponse": {
                 "type": "object",
@@ -4349,6 +4406,7 @@
                     "content",
                     "stop_reason"
                 ],
+                "title": "CompletionResponse",
                 "description": "Response from a completion request."
             },
             "CancelTrainingJobRequest": {
@@ -4361,7 +4419,8 @@
                 "additionalProperties": false,
                 "required": [
                     "job_uuid"
-                ]
+                ],
+                "title": "CancelTrainingJobRequest"
             },
             "ChatCompletionRequest": {
                 "type": "object",
@@ -4435,7 +4494,8 @@
                 "required": [
                     "model_id",
                     "messages"
-                ]
+                ],
+                "title": "ChatCompletionRequest"
             },
             "ChatCompletionResponseEvent": {
                 "type": "object",
@@ -4475,6 +4535,7 @@
                     "event_type",
                     "delta"
                 ],
+                "title": "ChatCompletionResponseEvent",
                 "description": "An event during chat completion generation."
             },
             "ChatCompletionResponseStreamChunk": {
@@ -4495,6 +4556,7 @@
                 "required": [
                     "event"
                 ],
+                "title": "ChatCompletionResponseStreamChunk",
                 "description": "A chunk of a streamed chat completion response."
             },
             "ContentDelta": {
@@ -4535,7 +4597,8 @@
                 "required": [
                     "type",
                     "image"
-                ]
+                ],
+                "title": "ImageDelta"
             },
             "TextDelta": {
                 "type": "object",
@@ -4553,7 +4616,8 @@
                 "required": [
                     "type",
                     "text"
-                ]
+                ],
+                "title": "TextDelta"
             },
             "ToolCallDelta": {
                 "type": "object",
@@ -4580,7 +4644,8 @@
                             "in_progress",
                             "failed",
                             "succeeded"
-                        ]
+                        ],
+                        "title": "ToolCallParseStatus"
                     }
                 },
                 "additionalProperties": false,
@@ -4588,7 +4653,8 @@
                     "type",
                     "tool_call",
                     "parse_status"
-                ]
+                ],
+                "title": "ToolCallDelta"
             },
             "CompletionRequest": {
                 "type": "object",
@@ -4630,7 +4696,8 @@
                 "required": [
                     "model_id",
                     "content"
-                ]
+                ],
+                "title": "CompletionRequest"
             },
             "CompletionResponseStreamChunk": {
                 "type": "object",
@@ -4660,6 +4727,7 @@
                 "required": [
                     "delta"
                 ],
+                "title": "CompletionResponseStreamChunk",
                 "description": "A chunk of a streamed completion response."
             },
             "CreateAgentRequest": {
@@ -4672,7 +4740,8 @@
                 "additionalProperties": false,
                 "required": [
                     "agent_config"
-                ]
+                ],
+                "title": "CreateAgentRequest"
             },
             "AgentCreateResponse": {
                 "type": "object",
@@ -4684,7 +4753,8 @@
                 "additionalProperties": false,
                 "required": [
                     "agent_id"
-                ]
+                ],
+                "title": "AgentCreateResponse"
             },
             "CreateAgentSessionRequest": {
                 "type": "object",
@@ -4696,7 +4766,8 @@
                 "additionalProperties": false,
                 "required": [
                     "session_name"
-                ]
+                ],
+                "title": "CreateAgentSessionRequest"
             },
             "AgentSessionCreateResponse": {
                 "type": "object",
@@ -4708,7 +4779,8 @@
                 "additionalProperties": false,
                 "required": [
                     "session_id"
-                ]
+                ],
+                "title": "AgentSessionCreateResponse"
             },
             "CreateAgentTurnRequest": {
                 "type": "object",
@@ -4761,7 +4833,8 @@
                             "required": [
                                 "content",
                                 "mime_type"
-                            ]
+                            ],
+                            "title": "Document"
                         }
                     },
                     "toolgroups": {
@@ -4777,7 +4850,8 @@
                 "additionalProperties": false,
                 "required": [
                     "messages"
-                ]
+                ],
+                "title": "CreateAgentTurnRequest"
             },
             "InferenceStep": {
                 "type": "object",
@@ -4811,7 +4885,8 @@
                     "step_id",
                     "step_type",
                     "model_response"
-                ]
+                ],
+                "title": "InferenceStep"
             },
             "MemoryRetrievalStep": {
                 "type": "object",
@@ -4849,7 +4924,8 @@
                     "step_type",
                     "vector_db_ids",
                     "inserted_context"
-                ]
+                ],
+                "title": "MemoryRetrievalStep"
             },
             "SafetyViolation": {
                 "type": "object",
@@ -4890,7 +4966,8 @@
                 "required": [
                     "violation_level",
                     "metadata"
-                ]
+                ],
+                "title": "SafetyViolation"
             },
             "ShieldCallStep": {
                 "type": "object",
@@ -4923,7 +5000,8 @@
                     "turn_id",
                     "step_id",
                     "step_type"
-                ]
+                ],
+                "title": "ShieldCallStep"
             },
             "ToolExecutionStep": {
                 "type": "object",
@@ -4967,7 +5045,8 @@
                     "step_type",
                     "tool_calls",
                     "tool_responses"
-                ]
+                ],
+                "title": "ToolExecutionStep"
             },
             "ToolResponse": {
                 "type": "object",
@@ -4984,7 +5063,8 @@
                                     "wolfram_alpha",
                                     "photogen",
                                     "code_interpreter"
-                                ]
+                                ],
+                                "title": "BuiltinTool"
                             },
                             {
                                 "type": "string"
@@ -5000,7 +5080,8 @@
                     "call_id",
                     "tool_name",
                     "content"
-                ]
+                ],
+                "title": "ToolResponse"
             },
             "Turn": {
                 "type": "object",
@@ -5087,7 +5168,8 @@
                             "required": [
                                 "content",
                                 "mime_type"
-                            ]
+                            ],
+                            "title": "Attachment"
                         }
                     },
                     "started_at": {
@@ -5108,6 +5190,7 @@
                     "output_message",
                     "started_at"
                 ],
+                "title": "Turn",
                 "description": "A single turn in an interaction with an Agentic System."
             },
             "ViolationLevel": {
@@ -5116,7 +5199,8 @@
                     "info",
                     "warn",
                     "error"
-                ]
+                ],
+                "title": "ViolationLevel"
             },
             "AgentTurnResponseEvent": {
                 "type": "object",
@@ -5128,7 +5212,8 @@
                 "additionalProperties": false,
                 "required": [
                     "payload"
-                ]
+                ],
+                "title": "AgentTurnResponseEvent"
             },
             "AgentTurnResponseEventPayload": {
                 "oneOf": [
@@ -5174,7 +5259,8 @@
                             "tool_execution",
                             "shield_call",
                             "memory_retrieval"
-                        ]
+                        ],
+                        "title": "StepType"
                     },
                     "step_id": {
                         "type": "string"
@@ -5211,7 +5297,8 @@
                     "step_type",
                     "step_id",
                     "step_details"
-                ]
+                ],
+                "title": "AgentTurnResponseStepCompletePayload"
             },
             "AgentTurnResponseStepProgressPayload": {
                 "type": "object",
@@ -5228,7 +5315,8 @@
                             "tool_execution",
                             "shield_call",
                             "memory_retrieval"
-                        ]
+                        ],
+                        "title": "StepType"
                     },
                     "step_id": {
                         "type": "string"
@@ -5243,7 +5331,8 @@
                     "step_type",
                     "step_id",
                     "delta"
-                ]
+                ],
+                "title": "AgentTurnResponseStepProgressPayload"
             },
             "AgentTurnResponseStepStartPayload": {
                 "type": "object",
@@ -5260,7 +5349,8 @@
                             "tool_execution",
                             "shield_call",
                             "memory_retrieval"
-                        ]
+                        ],
+                        "title": "StepType"
                     },
                     "step_id": {
                         "type": "string"
@@ -5296,7 +5386,8 @@
                     "event_type",
                     "step_type",
                     "step_id"
-                ]
+                ],
+                "title": "AgentTurnResponseStepStartPayload"
             },
             "AgentTurnResponseStreamChunk": {
                 "type": "object",
@@ -5309,6 +5400,7 @@
                 "required": [
                     "event"
                 ],
+                "title": "AgentTurnResponseStreamChunk",
                 "description": "streamed agent turn completion response."
             },
             "AgentTurnResponseTurnCompletePayload": {
@@ -5327,7 +5419,8 @@
                 "required": [
                     "event_type",
                     "turn"
-                ]
+                ],
+                "title": "AgentTurnResponseTurnCompletePayload"
             },
             "AgentTurnResponseTurnStartPayload": {
                 "type": "object",
@@ -5345,7 +5438,8 @@
                 "required": [
                     "event_type",
                     "turn_id"
-                ]
+                ],
+                "title": "AgentTurnResponseTurnStartPayload"
             },
             "EmbeddingsRequest": {
                 "type": "object",
@@ -5366,7 +5460,8 @@
                 "required": [
                     "model_id",
                     "contents"
-                ]
+                ],
+                "title": "EmbeddingsRequest"
             },
             "EmbeddingsResponse": {
                 "type": "object",
@@ -5386,6 +5481,7 @@
                 "required": [
                     "embeddings"
                 ],
+                "title": "EmbeddingsResponse",
                 "description": "Response containing generated embeddings."
             },
             "EvaluateRowsRequest": {
@@ -5434,7 +5530,8 @@
                     "input_rows",
                     "scoring_functions",
                     "task_config"
-                ]
+                ],
+                "title": "EvaluateRowsRequest"
             },
             "Session": {
                 "type": "object",
@@ -5463,6 +5560,7 @@
                     "turns",
                     "started_at"
                 ],
+                "title": "Session",
                 "description": "A single session of an interaction with an Agentic System."
             },
             "AgentStepResponse": {
@@ -5497,7 +5595,8 @@
                 "additionalProperties": false,
                 "required": [
                     "step"
-                ]
+                ],
+                "title": "AgentStepResponse"
             },
             "AgentTurnInputType": {
                 "type": "object",
@@ -5511,7 +5610,8 @@
                 "additionalProperties": false,
                 "required": [
                     "type"
-                ]
+                ],
+                "title": "AgentTurnInputType"
             },
             "ArrayType": {
                 "type": "object",
@@ -5525,7 +5625,8 @@
                 "additionalProperties": false,
                 "required": [
                     "type"
-                ]
+                ],
+                "title": "ArrayType"
             },
             "BooleanType": {
                 "type": "object",
@@ -5539,7 +5640,8 @@
                 "additionalProperties": false,
                 "required": [
                     "type"
-                ]
+                ],
+                "title": "BooleanType"
             },
             "ChatCompletionInputType": {
                 "type": "object",
@@ -5553,7 +5655,8 @@
                 "additionalProperties": false,
                 "required": [
                     "type"
-                ]
+                ],
+                "title": "ChatCompletionInputType"
             },
             "CompletionInputType": {
                 "type": "object",
@@ -5567,7 +5670,8 @@
                 "additionalProperties": false,
                 "required": [
                     "type"
-                ]
+                ],
+                "title": "CompletionInputType"
             },
             "Dataset": {
                 "type": "object",
@@ -5630,7 +5734,8 @@
                     "dataset_schema",
                     "url",
                     "metadata"
-                ]
+                ],
+                "title": "Dataset"
             },
             "JsonType": {
                 "type": "object",
@@ -5644,7 +5749,8 @@
                 "additionalProperties": false,
                 "required": [
                     "type"
-                ]
+                ],
+                "title": "JsonType"
             },
             "NumberType": {
                 "type": "object",
@@ -5658,7 +5764,8 @@
                 "additionalProperties": false,
                 "required": [
                     "type"
-                ]
+                ],
+                "title": "NumberType"
             },
             "ObjectType": {
                 "type": "object",
@@ -5672,7 +5779,8 @@
                 "additionalProperties": false,
                 "required": [
                     "type"
-                ]
+                ],
+                "title": "ObjectType"
             },
             "ParamType": {
                 "oneOf": [
@@ -5735,7 +5843,8 @@
                 "additionalProperties": false,
                 "required": [
                     "type"
-                ]
+                ],
+                "title": "StringType"
             },
             "UnionType": {
                 "type": "object",
@@ -5749,7 +5858,8 @@
                 "additionalProperties": false,
                 "required": [
                     "type"
-                ]
+                ],
+                "title": "UnionType"
             },
             "Model": {
                 "type": "object",
@@ -5806,14 +5916,16 @@
                     "type",
                     "metadata",
                     "model_type"
-                ]
+                ],
+                "title": "Model"
             },
             "ModelType": {
                 "type": "string",
                 "enum": [
                     "llm",
                     "embedding"
-                ]
+                ],
+                "title": "ModelType"
             },
             "PaginatedRowsResult": {
                 "type": "object",
@@ -5857,7 +5969,8 @@
                 "required": [
                     "rows",
                     "total_count"
-                ]
+                ],
+                "title": "PaginatedRowsResult"
             },
             "ScoringFn": {
                 "type": "object",
@@ -5919,7 +6032,8 @@
                     "type",
                     "metadata",
                     "return_type"
-                ]
+                ],
+                "title": "ScoringFn"
             },
             "Shield": {
                 "type": "object",
@@ -5971,6 +6085,7 @@
                     "provider_id",
                     "type"
                 ],
+                "title": "Shield",
                 "description": "A safety shield resource that can be used to check content"
             },
             "Span": {
@@ -6028,14 +6143,16 @@
                     "trace_id",
                     "name",
                     "start_time"
-                ]
+                ],
+                "title": "Span"
             },
             "SpanStatus": {
                 "type": "string",
                 "enum": [
                     "ok",
                     "error"
-                ]
+                ],
+                "title": "SpanStatus"
             },
             "SpanWithStatus": {
                 "type": "object",
@@ -6095,7 +6212,8 @@
                     "trace_id",
                     "name",
                     "start_time"
-                ]
+                ],
+                "title": "SpanWithStatus"
             },
             "QuerySpanTreeResponse": {
                 "type": "object",
@@ -6110,7 +6228,8 @@
                 "additionalProperties": false,
                 "required": [
                     "data"
-                ]
+                ],
+                "title": "QuerySpanTreeResponse"
             },
             "Tool": {
                 "type": "object",
@@ -6180,7 +6299,8 @@
                     "tool_host",
                     "description",
                     "parameters"
-                ]
+                ],
+                "title": "Tool"
             },
             "ToolHost": {
                 "type": "string",
@@ -6188,7 +6308,8 @@
                     "distribution",
                     "client",
                     "model_context_protocol"
-                ]
+                ],
+                "title": "ToolHost"
             },
             "ToolGroup": {
                 "type": "object",
@@ -6242,7 +6363,8 @@
                     "provider_resource_id",
                     "provider_id",
                     "type"
-                ]
+                ],
+                "title": "ToolGroup"
             },
             "Trace": {
                 "type": "object",
@@ -6267,10 +6389,12 @@
                     "trace_id",
                     "root_span_id",
                     "start_time"
-                ]
+                ],
+                "title": "Trace"
             },
             "Checkpoint": {
-                "description": "Checkpoint created during training runs"
+                "description": "Checkpoint created during training runs",
+                "title": "Checkpoint"
             },
             "PostTrainingJobArtifactsResponse": {
                 "type": "object",
@@ -6290,6 +6414,7 @@
                     "job_uuid",
                     "checkpoints"
                 ],
+                "title": "PostTrainingJobArtifactsResponse",
                 "description": "Artifacts of a finetuning job."
             },
             "PostTrainingJobStatusResponse": {
@@ -6351,6 +6476,7 @@
                     "status",
                     "checkpoints"
                 ],
+                "title": "PostTrainingJobStatusResponse",
                 "description": "Status of a finetuning job."
             },
             "ListPostTrainingJobsResponse": {
@@ -6368,14 +6494,16 @@
                             "additionalProperties": false,
                             "required": [
                                 "job_uuid"
-                            ]
+                            ],
+                            "title": "PostTrainingJob"
                         }
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "data"
-                ]
+                ],
+                "title": "ListPostTrainingJobsResponse"
             },
             "VectorDB": {
                 "type": "object",
@@ -6409,7 +6537,8 @@
                     "type",
                     "embedding_model",
                     "embedding_dimension"
-                ]
+                ],
+                "title": "VectorDB"
             },
             "HealthInfo": {
                 "type": "object",
@@ -6421,7 +6550,8 @@
                 "additionalProperties": false,
                 "required": [
                     "status"
-                ]
+                ],
+                "title": "HealthInfo"
             },
             "RAGDocument": {
                 "type": "object",
@@ -6482,7 +6612,8 @@
                     "document_id",
                     "content",
                     "metadata"
-                ]
+                ],
+                "title": "RAGDocument"
             },
             "InsertRequest": {
                 "type": "object",
@@ -6505,7 +6636,8 @@
                     "documents",
                     "vector_db_id",
                     "chunk_size_in_tokens"
-                ]
+                ],
+                "title": "InsertRequest"
             },
             "InsertChunksRequest": {
                 "type": "object",
@@ -6551,7 +6683,8 @@
                             "required": [
                                 "content",
                                 "metadata"
-                            ]
+                            ],
+                            "title": "Chunk"
                         }
                     },
                     "ttl_seconds": {
@@ -6562,7 +6695,8 @@
                 "required": [
                     "vector_db_id",
                     "chunks"
-                ]
+                ],
+                "title": "InsertChunksRequest"
             },
             "InvokeToolRequest": {
                 "type": "object",
@@ -6600,7 +6734,8 @@
                 "required": [
                     "tool_name",
                     "kwargs"
-                ]
+                ],
+                "title": "InvokeToolRequest"
             },
             "ToolInvocationResult": {
                 "type": "object",
@@ -6618,7 +6753,8 @@
                 "additionalProperties": false,
                 "required": [
                     "content"
-                ]
+                ],
+                "title": "ToolInvocationResult"
             },
             "ListDatasetsResponse": {
                 "type": "object",
@@ -6633,7 +6769,8 @@
                 "additionalProperties": false,
                 "required": [
                     "data"
-                ]
+                ],
+                "title": "ListDatasetsResponse"
             },
             "ListModelsResponse": {
                 "type": "object",
@@ -6648,7 +6785,8 @@
                 "additionalProperties": false,
                 "required": [
                     "data"
-                ]
+                ],
+                "title": "ListModelsResponse"
             },
             "ProviderInfo": {
                 "type": "object",
@@ -6668,7 +6806,8 @@
                     "api",
                     "provider_id",
                     "provider_type"
-                ]
+                ],
+                "title": "ProviderInfo"
             },
             "ListProvidersResponse": {
                 "type": "object",
@@ -6683,7 +6822,8 @@
                 "additionalProperties": false,
                 "required": [
                     "data"
-                ]
+                ],
+                "title": "ListProvidersResponse"
             },
             "RouteInfo": {
                 "type": "object",
@@ -6706,7 +6846,8 @@
                     "route",
                     "method",
                     "provider_types"
-                ]
+                ],
+                "title": "RouteInfo"
             },
             "ListRoutesResponse": {
                 "type": "object",
@@ -6721,7 +6862,8 @@
                 "additionalProperties": false,
                 "required": [
                     "data"
-                ]
+                ],
+                "title": "ListRoutesResponse"
             },
             "ListScoringFunctionsResponse": {
                 "type": "object",
@@ -6736,7 +6878,8 @@
                 "additionalProperties": false,
                 "required": [
                     "data"
-                ]
+                ],
+                "title": "ListScoringFunctionsResponse"
             },
             "ListShieldsResponse": {
                 "type": "object",
@@ -6751,7 +6894,8 @@
                 "additionalProperties": false,
                 "required": [
                     "data"
-                ]
+                ],
+                "title": "ListShieldsResponse"
             },
             "ListToolGroupsResponse": {
                 "type": "object",
@@ -6766,7 +6910,8 @@
                 "additionalProperties": false,
                 "required": [
                     "data"
-                ]
+                ],
+                "title": "ListToolGroupsResponse"
             },
             "ListToolsResponse": {
                 "type": "object",
@@ -6781,7 +6926,8 @@
                 "additionalProperties": false,
                 "required": [
                     "data"
-                ]
+                ],
+                "title": "ListToolsResponse"
             },
             "ListVectorDBsResponse": {
                 "type": "object",
@@ -6796,7 +6942,8 @@
                 "additionalProperties": false,
                 "required": [
                     "data"
-                ]
+                ],
+                "title": "ListVectorDBsResponse"
             },
             "Event": {
                 "oneOf": [
@@ -6828,7 +6975,8 @@
                     "warn",
                     "error",
                     "critical"
-                ]
+                ],
+                "title": "LogSeverity"
             },
             "SpanEndPayload": {
                 "type": "object",
@@ -6846,7 +6994,8 @@
                 "required": [
                     "type",
                     "status"
-                ]
+                ],
+                "title": "SpanEndPayload"
             },
             "SpanStartPayload": {
                 "type": "object",
@@ -6867,7 +7016,8 @@
                 "required": [
                     "type",
                     "name"
-                ]
+                ],
+                "title": "SpanStartPayload"
             },
             "StructuredLogEvent": {
                 "type": "object",
@@ -6920,7 +7070,8 @@
                     "timestamp",
                     "type",
                     "payload"
-                ]
+                ],
+                "title": "StructuredLogEvent"
             },
             "StructuredLogPayload": {
                 "oneOf": [
@@ -6994,7 +7145,8 @@
                     "type",
                     "message",
                     "severity"
-                ]
+                ],
+                "title": "UnstructuredLogEvent"
             },
             "LogEventRequest": {
                 "type": "object",
@@ -7010,7 +7162,8 @@
                 "required": [
                     "event",
                     "ttl_seconds"
-                ]
+                ],
+                "title": "LogEventRequest"
             },
             "DPOAlignmentConfig": {
                 "type": "object",
@@ -7034,7 +7187,8 @@
                     "reward_clip",
                     "epsilon",
                     "gamma"
-                ]
+                ],
+                "title": "DPOAlignmentConfig"
             },
             "DataConfig": {
                 "type": "object",
@@ -7069,14 +7223,16 @@
                     "batch_size",
                     "shuffle",
                     "data_format"
-                ]
+                ],
+                "title": "DataConfig"
             },
             "DatasetFormat": {
                 "type": "string",
                 "enum": [
                     "instruct",
                     "dialog"
-                ]
+                ],
+                "title": "DatasetFormat"
             },
             "EfficiencyConfig": {
                 "type": "object",
@@ -7098,7 +7254,8 @@
                         "default": false
                     }
                 },
-                "additionalProperties": false
+                "additionalProperties": false,
+                "title": "EfficiencyConfig"
             },
             "OptimizerConfig": {
                 "type": "object",
@@ -7122,7 +7279,8 @@
                     "lr",
                     "weight_decay",
                     "num_warmup_steps"
-                ]
+                ],
+                "title": "OptimizerConfig"
             },
             "OptimizerType": {
                 "type": "string",
@@ -7130,7 +7288,8 @@
                     "adam",
                     "adamw",
                     "sgd"
-                ]
+                ],
+                "title": "OptimizerType"
             },
             "TrainingConfig": {
                 "type": "object",
@@ -7169,7 +7328,8 @@
                     "max_validation_steps",
                     "data_config",
                     "optimizer_config"
-                ]
+                ],
+                "title": "TrainingConfig"
             },
             "PreferenceOptimizeRequest": {
                 "type": "object",
@@ -7245,7 +7405,8 @@
                     "training_config",
                     "hyperparam_search_config",
                     "logger_config"
-                ]
+                ],
+                "title": "PreferenceOptimizeRequest"
             },
             "PostTrainingJob": {
                 "type": "object",
@@ -7257,7 +7418,8 @@
                 "additionalProperties": false,
                 "required": [
                     "job_uuid"
-                ]
+                ],
+                "title": "PostTrainingJob"
             },
             "DefaultRAGQueryGeneratorConfig": {
                 "type": "object",
@@ -7276,7 +7438,8 @@
                 "required": [
                     "type",
                     "separator"
-                ]
+                ],
+                "title": "DefaultRAGQueryGeneratorConfig"
             },
             "LLMRAGQueryGeneratorConfig": {
                 "type": "object",
@@ -7298,7 +7461,8 @@
                     "type",
                     "model",
                     "template"
-                ]
+                ],
+                "title": "LLMRAGQueryGeneratorConfig"
             },
             "RAGQueryConfig": {
                 "type": "object",
@@ -7320,7 +7484,8 @@
                     "query_generator_config",
                     "max_tokens_in_context",
                     "max_chunks"
-                ]
+                ],
+                "title": "RAGQueryConfig"
             },
             "RAGQueryGeneratorConfig": {
                 "oneOf": [
@@ -7359,7 +7524,8 @@
                 "required": [
                     "content",
                     "vector_db_ids"
-                ]
+                ],
+                "title": "QueryRequest"
             },
             "RAGQueryResult": {
                 "type": "object",
@@ -7368,7 +7534,8 @@
                         "$ref": "#/components/schemas/InterleavedContent"
                     }
                 },
-                "additionalProperties": false
+                "additionalProperties": false,
+                "title": "RAGQueryResult"
             },
             "QueryChunksRequest": {
                 "type": "object",
@@ -7409,7 +7576,8 @@
                 "required": [
                     "vector_db_id",
                     "query"
-                ]
+                ],
+                "title": "QueryChunksRequest"
             },
             "QueryChunksResponse": {
                 "type": "object",
@@ -7452,7 +7620,8 @@
                             "required": [
                                 "content",
                                 "metadata"
-                            ]
+                            ],
+                            "title": "Chunk"
                         }
                     },
                     "scores": {
@@ -7466,7 +7635,8 @@
                 "required": [
                     "chunks",
                     "scores"
-                ]
+                ],
+                "title": "QueryChunksResponse"
             },
             "QueryCondition": {
                 "type": "object",
@@ -7505,7 +7675,8 @@
                     "key",
                     "op",
                     "value"
-                ]
+                ],
+                "title": "QueryCondition"
             },
             "QueryConditionOp": {
                 "type": "string",
@@ -7514,7 +7685,8 @@
                     "ne",
                     "gt",
                     "lt"
-                ]
+                ],
+                "title": "QueryConditionOp"
             },
             "QuerySpansResponse": {
                 "type": "object",
@@ -7529,7 +7701,8 @@
                 "additionalProperties": false,
                 "required": [
                     "data"
-                ]
+                ],
+                "title": "QuerySpansResponse"
             },
             "QueryTracesResponse": {
                 "type": "object",
@@ -7544,7 +7717,8 @@
                 "additionalProperties": false,
                 "required": [
                     "data"
-                ]
+                ],
+                "title": "QueryTracesResponse"
             },
             "RegisterBenchmarkRequest": {
                 "type": "object",
@@ -7598,7 +7772,8 @@
                     "benchmark_id",
                     "dataset_id",
                     "scoring_functions"
-                ]
+                ],
+                "title": "RegisterBenchmarkRequest"
             },
             "RegisterDatasetRequest": {
                 "type": "object",
@@ -7652,7 +7827,8 @@
                     "dataset_id",
                     "dataset_schema",
                     "url"
-                ]
+                ],
+                "title": "RegisterDatasetRequest"
             },
             "RegisterModelRequest": {
                 "type": "object",
@@ -7698,7 +7874,8 @@
                 "additionalProperties": false,
                 "required": [
                     "model_id"
-                ]
+                ],
+                "title": "RegisterModelRequest"
             },
             "RegisterScoringFunctionRequest": {
                 "type": "object",
@@ -7727,7 +7904,8 @@
                     "scoring_fn_id",
                     "description",
                     "return_type"
-                ]
+                ],
+                "title": "RegisterScoringFunctionRequest"
             },
             "RegisterShieldRequest": {
                 "type": "object",
@@ -7770,7 +7948,8 @@
                 "additionalProperties": false,
                 "required": [
                     "shield_id"
-                ]
+                ],
+                "title": "RegisterShieldRequest"
             },
             "RegisterToolGroupRequest": {
                 "type": "object",
@@ -7814,7 +7993,8 @@
                 "required": [
                     "toolgroup_id",
                     "provider_id"
-                ]
+                ],
+                "title": "RegisterToolGroupRequest"
             },
             "RegisterVectorDbRequest": {
                 "type": "object",
@@ -7839,7 +8019,8 @@
                 "required": [
                     "vector_db_id",
                     "embedding_model"
-                ]
+                ],
+                "title": "RegisterVectorDbRequest"
             },
             "RunEvalRequest": {
                 "type": "object",
@@ -7851,7 +8032,8 @@
                 "additionalProperties": false,
                 "required": [
                     "task_config"
-                ]
+                ],
+                "title": "RunEvalRequest"
             },
             "RunShieldRequest": {
                 "type": "object",
@@ -7896,7 +8078,8 @@
                     "shield_id",
                     "messages",
                     "params"
-                ]
+                ],
+                "title": "RunShieldRequest"
             },
             "RunShieldResponse": {
                 "type": "object",
@@ -7905,7 +8088,8 @@
                         "$ref": "#/components/schemas/SafetyViolation"
                     }
                 },
-                "additionalProperties": false
+                "additionalProperties": false,
+                "title": "RunShieldResponse"
             },
             "SaveSpansToDatasetRequest": {
                 "type": "object",
@@ -7934,7 +8118,8 @@
                     "attribute_filters",
                     "attributes_to_save",
                     "dataset_id"
-                ]
+                ],
+                "title": "SaveSpansToDatasetRequest"
             },
             "ScoreRequest": {
                 "type": "object",
@@ -7985,7 +8170,8 @@
                 "required": [
                     "input_rows",
                     "scoring_functions"
-                ]
+                ],
+                "title": "ScoreRequest"
             },
             "ScoreResponse": {
                 "type": "object",
@@ -8000,7 +8186,8 @@
                 "additionalProperties": false,
                 "required": [
                     "results"
-                ]
+                ],
+                "title": "ScoreResponse"
             },
             "ScoreBatchRequest": {
                 "type": "object",
@@ -8030,7 +8217,8 @@
                     "dataset_id",
                     "scoring_functions",
                     "save_results_dataset"
-                ]
+                ],
+                "title": "ScoreBatchRequest"
             },
             "ScoreBatchResponse": {
                 "type": "object",
@@ -8048,7 +8236,8 @@
                 "additionalProperties": false,
                 "required": [
                     "results"
-                ]
+                ],
+                "title": "ScoreBatchResponse"
             },
             "AlgorithmConfig": {
                 "oneOf": [
@@ -8110,7 +8299,8 @@
                     "apply_lora_to_output",
                     "rank",
                     "alpha"
-                ]
+                ],
+                "title": "LoraFinetuningConfig"
             },
             "QATFinetuningConfig": {
                 "type": "object",
@@ -8132,7 +8322,8 @@
                     "type",
                     "quantizer_name",
                     "group_size"
-                ]
+                ],
+                "title": "QATFinetuningConfig"
             },
             "SupervisedFineTuneRequest": {
                 "type": "object",
@@ -8210,7 +8401,8 @@
                     "hyperparam_search_config",
                     "logger_config",
                     "model"
-                ]
+                ],
+                "title": "SupervisedFineTuneRequest"
             },
             "SyntheticDataGenerateRequest": {
                 "type": "object",
@@ -8231,6 +8423,7 @@
                             "top_k_top_p",
                             "sigmoid"
                         ],
+                        "title": "FilteringFunction",
                         "description": "The type of filtering function."
                     },
                     "model": {
@@ -8241,7 +8434,8 @@
                 "required": [
                     "dialogs",
                     "filtering_function"
-                ]
+                ],
+                "title": "SyntheticDataGenerateRequest"
             },
             "SyntheticDataGenerationResponse": {
                 "type": "object",
@@ -8304,6 +8498,7 @@
                 "required": [
                     "synthetic_data"
                 ],
+                "title": "SyntheticDataGenerationResponse",
                 "description": "Response from the synthetic data generation. Batch of (prompt, response, score) tuples that pass the threshold."
             },
             "VersionInfo": {
@@ -8316,7 +8511,8 @@
                 "additionalProperties": false,
                 "required": [
                     "version"
-                ]
+                ],
+                "title": "VersionInfo"
             }
         },
         "responses": {}

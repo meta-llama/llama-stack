@@ -3,7 +3,7 @@ The RFC Specification (OpenAPI format) is generated from the set of API endpoint
 Please install the following packages before running the script:
 
 ```
-pip install python-openapi json-strong-typing fire PyYAML llama-models
+pip install fire PyYAML llama-models
 ```
 
 Then simply run `sh run_openapi_generator.sh`

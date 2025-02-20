@@ -19,7 +19,7 @@ from llama_stack.providers.inline.inference.sentence_transformers import (
 )
 from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOConfig
 from llama_stack.providers.remote.inference.together import TogetherImplConfig
-from llama_stack.providers.remote.inference.together.together import MODEL_ALIASES
+from llama_stack.providers.remote.inference.together.models import MODEL_ALIASES
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
 
