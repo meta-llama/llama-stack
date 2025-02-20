@@ -10,7 +10,6 @@ from pathlib import Path
 
 import pytest
 
-
 """
 Script for running client-sdk on AsyncLlamaStackAsLibraryClient with templates
 
@@ -36,9 +35,7 @@ CLIENT_SDK_TESTS_RELATIVE_PATH = "tests/client-sdk/"
 def main(parser: argparse.ArgumentParser):
     args = parser.parse_args()
     templates_dir = REPO_ROOT / "llama_stack" / "templates"
-    user_specified_templates = (
-        [templates_dir / t for t in args.templates] if args.templates else []
-    )
+    user_specified_templates = [templates_dir / t for t in args.templates] if args.templates else []
     for d in templates_dir.iterdir():
         if d.is_dir() and d.name != "__pycache__":
             template_configs = list(d.rglob("run.yaml"))
