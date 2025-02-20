@@ -148,6 +148,7 @@ async def _process_vllm_chat_completion_stream_response(
     async for chunk in stream:
         choice = chunk.choices[0]
         if choice.finish_reason:
+            args = tool_call_buf.arguments
             yield ChatCompletionResponseStreamChunk(
                 event=ChatCompletionResponseEvent(
                     event_type=event_type,
@@ -155,7 +156,7 @@ async def _process_vllm_chat_completion_stream_response(
                         tool_call=ToolCall(
                             call_id=tool_call_buf.call_id,
                             tool_name=tool_call_buf.tool_name,
-                            arguments=json.loads(tool_call_buf.arguments),
+                            arguments={} if not args else json.loads(args),
                         ),
                         parse_status=ToolCallParseStatus.succeeded,
                     ),
