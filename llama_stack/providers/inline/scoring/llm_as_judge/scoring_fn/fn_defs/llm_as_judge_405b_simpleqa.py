@@ -5,7 +5,11 @@
 # the root directory of this source tree.
 
 from llama_stack.apis.common.type_system import NumberType
-from llama_stack.apis.scoring_functions import LLMAsJudgeScoringFnParams, ScoringFn
+from llama_stack.apis.scoring_functions import (
+    AggregationFunctionType,
+    LLMAsJudgeScoringFnParams,
+    ScoringFn,
+)
 
 GRADER_TEMPLATE = """
 Your job is to look at a question, a gold target, and a predicted answer, and then assign a grade of either ["CORRECT", "INCORRECT", "NOT_ATTEMPTED"].
@@ -87,5 +91,6 @@ llm_as_judge_405b_simpleqa = ScoringFn(
         judge_model="meta-llama/Llama-3.1-405B-Instruct",
         prompt_template=GRADER_TEMPLATE,
         judge_score_regexes=[r"(A|B|C)"],
+        aggregation_functions=[AggregationFunctionType.categorical_count.value],
     ),
 )
