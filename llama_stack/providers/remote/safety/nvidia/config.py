@@ -9,7 +9,7 @@ from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, Field, SecretStr, field_validator
 
-from llama_models.schema_utils import json_schema_type
+from llama_stack.schema_utils import json_schema_type
 
 
 class ShieldType(Enum):

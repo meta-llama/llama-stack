@@ -108,7 +108,7 @@ def safety_nvidia() -> ProviderFixture:
     )
 
 
-SAFETY_FIXTURES = ["llama_guard", "bedrock", "remote"]
+SAFETY_FIXTURES = ["llama_guard", "bedrock", "remote", "nvidia"]
 
 
 @pytest_asyncio.fixture(scope="session")
