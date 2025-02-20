@@ -14,7 +14,7 @@ from llama_stack.providers.inline.inference.sentence_transformers import (
 )
 from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOConfig
 from llama_stack.providers.remote.inference.cerebras import CerebrasImplConfig
-from llama_stack.providers.remote.inference.cerebras.cerebras import model_aliases
+from llama_stack.providers.remote.inference.cerebras.models import model_aliases
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
 

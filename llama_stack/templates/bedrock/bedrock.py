@@ -10,7 +10,7 @@ from llama_stack.apis.models import ModelInput
 from llama_stack.distribution.datatypes import Provider, ToolGroupInput
 from llama_stack.models.llama.sku_list import all_registered_models
 from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOConfig
-from llama_stack.providers.remote.inference.bedrock.bedrock import MODEL_ALIASES
+from llama_stack.providers.remote.inference.bedrock.models import MODEL_ALIASES
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
 

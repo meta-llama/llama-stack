@@ -18,14 +18,12 @@ from llama_stack.apis.common.content_types import (
 )
 from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.models.llama.datatypes import (
-    CoreModelId,
     GreedySamplingStrategy,
     TopKSamplingStrategy,
     TopPSamplingStrategy,
 )
 from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
-    build_model_alias,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
     process_chat_completion_stream_response,
@@ -35,45 +33,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 )
 
 from .config import SambaNovaImplConfig
-
-MODEL_ALIASES = [
-    build_model_alias(
-        "Meta-Llama-3.1-8B-Instruct",
-        CoreModelId.llama3_1_8b_instruct.value,
-    ),
-    build_model_alias(
-        "Meta-Llama-3.1-70B-Instruct",
-        CoreModelId.llama3_1_70b_instruct.value,
-    ),
-    build_model_alias(
-        "Meta-Llama-3.1-405B-Instruct",
-        CoreModelId.llama3_1_405b_instruct.value,
-    ),
-    build_model_alias(
-        "Meta-Llama-3.2-1B-Instruct",
-        CoreModelId.llama3_2_1b_instruct.value,
-    ),
-    build_model_alias(
-        "Meta-Llama-3.2-3B-Instruct",
-        CoreModelId.llama3_2_3b_instruct.value,
-    ),
-    build_model_alias(
-        "Meta-Llama-3.3-70B-Instruct",
-        CoreModelId.llama3_3_70b_instruct.value,
-    ),
-    build_model_alias(
-        "Llama-3.2-11B-Vision-Instruct",
-        CoreModelId.llama3_2_11b_vision_instruct.value,
-    ),
-    build_model_alias(
-        "Llama-3.2-90B-Vision-Instruct",
-        CoreModelId.llama3_2_90b_vision_instruct.value,
-    ),
-    build_model_alias(
-        "Meta-Llama-Guard-3-8B",
-        CoreModelId.llama_guard_3_8b.value,
-    ),
-]
+from .models import MODEL_ALIASES
 
 
 class SambaNovaInferenceAdapter(ModelRegistryHelper, Inference):

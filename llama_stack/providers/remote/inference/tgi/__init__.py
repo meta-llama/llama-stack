@@ -7,13 +7,14 @@
 from typing import Union
 
 from .config import InferenceAPIImplConfig, InferenceEndpointImplConfig, TGIImplConfig
-from .tgi import InferenceAPIAdapter, InferenceEndpointAdapter, TGIAdapter
 
 
 async def get_adapter_impl(
     config: Union[InferenceAPIImplConfig, InferenceEndpointImplConfig, TGIImplConfig],
     _deps,
 ):
+    from .tgi import InferenceAPIAdapter, InferenceEndpointAdapter, TGIAdapter
+
     if isinstance(config, TGIImplConfig):
         impl = TGIAdapter()
     elif isinstance(config, InferenceAPIImplConfig):
