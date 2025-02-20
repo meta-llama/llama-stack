@@ -88,6 +88,7 @@ repos:
         pass_filenames: false
         require_serial: true
         files: ^llama_stack/templates/.*$
+        files: ^llama_stack/providers/.*/inference/.*/models\.py$
 
 ci:
     autofix_commit_msg: 🎨 [pre-commit.ci] Auto format from pre-commit.com hooks

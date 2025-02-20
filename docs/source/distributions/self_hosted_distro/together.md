@@ -46,6 +46,8 @@ The following models are available by default:
 - `meta-llama/Llama-3.3-70B-Instruct`
 - `meta-llama/Llama-Guard-3-8B`
 - `meta-llama/Llama-Guard-3-11B-Vision`
+- `togethercomputer/m2-bert-80M-8k-retrieval`
+- `togethercomputer/m2-bert-80M-32k-retrieval`
 
 
 ### Prerequisite: API Keys
