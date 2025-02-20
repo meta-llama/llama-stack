@@ -150,7 +150,14 @@ def _get_endpoint_functions(
 
         print(f"Processing {colored(func_name, 'white')}...")
         operation_name = func_name
-        if operation_name.startswith("get_") or operation_name.endswith("/get"):
+        
+        if webmethod.method == "GET":
+            prefix = "get"
+        elif webmethod.method == "DELETE":
+            prefix = "delete"
+        elif webmethod.method == "POST":
+            prefix = "post"
+        elif operation_name.startswith("get_") or operation_name.endswith("/get"):
             prefix = "get"
         elif (
             operation_name.startswith("delete_")
@@ -160,13 +167,8 @@ def _get_endpoint_functions(
         ):
             prefix = "delete"
         else:
-            if webmethod.method == "GET":
-                prefix = "get"
-            elif webmethod.method == "DELETE":
-                prefix = "delete"
-            else:
-                # by default everything else is a POST
-                prefix = "post"
+            # by default everything else is a POST
+            prefix = "post"
 
         yield prefix, operation_name, func_name, func_ref
 
