@@ -158,6 +158,7 @@
     "pandas",
     "pillow",
     "psycopg2-binary",
+    "pymongo",
     "pypdf",
     "redis",
     "requests",

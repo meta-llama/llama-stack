@@ -6,22 +6,26 @@
 
 from pathlib import Path
 
+from llama_stack.apis.models.models import ModelType
 from llama_stack.distribution.datatypes import (
     ModelInput,
     Provider,
-    ShieldInput,
     ToolGroupInput,
 )
 from llama_stack.models.llama.sku_list import all_registered_models
+from llama_stack.providers.inline.inference.sentence_transformers import (
+    SentenceTransformersInferenceConfig,
+)
+from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOConfig
 from llama_stack.providers.remote.inference.groq import GroqConfig
-from llama_stack.providers.remote.inference.groq.groq import _MODEL_ALIASES
+from llama_stack.providers.remote.inference.groq.models import _MODEL_ALIASES
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
 
 def get_distribution_template() -> DistributionTemplate:
     providers = {
         "inference": ["remote::groq"],
-        "vector_io": ["inline::faiss", "remote::chromadb", "remote::pgvector"],
+        "vector_io": ["inline::faiss"],
         "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],
         "telemetry": ["inline::meta-reference"],
@@ -41,6 +45,25 @@ def get_distribution_template() -> DistributionTemplate:
         provider_id=name,
         provider_type=f"remote::{name}",
         config=GroqConfig.sample_run_config(),
+    )
+
+    embedding_provider = Provider(
+        provider_id="sentence-transformers",
+        provider_type="inline::sentence-transformers",
+        config=SentenceTransformersInferenceConfig.sample_run_config(),
+    )
+    vector_io_provider = Provider(
+        provider_id="faiss",
+        provider_type="inline::faiss",
+        config=FaissVectorIOConfig.sample_run_config(f"distributions/{name}"),
+    )
+    embedding_model = ModelInput(
+        model_id="all-MiniLM-L6-v2",
+        provider_id="sentence-transformers",
+        model_type=ModelType.embedding,
+        metadata={
+            "embedding_dimension": 384,
+        },
     )
 
     core_model_to_hf_repo = {m.descriptor(): m.huggingface_repo for m in all_registered_models()}
@@ -79,10 +102,9 @@ def get_distribution_template() -> DistributionTemplate:
         run_configs={
             "run.yaml": RunConfigSettings(
                 provider_overrides={
-                    "inference": [inference_provider],
+                    "inference": [inference_provider, embedding_provider],
                 },
-                default_models=default_models,
-                default_shields=[ShieldInput(shield_id="meta-llama/Llama-Guard-3-8B")],
+                default_models=default_models + [embedding_model],
                 default_tool_groups=default_tool_groups,
             ),
         },
