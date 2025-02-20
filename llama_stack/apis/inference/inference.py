@@ -165,6 +165,7 @@ class ToolResponse(BaseModel):
     call_id: str
     tool_name: Union[BuiltinTool, str]
     content: InterleavedContent
+    metadata: Optional[Dict[str, Any]] = None
 
     @field_validator("tool_name", mode="before")
     @classmethod

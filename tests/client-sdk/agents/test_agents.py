@@ -453,6 +453,7 @@ def test_rag_agent(llama_stack_client, agent_config):
         vector_db_id=vector_db_id,
         embedding_model="all-MiniLM-L6-v2",
         embedding_dimension=384,
+        provider_id="faiss",
     )
     llama_stack_client.tool_runtime.rag_tool.insert(
         documents=documents,
@@ -488,11 +489,13 @@ def test_rag_agent(llama_stack_client, agent_config):
         response = rag_agent.create_turn(
             messages=[{"role": "user", "content": prompt}],
             session_id=session_id,
+            stream=False,
         )
-        logs = [str(log) for log in EventLogger().log(response) if log is not None]
-        logs_str = "".join(logs)
-        assert "Tool:query_from_memory" in logs_str
-        assert expected_kw in logs_str.lower()
+        # rag is called
+        assert response.steps[0].tool_calls[0].tool_name == "query_from_memory"
+        # document ids are present in metadata
+        assert "num-0" in response.steps[0].tool_responses[0].metadata["document_ids"]
+        assert expected_kw in response.output_message.content
 
 
 def test_rag_and_code_agent(llama_stack_client, agent_config):
