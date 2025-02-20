@@ -93,9 +93,10 @@ html_theme_options = {
 
 html_static_path = ["../_static"]
 # html_logo = "../_static/llama-stack-logo.png"
-html_style = "../_static/css/my_theme.css"
+# html_style = "../_static/css/my_theme.css"
 
 def setup(app):
+    app.add_css_file("css/my_theme.css")
     def dockerhub_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
         url = f"https://hub.docker.com/r/llamastack/{text}"
         node = nodes.reference(rawtext, text, refuri=url, **options)
