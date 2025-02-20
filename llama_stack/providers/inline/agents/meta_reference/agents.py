@@ -174,12 +174,7 @@ class MetaReferenceAgentsImpl(Agents):
         agent_id: str,
         session_id: str,
         turn_id: str,
-        new_messages: List[
-            Union[
-                UserMessage,
-                ToolResponseMessage,
-            ]
-        ],
+        tool_responses: List[ToolResponseMessage],
     ) -> AsyncGenerator:
         pass
 
