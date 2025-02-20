@@ -8,8 +8,6 @@ import logging
 from typing import AsyncGenerator, List, Optional, Union
 
 from llama_models.datatypes import StopReason, ToolCall
-from llama_models.llama3.api.chat_format import ChatFormat
-from llama_models.llama3.api.tokenizer import Tokenizer
 from openai import OpenAI
 
 from llama_stack.apis.common.content_types import InterleavedContent, TextDelta, ToolCallDelta, ToolCallParseStatus
@@ -191,7 +189,6 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
     def __init__(self, config: VLLMInferenceAdapterConfig) -> None:
         self.register_helper = ModelRegistryHelper(build_model_aliases())
         self.config = config
-        self.formatter = ChatFormat(Tokenizer.get_instance())
         self.client = None
 
     async def initialize(self) -> None:
@@ -286,14 +283,14 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         if len(request.tools) > 0:
             res = _process_vllm_chat_completion_stream_response(stream)
         else:
-            res = process_chat_completion_stream_response(stream, self.formatter, request)
+            res = process_chat_completion_stream_response(stream, request)
         async for chunk in res:
             yield chunk
 
     async def _nonstream_completion(self, request: CompletionRequest) -> CompletionResponse:
         params = await self._get_params(request)
         r = self.client.completions.create(**params)
-        return process_completion_response(r, self.formatter)
+        return process_completion_response(r)
 
     async def _stream_completion(self, request: CompletionRequest) -> AsyncGenerator:
         params = await self._get_params(request)
@@ -305,7 +302,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
                 yield chunk
 
         stream = _to_async_generator()
-        async for chunk in process_completion_stream_response(stream, self.formatter):
+        async for chunk in process_completion_stream_response(stream):
             yield chunk
 
     async def register_model(self, model: Model) -> Model:
@@ -332,10 +329,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
             input_dict["messages"] = [await convert_message_to_openai_dict(m, download=True) for m in request.messages]
         else:
             assert not request_has_media(request), "vLLM does not support media for Completion requests"
-            input_dict["prompt"] = await completion_request_to_prompt(
-                request,
-                self.formatter,
-            )
+            input_dict["prompt"] = await completion_request_to_prompt(request)
 
         if fmt := request.response_format:
             if fmt.type == ResponseFormatType.json_schema.value:

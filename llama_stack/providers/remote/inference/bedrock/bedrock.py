@@ -8,8 +8,6 @@ import json
 from typing import AsyncGenerator, AsyncIterator, Dict, List, Optional, Union
 
 from botocore.client import BaseClient
-from llama_models.llama3.api.chat_format import ChatFormat
-from llama_models.llama3.api.tokenizer import Tokenizer
 
 from llama_stack.apis.common.content_types import InterleavedContent
 from llama_stack.apis.inference import (
@@ -54,7 +52,6 @@ class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
         self._config = config
 
         self._client = create_bedrock_client(config)
-        self.formatter = ChatFormat(Tokenizer.get_instance())
 
     @property
     def client(self) -> BaseClient:
@@ -119,7 +116,7 @@ class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
         )
 
         response = OpenAICompatCompletionResponse(choices=[choice])
-        return process_chat_completion_response(response, self.formatter, request)
+        return process_chat_completion_response(response, request)
 
     async def _stream_chat_completion(self, request: ChatCompletionRequest) -> AsyncGenerator:
         params = await self._get_params_for_chat_completion(request)
@@ -137,7 +134,7 @@ class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
                 yield OpenAICompatCompletionResponse(choices=[choice])
 
         stream = _generate_and_convert_to_openai_compat()
-        async for chunk in process_chat_completion_stream_response(stream, self.formatter, request):
+        async for chunk in process_chat_completion_stream_response(stream, request):
             yield chunk
 
     async def _get_params_for_chat_completion(self, request: ChatCompletionRequest) -> Dict:
@@ -151,7 +148,7 @@ class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
         if sampling_params.repetition_penalty > 0:
             options["repetition_penalty"] = sampling_params.repetition_penalty
 
-        prompt = await chat_completion_request_to_prompt(request, self.get_llama_model(request.model), self.formatter)
+        prompt = await chat_completion_request_to_prompt(request, self.get_llama_model(request.model))
         return {
             "modelId": bedrock_model,
             "body": json.dumps(
