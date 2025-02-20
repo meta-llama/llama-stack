@@ -647,7 +647,7 @@ paths:
           schema:
             type: string
   /v1/telemetry/spans/{span_id}/tree:
-    get:
+    post:
       responses:
         '200':
           description: OK
@@ -664,18 +664,12 @@ paths:
           required: true
           schema:
             type: string
-        - name: attributes_to_return
-          in: query
-          required: false
-          schema:
-            type: array
-            items:
-              type: string
-        - name: max_depth
-          in: query
-          required: false
-          schema:
-            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetSpanTreeRequest'
+        required: true
   /v1/tools/{tool_name}:
     get:
       responses:
@@ -1370,7 +1364,7 @@ paths:
               $ref: '#/components/schemas/QueryChunksRequest'
         required: true
   /v1/telemetry/spans:
-    get:
+    post:
       responses:
         '200':
           description: OK
@@ -1381,28 +1375,15 @@ paths:
       tags:
         - Telemetry
       description: ''
-      parameters:
-        - name: attribute_filters
-          in: query
-          required: true
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/QueryCondition'
-        - name: attributes_to_return
-          in: query
-          required: true
-          schema:
-            type: array
-            items:
-              type: string
-        - name: max_depth
-          in: query
-          required: false
-          schema:
-            type: integer
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuerySpansRequest'
+        required: true
   /v1/telemetry/traces:
-    get:
+    post:
       responses:
         '200':
           description: OK
@@ -1413,31 +1394,13 @@ paths:
       tags:
         - Telemetry
       description: ''
-      parameters:
-        - name: attribute_filters
-          in: query
-          required: false
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/QueryCondition'
-        - name: limit
-          in: query
-          required: false
-          schema:
-            type: integer
-        - name: offset
-          in: query
-          required: false
-          schema:
-            type: integer
-        - name: order_by
-          in: query
-          required: false
-          schema:
-            type: array
-            items:
-              type: string
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryTracesRequest'
+        required: true
   /v1/eval/benchmarks/{benchmark_id}/jobs:
     post:
       responses:
@@ -3933,6 +3896,17 @@ components:
         - name
         - start_time
       title: Span
+    GetSpanTreeRequest:
+      type: object
+      properties:
+        attributes_to_return:
+          type: array
+          items:
+            type: string
+        max_depth:
+          type: integer
+      additionalProperties: false
+      title: GetSpanTreeRequest
     SpanStatus:
       type: string
       enum:
@@ -4975,6 +4949,24 @@ components:
         - gt
         - lt
       title: QueryConditionOp
+    QuerySpansRequest:
+      type: object
+      properties:
+        attribute_filters:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueryCondition'
+        attributes_to_return:
+          type: array
+          items:
+            type: string
+        max_depth:
+          type: integer
+      additionalProperties: false
+      required:
+        - attribute_filters
+        - attributes_to_return
+      title: QuerySpansRequest
     QuerySpansResponse:
       type: object
       properties:
@@ -4986,6 +4978,23 @@ components:
       required:
         - data
       title: QuerySpansResponse
+    QueryTracesRequest:
+      type: object
+      properties:
+        attribute_filters:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueryCondition'
+        limit:
+          type: integer
+        offset:
+          type: integer
+        order_by:
+          type: array
+          items:
+            type: string
+      additionalProperties: false
+      title: QueryTracesRequest
     QueryTracesResponse:
       type: object
       properties:
