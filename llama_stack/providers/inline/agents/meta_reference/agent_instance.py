@@ -31,6 +31,7 @@ from llama_stack.apis.agents import (
     AgentTurnResponseStepStartPayload,
     AgentTurnResponseStreamChunk,
     AgentTurnResponseTurnCompletePayload,
+    AgentTurnResponseTurnPendingPayload,
     AgentTurnResponseTurnStartPayload,
     Attachment,
     Document,
@@ -62,7 +63,11 @@ from llama_stack.apis.inference import (
 from llama_stack.apis.safety import Safety
 from llama_stack.apis.tools import RAGDocument, RAGQueryConfig, ToolGroups, ToolRuntime
 from llama_stack.apis.vector_io import VectorIO
-from llama_stack.models.llama.datatypes import BuiltinTool, ToolCall, ToolParamDefinition
+from llama_stack.models.llama.datatypes import (
+    BuiltinTool,
+    ToolCall,
+    ToolParamDefinition,
+)
 from llama_stack.providers.utils.kvstore import KVStore
 from llama_stack.providers.utils.memory.vector_store import concat_interleaved_content
 from llama_stack.providers.utils.telemetry import tracing
@@ -222,6 +227,15 @@ class ChatAgent(ShieldRunnerMixin):
             )
             await self.storage.add_turn_to_session(request.session_id, turn)
 
+        if output_message.tool_calls:
+            chunk = AgentTurnResponseStreamChunk(
+                event=AgentTurnResponseEvent(
+                    payload=AgentTurnResponseTurnPendingPayload(
+                        turn=turn,
+                    )
+                )
+            )
+        else:
             chunk = AgentTurnResponseStreamChunk(
                 event=AgentTurnResponseEvent(
                     payload=AgentTurnResponseTurnCompletePayload(
@@ -229,7 +243,8 @@ class ChatAgent(ShieldRunnerMixin):
                     )
                 )
             )
-            yield chunk
+
+        yield chunk
 
     async def run(
         self,

@@ -19,8 +19,12 @@ from llama_stack_client.types.shared.completion_message import CompletionMessage
 from llama_stack_client.types.shared_params.agent_config import AgentConfig, ToolConfig
 from llama_stack_client.types.tool_def_param import Parameter
 
-from llama_stack.apis.agents.agents import AgentConfig as Server__AgentConfig
-from llama_stack.apis.agents.agents import ToolChoice
+from llama_stack.apis.agents.agents import (
+    AgentConfig as Server__AgentConfig,
+)
+from llama_stack.apis.agents.agents import (
+    ToolChoice,
+)
 
 
 class TestClientTool(ClientTool):
@@ -314,6 +318,10 @@ def test_custom_tool(llama_stack_client, agent_config):
         ],
         session_id=session_id,
     )
+    from rich.pretty import pprint
+
+    for x in response:
+        pprint(x)
 
     logs = [str(log) for log in EventLogger().log(response) if log is not None]
     logs_str = "".join(logs)
