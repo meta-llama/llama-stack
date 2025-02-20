@@ -175,7 +175,7 @@ class MetaReferenceAgentsImpl(Agents):
         session_id: str,
         turn_id: str,
         tool_response_messages: List[ToolResponseMessage],
-    ) -> Union[Turn, AsyncIterator[AgentTurnResponseStreamChunk]]:
+    ) -> AsyncGenerator:
         pass
 
     async def get_agents_turn(self, agent_id: str, session_id: str, turn_id: str) -> Turn:
