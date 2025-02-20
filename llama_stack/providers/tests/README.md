@@ -12,6 +12,20 @@ We use `pytest` and all of its dynamism to enable the features needed. Specifica
 
 - We use `pytest_collection_modifyitems` to filter tests based on the test config (if specified).
 
+## Pre-requisites
+
+Your development environment should have been configured as per the instructions in the
+[CONTRIBUTING.md](../../../CONTRIBUTING.md) file. In particular, make sure to install the test extra
+dependencies. Below is the full configuration:
+
+
+```bash
+$ cd llama-stack
+$ uv sync --extra dev --extra test
+$ uv pip install -e .
+$ source .venv/bin/activate
+```
+
 ## Common options
 
 All tests support a `--providers` option which can be a string of the form `api1=provider_fixture1,api2=provider_fixture2`. So, when testing safety (which need inference and safety APIs) you can use `--providers inference=together,safety=meta_reference` to use these fixtures in concert.
@@ -49,6 +63,9 @@ pytest -s -v llama_stack/providers/tests/inference/test_text_inference.py \
   --inference-model "meta-llama/Llama3.1-70B-Instruct" \
   --env FIREWORKS_API_KEY=<...>
 ```
+
+> [!TIP]
+> If you’re using `uv`, you can isolate test executions by prefixing all commands with `uv run pytest...`.
 
 ## Agents
 
