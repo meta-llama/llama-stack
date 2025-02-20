@@ -43,12 +43,12 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
     interleaved_content_as_str,
 )
 
-from .models import MODEL_ALIASES
+from .models import MODEL_ENTRIES
 
 
 class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
     def __init__(self, config: BedrockConfig) -> None:
-        ModelRegistryHelper.__init__(self, MODEL_ALIASES)
+        ModelRegistryHelper.__init__(self, MODEL_ENTRIES)
         self._config = config
 
         self._client = create_bedrock_client(config)

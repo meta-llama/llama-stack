@@ -14,7 +14,7 @@ from llama_stack.providers.inline.inference.sentence_transformers import (
 )
 from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOConfig
 from llama_stack.providers.remote.inference.cerebras import CerebrasImplConfig
-from llama_stack.providers.remote.inference.cerebras.models import model_aliases
+from llama_stack.providers.remote.inference.cerebras.models import model_entries
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
 
@@ -55,7 +55,7 @@ def get_distribution_template() -> DistributionTemplate:
             provider_model_id=m.provider_model_id,
             provider_id="cerebras",
         )
-        for m in model_aliases
+        for m in model_entries
     ]
     embedding_model = ModelInput(
         model_id="all-MiniLM-L6-v2",

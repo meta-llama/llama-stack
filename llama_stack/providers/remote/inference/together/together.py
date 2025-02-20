@@ -46,12 +46,12 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 )
 
 from .config import TogetherImplConfig
-from .models import MODEL_ALIASES
+from .models import MODEL_ENTRIES
 
 
 class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProviderData):
     def __init__(self, config: TogetherImplConfig) -> None:
-        ModelRegistryHelper.__init__(self, MODEL_ALIASES)
+        ModelRegistryHelper.__init__(self, MODEL_ENTRIES)
         self.config = config
 
     async def initialize(self) -> None:

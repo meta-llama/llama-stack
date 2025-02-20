@@ -38,7 +38,7 @@ from llama_stack.models.llama.sku_list import all_registered_models
 from llama_stack.providers.datatypes import ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
-    build_hf_repo_model_alias,
+    build_hf_repo_model_entry,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
     OpenAICompatCompletionResponse,
@@ -62,9 +62,9 @@ from .config import VLLMInferenceAdapterConfig
 log = logging.getLogger(__name__)
 
 
-def build_hf_repo_model_aliases():
+def build_hf_repo_model_entries():
     return [
-        build_hf_repo_model_alias(
+        build_hf_repo_model_entry(
             model.huggingface_repo,
             model.descriptor(),
         )
@@ -204,7 +204,7 @@ async def _process_vllm_chat_completion_stream_response(
 
 class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
     def __init__(self, config: VLLMInferenceAdapterConfig) -> None:
-        self.register_helper = ModelRegistryHelper(build_hf_repo_model_aliases())
+        self.register_helper = ModelRegistryHelper(build_hf_repo_model_entries())
         self.config = config
         self.client = None
 

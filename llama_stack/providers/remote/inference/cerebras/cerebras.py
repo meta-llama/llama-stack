@@ -41,14 +41,14 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 )
 
 from .config import CerebrasImplConfig
-from .models import model_aliases
+from .models import model_entries
 
 
 class CerebrasInferenceAdapter(ModelRegistryHelper, Inference):
     def __init__(self, config: CerebrasImplConfig) -> None:
         ModelRegistryHelper.__init__(
             self,
-            model_aliases=model_aliases,
+            model_entries=model_entries,
         )
         self.config = config
 

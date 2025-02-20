@@ -130,7 +130,7 @@ llama stack run ./run-with-safety.yaml \
 ### (Optional) Update Model Serving Configuration
 
 ```{note}
-Please check the [model_aliases](https://github.com/meta-llama/llama-stack/blob/main/llama_stack/providers/remote/inference/ollama/ollama.py#L45) for the supported Ollama models.
+Please check the [model_entries](https://github.com/meta-llama/llama-stack/blob/main/llama_stack/providers/remote/inference/ollama/ollama.py#L45) for the supported Ollama models.
 ```
 
 To serve a new model with `ollama`

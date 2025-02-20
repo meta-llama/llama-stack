@@ -14,7 +14,7 @@ from llama_stack.distribution.datatypes import (
 )
 from llama_stack.models.llama.sku_list import all_registered_models
 from llama_stack.providers.remote.inference.sambanova import SambaNovaImplConfig
-from llama_stack.providers.remote.inference.sambanova.models import MODEL_ALIASES
+from llama_stack.providers.remote.inference.sambanova.models import MODEL_ENTRIES
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
 
@@ -47,7 +47,7 @@ def get_distribution_template() -> DistributionTemplate:
             provider_model_id=m.provider_model_id,
             provider_id=name,
         )
-        for m in MODEL_ALIASES
+        for m in MODEL_ENTRIES
     ]
 
     default_tool_groups = [

@@ -31,12 +31,12 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 )
 
 from .config import SambaNovaImplConfig
-from .models import MODEL_ALIASES
+from .models import MODEL_ENTRIES
 
 
 class SambaNovaInferenceAdapter(ModelRegistryHelper, Inference):
     def __init__(self, config: SambaNovaImplConfig) -> None:
-        ModelRegistryHelper.__init__(self, model_aliases=MODEL_ALIASES)
+        ModelRegistryHelper.__init__(self, model_entries=MODEL_ENTRIES)
         self.config = config
 
     async def initialize(self) -> None:
