@@ -25,7 +25,7 @@ from llama_stack.apis.inference import (
 from llama_stack.models.llama.datatypes import CoreModelId
 from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
-    build_model_alias,
+    build_hf_repo_model_alias,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
     get_sampling_options,
@@ -39,11 +39,11 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 from .config import DatabricksImplConfig
 
 model_aliases = [
-    build_model_alias(
+    build_hf_repo_model_alias(
         "databricks-meta-llama-3-1-70b-instruct",
         CoreModelId.llama3_1_70b_instruct.value,
     ),
-    build_model_alias(
+    build_hf_repo_model_alias(
         "databricks-meta-llama-3-1-405b-instruct",
         CoreModelId.llama3_1_405b_instruct.value,
     ),
