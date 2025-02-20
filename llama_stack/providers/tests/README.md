@@ -104,3 +104,6 @@ pytest llama_stack/providers/tests/ --config=ci_test_config.yaml
 Currently, we support test config on inference, agents and memory api tests.
 
 Example format of test config can be found in ci_test_config.yaml.
+
+## Test Data
+We encourage providers to use our test data for internal development testing, so to make it easier and consistent with the tests we provide. Each test case may define its own data format, and please refer to our test source code to get details on how these fields are used in the test.
