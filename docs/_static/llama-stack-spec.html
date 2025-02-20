@@ -2558,6 +2558,67 @@
                 }
             }
         },
+        "/v1/agents/{agent_id}/session/{session_id}/turn/{turn_id}/submit_tool_response_messages": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "A single turn in an interaction with an Agentic System. **OR** streamed agent turn completion response.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Turn"
+                                }
+                            },
+                            "text/event-stream": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AgentTurnResponseStreamChunk"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Agents"
+                ],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "agent_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "session_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "turn_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SubmitToolResponseMessagesRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/v1/post-training/supervised-fine-tune": {
             "post": {
                 "responses": {
@@ -5231,6 +5292,9 @@
                     },
                     {
                         "$ref": "#/components/schemas/AgentTurnResponseTurnCompletePayload"
+                    },
+                    {
+                        "$ref": "#/components/schemas/AgentTurnResponseTurnPendingPayload"
                     }
                 ],
                 "discriminator": {
@@ -5240,7 +5304,8 @@
                         "step_progress": "#/components/schemas/AgentTurnResponseStepProgressPayload",
                         "step_complete": "#/components/schemas/AgentTurnResponseStepCompletePayload",
                         "turn_start": "#/components/schemas/AgentTurnResponseTurnStartPayload",
-                        "turn_complete": "#/components/schemas/AgentTurnResponseTurnCompletePayload"
+                        "turn_complete": "#/components/schemas/AgentTurnResponseTurnCompletePayload",
+                        "turn_pending": "#/components/schemas/AgentTurnResponseTurnPendingPayload"
                     }
                 }
             },
@@ -5421,6 +5486,25 @@
                     "turn"
                 ],
                 "title": "AgentTurnResponseTurnCompletePayload"
+            },
+            "AgentTurnResponseTurnPendingPayload": {
+                "type": "object",
+                "properties": {
+                    "event_type": {
+                        "type": "string",
+                        "const": "turn_pending",
+                        "default": "turn_pending"
+                    },
+                    "turn": {
+                        "$ref": "#/components/schemas/Turn"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "event_type",
+                    "turn"
+                ],
+                "title": "AgentTurnResponseTurnPendingPayload"
             },
             "AgentTurnResponseTurnStartPayload": {
                 "type": "object",
@@ -8238,6 +8322,22 @@
                     "results"
                 ],
                 "title": "ScoreBatchResponse"
+            },
+            "SubmitToolResponseMessagesRequest": {
+                "type": "object",
+                "properties": {
+                    "tool_response_messages": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ToolResponseMessage"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "tool_response_messages"
+                ],
+                "title": "SubmitToolResponseMessagesRequest"
             },
             "AlgorithmConfig": {
                 "oneOf": [
