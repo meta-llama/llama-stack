@@ -4,8 +4,10 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+from llama_stack.apis.models.models import ModelType
 from llama_stack.models.llama.datatypes import CoreModelId
 from llama_stack.providers.utils.inference.model_registry import (
+    ProviderModelEntry,
     build_hf_repo_model_entry,
 )
 
@@ -49,5 +51,13 @@ MODEL_ENTRIES = [
     build_hf_repo_model_entry(
         "accounts/fireworks/models/llama-guard-3-11b-vision",
         CoreModelId.llama_guard_3_11b_vision.value,
+    ),
+    ProviderModelEntry(
+        provider_model_id="nomic-ai/nomic-embed-text-v1.5",
+        model_type=ModelType.embedding,
+        metadata={
+            "embedding_dimensions": 768,
+            "context_length": 8192,
+        },
     ),
 ]

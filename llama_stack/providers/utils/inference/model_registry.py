@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -23,6 +23,7 @@ class ProviderModelEntry(BaseModel):
     aliases: List[str] = Field(default_factory=list)
     llama_model: Optional[str] = None
     model_type: ModelType = ModelType.llm
+    metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
 def get_huggingface_repo(model_descriptor: str) -> Optional[str]:
@@ -47,6 +48,7 @@ def build_model_entry(provider_model_id: str, model_descriptor: str) -> Provider
         provider_model_id=provider_model_id,
         aliases=[],
         llama_model=model_descriptor,
+        model_type=ModelType.llm,
     )
 
 

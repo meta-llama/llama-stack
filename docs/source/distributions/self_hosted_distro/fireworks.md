@@ -47,6 +47,7 @@ The following models are available by default:
 - `meta-llama/Llama-3.3-70B-Instruct (accounts/fireworks/models/llama-v3p3-70b-instruct)`
 - `meta-llama/Llama-Guard-3-8B (accounts/fireworks/models/llama-guard-3-8b)`
 - `meta-llama/Llama-Guard-3-11B-Vision (accounts/fireworks/models/llama-guard-3-11b-vision)`
+- `nomic-ai/nomic-embed-text-v1.5 (nomic-ai/nomic-embed-text-v1.5)`
 
 
 ### Prerequisite: API Keys
