@@ -37,6 +37,9 @@ build_name="$1"
 env_name="llamastack-$build_name"
 pip_dependencies="$2"
 
+# whether we want to install dependencies in current system python environment
+system_install="$4"
+
 # Define color codes
 RED='\033[0;31m'
 NC='\033[0m' # No Color
@@ -73,11 +76,17 @@ run() {
   local env_name="$1"
   local pip_dependencies="$2"
   local special_pip_deps="$3"
+  local system_install="$4"
+  
+  if [ "$SYSTEM_INSTALL" = true ]; then
+    echo "Installing dependencies in system Python environment"
+  else
+    echo "Using virtual environment $env_name"
+    uv venv "$env_name"
+    # shellcheck source=/dev/null
+    source "$env_name/bin/activate"
+  fi
 
-  echo "Using virtual environment $env_name"
-  uv venv "$env_name"
-  # shellcheck source=/dev/null
-  source "$env_name/bin/activate"
   if [ -n "$TEST_PYPI_VERSION" ]; then
     # these packages are damaged in test-pypi, so install them first
     uv pip install fastapi libcst

@@ -122,11 +122,13 @@ def build_image(
             " ".join(normal_deps),
         ]
     elif build_config.image_type == ImageType.venv.value:
+        system_install = True
         script = str(importlib.resources.files("llama_stack") / "distribution/build_venv.sh")
         args = [
             script,
             str(image_name),
             " ".join(normal_deps),
+            str(system_install),
         ]
 
     if special_deps:
