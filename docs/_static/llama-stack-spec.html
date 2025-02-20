@@ -4724,11 +4724,6 @@
             "BenchmarkConfig": {
                 "type": "object",
                 "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "benchmark",
-                        "default": "benchmark"
-                    },
                     "eval_candidate": {
                         "$ref": "#/components/schemas/EvalCandidate"
                     },
@@ -4744,7 +4739,6 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "type",
                     "eval_candidate",
                     "scoring_params"
                 ],
