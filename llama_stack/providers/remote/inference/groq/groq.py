@@ -31,8 +31,8 @@ from llama_stack.models.llama.sku_list import CoreModelId
 from llama_stack.providers.remote.inference.groq.config import GroqConfig
 from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
+    build_hf_repo_model_alias,
     build_model_alias,
-    build_model_alias_with_just_provider_model_id,
 )
 
 from .groq_utils import (
@@ -42,19 +42,19 @@ from .groq_utils import (
 )
 
 _MODEL_ALIASES = [
-    build_model_alias(
+    build_hf_repo_model_alias(
         "llama3-8b-8192",
         CoreModelId.llama3_1_8b_instruct.value,
     ),
-    build_model_alias_with_just_provider_model_id(
+    build_model_alias(
         "llama-3.1-8b-instant",
         CoreModelId.llama3_1_8b_instruct.value,
     ),
-    build_model_alias(
+    build_hf_repo_model_alias(
         "llama3-70b-8192",
         CoreModelId.llama3_70b_instruct.value,
     ),
-    build_model_alias(
+    build_hf_repo_model_alias(
         "llama-3.3-70b-versatile",
         CoreModelId.llama3_3_70b_instruct.value,
     ),
@@ -62,7 +62,7 @@ _MODEL_ALIASES = [
     # Preview models aren't recommended for production use, but we include this one
     # to pass the test fixture
     # TODO(aidand): Replace this with a stable model once Groq supports it
-    build_model_alias(
+    build_hf_repo_model_alias(
         "llama-3.2-3b-preview",
         CoreModelId.llama3_2_3b_instruct.value,
     ),

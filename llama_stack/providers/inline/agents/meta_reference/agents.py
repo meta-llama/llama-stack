@@ -169,12 +169,17 @@ class MetaReferenceAgentsImpl(Agents):
         async for event in agent.create_and_execute_turn(request):
             yield event
 
-    async def submit_tool_response_messages(
+    async def continue_agent_turn(
         self,
         agent_id: str,
         session_id: str,
         turn_id: str,
-        tool_response_messages: List[ToolResponseMessage],
+        new_messages: List[
+            Union[
+                UserMessage,
+                ToolResponseMessage,
+            ]
+        ],
     ) -> AsyncGenerator:
         pass
 

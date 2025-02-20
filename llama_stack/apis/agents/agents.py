@@ -194,7 +194,7 @@ class AgentTurnResponseEventType(Enum):
 
     turn_start = "turn_start"
     turn_complete = "turn_complete"
-    turn_pending = "turn_pending"
+    turn_awaiting_input = "turn_awaiting_input"
 
 
 @json_schema_type
@@ -237,8 +237,10 @@ class AgentTurnResponseTurnCompletePayload(BaseModel):
 
 
 @json_schema_type
-class AgentTurnResponseTurnPendingPayload(BaseModel):
-    event_type: Literal[AgentTurnResponseEventType.turn_pending.value] = AgentTurnResponseEventType.turn_pending.value
+class AgentTurnResponseTurnAwaitingInputPayload(BaseModel):
+    event_type: Literal[AgentTurnResponseEventType.turn_awaiting_input.value] = (
+        AgentTurnResponseEventType.turn_awaiting_input.value
+    )
     turn: Turn
 
 
@@ -250,7 +252,7 @@ AgentTurnResponseEventPayload = register_schema(
             AgentTurnResponseStepCompletePayload,
             AgentTurnResponseTurnStartPayload,
             AgentTurnResponseTurnCompletePayload,
-            AgentTurnResponseTurnPendingPayload,
+            AgentTurnResponseTurnAwaitingInputPayload,
         ],
         Field(discriminator="event_type"),
     ],
@@ -344,15 +346,20 @@ class Agents(Protocol):
     ) -> Union[Turn, AsyncIterator[AgentTurnResponseStreamChunk]]: ...
 
     @webmethod(
-        route="/agents/{agent_id}/session/{session_id}/turn/{turn_id}/tool_responses",
+        route="/agents/{agent_id}/session/{session_id}/turn/{turn_id}/continue",
         method="POST",
     )
-    async def submit_tool_responses(
+    async def continue_agent_turn(
         self,
         agent_id: str,
         session_id: str,
         turn_id: str,
-        tool_responses: Dict[str, ToolResponseMessage],
+        new_messages: List[
+            Union[
+                UserMessage,
+                ToolResponseMessage,
+            ]
+        ],
     ) -> Union[Turn, AsyncIterator[AgentTurnResponseStreamChunk]]: ...
 
     @webmethod(

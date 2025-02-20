@@ -32,7 +32,7 @@ from llama_stack.models.llama.sku_list import all_registered_models
 from llama_stack.providers.datatypes import ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
-    build_model_alias,
+    build_hf_repo_model_alias,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
     OpenAICompatCompletionChoice,
@@ -53,9 +53,9 @@ from .config import InferenceAPIImplConfig, InferenceEndpointImplConfig, TGIImpl
 log = logging.getLogger(__name__)
 
 
-def build_model_aliases():
+def build_hf_repo_model_aliases():
     return [
-        build_model_alias(
+        build_hf_repo_model_alias(
             model.huggingface_repo,
             model.descriptor(),
         )
@@ -70,7 +70,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
     model_id: str
 
     def __init__(self) -> None:
-        self.register_helper = ModelRegistryHelper(build_model_aliases())
+        self.register_helper = ModelRegistryHelper(build_hf_repo_model_aliases())
         self.huggingface_repo_to_llama_model_id = {
             model.huggingface_repo: model.descriptor() for model in all_registered_models() if model.huggingface_repo
         }
