@@ -83,7 +83,6 @@ model_entries = [
         "llama-guard3:1b",
         CoreModelId.llama_guard_3_1b.value,
     ),
-] + [
     ProviderModelEntry(
         provider_model_id="all-minilm",
         model_type=ModelType.embedding,
