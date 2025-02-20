@@ -128,7 +128,6 @@ def build_image(
             script,
             str(image_name),
             " ".join(normal_deps),
-            str(system_install),
         ]
 
     if special_deps:

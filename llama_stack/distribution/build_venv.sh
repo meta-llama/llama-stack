@@ -29,7 +29,7 @@ if [ "$#" -lt 3 ]; then
   exit 1
 fi
 
-special_pip_deps="$4"
+special_pip_deps="$3"
 
 set -euo pipefail
 
@@ -85,7 +85,7 @@ run() {
 
   if [ -n "$TEST_PYPI_VERSION" ]; then
     # these packages are damaged in test-pypi, so install them first
-    uv pip install  fastapi libcst
+    uv pip install fastapi libcst
     # shellcheck disable=SC2086
     # we are building a command line so word splitting is expected
     uv pip install --extra-index-url https://test.pypi.org/simple/ \
@@ -129,7 +129,7 @@ run() {
     printf "Installing pip dependencies\n"
     # shellcheck disable=SC2086
     # we are building a command line so word splitting is expected
-    uv pip install  $pip_dependencies
+    uv pip install $pip_dependencies
     if [ -n "$special_pip_deps" ]; then
       IFS='#' read -ra parts <<<"$special_pip_deps"
       for part in "${parts[@]}"; do
