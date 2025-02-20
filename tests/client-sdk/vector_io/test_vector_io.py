@@ -11,7 +11,7 @@ import pytest
 INLINE_VECTOR_DB_PROVIDERS = [
     "faiss",
     # TODO: add sqlite_vec to templates
-    # "sqlite_vec",
+    "sqlite_vec",
 ]
 
 
