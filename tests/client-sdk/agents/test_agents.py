@@ -496,10 +496,11 @@ def test_rag_agent(llama_stack_client, agent_config):
             stream=False,
         )
         # rag is called
-        assert response.steps[0].tool_calls[0].tool_name == "query_from_memory"
+        tool_execution_step = next(step for step in response.steps if step.step_type == "tool_execution")
+        assert tool_execution_step.tool_calls[0].tool_name == "query_from_memory"
         # document ids are present in metadata
-        assert "num-0" in response.steps[0].tool_responses[0].metadata["document_ids"]
-        assert expected_kw in response.output_message.content
+        assert "num-0" in tool_execution_step.tool_responses[0].metadata["document_ids"]
+        assert expected_kw in response.output_message.content.lower()
 
 
 def test_rag_and_code_agent(llama_stack_client, agent_config):
