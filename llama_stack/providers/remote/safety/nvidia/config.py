@@ -4,16 +4,11 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 import os
-from enum import Enum
 from typing import Any, Dict, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field
 
 from llama_stack.schema_utils import json_schema_type
-
-
-class ShieldType(Enum):
-    self_check = "self_check"
 
 
 @json_schema_type
@@ -41,14 +36,6 @@ class NVIDIASafetyConfig(BaseModel):
         description="The url for accessing the guardrails service",
     )
     config_id: Optional[str] = Field(default="self-check", description="Config ID to use from the config store")
-    config_store_path: Optional[str] = Field(default="/config-store", description="Path to config store")
-
-    @classmethod
-    @field_validator("guard_type")
-    def validate_guard_type(cls, v):
-        if v not in [t.value for t in ShieldType]:
-            raise ValueError(f"Unknown shield type: {v}")
-        return v
 
     @classmethod
     def sample_run_config(cls, **kwargs) -> Dict[str, Any]:

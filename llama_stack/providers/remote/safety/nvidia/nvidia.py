@@ -24,7 +24,6 @@ class NVIDIASafetyAdapter(Safety, ShieldsProtocolPrivate):
     def __init__(self, config: NVIDIASafetyConfig) -> None:
         print(f"Initializing NVIDIASafetyAdapter({config.guardrails_service_url})...")
         self.config = config
-        self.registered_shields = []
 
     async def initialize(self) -> None:
         pass
@@ -56,7 +55,6 @@ class NeMoGuardrails:
         temperature: float = 1.0,
     ):
         self.config_id = config.config_id
-        self.config_store_path = config.config_store_path
         self.model = model
         assert self.config_id is not None or self.config_store_path is not None, (
             "Must provide one of config id or config store path"
@@ -64,7 +62,6 @@ class NeMoGuardrails:
         if temperature <= 0:
             raise ValueError("Temperature must be greater than 0")
 
-        self.config = config
         self.temperature = temperature
         self.threshold = threshold
         self.guardrails_service_url = config.guardrails_service_url
@@ -89,7 +86,6 @@ class NeMoGuardrails:
         response = requests.post(
             url=f"{self.guardrails_service_url}/v1/guardrail/checks", headers=headers, json=request_data
         )
-        print(response)
         response.raise_for_status()
         if "Content-Type" in response.headers and response.headers["Content-Type"].startswith("application/json"):
             response_json = response.json()
