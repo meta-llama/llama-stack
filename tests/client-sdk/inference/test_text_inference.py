@@ -250,9 +250,12 @@ def test_text_chat_completion_with_tool_calling_and_streaming(
     assert tool_invocation_content == "[get_weather, {'location': 'San Francisco, CA'}]"
 
 
-@pytest.mark.parametrize("test_case", ["chat_completion-01"])
 def test_text_chat_completion_with_tool_choice_required(
-    llama_stack_client, text_model_id, get_weather_tool_definition, provider_tool_format, inference_provider_type
+    llama_stack_client,
+    text_model_id,
+    get_weather_tool_definition,
+    provider_tool_format,
+    inference_provider_type,
 ):
     response = llama_stack_client.inference.chat_completion(
         model_id=text_model_id,
@@ -261,7 +264,10 @@ def test_text_chat_completion_with_tool_choice_required(
             {"role": "user", "content": "What's the weather like in San Francisco?"},
         ],
         tools=[get_weather_tool_definition],
-        tool_config={"tool_choice": "required", "tool_prompt_format": provider_tool_format},
+        tool_config={
+            "tool_choice": "required",
+            "tool_prompt_format": provider_tool_format,
+        },
         stream=True,
     )
     tool_invocation_content = extract_tool_invocation_content(response)
