@@ -11,8 +11,6 @@ import tempfile
 import uuid
 from typing import AsyncGenerator, List, Optional, Union
 
-from termcolor import colored
-
 from llama_stack.apis.agents import (
     AgentConfig,
     AgentCreateResponse,
@@ -69,12 +67,7 @@ class MetaReferenceAgentsImpl(Agents):
 
         # check if "bwrap" is available
         if not shutil.which("bwrap"):
-            print(
-                colored(
-                    "Warning: `bwrap` is not available. Code interpreter tool will not work correctly.",
-                    "yellow",
-                )
-            )
+            logger.warning("Warning: `bwrap` is not available. Code interpreter tool will not work correctly.")
 
     async def create_agent(
         self,

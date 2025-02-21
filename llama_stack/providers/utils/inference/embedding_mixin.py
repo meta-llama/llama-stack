@@ -35,7 +35,9 @@ class SentenceTransformerEmbeddingMixin:
     ) -> EmbeddingsResponse:
         model = await self.model_store.get_model(model_id)
         embedding_model = self._load_sentence_transformer_model(model.provider_resource_id)
-        embeddings = embedding_model.encode([interleaved_content_as_str(content) for content in contents])
+        embeddings = embedding_model.encode(
+            [interleaved_content_as_str(content) for content in contents], show_progress_bar=False
+        )
         return EmbeddingsResponse(embeddings=embeddings)
 
     def _load_sentence_transformer_model(self, model: str) -> "SentenceTransformer":

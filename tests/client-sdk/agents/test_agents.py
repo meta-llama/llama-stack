@@ -90,7 +90,6 @@ class TestClientTool(ClientTool):
 def agent_config(llama_stack_client, text_model_id):
     available_shields = [shield.identifier for shield in llama_stack_client.shields.list()]
     available_shields = available_shields[:1]
-    print(f"Using shield: {available_shields}")
     agent_config = AgentConfig(
         model=text_model_id,
         instructions="You are a helpful assistant",
@@ -489,7 +488,6 @@ def test_rag_agent(llama_stack_client, agent_config):
         ),
     ]
     for prompt, expected_kw in user_prompts:
-        print(f"User> {prompt}")
         response = rag_agent.create_turn(
             messages=[{"role": "user", "content": prompt}],
             session_id=session_id,
