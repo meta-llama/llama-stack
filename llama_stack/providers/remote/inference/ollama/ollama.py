@@ -280,6 +280,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         return EmbeddingsResponse(embeddings=embeddings)
 
     async def register_model(self, model: Model) -> Model:
+        model = await self.register_helper.register_model(model)
         if model.model_type == ModelType.embedding:
             log.info(f"Pulling embedding model `{model.provider_resource_id}` if necessary...")
             await self.client.pull(model.provider_resource_id)
@@ -292,7 +293,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
                 f"Model '{model.provider_resource_id}' is not available in Ollama. Available models: {', '.join(available_models)}"
             )
 
-        return await self.register_helper.register_model(model)
+        return model
 
 
 async def convert_message_to_openai_dict_for_ollama(message: Message) -> List[dict]:
