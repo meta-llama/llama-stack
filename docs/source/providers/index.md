@@ -31,7 +31,7 @@ Importantly, Llama Stack always strives to provide at least one fully "local" pr
 
 ## Tool Runtime
 
-## [Vector DBs](vector_db/index.md)
+## Vector DBs
 
 ```{toctree}
 :maxdepth: 1
