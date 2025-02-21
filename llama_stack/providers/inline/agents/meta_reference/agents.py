@@ -146,6 +146,7 @@ class MetaReferenceAgentsImpl(Agents):
         documents: Optional[List[Document]] = None,
         stream: Optional[bool] = False,
         tool_config: Optional[ToolConfig] = None,
+        allow_turn_resume: Optional[bool] = False,
     ) -> AsyncGenerator:
         request = AgentTurnCreateRequest(
             agent_id=agent_id,
@@ -155,6 +156,7 @@ class MetaReferenceAgentsImpl(Agents):
             toolgroups=toolgroups,
             documents=documents,
             tool_config=tool_config,
+            allow_turn_resume=allow_turn_resume,
         )
         if stream:
             return self._create_agent_turn_streaming(request)
