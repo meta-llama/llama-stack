@@ -1401,6 +1401,45 @@ paths:
             schema:
               $ref: '#/components/schemas/QueryTracesRequest'
         required: true
+  /v1/agents/{agent_id}/session/{session_id}/turn/{turn_id}/resume:
+    post:
+      responses:
+        '200':
+          description: >-
+            A single turn in an interaction with an Agentic System. **OR** streamed
+            agent turn completion response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Turn'
+            text/event-stream:
+              schema:
+                $ref: '#/components/schemas/AgentTurnResponseStreamChunk'
+      tags:
+        - Agents
+      description: ''
+      parameters:
+        - name: agent_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: turn_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResumeAgentTurnRequest'
+        required: true
   /v1/eval/benchmarks/{benchmark_id}/jobs:
     post:
       responses:
@@ -2992,6 +3031,7 @@ components:
         - $ref: '#/components/schemas/AgentTurnResponseStepCompletePayload'
         - $ref: '#/components/schemas/AgentTurnResponseTurnStartPayload'
         - $ref: '#/components/schemas/AgentTurnResponseTurnCompletePayload'
+        - $ref: '#/components/schemas/AgentTurnResponseTurnAwaitingInputPayload'
       discriminator:
         propertyName: event_type
         mapping:
@@ -3000,6 +3040,7 @@ components:
           step_complete: '#/components/schemas/AgentTurnResponseStepCompletePayload'
           turn_start: '#/components/schemas/AgentTurnResponseTurnStartPayload'
           turn_complete: '#/components/schemas/AgentTurnResponseTurnCompletePayload'
+          turn_awaiting_input: '#/components/schemas/AgentTurnResponseTurnAwaitingInputPayload'
     AgentTurnResponseStepCompletePayload:
       type: object
       properties:
@@ -3106,6 +3147,21 @@ components:
         - event
       title: AgentTurnResponseStreamChunk
       description: streamed agent turn completion response.
+    "AgentTurnResponseTurnAwaitingInputPayload":
+      type: object
+      properties:
+        event_type:
+          type: string
+          const: turn_awaiting_input
+          default: turn_awaiting_input
+        turn:
+          $ref: '#/components/schemas/Turn'
+      additionalProperties: false
+      required:
+        - event_type
+        - turn
+      title: >-
+        AgentTurnResponseTurnAwaitingInputPayload
     AgentTurnResponseTurnCompletePayload:
       type: object
       properties:
@@ -5205,6 +5261,19 @@ components:
         - vector_db_id
         - embedding_model
       title: RegisterVectorDbRequest
+    ResumeAgentTurnRequest:
+      type: object
+      properties:
+        tool_responses:
+          type: array
+          items:
+            $ref: '#/components/schemas/ToolResponseMessage'
+        stream:
+          type: boolean
+      additionalProperties: false
+      required:
+        - tool_responses
+      title: ResumeAgentTurnRequest
     RunEvalRequest:
       type: object
       properties:

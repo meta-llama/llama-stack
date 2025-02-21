@@ -194,6 +194,7 @@ class AgentTurnResponseEventType(Enum):
 
     turn_start = "turn_start"
     turn_complete = "turn_complete"
+    turn_awaiting_input = "turn_awaiting_input"
 
 
 @json_schema_type
@@ -235,6 +236,14 @@ class AgentTurnResponseTurnCompletePayload(BaseModel):
     turn: Turn
 
 
+@json_schema_type
+class AgentTurnResponseTurnAwaitingInputPayload(BaseModel):
+    event_type: Literal[AgentTurnResponseEventType.turn_awaiting_input.value] = (
+        AgentTurnResponseEventType.turn_awaiting_input.value
+    )
+    turn: Turn
+
+
 AgentTurnResponseEventPayload = register_schema(
     Annotated[
         Union[
@@ -243,6 +252,7 @@ AgentTurnResponseEventPayload = register_schema(
             AgentTurnResponseStepCompletePayload,
             AgentTurnResponseTurnStartPayload,
             AgentTurnResponseTurnCompletePayload,
+            AgentTurnResponseTurnAwaitingInputPayload,
         ],
         Field(discriminator="event_type"),
     ],
@@ -285,6 +295,15 @@ class AgentTurnCreateRequest(AgentConfigOverridablePerTurn):
 
     stream: Optional[bool] = False
     tool_config: Optional[ToolConfig] = None
+
+
+@json_schema_type
+class AgentTurnResumeRequest(BaseModel):
+    agent_id: str
+    session_id: str
+    turn_id: str
+    tool_responses: List[ToolResponseMessage]
+    stream: Optional[bool] = False
 
 
 @json_schema_type
@@ -333,6 +352,19 @@ class Agents(Protocol):
         documents: Optional[List[Document]] = None,
         toolgroups: Optional[List[AgentToolGroup]] = None,
         tool_config: Optional[ToolConfig] = None,
+    ) -> Union[Turn, AsyncIterator[AgentTurnResponseStreamChunk]]: ...
+
+    @webmethod(
+        route="/agents/{agent_id}/session/{session_id}/turn/{turn_id}/resume",
+        method="POST",
+    )
+    async def resume_agent_turn(
+        self,
+        agent_id: str,
+        session_id: str,
+        turn_id: str,
+        tool_responses: List[ToolResponseMessage],
+        stream: Optional[bool] = False,
     ) -> Union[Turn, AsyncIterator[AgentTurnResponseStreamChunk]]: ...
 
     @webmethod(
