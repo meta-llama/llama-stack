@@ -275,6 +275,8 @@ class ChatAgent(ShieldRunnerMixin):
                 steps = turns[-1].steps
 
             # mark tool execution step as complete
+            # if there's no tool execution in progress step (due to storage, or tool call parsing on client),
+            # we'll create a new tool execution step with current time
             in_progress_tool_call_step = await self.storage.get_in_progress_tool_call_step(
                 request.session_id, request.turn_id
             )
