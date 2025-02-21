@@ -25,17 +25,6 @@ from .config import NVIDIASafetyConfig
 
 logger = logging.getLogger(__name__)
 
-SHIELD_IDS_TO_MODEL_MAPPING = {
-    CoreModelId.llama3_8b_instruct.value: "meta/llama3-8b-instruct",
-    CoreModelId.llama3_70b_instruct.value:  "meta/llama3-70b-instruct",
-    CoreModelId.llama3_1_8b_instruct.value: "meta/llama-3.1-8b-instruct",
-    CoreModelId.llama3_1_70b_instruct.value: "meta/llama-3.1-70b-instruct",
-    CoreModelId.llama3_1_405b_instruct.value: "meta/llama-3.1-405b-instruct",
-    CoreModelId.llama3_2_1b_instruct.value: "meta/llama-3.2-1b-instruct",
-    CoreModelId.llama3_2_3b_instruct.value: "meta/llama-3.2-3b-instruct",
-    CoreModelId.llama3_2_11b_vision_instruct.value: "meta/llama-3.2-11b-vision-instruct",
-    CoreModelId.llama3_2_90b_vision_instruct.value: "meta/llama-3.2-90b-vision-instruct"
-}
 
 class NVIDIASafetyAdapter(Safety, ShieldsProtocolPrivate):
     def __init__(self, config: NVIDIASafetyConfig) -> None:
@@ -59,11 +48,11 @@ class NVIDIASafetyAdapter(Safety, ShieldsProtocolPrivate):
         shield = await self.shield_store.get_shield(shield_id)
         if not shield:
             raise ValueError(f"Shield {shield_id} not found")
-        # print(shield.provider_shield_id)
+
         self.shield = NeMoGuardrails(self.config, shield.shield_id)
         return await self.shield.run(messages)
-        
-    
+
+
 class NeMoGuardrails:
     def __init__(
         self,
@@ -75,7 +64,9 @@ class NeMoGuardrails:
         self.config_id = config.config_id
         self.config_store_path = config.config_store_path
         self.model = model
-        assert  self.config_id is not None or self.config_store_path is not None, "Must provide one of config id or config store path"
+        assert self.config_id is not None or self.config_store_path is not None, (
+            "Must provide one of config id or config store path"
+        )
         if temperature <= 0:
             raise ValueError("Temperature must be greater than 0")
 
@@ -99,21 +90,19 @@ class NeMoGuardrails:
             "stream": False,
             "guardrails": {
                 "config_id": self.config_id,
-            }
+            },
         }
         response = requests.post(
-            url=f"{self.guardrails_service_url}/v1/guardrail/checks",
-            headers=headers,
-            json=request_data
+            url=f"{self.guardrails_service_url}/v1/guardrail/checks", headers=headers, json=request_data
         )
         print(response)
         response.raise_for_status()
-        if 'Content-Type' in response.headers and response.headers['Content-Type'].startswith('application/json'):
+        if "Content-Type" in response.headers and response.headers["Content-Type"].startswith("application/json"):
             response_json = response.json()
         if response_json["status"] == "blocked":
             user_message = "Sorry I cannot do this."
             metadata = response_json["rails_status"]
-            
+
             return RunShieldResponse(
                 violation=SafetyViolation(
                     user_message=user_message,

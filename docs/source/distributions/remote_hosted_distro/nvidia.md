@@ -20,8 +20,10 @@ The `llamastack/distribution-nvidia` distribution consists of the following prov
 
 The following environment variables can be configured:
 
-- `LLAMASTACK_PORT`: Port for the Llama Stack distribution server (default: `5001`)
 - `NVIDIA_API_KEY`: NVIDIA API Key (default: ``)
+- `GUARDRAILS_SERVICE_URL`: URL for the NeMo Guardrails Service (default: `http://0.0.0.0:7331`)
+- `INFERENCE_MODEL`: Inference model (default: `Llama3.1-8B-Instruct`)
+- `SAFETY_MODEL`: Name of the model to use for safety (default: `meta/llama-3.1-8b-instruct`)
 
 ### Models
 

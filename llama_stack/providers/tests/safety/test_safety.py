@@ -20,7 +20,7 @@ class TestSafety:
     @pytest.mark.asyncio
     async def test_shield_list(self, safety_stack):
         _, shields_impl, _ = safety_stack
-        response = await shields_impl.list_shields()
+        response = (await shields_impl.list_shields()).data
         assert isinstance(response, list)
         assert len(response) >= 1
 

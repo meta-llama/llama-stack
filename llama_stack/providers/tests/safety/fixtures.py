@@ -95,6 +95,7 @@ def safety_bedrock() -> ProviderFixture:
         ],
     )
 
+
 @pytest.fixture(scope="session")
 def safety_nvidia() -> ProviderFixture:
     return ProviderFixture(

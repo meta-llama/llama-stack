@@ -35,18 +35,13 @@ class NVIDIASafetyConfig(BaseModel):
     By default the configuration will attempt to read the NVIDIA_API_KEY environment
     variable to set the api_key. Please do not put your API key in code.
     """
+
     guardrails_service_url: str = Field(
         default_factory=lambda: os.getenv("NVIDIA_BASE_URL", "http://0.0.0.0:7331"),
         description="The url for accessing the guardrails service",
     )
-    config_id: Optional[str] = Field(
-        default="self-check",
-        description="Config ID to use from the config store"
-    )
-    config_store_path: Optional[str] = Field(
-        default="/config-store",
-        description="Path to config store"
-    )
+    config_id: Optional[str] = Field(default="self-check", description="Config ID to use from the config store")
+    config_store_path: Optional[str] = Field(default="/config-store", description="Path to config store")
 
     @classmethod
     @field_validator("guard_type")
@@ -54,10 +49,10 @@ class NVIDIASafetyConfig(BaseModel):
         if v not in [t.value for t in ShieldType]:
             raise ValueError(f"Unknown shield type: {v}")
         return v
-    
+
     @classmethod
     def sample_run_config(cls, **kwargs) -> Dict[str, Any]:
         return {
             "guardrails_service_url": "${env.GUARDRAILS_SERVICE_URL:http://localhost:7331}",
-            "config_id": "self-check"
+            "config_id": "self-check",
         }
