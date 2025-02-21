@@ -142,18 +142,38 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
         #
         # we can ignore str and always pass List[str] to OpenAI
         #
-        flat_contents = [
-            item.text if isinstance(item, TextContentItem) else item
-            for content in contents
-            for item in (content if isinstance(content, list) else [content])
-        ]
+        flat_contents = [content.text if isinstance(content, TextContentItem) else content for content in contents]
         input = [content.text if isinstance(content, TextContentItem) else content for content in flat_contents]
         model = self.get_provider_model_id(model_id)
+
+        extra_body = {}
+
+        if text_truncation is not None:
+            text_truncation_options = {
+                TextTruncation.none: "NONE",
+                TextTruncation.end: "END",
+                TextTruncation.start: "START",
+            }
+            if text_truncation not in text_truncation_options:
+                raise ValueError(f"Invalid text_truncation: {text_truncation}")
+            extra_body["truncate"] = text_truncation_options[text_truncation]
+
+        if output_dimension is not None:
+            extra_body["dimensions"] = output_dimension
+
+        if task_type is not None:
+            task_type_options = {
+                EmbeddingTaskType.document: "DOCUMENT",
+                EmbeddingTaskType.query: "QUERY",
+            }
+            if task_type not in task_type_options:
+                raise ValueError(f"Invalid task_type: {task_type}")
+            extra_body["input_type"] = task_type_options[task_type]
 
         response = await self._client.embeddings.create(
             model=model,
             input=input,
-            # extra_body={"input_type": "passage"|"query"},  # TODO(mf): how to tell caller's intent?
+            extra_body=extra_body,
         )
 
         #
