@@ -8,6 +8,12 @@ import argparse
 
 from llama_stack.cli.subcommand import Subcommand
 
+DEPRECATED_MESSAGE = """
+    DEPRECATED! llama stack configure has been deprecated.
+    Please use llama stack run <path/to/run.yaml> instead.
+    Please see example run.yaml in /distributions folder.
+"""
+
 
 class StackConfigure(Subcommand):
     """Llama cli for configuring llama toolchain configs"""
@@ -17,7 +23,7 @@ class StackConfigure(Subcommand):
         self.parser = subparsers.add_parser(
             "configure",
             prog="llama stack configure",
-            description="Configure a llama stack distribution",
+            description=f"Configure a llama stack distribution\n{DEPRECATED_MESSAGE}",
             formatter_class=argparse.RawTextHelpFormatter,
         )
         self._add_arguments()
@@ -37,10 +43,4 @@ class StackConfigure(Subcommand):
         )
 
     def _run_stack_configure_cmd(self, args: argparse.Namespace) -> None:
-        self.parser.error(
-            """
-            DEPRECATED! llama stack configure has been deprecated.
-            Please use llama stack run <path/to/run.yaml> instead.
-            Please see example run.yaml in /distributions folder.
-            """
-        )
+        self.parser.error(DEPRECATED_MESSAGE)
