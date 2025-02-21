@@ -355,6 +355,7 @@ class Agents(Protocol):
         session_id: str,
         turn_id: str,
         tool_responses: List[ToolResponseMessage],
+        stream: Optional[bool] = False,
     ) -> Union[Turn, AsyncIterator[AgentTurnResponseStreamChunk]]: ...
 
     @webmethod(
