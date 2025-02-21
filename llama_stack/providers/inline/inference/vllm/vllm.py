@@ -20,14 +20,13 @@ from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.datatypes import (
     SamplingParams,
     StopReason,
+    ToolCall,
     ToolDefinition,
     ToolPromptFormat,
     TopKSamplingStrategy,
     TopPSamplingStrategy,
 )
 from llama_models.llama3.api.tokenizer import Tokenizer
-
-# We deep-import the names that don't conflict with Llama Stack names
 from vllm.engine.arg_utils import AsyncEngineArgs
 from vllm.engine.async_llm_engine import AsyncLLMEngine
 from vllm.entrypoints.openai.serving_chat import OpenAIServingChat
@@ -35,6 +34,7 @@ from vllm.entrypoints.openai.serving_models import BaseModelPath, OpenAIServingM
 
 from llama_stack.apis.common.content_types import (
     InterleavedContent,
+    InterleavedContentItem,
     TextDelta,
     ToolCallDelta,
 )
@@ -54,9 +54,10 @@ from llama_stack.apis.inference import (
     LogProbConfig,
     Message,
     ResponseFormat,
+    TextTruncation,
     TokenLogProbs,
-    ToolCall,
     ToolChoice,
+    ToolConfig,
 )
 from llama_stack.apis.models import Model
 from llama_stack.models.llama.llama3.chat_format import ChatFormat
@@ -254,7 +255,7 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         logger.debug(f"In register_model({model})")
 
         # First attempt to interpret the model coordinates as a Llama model name
-        resolved_llama_model = resolve_model(model.provider_model_id)
+        resolved_llama_model = llama_models.sku_list.resolve_model(model.provider_model_id)
         if resolved_llama_model is not None:
             # Load from Hugging Face repo into default local cache dir
             model_id_for_vllm = resolved_llama_model.huggingface_repo
@@ -277,16 +278,12 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
             else:
                 # Model already loaded
                 logger.info(
-                    f"Requested id {model} resolves to {model_id_for_vllm}, "
-                    f"which is already loaded. Continuing."
+                    f"Requested id {model} resolves to {model_id_for_vllm}, which is already loaded. Continuing."
                 )
                 self.model_ids.add(model.model_id)
                 return model
 
-        logger.info(
-            f"Requested id {model} resolves to {model_id_for_vllm}. Loading "
-            f"{model_id_for_vllm}."
-        )
+        logger.info(f"Requested id {model} resolves to {model_id_for_vllm}. Loading {model_id_for_vllm}.")
         if is_meta_llama_model:
             logger.info(f"Model {model_id_for_vllm} is a Meta Llama model.")
         self.is_meta_llama_model = is_meta_llama_model
@@ -425,7 +422,8 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         tool_prompt_format: Optional[ToolPromptFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
-    ) -> Union[ChatCompletionResponse, AsyncIterator[ChatCompletionResponseStreamChunk]]:
+        tool_config: Optional[ToolConfig] = None,
+    ) -> ChatCompletionResponse | ChatCompletionResponseStreamChunk:
         if model_id not in self.model_ids:
             raise ValueError(
                 f"This adapter is not registered to model id '{model_id}'. Registered IDs are: {self.model_ids}"

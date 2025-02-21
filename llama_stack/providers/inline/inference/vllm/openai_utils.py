@@ -7,7 +7,6 @@
 from typing import List, Optional
 
 import vllm
-
 from llama_models.llama3.api.datatypes import BuiltinTool, ToolDefinition
 
 from llama_stack.apis.inference import (
@@ -22,7 +21,6 @@ from llama_stack.providers.utils.inference.openai_compat import (
     convert_message_to_openai_dict,
     get_sampling_options,
 )
-
 
 ###############################################################################
 # This file contains OpenAI compatibility code that is currently only used
@@ -77,8 +75,7 @@ def _llama_stack_tools_to_openai_tools(
             parameters = {
                 "type": "object",  # Mystery value that shows up in OpenAI docs
                 "properties": {
-                    k: {"type": v.param_type, "description": v.description}
-                    for k, v in t.parameters.items()
+                    k: {"type": v.param_type, "description": v.description} for k, v in t.parameters.items()
                 },
                 "required": required_params,
             }
@@ -88,11 +85,7 @@ def _llama_stack_tools_to_openai_tools(
         )
 
         # Every tool definition is double-boxed in a ChatCompletionToolsParam
-        result.append(
-            vllm.entrypoints.openai.protocol.ChatCompletionToolsParam(
-                function=function_def
-            )
-        )
+        result.append(vllm.entrypoints.openai.protocol.ChatCompletionToolsParam(function=function_def))
     return result
 
 
@@ -113,9 +106,7 @@ async def llama_stack_chat_completion_to_openai_chat_completion_dict(
 
     converted_messages = [
         # This mystery async call makes the parent function also be async
-        await convert_message_to_openai_dict(
-            _merge_context_into_content(m), download=True
-        )
+        await convert_message_to_openai_dict(_merge_context_into_content(m), download=True)
         for m in request.messages
     ]
     converted_tools = _llama_stack_tools_to_openai_tools(request.tools)
@@ -123,11 +114,7 @@ async def llama_stack_chat_completion_to_openai_chat_completion_dict(
     # Llama will try to use built-in tools with no tool catalog, so don't enable
     # tool choice unless at least one tool is enabled.
     converted_tool_choice = "none"
-    if (
-        request.tool_choice == ToolChoice.auto
-        and request.tools is not None
-        and len(request.tools) > 0
-    ):
+    if request.tool_choice == ToolChoice.auto and request.tools is not None and len(request.tools) > 0:
         converted_tool_choice = "auto"
 
     # TODO: Figure out what to do with the tool_prompt_format argument.
@@ -143,13 +130,8 @@ async def llama_stack_chat_completion_to_openai_chat_completion_dict(
     # API will handle correctly. Two wrongs make a right...
     if "repeat_penalty" in sampling_options:
         del sampling_options["repeat_penalty"]
-    if (
-        request.sampling_params.repetition_penalty is not None
-        and request.sampling_params.repetition_penalty != 1.0
-    ):
-        sampling_options["repetition_penalty"] = (
-            request.sampling_params.repetition_penalty
-        )
+    if request.sampling_params.repetition_penalty is not None and request.sampling_params.repetition_penalty != 1.0:
+        sampling_options["repetition_penalty"] = request.sampling_params.repetition_penalty
 
     # Convert a single response format into four different parameters, per
     # the OpenAI spec
@@ -162,10 +144,7 @@ async def llama_stack_chat_completion_to_openai_chat_completion_dict(
     elif isinstance(request.response_format, GrammarResponseFormat):
         guided_decoding_options["guided_grammar"] = request.response_format.bnf
     else:
-        raise TypeError(
-            f"ResponseFormat object is of unexpected "
-            f"subtype '{type(request.response_format)}'"
-        )
+        raise TypeError(f"ResponseFormat object is of unexpected subtype '{type(request.response_format)}'")
 
     logprob_options = dict()
     if request.logprobs is not None:
