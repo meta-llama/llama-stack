@@ -10,11 +10,9 @@ from typing import Any, Dict, List
 import requests
 
 from llama_stack.apis.inference import Message
-from llama_stack.apis.safety import (RunShieldResponse, Safety,
-                                     SafetyViolation, ViolationLevel)
+from llama_stack.apis.safety import RunShieldResponse, Safety, SafetyViolation, ViolationLevel
 from llama_stack.apis.shields import Shield
-from llama_stack.distribution.library_client import \
-    convert_pydantic_to_json_value
+from llama_stack.distribution.library_client import convert_pydantic_to_json_value
 from llama_stack.providers.datatypes import ShieldsProtocolPrivate
 
 from .config import NVIDIASafetyConfig
