@@ -402,6 +402,30 @@ class ModelStore(Protocol):
     def get_model(self, identifier: str) -> Model: ...
 
 
+class TextTruncation(Enum):
+    """Config for how to truncate text for embedding when text is longer than the model's max sequence length. Start and End semantics depend on whether the language is left-to-right or right-to-left.
+
+    :cvar none: No truncation (default). If the text is longer than the model's max sequence length, you will get an error.
+    :cvar start: Truncate from the start
+    :cvar end: Truncate from the end
+    """
+
+    none = "none"
+    start = "start"
+    end = "end"
+
+
+class EmbeddingTaskType(Enum):
+    """How is the embedding being used? This is only supported by asymmetric embedding models.
+
+    :cvar query: Used for a query for semantic search.
+    :cvar document: Used at indexing time when ingesting documents.
+    """
+
+    query = "query"
+    document = "document"
+
+
 @runtime_checkable
 @trace_protocol
 class Inference(Protocol):
@@ -482,11 +506,17 @@ class Inference(Protocol):
         self,
         model_id: str,
         contents: List[str] | List[InterleavedContentItem],
+        text_truncation: Optional[TextTruncation] = TextTruncation.none,
+        output_dimension: Optional[int] = None,
+        task_type: Optional[EmbeddingTaskType] = None,
     ) -> EmbeddingsResponse:
         """Generate embeddings for content pieces using the specified model.
 
         :param model_id: The identifier of the model to use. The model must be an embedding model registered with Llama Stack and available via the /models endpoint.
         :param contents: List of contents to generate embeddings for. Each content can be a string or an InterleavedContentItem (and hence can be multimodal). The behavior depends on the model and provider. Some models may only support text.
+        :param output_dimension: (Optional) Output dimensionality for the embeddings. Only supported by Matryoshka models.
+        :param text_truncation: (Optional) Config for how to truncate text for embedding when text is longer than the model's max sequence length.
+        :param task_type: (Optional) How is the embedding being used? This is only supported by asymmetric embedding models.
         :returns: An array of embeddings, one for each content. Each embedding is a list of floats. The dimensionality of the embedding is model-specific; you can check model metadata using /models/{model_id}
         """
         ...
