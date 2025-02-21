@@ -318,10 +318,6 @@ def test_custom_tool(llama_stack_client, agent_config):
         ],
         session_id=session_id,
     )
-    from rich.pretty import pprint
-
-    for x in response:
-        pprint(x)
 
     logs = [str(log) for log in EventLogger().log(response) if log is not None]
     logs_str = "".join(logs)
