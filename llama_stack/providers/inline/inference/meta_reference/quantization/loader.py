@@ -12,6 +12,7 @@ import os
 from typing import Any, Dict, List, Optional
 
 import torch
+from fairscale.nn.model_parallel.initialize import get_model_parallel_rank
 from fairscale.nn.model_parallel.layers import ColumnParallelLinear, RowParallelLinear
 from fairscale.nn.model_parallel.mappings import reduce_from_model_parallel_region
 from llama_models.llama3.api.args import ModelArgs
