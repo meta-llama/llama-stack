@@ -175,6 +175,7 @@ class MetaReferenceAgentsImpl(Agents):
         session_id: str,
         turn_id: str,
         tool_responses: List[ToolResponseMessage],
+        stream: Optional[bool] = False,
     ) -> AsyncGenerator:
         pass
 
