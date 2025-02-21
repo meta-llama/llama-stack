@@ -20,8 +20,8 @@ from llama_stack.apis.agents import (
     AgentSessionCreateResponse,
     AgentStepResponse,
     AgentToolGroup,
-    AgentTurnContinueRequest,
     AgentTurnCreateRequest,
+    AgentTurnResumeRequest,
     Document,
     Session,
     Turn,
@@ -178,7 +178,7 @@ class MetaReferenceAgentsImpl(Agents):
         tool_responses: List[ToolResponseMessage],
         stream: Optional[bool] = False,
     ) -> AsyncGenerator:
-        request = AgentTurnContinueRequest(
+        request = AgentTurnResumeRequest(
             agent_id=agent_id,
             session_id=session_id,
             turn_id=turn_id,
@@ -192,7 +192,7 @@ class MetaReferenceAgentsImpl(Agents):
 
     async def _continue_agent_turn_streaming(
         self,
-        request: AgentTurnContinueRequest,
+        request: AgentTurnResumeRequest,
     ) -> AsyncGenerator:
         agent = await self.get_agent(request.agent_id)
         async for event in agent.continue_turn(request):

@@ -23,7 +23,6 @@ from llama_stack.apis.agents import (
     AgentConfig,
     AgentToolGroup,
     AgentToolGroupWithArgs,
-    AgentTurnContinueRequest,
     AgentTurnCreateRequest,
     AgentTurnResponseEvent,
     AgentTurnResponseEventType,
@@ -34,6 +33,7 @@ from llama_stack.apis.agents import (
     AgentTurnResponseTurnAwaitingInputPayload,
     AgentTurnResponseTurnCompletePayload,
     AgentTurnResponseTurnStartPayload,
+    AgentTurnResumeRequest,
     Attachment,
     Document,
     InferenceStep,
@@ -247,7 +247,7 @@ class ChatAgent(ShieldRunnerMixin):
 
             yield chunk
 
-    async def continue_turn(self, request: AgentTurnContinueRequest) -> AsyncGenerator:
+    async def continue_turn(self, request: AgentTurnResumeRequest) -> AsyncGenerator:
         with tracing.span("continue_turn") as span:
             span.set_attribute("agent_id", self.agent_id)
             span.set_attribute("session_id", request.session_id)
