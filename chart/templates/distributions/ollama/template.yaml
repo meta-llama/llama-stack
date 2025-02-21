@@ -1,0 +1,58 @@
+{{- if eq .Values.distribution "ollama" }}
+
+{{- $variables := include "distributions.ollama" . | fromYaml -}}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ollama
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ollama
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ollama
+    spec:
+      tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Exists"
+        effect: "NoSchedule"
+      containers:
+        - name: ollama
+          image: "{{ $variables.image.repository }}:{{ $variables.image.tag }}"
+          resources:
+            {{- toYaml .Values.ollama.resources | nindent 12 }}
+          env:
+          - name: OLLAMA_KEEP_ALIVE
+            value: "-1"
+          volumeMounts:
+          - mountPath: /root/.ollama
+            name: ollama-volume
+          ports:
+          - containerPort: 11434
+          lifecycle:
+            postStart:
+              exec:
+                command: ["/bin/sh", "-c", "ollama run {{ index $variables.models .Values.model }}"]
+      volumes:
+      - name: ollama-volume
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ollama
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: ollama
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 11434
+---
+{{ end -}}
