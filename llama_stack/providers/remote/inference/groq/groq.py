@@ -17,17 +17,23 @@ from llama_stack.apis.inference import (
     CompletionResponse,
     CompletionResponseStreamChunk,
     EmbeddingsResponse,
+    EmbeddingTaskType,
     Inference,
     InterleavedContent,
     InterleavedContentItem,
     LogProbConfig,
     Message,
     ResponseFormat,
+    TextTruncation,
     ToolChoice,
     ToolConfig,
 )
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
-from llama_stack.models.llama.datatypes import SamplingParams, ToolDefinition, ToolPromptFormat
+from llama_stack.models.llama.datatypes import (
+    SamplingParams,
+    ToolDefinition,
+    ToolPromptFormat,
+)
 from llama_stack.models.llama.sku_list import CoreModelId
 from llama_stack.providers.remote.inference.groq.config import GroqConfig
 from llama_stack.providers.utils.inference.model_registry import (
@@ -142,6 +148,9 @@ class GroqInferenceAdapter(Inference, ModelRegistryHelper, NeedsRequestProviderD
         self,
         model_id: str,
         contents: List[str] | List[InterleavedContentItem],
+        text_truncation: Optional[TextTruncation] = TextTruncation.none,
+        output_dimension: Optional[int] = None,
+        task_type: Optional[EmbeddingTaskType] = None,
     ) -> EmbeddingsResponse:
         raise NotImplementedError()
 

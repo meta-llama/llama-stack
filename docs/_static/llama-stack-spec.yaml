@@ -3235,6 +3235,28 @@ components:
             List of contents to generate embeddings for. Each content can be a string
             or an InterleavedContentItem (and hence can be multimodal). The behavior
             depends on the model and provider. Some models may only support text.
+        text_truncation:
+          type: string
+          enum:
+            - none
+            - start
+            - end
+          description: >-
+            (Optional) Config for how to truncate text for embedding when text is
+            longer than the model's max sequence length.
+        output_dimension:
+          type: integer
+          description: >-
+            (Optional) Output dimensionality for the embeddings. Only supported by
+            Matryoshka models.
+        task_type:
+          type: string
+          enum:
+            - query
+            - document
+          description: >-
+            (Optional) How is the embedding being used? This is only supported by
+            asymmetric embedding models.
       additionalProperties: false
       required:
         - model_id

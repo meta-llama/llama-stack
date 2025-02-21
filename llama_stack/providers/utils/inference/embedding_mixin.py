@@ -5,12 +5,14 @@
 # the root directory of this source tree.
 
 import logging
-from typing import List
+from typing import List, Optional
 
 from llama_stack.apis.inference import (
     EmbeddingsResponse,
+    EmbeddingTaskType,
     InterleavedContentItem,
     ModelStore,
+    TextTruncation,
 )
 
 EMBEDDING_MODELS = {}
@@ -26,6 +28,9 @@ class SentenceTransformerEmbeddingMixin:
         self,
         model_id: str,
         contents: List[str] | List[InterleavedContentItem],
+        text_truncation: Optional[TextTruncation] = TextTruncation.none,
+        output_dimension: Optional[int] = None,
+        task_type: Optional[EmbeddingTaskType] = None,
     ) -> EmbeddingsResponse:
         model = await self.model_store.get_model(model_id)
         embedding_model = self._load_sentence_transformer_model(model.provider_resource_id)
