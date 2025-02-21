@@ -23,7 +23,7 @@ The `llamastack/distribution-ollama` distribution consists of the following prov
 | scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |
 | telemetry | `inline::meta-reference` |
 | tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::code-interpreter`, `inline::rag-runtime` |
-| vector_io | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
+| vector_io | `inline::faiss`, `inline::sqlite_vec`, `remote::chromadb`, `remote::pgvector` |
 
 
 You should use this distribution if you have a regular desktop machine without very powerful GPUs. Of course, if you have powerful GPUs, you can still continue using this distribution since Ollama supports GPU acceleration.
