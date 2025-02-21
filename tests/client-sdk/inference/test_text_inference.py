@@ -291,6 +291,7 @@ def test_text_chat_completion_with_tool_choice_none(
     assert tool_invocation_content == ""
 
 
+@pytest.mark.parametrize("test_case", ["chat_completion-01"])
 def test_text_chat_completion_structured_output(llama_stack_client, text_model_id, inference_provider_type, test_case):
     class AnswerFormat(BaseModel):
         first_name: str
