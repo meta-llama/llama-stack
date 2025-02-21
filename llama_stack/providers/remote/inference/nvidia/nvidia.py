@@ -163,8 +163,8 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
 
         if task_type is not None:
             task_type_options = {
-                EmbeddingTaskType.document: "DOCUMENT",
-                EmbeddingTaskType.query: "QUERY",
+                EmbeddingTaskType.document: "passage",
+                EmbeddingTaskType.query: "query",
             }
             if task_type not in task_type_options:
                 raise ValueError(f"Invalid task_type: {task_type}")
