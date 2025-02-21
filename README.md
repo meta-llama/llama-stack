@@ -78,18 +78,14 @@ You have two ways to install this repository:
    ```
 
 * **Install from source**:
-   If you prefer to install from the source code, make sure you have [conda installed](https://docs.conda.io/projects/conda/en/stable).
+   If you prefer to install from the source code, we recommend using [uv](https://github.com/astral-sh/uv).
    Then, run the following commands:
    ```bash
-    mkdir -p ~/local
-    cd ~/local
     git clone git@github.com:meta-llama/llama-stack.git
-
-    conda create -n stack python=3.10
-    conda activate stack
-
     cd llama-stack
-    pip install -e .
+
+    uv sync
+    uv pip install -e .
    ```
 
 ### Documentation
