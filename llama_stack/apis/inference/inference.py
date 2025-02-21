@@ -206,11 +206,13 @@ class ChatCompletionResponseEventType(Enum):
     :cvar start: Inference has started
     :cvar complete: Inference is complete and a full response is available
     :cvar progress: Inference is in progress and a partial response is available
+    :cvar prepare: Inference is preparing to start
     """
 
     start = "start"
     complete = "complete"
     progress = "progress"
+    prepare = "prepare"
 
 
 @json_schema_type
@@ -227,6 +229,8 @@ class ChatCompletionResponseEvent(BaseModel):
     delta: ContentDelta
     logprobs: Optional[List[TokenLogProbs]] = None
     stop_reason: Optional[StopReason] = None
+    input_prompt: Optional[str] = None
+    input_messages: Optional[List[Dict[str, str]]] = None
 
 
 class ResponseFormatType(Enum):

@@ -33,6 +33,7 @@ from llama_stack.apis.inference import (
     ToolResponse,
     ToolResponseMessage,
     UserMessage,
+    Message,
 )
 from llama_stack.apis.safety import SafetyViolation
 from llama_stack.apis.tools import ToolDef
@@ -70,6 +71,7 @@ class InferenceStep(StepCommon):
 
     step_type: Literal[StepType.inference.value] = StepType.inference.value
     model_response: CompletionMessage
+    model_input: Union[str, List[Dict[str, str]]]
 
 
 @json_schema_type

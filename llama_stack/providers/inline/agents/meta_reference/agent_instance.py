@@ -514,6 +514,9 @@ class ChatAgent(ShieldRunnerMixin):
                     elif event.event_type == ChatCompletionResponseEventType.complete:
                         stop_reason = StopReason.end_of_turn
                         continue
+                    elif event.event_type == ChatCompletionResponseEventType.prepare:
+                        model_input = event.input_prompt or event.input_messages
+                        continue
 
                     delta = event.delta
                     if delta.type == "tool_call":
@@ -582,6 +585,7 @@ class ChatAgent(ShieldRunnerMixin):
                             model_response=copy.deepcopy(message),
                             started_at=inference_start_time,
                             completed_at=datetime.now(),
+                            model_input=model_input,
                         ),
                     )
                 )

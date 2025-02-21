@@ -8,7 +8,7 @@ from typing import AsyncGenerator, List, Optional, Union
 
 from fireworks.client import Fireworks
 
-from llama_stack.apis.common.content_types import InterleavedContent
+from llama_stack.apis.common.content_types import InterleavedContent, TextDelta
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
     ChatCompletionResponse,
@@ -25,6 +25,9 @@ from llama_stack.apis.inference import (
     ToolConfig,
     ToolDefinition,
     ToolPromptFormat,
+    ChatCompletionResponseEvent,
+    ChatCompletionResponseEventType,
+    ChatCompletionResponseStreamChunk,
 )
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.providers.utils.inference.model_registry import (
@@ -187,6 +190,14 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProv
 
     async def _stream_chat_completion(self, request: ChatCompletionRequest) -> AsyncGenerator:
         params = await self._get_params(request)
+        yield ChatCompletionResponseStreamChunk(
+            event=ChatCompletionResponseEvent(
+                delta=TextDelta(text=""),
+                event_type=ChatCompletionResponseEventType.prepare,
+                input_prompt=params.get("prompt", None),
+                input_messages=params.get("messages", None),
+            )
+        )
 
         async def _to_async_generator():
             if "messages" in params:
@@ -222,6 +233,7 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProv
             if input_dict["prompt"].startswith("<|begin_of_text|>"):
                 input_dict["prompt"] = input_dict["prompt"][len("<|begin_of_text|>") :]
 
+        print(f"prompt: {input_dict['prompt']}")
         return {
             "model": request.model,
             **input_dict,
