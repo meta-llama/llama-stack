@@ -12,24 +12,31 @@ Providers come in two flavors:
 Importantly, Llama Stack always strives to provide at least one fully "local" provider for each API so you can iterate on a fully featured environment locally.
 
 ## Agents
+Run multi-step agentic workflows with LLMs with tool usage, memory (RAG), etc.
 
 ## DatasetIO
+Interfaces with datasets and data loaders.
 
 ## Eval
+Generates outputs (via Inference or Agents) and perform scoring.
 
 ## Inference
-
-## iOS
+Runs inference with an LLM.
 
 ## Post Training
+Fine-tunes a model.
 
 ## Safety
+Applies safety policies to the output at a Systems (not only model) level.
 
 ## Scoring
+Evaluates the outputs of the system.
 
 ## Telemetry
+Collects telemetry data from the system.
 
 ## Tool Runtime
+Is associated with the ToolGroup resouces. 
 
 ## Vector IO
 
