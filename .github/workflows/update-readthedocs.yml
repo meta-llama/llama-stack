@@ -11,17 +11,42 @@ on:
     branches:
       - main
     paths:
-      - 'docs/source/**'
-      - 'docs/resources/**'
+      - 'docs/**'
+      - '.github/workflows/update-readthedocs.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'docs/**'
       - '.github/workflows/update-readthedocs.yml'
 
 jobs:
   update-readthedocs:
-    runs-on: ubuntu-latest    
+    runs-on: ubuntu-latest
     env:
       TOKEN: ${{ secrets.READTHEDOCS_TOKEN }}
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Sync with uv
+        run: uv sync --extra docs
+
+      - name: Build HTML
+        run: |
+          cd docs
+          uv run make html
+
       - name: Trigger ReadTheDocs build
+        if: github.event_name != 'pull_request'
         run: |
           if [ -z "$TOKEN" ]; then
             echo "READTHEDOCS_TOKEN is not set"
