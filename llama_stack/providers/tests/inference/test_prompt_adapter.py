@@ -8,7 +8,10 @@ import unittest
 
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
+    CompletionMessage,
+    StopReason,
     SystemMessage,
+    ToolCall,
     ToolConfig,
     UserMessage,
 )
@@ -20,6 +23,7 @@ from llama_stack.models.llama.datatypes import (
 )
 from llama_stack.providers.utils.inference.prompt_adapter import (
     chat_completion_request_to_messages,
+    chat_completion_request_to_prompt,
 )
 
 MODEL = "Llama3.1-8B-Instruct"
@@ -118,6 +122,46 @@ class PrepareMessagesTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertTrue("Return function calls in JSON format" in messages[1].content)
         self.assertEqual(messages[-1].content, content)
+
+    async def test_completion_message_encoding(self):
+        request = ChatCompletionRequest(
+            model=MODEL3_2,
+            messages=[
+                UserMessage(content="hello"),
+                CompletionMessage(
+                    content="",
+                    stop_reason=StopReason.end_of_turn,
+                    tool_calls=[
+                        ToolCall(
+                            tool_name="custom1",
+                            arguments={"param1": "value1"},
+                            call_id="123",
+                        )
+                    ],
+                ),
+            ],
+            tools=[
+                ToolDefinition(
+                    tool_name="custom1",
+                    description="custom1 tool",
+                    parameters={
+                        "param1": ToolParamDefinition(
+                            param_type="str",
+                            description="param1 description",
+                            required=True,
+                        ),
+                    },
+                ),
+            ],
+            tool_config=ToolConfig(tool_prompt_format=ToolPromptFormat.python_list),
+        )
+        prompt = await chat_completion_request_to_prompt(request, request.model)
+        self.assertIn('[custom1(param1="value1")]', prompt)
+
+        request.model = MODEL
+        request.tool_config.tool_prompt_format = ToolPromptFormat.json
+        prompt = await chat_completion_request_to_prompt(request, request.model)
+        self.assertIn('{"type": "function", "name": "custom1", "parameters": {"param1": "value1"}}', prompt)
 
     async def test_user_provided_system_message(self):
         content = "Hello !"

@@ -252,7 +252,9 @@ async def chat_completion_request_to_prompt(request: ChatCompletionRequest, llam
     request = await convert_request_to_raw(request)
 
     formatter = ChatFormat(tokenizer=Tokenizer.get_instance())
-    model_input = formatter.encode_dialog_prompt(request.messages)
+    model_input = formatter.encode_dialog_prompt(
+        request.messages, tool_prompt_format=request.tool_config.tool_prompt_format
+    )
     return formatter.tokenizer.decode(model_input.tokens)
 
 
@@ -264,7 +266,9 @@ async def chat_completion_request_to_model_input_info(
     request = await convert_request_to_raw(request)
 
     formatter = ChatFormat(tokenizer=Tokenizer.get_instance())
-    model_input = formatter.encode_dialog_prompt(request.messages)
+    model_input = formatter.encode_dialog_prompt(
+        request.messages, tool_prompt_format=request.tool_config.tool_prompt_format
+    )
     return (
         formatter.tokenizer.decode(model_input.tokens),
         len(model_input.tokens),
