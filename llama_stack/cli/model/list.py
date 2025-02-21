@@ -5,10 +5,42 @@
 # the root directory of this source tree.
 
 import argparse
+import os
+import time
+from pathlib import Path
 
 from llama_stack.cli.subcommand import Subcommand
 from llama_stack.cli.table import print_table
+from llama_stack.distribution.utils.config_dirs import DEFAULT_CHECKPOINT_DIR
 from llama_stack.models.llama.sku_list import all_registered_models
+
+
+def _get_model_size(model_dir):
+    return sum(f.stat().st_size for f in Path(model_dir).rglob("*") if f.is_file())
+
+
+def _run_model_list_downloaded_cmd() -> None:
+    headers = ["Model", "Size", "Modified Time"]
+
+    rows = []
+    for model in os.listdir(DEFAULT_CHECKPOINT_DIR):
+        abs_path = os.path.join(DEFAULT_CHECKPOINT_DIR, model)
+        space_usage = _get_model_size(abs_path)
+        model_size = f"{space_usage / (1024**3):.2f} GB"
+        modified_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(os.path.getmtime(abs_path)))
+        rows.append(
+            [
+                model,
+                model_size,
+                modified_time,
+            ]
+        )
+
+    print_table(
+        rows,
+        headers,
+        separate_rows=True,
+    )
 
 
 class ModelList(Subcommand):
@@ -31,9 +63,17 @@ class ModelList(Subcommand):
             action="store_true",
             help="Show all models (not just defaults)",
         )
+        self.parser.add_argument(
+            "--downloaded",
+            action="store_true",
+            help="List the downloaded models",
+        )
 
     def _run_model_list_cmd(self, args: argparse.Namespace) -> None:
         from .safety_models import prompt_guard_model_sku
+
+        if args.downloaded:
+            return _run_model_list_downloaded_cmd()
 
         headers = [
             "Model Descriptor(ID)",

@@ -19,7 +19,7 @@ from llama_stack.providers.inline.inference.sentence_transformers import (
 )
 from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOConfig
 from llama_stack.providers.remote.inference.fireworks import FireworksImplConfig
-from llama_stack.providers.remote.inference.fireworks.fireworks import MODEL_ALIASES
+from llama_stack.providers.remote.inference.fireworks.models import MODEL_ENTRIES
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
 
@@ -63,11 +63,13 @@ def get_distribution_template() -> DistributionTemplate:
     core_model_to_hf_repo = {m.descriptor(): m.huggingface_repo for m in all_registered_models()}
     default_models = [
         ModelInput(
-            model_id=core_model_to_hf_repo[m.llama_model],
+            model_id=core_model_to_hf_repo[m.llama_model] if m.llama_model else m.provider_model_id,
             provider_model_id=m.provider_model_id,
             provider_id="fireworks",
+            metadata=m.metadata,
+            model_type=m.model_type,
         )
-        for m in MODEL_ALIASES
+        for m in MODEL_ENTRIES
     ]
     embedding_model = ModelInput(
         model_id="all-MiniLM-L6-v2",

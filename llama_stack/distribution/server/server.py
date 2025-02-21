@@ -481,6 +481,8 @@ def main():
 def extract_path_params(route: str) -> List[str]:
     segments = route.split("/")
     params = [seg[1:-1] for seg in segments if seg.startswith("{") and seg.endswith("}")]
+    # to handle path params like {param:path}
+    params = [param.split(":")[0] for param in params]
     return params
 
 

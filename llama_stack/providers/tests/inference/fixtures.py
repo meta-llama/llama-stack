@@ -20,7 +20,7 @@ from llama_stack.providers.remote.inference.cerebras import CerebrasImplConfig
 from llama_stack.providers.remote.inference.fireworks import FireworksImplConfig
 from llama_stack.providers.remote.inference.groq import GroqConfig
 from llama_stack.providers.remote.inference.nvidia import NVIDIAConfig
-from llama_stack.providers.remote.inference.ollama import OllamaImplConfig
+from llama_stack.providers.remote.inference.ollama import DEFAULT_OLLAMA_URL, OllamaImplConfig
 from llama_stack.providers.remote.inference.sambanova import SambaNovaImplConfig
 from llama_stack.providers.remote.inference.tgi import TGIImplConfig
 from llama_stack.providers.remote.inference.together import TogetherImplConfig
@@ -83,17 +83,13 @@ def inference_cerebras() -> ProviderFixture:
 
 
 @pytest.fixture(scope="session")
-def inference_ollama(inference_model) -> ProviderFixture:
-    inference_model = [inference_model] if isinstance(inference_model, str) else inference_model
-    if inference_model and "Llama3.1-8B-Instruct" in inference_model:
-        pytest.skip("Ollama only supports Llama3.2-3B-Instruct for testing")
-
+def inference_ollama() -> ProviderFixture:
     return ProviderFixture(
         providers=[
             Provider(
                 provider_id="ollama",
                 provider_type="remote::ollama",
-                config=OllamaImplConfig(host="localhost", port=os.getenv("OLLAMA_PORT", 11434)).model_dump(),
+                config=OllamaImplConfig(url=os.getenv("OLLAMA_URL", DEFAULT_OLLAMA_URL)).model_dump(),
             )
         ],
     )

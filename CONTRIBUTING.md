@@ -139,6 +139,16 @@ $ make html
 $ uv run sphinx-autobuild source build/html
 ```
 
+### Update API Documentation
+
+If you modify or add new API endpoints, update the API documentation accordingly. You can do this by running the following command:
+
+```bash
+$ uv sync --extra dev
+$ ./docs/openapi_generator/run_openapi_generator.sh
+```
+
+The generated API documentation will be available in `docs/_static/`. Make sure to review the changes before committing.
 
 ## License
 By contributing to Llama, you agree that your contributions will be licensed

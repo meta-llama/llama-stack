@@ -144,6 +144,13 @@ models:
   provider_model_id: accounts/fireworks/models/llama-guard-3-11b-vision
   model_type: llm
 - metadata:
+    embedding_dimension: 768
+    context_length: 8192
+  model_id: nomic-ai/nomic-embed-text-v1.5
+  provider_id: fireworks
+  provider_model_id: nomic-ai/nomic-embed-text-v1.5
+  model_type: embedding
+- metadata:
     embedding_dimension: 384
   model_id: all-MiniLM-L6-v2
   provider_id: sentence-transformers

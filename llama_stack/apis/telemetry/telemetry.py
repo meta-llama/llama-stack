@@ -216,7 +216,7 @@ class Telemetry(Protocol):
     @webmethod(route="/telemetry/events", method="POST")
     async def log_event(self, event: Event, ttl_seconds: int = DEFAULT_TTL_DAYS * 86400) -> None: ...
 
-    @webmethod(route="/telemetry/traces", method="GET")
+    @webmethod(route="/telemetry/traces", method="POST")
     async def query_traces(
         self,
         attribute_filters: Optional[List[QueryCondition]] = None,
@@ -231,7 +231,7 @@ class Telemetry(Protocol):
     @webmethod(route="/telemetry/traces/{trace_id:path}/spans/{span_id:path}", method="GET")
     async def get_span(self, trace_id: str, span_id: str) -> Span: ...
 
-    @webmethod(route="/telemetry/spans/{span_id:path}/tree", method="GET")
+    @webmethod(route="/telemetry/spans/{span_id:path}/tree", method="POST")
     async def get_span_tree(
         self,
         span_id: str,
@@ -239,7 +239,7 @@ class Telemetry(Protocol):
         max_depth: Optional[int] = None,
     ) -> QuerySpanTreeResponse: ...
 
-    @webmethod(route="/telemetry/spans", method="GET")
+    @webmethod(route="/telemetry/spans", method="POST")
     async def query_spans(
         self,
         attribute_filters: List[QueryCondition],

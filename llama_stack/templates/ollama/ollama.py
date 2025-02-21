@@ -71,7 +71,8 @@ def get_distribution_template() -> DistributionTemplate:
     )
     embedding_model = ModelInput(
         model_id="all-MiniLM-L6-v2",
-        provider_id="sentence-transformers",
+        provider_id="ollama",
+        provider_model_id="all-minilm:latest",
         model_type=ModelType.embedding,
         metadata={
             "embedding_dimension": 384,

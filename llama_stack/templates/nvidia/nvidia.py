@@ -10,7 +10,7 @@ from llama_stack.distribution.datatypes import ModelInput, Provider, ShieldInput
 from llama_stack.models.llama.sku_list import all_registered_models
 from llama_stack.providers.remote.safety.nvidia import NVIDIASafetyConfig
 from llama_stack.providers.remote.inference.nvidia import NVIDIAConfig
-from llama_stack.providers.remote.inference.nvidia.nvidia import _MODEL_ALIASES
+from llama_stack.providers.remote.inference.nvidia.models import _MODEL_ENTRIES
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
 
@@ -59,7 +59,7 @@ def get_distribution_template() -> DistributionTemplate:
             provider_model_id=m.provider_model_id,
             provider_id="nvidia",
         )
-        for m in _MODEL_ALIASES
+        for m in _MODEL_ENTRIES
     ]
     default_tool_groups = [
         ToolGroupInput(

@@ -46,7 +46,7 @@ from llama_stack.providers.utils.inference.embedding_mixin import (
 )
 from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
-    build_model_alias,
+    build_hf_repo_model_entry,
 )
 from llama_stack.providers.utils.inference.prompt_adapter import (
     augment_content_with_response_format_prompt,
@@ -116,7 +116,7 @@ class MetaReferenceInferenceImpl(
 
         self.model_registry_helper = ModelRegistryHelper(
             [
-                build_model_alias(
+                build_hf_repo_model_entry(
                     llama_model.descriptor(),
                     llama_model.core_model_id.value,
                 )

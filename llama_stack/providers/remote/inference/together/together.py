@@ -6,8 +6,6 @@
 
 from typing import AsyncGenerator, List, Optional, Union
 
-from llama_models.llama3.api.chat_format import ChatFormat
-from llama_models.llama3.api.tokenizer import Tokenizer
 from together import Together
 
 from llama_stack.apis.common.content_types import InterleavedContent
@@ -28,10 +26,8 @@ from llama_stack.apis.inference import (
     ToolPromptFormat,
 )
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
-from llama_stack.models.llama.datatypes import CoreModelId
 from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
-    build_model_alias,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
     convert_message_to_openai_dict,
@@ -50,52 +46,13 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 )
 
 from .config import TogetherImplConfig
-
-MODEL_ALIASES = [
-    build_model_alias(
-        "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
-        CoreModelId.llama3_1_8b_instruct.value,
-    ),
-    build_model_alias(
-        "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
-        CoreModelId.llama3_1_70b_instruct.value,
-    ),
-    build_model_alias(
-        "meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
-        CoreModelId.llama3_1_405b_instruct.value,
-    ),
-    build_model_alias(
-        "meta-llama/Llama-3.2-3B-Instruct-Turbo",
-        CoreModelId.llama3_2_3b_instruct.value,
-    ),
-    build_model_alias(
-        "meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo",
-        CoreModelId.llama3_2_11b_vision_instruct.value,
-    ),
-    build_model_alias(
-        "meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo",
-        CoreModelId.llama3_2_90b_vision_instruct.value,
-    ),
-    build_model_alias(
-        "meta-llama/Llama-3.3-70B-Instruct-Turbo",
-        CoreModelId.llama3_3_70b_instruct.value,
-    ),
-    build_model_alias(
-        "meta-llama/Meta-Llama-Guard-3-8B",
-        CoreModelId.llama_guard_3_8b.value,
-    ),
-    build_model_alias(
-        "meta-llama/Llama-Guard-3-11B-Vision-Turbo",
-        CoreModelId.llama_guard_3_11b_vision.value,
-    ),
-]
+from .models import MODEL_ENTRIES
 
 
 class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProviderData):
     def __init__(self, config: TogetherImplConfig) -> None:
-        ModelRegistryHelper.__init__(self, MODEL_ALIASES)
+        ModelRegistryHelper.__init__(self, MODEL_ENTRIES)
         self.config = config
-        self.formatter = ChatFormat(Tokenizer.get_instance())
 
     async def initialize(self) -> None:
         pass
@@ -142,7 +99,7 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
     async def _nonstream_completion(self, request: CompletionRequest) -> ChatCompletionResponse:
         params = await self._get_params(request)
         r = self._get_client().completions.create(**params)
-        return process_completion_response(r, self.formatter)
+        return process_completion_response(r)
 
     async def _stream_completion(self, request: CompletionRequest) -> AsyncGenerator:
         params = await self._get_params(request)
@@ -154,7 +111,7 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
                 yield chunk
 
         stream = _to_async_generator()
-        async for chunk in process_completion_stream_response(stream, self.formatter):
+        async for chunk in process_completion_stream_response(stream):
             yield chunk
 
     def _build_options(
@@ -220,7 +177,7 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
             r = self._get_client().chat.completions.create(**params)
         else:
             r = self._get_client().completions.create(**params)
-        return process_chat_completion_response(r, self.formatter, request)
+        return process_chat_completion_response(r, request)
 
     async def _stream_chat_completion(self, request: ChatCompletionRequest) -> AsyncGenerator:
         params = await self._get_params(request)
@@ -235,7 +192,7 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
                 yield chunk
 
         stream = _to_async_generator()
-        async for chunk in process_chat_completion_stream_response(stream, self.formatter, request):
+        async for chunk in process_chat_completion_stream_response(stream, request):
             yield chunk
 
     async def _get_params(self, request: Union[ChatCompletionRequest, CompletionRequest]) -> dict:
@@ -246,11 +203,11 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
                 input_dict["messages"] = [await convert_message_to_openai_dict(m) for m in request.messages]
             else:
                 input_dict["prompt"] = await chat_completion_request_to_prompt(
-                    request, self.get_llama_model(request.model), self.formatter
+                    request, self.get_llama_model(request.model)
                 )
         else:
             assert not media_present, "Together does not support media for Completion requests"
-            input_dict["prompt"] = await completion_request_to_prompt(request, self.formatter)
+            input_dict["prompt"] = await completion_request_to_prompt(request)
 
         return {
             "model": request.model,
