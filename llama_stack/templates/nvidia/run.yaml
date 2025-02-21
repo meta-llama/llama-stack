@@ -135,6 +135,13 @@ models:
   provider_id: nvidia
   provider_model_id: meta/llama-3.2-90b-vision-instruct
   model_type: llm
+- metadata:
+    embedding_dimensions: 1024
+    context_length: 8192
+  model_id: baai/bge-m3
+  provider_id: nvidia
+  provider_model_id: baai/bge-m3
+  model_type: embedding
 shields: []
 vector_dbs: []
 datasets: []

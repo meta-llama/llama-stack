@@ -10,6 +10,11 @@ from typing import AsyncIterator, List, Optional, Union
 
 from openai import APIConnectionError, AsyncOpenAI
 
+from llama_stack.apis.common.content_types import (
+    InterleavedContent,
+    InterleavedContentItem,
+    TextContentItem,
+)
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
     ChatCompletionResponse,
@@ -19,7 +24,6 @@ from llama_stack.apis.inference import (
     CompletionResponseStreamChunk,
     EmbeddingsResponse,
     Inference,
-    InterleavedContent,
     LogProbConfig,
     Message,
     ResponseFormat,
@@ -117,9 +121,38 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
     async def embeddings(
         self,
         model_id: str,
-        contents: List[InterleavedContent],
+        contents: List[str] | List[InterleavedContentItem],
     ) -> EmbeddingsResponse:
-        raise NotImplementedError()
+        if any(content_has_media(content) for content in contents):
+            raise NotImplementedError("Media is not supported")
+
+        #
+        # Llama Stack: contents = List[str] | List[InterleavedContentItem]
+        #  ->
+        # OpenAI: input = str | List[str]
+        #
+        # we can ignore str and always pass List[str] to OpenAI
+        #
+        flat_contents = [
+            item.text if isinstance(item, TextContentItem) else item
+            for content in contents
+            for item in (content if isinstance(content, list) else [content])
+        ]
+        input = [content.text if isinstance(content, TextContentItem) else content for content in flat_contents]
+        model = self.get_provider_model_id(model_id)
+
+        response = await self._client.embeddings.create(
+            model=model,
+            input=input,
+            # extra_body={"input_type": "passage"|"query"},  # TODO(mf): how to tell caller's intent?
+        )
+
+        #
+        # OpenAI: CreateEmbeddingResponse(data=[Embedding(embedding=List[float], ...)], ...)
+        #  ->
+        # Llama Stack: EmbeddingsResponse(embeddings=List[List[float]])
+        #
+        return EmbeddingsResponse(embeddings=[embedding.embedding for embedding in response.data])
 
     async def chat_completion(
         self,

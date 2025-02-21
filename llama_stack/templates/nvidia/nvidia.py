@@ -41,9 +41,11 @@ def get_distribution_template() -> DistributionTemplate:
     core_model_to_hf_repo = {m.descriptor(): m.huggingface_repo for m in all_registered_models()}
     default_models = [
         ModelInput(
-            model_id=core_model_to_hf_repo[m.llama_model],
+            model_id=core_model_to_hf_repo[m.llama_model] if m.llama_model else m.provider_model_id,
             provider_model_id=m.provider_model_id,
             provider_id="nvidia",
+            model_type=m.model_type,
+            metadata=m.metadata,
         )
         for m in _MODEL_ENTRIES
     ]
