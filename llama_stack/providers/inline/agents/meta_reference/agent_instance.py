@@ -162,7 +162,7 @@ class ChatAgent(ShieldRunnerMixin):
         if self.agent_config.instructions != "":
             messages.append(SystemMessage(content=self.agent_config.instructions))
 
-        for i, turn in enumerate(turns):
+        for turn in turns:
             messages.extend(self.turn_to_messages(turn))
         return messages
 
