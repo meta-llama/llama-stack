@@ -12,7 +12,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
-from llama_stack.apis.agents import Turn
+from llama_stack.apis.agents import ToolExecutionStep, Turn
 from llama_stack.providers.utils.kvstore import KVStore
 
 log = logging.getLogger(__name__)
@@ -84,3 +84,15 @@ class AgentPersistence:
                 continue
         turns.sort(key=lambda x: (x.completed_at or datetime.min))
         return turns
+
+    async def set_in_progress_tool_call_step(self, session_id: str, turn_id: str, step: ToolExecutionStep):
+        await self.kvstore.set(
+            key=f"in_progress_tool_call_step:{self.agent_id}:{session_id}:{turn_id}",
+            value=step.model_dump_json(),
+        )
+
+    async def get_in_progress_tool_call_step(self, session_id: str, turn_id: str) -> Optional[ToolExecutionStep]:
+        value = await self.kvstore.get(
+            key=f"in_progress_tool_call_step:{self.agent_id}:{session_id}:{turn_id}",
+        )
+        return ToolExecutionStep(**json.loads(value)) if value else None
