@@ -1406,8 +1406,8 @@ paths:
       responses:
         '200':
           description: >-
-            A single turn in an interaction with an Agentic System. **OR** streamed
-            agent turn completion response.
+            A Turn object if stream is False, otherwise an AsyncIterator of AgentTurnResponseStreamChunk
+            objects.
           content:
             application/json:
               schema:
@@ -1417,20 +1417,28 @@ paths:
                 $ref: '#/components/schemas/AgentTurnResponseStreamChunk'
       tags:
         - Agents
-      description: ''
+      description: >-
+        Resume an agent turn with executed tool call responses.
+
+        When a Turn has the status `awaiting_input` due to pending input from client
+        side tool calls, this endpoint can be used to submit the outputs from the
+        tool calls once they are ready.
       parameters:
         - name: agent_id
           in: path
+          description: The ID of the agent to resume.
           required: true
           schema:
             type: string
         - name: session_id
           in: path
+          description: The ID of the session to resume.
           required: true
           schema:
             type: string
         - name: turn_id
           in: path
+          description: The ID of the turn to resume.
           required: true
           schema:
             type: string
@@ -2779,6 +2787,8 @@ components:
             $ref: '#/components/schemas/AgentTool'
         tool_config:
           $ref: '#/components/schemas/ToolConfig'
+        allow_turn_resume:
+          type: boolean
       additionalProperties: false
       required:
         - messages
@@ -5242,8 +5252,11 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ToolResponseMessage'
+          description: >-
+            The tool call responses to resume the turn with.
         stream:
           type: boolean
+          description: Whether to stream the response.
       additionalProperties: false
       required:
         - tool_responses
