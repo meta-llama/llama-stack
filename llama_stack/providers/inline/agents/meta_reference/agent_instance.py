@@ -30,8 +30,10 @@ from llama_stack.apis.agents import (
     AgentTurnResponseStepProgressPayload,
     AgentTurnResponseStepStartPayload,
     AgentTurnResponseStreamChunk,
+    AgentTurnResponseTurnAwaitingInputPayload,
     AgentTurnResponseTurnCompletePayload,
     AgentTurnResponseTurnStartPayload,
+    AgentTurnResumeRequest,
     Attachment,
     Document,
     InferenceStep,
@@ -62,7 +64,11 @@ from llama_stack.apis.inference import (
 from llama_stack.apis.safety import Safety
 from llama_stack.apis.tools import RAGDocument, RAGQueryConfig, ToolGroups, ToolRuntime
 from llama_stack.apis.vector_io import VectorIO
-from llama_stack.models.llama.datatypes import BuiltinTool, ToolCall, ToolParamDefinition
+from llama_stack.models.llama.datatypes import (
+    BuiltinTool,
+    ToolCall,
+    ToolParamDefinition,
+)
 from llama_stack.providers.utils.kvstore import KVStore
 from llama_stack.providers.utils.memory.vector_store import concat_interleaved_content
 from llama_stack.providers.utils.telemetry import tracing
@@ -151,6 +157,15 @@ class ChatAgent(ShieldRunnerMixin):
     async def create_session(self, name: str) -> str:
         return await self.storage.create_session(name)
 
+    async def get_messages_from_turns(self, turns: List[Turn]) -> List[Message]:
+        messages = []
+        if self.agent_config.instructions != "":
+            messages.append(SystemMessage(content=self.agent_config.instructions))
+
+        for turn in turns:
+            messages.extend(self.turn_to_messages(turn))
+        return messages
+
     async def create_and_execute_turn(self, request: AgentTurnCreateRequest) -> AsyncGenerator:
         with tracing.span("create_and_execute_turn") as span:
             span.set_attribute("session_id", request.session_id)
@@ -163,14 +178,7 @@ class ChatAgent(ShieldRunnerMixin):
                 raise ValueError(f"Session {request.session_id} not found")
 
             turns = await self.storage.get_session_turns(request.session_id)
-
-            messages = []
-            if self.agent_config.instructions != "":
-                messages.append(SystemMessage(content=self.agent_config.instructions))
-
-            for i, turn in enumerate(turns):
-                messages.extend(self.turn_to_messages(turn))
-
+            messages = await self.get_messages_from_turns(turns)
             messages.extend(request.messages)
 
             turn_id = str(uuid.uuid4())
@@ -222,13 +230,136 @@ class ChatAgent(ShieldRunnerMixin):
             )
             await self.storage.add_turn_to_session(request.session_id, turn)
 
-            chunk = AgentTurnResponseStreamChunk(
+            if output_message.tool_calls and request.allow_turn_resume:
+                chunk = AgentTurnResponseStreamChunk(
+                    event=AgentTurnResponseEvent(
+                        payload=AgentTurnResponseTurnAwaitingInputPayload(
+                            turn=turn,
+                        )
+                    )
+                )
+            else:
+                chunk = AgentTurnResponseStreamChunk(
+                    event=AgentTurnResponseEvent(
+                        payload=AgentTurnResponseTurnCompletePayload(
+                            turn=turn,
+                        )
+                    )
+                )
+
+            yield chunk
+
+    async def resume_turn(self, request: AgentTurnResumeRequest) -> AsyncGenerator:
+        with tracing.span("resume_turn") as span:
+            span.set_attribute("agent_id", self.agent_id)
+            span.set_attribute("session_id", request.session_id)
+            span.set_attribute("turn_id", request.turn_id)
+            span.set_attribute("request", request.model_dump_json())
+            assert request.stream is True, "Non-streaming not supported"
+
+            session_info = await self.storage.get_session_info(request.session_id)
+            if session_info is None:
+                raise ValueError(f"Session {request.session_id} not found")
+
+            turns = await self.storage.get_session_turns(request.session_id)
+            messages = await self.get_messages_from_turns(turns)
+            messages.extend(request.tool_responses)
+
+            last_turn_messages = [
+                x for x in messages if isinstance(x, UserMessage) or isinstance(x, ToolResponseMessage)
+            ]
+
+            # get the steps from the turn id
+            steps = []
+            if len(turns) > 0:
+                steps = turns[-1].steps
+
+            # mark tool execution step as complete
+            # if there's no tool execution in progress step (due to storage, or tool call parsing on client),
+            # we'll create a new tool execution step with current time
+            in_progress_tool_call_step = await self.storage.get_in_progress_tool_call_step(
+                request.session_id, request.turn_id
+            )
+            now = datetime.now()
+            tool_execution_step = ToolExecutionStep(
+                step_id=(in_progress_tool_call_step.step_id if in_progress_tool_call_step else str(uuid.uuid4())),
+                turn_id=request.turn_id,
+                tool_calls=(in_progress_tool_call_step.tool_calls if in_progress_tool_call_step else []),
+                tool_responses=[
+                    ToolResponse(
+                        call_id=x.call_id,
+                        tool_name=x.tool_name,
+                        content=x.content,
+                    )
+                    for x in request.tool_responses
+                ],
+                completed_at=now,
+                started_at=(in_progress_tool_call_step.started_at if in_progress_tool_call_step else now),
+            )
+            steps.append(tool_execution_step)
+            yield AgentTurnResponseStreamChunk(
                 event=AgentTurnResponseEvent(
-                    payload=AgentTurnResponseTurnCompletePayload(
-                        turn=turn,
+                    payload=AgentTurnResponseStepCompletePayload(
+                        step_type=StepType.tool_execution.value,
+                        step_id=tool_execution_step.step_id,
+                        step_details=tool_execution_step,
                     )
                 )
             )
+
+            output_message = None
+            async for chunk in self.run(
+                session_id=request.session_id,
+                turn_id=request.turn_id,
+                input_messages=messages,
+                sampling_params=self.agent_config.sampling_params,
+                stream=request.stream,
+            ):
+                if isinstance(chunk, CompletionMessage):
+                    output_message = chunk
+                    continue
+
+                assert isinstance(chunk, AgentTurnResponseStreamChunk), f"Unexpected type {type(chunk)}"
+                event = chunk.event
+                if event.payload.event_type == AgentTurnResponseEventType.step_complete.value:
+                    steps.append(event.payload.step_details)
+
+                yield chunk
+
+            assert output_message is not None
+
+            last_turn_start_time = datetime.now()
+            if len(turns) > 0:
+                last_turn_start_time = turns[-1].started_at
+
+            turn = Turn(
+                turn_id=request.turn_id,
+                session_id=request.session_id,
+                input_messages=last_turn_messages,
+                output_message=output_message,
+                started_at=last_turn_start_time,
+                completed_at=datetime.now(),
+                steps=steps,
+            )
+            await self.storage.add_turn_to_session(request.session_id, turn)
+
+            if output_message.tool_calls:
+                chunk = AgentTurnResponseStreamChunk(
+                    event=AgentTurnResponseEvent(
+                        payload=AgentTurnResponseTurnAwaitingInputPayload(
+                            turn=turn,
+                        )
+                    )
+                )
+            else:
+                chunk = AgentTurnResponseStreamChunk(
+                    event=AgentTurnResponseEvent(
+                        payload=AgentTurnResponseTurnCompletePayload(
+                            turn=turn,
+                        )
+                    )
+                )
+
             yield chunk
 
     async def run(
@@ -611,11 +742,7 @@ class ChatAgent(ShieldRunnerMixin):
                     input_messages = input_messages + [message]
             else:
                 log.info(f"{str(message)}")
-                tool_call = message.tool_calls[0]
-                if tool_call.tool_name in client_tools:
-                    yield message
-                    return
-
+                # 1. Start the tool execution step and progress
                 step_id = str(uuid.uuid4())
                 yield AgentTurnResponseStreamChunk(
                     event=AgentTurnResponseEvent(
@@ -625,6 +752,7 @@ class ChatAgent(ShieldRunnerMixin):
                         )
                     )
                 )
+                tool_call = message.tool_calls[0]
                 yield AgentTurnResponseStreamChunk(
                     event=AgentTurnResponseEvent(
                         payload=AgentTurnResponseStepProgressPayload(
@@ -639,6 +767,23 @@ class ChatAgent(ShieldRunnerMixin):
                     )
                 )
 
+                # If tool is a client tool, yield CompletionMessage and return
+                if tool_call.tool_name in client_tools:
+                    await self.storage.set_in_progress_tool_call_step(
+                        session_id,
+                        turn_id,
+                        ToolExecutionStep(
+                            step_id=step_id,
+                            turn_id=turn_id,
+                            tool_calls=[tool_call],
+                            tool_responses=[],
+                            started_at=datetime.now(),
+                        ),
+                    )
+                    yield message
+                    return
+
+                # If tool is a builtin server tool, execute it
                 tool_name = tool_call.tool_name
                 if isinstance(tool_name, BuiltinTool):
                     tool_name = tool_name.value

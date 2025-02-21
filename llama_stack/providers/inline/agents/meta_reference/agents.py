@@ -21,6 +21,7 @@ from llama_stack.apis.agents import (
     AgentStepResponse,
     AgentToolGroup,
     AgentTurnCreateRequest,
+    AgentTurnResumeRequest,
     Document,
     Session,
     Turn,
@@ -146,6 +147,7 @@ class MetaReferenceAgentsImpl(Agents):
         documents: Optional[List[Document]] = None,
         stream: Optional[bool] = False,
         tool_config: Optional[ToolConfig] = None,
+        allow_turn_resume: Optional[bool] = False,
     ) -> AsyncGenerator:
         request = AgentTurnCreateRequest(
             agent_id=agent_id,
@@ -155,6 +157,7 @@ class MetaReferenceAgentsImpl(Agents):
             toolgroups=toolgroups,
             documents=documents,
             tool_config=tool_config,
+            allow_turn_resume=allow_turn_resume,
         )
         if stream:
             return self._create_agent_turn_streaming(request)
@@ -177,7 +180,25 @@ class MetaReferenceAgentsImpl(Agents):
         tool_responses: List[ToolResponseMessage],
         stream: Optional[bool] = False,
     ) -> AsyncGenerator:
-        pass
+        request = AgentTurnResumeRequest(
+            agent_id=agent_id,
+            session_id=session_id,
+            turn_id=turn_id,
+            tool_responses=tool_responses,
+            stream=stream,
+        )
+        if stream:
+            return self._continue_agent_turn_streaming(request)
+        else:
+            raise NotImplementedError("Non-streaming agent turns not yet implemented")
+
+    async def _continue_agent_turn_streaming(
+        self,
+        request: AgentTurnResumeRequest,
+    ) -> AsyncGenerator:
+        agent = await self.get_agent(request.agent_id)
+        async for event in agent.resume_turn(request):
+            yield event
 
     async def get_agents_turn(self, agent_id: str, session_id: str, turn_id: str) -> Turn:
         turn = await self.persistence_store.get(f"session:{agent_id}:{session_id}:{turn_id}")
