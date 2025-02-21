@@ -225,6 +225,7 @@ class ChatAgent(ShieldRunnerMixin):
                 completed_at=datetime.now(),
                 steps=steps,
             )
+            await self.storage.add_turn_to_session(request.session_id, turn)
 
             if output_message.tool_calls:
                 chunk = AgentTurnResponseStreamChunk(
@@ -242,8 +243,6 @@ class ChatAgent(ShieldRunnerMixin):
                         )
                     )
                 )
-                # only add to storage if turn is complete
-                await self.storage.add_turn_to_session(request.session_id, turn)
 
             yield chunk
 
