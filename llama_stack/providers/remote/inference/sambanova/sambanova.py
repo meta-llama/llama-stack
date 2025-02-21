@@ -20,6 +20,7 @@ from llama_stack.apis.inference import (
     ChatCompletionResponse,
     CompletionMessage,
     EmbeddingsResponse,
+    EmbeddingTaskType,
     Inference,
     LogProbConfig,
     Message,
@@ -27,6 +28,7 @@ from llama_stack.apis.inference import (
     SamplingParams,
     StopReason,
     SystemMessage,
+    TextTruncation,
     ToolCall,
     ToolChoice,
     ToolConfig,
@@ -140,6 +142,9 @@ class SambaNovaInferenceAdapter(ModelRegistryHelper, Inference):
         self,
         model_id: str,
         contents: List[str] | List[InterleavedContentItem],
+        text_truncation: Optional[TextTruncation] = TextTruncation.none,
+        output_dimension: Optional[int] = None,
+        task_type: Optional[EmbeddingTaskType] = None,
     ) -> EmbeddingsResponse:
         raise NotImplementedError()
 

@@ -9,17 +9,22 @@ from typing import AsyncGenerator, AsyncIterator, Dict, List, Optional, Union
 
 from botocore.client import BaseClient
 
-from llama_stack.apis.common.content_types import InterleavedContent, InterleavedContentItem
+from llama_stack.apis.common.content_types import (
+    InterleavedContent,
+    InterleavedContentItem,
+)
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
     ChatCompletionResponse,
     ChatCompletionResponseStreamChunk,
     EmbeddingsResponse,
+    EmbeddingTaskType,
     Inference,
     LogProbConfig,
     Message,
     ResponseFormat,
     SamplingParams,
+    TextTruncation,
     ToolChoice,
     ToolConfig,
     ToolDefinition,
@@ -163,6 +168,9 @@ class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
         self,
         model_id: str,
         contents: List[str] | List[InterleavedContentItem],
+        text_truncation: Optional[TextTruncation] = TextTruncation.none,
+        output_dimension: Optional[int] = None,
+        task_type: Optional[EmbeddingTaskType] = None,
     ) -> EmbeddingsResponse:
         model = await self.model_store.get_model(model_id)
         embeddings = []

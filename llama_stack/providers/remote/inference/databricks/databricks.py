@@ -8,16 +8,21 @@ from typing import AsyncGenerator, List, Optional
 
 from openai import OpenAI
 
-from llama_stack.apis.common.content_types import InterleavedContent, InterleavedContentItem
+from llama_stack.apis.common.content_types import (
+    InterleavedContent,
+    InterleavedContentItem,
+)
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
     ChatCompletionResponse,
     EmbeddingsResponse,
+    EmbeddingTaskType,
     Inference,
     LogProbConfig,
     Message,
     ResponseFormat,
     SamplingParams,
+    TextTruncation,
     ToolChoice,
     ToolDefinition,
     ToolPromptFormat,
@@ -132,5 +137,8 @@ class DatabricksInferenceAdapter(ModelRegistryHelper, Inference):
         self,
         model_id: str,
         contents: List[str] | List[InterleavedContentItem],
+        text_truncation: Optional[TextTruncation] = TextTruncation.none,
+        output_dimension: Optional[int] = None,
+        task_type: Optional[EmbeddingTaskType] = None,
     ) -> EmbeddingsResponse:
         raise NotImplementedError()
