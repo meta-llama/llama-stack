@@ -31,6 +31,7 @@ from llama_stack.apis.agents import (
     AgentTurnResponseStepProgressPayload,
     AgentTurnResponseStepStartPayload,
     AgentTurnResponseStreamChunk,
+    AgentTurnResponseTurnAwaitingInputPayload,
     AgentTurnResponseTurnCompletePayload,
     AgentTurnResponseTurnStartPayload,
     Attachment,
@@ -227,13 +228,23 @@ class ChatAgent(ShieldRunnerMixin):
             )
             await self.storage.add_turn_to_session(request.session_id, turn)
 
-            chunk = AgentTurnResponseStreamChunk(
-                event=AgentTurnResponseEvent(
-                    payload=AgentTurnResponseTurnCompletePayload(
-                        turn=turn,
+            if output_message.tool_calls:
+                chunk = AgentTurnResponseStreamChunk(
+                    event=AgentTurnResponseEvent(
+                        payload=AgentTurnResponseTurnAwaitingInputPayload(
+                            turn=turn,
+                        )
                     )
                 )
-            )
+            else:
+                chunk = AgentTurnResponseStreamChunk(
+                    event=AgentTurnResponseEvent(
+                        payload=AgentTurnResponseTurnCompletePayload(
+                            turn=turn,
+                        )
+                    )
+                )
+
             yield chunk
 
     async def continue_turn(self, request: AgentTurnContinueRequest) -> AsyncGenerator:
