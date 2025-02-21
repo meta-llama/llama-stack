@@ -16,19 +16,9 @@ providers:
     provider_type: remote::ollama
     config:
       url: ${env.OLLAMA_URL:http://localhost:11434}
-  - provider_id: sentence-transformers
-    provider_type: inline::sentence-transformers
-    config: {}
   vector_io:
-  - provider_id: faiss
-    provider_type: inline::faiss
-    config:
-      kvstore:
-        type: sqlite
-        namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/faiss_store.db
-  - provider_id: sqlite_vec
-    provider_type: inline::sqlite_vec
+  - provider_id: sqlite-vec
+    provider_type: inline::sqlite-vec
     config:
       db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/sqlite_vec.db
   safety:
@@ -97,12 +87,6 @@ models:
   model_id: ${env.INFERENCE_MODEL}
   provider_id: ollama
   model_type: llm
-- metadata:
-    embedding_dimension: 384
-  model_id: all-MiniLM-L6-v2
-  provider_id: ollama
-  provider_model_id: all-minilm:latest
-  model_type: embedding
 shields: []
 vector_dbs: []
 datasets: []

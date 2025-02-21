@@ -178,6 +178,12 @@ class StackRun(Subcommand):
             # else must be venv since that is the only valid option left.
             current_venv = os.environ.get("VIRTUAL_ENV")
             venv = args.image_name or current_venv
+            if not venv:
+                cprint(
+                    "No current virtual environment detected, please specify a virtual environment name with --image-name",
+                    color="red",
+                )
+                return
             script = importlib.resources.files("llama_stack") / "distribution/start_venv.sh"
             run_args = [
                 script,
@@ -206,5 +212,4 @@ class StackRun(Subcommand):
 
         if args.tls_keyfile and args.tls_certfile:
             run_args.extend(["--tls-keyfile", args.tls_keyfile, "--tls-certfile", args.tls_certfile])
-
         run_with_pty(run_args)

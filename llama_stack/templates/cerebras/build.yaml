@@ -4,6 +4,7 @@ distribution_spec:
   providers:
     inference:
     - remote::cerebras
+    - inline::sentence-transformers
     safety:
     - inline::llama-guard
     vector_io:

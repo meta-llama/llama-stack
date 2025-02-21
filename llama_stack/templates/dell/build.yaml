@@ -5,6 +5,7 @@ distribution_spec:
   providers:
     inference:
     - remote::tgi
+    - inline::sentence-transformers
     vector_io:
     - inline::faiss
     - remote::chromadb

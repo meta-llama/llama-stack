@@ -13,10 +13,6 @@ from llama_stack.distribution.datatypes import (
     ShieldInput,
     ToolGroupInput,
 )
-from llama_stack.providers.inline.inference.sentence_transformers import (
-    SentenceTransformersInferenceConfig,
-)
-from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOConfig
 from llama_stack.providers.inline.vector_io.sqlite_vec.config import SQLiteVectorIOConfig
 from llama_stack.providers.remote.inference.ollama import OllamaImplConfig
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
@@ -25,7 +21,7 @@ from llama_stack.templates.template import DistributionTemplate, RunConfigSettin
 def get_distribution_template() -> DistributionTemplate:
     providers = {
         "inference": ["remote::ollama"],
-        "vector_io": ["inline::faiss", "inline::sqlite_vec", "remote::chromadb", "remote::pgvector"],
+        "vector_io": ["inline::sqlite-vec", "remote::chromadb", "remote::pgvector"],
         "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],
         "telemetry": ["inline::meta-reference"],
@@ -45,19 +41,9 @@ def get_distribution_template() -> DistributionTemplate:
         provider_type="remote::ollama",
         config=OllamaImplConfig.sample_run_config(),
     )
-    embedding_provider = Provider(
-        provider_id="sentence-transformers",
-        provider_type="inline::sentence-transformers",
-        config=SentenceTransformersInferenceConfig.sample_run_config(),
-    )
-    vector_io_provider_faiss = Provider(
-        provider_id="faiss",
-        provider_type="inline::faiss",
-        config=FaissVectorIOConfig.sample_run_config(f"distributions/{name}"),
-    )
     vector_io_provider_sqlite = Provider(
-        provider_id="sqlite_vec",
-        provider_type="inline::sqlite_vec",
+        provider_id="sqlite-vec",
+        provider_type="inline::sqlite-vec",
         config=SQLiteVectorIOConfig.sample_run_config(f"distributions/{name}"),
     )
 
@@ -104,19 +90,16 @@ def get_distribution_template() -> DistributionTemplate:
         run_configs={
             "run.yaml": RunConfigSettings(
                 provider_overrides={
-                    "inference": [inference_provider, embedding_provider],
-                    "vector_io": [vector_io_provider_faiss, vector_io_provider_sqlite],
+                    "inference": [inference_provider],
+                    "vector_io": [vector_io_provider_sqlite],
                 },
-                default_models=[inference_model, embedding_model],
+                default_models=[inference_model],
                 default_tool_groups=default_tool_groups,
             ),
             "run-with-safety.yaml": RunConfigSettings(
                 provider_overrides={
-                    "inference": [
-                        inference_provider,
-                        embedding_provider,
-                    ],
-                    "vector_io": [vector_io_provider_faiss, vector_io_provider_faiss],
+                    "inference": [inference_provider],
+                    "vector_io": [vector_io_provider_sqlite],
                     "safety": [
                         Provider(
                             provider_id="llama-guard",

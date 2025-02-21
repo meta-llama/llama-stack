@@ -5,8 +5,7 @@ distribution_spec:
     inference:
     - remote::ollama
     vector_io:
-    - inline::faiss
-    - inline::sqlite_vec
+    - inline::sqlite-vec
     - remote::chromadb
     - remote::pgvector
     safety:
