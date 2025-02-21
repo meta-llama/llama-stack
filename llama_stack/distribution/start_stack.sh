@@ -44,6 +44,7 @@ shift
 port="$1"
 shift
 
+SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 source "$SCRIPT_DIR/common.sh"
 
 # Initialize env_vars as an string
@@ -78,9 +79,10 @@ case "$env_type" in
         exit 1
     fi
 
-    if [ ! -d "$env_path_or_name/bin/activate"]; then
-        echo -e "${RED}Error: Virtual environent activate binary not found at $env_path_or_name/bin/activate" >&2
+    if [ ! -f "$env_path_or_name/bin/activate" ]; then
+        echo -e "${RED}Error: Virtual environment activate binary not found at $env_path_or_name/bin/activate" >&2
         exit 1
+    fi
 
     source "$env_path_or_name/bin/activate"
     ;;
@@ -88,6 +90,7 @@ case "$env_type" in
     if ! is_command_available conda; then
         echo -e "${RED}Error: conda not found" >&2
         exit 1
+    fi
     eval "$(conda shell.bash hook)"
     conda deactivate && conda activate "$env_path_or_name"
     PYTHON_BINARY="$CONDA_PREFIX/bin/python"
@@ -125,9 +128,10 @@ elif [[ "$env_type" == "container" ]]; then
     elif [ -n "$TEST_PYPI_VERSION" ]; then
         version_tag="test-$TEST_PYPI_VERSION"
     else
-        if ! command_is_available jq:
+        if ! is_command_available jq; then
             echo -e "${RED}Error: jq not found" >&2
             exit 1
+        fi
         URL="https://pypi.org/pypi/llama-stack/json"
         version_tag=$(curl -s $URL | jq -r '.info.version')
     fi
