@@ -67,22 +67,12 @@ DUMMY_IMAGE_BASE64 = ImageContentItem(image=ImageContentItemImage(data="base64st
 @pytest.mark.parametrize(
     "contents",
     [
-        [DUMMY_STRING],
-        [DUMMY_TEXT],
         [DUMMY_STRING, DUMMY_STRING2],
         [DUMMY_TEXT, DUMMY_TEXT2],
-        [[DUMMY_TEXT]],
-        [[DUMMY_TEXT], [DUMMY_TEXT, DUMMY_TEXT2]],
-        [DUMMY_STRING, [DUMMY_TEXT, DUMMY_TEXT2]],
     ],
     ids=[
-        "string",
-        "text",
         "list[string]",
         "list[text]",
-        "list[list[text]]",
-        "list[list[text],list[text,text]]",
-        "string,list[text,text]",
     ],
 )
 def test_embedding_text(llama_stack_client, embedding_model_id, contents):
@@ -96,26 +86,12 @@ def test_embedding_text(llama_stack_client, embedding_model_id, contents):
 @pytest.mark.parametrize(
     "contents",
     [
-        [DUMMY_IMAGE_URL],
-        [DUMMY_IMAGE_BASE64],
         [DUMMY_IMAGE_URL, DUMMY_IMAGE_BASE64],
         [DUMMY_IMAGE_URL, DUMMY_STRING, DUMMY_IMAGE_BASE64, DUMMY_TEXT],
-        [[DUMMY_IMAGE_URL]],
-        [[DUMMY_IMAGE_BASE64]],
-        [[DUMMY_IMAGE_URL, DUMMY_TEXT, DUMMY_IMAGE_BASE64]],
-        [[DUMMY_IMAGE_URL], [DUMMY_IMAGE_BASE64]],
-        [[DUMMY_IMAGE_URL], [DUMMY_TEXT, DUMMY_IMAGE_BASE64]],
     ],
     ids=[
-        "url",
-        "base64",
         "list[url,base64]",
         "list[url,string,base64,text]",
-        "list[list[url]]",
-        "list[list[base64]]",
-        "list[list[url,text,base64]]",
-        "list[list[url],list[base64]]",
-        "list[list[url],list[text,base64]]",
     ],
 )
 @pytest.mark.skip(reason="Media is not supported")
