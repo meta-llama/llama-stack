@@ -12,7 +12,6 @@
 #   - array of a string
 #   - array of a image (ImageContentItem, either URL or base64 string)
 #   - array of a text (TextContentItem)
-#   - array of array of texts, images, or both
 #  Types of output:
 #   - list of list of floats
 #
@@ -23,9 +22,6 @@
 #      - empty string
 #      - empty text
 #      - empty image
-#      - list of empty texts
-#      - list of empty images
-#      - list of empty texts and images
 #    - long
 #      - long string
 #      - long text
@@ -36,7 +32,6 @@
 #    - invalid
 #      - invalid URL
 #      - invalid base64
-#      - list of list of strings
 #
 # Notes:
 #  - use llama_stack_client fixture
