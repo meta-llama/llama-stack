@@ -280,6 +280,7 @@ class ChatAgent(ShieldRunnerMixin):
             in_progress_tool_call_step = await self.storage.get_in_progress_tool_call_step(
                 request.session_id, request.turn_id
             )
+            now = datetime.now()
             tool_execution_step = ToolExecutionStep(
                 step_id=(in_progress_tool_call_step.step_id if in_progress_tool_call_step else str(uuid.uuid4())),
                 turn_id=request.turn_id,
@@ -292,8 +293,8 @@ class ChatAgent(ShieldRunnerMixin):
                     )
                     for x in request.tool_responses
                 ],
-                completed_at=datetime.now(),
-                started_at=(in_progress_tool_call_step.started_at if in_progress_tool_call_step else datetime.now()),
+                completed_at=now,
+                started_at=(in_progress_tool_call_step.started_at if in_progress_tool_call_step else now),
             )
             steps.append(tool_execution_step)
             yield AgentTurnResponseStreamChunk(
