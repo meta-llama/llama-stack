@@ -8,7 +8,7 @@ from typing import AsyncGenerator, List, Optional, Union
 
 from cerebras.cloud.sdk import AsyncCerebras
 
-from llama_stack.apis.common.content_types import InterleavedContent
+from llama_stack.apis.common.content_types import InterleavedContent, InterleavedContentItem
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
     CompletionRequest,
@@ -172,6 +172,6 @@ class CerebrasInferenceAdapter(ModelRegistryHelper, Inference):
     async def embeddings(
         self,
         model_id: str,
-        contents: List[InterleavedContent],
+        contents: List[str] | List[InterleavedContentItem],
     ) -> EmbeddingsResponse:
         raise NotImplementedError()

@@ -8,7 +8,7 @@ from typing import AsyncGenerator, List, Optional, Union
 
 from together import Together
 
-from llama_stack.apis.common.content_types import InterleavedContent
+from llama_stack.apis.common.content_types import InterleavedContent, InterleavedContentItem
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
     ChatCompletionResponse,
@@ -219,7 +219,7 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
     async def embeddings(
         self,
         model_id: str,
-        contents: List[InterleavedContent],
+        contents: List[str] | List[InterleavedContentItem],
     ) -> EmbeddingsResponse:
         model = await self.model_store.get_model(model_id)
         assert all(not content_has_media(content) for content in contents), (

@@ -6,7 +6,7 @@
 
 from typing import Any, AsyncGenerator, Dict, List, Optional
 
-from llama_stack.apis.common.content_types import URL, InterleavedContent
+from llama_stack.apis.common.content_types import URL, InterleavedContent, InterleavedContentItem
 from llama_stack.apis.datasetio import DatasetIO, PaginatedRowsResult
 from llama_stack.apis.eval import (
     BenchmarkConfig,
@@ -214,7 +214,7 @@ class InferenceRouter(Inference):
     async def embeddings(
         self,
         model_id: str,
-        contents: List[InterleavedContent],
+        contents: List[str] | List[InterleavedContentItem],
     ) -> EmbeddingsResponse:
         model = await self.routing_table.get_model(model_id)
         if model is None:

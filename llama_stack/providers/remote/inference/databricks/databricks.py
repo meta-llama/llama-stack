@@ -8,7 +8,7 @@ from typing import AsyncGenerator, List, Optional
 
 from openai import OpenAI
 
-from llama_stack.apis.common.content_types import InterleavedContent
+from llama_stack.apis.common.content_types import InterleavedContent, InterleavedContentItem
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
     ChatCompletionResponse,
@@ -130,7 +130,7 @@ class DatabricksInferenceAdapter(ModelRegistryHelper, Inference):
 
     async def embeddings(
         self,
-        model: str,
-        contents: List[InterleavedContent],
+        model_id: str,
+        contents: List[str] | List[InterleavedContentItem],
     ) -> EmbeddingsResponse:
         raise NotImplementedError()

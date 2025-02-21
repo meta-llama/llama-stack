@@ -10,7 +10,7 @@ from typing import AsyncGenerator, List, Optional
 
 from huggingface_hub import AsyncInferenceClient, HfApi
 
-from llama_stack.apis.common.content_types import InterleavedContent
+from llama_stack.apis.common.content_types import InterleavedContent, InterleavedContentItem
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
     ChatCompletionResponse,
@@ -268,7 +268,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
     async def embeddings(
         self,
         model_id: str,
-        contents: List[InterleavedContent],
+        contents: List[str] | List[InterleavedContentItem],
     ) -> EmbeddingsResponse:
         raise NotImplementedError()
 

@@ -23,6 +23,7 @@ from llama_stack.apis.inference import (
     CompletionResponseStreamChunk,
     EmbeddingsResponse,
     Inference,
+    InterleavedContentItem,
     LogProbConfig,
     Message,
     ResponseFormat,
@@ -230,5 +231,5 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         async for chunk in process_chat_completion_stream_response(stream, request):
             yield chunk
 
-    async def embeddings(self, model_id: str, contents: List[InterleavedContent]) -> EmbeddingsResponse:
+    async def embeddings(self, model_id: str, contents: List[str] | List[InterleavedContentItem]) -> EmbeddingsResponse:
         raise NotImplementedError()
