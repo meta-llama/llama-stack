@@ -3224,13 +3224,17 @@ components:
             The identifier of the model to use. The model must be an embedding model
             registered with Llama Stack and available via the /models endpoint.
         contents:
-          type: array
-          items:
-            $ref: '#/components/schemas/InterleavedContent'
+          oneOf:
+            - type: array
+              items:
+                type: string
+            - type: array
+              items:
+                $ref: '#/components/schemas/InterleavedContentItem'
           description: >-
-            List of contents to generate embeddings for. Note that content can be
-            multimodal. The behavior depends on the model and provider. Some models
-            may only support text.
+            List of contents to generate embeddings for. Each content can be a string
+            or an InterleavedContentItem (and hence can be multimodal). The behavior
+            depends on the model and provider. Some models may only support text.
       additionalProperties: false
       required:
         - model_id
