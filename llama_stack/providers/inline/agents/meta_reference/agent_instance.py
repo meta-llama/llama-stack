@@ -663,11 +663,7 @@ class ChatAgent(ShieldRunnerMixin):
                     input_messages = input_messages + [message]
             else:
                 log.info(f"{str(message)}")
-                tool_call = message.tool_calls[0]
-                if tool_call.tool_name in client_tools:
-                    yield message
-                    return
-
+                # 1. Start the tool execution step and progress
                 step_id = str(uuid.uuid4())
                 yield AgentTurnResponseStreamChunk(
                     event=AgentTurnResponseEvent(
@@ -691,6 +687,13 @@ class ChatAgent(ShieldRunnerMixin):
                     )
                 )
 
+                # If tool is a client tool, yield CompletionMessage and return
+                tool_call = message.tool_calls[0]
+                if tool_call.tool_name in client_tools:
+                    yield message
+                    return
+
+                # If tool is a builtin server tool, execute it
                 tool_name = tool_call.tool_name
                 if isinstance(tool_name, BuiltinTool):
                     tool_name = tool_name.value
