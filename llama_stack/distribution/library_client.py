@@ -230,12 +230,11 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         if Api.telemetry in self.impls:
             setup_logger(self.impls[Api.telemetry])
 
-        console = Console()
-        console.print(f"Using config [blue]{self.config_path_or_template_name}[/blue]:")
-
-        # Redact sensitive information before printing
-        safe_config = redact_sensitive_fields(self.config.model_dump())
-        console.print(yaml.dump(safe_config, indent=2))
+        if not os.environ.get("PYTEST_CURRENT_TEST"):
+            console = Console()
+            console.print(f"Using config [blue]{self.config_path_or_template_name}[/blue]:")
+            safe_config = redact_sensitive_fields(self.config.model_dump())
+            console.print(yaml.dump(safe_config, indent=2))
 
         endpoints = get_all_api_endpoints()
         endpoint_impls = {}
