@@ -2945,6 +2945,16 @@ components:
             - type: string
         content:
           $ref: '#/components/schemas/InterleavedContent'
+        metadata:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
       additionalProperties: false
       required:
         - call_id
@@ -4381,6 +4391,16 @@ components:
           type: string
         error_code:
           type: integer
+        metadata:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
       additionalProperties: false
       required:
         - content
@@ -4954,7 +4974,19 @@ components:
       properties:
         content:
           $ref: '#/components/schemas/InterleavedContent'
+        metadata:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
       additionalProperties: false
+      required:
+        - metadata
       title: RAGQueryResult
     QueryChunksRequest:
       type: object
