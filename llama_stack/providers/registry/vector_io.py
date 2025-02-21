@@ -121,4 +121,14 @@ def available_providers() -> List[ProviderSpec]:
             ),
             api_dependencies=[Api.inference],
         ),
+        remote_provider_spec(
+            Api.vector_io,
+            AdapterSpec(
+                adapter_type="mongodb",
+                pip_packages=EMBEDDING_DEPS + ["pymongo", "certifi"],
+                module="llama_stack.providers.remote.vector_io.mongodb",
+                config_class="llama_stack.providers.remote.vector_io.mongodb.MongoDBVectorIOConfig",
+            ),
+            api_dependencies=[Api.inference],
+        ),
     ]

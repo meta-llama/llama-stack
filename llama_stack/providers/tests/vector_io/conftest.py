@@ -71,6 +71,14 @@ DEFAULT_PROVIDER_COMBINATIONS = [
         id="weaviate",
         marks=pytest.mark.weaviate,
     ),
+    pytest.param(
+        {
+            "inference": "bedrock",
+            "vector_io": "mongodb",
+        },
+        id="mongodb",
+        marks=pytest.mark.mongodb,
+    ),
 ]
 
 

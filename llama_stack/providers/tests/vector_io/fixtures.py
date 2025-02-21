@@ -19,6 +19,7 @@ from llama_stack.providers.remote.vector_io.chroma import ChromaVectorIOConfig
 from llama_stack.providers.remote.vector_io.pgvector import PGVectorVectorIOConfig
 from llama_stack.providers.remote.vector_io.qdrant import QdrantVectorIOConfig
 from llama_stack.providers.remote.vector_io.weaviate import WeaviateVectorIOConfig
+from llama_stack.providers.remote.vector_io.mongodb import MongoDBVectorIOConfig
 from llama_stack.providers.tests.resolver import construct_stack_for_test
 from llama_stack.providers.utils.kvstore.config import SqliteKVStoreConfig
 
@@ -146,8 +147,23 @@ def vector_io_qdrant() -> ProviderFixture:
         ]
     )
 
+@pytest.fixture(scope="session")
+def vector_io_mongodb() -> ProviderFixture:
+    connection_str = get_env_or_fail("MONGODB_CONNECTION_STR")
+    namespace = get_env_or_fail("MONGODB_NAMESPACE")
+    config = MongoDBVectorIOConfig(connection_str=connection_str, namespace=namespace)
+    provider_type = "remote::mongodb"
+    return ProviderFixture(
+        providers=[
+            Provider(
+                provider_id="mongodb",
+                provider_type=provider_type,
+                config=config.model_dump(),
+            )
+        ]
+    )
 
-VECTOR_IO_FIXTURES = ["faiss", "pgvector", "weaviate", "chroma", "qdrant", "sqlite_vec"]
+VECTOR_IO_FIXTURES = ["faiss", "pgvector", "weaviate", "chroma", "qdrant", "sqlite_vec", "mongodb"]
 
 
 @pytest_asyncio.fixture(scope="session")
