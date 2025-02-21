@@ -268,7 +268,7 @@ class ChatAgent(ShieldRunnerMixin):
             for i, turn in enumerate(turns):
                 messages.extend(self.turn_to_messages(turn))
 
-            messages.extend(request.messages)
+            messages.extend(request.tool_responses)
 
             # steps = []
             # output_message = None
@@ -673,6 +673,7 @@ class ChatAgent(ShieldRunnerMixin):
                         )
                     )
                 )
+                tool_call = message.tool_calls[0]
                 yield AgentTurnResponseStreamChunk(
                     event=AgentTurnResponseEvent(
                         payload=AgentTurnResponseStepProgressPayload(
@@ -688,7 +689,6 @@ class ChatAgent(ShieldRunnerMixin):
                 )
 
                 # If tool is a client tool, yield CompletionMessage and return
-                tool_call = message.tool_calls[0]
                 if tool_call.tool_name in client_tools:
                     yield message
                     return
