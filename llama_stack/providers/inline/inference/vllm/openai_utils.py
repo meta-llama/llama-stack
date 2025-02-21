@@ -7,7 +7,6 @@
 from typing import List, Optional
 
 import vllm
-from llama_models.llama3.api.datatypes import BuiltinTool, ToolDefinition
 
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
@@ -17,6 +16,7 @@ from llama_stack.apis.inference import (
     ToolChoice,
     UserMessage,
 )
+from llama_stack.models.llama.datatypes import BuiltinTool, ToolDefinition
 from llama_stack.providers.utils.inference.openai_compat import (
     convert_message_to_openai_dict,
     get_sampling_options,
@@ -114,7 +114,12 @@ async def llama_stack_chat_completion_to_openai_chat_completion_dict(
     # Llama will try to use built-in tools with no tool catalog, so don't enable
     # tool choice unless at least one tool is enabled.
     converted_tool_choice = "none"
-    if request.tool_choice == ToolChoice.auto and request.tools is not None and len(request.tools) > 0:
+    if (
+        request.tool_config is not None
+        and request.tool_config.tool_choice == ToolChoice.auto
+        and request.tools is not None
+        and len(request.tools) > 0
+    ):
         converted_tool_choice = "auto"
 
     # TODO: Figure out what to do with the tool_prompt_format argument.
