@@ -375,8 +375,8 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
 
         kwargs = {}
         assert model.model_type == ModelType.embedding
-        assert model.metadata.get("embedding_dimensions")
-        kwargs["dimensions"] = model.metadata.get("embedding_dimensions")
+        assert model.metadata.get("embedding_dimension")
+        kwargs["dimensions"] = model.metadata.get("embedding_dimension")
         assert all(not content_has_media(content) for content in contents), "VLLM does not support media for embeddings"
         response = self.client.embeddings.create(
             model=model.provider_resource_id,

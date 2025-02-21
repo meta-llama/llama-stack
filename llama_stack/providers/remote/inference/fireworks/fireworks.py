@@ -237,8 +237,8 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProv
         model = await self.model_store.get_model(model_id)
 
         kwargs = {}
-        if model.metadata.get("embedding_dimensions"):
-            kwargs["dimensions"] = model.metadata.get("embedding_dimensions")
+        if model.metadata.get("embedding_dimension"):
+            kwargs["dimensions"] = model.metadata.get("embedding_dimension")
         assert all(not content_has_media(content) for content in contents), (
             "Fireworks does not support media for embeddings"
         )

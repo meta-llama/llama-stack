@@ -56,7 +56,7 @@ MODEL_ENTRIES = [
         provider_model_id="nomic-ai/nomic-embed-text-v1.5",
         model_type=ModelType.embedding,
         metadata={
-            "embedding_dimensions": 768,
+            "embedding_dimension": 768,
             "context_length": 8192,
         },
     ),

@@ -88,7 +88,7 @@ model_entries = [
         aliases=["all-minilm"],
         model_type=ModelType.embedding,
         metadata={
-            "embedding_dimensions": 384,
+            "embedding_dimension": 384,
             "context_length": 512,
         },
     ),
@@ -96,7 +96,7 @@ model_entries = [
         provider_model_id="nomic-embed-text",
         model_type=ModelType.embedding,
         metadata={
-            "embedding_dimensions": 768,
+            "embedding_dimension": 768,
             "context_length": 8192,
         },
     ),

@@ -52,7 +52,7 @@ MODEL_ENTRIES = [
         provider_model_id="togethercomputer/m2-bert-80M-8k-retrieval",
         model_type=ModelType.embedding,
         metadata={
-            "embedding_dimensions": 768,
+            "embedding_dimension": 768,
             "context_length": 8192,
         },
     ),
@@ -60,7 +60,7 @@ MODEL_ENTRIES = [
         provider_model_id="togethercomputer/m2-bert-80M-32k-retrieval",
         model_type=ModelType.embedding,
         metadata={
-            "embedding_dimensions": 768,
+            "embedding_dimension": 768,
             "context_length": 32768,
         },
     ),
