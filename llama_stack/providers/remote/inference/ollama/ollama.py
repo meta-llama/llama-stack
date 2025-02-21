@@ -281,6 +281,8 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
 
     async def register_model(self, model: Model) -> Model:
         if model.model_type == ModelType.embedding:
+            log.info(f"Pulling embedding model `{model.provider_resource_id}` if necessary...")
+            await self.client.pull(model.provider_resource_id)
             response = await self.client.list()
         else:
             response = await self.client.ps()

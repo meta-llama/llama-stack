@@ -356,6 +356,7 @@
     "scikit-learn",
     "scipy",
     "sentencepiece",
+    "sqlite-vec",
     "tqdm",
     "transformers",
     "uvicorn",
