@@ -19,6 +19,13 @@ def _get_model_size(model_dir):
     return sum(f.stat().st_size for f in Path(model_dir).rglob("*") if f.is_file())
 
 
+def _convert_to_model_descriptor(model):
+    for m in all_registered_models():
+        if model == m.descriptor().replace(":", "-"):
+            return str(m.descriptor())
+    return str(model)
+
+
 def _run_model_list_downloaded_cmd() -> None:
     headers = ["Model", "Size", "Modified Time"]
 
@@ -30,7 +37,7 @@ def _run_model_list_downloaded_cmd() -> None:
         modified_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(os.path.getmtime(abs_path)))
         rows.append(
             [
-                model,
+                _convert_to_model_descriptor(model),
                 model_size,
                 modified_time,
             ]
