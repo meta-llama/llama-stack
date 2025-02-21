@@ -78,7 +78,7 @@ def provider_data():
 
 
 @pytest.fixture(scope="session")
-def llama_stack_client(provider_data):
+def llama_stack_client(provider_data, text_model_id):
     if os.environ.get("LLAMA_STACK_CONFIG"):
         client = LlamaStackAsLibraryClient(
             get_env_or_fail("LLAMA_STACK_CONFIG"),
@@ -95,6 +95,14 @@ def llama_stack_client(provider_data):
         )
     else:
         raise ValueError("LLAMA_STACK_CONFIG or LLAMA_STACK_BASE_URL must be set")
+
+    inference_providers = [
+        p.provider_id
+        for p in client.providers.list()
+        if p.api == "inference" and p.provider_id != "sentence-transformers"
+    ]
+    assert len(inference_providers) > 0, "No inference providers found"
+    client.models.register(model_id=text_model_id, provider_id=inference_providers[0])
     return client
 
 

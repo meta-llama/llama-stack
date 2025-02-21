@@ -178,8 +178,9 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
 
         input_dict = {}
         media_present = request_has_media(request)
+        llama_model = self.register_helper.get_llama_model(request.model)
         if isinstance(request, ChatCompletionRequest):
-            if media_present:
+            if media_present or not llama_model:
                 contents = [await convert_message_to_openai_dict_for_ollama(m) for m in request.messages]
                 # flatten the list of lists
                 input_dict["messages"] = [item for sublist in contents for item in sublist]
@@ -187,7 +188,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
                 input_dict["raw"] = True
                 input_dict["prompt"] = await chat_completion_request_to_prompt(
                     request,
-                    self.register_helper.get_llama_model(request.model),
+                    llama_model,
                 )
         else:
             assert not media_present, "Ollama does not support media for Completion requests"
