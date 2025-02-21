@@ -194,6 +194,7 @@ class AgentTurnResponseEventType(Enum):
 
     turn_start = "turn_start"
     turn_complete = "turn_complete"
+    turn_awaiting_input = "turn_awaiting_input"
 
 
 @json_schema_type
@@ -235,6 +236,14 @@ class AgentTurnResponseTurnCompletePayload(BaseModel):
     turn: Turn
 
 
+@json_schema_type
+class AgentTurnResponseTurnAwaitingInputPayload(BaseModel):
+    event_type: Literal[AgentTurnResponseEventType.turn_awaiting_input.value] = (
+        AgentTurnResponseEventType.turn_awaiting_input.value
+    )
+    turn: Turn
+
+
 AgentTurnResponseEventPayload = register_schema(
     Annotated[
         Union[
@@ -243,6 +252,7 @@ AgentTurnResponseEventPayload = register_schema(
             AgentTurnResponseStepCompletePayload,
             AgentTurnResponseTurnStartPayload,
             AgentTurnResponseTurnCompletePayload,
+            AgentTurnResponseTurnAwaitingInputPayload,
         ],
         Field(discriminator="event_type"),
     ],
@@ -285,6 +295,18 @@ class AgentTurnCreateRequest(AgentConfigOverridablePerTurn):
 
     stream: Optional[bool] = False
     tool_config: Optional[ToolConfig] = None
+
+    # TODO (xiyan): temporary flag, will remove for 0.1.5
+    allow_turn_resume: Optional[bool] = False
+
+
+@json_schema_type
+class AgentTurnResumeRequest(BaseModel):
+    agent_id: str
+    session_id: str
+    turn_id: str
+    tool_responses: List[ToolResponseMessage]
+    stream: Optional[bool] = False
 
 
 @json_schema_type
@@ -333,7 +355,33 @@ class Agents(Protocol):
         documents: Optional[List[Document]] = None,
         toolgroups: Optional[List[AgentToolGroup]] = None,
         tool_config: Optional[ToolConfig] = None,
+        allow_turn_resume: Optional[bool] = False,
     ) -> Union[Turn, AsyncIterator[AgentTurnResponseStreamChunk]]: ...
+
+    @webmethod(
+        route="/agents/{agent_id}/session/{session_id}/turn/{turn_id}/resume",
+        method="POST",
+    )
+    async def resume_agent_turn(
+        self,
+        agent_id: str,
+        session_id: str,
+        turn_id: str,
+        tool_responses: List[ToolResponseMessage],
+        stream: Optional[bool] = False,
+    ) -> Union[Turn, AsyncIterator[AgentTurnResponseStreamChunk]]:
+        """Resume an agent turn with executed tool call responses.
+
+        When a Turn has the status `awaiting_input` due to pending input from client side tool calls, this endpoint can be used to submit the outputs from the tool calls once they are ready.
+
+        :param agent_id: The ID of the agent to resume.
+        :param session_id: The ID of the session to resume.
+        :param turn_id: The ID of the turn to resume.
+        :param tool_responses: The tool call responses to resume the turn with.
+        :param stream: Whether to stream the response.
+        :returns: A Turn object if stream is False, otherwise an AsyncIterator of AgentTurnResponseStreamChunk objects.
+        """
+        ...
 
     @webmethod(
         route="/agents/{agent_id}/session/{session_id}/turn/{turn_id}",
