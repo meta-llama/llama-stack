@@ -269,6 +269,9 @@ class ChatAgent(ShieldRunnerMixin):
                 messages.extend(self.turn_to_messages(turn))
 
             messages.extend(request.tool_responses)
+            last_turn_messages = [
+                x for x in messages if isinstance(x, UserMessage) or isinstance(x, ToolResponseMessage)
+            ]
 
             # get the steps from the turn id
             steps = []
@@ -326,19 +329,9 @@ class ChatAgent(ShieldRunnerMixin):
 
             assert output_message is not None
 
-            last_turn_messages = []
             last_turn_start_time = datetime.now()
             if len(turns) > 0:
                 last_turn_start_time = turns[-1].started_at
-                last_turn_messages = self.turn_to_messages(turns[-1])
-
-            # add tool responses to the last turn messages
-            last_turn_messages.extend(request.tool_responses)
-            # filter out non User / Tool messages
-            # TODO: should we just keep all message types in Turn.input_messages?
-            last_turn_messages = [
-                m for m in last_turn_messages if isinstance(m, UserMessage) or isinstance(m, ToolResponseMessage)
-            ]
 
             turn = Turn(
                 turn_id=request.turn_id,
