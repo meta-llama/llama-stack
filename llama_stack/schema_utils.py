@@ -5,11 +5,9 @@
 # the root directory of this source tree.
 
 from dataclasses import dataclass
-from typing import Any, Callable, List, Optional, TypeVar
+from typing import Any, Callable, List, Optional, Protocol, TypeVar
 
 from .strong_typing.schema import json_schema_type, register_schema  # noqa: F401
-
-T = TypeVar("T")
 
 
 @dataclass
@@ -20,6 +18,13 @@ class WebMethod:
     response_examples: Optional[List[Any]] = None
     method: Optional[str] = None
     raw_bytes_request_body: Optional[bool] = False
+
+
+class HasWebMethod(Protocol):
+    __webmethod__: WebMethod
+
+
+T = TypeVar("T", bound=HasWebMethod)  # Bound T to classes that match this protocol
 
 
 def webmethod(
