@@ -2319,7 +2319,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "A single turn in an interaction with an Agentic System. **OR** streamed agent turn completion response.",
+                        "description": "A Turn object if stream is False, otherwise an AsyncIterator of AgentTurnResponseStreamChunk objects.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2337,11 +2337,12 @@
                 "tags": [
                     "Agents"
                 ],
-                "description": "",
+                "description": "Resume an agent turn with executed tool call responses.\nWhen a Turn has the status `awaiting_input` due to pending input from client side tool calls, this endpoint can be used to submit the outputs from the tool calls once they are ready.",
                 "parameters": [
                     {
                         "name": "agent_id",
                         "in": "path",
+                        "description": "The ID of the agent to resume.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -2350,6 +2351,7 @@
                     {
                         "name": "session_id",
                         "in": "path",
+                        "description": "The ID of the session to resume.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -2358,6 +2360,7 @@
                     {
                         "name": "turn_id",
                         "in": "path",
+                        "description": "The ID of the turn to resume.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -8109,10 +8112,12 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/ToolResponseMessage"
-                        }
+                        },
+                        "description": "The tool call responses to resume the turn with."
                     },
                     "stream": {
-                        "type": "boolean"
+                        "type": "boolean",
+                        "description": "Whether to stream the response."
                     }
                 },
                 "additionalProperties": false,
