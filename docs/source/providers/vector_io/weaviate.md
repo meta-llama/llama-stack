@@ -1,3 +1,6 @@
+---
+orphan: true
+---
 # Weaviate 
 
 [Weaviate](https://weaviate.io/) is a vector database provider for Llama Stack. 

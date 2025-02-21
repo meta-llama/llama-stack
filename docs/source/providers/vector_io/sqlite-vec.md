@@ -1,3 +1,6 @@
+---
+orphan: true
+---
 # SQLite-Vec
 
 [SQLite-Vec](https://github.com/asg017/sqlite-vec) is an inline vector database provider for Llama Stack. It 

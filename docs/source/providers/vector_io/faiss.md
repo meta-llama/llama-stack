@@ -1,3 +1,6 @@
+---
+orphan: true
+---
 # Faiss
 
 [Faiss](https://github.com/facebookresearch/faiss) is an inline vector database provider for Llama Stack. It 

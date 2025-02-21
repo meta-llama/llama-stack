@@ -1,3 +1,6 @@
+---
+orphan: true
+---
 # Qdrant
 
 [Qdrant](https://qdrant.tech/documentation/) is a remote vector database provider for Llama Stack. It 

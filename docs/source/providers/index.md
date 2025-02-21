@@ -33,14 +33,20 @@ Importantly, Llama Stack always strives to provide at least one fully "local" pr
 
 ## Vector IO
 
-Vector IO refers to operations on vector databases, such as adding documents, searching, and deleting documents. 
-Vector IO plays a crucial role in [Retreival Augmented Generation (RAG)](../building_applications/rag), where the vector 
+Vector IO refers to operations on vector databases, such as adding documents, searching, and deleting documents.
+Vector IO plays a crucial role in [Retreival Augmented Generation (RAG)](../..//building_applications/rag), where the vector
 io and database are used to store and retrieve documents for retrieval.
 
+#### Vector IO Providers
 The following providers (i.e., databases) are available for Vector IO:
 
 ```{toctree}
 :maxdepth: 1
 
-vector_io/index
+vector_io/faiss
+vector_io/sqlite-vec
+vector_io/chromadb
+vector_io/pgvector
+vector_io/qdrant
+vector_io/weaviate
 ```

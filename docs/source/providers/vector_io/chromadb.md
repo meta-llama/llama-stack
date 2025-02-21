@@ -1,3 +1,6 @@
+---
+orphan: true
+---
 # Chroma 
 
 [Chroma](https://www.trychroma.com/) is an inline and remote vector 

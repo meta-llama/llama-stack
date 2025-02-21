@@ -1,3 +1,6 @@
+---
+orphan: true
+---
 # Postgres PGVector
 
 [PGVector](https://github.com/pgvector/pgvector) is a remote vector database provider for Llama Stack. It 
