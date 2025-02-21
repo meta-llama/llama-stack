@@ -20,7 +20,7 @@ from llama_stack.templates.template import (
 
 def get_distribution_template() -> DistributionTemplate:
     providers = {
-        "inference": ["inline::vllm"],
+        "inference": ["inline::vllm", "inline::sentence-transformers"],
         "vector_io": ["inline::faiss", "remote::chromadb", "remote::pgvector"],
         "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],

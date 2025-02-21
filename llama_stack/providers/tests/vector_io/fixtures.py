@@ -61,7 +61,7 @@ def vector_io_sqlite_vec() -> ProviderFixture:
         providers=[
             Provider(
                 provider_id="sqlite_vec",
-                provider_type="inline::sqlite_vec",
+                provider_type="inline::sqlite-vec",
                 config=SQLiteVectorIOConfig(
                     kvstore=SqliteKVStoreConfig(db_path=temp_file.name).model_dump(),
                 ).model_dump(),

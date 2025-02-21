@@ -30,9 +30,7 @@
     "sentencepiece",
     "tqdm",
     "transformers",
-    "uvicorn",
-    "sentence-transformers --no-deps",
-    "torch torchvision --index-url https://download.pytorch.org/whl/cpu"
+    "uvicorn"
   ],
   "cerebras": [
     "aiosqlite",
@@ -170,9 +168,7 @@
     "sentencepiece",
     "tqdm",
     "transformers",
-    "uvicorn",
-    "sentence-transformers --no-deps",
-    "torch torchvision --index-url https://download.pytorch.org/whl/cpu"
+    "uvicorn"
   ],
   "hf-serverless": [
     "aiohttp",
@@ -247,9 +243,7 @@
     "tqdm",
     "transformers",
     "uvicorn",
-    "zmq",
-    "sentence-transformers --no-deps",
-    "torch torchvision --index-url https://download.pytorch.org/whl/cpu"
+    "zmq"
   ],
   "meta-reference-quantized-gpu": [
     "accelerate",
@@ -290,9 +284,7 @@
     "tqdm",
     "transformers",
     "uvicorn",
-    "zmq",
-    "sentence-transformers --no-deps",
-    "torch torchvision --index-url https://download.pytorch.org/whl/cpu"
+    "zmq"
   ],
   "nvidia": [
     "aiosqlite",
@@ -323,9 +315,7 @@
     "sentencepiece",
     "tqdm",
     "transformers",
-    "uvicorn",
-    "sentence-transformers --no-deps",
-    "torch torchvision --index-url https://download.pytorch.org/whl/cpu"
+    "uvicorn"
   ],
   "ollama": [
     "aiohttp",
@@ -335,7 +325,6 @@
     "chardet",
     "chromadb-client",
     "datasets",
-    "faiss-cpu",
     "fastapi",
     "fire",
     "httpx",
@@ -359,9 +348,7 @@
     "sqlite-vec",
     "tqdm",
     "transformers",
-    "uvicorn",
-    "sentence-transformers --no-deps",
-    "torch torchvision --index-url https://download.pytorch.org/whl/cpu"
+    "uvicorn"
   ],
   "remote-vllm": [
     "aiosqlite",
@@ -424,9 +411,7 @@
     "sentencepiece",
     "tqdm",
     "transformers",
-    "uvicorn",
-    "sentence-transformers --no-deps",
-    "torch torchvision --index-url https://download.pytorch.org/whl/cpu"
+    "uvicorn"
   ],
   "tgi": [
     "aiohttp",

@@ -21,7 +21,7 @@ from llama_stack.templates.template import DistributionTemplate, RunConfigSettin
 
 def get_distribution_template() -> DistributionTemplate:
     providers = {
-        "inference": ["remote::hf::serverless"],
+        "inference": ["remote::hf::serverless", "inline::sentence-transformers"],
         "vector_io": ["inline::faiss", "remote::chromadb", "remote::pgvector"],
         "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],

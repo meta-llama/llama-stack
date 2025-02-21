@@ -61,7 +61,10 @@ def available_providers() -> List[ProviderSpec]:
         InlineProviderSpec(
             api=Api.inference,
             provider_type="inline::sentence-transformers",
-            pip_packages=["sentence-transformers"],
+            pip_packages=[
+                "torch torchvision --index-url https://download.pytorch.org/whl/cpu",
+                "sentence-transformers --no-deps",
+            ],
             module="llama_stack.providers.inline.inference.sentence_transformers",
             config_class="llama_stack.providers.inline.inference.sentence_transformers.config.SentenceTransformersInferenceConfig",
         ),

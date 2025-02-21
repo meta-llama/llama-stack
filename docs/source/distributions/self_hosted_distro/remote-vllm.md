@@ -17,7 +17,7 @@ The `llamastack/distribution-remote-vllm` distribution consists of the following
 | agents | `inline::meta-reference` |
 | datasetio | `remote::huggingface`, `inline::localfs` |
 | eval | `inline::meta-reference` |
-| inference | `remote::vllm` |
+| inference | `remote::vllm`, `inline::sentence-transformers` |
 | safety | `inline::llama-guard` |
 | scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |
 | telemetry | `inline::meta-reference` |
