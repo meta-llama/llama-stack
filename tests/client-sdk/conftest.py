@@ -42,27 +42,29 @@ def pytest_addoption(parser):
     )
     parser.addoption(
         "--inference-model",
-        action="store",
         default=TEXT_MODEL,
         help="Specify the inference model to use for testing",
     )
     parser.addoption(
         "--vision-inference-model",
-        action="store",
         default=VISION_MODEL,
         help="Specify the vision inference model to use for testing",
     )
     parser.addoption(
         "--safety-shield",
-        action="store",
         default="meta-llama/Llama-Guard-3-1B",
         help="Specify the safety shield model to use for testing",
     )
     parser.addoption(
         "--embedding-model",
-        action="store",
-        default=TEXT_MODEL,
+        default=None,
         help="Specify the embedding model to use for testing",
+    )
+    parser.addoption(
+        "--embedding-dimension",
+        type=int,
+        default=384,
+        help="Output dimensionality of the embedding model to use for testing",
     )
 
 
@@ -96,13 +98,44 @@ def llama_stack_client(provider_data, text_model_id):
     else:
         raise ValueError("LLAMA_STACK_CONFIG or LLAMA_STACK_BASE_URL must be set")
 
-    inference_providers = [
-        p.provider_id
-        for p in client.providers.list()
-        if p.api == "inference" and p.provider_id != "sentence-transformers"
-    ]
+    return client
+
+
+@pytest.fixture(scope="session")
+def inference_provider_type(llama_stack_client):
+    providers = llama_stack_client.providers.list()
+    inference_providers = [p for p in providers if p.api == "inference"]
     assert len(inference_providers) > 0, "No inference providers found"
-    client.models.register(model_id=text_model_id, provider_id=inference_providers[0])
+    return inference_providers[0].provider_type
+
+
+@pytest.fixture(scope="session")
+def client_with_models(llama_stack_client, text_model_id, vision_model_id, embedding_model_id, embedding_dimension):
+    client = llama_stack_client
+
+    providers = [p for p in client.providers.list() if p.api == "inference"]
+    assert len(providers) > 0, "No inference providers found"
+    inference_providers = [p.provider_id for p in providers if p.provider_type != "inline::sentence-transformers"]
+    if text_model_id:
+        client.models.register(model_id=text_model_id, provider_id=inference_providers[0])
+    if vision_model_id:
+        client.models.register(model_id=vision_model_id, provider_id=inference_providers[0])
+
+    if embedding_model_id and embedding_dimension:
+        # try to find a provider that supports embeddings, if sentence-transformers is not available
+        selected_provider = None
+        for p in providers:
+            if p.provider_type == "inline::sentence-transformers":
+                selected_provider = p
+                break
+
+        selected_provider = selected_provider or providers[0]
+        client.models.register(
+            model_id=embedding_model_id,
+            provider_id=selected_provider.provider_id,
+            model_type="embedding",
+            metadata={"embedding_dimension": embedding_dimension},
+        )
     return client
 
 
@@ -123,5 +156,11 @@ def pytest_generate_tests(metafunc):
         metafunc.parametrize(
             "embedding_model_id",
             [metafunc.config.getoption("--embedding-model")],
+            scope="session",
+        )
+    if "embedding_dimension" in metafunc.fixturenames:
+        metafunc.parametrize(
+            "embedding_dimension",
+            [metafunc.config.getoption("--embedding-dimension")],
             scope="session",
         )
