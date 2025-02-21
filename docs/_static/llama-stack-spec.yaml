@@ -2779,6 +2779,8 @@ components:
             $ref: '#/components/schemas/AgentTool'
         tool_config:
           $ref: '#/components/schemas/ToolConfig'
+        allow_turn_resume:
+          type: boolean
       additionalProperties: false
       required:
         - messages

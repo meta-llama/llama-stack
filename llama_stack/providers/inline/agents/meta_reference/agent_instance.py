@@ -228,7 +228,7 @@ class ChatAgent(ShieldRunnerMixin):
             )
             await self.storage.add_turn_to_session(request.session_id, turn)
 
-            if output_message.tool_calls:
+            if output_message.tool_calls and request.allow_turn_resume:
                 chunk = AgentTurnResponseStreamChunk(
                     event=AgentTurnResponseEvent(
                         payload=AgentTurnResponseTurnAwaitingInputPayload(
