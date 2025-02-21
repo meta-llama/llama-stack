@@ -52,7 +52,7 @@ _MODEL_ENTRIES = [
         provider_model_id="baai/bge-m3",
         model_type=ModelType.embedding,
         metadata={
-            "embedding_dimensions": 1024,
+            "embedding_dimension": 1024,
             "context_length": 8192,
         },
     ),
