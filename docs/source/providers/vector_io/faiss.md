@@ -15,7 +15,7 @@ That means you'll get fast and efficient vector retrieval.
 
 ## Usage
 
-To use faiss in your Llama Stack project, follow these steps:
+To use Faiss in your Llama Stack project, follow these steps:
 
 1. Install the necessary dependencies.
 2. Configure your Llama Stack project to use Faiss.
@@ -23,7 +23,7 @@ To use faiss in your Llama Stack project, follow these steps:
 
 ## Installation
 
-You can install faiss using pip:
+You can install Faiss using pip:
 
 ```bash
 pip install faiss-cpu
