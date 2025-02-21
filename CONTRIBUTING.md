@@ -138,7 +138,7 @@ $ uv sync --extra docs
 $ uv run make html
 
 # This will start a local server (usually at http://127.0.0.1:8000) that automatically rebuilds and refreshes when you make changes to the documentation.
-$ uv run sphinx-autobuild source build/html
+$ uv run sphinx-autobuild source build/html --write-all
 ```
 
 ### Update API Documentation
