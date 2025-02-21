@@ -55,6 +55,7 @@
 #
 
 import pytest
+from llama_stack_client import BadRequestError
 from llama_stack_client.types import EmbeddingsResponse
 from llama_stack_client.types.shared.interleaved_content import (
     ImageContentItem,
@@ -62,8 +63,6 @@ from llama_stack_client.types.shared.interleaved_content import (
     ImageContentItemImageURL,
     TextContentItem,
 )
-
-from llama_stack.apis.inference import EmbeddingTaskType, TextTruncation
 
 DUMMY_STRING = "hello"
 DUMMY_STRING2 = "world"
@@ -120,8 +119,8 @@ def test_embedding_image(llama_stack_client, embedding_model_id, contents):
 @pytest.mark.parametrize(
     "text_truncation",
     [
-        TextTruncation.end,
-        TextTruncation.start,
+        "end",
+        "start",
     ],
 )
 @pytest.mark.parametrize(
@@ -149,7 +148,7 @@ def test_embedding_truncation(llama_stack_client, embedding_model_id, text_trunc
     "text_truncation",
     [
         None,
-        TextTruncation.none,
+        "none",
     ],
 )
 @pytest.mark.parametrize(
@@ -164,13 +163,10 @@ def test_embedding_truncation(llama_stack_client, embedding_model_id, text_trunc
     ],
 )
 def test_embedding_truncation_error(llama_stack_client, embedding_model_id, text_truncation, contents):
-    response = llama_stack_client.inference.embeddings(
-        model_id=embedding_model_id, contents=[DUMMY_LONG_TEXT], text_truncation=text_truncation
-    )
-    assert isinstance(response, EmbeddingsResponse)
-    assert len(response.embeddings) == 1
-    assert isinstance(response.embeddings[0], list)
-    assert isinstance(response.embeddings[0][0], float)
+    with pytest.raises(BadRequestError) as excinfo:
+        llama_stack_client.inference.embeddings(
+            model_id=embedding_model_id, contents=[DUMMY_LONG_TEXT], text_truncation=text_truncation
+        )
 
 
 @pytest.mark.xfail(reason="Only valid for model supporting dimension reduction")
@@ -186,9 +182,9 @@ def test_embedding_output_dimension(llama_stack_client, embedding_model_id):
 @pytest.mark.xfail(reason="Only valid for model supporting task type")
 def test_embedding_task_type(llama_stack_client, embedding_model_id):
     query_embedding = llama_stack_client.inference.embeddings(
-        model_id=embedding_model_id, contents=[DUMMY_STRING], task_type=EmbeddingTaskType.query
+        model_id=embedding_model_id, contents=[DUMMY_STRING], task_type="query"
     )
     document_embedding = llama_stack_client.inference.embeddings(
-        model_id=embedding_model_id, contents=[DUMMY_STRING], task_type=EmbeddingTaskType.document
+        model_id=embedding_model_id, contents=[DUMMY_STRING], task_type="doument"
     )
     assert query_embedding.embeddings != document_embedding.embeddings

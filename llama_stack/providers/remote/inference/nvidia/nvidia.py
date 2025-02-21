@@ -8,7 +8,7 @@ import logging
 import warnings
 from typing import AsyncIterator, List, Optional, Union
 
-from openai import APIConnectionError, AsyncOpenAI
+from openai import APIConnectionError, AsyncOpenAI, BadRequestError
 
 from llama_stack.apis.common.content_types import (
     InterleavedContent,
@@ -170,11 +170,14 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
                 raise ValueError(f"Invalid task_type: {task_type}")
             extra_body["input_type"] = task_type_options[task_type]
 
-        response = await self._client.embeddings.create(
-            model=model,
-            input=input,
-            extra_body=extra_body,
-        )
+        try:
+            response = await self._client.embeddings.create(
+                model=model,
+                input=input,
+                extra_body=extra_body,
+            )
+        except BadRequestError as e:
+            raise ValueError(f"Failed to get embeddings: {e}") from e
 
         #
         # OpenAI: CreateEmbeddingResponse(data=[Embedding(embedding=List[float], ...)], ...)
