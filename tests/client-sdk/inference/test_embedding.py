@@ -45,15 +45,13 @@
 #
 
 import pytest
-
 from llama_stack_client.types import EmbeddingsResponse
 from llama_stack_client.types.shared.interleaved_content import (
-    TextContentItem,
+    URL,
     ImageContentItem,
     ImageContentItemImage,
-    URL,
+    TextContentItem,
 )
-
 
 DUMMY_STRING = "hello"
 DUMMY_STRING2 = "world"
