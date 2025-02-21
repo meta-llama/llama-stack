@@ -4,22 +4,18 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import json
 import logging
 from typing import Any, Dict, List
 
-from llama_stack.apis.inference import Message, UserMessage
-from llama_stack.apis.safety import (
-    RunShieldResponse,
-    Safety,
-    SafetyViolation,
-    ViolationLevel,
-)
-from llama_stack.apis.shields import Shield
-from llama_stack.distribution.library_client import convert_pydantic_to_json_value
-from llama_stack.models.llama.datatypes import CoreModelId
-from llama_stack.providers.datatypes import ShieldsProtocolPrivate
 import requests
+
+from llama_stack.apis.inference import Message
+from llama_stack.apis.safety import (RunShieldResponse, Safety,
+                                     SafetyViolation, ViolationLevel)
+from llama_stack.apis.shields import Shield
+from llama_stack.distribution.library_client import \
+    convert_pydantic_to_json_value
+from llama_stack.providers.datatypes import ShieldsProtocolPrivate
 
 from .config import NVIDIASafetyConfig
 
@@ -40,7 +36,7 @@ class NVIDIASafetyAdapter(Safety, ShieldsProtocolPrivate):
 
     async def register_shield(self, shield: Shield) -> None:
         if not shield.provider_resource_id:
-            raise ValueError(f"Shield model not provided. ")
+            raise ValueError("Shield model not provided.")
 
     async def run_shield(
         self, shield_id: str, messages: List[Message], params: Dict[str, Any] = None

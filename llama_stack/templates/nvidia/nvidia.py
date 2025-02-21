@@ -8,9 +8,9 @@ from pathlib import Path
 
 from llama_stack.distribution.datatypes import ModelInput, Provider, ShieldInput, ToolGroupInput
 from llama_stack.models.llama.sku_list import all_registered_models
-from llama_stack.providers.remote.safety.nvidia import NVIDIASafetyConfig
 from llama_stack.providers.remote.inference.nvidia import NVIDIAConfig
 from llama_stack.providers.remote.inference.nvidia.models import _MODEL_ENTRIES
+from llama_stack.providers.remote.safety.nvidia import NVIDIASafetyConfig
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
 

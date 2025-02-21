@@ -3,11 +3,11 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from enum import Enum
 import os
+from enum import Enum
 from typing import Any, Dict, Optional
 
-from pydantic import BaseModel, Field, SecretStr, field_validator
+from pydantic import BaseModel, Field, field_validator
 
 from llama_stack.schema_utils import json_schema_type
 
