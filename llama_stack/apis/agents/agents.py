@@ -298,7 +298,7 @@ class AgentTurnCreateRequest(AgentConfigOverridablePerTurn):
 
 
 @json_schema_type
-class AgentTurnContinueRequest(BaseModel):
+class AgentTurnResumeRequest(BaseModel):
     agent_id: str
     session_id: str
     turn_id: str
