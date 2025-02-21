@@ -67,6 +67,7 @@ A number of "adapters" are available for some popular Inference and Vector Store
 |  **Provider** |  **Environments** |
 | :----: | :----: |
 |  FAISS | Single Node |
+|  SQLite-Vec| Single Node |
 |  Chroma | Hosted and Single Node |
 |  Postgres (PGVector) | Hosted and Single Node |
 |  Weaviate | Hosted |
@@ -88,6 +89,7 @@ self
 introduction/index
 getting_started/index
 concepts/index
+providers/index
 distributions/index
 distributions/selection
 building_applications/index

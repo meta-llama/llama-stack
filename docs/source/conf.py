@@ -15,7 +15,7 @@
 from docutils import nodes
 
 project = "llama-stack"
-copyright = "2024, Meta"
+copyright = "2025, Meta"
 author = "Meta"
 
 # -- General configuration ---------------------------------------------------
