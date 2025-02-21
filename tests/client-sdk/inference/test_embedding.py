@@ -47,9 +47,9 @@
 import pytest
 from llama_stack_client.types import EmbeddingsResponse
 from llama_stack_client.types.shared.interleaved_content import (
-    URL,
     ImageContentItem,
     ImageContentItemImage,
+    ImageContentItemImageURL,
     TextContentItem,
 )
 
@@ -59,7 +59,7 @@ DUMMY_TEXT = TextContentItem(text=DUMMY_STRING, type="text")
 DUMMY_TEXT2 = TextContentItem(text=DUMMY_STRING2, type="text")
 # TODO(mf): add a real image URL and base64 string
 DUMMY_IMAGE_URL = ImageContentItem(
-    image=ImageContentItemImage(url=URL(uri="https://example.com/image.jpg")), type="image"
+    image=ImageContentItemImage(url=ImageContentItemImageURL(uri="https://example.com/image.jpg")), type="image"
 )
 DUMMY_IMAGE_BASE64 = ImageContentItem(image=ImageContentItemImage(data="base64string"), type="image")
 
