@@ -79,28 +79,28 @@ class ModelRegistryHelper(ModelsProtocolPrivate):
             provider_resource_id = model.provider_resource_id
         else:
             provider_resource_id = self.get_provider_model_id(model.provider_resource_id)
+
         if provider_resource_id:
             model.provider_resource_id = provider_resource_id
         else:
-            if model.metadata.get("llama_model") is None:
-                raise ValueError(
-                    f"Model '{model.provider_resource_id}' is not available and no llama_model was specified in metadata. "
-                    "Please specify a llama_model in metadata or use a supported model identifier"
-                )
+            llama_model = model.metadata.get("llama_model")
+            if llama_model is None:
+                return model
+
             existing_llama_model = self.get_llama_model(model.provider_resource_id)
             if existing_llama_model:
-                if existing_llama_model != model.metadata["llama_model"]:
+                if existing_llama_model != llama_model:
                     raise ValueError(
                         f"Provider model id '{model.provider_resource_id}' is already registered to a different llama model: '{existing_llama_model}'"
                     )
             else:
-                if model.metadata["llama_model"] not in ALL_HUGGINGFACE_REPOS_TO_MODEL_DESCRIPTOR:
+                if llama_model not in ALL_HUGGINGFACE_REPOS_TO_MODEL_DESCRIPTOR:
                     raise ValueError(
-                        f"Invalid llama_model '{model.metadata['llama_model']}' specified in metadata. "
+                        f"Invalid llama_model '{llama_model}' specified in metadata. "
                         f"Must be one of: {', '.join(ALL_HUGGINGFACE_REPOS_TO_MODEL_DESCRIPTOR.keys())}"
                     )
                 self.provider_id_to_llama_model_map[model.provider_resource_id] = (
-                    ALL_HUGGINGFACE_REPOS_TO_MODEL_DESCRIPTOR[model.metadata["llama_model"]]
+                    ALL_HUGGINGFACE_REPOS_TO_MODEL_DESCRIPTOR[llama_model]
                 )
 
         return model
