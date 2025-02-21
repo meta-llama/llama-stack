@@ -195,7 +195,7 @@ class MetaReferenceAgentsImpl(Agents):
         request: AgentTurnResumeRequest,
     ) -> AsyncGenerator:
         agent = await self.get_agent(request.agent_id)
-        async for event in agent.continue_turn(request):
+        async for event in agent.resume_turn(request):
             yield event
 
     async def get_agents_turn(self, agent_id: str, session_id: str, turn_id: str) -> Turn:

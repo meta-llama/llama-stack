@@ -247,8 +247,8 @@ class ChatAgent(ShieldRunnerMixin):
 
             yield chunk
 
-    async def continue_turn(self, request: AgentTurnResumeRequest) -> AsyncGenerator:
-        with tracing.span("continue_turn") as span:
+    async def resume_turn(self, request: AgentTurnResumeRequest) -> AsyncGenerator:
+        with tracing.span("resume_turn") as span:
             span.set_attribute("agent_id", self.agent_id)
             span.set_attribute("session_id", request.session_id)
             span.set_attribute("turn_id", request.turn_id)
