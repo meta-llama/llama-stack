@@ -57,7 +57,7 @@ DEFAULT_PROVIDER_COMBINATIONS = [
             "safety": "nvidia",
         },
         id="nvidia",
-        marks=pytest.mark.meta_reference,
+        marks=pytest.mark.nvidia,
     ),
 ]
 

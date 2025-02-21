@@ -59,7 +59,8 @@ class NVIDIASafetyAdapter(Safety, ShieldsProtocolPrivate):
         shield = await self.shield_store.get_shield(shield_id)
         if not shield:
             raise ValueError(f"Shield {shield_id} not found")
-        self.shield = NeMoGuardrails(self.config, SHIELD_IDS_TO_MODEL_MAPPING[shield.shield_id])
+        # print(shield.provider_shield_id)
+        self.shield = NeMoGuardrails(self.config, shield.shield_id)
         return await self.shield.run(messages)
         
     

@@ -36,7 +36,7 @@ class NVIDIASafetyConfig(BaseModel):
     variable to set the api_key. Please do not put your API key in code.
     """
     guardrails_service_url: str = Field(
-        default_factory=lambda: os.getenv("NVIDIA_BASE_URL", "https://0.0.0.0:7331"),
+        default_factory=lambda: os.getenv("NVIDIA_BASE_URL", "http://0.0.0.0:7331"),
         description="The url for accessing the guardrails service",
     )
     config_id: Optional[str] = Field(
