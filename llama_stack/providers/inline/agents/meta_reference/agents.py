@@ -178,6 +178,13 @@ class MetaReferenceAgentsImpl(Agents):
         tool_responses: List[ToolResponseMessage],
         stream: Optional[bool] = False,
     ) -> AsyncGenerator:
+        request = AgentTurnContinueRequest(
+            agent_id=agent_id,
+            session_id=session_id,
+            turn_id=turn_id,
+            tool_responses=tool_responses,
+            stream=stream,
+        )
         if stream:
             return self._continue_agent_turn_streaming(request)
         else:
