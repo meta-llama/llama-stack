@@ -298,6 +298,15 @@ class AgentTurnCreateRequest(AgentConfigOverridablePerTurn):
 
 
 @json_schema_type
+class AgentTurnContinueRequest(BaseModel):
+    agent_id: str
+    session_id: str
+    turn_id: str
+    tool_responses: List[ToolResponseMessage]
+    stream: Optional[bool] = False
+
+
+@json_schema_type
 class AgentTurnResponseStreamChunk(BaseModel):
     """streamed agent turn completion response."""
 

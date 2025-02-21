@@ -23,6 +23,7 @@ from llama_stack.apis.agents import (
     AgentConfig,
     AgentToolGroup,
     AgentToolGroupWithArgs,
+    AgentTurnContinueRequest,
     AgentTurnCreateRequest,
     AgentTurnResponseEvent,
     AgentTurnResponseEventType,
@@ -30,7 +31,6 @@ from llama_stack.apis.agents import (
     AgentTurnResponseStepProgressPayload,
     AgentTurnResponseStepStartPayload,
     AgentTurnResponseStreamChunk,
-    AgentTurnResponseTurnAwaitingInputPayload,
     AgentTurnResponseTurnCompletePayload,
     AgentTurnResponseTurnStartPayload,
     Attachment,
@@ -227,24 +227,50 @@ class ChatAgent(ShieldRunnerMixin):
             )
             await self.storage.add_turn_to_session(request.session_id, turn)
 
-            if output_message.tool_calls:
-                chunk = AgentTurnResponseStreamChunk(
-                    event=AgentTurnResponseEvent(
-                        payload=AgentTurnResponseTurnAwaitingInputPayload(
-                            turn=turn,
-                        )
+            chunk = AgentTurnResponseStreamChunk(
+                event=AgentTurnResponseEvent(
+                    payload=AgentTurnResponseTurnCompletePayload(
+                        turn=turn,
                     )
                 )
-            else:
-                chunk = AgentTurnResponseStreamChunk(
-                    event=AgentTurnResponseEvent(
-                        payload=AgentTurnResponseTurnCompletePayload(
-                            turn=turn,
-                        )
-                    )
-                )
-
+            )
             yield chunk
+
+    async def continue_turn(self, request: AgentTurnContinueRequest) -> AsyncGenerator:
+        with tracing.span("continue_turn") as span:
+            span.set_attribute("agent_id", self.agent_id)
+            span.set_attribute("session_id", request.session_id)
+            span.set_attribute("turn_id", request.turn_id)
+            span.set_attribute("request", request.model_dump_json())
+            assert request.stream is True, "Non-streaming not supported"
+
+            session_info = await self.storage.get_session_info(request.session_id)
+            if session_info is None:
+                raise ValueError(f"Session {request.session_id} not found")
+
+            turns = await self.storage.get_session_turns(request.session_id)
+
+            messages = []
+            if self.agent_config.instructions != "":
+                messages.append(SystemMessage(content=self.agent_config.instructions))
+
+            for i, turn in enumerate(turns):
+                messages.extend(self.turn_to_messages(turn))
+
+            messages.extend(request.messages)
+
+            # steps = []
+            # output_message = None
+            # async for chunk in self.run(
+            #     session_id=request.session_id,
+            #     turn_id=request.turn_id,
+            #     input_messages=messages,
+            #     sampling_params=self.agent_config.sampling_params,
+            #     stream=request.stream,
+            #     documents=request.documents,
+            #     toolgroups_for_turn=request.toolgroups,
+            # ):
+            #     if isinstance(chunk, CompletionMessage):
 
     async def run(
         self,
@@ -626,7 +652,11 @@ class ChatAgent(ShieldRunnerMixin):
                     input_messages = input_messages + [message]
             else:
                 log.info(f"{str(message)}")
-                # 1. Start the tool execution step and progress
+                tool_call = message.tool_calls[0]
+                if tool_call.tool_name in client_tools:
+                    yield message
+                    return
+
                 step_id = str(uuid.uuid4())
                 yield AgentTurnResponseStreamChunk(
                     event=AgentTurnResponseEvent(
@@ -636,8 +666,6 @@ class ChatAgent(ShieldRunnerMixin):
                         )
                     )
                 )
-
-                tool_call = message.tool_calls[0]
                 yield AgentTurnResponseStreamChunk(
                     event=AgentTurnResponseEvent(
                         payload=AgentTurnResponseStepProgressPayload(
@@ -652,12 +680,6 @@ class ChatAgent(ShieldRunnerMixin):
                     )
                 )
 
-                # If tool is a client tool, yield CompletionMessage and return
-                if tool_call.tool_name in client_tools:
-                    yield message
-                    return
-
-                # If tool is a builtin server tool, execute it
                 tool_name = tool_call.tool_name
                 if isinstance(tool_name, BuiltinTool):
                     tool_name = tool_name.value

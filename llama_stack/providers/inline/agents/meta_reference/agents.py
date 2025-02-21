@@ -20,6 +20,7 @@ from llama_stack.apis.agents import (
     AgentSessionCreateResponse,
     AgentStepResponse,
     AgentToolGroup,
+    AgentTurnContinueRequest,
     AgentTurnCreateRequest,
     Document,
     Session,
@@ -177,7 +178,18 @@ class MetaReferenceAgentsImpl(Agents):
         tool_responses: List[ToolResponseMessage],
         stream: Optional[bool] = False,
     ) -> AsyncGenerator:
-        pass
+        if stream:
+            return self._continue_agent_turn_streaming(request)
+        else:
+            raise NotImplementedError("Non-streaming agent turns not yet implemented")
+
+    async def _continue_agent_turn_streaming(
+        self,
+        request: AgentTurnContinueRequest,
+    ) -> AsyncGenerator:
+        agent = await self.get_agent(request.agent_id)
+        async for event in agent.continue_turn(request):
+            yield event
 
     async def get_agents_turn(self, agent_id: str, session_id: str, turn_id: str) -> Turn:
         turn = await self.persistence_store.get(f"session:{agent_id}:{session_id}:{turn_id}")
