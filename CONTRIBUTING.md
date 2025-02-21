@@ -145,7 +145,7 @@ If you modify or add new API endpoints, update the API documentation accordingly
 
 ```bash
 $ uv sync --extra dev
-$ ./docs/openapi_generator/run_openapi_generator.sh
+$ uv run ./docs/openapi_generator/run_openapi_generator.sh
 ```
 
 The generated API documentation will be available in `docs/_static/`. Make sure to review the changes before committing.
