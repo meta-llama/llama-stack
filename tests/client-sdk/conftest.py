@@ -139,28 +139,49 @@ def client_with_models(llama_stack_client, text_model_id, vision_model_id, embed
     return client
 
 
+MODEL_SHORT_IDS = {
+    "meta-llama/Llama-3.1-8B-Instruct": "8B",
+    "meta-llama/Llama-3.2-11B-Vision-Instruct": "11B",
+    "all-MiniLM-L6-v2": "MiniLM",
+}
+
+
+def get_short_id(value):
+    return MODEL_SHORT_IDS.get(value, value)
+
+
 def pytest_generate_tests(metafunc):
+    params = []
+    values = []
+    id_parts = []
+
     if "text_model_id" in metafunc.fixturenames:
-        metafunc.parametrize(
-            "text_model_id",
-            [metafunc.config.getoption("--inference-model")],
-            scope="session",
-        )
+        params.append("text_model_id")
+        val = metafunc.config.getoption("--inference-model")
+        values.append(val)
+        id_parts.append(f"txt={get_short_id(val)}")
+
     if "vision_model_id" in metafunc.fixturenames:
-        metafunc.parametrize(
-            "vision_model_id",
-            [metafunc.config.getoption("--vision-inference-model")],
-            scope="session",
-        )
+        params.append("vision_model_id")
+        val = metafunc.config.getoption("--vision-inference-model")
+        values.append(val)
+        id_parts.append(f"vis={get_short_id(val)}")
+
     if "embedding_model_id" in metafunc.fixturenames:
-        metafunc.parametrize(
-            "embedding_model_id",
-            [metafunc.config.getoption("--embedding-model")],
-            scope="session",
-        )
+        params.append("embedding_model_id")
+        val = metafunc.config.getoption("--embedding-model")
+        values.append(val)
+        if val is not None:
+            id_parts.append(f"emb={get_short_id(val)}")
+
     if "embedding_dimension" in metafunc.fixturenames:
-        metafunc.parametrize(
-            "embedding_dimension",
-            [metafunc.config.getoption("--embedding-dimension")],
-            scope="session",
-        )
+        params.append("embedding_dimension")
+        val = metafunc.config.getoption("--embedding-dimension")
+        values.append(val)
+        if val != 384:
+            id_parts.append(f"dim={val}")
+
+    if params:
+        # Create a single test ID string
+        test_id = ":".join(id_parts)
+        metafunc.parametrize(params, [values], scope="session", ids=[test_id])
