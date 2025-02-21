@@ -346,10 +346,10 @@ class Agents(Protocol):
     ) -> Union[Turn, AsyncIterator[AgentTurnResponseStreamChunk]]: ...
 
     @webmethod(
-        route="/agents/{agent_id}/session/{session_id}/turn/{turn_id}/continue",
+        route="/agents/{agent_id}/session/{session_id}/turn/{turn_id}/resume",
         method="POST",
     )
-    async def continue_agent_turn(
+    async def resume_agent_turn(
         self,
         agent_id: str,
         session_id: str,

@@ -274,67 +274,6 @@
                 }
             }
         },
-        "/v1/agents/{agent_id}/session/{session_id}/turn/{turn_id}/continue": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "A single turn in an interaction with an Agentic System. **OR** streamed agent turn completion response.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Turn"
-                                }
-                            },
-                            "text/event-stream": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/AgentTurnResponseStreamChunk"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "Agents"
-                ],
-                "description": "",
-                "parameters": [
-                    {
-                        "name": "agent_id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "session_id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "turn_id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ContinueAgentTurnRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
         "/v1/agents": {
             "post": {
                 "responses": {
@@ -2376,6 +2315,67 @@
                 }
             }
         },
+        "/v1/agents/{agent_id}/session/{session_id}/turn/{turn_id}/resume": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "A single turn in an interaction with an Agentic System. **OR** streamed agent turn completion response.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Turn"
+                                }
+                            },
+                            "text/event-stream": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AgentTurnResponseStreamChunk"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Agents"
+                ],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "agent_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "session_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "turn_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ResumeAgentTurnRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/v1/eval/benchmarks/{benchmark_id}/jobs": {
             "post": {
                 "responses": {
@@ -3951,24 +3951,349 @@
                 "title": "CompletionResponseStreamChunk",
                 "description": "A chunk of a streamed completion response."
             },
-            "ContinueAgentTurnRequest": {
+            "AgentConfig": {
                 "type": "object",
                 "properties": {
-                    "tool_responses": {
+                    "sampling_params": {
+                        "$ref": "#/components/schemas/SamplingParams"
+                    },
+                    "input_shields": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/ToolResponseMessage"
+                            "type": "string"
                         }
                     },
-                    "stream": {
-                        "type": "boolean"
+                    "output_shields": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "toolgroups": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AgentTool"
+                        }
+                    },
+                    "client_tools": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ToolDef"
+                        }
+                    },
+                    "tool_choice": {
+                        "type": "string",
+                        "enum": [
+                            "auto",
+                            "required",
+                            "none"
+                        ],
+                        "title": "ToolChoice",
+                        "description": "Whether tool use is required or automatic. This is a hint to the model which may not be followed. It depends on the Instruction Following capabilities of the model.",
+                        "deprecated": true
+                    },
+                    "tool_prompt_format": {
+                        "type": "string",
+                        "enum": [
+                            "json",
+                            "function_tag",
+                            "python_list"
+                        ],
+                        "title": "ToolPromptFormat",
+                        "description": "Prompt format for calling custom / zero shot tools.",
+                        "deprecated": true
+                    },
+                    "tool_config": {
+                        "$ref": "#/components/schemas/ToolConfig"
+                    },
+                    "max_infer_iters": {
+                        "type": "integer",
+                        "default": 10
+                    },
+                    "model": {
+                        "type": "string"
+                    },
+                    "instructions": {
+                        "type": "string"
+                    },
+                    "enable_session_persistence": {
+                        "type": "boolean",
+                        "default": false
+                    },
+                    "response_format": {
+                        "$ref": "#/components/schemas/ResponseFormat"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "tool_responses"
+                    "model",
+                    "instructions"
                 ],
-                "title": "ContinueAgentTurnRequest"
+                "title": "AgentConfig"
+            },
+            "AgentTool": {
+                "oneOf": [
+                    {
+                        "type": "string"
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "args": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "oneOf": [
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "type": "boolean"
+                                        },
+                                        {
+                                            "type": "number"
+                                        },
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "array"
+                                        },
+                                        {
+                                            "type": "object"
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "name",
+                            "args"
+                        ],
+                        "title": "AgentToolGroupWithArgs"
+                    }
+                ]
+            },
+            "ToolDef": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "parameters": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ToolParameter"
+                        }
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "name"
+                ],
+                "title": "ToolDef"
+            },
+            "ToolParameter": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "parameter_type": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "required": {
+                        "type": "boolean",
+                        "default": true
+                    },
+                    "default": {
+                        "oneOf": [
+                            {
+                                "type": "null"
+                            },
+                            {
+                                "type": "boolean"
+                            },
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array"
+                            },
+                            {
+                                "type": "object"
+                            }
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "name",
+                    "parameter_type",
+                    "description",
+                    "required"
+                ],
+                "title": "ToolParameter"
+            },
+            "CreateAgentRequest": {
+                "type": "object",
+                "properties": {
+                    "agent_config": {
+                        "$ref": "#/components/schemas/AgentConfig"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "agent_config"
+                ],
+                "title": "CreateAgentRequest"
+            },
+            "AgentCreateResponse": {
+                "type": "object",
+                "properties": {
+                    "agent_id": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "agent_id"
+                ],
+                "title": "AgentCreateResponse"
+            },
+            "CreateAgentSessionRequest": {
+                "type": "object",
+                "properties": {
+                    "session_name": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "session_name"
+                ],
+                "title": "CreateAgentSessionRequest"
+            },
+            "AgentSessionCreateResponse": {
+                "type": "object",
+                "properties": {
+                    "session_id": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "session_id"
+                ],
+                "title": "AgentSessionCreateResponse"
+            },
+            "CreateAgentTurnRequest": {
+                "type": "object",
+                "properties": {
+                    "messages": {
+                        "type": "array",
+                        "items": {
+                            "oneOf": [
+                                {
+                                    "$ref": "#/components/schemas/UserMessage"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/ToolResponseMessage"
+                                }
+                            ]
+                        }
+                    },
+                    "stream": {
+                        "type": "boolean"
+                    },
+                    "documents": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "content": {
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/InterleavedContentItem"
+                                        },
+                                        {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/InterleavedContentItem"
+                                            }
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/URL"
+                                        }
+                                    ]
+                                },
+                                "mime_type": {
+                                    "type": "string"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "content",
+                                "mime_type"
+                            ],
+                            "title": "Document"
+                        }
+                    },
+                    "toolgroups": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AgentTool"
+                        }
+                    },
+                    "tool_config": {
+                        "$ref": "#/components/schemas/ToolConfig"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "messages"
+                ],
+                "title": "CreateAgentTurnRequest"
             },
             "InferenceStep": {
                 "type": "object",
@@ -4580,350 +4905,6 @@
                     "turn_id"
                 ],
                 "title": "AgentTurnResponseTurnStartPayload"
-            },
-            "AgentConfig": {
-                "type": "object",
-                "properties": {
-                    "sampling_params": {
-                        "$ref": "#/components/schemas/SamplingParams"
-                    },
-                    "input_shields": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "output_shields": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "toolgroups": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/AgentTool"
-                        }
-                    },
-                    "client_tools": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/ToolDef"
-                        }
-                    },
-                    "tool_choice": {
-                        "type": "string",
-                        "enum": [
-                            "auto",
-                            "required",
-                            "none"
-                        ],
-                        "title": "ToolChoice",
-                        "description": "Whether tool use is required or automatic. This is a hint to the model which may not be followed. It depends on the Instruction Following capabilities of the model.",
-                        "deprecated": true
-                    },
-                    "tool_prompt_format": {
-                        "type": "string",
-                        "enum": [
-                            "json",
-                            "function_tag",
-                            "python_list"
-                        ],
-                        "title": "ToolPromptFormat",
-                        "description": "Prompt format for calling custom / zero shot tools.",
-                        "deprecated": true
-                    },
-                    "tool_config": {
-                        "$ref": "#/components/schemas/ToolConfig"
-                    },
-                    "max_infer_iters": {
-                        "type": "integer",
-                        "default": 10
-                    },
-                    "model": {
-                        "type": "string"
-                    },
-                    "instructions": {
-                        "type": "string"
-                    },
-                    "enable_session_persistence": {
-                        "type": "boolean",
-                        "default": false
-                    },
-                    "response_format": {
-                        "$ref": "#/components/schemas/ResponseFormat"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "model",
-                    "instructions"
-                ],
-                "title": "AgentConfig"
-            },
-            "AgentTool": {
-                "oneOf": [
-                    {
-                        "type": "string"
-                    },
-                    {
-                        "type": "object",
-                        "properties": {
-                            "name": {
-                                "type": "string"
-                            },
-                            "args": {
-                                "type": "object",
-                                "additionalProperties": {
-                                    "oneOf": [
-                                        {
-                                            "type": "null"
-                                        },
-                                        {
-                                            "type": "boolean"
-                                        },
-                                        {
-                                            "type": "number"
-                                        },
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "type": "array"
-                                        },
-                                        {
-                                            "type": "object"
-                                        }
-                                    ]
-                                }
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "name",
-                            "args"
-                        ],
-                        "title": "AgentToolGroupWithArgs"
-                    }
-                ]
-            },
-            "ToolDef": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "description": {
-                        "type": "string"
-                    },
-                    "parameters": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/ToolParameter"
-                        }
-                    },
-                    "metadata": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "name"
-                ],
-                "title": "ToolDef"
-            },
-            "ToolParameter": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "parameter_type": {
-                        "type": "string"
-                    },
-                    "description": {
-                        "type": "string"
-                    },
-                    "required": {
-                        "type": "boolean",
-                        "default": true
-                    },
-                    "default": {
-                        "oneOf": [
-                            {
-                                "type": "null"
-                            },
-                            {
-                                "type": "boolean"
-                            },
-                            {
-                                "type": "number"
-                            },
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "type": "array"
-                            },
-                            {
-                                "type": "object"
-                            }
-                        ]
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "name",
-                    "parameter_type",
-                    "description",
-                    "required"
-                ],
-                "title": "ToolParameter"
-            },
-            "CreateAgentRequest": {
-                "type": "object",
-                "properties": {
-                    "agent_config": {
-                        "$ref": "#/components/schemas/AgentConfig"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "agent_config"
-                ],
-                "title": "CreateAgentRequest"
-            },
-            "AgentCreateResponse": {
-                "type": "object",
-                "properties": {
-                    "agent_id": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "agent_id"
-                ],
-                "title": "AgentCreateResponse"
-            },
-            "CreateAgentSessionRequest": {
-                "type": "object",
-                "properties": {
-                    "session_name": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "session_name"
-                ],
-                "title": "CreateAgentSessionRequest"
-            },
-            "AgentSessionCreateResponse": {
-                "type": "object",
-                "properties": {
-                    "session_id": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "session_id"
-                ],
-                "title": "AgentSessionCreateResponse"
-            },
-            "CreateAgentTurnRequest": {
-                "type": "object",
-                "properties": {
-                    "messages": {
-                        "type": "array",
-                        "items": {
-                            "oneOf": [
-                                {
-                                    "$ref": "#/components/schemas/UserMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/ToolResponseMessage"
-                                }
-                            ]
-                        }
-                    },
-                    "stream": {
-                        "type": "boolean"
-                    },
-                    "documents": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "content": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/InterleavedContentItem"
-                                        },
-                                        {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/InterleavedContentItem"
-                                            }
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/URL"
-                                        }
-                                    ]
-                                },
-                                "mime_type": {
-                                    "type": "string"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "content",
-                                "mime_type"
-                            ],
-                            "title": "Document"
-                        }
-                    },
-                    "toolgroups": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/AgentTool"
-                        }
-                    },
-                    "tool_config": {
-                        "$ref": "#/components/schemas/ToolConfig"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "messages"
-                ],
-                "title": "CreateAgentTurnRequest"
             },
             "CreateUploadSessionRequest": {
                 "type": "object",
@@ -8117,6 +8098,25 @@
                     "embedding_model"
                 ],
                 "title": "RegisterVectorDbRequest"
+            },
+            "ResumeAgentTurnRequest": {
+                "type": "object",
+                "properties": {
+                    "tool_responses": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ToolResponseMessage"
+                        }
+                    },
+                    "stream": {
+                        "type": "boolean"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "tool_responses"
+                ],
+                "title": "ResumeAgentTurnRequest"
             },
             "RunEvalRequest": {
                 "type": "object",
