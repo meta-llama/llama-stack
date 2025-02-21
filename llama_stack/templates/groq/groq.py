@@ -18,7 +18,7 @@ from llama_stack.providers.inline.inference.sentence_transformers import (
 )
 from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOConfig
 from llama_stack.providers.remote.inference.groq import GroqConfig
-from llama_stack.providers.remote.inference.groq.models import _MODEL_ALIASES
+from llama_stack.providers.remote.inference.groq.models import _MODEL_ENTRIES
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
 
@@ -73,7 +73,7 @@ def get_distribution_template() -> DistributionTemplate:
             provider_model_id=m.provider_model_id,
             provider_id=name,
         )
-        for m in _MODEL_ALIASES
+        for m in _MODEL_ENTRIES
     ]
 
     default_tool_groups = [
