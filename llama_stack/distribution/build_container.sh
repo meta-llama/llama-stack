@@ -177,6 +177,15 @@ ENTRYPOINT ["python", "-m", "llama_stack.distribution.server.server"]
 EOF
 fi
 
+# Add other require item commands genearic to all containers
+add_to_container << EOF
+
+# Allows running as non-root user
+RUN mkdir -p /.llama /.cache
+
+RUN chmod -R g+rw /app /.llama /.cache
+EOF
+
 printf "Containerfile created successfully in $TEMP_DIR/Containerfile\n\n"
 cat $TEMP_DIR/Containerfile
 printf "\n"
