@@ -289,7 +289,7 @@ class ChatAgent(ShieldRunnerMixin):
                         tool_name=x.tool_name,
                         content=x.content,
                     )
-                    for x in in_progress_tool_call_step.tool_responses
+                    for x in request.tool_responses
                 ],
                 completed_at=datetime.now(),
                 started_at=(in_progress_tool_call_step.started_at if in_progress_tool_call_step else datetime.now()),
