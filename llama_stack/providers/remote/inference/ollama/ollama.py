@@ -83,7 +83,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         pass
 
     async def unregister_model(self, model_id: str) -> None:
-        pass
+        await self.register_helper.unregister_model(model_id)
 
     async def completion(
         self,
@@ -290,6 +290,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
             response = await self.client.ps()
         available_models = [m["model"] for m in response["models"]]
         if model.provider_resource_id not in available_models:
+            await self.unregister_model(model.provider_resource_id)
             raise ValueError(
                 f"Model '{model.provider_resource_id}' is not available in Ollama. Available models: {', '.join(available_models)}"
             )
