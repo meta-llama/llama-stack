@@ -384,7 +384,6 @@ def xtest_override_system_message_behavior(llama_stack_client, agent_config):
 
     logs = [str(log) for log in EventLogger().log(response) if log is not None]
     logs_str = "".join(logs)
-    print(logs_str)
     # can't tell a joke: "I don't have a function"
     assert "function" in logs_str
 
@@ -423,7 +422,6 @@ def xtest_override_system_message_behavior(llama_stack_client, agent_config):
 
     logs = [str(log) for log in EventLogger().log(response) if log is not None]
     logs_str = "".join(logs)
-    print(logs_str)
     assert "bicycle" in logs_str
 
     response = agent.create_turn(
@@ -438,7 +436,6 @@ def xtest_override_system_message_behavior(llama_stack_client, agent_config):
 
     logs = [str(log) for log in EventLogger().log(response) if log is not None]
     logs_str = "".join(logs)
-    print(logs_str)
     assert "-100" in logs_str
     assert "get_boiling_point" in logs_str
 
@@ -557,7 +554,6 @@ def test_rag_and_code_agent(llama_stack_client, agent_config):
     ]
 
     for prompt, docs, tool_name in user_prompts:
-        print(f"User> {prompt}")
         session_id = agent.create_session(f"test-session-{uuid4()}")
         response = agent.create_turn(
             messages=[{"role": "user", "content": prompt}],
