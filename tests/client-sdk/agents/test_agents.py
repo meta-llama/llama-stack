@@ -332,8 +332,11 @@ def test_tool_choice(llama_stack_client, agent_config):
     ]
     client_tool = TestClientTool()
     for tool_choice, expected_tool in data:
-        agent_config["tool_config"] = {"tool_choice": tool_choice}
-        agent_config["client_tools"] = [client_tool.get_tool_definition()]
+        agent_config = {
+            **agent_config,
+            "tool_config": {"tool_choice": tool_choice},
+            "client_tools": [client_tool.get_tool_definition()],
+        }
 
         agent = Agent(llama_stack_client, agent_config, client_tools=(client_tool,))
         session_id = agent.create_session(f"test-session-{uuid4()}")
