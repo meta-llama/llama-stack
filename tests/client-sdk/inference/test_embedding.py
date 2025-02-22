@@ -185,6 +185,6 @@ def test_embedding_task_type(llama_stack_client, embedding_model_id):
         model_id=embedding_model_id, contents=[DUMMY_STRING], task_type="query"
     )
     document_embedding = llama_stack_client.inference.embeddings(
-        model_id=embedding_model_id, contents=[DUMMY_STRING], task_type="doument"
+        model_id=embedding_model_id, contents=[DUMMY_STRING], task_type="document"
     )
     assert query_embedding.embeddings != document_embedding.embeddings
