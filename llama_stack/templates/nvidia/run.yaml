@@ -136,11 +136,32 @@ models:
   provider_model_id: meta/llama-3.2-90b-vision-instruct
   model_type: llm
 - metadata:
-    embedding_dimension: 1024
+    embedding_dimension: 2048
     context_length: 8192
-  model_id: baai/bge-m3
+  model_id: nvidia/llama-3.2-nv-embedqa-1b-v2
   provider_id: nvidia
-  provider_model_id: baai/bge-m3
+  provider_model_id: nvidia/llama-3.2-nv-embedqa-1b-v2
+  model_type: embedding
+- metadata:
+    embedding_dimension: 1024
+    context_length: 512
+  model_id: nvidia/nv-embedqa-e5-v5
+  provider_id: nvidia
+  provider_model_id: nvidia/nv-embedqa-e5-v5
+  model_type: embedding
+- metadata:
+    embedding_dimension: 4096
+    context_length: 512
+  model_id: nvidia/nv-embedqa-mistral-7b-v2
+  provider_id: nvidia
+  provider_model_id: nvidia/nv-embedqa-mistral-7b-v2
+  model_type: embedding
+- metadata:
+    embedding_dimension: 1024
+    context_length: 512
+  model_id: snowflake/arctic-embed-l
+  provider_id: nvidia
+  provider_model_id: snowflake/arctic-embed-l
   model_type: embedding
 shields: []
 vector_dbs: []

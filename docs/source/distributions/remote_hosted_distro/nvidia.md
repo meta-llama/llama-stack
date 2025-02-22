@@ -36,7 +36,10 @@ The following models are available by default:
 - `meta-llama/Llama-3.2-3B-Instruct (meta/llama-3.2-3b-instruct)`
 - `meta-llama/Llama-3.2-11B-Vision-Instruct (meta/llama-3.2-11b-vision-instruct)`
 - `meta-llama/Llama-3.2-90B-Vision-Instruct (meta/llama-3.2-90b-vision-instruct)`
-- `baai/bge-m3 (baai/bge-m3)`
+- `nvidia/llama-3.2-nv-embedqa-1b-v2 (nvidia/llama-3.2-nv-embedqa-1b-v2)`
+- `nvidia/nv-embedqa-e5-v5 (nvidia/nv-embedqa-e5-v5)`
+- `nvidia/nv-embedqa-mistral-7b-v2 (nvidia/nv-embedqa-mistral-7b-v2)`
+- `snowflake/arctic-embed-l (snowflake/arctic-embed-l)`
 
 
 ### Prerequisite: API Keys
