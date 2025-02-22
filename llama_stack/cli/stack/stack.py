@@ -22,6 +22,7 @@ class StackParser(Subcommand):
             "stack",
             prog="llama stack",
             description="Operations for the Llama Stack / Distributions",
+            formatter_class=argparse.RawTextHelpFormatter,
         )
 
         self.parser.add_argument(
@@ -39,3 +40,12 @@ class StackParser(Subcommand):
         StackListApis.create(subparsers)
         StackListProviders.create(subparsers)
         StackRun.create(subparsers)
+
+        self.print_subcommand_description(subparsers)
+
+    def print_subcommand_description(self, subparsers: argparse._SubParsersAction):
+        description_text = ""
+        for name, subcommand in subparsers.choices.items():
+            description = subcommand.description
+            description_text += f"  {name:<21} {description}\n"
+        self.parser.epilog = description_text

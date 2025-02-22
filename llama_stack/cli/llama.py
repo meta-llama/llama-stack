@@ -20,6 +20,7 @@ class LlamaCLIParser:
             prog="llama",
             description="Welcome to the Llama CLI",
             add_help=True,
+            formatter_class=argparse.RawTextHelpFormatter,
         )
 
         # Default command is to print help
@@ -33,11 +34,20 @@ class LlamaCLIParser:
         Download.create(subparsers)
         VerifyDownload.create(subparsers)
 
+        self.print_subcommand_description(subparsers)
+
     def parse_args(self) -> argparse.Namespace:
         return self.parser.parse_args()
 
     def run(self, args: argparse.Namespace) -> None:
         args.func(args)
+
+    def print_subcommand_description(self, subparsers: argparse._SubParsersAction):
+        description_text = ""
+        for name, subcommand in subparsers.choices.items():
+            description = subcommand.description
+            description_text += f"  {name:<21} {description}\n"
+        self.parser.epilog = description_text
 
 
 def main():

@@ -24,6 +24,7 @@ class ModelParser(Subcommand):
             "model",
             prog="llama model",
             description="Work with llama models",
+            formatter_class=argparse.RawTextHelpFormatter,
         )
 
         self.parser.set_defaults(func=lambda args: self.parser.print_help())
@@ -37,3 +38,12 @@ class ModelParser(Subcommand):
         ModelDescribe.create(subparsers)
         ModelVerifyDownload.create(subparsers)
         ModelRemove.create(subparsers)
+
+        self.print_subcommand_description(subparsers)
+
+    def print_subcommand_description(self, subparsers: argparse._SubParsersAction):
+        description_text = ""
+        for name, subcommand in subparsers.choices.items():
+            description = subcommand.description
+            description_text += f"  {name:<21} {description}\n"
+        self.parser.epilog = description_text
