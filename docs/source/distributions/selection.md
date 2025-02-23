@@ -28,7 +28,7 @@ Which templates / distributions to choose depends on the hardware you have for r
   - [Android](ondevice_distro/android_sdk)
 
 
-- **If none of the above fit your needs, you can also build your own [custom distribution](building_distro).**
+- **If none of the above fit your needs, you can also build your own [custom distribution](building_distro.md).**
 
 ### Distribution Details
 
