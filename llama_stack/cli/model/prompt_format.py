@@ -9,6 +9,7 @@ import textwrap
 from io import StringIO
 
 from llama_stack.cli.subcommand import Subcommand
+from llama_stack.cli.table import print_table
 from llama_stack.models.llama.datatypes import CoreModelId, ModelFamily, is_multimodal, model_family
 
 
@@ -48,7 +49,26 @@ class ModelPromptFormat(Subcommand):
         supported_model_ids = [
             m for m in CoreModelId if model_family(m) in {ModelFamily.llama3_1, ModelFamily.llama3_2}
         ]
-        model_str = "\n".join([m.value for m in supported_model_ids])
+
+        model_list = [m.value for m in supported_model_ids]
+        model_str = "\n".join(model_list)
+
+        if args.list:
+            headers = ["Model"]
+            rows = []
+            for m in model_list:
+                rows.append(
+                    [
+                        m,
+                    ]
+                )
+            print_table(
+                rows,
+                headers,
+                separate_rows=True,
+            )
+            return
+
         try:
             model_id = CoreModelId(args.model_name)
         except ValueError:
