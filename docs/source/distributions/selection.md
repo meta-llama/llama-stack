@@ -17,7 +17,7 @@ Which templates / distributions to choose depends on the hardware you have for r
   - {dockerhub}`distribution-nvidia` ([Guide](self_hosted_distro/nvidia))
 
 - **Are you running on a "regular" desktop or laptop ?** We suggest using the ollama template for quick prototyping and get started without having to worry about needing GPUs.
-  - {dockerhub}`distribution-ollama` ([link](self_hosted_distro/ollama))
+  - {dockerhub}`distribution-ollama` ([Guide](self_hosted_distro/ollama))
 
 - **Do you have an API key for a remote inference provider like Fireworks, Together, etc.?**  If so, we suggest:
   - {dockerhub}`distribution-together` ([Guide](self_hosted_distro/together))
