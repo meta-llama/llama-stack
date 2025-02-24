@@ -107,6 +107,22 @@ fi
 stack_mount="/app/llama-stack-source"
 models_mount="/app/llama-models-source"
 
+if [ -n "$LLAMA_MODELS_DIR" ]; then
+  if [ ! -d "$LLAMA_MODELS_DIR" ]; then
+    echo "${RED}Warning: LLAMA_MODELS_DIR is set but directory does not exist: $LLAMA_MODELS_DIR${NC}" >&2
+    exit 1
+  fi
+
+  if [ "$USE_COPY_NOT_MOUNT" = "true" ]; then
+    add_to_container << EOF
+COPY $LLAMA_MODELS_DIR $models_mount
+EOF
+  fi
+  add_to_container << EOF
+RUN uv pip install --no-cache -e $models_mount
+EOF
+fi
+
 if [ -n "$LLAMA_STACK_DIR" ]; then
   if [ ! -d "$LLAMA_STACK_DIR" ]; then
     echo "${RED}Warning: LLAMA_STACK_DIR is set but directory does not exist: $LLAMA_STACK_DIR${NC}" >&2
@@ -134,6 +150,7 @@ RUN uv pip install fastapi libcst
 EOF
     add_to_container << EOF
 RUN uv pip install --no-cache --extra-index-url https://test.pypi.org/simple/ \
+  --index-strategy unsafe-best-match \
   llama-models==$TEST_PYPI_VERSION llama-stack-client==$TEST_PYPI_VERSION llama-stack==$TEST_PYPI_VERSION
 
 EOF
@@ -147,23 +164,6 @@ EOF
 RUN uv pip install --no-cache $SPEC_VERSION
 EOF
   fi
-fi
-
-if [ -n "$LLAMA_MODELS_DIR" ]; then
-  if [ ! -d "$LLAMA_MODELS_DIR" ]; then
-    echo "${RED}Warning: LLAMA_MODELS_DIR is set but directory does not exist: $LLAMA_MODELS_DIR${NC}" >&2
-    exit 1
-  fi
-
-  if [ "$USE_COPY_NOT_MOUNT" = "true" ]; then
-    add_to_container << EOF
-COPY $LLAMA_MODELS_DIR $models_mount
-EOF
-  fi
-  add_to_container << EOF
-RUN uv pip uninstall llama-models
-RUN uv pip install --no-cache $models_mount
-EOF
 fi
 
 # if template_or_config ends with .yaml, it is not a template and we should not use the --template flag
