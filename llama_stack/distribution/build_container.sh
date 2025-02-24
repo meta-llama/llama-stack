@@ -8,6 +8,8 @@
 
 LLAMA_MODELS_DIR=${LLAMA_MODELS_DIR:-}
 LLAMA_STACK_DIR=${LLAMA_STACK_DIR:-}
+LLAMA_STACK_CLIENT_DIR=${LLAMA_STACK_CLIENT_DIR:-}
+
 TEST_PYPI_VERSION=${TEST_PYPI_VERSION:-}
 PYPI_VERSION=${PYPI_VERSION:-}
 BUILD_PLATFORM=${BUILD_PLATFORM:-}
@@ -106,42 +108,39 @@ fi
 
 stack_mount="/app/llama-stack-source"
 models_mount="/app/llama-models-source"
+client_mount="/app/llama-stack-client-source"
 
-if [ -n "$LLAMA_MODELS_DIR" ]; then
-  if [ ! -d "$LLAMA_MODELS_DIR" ]; then
-    echo "${RED}Warning: LLAMA_MODELS_DIR is set but directory does not exist: $LLAMA_MODELS_DIR${NC}" >&2
+install_local_package() {
+  local dir="$1"
+  local mount_point="$2"
+  local name="$3"
+
+  if [ ! -d "$dir" ]; then
+    echo "${RED}Warning: $name is set but directory does not exist: $dir${NC}" >&2
     exit 1
   fi
 
   if [ "$USE_COPY_NOT_MOUNT" = "true" ]; then
     add_to_container << EOF
-COPY $LLAMA_MODELS_DIR $models_mount
+COPY $dir $mount_point
 EOF
   fi
   add_to_container << EOF
-RUN uv pip install --no-cache -e $models_mount
+RUN uv pip install --no-cache -e $mount_point
 EOF
+}
+
+
+if [ -n "$LLAMA_MODELS_DIR" ]; then
+  install_local_package "$LLAMA_MODELS_DIR" "$models_mount" "LLAMA_MODELS_DIR"
+fi
+
+if [ -n "$LLAMA_STACK_CLIENT_DIR" ]; then
+  install_local_package "$LLAMA_STACK_CLIENT_DIR" "$client_mount" "LLAMA_STACK_CLIENT_DIR"
 fi
 
 if [ -n "$LLAMA_STACK_DIR" ]; then
-  if [ ! -d "$LLAMA_STACK_DIR" ]; then
-    echo "${RED}Warning: LLAMA_STACK_DIR is set but directory does not exist: $LLAMA_STACK_DIR${NC}" >&2
-    exit 1
-  fi
-
-  # Install in editable format. We will mount the source code into the container
-  # so that changes will be reflected in the container without having to do a
-  # rebuild. This is just for development convenience.
-
-  if [ "$USE_COPY_NOT_MOUNT" = "true" ]; then
-    add_to_container << EOF
-COPY $LLAMA_STACK_DIR $stack_mount
-EOF
-  fi
-
-  add_to_container << EOF
-RUN uv pip install --no-cache -e $stack_mount
-EOF
+  install_local_package "$LLAMA_STACK_DIR" "$stack_mount" "LLAMA_STACK_DIR"
 else
   if [ -n "$TEST_PYPI_VERSION" ]; then
     # these packages are damaged in test-pypi, so install them first
