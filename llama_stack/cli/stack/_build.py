@@ -9,6 +9,7 @@ import importlib.resources
 import json
 import os
 import shutil
+import sys
 import textwrap
 from functools import lru_cache
 from pathlib import Path
@@ -79,7 +80,7 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
                 f"Could not find template {args.template}. Please run `llama stack build --list-templates` to check out the available templates",
                 color="red",
             )
-            return
+            sys.exit(1)
         build_config = available_templates[args.template]
         if args.image_type:
             build_config.image_type = args.image_type
@@ -88,7 +89,7 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
                 f"Please specify a image-type (container | conda | venv) for {args.template}",
                 color="red",
             )
-            return
+            sys.exit(1)
     elif not args.config and not args.template:
         name = prompt(
             "> Enter a name for your Llama Stack (e.g. my-local-stack): ",
@@ -169,14 +170,14 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
                     f"Could not parse config file {args.config}: {e}",
                     color="red",
                 )
-                return
+                sys.exit(1)
 
         if build_config.image_type == ImageType.container.value and not args.image_name:
             cprint(
                 "Please specify --image-name when building a container from a config file",
                 color="red",
             )
-            return
+            sys.exit(1)
 
     if args.print_deps_only:
         print(f"# Dependencies for {args.template or args.config or image_name}")
@@ -195,18 +196,18 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
             template_name=args.template,
         )
 
-    except Exception as exc:
+    except (Exception, RuntimeError) as exc:
         cprint(
             f"Error building stack: {exc}",
             color="red",
         )
-        return
+        sys.exit(1)
     if run_config is None:
         cprint(
             "Run config path is empty",
             color="red",
         )
-        return
+        sys.exit(1)
 
     if args.run:
         run_config = Path(run_config)
@@ -312,7 +313,7 @@ def _run_stack_build_command_from_build_config(
         template_or_config=template_name or config_path,
     )
     if return_code != 0:
-        return
+        raise RuntimeError(f"Failed to build image {image_name}")
 
     if template_name:
         # copy run.yaml from template to build_dir instead of generating it again
