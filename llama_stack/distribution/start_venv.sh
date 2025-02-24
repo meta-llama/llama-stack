@@ -55,6 +55,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+echo "Using virtual environment: $venv_path"
 # Activate virtual environment
 if [ ! -d "$venv_path" ]; then
   echo -e "${RED}Error: Virtual environment not found at $venv_path${NC}" >&2

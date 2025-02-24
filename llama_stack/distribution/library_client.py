@@ -32,6 +32,7 @@ from termcolor import cprint
 from llama_stack.distribution.build import print_pip_install_help
 from llama_stack.distribution.configure import parse_and_maybe_upgrade_config
 from llama_stack.distribution.datatypes import Api
+from llama_stack.distribution.utils.exec import in_notebook
 from llama_stack.distribution.request_headers import set_request_provider_data
 from llama_stack.distribution.resolver import ProviderRegistry
 from llama_stack.distribution.server.endpoints import get_all_api_endpoints
@@ -47,22 +48,10 @@ from llama_stack.providers.utils.telemetry.tracing import (
     start_trace,
 )
 
+
 logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
-
-
-def in_notebook():
-    try:
-        from IPython import get_ipython
-
-        if "IPKernelApp" not in get_ipython().config:  # pragma: no cover
-            return False
-    except ImportError:
-        return False
-    except AttributeError:
-        return False
-    return True
 
 
 def convert_pydantic_to_json_value(value: Any) -> Any:
