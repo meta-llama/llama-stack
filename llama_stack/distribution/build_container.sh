@@ -197,6 +197,9 @@ if [ "$USE_COPY_NOT_MOUNT" != "true" ]; then
   if [ -n "$LLAMA_MODELS_DIR" ]; then
     mounts="$mounts -v $(readlink -f $LLAMA_MODELS_DIR):$models_mount"
   fi
+  if [ -n "$LLAMA_STACK_CLIENT_DIR" ]; then
+    mounts="$mounts -v $(readlink -f $LLAMA_STACK_CLIENT_DIR):$client_mount"
+  fi
 fi
 
 if command -v selinuxenabled &>/dev/null && selinuxenabled; then
