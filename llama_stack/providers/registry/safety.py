@@ -89,7 +89,7 @@ Provider `inline::meta-reference` for API `safety` does not work with the latest
             api=Api.safety,
             adapter=AdapterSpec(
                 adapter_type="nvidia",
-                pip_packages=[],
+                pip_packages=["requests"],
                 module="llama_stack.providers.remote.safety.nvidia",
                 config_class="llama_stack.providers.remote.safety.nvidia.NVIDIASafetyConfig",
             ),
