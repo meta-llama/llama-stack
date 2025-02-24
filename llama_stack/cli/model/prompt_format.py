@@ -54,7 +54,7 @@ class ModelPromptFormat(Subcommand):
         model_str = "\n".join(model_list)
 
         if args.list:
-            headers = ["Model"]
+            headers = ["Model(s)"]
             rows = []
             for m in model_list:
                 rows.append(
