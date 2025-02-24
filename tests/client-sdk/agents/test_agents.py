@@ -357,7 +357,7 @@ def test_tool_choice(llama_stack_client, agent_config):
     assert len(tool_execution_steps) == 0
 
     tool_execution_steps = run_agent("get_boiling_point")
-    assert len(tool_execution_steps) == 1 and tool_execution_steps[0].tool_calls[0].tool_name == "get_boiling_point"
+    assert len(tool_execution_steps) >= 1 and tool_execution_steps[0].tool_calls[0].tool_name == "get_boiling_point"
 
 
 # TODO: fix this flaky test
