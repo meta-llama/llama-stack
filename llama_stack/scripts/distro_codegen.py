@@ -11,7 +11,7 @@ import subprocess
 import sys
 from functools import partial
 from pathlib import Path
-from typing import Iterator
+from typing import Iterable
 
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
@@ -39,7 +39,7 @@ class ChangedPathTracker:
         return self._changed_paths
 
 
-def find_template_dirs(templates_dir: Path) -> Iterator[Path]:
+def find_template_dirs(templates_dir: Path) -> Iterable[Path]:
     """Find immediate subdirectories in the templates folder."""
     if not templates_dir.exists():
         raise FileNotFoundError(f"Templates directory not found: {templates_dir}")
@@ -90,7 +90,7 @@ def check_for_changes(change_tracker: ChangedPathTracker) -> bool:
     return has_changes
 
 
-def collect_template_dependencies(template_dir: Path) -> tuple[str, list[str]]:
+def collect_template_dependencies(template_dir: Path) -> tuple[str | None, list[str]]:
     try:
         module_name = f"llama_stack.templates.{template_dir.name}"
         module = importlib.import_module(module_name)

@@ -5,16 +5,38 @@
 # the root directory of this source tree.
 
 import json
-from typing import AsyncGenerator
+from typing import AsyncGenerator, List, Optional
 
 from openai import OpenAI
 
 from llama_stack.apis.common.content_types import (
     ImageContentItem,
     InterleavedContent,
+    InterleavedContentItem,
     TextContentItem,
 )
-from llama_stack.apis.inference import *  # noqa: F403
+from llama_stack.apis.inference import (
+    ChatCompletionRequest,
+    ChatCompletionResponse,
+    CompletionMessage,
+    EmbeddingsResponse,
+    EmbeddingTaskType,
+    Inference,
+    LogProbConfig,
+    Message,
+    ResponseFormat,
+    SamplingParams,
+    StopReason,
+    SystemMessage,
+    TextTruncation,
+    ToolCall,
+    ToolChoice,
+    ToolConfig,
+    ToolDefinition,
+    ToolPromptFormat,
+    ToolResponseMessage,
+    UserMessage,
+)
 from llama_stack.models.llama.datatypes import (
     GreedySamplingStrategy,
     TopKSamplingStrategy,
@@ -119,7 +141,10 @@ class SambaNovaInferenceAdapter(ModelRegistryHelper, Inference):
     async def embeddings(
         self,
         model_id: str,
-        contents: List[InterleavedContent],
+        contents: List[str] | List[InterleavedContentItem],
+        text_truncation: Optional[TextTruncation] = TextTruncation.none,
+        output_dimension: Optional[int] = None,
+        task_type: Optional[EmbeddingTaskType] = None,
     ) -> EmbeddingsResponse:
         raise NotImplementedError()
 

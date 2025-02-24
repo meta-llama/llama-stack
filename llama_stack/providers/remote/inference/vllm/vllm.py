@@ -10,7 +10,13 @@ from typing import AsyncGenerator, List, Optional, Union
 from llama_models.datatypes import StopReason, ToolCall
 from openai import OpenAI
 
-from llama_stack.apis.common.content_types import InterleavedContent, TextDelta, ToolCallDelta, ToolCallParseStatus
+from llama_stack.apis.common.content_types import (
+    InterleavedContent,
+    InterleavedContentItem,
+    TextDelta,
+    ToolCallDelta,
+    ToolCallParseStatus,
+)
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
     ChatCompletionResponse,
@@ -22,18 +28,21 @@ from llama_stack.apis.inference import (
     CompletionResponse,
     CompletionResponseStreamChunk,
     EmbeddingsResponse,
+    EmbeddingTaskType,
     Inference,
     LogProbConfig,
     Message,
     ResponseFormat,
     ResponseFormatType,
     SamplingParams,
+    TextTruncation,
     ToolChoice,
     ToolConfig,
     ToolDefinition,
     ToolPromptFormat,
 )
 from llama_stack.apis.models import Model, ModelType
+from llama_stack.models.llama.datatypes import BuiltinTool
 from llama_stack.models.llama.sku_list import all_registered_models
 from llama_stack.providers.datatypes import ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.model_registry import (
@@ -112,10 +121,16 @@ def _convert_to_vllm_tools_in_request(tools: List[ToolDefinition]) -> List[dict]
                 if tool_param.required:
                     compat_required.append(tool_key)
 
+        # The tool.tool_name can be a str or a BuiltinTool enum. If
+        # it's the latter, convert to a string.
+        tool_name = tool.tool_name
+        if isinstance(tool_name, BuiltinTool):
+            tool_name = tool_name.value
+
         compat_tool = {
             "type": "function",
             "function": {
-                "name": tool.tool_name,
+                "name": tool_name,
                 "description": tool.description,
                 "parameters": {
                     "type": "object",
@@ -369,7 +384,10 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
     async def embeddings(
         self,
         model_id: str,
-        contents: List[InterleavedContent],
+        contents: List[str] | List[InterleavedContentItem],
+        text_truncation: Optional[TextTruncation] = TextTruncation.none,
+        output_dimension: Optional[int] = None,
+        task_type: Optional[EmbeddingTaskType] = None,
     ) -> EmbeddingsResponse:
         model = await self.model_store.get_model(model_id)
 

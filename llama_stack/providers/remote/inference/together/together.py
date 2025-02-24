@@ -8,18 +8,23 @@ from typing import AsyncGenerator, List, Optional, Union
 
 from together import Together
 
-from llama_stack.apis.common.content_types import InterleavedContent
+from llama_stack.apis.common.content_types import (
+    InterleavedContent,
+    InterleavedContentItem,
+)
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
     ChatCompletionResponse,
     CompletionRequest,
     EmbeddingsResponse,
+    EmbeddingTaskType,
     Inference,
     LogProbConfig,
     Message,
     ResponseFormat,
     ResponseFormatType,
     SamplingParams,
+    TextTruncation,
     ToolChoice,
     ToolConfig,
     ToolDefinition,
@@ -198,13 +203,12 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
     async def _get_params(self, request: Union[ChatCompletionRequest, CompletionRequest]) -> dict:
         input_dict = {}
         media_present = request_has_media(request)
+        llama_model = self.get_llama_model(request.model)
         if isinstance(request, ChatCompletionRequest):
-            if media_present:
+            if media_present or not llama_model:
                 input_dict["messages"] = [await convert_message_to_openai_dict(m) for m in request.messages]
             else:
-                input_dict["prompt"] = await chat_completion_request_to_prompt(
-                    request, self.get_llama_model(request.model)
-                )
+                input_dict["prompt"] = await chat_completion_request_to_prompt(request, llama_model)
         else:
             assert not media_present, "Together does not support media for Completion requests"
             input_dict["prompt"] = await completion_request_to_prompt(request)
@@ -219,7 +223,10 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
     async def embeddings(
         self,
         model_id: str,
-        contents: List[InterleavedContent],
+        contents: List[str] | List[InterleavedContentItem],
+        text_truncation: Optional[TextTruncation] = TextTruncation.none,
+        output_dimension: Optional[int] = None,
+        task_type: Optional[EmbeddingTaskType] = None,
     ) -> EmbeddingsResponse:
         model = await self.model_store.get_model(model_id)
         assert all(not content_has_media(content) for content in contents), (

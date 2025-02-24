@@ -158,3 +158,26 @@ ignore = [
     "B007",
     "B008",
 ]
+
+[tool.mypy]
+mypy_path = ["llama_stack"]
+packages = ["llama_stack"]
+disable_error_code = []
+warn_return_any = true
+# # honor excludes by not following there through imports
+follow_imports = "silent"
+exclude = [
+    # As we fix more and more of these, we should remove them from the list
+    "llama_stack/providers",
+    "llama_stack/distribution",
+    "llama_stack/apis",
+    "llama_stack/cli",
+    "llama_stack/models",
+    "llama_stack/strong_typing",
+    "llama_stack/templates",
+]
+
+[[tool.mypy.overrides]]
+# packages that lack typing annotations, do not have stubs, or are unavailable.
+module = ["llama_models.*", "yaml", "fire"]
+ignore_missing_imports = true

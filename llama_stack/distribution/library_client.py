@@ -41,6 +41,7 @@ from llama_stack.distribution.stack import (
     redact_sensitive_fields,
     replace_env_vars,
 )
+from llama_stack.distribution.utils.exec import in_notebook
 from llama_stack.providers.utils.telemetry.tracing import (
     end_trace,
     setup_logger,
@@ -50,19 +51,6 @@ from llama_stack.providers.utils.telemetry.tracing import (
 logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
-
-
-def in_notebook():
-    try:
-        from IPython import get_ipython
-
-        if "IPKernelApp" not in get_ipython().config:  # pragma: no cover
-            return False
-    except ImportError:
-        return False
-    except AttributeError:
-        return False
-    return True
 
 
 def convert_pydantic_to_json_value(value: Any) -> Any:
@@ -230,12 +218,11 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         if Api.telemetry in self.impls:
             setup_logger(self.impls[Api.telemetry])
 
-        console = Console()
-        console.print(f"Using config [blue]{self.config_path_or_template_name}[/blue]:")
-
-        # Redact sensitive information before printing
-        safe_config = redact_sensitive_fields(self.config.model_dump())
-        console.print(yaml.dump(safe_config, indent=2))
+        if not os.environ.get("PYTEST_CURRENT_TEST"):
+            console = Console()
+            console.print(f"Using config [blue]{self.config_path_or_template_name}[/blue]:")
+            safe_config = redact_sensitive_fields(self.config.model_dump())
+            console.print(yaml.dump(safe_config, indent=2))
 
         endpoints = get_all_api_endpoints()
         endpoint_impls = {}

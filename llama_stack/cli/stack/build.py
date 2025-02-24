@@ -68,6 +68,13 @@ the build. If not specified, currently active Conda environment will be used if 
             help="Print the dependencies for the stack only, without building the stack",
         )
 
+        self.parser.add_argument(
+            "--run",
+            action="store_true",
+            default=False,
+            help="Run the stack after building using the same image type, name, and other applicable arguments",
+        )
+
     def _run_stack_build_command(self, args: argparse.Namespace) -> None:
         # always keep implementation completely silo-ed away from CLI so CLI
         # can be fast to load and reduces dependencies

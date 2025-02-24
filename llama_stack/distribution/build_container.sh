@@ -8,6 +8,8 @@
 
 LLAMA_MODELS_DIR=${LLAMA_MODELS_DIR:-}
 LLAMA_STACK_DIR=${LLAMA_STACK_DIR:-}
+LLAMA_STACK_CLIENT_DIR=${LLAMA_STACK_CLIENT_DIR:-}
+
 TEST_PYPI_VERSION=${TEST_PYPI_VERSION:-}
 PYPI_VERSION=${PYPI_VERSION:-}
 BUILD_PLATFORM=${BUILD_PLATFORM:-}
@@ -32,7 +34,7 @@ container_base="$3"
 build_file_path="$4"
 host_build_dir="$5"
 pip_dependencies="$6"
-special_pip_deps="$7"
+special_pip_deps="${7:-}"
 
 
 # Define color codes
@@ -106,26 +108,39 @@ fi
 
 stack_mount="/app/llama-stack-source"
 models_mount="/app/llama-models-source"
+client_mount="/app/llama-stack-client-source"
 
-if [ -n "$LLAMA_STACK_DIR" ]; then
-  if [ ! -d "$LLAMA_STACK_DIR" ]; then
-    echo "${RED}Warning: LLAMA_STACK_DIR is set but directory does not exist: $LLAMA_STACK_DIR${NC}" >&2
+install_local_package() {
+  local dir="$1"
+  local mount_point="$2"
+  local name="$3"
+
+  if [ ! -d "$dir" ]; then
+    echo "${RED}Warning: $name is set but directory does not exist: $dir${NC}" >&2
     exit 1
   fi
 
-  # Install in editable format. We will mount the source code into the container
-  # so that changes will be reflected in the container without having to do a
-  # rebuild. This is just for development convenience.
-
   if [ "$USE_COPY_NOT_MOUNT" = "true" ]; then
     add_to_container << EOF
-COPY $LLAMA_STACK_DIR $stack_mount
+COPY $dir $mount_point
 EOF
   fi
-
   add_to_container << EOF
-RUN uv pip install --no-cache -e $stack_mount
+RUN uv pip install --no-cache -e $mount_point
 EOF
+}
+
+
+if [ -n "$LLAMA_MODELS_DIR" ]; then
+  install_local_package "$LLAMA_MODELS_DIR" "$models_mount" "LLAMA_MODELS_DIR"
+fi
+
+if [ -n "$LLAMA_STACK_CLIENT_DIR" ]; then
+  install_local_package "$LLAMA_STACK_CLIENT_DIR" "$client_mount" "LLAMA_STACK_CLIENT_DIR"
+fi
+
+if [ -n "$LLAMA_STACK_DIR" ]; then
+  install_local_package "$LLAMA_STACK_DIR" "$stack_mount" "LLAMA_STACK_DIR"
 else
   if [ -n "$TEST_PYPI_VERSION" ]; then
     # these packages are damaged in test-pypi, so install them first
@@ -134,6 +149,7 @@ RUN uv pip install fastapi libcst
 EOF
     add_to_container << EOF
 RUN uv pip install --no-cache --extra-index-url https://test.pypi.org/simple/ \
+  --index-strategy unsafe-best-match \
   llama-models==$TEST_PYPI_VERSION llama-stack-client==$TEST_PYPI_VERSION llama-stack==$TEST_PYPI_VERSION
 
 EOF
@@ -149,23 +165,6 @@ EOF
   fi
 fi
 
-if [ -n "$LLAMA_MODELS_DIR" ]; then
-  if [ ! -d "$LLAMA_MODELS_DIR" ]; then
-    echo "${RED}Warning: LLAMA_MODELS_DIR is set but directory does not exist: $LLAMA_MODELS_DIR${NC}" >&2
-    exit 1
-  fi
-
-  if [ "$USE_COPY_NOT_MOUNT" = "true" ]; then
-    add_to_container << EOF
-COPY $LLAMA_MODELS_DIR $models_mount
-EOF
-  fi
-  add_to_container << EOF
-RUN uv pip uninstall llama-models
-RUN uv pip install --no-cache $models_mount
-EOF
-fi
-
 # if template_or_config ends with .yaml, it is not a template and we should not use the --template flag
 if [[ "$template_or_config" != *.yaml ]]; then
   add_to_container << EOF
@@ -176,6 +175,15 @@ else
 ENTRYPOINT ["python", "-m", "llama_stack.distribution.server.server"]
 EOF
 fi
+
+# Add other require item commands genearic to all containers
+add_to_container << EOF
+
+# Allows running as non-root user
+RUN mkdir -p /.llama /.cache
+
+RUN chmod -R g+rw /app /.llama /.cache
+EOF
 
 printf "Containerfile created successfully in $TEMP_DIR/Containerfile\n\n"
 cat $TEMP_DIR/Containerfile
@@ -188,6 +196,9 @@ if [ "$USE_COPY_NOT_MOUNT" != "true" ]; then
   fi
   if [ -n "$LLAMA_MODELS_DIR" ]; then
     mounts="$mounts -v $(readlink -f $LLAMA_MODELS_DIR):$models_mount"
+  fi
+  if [ -n "$LLAMA_STACK_CLIENT_DIR" ]; then
+    mounts="$mounts -v $(readlink -f $LLAMA_STACK_CLIENT_DIR):$client_mount"
   fi
 fi
 

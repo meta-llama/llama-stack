@@ -10,14 +10,6 @@ import pathlib
 import pytest
 
 
-@pytest.fixture(scope="session")
-def inference_provider_type(llama_stack_client):
-    providers = llama_stack_client.providers.list()
-    inference_providers = [p for p in providers if p.api == "inference"]
-    assert len(inference_providers) > 0, "No inference providers found"
-    return inference_providers[0].provider_type
-
-
 @pytest.fixture
 def image_path():
     return pathlib.Path(__file__).parent / "dog.png"
@@ -35,7 +27,7 @@ def base64_image_url(base64_image_data, image_path):
     return f"data:image/{image_path.suffix[1:]};base64,{base64_image_data}"
 
 
-def test_image_chat_completion_non_streaming(llama_stack_client, vision_model_id):
+def test_image_chat_completion_non_streaming(client_with_models, vision_model_id):
     message = {
         "role": "user",
         "content": [
@@ -53,7 +45,7 @@ def test_image_chat_completion_non_streaming(llama_stack_client, vision_model_id
             },
         ],
     }
-    response = llama_stack_client.inference.chat_completion(
+    response = client_with_models.inference.chat_completion(
         model_id=vision_model_id,
         messages=[message],
         stream=False,
@@ -63,7 +55,7 @@ def test_image_chat_completion_non_streaming(llama_stack_client, vision_model_id
     assert any(expected in message_content for expected in {"dog", "puppy", "pup"})
 
 
-def test_image_chat_completion_streaming(llama_stack_client, vision_model_id):
+def test_image_chat_completion_streaming(client_with_models, vision_model_id):
     message = {
         "role": "user",
         "content": [
@@ -81,7 +73,7 @@ def test_image_chat_completion_streaming(llama_stack_client, vision_model_id):
             },
         ],
     }
-    response = llama_stack_client.inference.chat_completion(
+    response = client_with_models.inference.chat_completion(
         model_id=vision_model_id,
         messages=[message],
         stream=True,
@@ -94,7 +86,7 @@ def test_image_chat_completion_streaming(llama_stack_client, vision_model_id):
 
 
 @pytest.mark.parametrize("type_", ["url", "data"])
-def test_image_chat_completion_base64(llama_stack_client, vision_model_id, base64_image_data, base64_image_url, type_):
+def test_image_chat_completion_base64(client_with_models, vision_model_id, base64_image_data, base64_image_url, type_):
     image_spec = {
         "url": {
             "type": "image",
@@ -122,7 +114,7 @@ def test_image_chat_completion_base64(llama_stack_client, vision_model_id, base6
             },
         ],
     }
-    response = llama_stack_client.inference.chat_completion(
+    response = client_with_models.inference.chat_completion(
         model_id=vision_model_id,
         messages=[message],
         stream=False,

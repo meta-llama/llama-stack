@@ -20,7 +20,7 @@ from llama_stack.templates.template import DistributionTemplate, RunConfigSettin
 
 def get_distribution_template() -> DistributionTemplate:
     providers = {
-        "inference": ["remote::cerebras"],
+        "inference": ["remote::cerebras", "inline::sentence-transformers"],
         "safety": ["inline::llama-guard"],
         "vector_io": ["inline::faiss", "remote::chromadb", "remote::pgvector"],
         "agents": ["inline::meta-reference"],

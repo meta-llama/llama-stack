@@ -19,7 +19,7 @@ The `llamastack/distribution-dell` distribution consists of the following provid
 | agents | `inline::meta-reference` |
 | datasetio | `remote::huggingface`, `inline::localfs` |
 | eval | `inline::meta-reference` |
-| inference | `remote::tgi` |
+| inference | `remote::tgi`, `inline::sentence-transformers` |
 | safety | `inline::llama-guard` |
 | scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |
 | telemetry | `inline::meta-reference` |

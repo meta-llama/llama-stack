@@ -52,7 +52,7 @@ def main(parser: argparse.ArgumentParser):
                     pytest_args,
                     "-s",
                     "-v",
-                    REPO_ROOT / CLIENT_SDK_TESTS_RELATIVE_PATH,
+                    str(REPO_ROOT / CLIENT_SDK_TESTS_RELATIVE_PATH),
                 ]
             )
 

@@ -18,7 +18,7 @@ The `llamastack/distribution-fireworks` distribution consists of the following p
 | agents | `inline::meta-reference` |
 | datasetio | `remote::huggingface`, `inline::localfs` |
 | eval | `inline::meta-reference` |
-| inference | `remote::fireworks` |
+| inference | `remote::fireworks`, `inline::sentence-transformers` |
 | safety | `inline::llama-guard` |
 | scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |
 | telemetry | `inline::meta-reference` |
