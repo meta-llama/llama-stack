@@ -26,8 +26,8 @@ if [ -n "$LLAMA_MODELS_DIR" ]; then
 fi
 
 if [ "$#" -lt 2 ]; then
-  echo "Usage: $0 <distribution_type> <env_name> <pip_dependencies> [<special_pip_deps>]" >&2
-  echo "Example: $0 <distribution_type> mybuild ./my-stack-build.yaml 'numpy pandas scipy'" >&2
+  echo "Usage: $0 <env_name> <pip_dependencies> [<special_pip_deps>]" >&2
+  echo "Example: $0 mybuild ./my-stack-build.yaml 'numpy pandas scipy'" >&2
   exit 1
 fi
 
