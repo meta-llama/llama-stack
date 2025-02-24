@@ -6,13 +6,13 @@ The `llamastack/distribution-nvidia` distribution consists of the following prov
 | API | Provider(s) |
 |-----|-------------|
 | agents | `inline::meta-reference` |
-| datasetio | `remote::huggingface`, `inline::localfs` |
+| datasetio | `inline::localfs` |
 | eval | `inline::meta-reference` |
 | inference | `remote::nvidia` |
-| safety | `inline::llama-guard` |
-| scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |
+| safety | `remote::nvidia` |
+| scoring | `inline::basic` |
 | telemetry | `inline::meta-reference` |
-| tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::code-interpreter`, `inline::rag-runtime`, `remote::model-context-protocol` |
+| tool_runtime | `inline::rag-runtime` |
 | vector_io | `inline::faiss` |
 
 

@@ -18,19 +18,13 @@ def get_distribution_template() -> DistributionTemplate:
     providers = {
         "inference": ["remote::nvidia"],
         "vector_io": ["inline::faiss"],
-        "safety": ["inline::llama-guard"],
+        "safety": ["remote::nvidia"],
         "agents": ["inline::meta-reference"],
         "telemetry": ["inline::meta-reference"],
         "eval": ["inline::meta-reference"],
-        "datasetio": ["remote::huggingface", "inline::localfs"],
-        "scoring": ["inline::basic", "inline::llm-as-judge", "inline::braintrust"],
-        "tool_runtime": [
-            "remote::brave-search",
-            "remote::tavily-search",
-            "inline::code-interpreter",
-            "inline::rag-runtime",
-            "remote::model-context-protocol",
-        ],
+        "datasetio": ["inline::localfs"],
+        "scoring": ["inline::basic"],
+        "tool_runtime": ["inline::rag-runtime"],
     }
 
     inference_provider = Provider(
@@ -65,16 +59,8 @@ def get_distribution_template() -> DistributionTemplate:
     ]
     default_tool_groups = [
         ToolGroupInput(
-            toolgroup_id="builtin::websearch",
-            provider_id="tavily-search",
-        ),
-        ToolGroupInput(
             toolgroup_id="builtin::rag",
             provider_id="rag-runtime",
-        ),
-        ToolGroupInput(
-            toolgroup_id="builtin::code_interpreter",
-            provider_id="code-interpreter",
         ),
     ]
 

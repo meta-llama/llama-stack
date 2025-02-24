@@ -26,9 +26,11 @@ providers:
         namespace: null
         db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/nvidia}/faiss_store.db
   safety:
-  - provider_id: llama-guard
-    provider_type: inline::llama-guard
-    config: {}
+  - provider_id: nvidia
+    provider_type: remote::nvidia
+    config:
+      guardrails_service_url: ${env.GUARDRAILS_SERVICE_URL:http://localhost:7331}
+      config_id: self-check
   agents:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -49,9 +51,6 @@ providers:
     provider_type: inline::meta-reference
     config: {}
   datasetio:
-  - provider_id: huggingface
-    provider_type: remote::huggingface
-    config: {}
   - provider_id: localfs
     provider_type: inline::localfs
     config: {}
@@ -59,32 +58,9 @@ providers:
   - provider_id: basic
     provider_type: inline::basic
     config: {}
-  - provider_id: llm-as-judge
-    provider_type: inline::llm-as-judge
-    config: {}
-  - provider_id: braintrust
-    provider_type: inline::braintrust
-    config:
-      openai_api_key: ${env.OPENAI_API_KEY:}
   tool_runtime:
-  - provider_id: brave-search
-    provider_type: remote::brave-search
-    config:
-      api_key: ${env.BRAVE_SEARCH_API_KEY:}
-      max_results: 3
-  - provider_id: tavily-search
-    provider_type: remote::tavily-search
-    config:
-      api_key: ${env.TAVILY_SEARCH_API_KEY:}
-      max_results: 3
-  - provider_id: code-interpreter
-    provider_type: inline::code-interpreter
-    config: {}
   - provider_id: rag-runtime
     provider_type: inline::rag-runtime
-    config: {}
-  - provider_id: model-context-protocol
-    provider_type: remote::model-context-protocol
     config: {}
 metadata_store:
   type: sqlite
@@ -148,11 +124,7 @@ datasets: []
 scoring_fns: []
 benchmarks: []
 tool_groups:
-- toolgroup_id: builtin::websearch
-  provider_id: tavily-search
 - toolgroup_id: builtin::rag
   provider_id: rag-runtime
-- toolgroup_id: builtin::code_interpreter
-  provider_id: code-interpreter
 server:
   port: 8321

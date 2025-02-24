@@ -1,6 +1,6 @@
 version: '2'
 distribution_spec:
-  description: Use NVIDIA NIM for running LLM inference
+  description: Use NVIDIA NIM for running LLM inference and safety
   providers:
     inference:
     - remote::nvidia

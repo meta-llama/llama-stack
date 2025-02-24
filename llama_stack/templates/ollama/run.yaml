@@ -87,14 +87,6 @@ models:
   model_id: ${env.INFERENCE_MODEL}
   provider_id: ollama
   model_type: llm
-<<<<<<< HEAD
-- metadata:
-    embedding_dimension: 384
-  model_id: all-MiniLM-L6-v2
-  provider_id: sentence-transformers
-  model_type: embedding
-=======
->>>>>>> upstream/main
 shields: []
 vector_dbs: []
 datasets: []
