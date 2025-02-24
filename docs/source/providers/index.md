@@ -1,7 +1,7 @@
 # Providers Overview
 
 The goal of Llama Stack is to build an ecosystem where users can easily swap out different implementations for the same API. Examples for these include:
-- LLM inference providers (e.g., Fireworks, Together, AWS Bedrock, Groq, Cerebras, SambaNova, etc.),
+- LLM inference providers (e.g., Fireworks, Together, AWS Bedrock, Groq, Cerebras, SambaNova, vLLM, etc.),
 - Vector databases (e.g., ChromaDB, Weaviate, Qdrant, FAISS, PGVector, etc.),
 - Safety providers (e.g., Meta's Llama Guard, AWS Bedrock Guardrails, etc.)
 
