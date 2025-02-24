@@ -37,6 +37,7 @@ from llama_stack.distribution.distribution import get_provider_registry
 from llama_stack.distribution.resolver import InvalidProviderError
 from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
+from llama_stack.distribution.utils.exec import in_notebook
 from llama_stack.providers.datatypes import Api
 
 TEMPLATES_PATH = Path(__file__).parent.parent.parent / "templates"
@@ -59,8 +60,16 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
     if args.list_templates:
         return _run_template_list_cmd()
 
-    current_conda_env = os.environ.get("CONDA_DEFAULT_ENV")
-    image_name = args.image_name or current_conda_env
+    if args.image_type == "venv":
+        current_venv = os.environ.get("VIRTUAL_ENV")
+        image_name = args.image_name or current_venv
+        if not image_name and in_notebook():
+            image_name = "__system__"
+    elif args.image_type == "conda":
+        current_conda_env = os.environ.get("CONDA_DEFAULT_ENV")
+        image_name = args.image_name or current_conda_env
+    else:
+        image_name = args.image_name
 
     if args.template:
         available_templates = available_templates_specs()
@@ -256,6 +265,9 @@ def _run_stack_build_command_from_build_config(
     elif build_config.image_type == ImageType.conda.value:
         if not image_name:
             raise ValueError("Please specify an image name when building a conda image")
+    elif build_config.image_type == ImageType.venv.value:
+        if not image_name:
+            raise ValueError("Please specify an image name when building a venv image")
 
     if template_name:
         build_dir = DISTRIBS_BASE_DIR / template_name

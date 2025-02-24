@@ -41,6 +41,7 @@ from llama_stack.distribution.stack import (
     redact_sensitive_fields,
     replace_env_vars,
 )
+from llama_stack.distribution.utils.exec import in_notebook
 from llama_stack.providers.utils.telemetry.tracing import (
     end_trace,
     setup_logger,
@@ -50,19 +51,6 @@ from llama_stack.providers.utils.telemetry.tracing import (
 logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
-
-
-def in_notebook():
-    try:
-        from IPython import get_ipython
-
-        if "IPKernelApp" not in get_ipython().config:  # pragma: no cover
-            return False
-    except ImportError:
-        return False
-    except AttributeError:
-        return False
-    return True
 
 
 def convert_pydantic_to_json_value(value: Any) -> Any:
