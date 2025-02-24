@@ -79,7 +79,7 @@ def get_distribution_template() -> DistributionTemplate:
     return DistributionTemplate(
         name="nvidia",
         distro_type="remote_hosted",
-        description="Use NVIDIA NIM for running LLM inference",
+        description="Use NVIDIA NIM for running LLM inference and safety",
         container_image=None,
         template_path=Path(__file__).parent / "doc_template.md",
         providers=providers,
@@ -100,7 +100,7 @@ def get_distribution_template() -> DistributionTemplate:
                     ]
                 },
                 default_models=[inference_model, safety_model],
-                default_shields=[ShieldInput(shield_id="${env.SAFETY_MODEL}")],
+                default_shields=[ShieldInput(shield_id="${env.SAFETY_MODEL}", provider_id="nvidia")],
                 default_tool_groups=default_tool_groups,
             ),
         },
