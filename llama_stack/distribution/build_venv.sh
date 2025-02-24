@@ -75,7 +75,6 @@ run() {
   local pip_dependencies="$2"
   local special_pip_deps="$3"
   
-  # or if __none__ is set, we are using the system python
   if [ -n "$UV_SYSTEM_PYTHON" ] || [ "$env_name" == "__system__" ]; then 
     echo "Installing dependencies in system Python environment"
     # if env == __system__, ensure we set UV_SYSTEM_PYTHON

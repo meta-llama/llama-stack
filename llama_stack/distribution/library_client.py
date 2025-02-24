@@ -32,7 +32,6 @@ from termcolor import cprint
 from llama_stack.distribution.build import print_pip_install_help
 from llama_stack.distribution.configure import parse_and_maybe_upgrade_config
 from llama_stack.distribution.datatypes import Api
-from llama_stack.distribution.utils.exec import in_notebook
 from llama_stack.distribution.request_headers import set_request_provider_data
 from llama_stack.distribution.resolver import ProviderRegistry
 from llama_stack.distribution.server.endpoints import get_all_api_endpoints
@@ -42,12 +41,12 @@ from llama_stack.distribution.stack import (
     redact_sensitive_fields,
     replace_env_vars,
 )
+from llama_stack.distribution.utils.exec import in_notebook
 from llama_stack.providers.utils.telemetry.tracing import (
     end_trace,
     setup_logger,
     start_trace,
 )
-
 
 logger = logging.getLogger(__name__)
 
