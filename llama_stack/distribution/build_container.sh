@@ -24,6 +24,8 @@ if [ "$#" -lt 6 ]; then
   exit 1
 fi
 
+special_pip_deps="$7"
+
 set -euo pipefail
 
 template_or_config="$1"
@@ -32,7 +34,6 @@ container_base="$3"
 build_file_path="$4"
 host_build_dir="$5"
 pip_dependencies="$6"
-special_pip_deps="$7"
 
 
 # Define color codes
