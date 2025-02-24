@@ -71,6 +71,10 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
     else:
         image_name = args.image_name
 
+    if not image_name:
+        image_name = f"llamastack-{args.image_type}"
+        print(f"No image name provided and could not detect one from environment. Using image_name: {image_name}")
+
     if args.template:
         available_templates = available_templates_specs()
         if args.template not in available_templates:
