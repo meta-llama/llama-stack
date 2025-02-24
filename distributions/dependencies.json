@@ -306,6 +306,7 @@
     "pymongo",
     "pypdf",
     "redis",
+    "requests",
     "scikit-learn",
     "scipy",
     "sentencepiece",
