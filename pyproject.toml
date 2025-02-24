@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "llama_stack"
-version = "0.1.3"
+version = "0.1.4"
 authors = [{ name = "Meta Llama", email = "llama-oss@meta.com" }]
 description = "Llama Stack"
 readme = "README.md"
@@ -26,8 +26,8 @@ dependencies = [
     "httpx",
     "huggingface-hub",
     "jsonschema",
-    "llama-models>=0.1.3",
-    "llama-stack-client>=0.1.3",
+    "llama-models>=0.1.4",
+    "llama-stack-client>=0.1.4",
     "prompt-toolkit",
     "python-dotenv",
     "pydantic>=2",
