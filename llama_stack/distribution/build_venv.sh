@@ -25,7 +25,7 @@ if [ -n "$LLAMA_MODELS_DIR" ]; then
   echo "Using llama-models-dir=$LLAMA_MODELS_DIR"
 fi
 
-if [ "$#" -lt 3 ]; then
+if [ "$#" -lt 2 ]; then
   echo "Usage: $0 <distribution_type> <env_name> <pip_dependencies> [<special_pip_deps>]" >&2
   echo "Example: $0 <distribution_type> mybuild ./my-stack-build.yaml 'numpy pandas scipy'" >&2
   exit 1
@@ -74,8 +74,8 @@ run() {
   local env_name="$1"
   local pip_dependencies="$2"
   local special_pip_deps="$3"
-  
-  if [ -n "$UV_SYSTEM_PYTHON" ] || [ "$env_name" == "__system__" ]; then 
+
+  if [ -n "$UV_SYSTEM_PYTHON" ] || [ "$env_name" == "__system__" ]; then
     echo "Installing dependencies in system Python environment"
     # if env == __system__, ensure we set UV_SYSTEM_PYTHON
     export UV_SYSTEM_PYTHON=1
