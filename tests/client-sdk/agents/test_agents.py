@@ -325,10 +325,11 @@ def test_custom_tool(llama_stack_client, agent_config):
 
 
 def test_tool_choice(llama_stack_client, agent_config):
+    tool_str = "Tool:get_boiling_point"
     data = [
-        ("required", '{"type": "function"'),
+        ("required", tool_str),
         ("none", None),
-        ("get_boiling_point", '{"type": "function", "name": "get_boiling_point"'),
+        ("get_boiling_point", tool_str),
     ]
     client_tool = TestClientTool()
     for tool_choice, expected_tool in data:
@@ -350,13 +351,12 @@ def test_tool_choice(llama_stack_client, agent_config):
             ],
             session_id=session_id,
         )
-
         logs = [str(log) for log in EventLogger().log(response) if log is not None]
         logs_str = "".join(logs)
         if expected_tool:
             assert expected_tool in logs_str
         else:
-            assert '{"type": "function"' not in logs_str
+            assert tool_str not in logs_str
 
 
 # TODO: fix this flaky test
