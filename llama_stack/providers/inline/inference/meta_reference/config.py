@@ -9,7 +9,6 @@ from typing import Any, Dict, Optional
 from pydantic import BaseModel, field_validator
 
 from llama_stack.apis.inference import QuantizationConfig
-
 from llama_stack.providers.utils.inference import supported_inference_models
 
 
@@ -40,9 +39,7 @@ class MetaReferenceInferenceConfig(BaseModel):
         repos = [m.huggingface_repo for m in permitted_models]
         if model not in (descriptors + repos):
             model_list = "\n\t".join(repos)
-            raise ValueError(
-                f"Unknown model: `{model}`. Choose from [\n\t{model_list}\n]"
-            )
+            raise ValueError(f"Unknown model: `{model}`. Choose from [\n\t{model_list}\n]")
         return model
 
     @classmethod

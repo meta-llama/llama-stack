@@ -44,13 +44,16 @@ def setup_verify_download_parser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--model-id",
         required=True,
-        help="Model ID to verify",
+        help="Model ID to verify (only for models downloaded from Meta)",
     )
     parser.set_defaults(func=partial(run_verify_cmd, parser=parser))
 
 
 def calculate_md5(filepath: Path, chunk_size: int = 8192) -> str:
-    md5_hash = hashlib.md5()
+    # NOTE: MD5 is used here only for download integrity verification,
+    # not for security purposes
+    # TODO: switch to SHA256
+    md5_hash = hashlib.md5(usedforsecurity=False)
     with open(filepath, "rb") as f:
         for chunk in iter(lambda: f.read(chunk_size), b""):
             md5_hash.update(chunk)
@@ -69,9 +72,7 @@ def load_checksums(checklist_path: Path) -> Dict[str, str]:
     return checksums
 
 
-def verify_files(
-    model_dir: Path, checksums: Dict[str, str], console: Console
-) -> List[VerificationResult]:
+def verify_files(model_dir: Path, checksums: Dict[str, str], console: Console) -> List[VerificationResult]:
     results = []
 
     with Progress(

@@ -6,8 +6,8 @@
 
 from typing import List
 
-from llama_models.datatypes import *  # noqa: F403
-from llama_models.sku_list import all_registered_models
+from llama_stack.models.llama.datatypes import *  # noqa: F403
+from llama_stack.models.llama.sku_list import all_registered_models
 
 
 def is_supported_safety_model(model: Model) -> bool:
@@ -27,13 +27,10 @@ def supported_inference_models() -> List[Model]:
         m
         for m in all_registered_models()
         if (
-            m.model_family
-            in {ModelFamily.llama3_1, ModelFamily.llama3_2, ModelFamily.llama3_3}
+            m.model_family in {ModelFamily.llama3_1, ModelFamily.llama3_2, ModelFamily.llama3_3}
             or is_supported_safety_model(m)
         )
     ]
 
 
-ALL_HUGGINGFACE_REPOS_TO_MODEL_DESCRIPTOR = {
-    m.huggingface_repo: m.descriptor() for m in all_registered_models()
-}
+ALL_HUGGINGFACE_REPOS_TO_MODEL_DESCRIPTOR = {m.huggingface_repo: m.descriptor() for m in all_registered_models()}

@@ -70,9 +70,7 @@ class RegisteredBaseScoringFn(BaseScoringFn):
 
     def register_scoring_fn_def(self, scoring_fn: ScoringFn) -> None:
         if scoring_fn.identifier in self.supported_fn_defs_registry:
-            raise ValueError(
-                f"Scoring function def with identifier {scoring_fn.identifier} already exists."
-            )
+            raise ValueError(f"Scoring function def with identifier {scoring_fn.identifier} already exists.")
         self.supported_fn_defs_registry[scoring_fn.identifier] = scoring_fn
 
     @abstractmethod
@@ -98,11 +96,7 @@ class RegisteredBaseScoringFn(BaseScoringFn):
                 params.aggregation_functions = scoring_params.aggregation_functions
 
         aggregation_functions = []
-        if (
-            params
-            and hasattr(params, "aggregation_functions")
-            and params.aggregation_functions
-        ):
+        if params and hasattr(params, "aggregation_functions") and params.aggregation_functions:
             aggregation_functions.extend(params.aggregation_functions)
         return aggregate_metrics(scoring_results, aggregation_functions)
 
@@ -112,7 +106,4 @@ class RegisteredBaseScoringFn(BaseScoringFn):
         scoring_fn_identifier: Optional[str] = None,
         scoring_params: Optional[ScoringFnParams] = None,
     ) -> List[ScoringResultRow]:
-        return [
-            await self.score_row(input_row, scoring_fn_identifier, scoring_params)
-            for input_row in input_rows
-        ]
+        return [await self.score_row(input_row, scoring_fn_identifier, scoring_params) for input_row in input_rows]

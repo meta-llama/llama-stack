@@ -1,27 +1,10 @@
 # What does this PR do?
+[Provide a short summary of what this PR does and why. Link to relevant issues if applicable.]
 
-In short, provide a summary of what this PR does and why. Usually, the relevant context should be present in a linked issue.
-
-- [ ] Addresses issue (#issue)
-
+[//]: # (If resolving an issue, uncomment and update the line below)
+[//]: # (Closes #[issue-number])
 
 ## Test Plan
+[Describe the tests you ran to verify your changes with result summaries. *Provide clear instructions so the plan can be easily re-executed.*]
 
-Please describe:
- - tests you ran to verify your changes with result summaries.
- - provide instructions so it can be reproduced.
-
-
-## Sources
-
-Please link relevant resources if necessary.
-
-
-## Before submitting
-
-- [ ] This PR fixes a typo or improves the docs (you can dismiss the other checks if that's the case).
-- [ ] Ran pre-commit to handle lint / formatting issues.
-- [ ] Read the [contributor guideline](https://github.com/meta-llama/llama-stack/blob/main/CONTRIBUTING.md),
-      Pull Request section?
-- [ ] Updated relevant documentation.
-- [ ] Wrote necessary unit or integration tests.
+[//]: # (## Documentation)

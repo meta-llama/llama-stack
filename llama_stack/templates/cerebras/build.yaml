@@ -4,6 +4,7 @@ distribution_spec:
   providers:
     inference:
     - remote::cerebras
+    - inline::sentence-transformers
     safety:
     - inline::llama-guard
     vector_io:
@@ -27,5 +28,5 @@ distribution_spec:
     - remote::brave-search
     - remote::tavily-search
     - inline::code-interpreter
-    - inline::memory-runtime
+    - inline::rag-runtime
 image_type: conda

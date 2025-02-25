@@ -7,7 +7,6 @@
 from typing import Any, Dict, List, Optional
 
 import requests
-from llama_models.llama3.api.datatypes import BuiltinTool
 
 from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.tools import (
@@ -18,14 +17,13 @@ from llama_stack.apis.tools import (
     ToolRuntime,
 )
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
+from llama_stack.models.llama.datatypes import BuiltinTool
 from llama_stack.providers.datatypes import ToolsProtocolPrivate
 
 from .config import BraveSearchToolConfig
 
 
-class BraveSearchToolRuntimeImpl(
-    ToolsProtocolPrivate, ToolRuntime, NeedsRequestProviderData
-):
+class BraveSearchToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, NeedsRequestProviderData):
     def __init__(self, config: BraveSearchToolConfig):
         self.config = config
 
@@ -67,9 +65,7 @@ class BraveSearchToolRuntimeImpl(
             )
         ]
 
-    async def invoke_tool(
-        self, tool_name: str, kwargs: Dict[str, Any]
-    ) -> ToolInvocationResult:
+    async def invoke_tool(self, tool_name: str, kwargs: Dict[str, Any]) -> ToolInvocationResult:
         api_key = self._get_api_key()
         url = "https://api.search.brave.com/res/v1/web/search"
         headers = {
@@ -135,10 +131,7 @@ class BraveSearchToolRuntimeImpl(
         results = result_selector(results)
 
         if isinstance(results, list):
-            cleaned = [
-                {k: v for k, v in item.items() if k in selected_keys}
-                for item in results
-            ]
+            cleaned = [{k: v for k, v in item.items() if k in selected_keys} for item in results]
         else:
             cleaned = {k: v for k, v in results.items() if k in selected_keys}
 

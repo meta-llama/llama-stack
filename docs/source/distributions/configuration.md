@@ -10,7 +10,7 @@ conda_env: ollama
 apis:
 - agents
 - inference
-- memory
+- vector_io
 - safety
 - telemetry
 providers:
@@ -19,7 +19,7 @@ providers:
     provider_type: remote::ollama
     config:
       url: ${env.OLLAMA_URL:http://localhost:11434}
-  memory:
+  vector_io:
   - provider_id: faiss
     provider_type: inline::faiss
     config:
@@ -70,20 +70,27 @@ Next up is the most critical part: the set of providers that the stack will use 
 ```yaml
 providers:
   inference:
+  # provider_id is a string you can choose freely
   - provider_id: ollama
+    # provider_type is a string that specifies the type of provider.
+    # in this case, the provider for inference is ollama and it is run remotely (outside of the distribution)
     provider_type: remote::ollama
+    # config is a dictionary that contains the configuration for the provider.
+    # in this case, the configuration is the url of the ollama server
     config:
       url: ${env.OLLAMA_URL:http://localhost:11434}
 ```
 A few things to note:
-- A _provider instance_ is identified with an (identifier, type, configuration) tuple. The identifier is a string you can choose freely.
+- A _provider instance_ is identified with an (id, type, configuration) triplet.
+- The id is a string you can choose freely.
 - You can instantiate any number of provider instances of the same type.
-- The configuration dictionary is provider-specific. Notice that configuration can reference environment variables (with default values), which are expanded at runtime. When you run a stack server (via docker or via `llama stack run`), you can specify `--env OLLAMA_URL=http://my-server:11434` to override the default value.
+- The configuration dictionary is provider-specific.
+- Notice that configuration can reference environment variables (with default values), which are expanded at runtime. When you run a stack server (via docker or via `llama stack run`), you can specify `--env OLLAMA_URL=http://my-server:11434` to override the default value.
 
 ## Resources
-```
 
 Finally, let's look at the `models` section:
+
 ```yaml
 models:
 - metadata: {}

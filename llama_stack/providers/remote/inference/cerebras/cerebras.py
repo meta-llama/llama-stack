@@ -7,28 +7,30 @@
 from typing import AsyncGenerator, List, Optional, Union
 
 from cerebras.cloud.sdk import AsyncCerebras
-from llama_models.datatypes import CoreModelId
-from llama_models.llama3.api.chat_format import ChatFormat
-from llama_models.llama3.api.datatypes import TopKSamplingStrategy
-from llama_models.llama3.api.tokenizer import Tokenizer
 
-from llama_stack.apis.common.content_types import InterleavedContent
+from llama_stack.apis.common.content_types import (
+    InterleavedContent,
+    InterleavedContentItem,
+)
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
     CompletionRequest,
     CompletionResponse,
     EmbeddingsResponse,
+    EmbeddingTaskType,
     Inference,
     LogProbConfig,
     Message,
     ResponseFormat,
     SamplingParams,
+    TextTruncation,
     ToolChoice,
+    ToolConfig,
     ToolDefinition,
     ToolPromptFormat,
 )
+from llama_stack.models.llama.datatypes import TopKSamplingStrategy
 from llama_stack.providers.utils.inference.model_registry import (
-    build_model_alias,
     ModelRegistryHelper,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
@@ -44,27 +46,16 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 )
 
 from .config import CerebrasImplConfig
-
-model_aliases = [
-    build_model_alias(
-        "llama3.1-8b",
-        CoreModelId.llama3_1_8b_instruct.value,
-    ),
-    build_model_alias(
-        "llama-3.3-70b",
-        CoreModelId.llama3_3_70b_instruct.value,
-    ),
-]
+from .models import model_entries
 
 
 class CerebrasInferenceAdapter(ModelRegistryHelper, Inference):
     def __init__(self, config: CerebrasImplConfig) -> None:
         ModelRegistryHelper.__init__(
             self,
-            model_aliases=model_aliases,
+            model_entries=model_entries,
         )
         self.config = config
-        self.formatter = ChatFormat(Tokenizer.get_instance())
 
         self.client = AsyncCerebras(
             base_url=self.config.base_url,
@@ -102,21 +93,19 @@ class CerebrasInferenceAdapter(ModelRegistryHelper, Inference):
         else:
             return await self._nonstream_completion(request)
 
-    async def _nonstream_completion(
-        self, request: CompletionRequest
-    ) -> CompletionResponse:
+    async def _nonstream_completion(self, request: CompletionRequest) -> CompletionResponse:
         params = await self._get_params(request)
 
         r = await self.client.completions.create(**params)
 
-        return process_completion_response(r, self.formatter)
+        return process_completion_response(r)
 
     async def _stream_completion(self, request: CompletionRequest) -> AsyncGenerator:
         params = await self._get_params(request)
 
         stream = await self.client.completions.create(**params)
 
-        async for chunk in process_completion_stream_response(stream, self.formatter):
+        async for chunk in process_completion_stream_response(stream):
             yield chunk
 
     async def chat_completion(
@@ -130,6 +119,7 @@ class CerebrasInferenceAdapter(ModelRegistryHelper, Inference):
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
+        tool_config: Optional[ToolConfig] = None,
     ) -> AsyncGenerator:
         model = await self.model_store.get_model(model_id)
         request = ChatCompletionRequest(
@@ -142,6 +132,7 @@ class CerebrasInferenceAdapter(ModelRegistryHelper, Inference):
             response_format=response_format,
             stream=stream,
             logprobs=logprobs,
+            tool_config=tool_config,
         )
 
         if stream:
@@ -149,42 +140,30 @@ class CerebrasInferenceAdapter(ModelRegistryHelper, Inference):
         else:
             return await self._nonstream_chat_completion(request)
 
-    async def _nonstream_chat_completion(
-        self, request: CompletionRequest
-    ) -> CompletionResponse:
+    async def _nonstream_chat_completion(self, request: CompletionRequest) -> CompletionResponse:
         params = await self._get_params(request)
 
         r = await self.client.completions.create(**params)
 
-        return process_chat_completion_response(r, self.formatter)
+        return process_chat_completion_response(r, request)
 
-    async def _stream_chat_completion(
-        self, request: CompletionRequest
-    ) -> AsyncGenerator:
+    async def _stream_chat_completion(self, request: CompletionRequest) -> AsyncGenerator:
         params = await self._get_params(request)
 
         stream = await self.client.completions.create(**params)
 
-        async for chunk in process_chat_completion_stream_response(
-            stream, self.formatter
-        ):
+        async for chunk in process_chat_completion_stream_response(stream, request):
             yield chunk
 
-    async def _get_params(
-        self, request: Union[ChatCompletionRequest, CompletionRequest]
-    ) -> dict:
-        if request.sampling_params and isinstance(
-            request.sampling_params.strategy, TopKSamplingStrategy
-        ):
+    async def _get_params(self, request: Union[ChatCompletionRequest, CompletionRequest]) -> dict:
+        if request.sampling_params and isinstance(request.sampling_params.strategy, TopKSamplingStrategy):
             raise ValueError("`top_k` not supported by Cerebras")
 
         prompt = ""
         if isinstance(request, ChatCompletionRequest):
-            prompt = await chat_completion_request_to_prompt(
-                request, self.get_llama_model(request.model), self.formatter
-            )
+            prompt = await chat_completion_request_to_prompt(request, self.get_llama_model(request.model))
         elif isinstance(request, CompletionRequest):
-            prompt = await completion_request_to_prompt(request, self.formatter)
+            prompt = await completion_request_to_prompt(request)
         else:
             raise ValueError(f"Unknown request type {type(request)}")
 
@@ -198,6 +177,9 @@ class CerebrasInferenceAdapter(ModelRegistryHelper, Inference):
     async def embeddings(
         self,
         model_id: str,
-        contents: List[InterleavedContent],
+        contents: List[str] | List[InterleavedContentItem],
+        text_truncation: Optional[TextTruncation] = TextTruncation.none,
+        output_dimension: Optional[int] = None,
+        task_type: Optional[EmbeddingTaskType] = None,
     ) -> EmbeddingsResponse:
         raise NotImplementedError()

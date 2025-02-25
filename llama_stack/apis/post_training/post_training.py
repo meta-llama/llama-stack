@@ -8,13 +8,13 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Literal, Optional, Protocol, Union
 
-from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
 from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.common.job_types import JobStatus
 from llama_stack.apis.common.training_types import Checkpoint
+from llama_stack.schema_utils import json_schema_type, register_schema, webmethod
 
 
 @json_schema_type
@@ -88,9 +88,10 @@ class QATFinetuningConfig(BaseModel):
     group_size: int
 
 
-AlgorithmConfig = Annotated[
-    Union[LoraFinetuningConfig, QATFinetuningConfig], Field(discriminator="type")
-]
+AlgorithmConfig = register_schema(
+    Annotated[Union[LoraFinetuningConfig, QATFinetuningConfig], Field(discriminator="type")],
+    name="AlgorithmConfig",
+)
 
 
 @json_schema_type
@@ -201,14 +202,10 @@ class PostTraining(Protocol):
     async def get_training_jobs(self) -> ListPostTrainingJobsResponse: ...
 
     @webmethod(route="/post-training/job/status", method="GET")
-    async def get_training_job_status(
-        self, job_uuid: str
-    ) -> Optional[PostTrainingJobStatusResponse]: ...
+    async def get_training_job_status(self, job_uuid: str) -> Optional[PostTrainingJobStatusResponse]: ...
 
     @webmethod(route="/post-training/job/cancel", method="POST")
     async def cancel_training_job(self, job_uuid: str) -> None: ...
 
     @webmethod(route="/post-training/job/artifacts", method="GET")
-    async def get_training_job_artifacts(
-        self, job_uuid: str
-    ) -> Optional[PostTrainingJobArtifactsResponse]: ...
+    async def get_training_job_artifacts(self, job_uuid: str) -> Optional[PostTrainingJobArtifactsResponse]: ...

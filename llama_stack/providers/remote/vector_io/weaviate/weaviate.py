@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 import json
 import logging
-
 from typing import Any, Dict, List, Optional
 
 import weaviate
@@ -24,7 +23,7 @@ from llama_stack.providers.utils.memory.vector_store import (
     VectorDBWithIndex,
 )
 
-from .config import WeaviateConfig, WeaviateRequestProviderData
+from .config import WeaviateRequestProviderData, WeaviateVectorIOConfig
 
 log = logging.getLogger(__name__)
 
@@ -35,9 +34,9 @@ class WeaviateIndex(EmbeddingIndex):
         self.collection_name = collection_name
 
     async def add_chunks(self, chunks: List[Chunk], embeddings: NDArray):
-        assert len(chunks) == len(
-            embeddings
-        ), f"Chunk length {len(chunks)} does not match embedding length {len(embeddings)}"
+        assert len(chunks) == len(embeddings), (
+            f"Chunk length {len(chunks)} does not match embedding length {len(embeddings)}"
+        )
 
         data_objects = []
         for i, chunk in enumerate(chunks):
@@ -56,9 +55,7 @@ class WeaviateIndex(EmbeddingIndex):
         # TODO: make this async friendly
         collection.data.insert_many(data_objects)
 
-    async def query(
-        self, embedding: NDArray, k: int, score_threshold: float
-    ) -> QueryChunksResponse:
+    async def query(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
         collection = self.client.collections.get(self.collection_name)
 
         results = collection.query.near_vector(
@@ -85,17 +82,15 @@ class WeaviateIndex(EmbeddingIndex):
 
     async def delete(self, chunk_ids: List[str]) -> None:
         collection = self.client.collections.get(self.collection_name)
-        collection.data.delete_many(
-            where=Filter.by_property("id").contains_any(chunk_ids)
-        )
+        collection.data.delete_many(where=Filter.by_property("id").contains_any(chunk_ids))
 
 
-class WeaviateMemoryAdapter(
+class WeaviateVectorIOAdapter(
     VectorIO,
     NeedsRequestProviderData,
     VectorDBsProtocolPrivate,
 ):
-    def __init__(self, config: WeaviateConfig, inference_api: Api.inference) -> None:
+    def __init__(self, config: WeaviateVectorIOConfig, inference_api: Api.inference) -> None:
         self.config = config
         self.inference_api = inference_api
         self.client_cache = {}
@@ -149,9 +144,7 @@ class WeaviateMemoryAdapter(
             self.inference_api,
         )
 
-    async def _get_and_cache_vector_db_index(
-        self, vector_db_id: str
-    ) -> Optional[VectorDBWithIndex]:
+    async def _get_and_cache_vector_db_index(self, vector_db_id: str) -> Optional[VectorDBWithIndex]:
         if vector_db_id in self.cache:
             return self.cache[vector_db_id]
 

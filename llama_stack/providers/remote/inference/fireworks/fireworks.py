@@ -7,30 +7,32 @@
 from typing import AsyncGenerator, List, Optional, Union
 
 from fireworks.client import Fireworks
-from llama_models.datatypes import CoreModelId
-from llama_models.llama3.api.chat_format import ChatFormat
-from llama_models.llama3.api.tokenizer import Tokenizer
 
-from llama_stack.apis.common.content_types import InterleavedContent
+from llama_stack.apis.common.content_types import (
+    InterleavedContent,
+    InterleavedContentItem,
+)
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
     ChatCompletionResponse,
     CompletionRequest,
     CompletionResponse,
     EmbeddingsResponse,
+    EmbeddingTaskType,
     Inference,
     LogProbConfig,
     Message,
     ResponseFormat,
     ResponseFormatType,
     SamplingParams,
+    TextTruncation,
     ToolChoice,
+    ToolConfig,
     ToolDefinition,
     ToolPromptFormat,
 )
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.providers.utils.inference.model_registry import (
-    build_model_alias,
     ModelRegistryHelper,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
@@ -50,58 +52,13 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 )
 
 from .config import FireworksImplConfig
-
-MODEL_ALIASES = [
-    build_model_alias(
-        "accounts/fireworks/models/llama-v3p1-8b-instruct",
-        CoreModelId.llama3_1_8b_instruct.value,
-    ),
-    build_model_alias(
-        "accounts/fireworks/models/llama-v3p1-70b-instruct",
-        CoreModelId.llama3_1_70b_instruct.value,
-    ),
-    build_model_alias(
-        "accounts/fireworks/models/llama-v3p1-405b-instruct",
-        CoreModelId.llama3_1_405b_instruct.value,
-    ),
-    build_model_alias(
-        "accounts/fireworks/models/llama-v3p2-1b-instruct",
-        CoreModelId.llama3_2_1b_instruct.value,
-    ),
-    build_model_alias(
-        "accounts/fireworks/models/llama-v3p2-3b-instruct",
-        CoreModelId.llama3_2_3b_instruct.value,
-    ),
-    build_model_alias(
-        "accounts/fireworks/models/llama-v3p2-11b-vision-instruct",
-        CoreModelId.llama3_2_11b_vision_instruct.value,
-    ),
-    build_model_alias(
-        "accounts/fireworks/models/llama-v3p2-90b-vision-instruct",
-        CoreModelId.llama3_2_90b_vision_instruct.value,
-    ),
-    build_model_alias(
-        "accounts/fireworks/models/llama-v3p3-70b-instruct",
-        CoreModelId.llama3_3_70b_instruct.value,
-    ),
-    build_model_alias(
-        "accounts/fireworks/models/llama-guard-3-8b",
-        CoreModelId.llama_guard_3_8b.value,
-    ),
-    build_model_alias(
-        "accounts/fireworks/models/llama-guard-3-11b-vision",
-        CoreModelId.llama_guard_3_11b_vision.value,
-    ),
-]
+from .models import MODEL_ENTRIES
 
 
-class FireworksInferenceAdapter(
-    ModelRegistryHelper, Inference, NeedsRequestProviderData
-):
+class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProviderData):
     def __init__(self, config: FireworksImplConfig) -> None:
-        ModelRegistryHelper.__init__(self, MODEL_ALIASES)
+        ModelRegistryHelper.__init__(self, MODEL_ENTRIES)
         self.config = config
-        self.formatter = ChatFormat(Tokenizer.get_instance())
 
     async def initialize(self) -> None:
         pass
@@ -147,12 +104,10 @@ class FireworksInferenceAdapter(
         else:
             return await self._nonstream_completion(request)
 
-    async def _nonstream_completion(
-        self, request: CompletionRequest
-    ) -> CompletionResponse:
+    async def _nonstream_completion(self, request: CompletionRequest) -> CompletionResponse:
         params = await self._get_params(request)
         r = await self._get_client().completion.acreate(**params)
-        return process_completion_response(r, self.formatter)
+        return process_completion_response(r)
 
     async def _stream_completion(self, request: CompletionRequest) -> AsyncGenerator:
         params = await self._get_params(request)
@@ -164,7 +119,7 @@ class FireworksInferenceAdapter(
                 yield chunk
 
         stream = _to_async_generator()
-        async for chunk in process_completion_stream_response(stream, self.formatter):
+        async for chunk in process_completion_stream_response(stream):
             yield chunk
 
     def _build_options(
@@ -208,6 +163,7 @@ class FireworksInferenceAdapter(
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
+        tool_config: Optional[ToolConfig] = None,
     ) -> AsyncGenerator:
         model = await self.model_store.get_model(model_id)
         request = ChatCompletionRequest(
@@ -215,11 +171,10 @@ class FireworksInferenceAdapter(
             messages=messages,
             sampling_params=sampling_params,
             tools=tools or [],
-            tool_choice=tool_choice,
-            tool_prompt_format=tool_prompt_format,
             response_format=response_format,
             stream=stream,
             logprobs=logprobs,
+            tool_config=tool_config,
         )
 
         if stream:
@@ -227,19 +182,15 @@ class FireworksInferenceAdapter(
         else:
             return await self._nonstream_chat_completion(request)
 
-    async def _nonstream_chat_completion(
-        self, request: ChatCompletionRequest
-    ) -> ChatCompletionResponse:
+    async def _nonstream_chat_completion(self, request: ChatCompletionRequest) -> ChatCompletionResponse:
         params = await self._get_params(request)
         if "messages" in params:
             r = await self._get_client().chat.completions.acreate(**params)
         else:
             r = await self._get_client().completion.acreate(**params)
-        return process_chat_completion_response(r, self.formatter)
+        return process_chat_completion_response(r, request)
 
-    async def _stream_chat_completion(
-        self, request: ChatCompletionRequest
-    ) -> AsyncGenerator:
+    async def _stream_chat_completion(self, request: ChatCompletionRequest) -> AsyncGenerator:
         params = await self._get_params(request)
 
         async def _to_async_generator():
@@ -251,34 +202,24 @@ class FireworksInferenceAdapter(
                 yield chunk
 
         stream = _to_async_generator()
-        async for chunk in process_chat_completion_stream_response(
-            stream, self.formatter
-        ):
+        async for chunk in process_chat_completion_stream_response(stream, request):
             yield chunk
 
-    async def _get_params(
-        self, request: Union[ChatCompletionRequest, CompletionRequest]
-    ) -> dict:
+    async def _get_params(self, request: Union[ChatCompletionRequest, CompletionRequest]) -> dict:
         input_dict = {}
         media_present = request_has_media(request)
 
+        llama_model = self.get_llama_model(request.model)
         if isinstance(request, ChatCompletionRequest):
-            if media_present:
+            if media_present or not llama_model:
                 input_dict["messages"] = [
-                    await convert_message_to_openai_dict(m, download=True)
-                    for m in request.messages
+                    await convert_message_to_openai_dict(m, download=True) for m in request.messages
                 ]
             else:
-                input_dict["prompt"] = await chat_completion_request_to_prompt(
-                    request, self.get_llama_model(request.model), self.formatter
-                )
+                input_dict["prompt"] = await chat_completion_request_to_prompt(request, llama_model)
         else:
-            assert (
-                not media_present
-            ), "Fireworks does not support media for Completion requests"
-            input_dict["prompt"] = await completion_request_to_prompt(
-                request, self.formatter
-            )
+            assert not media_present, "Fireworks does not support media for Completion requests"
+            input_dict["prompt"] = await completion_request_to_prompt(request)
 
         # Fireworks always prepends with BOS
         if "prompt" in input_dict:
@@ -289,24 +230,25 @@ class FireworksInferenceAdapter(
             "model": request.model,
             **input_dict,
             "stream": request.stream,
-            **self._build_options(
-                request.sampling_params, request.response_format, request.logprobs
-            ),
+            **self._build_options(request.sampling_params, request.response_format, request.logprobs),
         }
 
     async def embeddings(
         self,
         model_id: str,
-        contents: List[InterleavedContent],
+        contents: List[str] | List[InterleavedContentItem],
+        text_truncation: Optional[TextTruncation] = TextTruncation.none,
+        output_dimension: Optional[int] = None,
+        task_type: Optional[EmbeddingTaskType] = None,
     ) -> EmbeddingsResponse:
         model = await self.model_store.get_model(model_id)
 
         kwargs = {}
-        if model.metadata.get("embedding_dimensions"):
-            kwargs["dimensions"] = model.metadata.get("embedding_dimensions")
-        assert all(
-            not content_has_media(content) for content in contents
-        ), "Fireworks does not support media for embeddings"
+        if model.metadata.get("embedding_dimension"):
+            kwargs["dimensions"] = model.metadata.get("embedding_dimension")
+        assert all(not content_has_media(content) for content in contents), (
+            "Fireworks does not support media for embeddings"
+        )
         response = self._get_client().embeddings.create(
             model=model.provider_resource_id,
             input=[interleaved_content_as_str(content) for content in contents],

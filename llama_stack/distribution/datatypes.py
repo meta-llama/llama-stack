@@ -8,10 +8,10 @@ from typing import Annotated, Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field
 
+from llama_stack.apis.benchmarks import Benchmark, BenchmarkInput
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Dataset, DatasetInput
 from llama_stack.apis.eval import Eval
-from llama_stack.apis.eval_tasks import EvalTask, EvalTaskInput
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.models import Model, ModelInput
 from llama_stack.apis.safety import Safety
@@ -37,7 +37,7 @@ RoutableObject = Union[
     VectorDB,
     Dataset,
     ScoringFn,
-    EvalTask,
+    Benchmark,
     Tool,
     ToolGroup,
 ]
@@ -50,7 +50,7 @@ RoutableObjectWithProvider = Annotated[
         VectorDB,
         Dataset,
         ScoringFn,
-        EvalTask,
+        Benchmark,
         Tool,
         ToolGroup,
     ],
@@ -117,6 +117,23 @@ class Provider(BaseModel):
     config: Dict[str, Any]
 
 
+class ServerConfig(BaseModel):
+    port: int = Field(
+        default=8321,
+        description="Port to listen on",
+        ge=1024,
+        le=65535,
+    )
+    tls_certfile: Optional[str] = Field(
+        default=None,
+        description="Path to TLS certificate file for HTTPS",
+    )
+    tls_keyfile: Optional[str] = Field(
+        default=None,
+        description="Path to TLS key file for HTTPS",
+    )
+
+
 class StackRunConfig(BaseModel):
     version: str = LLAMA_STACK_RUN_CONFIG_VERSION
 
@@ -156,16 +173,19 @@ a default SQLite store will be used.""",
     vector_dbs: List[VectorDBInput] = Field(default_factory=list)
     datasets: List[DatasetInput] = Field(default_factory=list)
     scoring_fns: List[ScoringFnInput] = Field(default_factory=list)
-    eval_tasks: List[EvalTaskInput] = Field(default_factory=list)
+    benchmarks: List[BenchmarkInput] = Field(default_factory=list)
     tool_groups: List[ToolGroupInput] = Field(default_factory=list)
+
+    server: ServerConfig = Field(
+        default_factory=ServerConfig,
+        description="Configuration for the HTTP(S) server",
+    )
 
 
 class BuildConfig(BaseModel):
     version: str = LLAMA_STACK_BUILD_CONFIG_VERSION
 
-    distribution_spec: DistributionSpec = Field(
-        description="The distribution spec to build including API providers. "
-    )
+    distribution_spec: DistributionSpec = Field(description="The distribution spec to build including API providers. ")
     image_type: str = Field(
         default="conda",
         description="Type of package to build (conda | container | venv)",

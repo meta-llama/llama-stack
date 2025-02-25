@@ -4,14 +4,13 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import base64
 from enum import Enum
 from typing import Annotated, List, Literal, Optional, Union
 
-from llama_models.llama3.api.datatypes import ToolCall
+from pydantic import BaseModel, Field, model_validator
 
-from llama_models.schema_utils import json_schema_type, register_schema
-from pydantic import BaseModel, Field, field_serializer, model_validator
+from llama_stack.models.llama.datatypes import ToolCall
+from llama_stack.schema_utils import json_schema_type, register_schema
 
 
 @json_schema_type
@@ -20,8 +19,16 @@ class URL(BaseModel):
 
 
 class _URLOrData(BaseModel):
+    """
+    A URL or a base64 encoded string
+
+    :param url: A URL of the image or data URL in the format of data:image/{type};base64,{data}. Note that URL could have length limits.
+    :param data: base64 encoded image data as string
+    """
+
     url: Optional[URL] = None
-    data: Optional[bytes] = None
+    # data is a base64 encoded string, hint with contentEncoding=base64
+    data: Optional[str] = Field(contentEncoding="base64", default=None)
 
     @model_validator(mode="before")
     @classmethod
@@ -30,21 +37,27 @@ class _URLOrData(BaseModel):
             return values
         return {"url": values}
 
-    @field_serializer("data")
-    def serialize_data(self, data: Optional[bytes], _info):
-        if data is None:
-            return None
-        return base64.b64encode(data).decode("utf-8")
-
 
 @json_schema_type
 class ImageContentItem(BaseModel):
+    """A image content item
+
+    :param type: Discriminator type of the content item. Always "image"
+    :param image: Image as a base64 encoded string or an URL
+    """
+
     type: Literal["image"] = "image"
     image: _URLOrData
 
 
 @json_schema_type
 class TextContentItem(BaseModel):
+    """A text content item
+
+    :param type: Discriminator type of the content item. Always "text"
+    :param text: Text content
+    """
+
     type: Literal["text"] = "text"
     text: str
 
@@ -77,7 +90,6 @@ class ImageDelta(BaseModel):
     image: bytes
 
 
-@json_schema_type
 class ToolCallParseStatus(Enum):
     started = "started"
     in_progress = "in_progress"

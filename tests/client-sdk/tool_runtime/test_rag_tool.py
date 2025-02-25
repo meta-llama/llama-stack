@@ -7,15 +7,12 @@
 import random
 
 import pytest
-
-from llama_stack_client.types.tool_runtime import DocumentParam
+from llama_stack_client.types import Document
 
 
 @pytest.fixture(scope="function")
 def empty_vector_db_registry(llama_stack_client):
-    vector_dbs = [
-        vector_db.identifier for vector_db in llama_stack_client.vector_dbs.list()
-    ]
+    vector_dbs = [vector_db.identifier for vector_db in llama_stack_client.vector_dbs.list()]
     for vector_db_id in vector_dbs:
         llama_stack_client.vector_dbs.unregister(vector_db_id=vector_db_id)
 
@@ -29,31 +26,29 @@ def single_entry_vector_db_registry(llama_stack_client, empty_vector_db_registry
         embedding_dimension=384,
         provider_id="faiss",
     )
-    vector_dbs = [
-        vector_db.identifier for vector_db in llama_stack_client.vector_dbs.list()
-    ]
+    vector_dbs = [vector_db.identifier for vector_db in llama_stack_client.vector_dbs.list()]
     return vector_dbs
 
 
 @pytest.fixture(scope="session")
 def sample_documents():
     return [
-        DocumentParam(
+        Document(
             document_id="test-doc-1",
             content="Python is a high-level programming language.",
             metadata={"category": "programming", "difficulty": "beginner"},
         ),
-        DocumentParam(
+        Document(
             document_id="test-doc-2",
             content="Machine learning is a subset of artificial intelligence.",
             metadata={"category": "AI", "difficulty": "advanced"},
         ),
-        DocumentParam(
+        Document(
             document_id="test-doc-3",
             content="Data structures are fundamental to computer science.",
             metadata={"category": "computer science", "difficulty": "intermediate"},
         ),
-        DocumentParam(
+        Document(
             document_id="test-doc-4",
             content="Neural networks are inspired by biological neural networks.",
             metadata={"category": "AI", "difficulty": "advanced"},
@@ -69,9 +64,7 @@ def assert_valid_response(response):
         assert isinstance(chunk.content, str)
 
 
-def test_vector_db_insert_inline_and_query(
-    llama_stack_client, single_entry_vector_db_registry, sample_documents
-):
+def test_vector_db_insert_inline_and_query(llama_stack_client, single_entry_vector_db_registry, sample_documents):
     vector_db_id = single_entry_vector_db_registry[0]
     llama_stack_client.tool_runtime.rag_tool.insert(
         documents=sample_documents,
@@ -118,9 +111,7 @@ def test_vector_db_insert_inline_and_query(
     assert all(score >= 0.01 for score in response4.scores)
 
 
-def test_vector_db_insert_from_url_and_query(
-    llama_stack_client, empty_vector_db_registry
-):
+def test_vector_db_insert_from_url_and_query(llama_stack_client, empty_vector_db_registry):
     providers = [p for p in llama_stack_client.providers.list() if p.api == "vector_io"]
     assert len(providers) > 0
 
@@ -134,9 +125,7 @@ def test_vector_db_insert_from_url_and_query(
     )
 
     # list to check memory bank is successfully registered
-    available_vector_dbs = [
-        vector_db.identifier for vector_db in llama_stack_client.vector_dbs.list()
-    ]
+    available_vector_dbs = [vector_db.identifier for vector_db in llama_stack_client.vector_dbs.list()]
     assert vector_db_id in available_vector_dbs
 
     # URLs of documents to insert
@@ -148,7 +137,7 @@ def test_vector_db_insert_from_url_and_query(
         "llama3.rst",
     ]
     documents = [
-        DocumentParam(
+        Document(
             document_id=f"num-{i}",
             content=f"https://raw.githubusercontent.com/pytorch/torchtune/main/docs/source/tutorials/{url}",
             mime_type="text/plain",

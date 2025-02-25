@@ -8,14 +8,6 @@ import asyncio
 import logging
 from typing import AsyncGenerator, List, Optional, Union
 
-from llama_models.llama3.api.datatypes import (
-    SamplingParams,
-    StopReason,
-    ToolDefinition,
-    ToolPromptFormat,
-)
-from llama_models.sku_list import resolve_model
-
 from llama_stack.apis.common.content_types import (
     TextDelta,
     ToolCallDelta,
@@ -38,15 +30,23 @@ from llama_stack.apis.inference import (
     ResponseFormat,
     TokenLogProbs,
     ToolChoice,
+    ToolConfig,
 )
 from llama_stack.apis.models import Model, ModelType
+from llama_stack.models.llama.datatypes import (
+    SamplingParams,
+    StopReason,
+    ToolDefinition,
+    ToolPromptFormat,
+)
+from llama_stack.models.llama.sku_list import resolve_model
 from llama_stack.providers.datatypes import ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.embedding_mixin import (
     SentenceTransformerEmbeddingMixin,
 )
 from llama_stack.providers.utils.inference.model_registry import (
-    build_model_alias,
     ModelRegistryHelper,
+    build_hf_repo_model_entry,
 )
 from llama_stack.providers.utils.inference.prompt_adapter import (
     augment_content_with_response_format_prompt,
@@ -80,9 +80,7 @@ class MetaReferenceInferenceImpl(
     async def load_model(self, model_id, llama_model) -> None:
         log.info(f"Loading model `{model_id}`")
         if self.config.create_distributed_process_group:
-            self.generator = LlamaModelParallelGenerator(
-                self.config, model_id, llama_model
-            )
+            self.generator = LlamaModelParallelGenerator(self.config, model_id, llama_model)
             self.generator.start()
         else:
             self.generator = Llama.build(self.config, model_id, llama_model)
@@ -100,9 +98,7 @@ class MetaReferenceInferenceImpl(
                 "No avaible model yet, please register your requested model or add your model in the resouces first"
             )
         elif request.model != self.model_id:
-            raise RuntimeError(
-                f"Model mismatch: request model: {request.model} != loaded model: {self.model_id}"
-            )
+            raise RuntimeError(f"Model mismatch: request model: {request.model} != loaded model: {self.model_id}")
 
     async def unregister_model(self, model_id: str) -> None:
         pass
@@ -120,7 +116,7 @@ class MetaReferenceInferenceImpl(
 
         self.model_registry_helper = ModelRegistryHelper(
             [
-                build_model_alias(
+                build_hf_repo_model_entry(
                     llama_model.descriptor(),
                     llama_model.core_model_id.value,
                 )
@@ -184,13 +180,7 @@ class MetaReferenceInferenceImpl(
                     if request.logprobs:
                         assert len(token_result.logprobs) == 1
 
-                        logprobs = [
-                            TokenLogProbs(
-                                logprobs_by_token={
-                                    token_result.text: token_result.logprobs[0]
-                                }
-                            )
-                        ]
+                        logprobs = [TokenLogProbs(logprobs_by_token={token_result.text: token_result.logprobs[0]})]
 
                 yield CompletionResponseStreamChunk(
                     delta=text,
@@ -212,9 +202,7 @@ class MetaReferenceInferenceImpl(
             for x in impl():
                 yield x
 
-    async def _nonstream_completion(
-        self, request: CompletionRequest
-    ) -> CompletionResponse:
+    async def _nonstream_completion(self, request: CompletionRequest) -> CompletionResponse:
         def impl():
             tokens = []
             logprobs = []
@@ -231,13 +219,7 @@ class MetaReferenceInferenceImpl(
                 if request.logprobs:
                     assert len(token_result.logprobs) == 1
 
-                    logprobs.append(
-                        TokenLogProbs(
-                            logprobs_by_token={
-                                token_result.text: token_result.logprobs[0]
-                            }
-                        )
-                    )
+                    logprobs.append(TokenLogProbs(logprobs_by_token={token_result.text: token_result.logprobs[0]}))
 
             if stop_reason is None:
                 stop_reason = StopReason.out_of_tokens
@@ -270,6 +252,7 @@ class MetaReferenceInferenceImpl(
         tool_prompt_format: Optional[ToolPromptFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
+        tool_config: Optional[ToolConfig] = None,
     ) -> AsyncGenerator:
         if logprobs:
             assert logprobs.top_k == 1, f"Unexpected top_k={logprobs.top_k}"
@@ -280,18 +263,15 @@ class MetaReferenceInferenceImpl(
             messages=messages,
             sampling_params=sampling_params,
             tools=tools or [],
-            tool_choice=tool_choice,
-            tool_prompt_format=tool_prompt_format,
             response_format=response_format,
             stream=stream,
             logprobs=logprobs,
+            tool_config=tool_config,
         )
         self.check_model(request)
 
         # augment and rewrite messages depending on the model
-        request.messages = chat_completion_request_to_messages(
-            request, self.llama_model.core_model_id.value
-        )
+        request.messages = chat_completion_request_to_messages(request, self.llama_model.core_model_id.value)
         # download media and convert to raw content so we can send it to the model
         request = await convert_request_to_raw(request)
 
@@ -304,9 +284,7 @@ class MetaReferenceInferenceImpl(
         else:
             return await self._nonstream_chat_completion(request)
 
-    async def _nonstream_chat_completion(
-        self, request: ChatCompletionRequest
-    ) -> ChatCompletionResponse:
+    async def _nonstream_chat_completion(self, request: ChatCompletionRequest) -> ChatCompletionResponse:
         def impl():
             tokens = []
             logprobs = []
@@ -323,20 +301,12 @@ class MetaReferenceInferenceImpl(
                 if request.logprobs:
                     assert len(token_result.logprobs) == 1
 
-                    logprobs.append(
-                        TokenLogProbs(
-                            logprobs_by_token={
-                                token_result.text: token_result.logprobs[0]
-                            }
-                        )
-                    )
+                    logprobs.append(TokenLogProbs(logprobs_by_token={token_result.text: token_result.logprobs[0]}))
 
             if stop_reason is None:
                 stop_reason = StopReason.out_of_tokens
 
-            raw_message = self.generator.formatter.decode_assistant_message(
-                tokens, stop_reason
-            )
+            raw_message = self.generator.formatter.decode_assistant_message(tokens, stop_reason)
             return ChatCompletionResponse(
                 completion_message=CompletionMessage(
                     content=raw_message.content,
@@ -352,9 +322,7 @@ class MetaReferenceInferenceImpl(
         else:
             return impl()
 
-    async def _stream_chat_completion(
-        self, request: ChatCompletionRequest
-    ) -> AsyncGenerator:
+    async def _stream_chat_completion(self, request: ChatCompletionRequest) -> AsyncGenerator:
         def impl():
             yield ChatCompletionResponseStreamChunk(
                 event=ChatCompletionResponseEvent(
@@ -405,13 +373,7 @@ class MetaReferenceInferenceImpl(
                     if request.logprobs:
                         assert len(token_result.logprobs) == 1
 
-                        logprobs.append(
-                            TokenLogProbs(
-                                logprobs_by_token={
-                                    token_result.text: token_result.logprobs[0]
-                                }
-                            )
-                        )
+                        logprobs.append(TokenLogProbs(logprobs_by_token={token_result.text: token_result.logprobs[0]}))
                     yield ChatCompletionResponseStreamChunk(
                         event=ChatCompletionResponseEvent(
                             event_type=ChatCompletionResponseEventType.progress,
@@ -424,9 +386,7 @@ class MetaReferenceInferenceImpl(
             if stop_reason is None:
                 stop_reason = StopReason.out_of_tokens
 
-            message = self.generator.formatter.decode_assistant_message(
-                tokens, stop_reason
-            )
+            message = self.generator.formatter.decode_assistant_message(tokens, stop_reason)
 
             parsed_tool_calls = len(message.tool_calls) > 0
             if ipython and not parsed_tool_calls:

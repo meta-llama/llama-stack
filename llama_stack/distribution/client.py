@@ -5,18 +5,16 @@
 # the root directory of this source tree.
 
 import inspect
-
 import json
 from collections.abc import AsyncIterator
 from enum import Enum
-from typing import Any, get_args, get_origin, Type, Union
+from typing import Any, Type, Union, get_args, get_origin
 
 import httpx
 from pydantic import BaseModel, parse_obj_as
 from termcolor import cprint
 
 from llama_stack.apis.version import LLAMA_STACK_API_VERSION
-
 from llama_stack.providers.datatypes import RemoteProviderConfig
 
 _CLIENT_CLASSES = {}
@@ -68,9 +66,7 @@ def create_api_client_class(protocol) -> Type:
                 return_type = None
             else:
                 return_type = extract_non_async_iterator_type(sig.return_annotation)
-                assert (
-                    return_type
-                ), f"Could not extract return type for {sig.return_annotation}"
+                assert return_type, f"Could not extract return type for {sig.return_annotation}"
 
             async with httpx.AsyncClient() as client:
                 params = self.httpx_request_params(method_name, *args, **kwargs)
@@ -87,9 +83,7 @@ def create_api_client_class(protocol) -> Type:
             webmethod, sig = self.routes[method_name]
 
             return_type = extract_async_iterator_type(sig.return_annotation)
-            assert (
-                return_type
-            ), f"Could not extract return type for {sig.return_annotation}"
+            assert return_type, f"Could not extract return type for {sig.return_annotation}"
 
             async with httpx.AsyncClient() as client:
                 params = self.httpx_request_params(method_name, *args, **kwargs)
@@ -192,35 +186,3 @@ def extract_async_iterator_type(type_hint):
                 inner_args = get_args(arg)
                 return inner_args[0]
     return None
-
-
-async def example(model: str = None):
-    from llama_stack.apis.inference import Inference, UserMessage  # noqa: F403
-    from llama_stack.apis.inference.event_logger import EventLogger
-
-    client_class = create_api_client_class(Inference)
-    client = client_class("http://localhost:5003")
-
-    if not model:
-        model = "Llama3.2-3B-Instruct"
-
-    message = UserMessage(
-        content="hello world, write me a 2 sentence poem about the moon"
-    )
-    cprint(f"User>{message.content}", "green")
-
-    stream = True
-    iterator = await client.chat_completion(
-        model=model,
-        messages=[message],
-        stream=stream,
-    )
-
-    async for log in EventLogger().log(iterator):
-        log.print()
-
-
-if __name__ == "__main__":
-    import asyncio
-
-    asyncio.run(example())

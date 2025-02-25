@@ -6,8 +6,6 @@
 from datetime import datetime
 from typing import Any, Dict, Optional
 
-from llama_models.schema_utils import webmethod
-
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
 from llama_stack.apis.post_training import (
@@ -27,6 +25,7 @@ from llama_stack.providers.inline.post_training.torchtune.config import (
 from llama_stack.providers.inline.post_training.torchtune.recipes.lora_finetuning_single_device import (
     LoraFinetuningSingleDevice,
 )
+from llama_stack.schema_utils import webmethod
 
 
 class TorchtunePostTrainingImpl:
@@ -41,8 +40,7 @@ class TorchtunePostTrainingImpl:
         self.datasets_api = datasets
 
         # TODO: assume sync job, will need jobs API for async scheduling
-        self.jobs_status = {}
-        self.jobs_list = []
+        self.jobs = {}
         self.checkpoints_dict = {}
 
     async def supervised_fine_tune(
@@ -55,9 +53,8 @@ class TorchtunePostTrainingImpl:
         checkpoint_dir: Optional[str],
         algorithm_config: Optional[AlgorithmConfig],
     ) -> PostTrainingJob:
-        for job in self.jobs_list:
-            if job_uuid == job.job_uuid:
-                raise ValueError(f"Job {job_uuid} already exists")
+        if job_uuid in self.jobs:
+            raise ValueError(f"Job {job_uuid} already exists")
 
         post_training_job = PostTrainingJob(job_uuid=job_uuid)
 
@@ -66,8 +63,8 @@ class TorchtunePostTrainingImpl:
             status=JobStatus.scheduled,
             scheduled_at=datetime.now(),
         )
+        self.jobs[job_uuid] = job_status_response
 
-        self.jobs_list.append(post_training_job)
         if isinstance(algorithm_config, LoraFinetuningConfig):
             try:
                 recipe = LoraFinetuningSingleDevice(
@@ -101,8 +98,6 @@ class TorchtunePostTrainingImpl:
         else:
             raise NotImplementedError()
 
-        self.jobs_status[job_uuid] = job_status_response
-
         return post_training_job
 
     async def preference_optimize(
@@ -116,27 +111,19 @@ class TorchtunePostTrainingImpl:
     ) -> PostTrainingJob: ...
 
     async def get_training_jobs(self) -> ListPostTrainingJobsResponse:
-        return ListPostTrainingJobsResponse(data=self.jobs_list)
+        return ListPostTrainingJobsResponse(data=[PostTrainingJob(job_uuid=uuid_) for uuid_ in self.jobs])
 
     @webmethod(route="/post-training/job/status")
-    async def get_training_job_status(
-        self, job_uuid: str
-    ) -> Optional[PostTrainingJobStatusResponse]:
-        if job_uuid in self.jobs_status:
-            return self.jobs_status[job_uuid]
-        return None
+    async def get_training_job_status(self, job_uuid: str) -> Optional[PostTrainingJobStatusResponse]:
+        return self.jobs.get(job_uuid, None)
 
     @webmethod(route="/post-training/job/cancel")
     async def cancel_training_job(self, job_uuid: str) -> None:
         raise NotImplementedError("Job cancel is not implemented yet")
 
     @webmethod(route="/post-training/job/artifacts")
-    async def get_training_job_artifacts(
-        self, job_uuid: str
-    ) -> Optional[PostTrainingJobArtifactsResponse]:
+    async def get_training_job_artifacts(self, job_uuid: str) -> Optional[PostTrainingJobArtifactsResponse]:
         if job_uuid in self.checkpoints_dict:
             checkpoints = self.checkpoints_dict.get(job_uuid, [])
-            return PostTrainingJobArtifactsResponse(
-                job_uuid=job_uuid, checkpoints=checkpoints
-            )
+            return PostTrainingJobArtifactsResponse(job_uuid=job_uuid, checkpoints=checkpoints)
         return None

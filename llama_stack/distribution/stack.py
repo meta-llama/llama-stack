@@ -15,10 +15,11 @@ from termcolor import colored
 
 from llama_stack.apis.agents import Agents
 from llama_stack.apis.batch_inference import BatchInference
+from llama_stack.apis.benchmarks import Benchmarks
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
 from llama_stack.apis.eval import Eval
-from llama_stack.apis.eval_tasks import EvalTasks
+from llama_stack.apis.files import Files
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.inspect import Inspect
 from llama_stack.apis.models import Models
@@ -53,7 +54,7 @@ class LlamaStack(
     PostTraining,
     VectorIO,
     Eval,
-    EvalTasks,
+    Benchmarks,
     Scoring,
     ScoringFunctions,
     DatasetIO,
@@ -63,6 +64,7 @@ class LlamaStack(
     ToolGroups,
     ToolRuntime,
     RAGToolRuntime,
+    Files,
 ):
     pass
 
@@ -78,7 +80,7 @@ RESOURCES = [
         "register_scoring_function",
         "list_scoring_functions",
     ),
-    ("eval_tasks", Api.eval_tasks, "register_eval_task", "list_eval_tasks"),
+    ("benchmarks", Api.benchmarks, "register_benchmark", "list_benchmarks"),
     ("tool_groups", Api.tool_groups, "register_tool_group", "list_tool_groups"),
 ]
 
@@ -110,9 +112,7 @@ class EnvVarError(Exception):
     def __init__(self, var_name: str, path: str = ""):
         self.var_name = var_name
         self.path = path
-        super().__init__(
-            f"Environment variable '{var_name}' not set or empty{f' at {path}' if path else ''}"
-        )
+        super().__init__(f"Environment variable '{var_name}' not set or empty{f' at {path}' if path else ''}")
 
 
 def redact_sensitive_fields(data: Dict[str, Any]) -> Dict[str, Any]:
@@ -187,9 +187,7 @@ def validate_env_pair(env_pair: str) -> tuple[str, str]:
         if not key:
             raise ValueError(f"Empty key in environment variable pair: {env_pair}")
         if not all(c.isalnum() or c == "_" for c in key):
-            raise ValueError(
-                f"Key must contain only alphanumeric characters and underscores: {key}"
-            )
+            raise ValueError(f"Key must contain only alphanumeric characters and underscores: {key}")
         return key, value
     except ValueError as e:
         raise ValueError(
@@ -202,20 +200,14 @@ def validate_env_pair(env_pair: str) -> tuple[str, str]:
 async def construct_stack(
     run_config: StackRunConfig, provider_registry: Optional[ProviderRegistry] = None
 ) -> Dict[Api, Any]:
-    dist_registry, _ = await create_dist_registry(
-        run_config.metadata_store, run_config.image_name
-    )
-    impls = await resolve_impls(
-        run_config, provider_registry or get_provider_registry(), dist_registry
-    )
+    dist_registry, _ = await create_dist_registry(run_config.metadata_store, run_config.image_name)
+    impls = await resolve_impls(run_config, provider_registry or get_provider_registry(), dist_registry)
     await register_resources(run_config, impls)
     return impls
 
 
 def get_stack_run_config_from_template(template: str) -> StackRunConfig:
-    template_path = (
-        importlib.resources.files("llama_stack") / f"templates/{template}/run.yaml"
-    )
+    template_path = importlib.resources.files("llama_stack") / f"templates/{template}/run.yaml"
 
     with importlib.resources.as_file(template_path) as path:
         if not path.exists():

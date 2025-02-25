@@ -6,36 +6,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>OpenAPI specification</title>
     <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700" rel="stylesheet">
+    <script type="module" src="https://unpkg.com/@stoplight/elements/web-components.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/@stoplight/elements/styles.min.css">
     <style>
         body {
             margin: 0;
             padding: 0;
+            height: 100vh;
         }
 
+        elements-api {
+            height: 100%;
+        }
     </style>
-    <script defer="defer" src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"></script>
-    <script defer="defer">
+</head>
+
+<body>
+    <elements-api id="openapi-container" router="hash" layout="sidebar" hideExport="true"
+        hideInternal="true"></elements-api>
+
+    <script>
         document.addEventListener("DOMContentLoaded", function () {
-            spec = { /* OPENAPI_SPECIFICATION */ };
-            options = {
-                downloadFileName: "openapi.json",
-                expandResponses: "200",
-                expandSingleSchemaField: true,
-                jsonSampleExpandLevel: "all",
-                schemaExpansionLevel: "all",
-            };
-            element = document.getElementById("openapi-container");
-            Redoc.init(spec, options, element);
+            const spec = { /* OPENAPI_SPECIFICATION */ };
+            const element = document.getElementById("openapi-container");
+            element.apiDescriptionDocument = spec;
 
             if (spec.info && spec.info.title) {
                 document.title = spec.info.title;
             }
         });
     </script>
-</head>
-
-<body>
-    <div id="openapi-container"></div>
 </body>
 
 </html>

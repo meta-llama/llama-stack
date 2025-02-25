@@ -4,10 +4,10 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from llama_models.schema_utils import json_schema_type
 from pydantic import BaseModel, Field, field_validator
 
 from llama_stack.providers.utils.inference import supported_inference_models
+from llama_stack.schema_utils import json_schema_type
 
 
 @json_schema_type
@@ -53,7 +53,5 @@ class VLLMConfig(BaseModel):
         repos = [m.huggingface_repo for m in permitted_models]
         if model not in (descriptors + repos):
             model_list = "\n\t".join(repos)
-            raise ValueError(
-                f"Unknown model: `{model}`. Choose from [\n\t{model_list}\n]"
-            )
+            raise ValueError(f"Unknown model: `{model}`. Choose from [\n\t{model_list}\n]")
         return model

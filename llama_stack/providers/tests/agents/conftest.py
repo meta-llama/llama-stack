@@ -13,7 +13,6 @@ from ..conftest import (
 )
 from ..inference.fixtures import INFERENCE_FIXTURES
 from ..safety.fixtures import SAFETY_FIXTURES, safety_model_from_shield
-
 from ..tools.fixtures import TOOL_RUNTIME_FIXTURES
 from ..vector_io.fixtures import VECTOR_IO_FIXTURES
 from .fixtures import AGENTS_FIXTURES
@@ -88,9 +87,7 @@ def pytest_configure(config):
 
 def pytest_generate_tests(metafunc):
     test_config = get_test_config_for_api(metafunc.config, "agents")
-    shield_id = getattr(
-        test_config, "safety_shield", None
-    ) or metafunc.config.getoption("--safety-shield")
+    shield_id = getattr(test_config, "safety_shield", None) or metafunc.config.getoption("--safety-shield")
     inference_models = getattr(test_config, "inference_models", None) or [
         metafunc.config.getoption("--inference-model")
     ]
@@ -120,9 +117,7 @@ def pytest_generate_tests(metafunc):
             "tool_runtime": TOOL_RUNTIME_FIXTURES,
         }
         combinations = (
-            get_provider_fixture_overrides_from_test_config(
-                metafunc.config, "agents", DEFAULT_PROVIDER_COMBINATIONS
-            )
+            get_provider_fixture_overrides_from_test_config(metafunc.config, "agents", DEFAULT_PROVIDER_COMBINATIONS)
             or get_provider_fixture_overrides(metafunc.config, available_fixtures)
             or DEFAULT_PROVIDER_COMBINATIONS
         )

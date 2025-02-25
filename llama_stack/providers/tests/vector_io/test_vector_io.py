@@ -9,16 +9,14 @@ import uuid
 import pytest
 
 from llama_stack.apis.tools import RAGDocument
-
 from llama_stack.apis.vector_dbs import ListVectorDBsResponse, VectorDB
 from llama_stack.apis.vector_io import QueryChunksResponse
-
 from llama_stack.providers.utils.memory.vector_store import make_overlapped_chunks
 
 # How to run this test:
 #
-# pytest llama_stack/providers/tests/memory/test_memory.py
-#   -m "sentence_transformers" --env EMBEDDING_DIMENSION=384
+# pytest llama_stack/providers/tests/vector_io/test_vector_io.py \
+#   -m "pgvector" --env EMBEDDING_DIMENSION=384 PGVECTOR_PORT=7432 \
 #   -v -s --tb=short --disable-warnings
 
 
@@ -48,11 +46,7 @@ def sample_chunks():
     ]
     chunks = []
     for doc in docs:
-        chunks.extend(
-            make_overlapped_chunks(
-                doc.document_id, doc.content, window_len=512, overlap_len=64
-            )
-        )
+        chunks.extend(make_overlapped_chunks(doc.document_id, doc.content, window_len=512, overlap_len=64))
     return chunks
 
 
@@ -71,31 +65,21 @@ class TestVectorIO:
         _, vector_dbs_impl = vector_io_stack
 
         # Register a test bank
-        registered_vector_db = await register_vector_db(
-            vector_dbs_impl, embedding_model
-        )
+        registered_vector_db = await register_vector_db(vector_dbs_impl, embedding_model)
 
         try:
             # Verify our bank shows up in list
             response = await vector_dbs_impl.list_vector_dbs()
             assert isinstance(response, ListVectorDBsResponse)
-            assert any(
-                vector_db.vector_db_id == registered_vector_db.vector_db_id
-                for vector_db in response.data
-            )
+            assert any(vector_db.vector_db_id == registered_vector_db.vector_db_id for vector_db in response.data)
         finally:
             # Clean up
-            await vector_dbs_impl.unregister_vector_db(
-                registered_vector_db.vector_db_id
-            )
+            await vector_dbs_impl.unregister_vector_db(registered_vector_db.vector_db_id)
 
         # Verify our bank was removed
         response = await vector_dbs_impl.list_vector_dbs()
         assert isinstance(response, ListVectorDBsResponse)
-        assert all(
-            vector_db.vector_db_id != registered_vector_db.vector_db_id
-            for vector_db in response.data
-        )
+        assert all(vector_db.vector_db_id != registered_vector_db.vector_db_id for vector_db in response.data)
 
     @pytest.mark.asyncio
     async def test_banks_register(self, vector_io_stack, embedding_model):
@@ -114,9 +98,7 @@ class TestVectorIO:
             # Verify our bank exists
             response = await vector_dbs_impl.list_vector_dbs()
             assert isinstance(response, ListVectorDBsResponse)
-            assert any(
-                vector_db.vector_db_id == vector_db_id for vector_db in response.data
-            )
+            assert any(vector_db.vector_db_id == vector_db_id for vector_db in response.data)
 
             # Try registering same bank again
             await vector_dbs_impl.register_vector_db(
@@ -128,24 +110,13 @@ class TestVectorIO:
             # Verify still only one instance of our bank
             response = await vector_dbs_impl.list_vector_dbs()
             assert isinstance(response, ListVectorDBsResponse)
-            assert (
-                len(
-                    [
-                        vector_db
-                        for vector_db in response.data
-                        if vector_db.vector_db_id == vector_db_id
-                    ]
-                )
-                == 1
-            )
+            assert len([vector_db for vector_db in response.data if vector_db.vector_db_id == vector_db_id]) == 1
         finally:
             # Clean up
             await vector_dbs_impl.unregister_vector_db(vector_db_id)
 
     @pytest.mark.asyncio
-    async def test_query_documents(
-        self, vector_io_stack, embedding_model, sample_chunks
-    ):
+    async def test_query_documents(self, vector_io_stack, embedding_model, sample_chunks):
         vector_io_impl, vector_dbs_impl = vector_io_stack
 
         with pytest.raises(ValueError):
@@ -155,37 +126,27 @@ class TestVectorIO:
         await vector_io_impl.insert_chunks(registered_db.vector_db_id, sample_chunks)
 
         query1 = "programming language"
-        response1 = await vector_io_impl.query_chunks(
-            registered_db.vector_db_id, query1
-        )
+        response1 = await vector_io_impl.query_chunks(registered_db.vector_db_id, query1)
         assert_valid_response(response1)
         assert any("Python" in chunk.content for chunk in response1.chunks)
 
         # Test case 3: Query with semantic similarity
         query3 = "AI and brain-inspired computing"
-        response3 = await vector_io_impl.query_chunks(
-            registered_db.vector_db_id, query3
-        )
+        response3 = await vector_io_impl.query_chunks(registered_db.vector_db_id, query3)
         assert_valid_response(response3)
-        assert any(
-            "neural networks" in chunk.content.lower() for chunk in response3.chunks
-        )
+        assert any("neural networks" in chunk.content.lower() for chunk in response3.chunks)
 
         # Test case 4: Query with limit on number of results
         query4 = "computer"
         params4 = {"max_chunks": 2}
-        response4 = await vector_io_impl.query_chunks(
-            registered_db.vector_db_id, query4, params4
-        )
+        response4 = await vector_io_impl.query_chunks(registered_db.vector_db_id, query4, params4)
         assert_valid_response(response4)
         assert len(response4.chunks) <= 2
 
         # Test case 5: Query with threshold on similarity score
         query5 = "quantum computing"  # Not directly related to any document
         params5 = {"score_threshold": 0.01}
-        response5 = await vector_io_impl.query_chunks(
-            registered_db.vector_db_id, query5, params5
-        )
+        response5 = await vector_io_impl.query_chunks(registered_db.vector_db_id, query5, params5)
         assert_valid_response(response5)
         print("The scores are:", response5.scores)
         assert all(score >= 0.01 for score in response5.scores)

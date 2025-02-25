@@ -9,7 +9,7 @@ import enum
 from dataclasses import dataclass
 from typing import Any, ClassVar, Dict, List, Optional, Union
 
-from ..strong_typing.schema import JsonType, Schema, StrictJsonType
+from llama_stack.strong_typing.schema import JsonType, Schema, StrictJsonType
 
 URL = str
 
@@ -78,7 +78,7 @@ class MediaType:
 
 @dataclass
 class RequestBody:
-    content: Dict[str, MediaType]
+    content: Dict[str, MediaType | Dict[str, Any]]
     description: Optional[str] = None
     required: Optional[bool] = None
 
@@ -117,6 +117,7 @@ class Operation:
     requestBody: Optional[RequestBody] = None
     callbacks: Optional[Dict[str, "Callback"]] = None
     security: Optional[List["SecurityRequirement"]] = None
+    deprecated: Optional[bool] = None
 
 
 @dataclass

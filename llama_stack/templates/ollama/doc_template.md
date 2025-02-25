@@ -16,7 +16,7 @@ The `llamastack/distribution-{{ name }}` distribution consists of the following 
 
 You should use this distribution if you have a regular desktop machine without very powerful GPUs. Of course, if you have powerful GPUs, you can still continue using this distribution since Ollama supports GPU acceleration.
 
-{%- if run_config_env_vars %}
+{% if run_config_env_vars %}
 ### Environment Variables
 
 The following environment variables can be configured:
@@ -74,11 +74,15 @@ docker run \
 If you are using Llama Stack Safety / Shield APIs, use:
 
 ```bash
+# You need a local checkout of llama-stack to run this, get it using
+# git clone https://github.com/meta-llama/llama-stack.git
+cd /path/to/llama-stack
+
 docker run \
   -it \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ~/.llama:/root/.llama \
-  -v ./run-with-safety.yaml:/root/my-run.yaml \
+  -v ./llama_stack/templates/ollama/run-with-safety.yaml:/root/my-run.yaml \
   llamastack/distribution-{{ name }} \
   --yaml-config /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
@@ -89,7 +93,7 @@ docker run \
 
 ### Via Conda
 
-Make sure you have done `pip install llama-stack` and have the Llama Stack CLI available.
+Make sure you have done `uv pip install llama-stack` and have the Llama Stack CLI available.
 
 ```bash
 export LLAMA_STACK_PORT=5001
@@ -115,7 +119,7 @@ llama stack run ./run-with-safety.yaml \
 ### (Optional) Update Model Serving Configuration
 
 ```{note}
-Please check the [model_aliases](https://github.com/meta-llama/llama-stack/blob/main/llama_stack/providers/remote/inference/ollama/ollama.py#L45) for the supported Ollama models.
+Please check the [model_entries](https://github.com/meta-llama/llama-stack/blob/main/llama_stack/providers/remote/inference/ollama/ollama.py#L45) for the supported Ollama models.
 ```
 
 To serve a new model with `ollama`

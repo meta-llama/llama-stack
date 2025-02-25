@@ -10,15 +10,14 @@
 import unittest
 
 import torch
-
-from fp8_impls import ffn_swiglu_fp8_dynamic, FfnQuantizeMode, quantize_fp8
-from hypothesis import given, settings, strategies as st
+from fp8_impls import FfnQuantizeMode, ffn_swiglu_fp8_dynamic, quantize_fp8
+from hypothesis import given, settings
+from hypothesis import strategies as st
 from torch import Tensor
 
 
 @unittest.skipIf(
-    not torch.cuda.is_available()
-    or torch.cuda.get_device_properties(torch.cuda.current_device()).major < 9,
+    not torch.cuda.is_available() or torch.cuda.get_device_properties(torch.cuda.current_device()).major < 9,
     "Skip when H100 is not available",
 )
 class FP8Tests(unittest.TestCase):

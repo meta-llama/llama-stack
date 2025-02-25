@@ -7,9 +7,7 @@
 import pytest
 
 from ..conftest import get_provider_fixture_overrides
-
 from ..datasetio.fixtures import DATASETIO_FIXTURES
-
 from .fixtures import POST_TRAINING_FIXTURES
 
 DEFAULT_PROVIDER_COMBINATIONS = [
@@ -39,7 +37,6 @@ def pytest_generate_tests(metafunc):
             "datasetio": DATASETIO_FIXTURES,
         }
         combinations = (
-            get_provider_fixture_overrides(metafunc.config, available_fixtures)
-            or DEFAULT_PROVIDER_COMBINATIONS
+            get_provider_fixture_overrides(metafunc.config, available_fixtures) or DEFAULT_PROVIDER_COMBINATIONS
         )
         metafunc.parametrize("post_training_stack", combinations, indirect=True)

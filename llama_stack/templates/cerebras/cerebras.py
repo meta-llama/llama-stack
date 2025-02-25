@@ -6,22 +6,21 @@
 
 from pathlib import Path
 
-from llama_models.sku_list import all_registered_models
-
 from llama_stack.apis.models.models import ModelType
 from llama_stack.distribution.datatypes import ModelInput, Provider, ToolGroupInput
+from llama_stack.models.llama.sku_list import all_registered_models
 from llama_stack.providers.inline.inference.sentence_transformers import (
     SentenceTransformersInferenceConfig,
 )
-from llama_stack.providers.inline.vector_io.faiss.config import FaissImplConfig
+from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOConfig
 from llama_stack.providers.remote.inference.cerebras import CerebrasImplConfig
-from llama_stack.providers.remote.inference.cerebras.cerebras import model_aliases
+from llama_stack.providers.remote.inference.cerebras.models import model_entries
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
 
 def get_distribution_template() -> DistributionTemplate:
     providers = {
-        "inference": ["remote::cerebras"],
+        "inference": ["remote::cerebras", "inline::sentence-transformers"],
         "safety": ["inline::llama-guard"],
         "vector_io": ["inline::faiss", "remote::chromadb", "remote::pgvector"],
         "agents": ["inline::meta-reference"],
@@ -33,7 +32,7 @@ def get_distribution_template() -> DistributionTemplate:
             "remote::brave-search",
             "remote::tavily-search",
             "inline::code-interpreter",
-            "inline::memory-runtime",
+            "inline::rag-runtime",
         ],
     }
 
@@ -49,16 +48,14 @@ def get_distribution_template() -> DistributionTemplate:
         config=SentenceTransformersInferenceConfig.sample_run_config(),
     )
 
-    core_model_to_hf_repo = {
-        m.descriptor(): m.huggingface_repo for m in all_registered_models()
-    }
+    core_model_to_hf_repo = {m.descriptor(): m.huggingface_repo for m in all_registered_models()}
     default_models = [
         ModelInput(
             model_id=core_model_to_hf_repo[m.llama_model],
             provider_model_id=m.provider_model_id,
             provider_id="cerebras",
         )
-        for m in model_aliases
+        for m in model_entries
     ]
     embedding_model = ModelInput(
         model_id="all-MiniLM-L6-v2",
@@ -71,7 +68,7 @@ def get_distribution_template() -> DistributionTemplate:
     vector_io_provider = Provider(
         provider_id="faiss",
         provider_type="inline::faiss",
-        config=FaissImplConfig.sample_run_config(f"distributions/{name}"),
+        config=FaissVectorIOConfig.sample_run_config(f"distributions/{name}"),
     )
     default_tool_groups = [
         ToolGroupInput(
@@ -79,8 +76,8 @@ def get_distribution_template() -> DistributionTemplate:
             provider_id="tavily-search",
         ),
         ToolGroupInput(
-            toolgroup_id="builtin::memory",
-            provider_id="memory-runtime",
+            toolgroup_id="builtin::rag",
+            provider_id="rag-runtime",
         ),
         ToolGroupInput(
             toolgroup_id="builtin::code_interpreter",

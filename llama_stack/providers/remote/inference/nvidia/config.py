@@ -7,8 +7,9 @@
 import os
 from typing import Any, Dict, Optional
 
-from llama_models.schema_utils import json_schema_type
 from pydantic import BaseModel, Field, SecretStr
+
+from llama_stack.schema_utils import json_schema_type
 
 
 @json_schema_type
@@ -35,9 +36,7 @@ class NVIDIAConfig(BaseModel):
     """
 
     url: str = Field(
-        default_factory=lambda: os.getenv(
-            "NVIDIA_BASE_URL", "https://integrate.api.nvidia.com"
-        ),
+        default_factory=lambda: os.getenv("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com"),
         description="A base url for accessing the NVIDIA NIM",
     )
     api_key: Optional[SecretStr] = Field(
@@ -52,6 +51,6 @@ class NVIDIAConfig(BaseModel):
     @classmethod
     def sample_run_config(cls, **kwargs) -> Dict[str, Any]:
         return {
-            "url": "https://integrate.api.nvidia.com",
-            "api_key": "${env.NVIDIA_API_KEY}",
+            "url": "${env.NVIDIA_BASE_URL:https://integrate.api.nvidia.com}",
+            "api_key": "${env.NVIDIA_API_KEY:}",
         }

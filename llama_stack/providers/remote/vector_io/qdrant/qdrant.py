@@ -20,7 +20,8 @@ from llama_stack.providers.utils.memory.vector_store import (
     EmbeddingIndex,
     VectorDBWithIndex,
 )
-from .config import QdrantConfig
+
+from .config import QdrantVectorIOConfig
 
 log = logging.getLogger(__name__)
 CHUNK_ID_KEY = "_chunk_id"
@@ -43,35 +44,30 @@ class QdrantIndex(EmbeddingIndex):
         self.collection_name = collection_name
 
     async def add_chunks(self, chunks: List[Chunk], embeddings: NDArray):
-        assert len(chunks) == len(
-            embeddings
-        ), f"Chunk length {len(chunks)} does not match embedding length {len(embeddings)}"
+        assert len(chunks) == len(embeddings), (
+            f"Chunk length {len(chunks)} does not match embedding length {len(embeddings)}"
+        )
 
         if not await self.client.collection_exists(self.collection_name):
             await self.client.create_collection(
                 self.collection_name,
-                vectors_config=models.VectorParams(
-                    size=len(embeddings[0]), distance=models.Distance.COSINE
-                ),
+                vectors_config=models.VectorParams(size=len(embeddings[0]), distance=models.Distance.COSINE),
             )
 
         points = []
-        for i, (chunk, embedding) in enumerate(zip(chunks, embeddings)):
-            chunk_id = f"{chunk.document_id}:chunk-{i}"
+        for i, (chunk, embedding) in enumerate(zip(chunks, embeddings, strict=False)):
+            chunk_id = f"{chunk.metadata['document_id']}:chunk-{i}"
             points.append(
                 PointStruct(
                     id=convert_id(chunk_id),
                     vector=embedding,
-                    payload={"chunk_content": chunk.model_dump()}
-                    | {CHUNK_ID_KEY: chunk_id},
+                    payload={"chunk_content": chunk.model_dump()} | {CHUNK_ID_KEY: chunk_id},
                 )
             )
 
         await self.client.upsert(collection_name=self.collection_name, points=points)
 
-    async def query(
-        self, embedding: NDArray, k: int, score_threshold: float
-    ) -> QueryChunksResponse:
+    async def query(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
         results = (
             await self.client.query_points(
                 collection_name=self.collection_name,
@@ -98,9 +94,12 @@ class QdrantIndex(EmbeddingIndex):
 
         return QueryChunksResponse(chunks=chunks, scores=scores)
 
+    async def delete(self):
+        await self.client.delete_collection(collection_name=self.collection_name)
 
-class QdrantVectorDBAdapter(VectorIO, VectorDBsProtocolPrivate):
-    def __init__(self, config: QdrantConfig, inference_api: Api.inference) -> None:
+
+class QdrantVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
+    def __init__(self, config: QdrantVectorIOConfig, inference_api: Api.inference) -> None:
         self.config = config
         self.client = AsyncQdrantClient(**self.config.model_dump(exclude_none=True))
         self.cache = {}
@@ -124,9 +123,7 @@ class QdrantVectorDBAdapter(VectorIO, VectorDBsProtocolPrivate):
 
         self.cache[vector_db.identifier] = index
 
-    async def _get_and_cache_vector_db_index(
-        self, vector_db_id: str
-    ) -> Optional[VectorDBWithIndex]:
+    async def _get_and_cache_vector_db_index(self, vector_db_id: str) -> Optional[VectorDBWithIndex]:
         if vector_db_id in self.cache:
             return self.cache[vector_db_id]
 

@@ -1,3 +1,183 @@
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "llama_stack"
+version = "0.1.4"
+authors = [{ name = "Meta Llama", email = "llama-oss@meta.com" }]
+description = "Llama Stack"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { "text" = "MIT" }
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+]
+dependencies = [
+    "blobfile",
+    "fire",
+    "httpx",
+    "huggingface-hub",
+    "jsonschema",
+    "llama-models>=0.1.4",
+    "llama-stack-client>=0.1.4",
+    "prompt-toolkit",
+    "python-dotenv",
+    "pydantic>=2",
+    "requests",
+    "rich",
+    "setuptools",
+    "termcolor",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+    "pytest-html",
+    "nbval",            # For notebook testing
+    "black",
+    "ruff",
+    "types-requests",
+    "types-setuptools",
+    "pre-commit",
+    "uvicorn",
+    "fastapi",
+    "ruamel.yaml",      # needed for openapi generator
+]
+test = [
+    "openai",
+    "aiosqlite",
+    "ollama",
+    "torch>=2.6.0",
+    "fairscale>=0.4.13",
+    "torchvision>=0.21.0",
+    "lm-format-enforcer>=0.10.9",
+    "groq",
+    "opentelemetry-sdk",
+    "opentelemetry-exporter-otlp-proto-http",
+]
+docs = [
+    "sphinx-autobuild",
+    "myst-parser",
+    "sphinx-rtd-theme",
+    "sphinx-copybutton",
+    "sphinx-tabs",
+    "sphinx-design",
+    "sphinxcontrib.redoc",
+    "sphinxcontrib.video",
+    "sphinxcontrib.mermaid",
+]
+
+[project.urls]
+Homepage = "https://github.com/meta-llama/llama-stack"
+
+[project.scripts]
+llama = "llama_stack.cli.llama:main"
+install-wheel-from-presigned = "llama_stack.cli.scripts.run:install_wheel_from_presigned"
+
+[tool.setuptools]
+packages = { find = {} }
+license-files = []
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu" }]
+torchvision = [{ index = "pytorch-cpu" }]
+
+[tool.ruff]
+line-length = 120
+exclude = [
+    "./.git",
+    "./docs/*",
+    "./build",
+    "./scripts",
+    "./venv",
+    "*.pyi",
+    ".pre-commit-config.yaml",
+    "*.md",
+    ".flake8",
+]
+
+[tool.ruff.lint]
+select = [
+    "B",  # flake8-bugbear
+    "B9", # flake8-bugbear subset
+    "C",  # comprehensions
+    "E",  # pycodestyle
+    "F",  # Pyflakes
+    "N",  # Naming
+    "W",  # Warnings
+    "I",  # isort
+]
+ignore = [
+    "E203",
+    "E305",
+    "E402",
+    "E501", # line too long
+    "E721",
+    "E741",
+    "F405",
+    "F821",
+    "F841",
+    "C408", # ignored because we like the dict keyword argument syntax
+    "E302",
+    "W291",
+    "E303",
+    "N812", # ignored because import torch.nn.functional as F is PyTorch convention
+    "N817", # ignored because importing using acronyms is convention (DistributedDataParallel as DDP)
+    "E731", # allow usage of assigning lambda expressions
+    # These are the additional ones we started ignoring after moving to ruff. We should look into each one of them later.
+    "C901",
+    "C405",
+    "C414",
+    "N803",
+    "N999",
+    "C403",
+    "C416",
+    "B028",
+    "C419",
+    "C401",
+    "B023",
+    # shebang has extra meaning in fbcode lints, so I think it's not worth trying
+    # to line this up with executable bit
+    "EXE001",
+    "N802",   # random naming hints don't need
+    # these ignores are from flake8-bugbear; please fix!
+    "B007",
+    "B008",
+]
+
+[tool.mypy]
+mypy_path = ["llama_stack"]
+packages = ["llama_stack"]
+disable_error_code = []
+warn_return_any = true
+# # honor excludes by not following there through imports
+follow_imports = "silent"
+exclude = [
+    # As we fix more and more of these, we should remove them from the list
+    "llama_stack/providers",
+    "llama_stack/distribution",
+    "llama_stack/apis",
+    "llama_stack/cli",
+    "llama_stack/models",
+    "llama_stack/strong_typing",
+    "llama_stack/templates",
+]
+
+[[tool.mypy.overrides]]
+# packages that lack typing annotations, do not have stubs, or are unavailable.
+module = ["llama_models.*", "yaml", "fire"]
+ignore_missing_imports = true

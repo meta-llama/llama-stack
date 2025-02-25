@@ -27,7 +27,6 @@ COLORS = {
 
 
 class ConsoleSpanProcessor(SpanProcessor):
-
     def __init__(self, print_attributes: bool = False):
         self.print_attributes = print_attributes
 
@@ -35,9 +34,7 @@ class ConsoleSpanProcessor(SpanProcessor):
         if span.attributes and span.attributes.get("__autotraced__"):
             return
 
-        timestamp = datetime.utcfromtimestamp(span.start_time / 1e9).strftime(
-            "%H:%M:%S.%f"
-        )[:-3]
+        timestamp = datetime.utcfromtimestamp(span.start_time / 1e9).strftime("%H:%M:%S.%f")[:-3]
 
         print(
             f"{COLORS['dim']}{timestamp}{COLORS['reset']} "
@@ -49,9 +46,7 @@ class ConsoleSpanProcessor(SpanProcessor):
         if span.attributes and span.attributes.get("__autotraced__"):
             return
 
-        timestamp = datetime.utcfromtimestamp(span.end_time / 1e9).strftime(
-            "%H:%M:%S.%f"
-        )[:-3]
+        timestamp = datetime.utcfromtimestamp(span.end_time / 1e9).strftime("%H:%M:%S.%f")[:-3]
 
         span_context = (
             f"{COLORS['dim']}{timestamp}{COLORS['reset']} "
@@ -79,9 +74,7 @@ class ConsoleSpanProcessor(SpanProcessor):
                 print(f"    {COLORS['dim']}{key}: {str_value}{COLORS['reset']}")
 
         for event in span.events:
-            event_time = datetime.utcfromtimestamp(event.timestamp / 1e9).strftime(
-                "%H:%M:%S.%f"
-            )[:-3]
+            event_time = datetime.utcfromtimestamp(event.timestamp / 1e9).strftime("%H:%M:%S.%f")[:-3]
 
             severity = event.attributes.get("severity", "info")
             message = event.attributes.get("message", event.name)
@@ -96,11 +89,7 @@ class ConsoleSpanProcessor(SpanProcessor):
             }
             msg_color = severity_colors.get(severity, COLORS["white"])
 
-            print(
-                f" {event_time} "
-                f"{msg_color}[{severity.upper()}] "
-                f"{message}{COLORS['reset']}"
-            )
+            print(f" {event_time} {msg_color}[{severity.upper()}] {message}{COLORS['reset']}")
 
             if event.attributes:
                 for key, value in event.attributes.items():

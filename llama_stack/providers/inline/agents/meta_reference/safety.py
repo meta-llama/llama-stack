@@ -6,11 +6,9 @@
 
 import asyncio
 import logging
-
 from typing import List
 
 from llama_stack.apis.inference import Message
-
 from llama_stack.apis.safety import Safety, SafetyViolation, ViolationLevel
 
 log = logging.getLogger(__name__)
@@ -33,9 +31,7 @@ class ShieldRunnerMixin:
         self.input_shields = input_shields
         self.output_shields = output_shields
 
-    async def run_multiple_shields(
-        self, messages: List[Message], identifiers: List[str]
-    ) -> None:
+    async def run_multiple_shields(self, messages: List[Message], identifiers: List[str]) -> None:
         responses = await asyncio.gather(
             *[
                 self.safety_api.run_shield(
@@ -45,7 +41,7 @@ class ShieldRunnerMixin:
                 for identifier in identifiers
             ]
         )
-        for identifier, response in zip(identifiers, responses):
+        for identifier, response in zip(identifiers, responses, strict=False):
             if not response.violation:
                 continue
 

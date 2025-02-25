@@ -11,12 +11,7 @@ from modules.api import llama_stack_api
 def scoring_functions():
     st.header("Scoring Functions")
 
-    scoring_functions_info = {
-        s.identifier: s.to_dict()
-        for s in llama_stack_api.client.scoring_functions.list()
-    }
+    scoring_functions_info = {s.identifier: s.to_dict() for s in llama_stack_api.client.scoring_functions.list()}
 
-    selected_scoring_function = st.selectbox(
-        "Select a scoring function", list(scoring_functions_info.keys())
-    )
+    selected_scoring_function = st.selectbox("Select a scoring function", list(scoring_functions_info.keys()))
     st.json(scoring_functions_info[selected_scoring_function], expanded=True)

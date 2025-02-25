@@ -9,7 +9,7 @@ import typing
 from pathlib import Path
 from typing import TextIO
 
-from ..strong_typing.schema import object_to_json, StrictJsonType
+from llama_stack.strong_typing.schema import object_to_json, StrictJsonType
 
 from .generator import Generator
 from .options import Options

@@ -22,15 +22,11 @@ def main():
     )
 
     # Playground pages
-    chat_page = st.Page(
-        "page/playground/chat.py", title="Chat", icon="💬", default=True
-    )
+    chat_page = st.Page("page/playground/chat.py", title="Chat", icon="💬", default=True)
     rag_page = st.Page("page/playground/rag.py", title="RAG", icon="💬", default=False)
 
     # Distribution pages
-    resources_page = st.Page(
-        "page/distribution/resources.py", title="Resources", icon="🔍", default=False
-    )
+    resources_page = st.Page("page/distribution/resources.py", title="Resources", icon="🔍", default=False)
     provider_page = st.Page(
         "page/distribution/providers.py",
         title="API Providers",

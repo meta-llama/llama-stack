@@ -15,7 +15,7 @@ from llama_stack.apis.version import LLAMA_STACK_API_VERSION
 
 from termcolor import colored
 
-from ..strong_typing.inspection import get_signature
+from llama_stack.strong_typing.inspection import get_signature
 
 
 def split_prefix(
@@ -130,6 +130,8 @@ class _FormatParameterExtractor:
 
 def _get_route_parameters(route: str) -> List[str]:
     extractor = _FormatParameterExtractor()
+    # Replace all occurrences of ":path" with empty string
+    route = route.replace(":path", "")
     route.format_map(extractor)
     return extractor.keys
 
@@ -148,7 +150,14 @@ def _get_endpoint_functions(
 
         print(f"Processing {colored(func_name, 'white')}...")
         operation_name = func_name
-        if operation_name.startswith("get_") or operation_name.endswith("/get"):
+        
+        if webmethod.method == "GET":
+            prefix = "get"
+        elif webmethod.method == "DELETE":
+            prefix = "delete"
+        elif webmethod.method == "POST":
+            prefix = "post"
+        elif operation_name.startswith("get_") or operation_name.endswith("/get"):
             prefix = "get"
         elif (
             operation_name.startswith("delete_")
@@ -158,13 +167,8 @@ def _get_endpoint_functions(
         ):
             prefix = "delete"
         else:
-            if webmethod.method == "GET":
-                prefix = "get"
-            elif webmethod.method == "DELETE":
-                prefix = "delete"
-            else:
-                # by default everything else is a POST
-                prefix = "post"
+            # by default everything else is a POST
+            prefix = "post"
 
         yield prefix, operation_name, func_name, func_ref
 

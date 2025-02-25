@@ -6,28 +6,31 @@
 
 from typing import AsyncGenerator, List, Optional
 
-from llama_models.datatypes import CoreModelId
-from llama_models.llama3.api.chat_format import ChatFormat
-from llama_models.llama3.api.tokenizer import Tokenizer
 from openai import OpenAI
 
-from llama_stack.apis.common.content_types import InterleavedContent
+from llama_stack.apis.common.content_types import (
+    InterleavedContent,
+    InterleavedContentItem,
+)
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
     ChatCompletionResponse,
     EmbeddingsResponse,
+    EmbeddingTaskType,
     Inference,
     LogProbConfig,
     Message,
     ResponseFormat,
     SamplingParams,
+    TextTruncation,
     ToolChoice,
     ToolDefinition,
     ToolPromptFormat,
 )
+from llama_stack.models.llama.datatypes import CoreModelId
 from llama_stack.providers.utils.inference.model_registry import (
-    build_model_alias,
     ModelRegistryHelper,
+    build_hf_repo_model_entry,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
     get_sampling_options,
@@ -40,12 +43,12 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 
 from .config import DatabricksImplConfig
 
-model_aliases = [
-    build_model_alias(
+model_entries = [
+    build_hf_repo_model_entry(
         "databricks-meta-llama-3-1-70b-instruct",
         CoreModelId.llama3_1_70b_instruct.value,
     ),
-    build_model_alias(
+    build_hf_repo_model_entry(
         "databricks-meta-llama-3-1-405b-instruct",
         CoreModelId.llama3_1_405b_instruct.value,
     ),
@@ -54,12 +57,8 @@ model_aliases = [
 
 class DatabricksInferenceAdapter(ModelRegistryHelper, Inference):
     def __init__(self, config: DatabricksImplConfig) -> None:
-        ModelRegistryHelper.__init__(
-            self,
-            model_aliases=model_aliases,
-        )
+        ModelRegistryHelper.__init__(self, model_entries=model_entries)
         self.config = config
-        self.formatter = ChatFormat(Tokenizer.get_instance())
 
     async def initialize(self) -> None:
         return
@@ -89,16 +88,16 @@ class DatabricksInferenceAdapter(ModelRegistryHelper, Inference):
         tool_prompt_format: Optional[ToolPromptFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
+        tool_config: Optional[ToolConfig] = None,
     ) -> AsyncGenerator:
         request = ChatCompletionRequest(
             model=model,
             messages=messages,
             sampling_params=sampling_params,
             tools=tools or [],
-            tool_choice=tool_choice,
-            tool_prompt_format=tool_prompt_format,
             stream=stream,
             logprobs=logprobs,
+            tool_config=tool_config,
         )
 
         client = OpenAI(base_url=self.config.url, api_key=self.config.api_token)
@@ -112,11 +111,9 @@ class DatabricksInferenceAdapter(ModelRegistryHelper, Inference):
     ) -> ChatCompletionResponse:
         params = self._get_params(request)
         r = client.completions.create(**params)
-        return process_chat_completion_response(r, self.formatter)
+        return process_chat_completion_response(r, request)
 
-    async def _stream_chat_completion(
-        self, request: ChatCompletionRequest, client: OpenAI
-    ) -> AsyncGenerator:
+    async def _stream_chat_completion(self, request: ChatCompletionRequest, client: OpenAI) -> AsyncGenerator:
         params = self._get_params(request)
 
         async def _to_async_generator():
@@ -125,24 +122,23 @@ class DatabricksInferenceAdapter(ModelRegistryHelper, Inference):
                 yield chunk
 
         stream = _to_async_generator()
-        async for chunk in process_chat_completion_stream_response(
-            stream, self.formatter
-        ):
+        async for chunk in process_chat_completion_stream_response(stream, request):
             yield chunk
 
     def _get_params(self, request: ChatCompletionRequest) -> dict:
         return {
             "model": request.model,
-            "prompt": chat_completion_request_to_prompt(
-                request, self.get_llama_model(request.model), self.formatter
-            ),
+            "prompt": chat_completion_request_to_prompt(request, self.get_llama_model(request.model)),
             "stream": request.stream,
             **get_sampling_options(request.sampling_params),
         }
 
     async def embeddings(
         self,
-        model: str,
-        contents: List[InterleavedContent],
+        model_id: str,
+        contents: List[str] | List[InterleavedContentItem],
+        text_truncation: Optional[TextTruncation] = TextTruncation.none,
+        output_dimension: Optional[int] = None,
+        task_type: Optional[EmbeddingTaskType] = None,
     ) -> EmbeddingsResponse:
         raise NotImplementedError()

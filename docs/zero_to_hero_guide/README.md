@@ -45,7 +45,7 @@ If you're looking for more specific topics, we have a [Zero to Hero Guide](#next
 
 ---
 
-## Install Dependencies and Set Up Environmen
+## Install Dependencies and Set Up Environment
 
 1. **Create a Conda Environment**:
    Create a new Conda environment with Python 3.10:
@@ -73,7 +73,7 @@ If you're looking for more specific topics, we have a [Zero to Hero Guide](#next
    Open a new terminal and install `llama-stack`:
    ```bash
    conda activate ollama
-   pip install llama-stack==0.0.61
+   pip install llama-stack==0.1.0
    ```
 
 ---
@@ -110,7 +110,7 @@ If you're looking for more specific topics, we have a [Zero to Hero Guide](#next
       --env SAFETY_MODEL=$SAFETY_MODEL
       --env OLLAMA_URL=$OLLAMA_URL
    ```
-   Note: Everytime you run a new model with `ollama run`, you will need to restart the llama stack. Otherwise it won't see the new model.
+   Note: Every time you run a new model with `ollama run`, you will need to restart the llama stack. Otherwise it won't see the new model.
 
 The server will start and listen on `http://localhost:5001`.
 
@@ -191,7 +191,7 @@ You can check the available models with the command `llama-stack-client models l
 
 You can also interact with the Llama Stack server using a simple Python script. Below is an example:
 
-### 1. Activate Conda Environmen
+### 1. Activate Conda Environment
 
 ```bash
 conda activate ollama
@@ -208,7 +208,7 @@ In `test_llama_stack.py`, write the following code:
 
 ```python
 import os
-from llama_stack_client import LlamaStackClien
+from llama_stack_client import LlamaStackClient
 
 # Get the model ID from the environment variable
 INFERENCE_MODEL = os.environ.get("INFERENCE_MODEL")
@@ -224,7 +224,7 @@ client = LlamaStackClient(base_url="http://localhost:5001")
 response = client.inference.chat_completion(
     messages=[
         {"role": "system", "content": "You are a friendly assistant."},
-        {"role": "user", "content": "Write a two-sentence poem about llama."}
+        {"role": "user", "content": "Write a two-sentence poem about llama."},
     ],
     model_id=INFERENCE_MODEL,
 )

@@ -22,8 +22,8 @@ def tool_runtime_memory_and_search() -> ProviderFixture:
     return ProviderFixture(
         providers=[
             Provider(
-                provider_id="memory-runtime",
-                provider_type="inline::memory-runtime",
+                provider_id="rag-runtime",
+                provider_type="inline::rag-runtime",
                 config={},
             ),
             Provider(
@@ -47,8 +47,8 @@ def tool_runtime_memory_and_search() -> ProviderFixture:
 @pytest.fixture(scope="session")
 def tool_group_input_memory() -> ToolGroupInput:
     return ToolGroupInput(
-        toolgroup_id="builtin::memory",
-        provider_id="memory-runtime",
+        toolgroup_id="builtin::rag",
+        provider_id="rag-runtime",
     )
 
 
@@ -96,9 +96,7 @@ async def tools_stack(
             )
         if fixture.provider_data:
             provider_data.update(fixture.provider_data)
-    inference_models = (
-        inference_model if isinstance(inference_model, list) else [inference_model]
-    )
+    inference_models = inference_model if isinstance(inference_model, list) else [inference_model]
     models = [
         ModelInput(
             model_id=model,

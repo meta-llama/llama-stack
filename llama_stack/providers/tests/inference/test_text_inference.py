@@ -6,17 +6,7 @@
 
 
 import pytest
-
-from llama_models.llama3.api.datatypes import (
-    SamplingParams,
-    StopReason,
-    ToolCall,
-    ToolDefinition,
-    ToolParamDefinition,
-    ToolPromptFormat,
-)
-
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, TypeAdapter, ValidationError
 
 from llama_stack.apis.common.content_types import ToolCallParseStatus
 from llama_stack.apis.inference import (
@@ -27,14 +17,23 @@ from llama_stack.apis.inference import (
     CompletionResponseStreamChunk,
     JsonSchemaResponseFormat,
     LogProbConfig,
+    Message,
     SystemMessage,
     ToolChoice,
     UserMessage,
 )
 from llama_stack.apis.models import ListModelsResponse, Model
+from llama_stack.models.llama.datatypes import (
+    SamplingParams,
+    StopReason,
+    ToolCall,
+    ToolDefinition,
+    ToolParamDefinition,
+    ToolPromptFormat,
+)
+from llama_stack.providers.tests.test_cases.test_case import TestCase
 
 from .utils import group_chunks
-
 
 # How to run this test:
 #
@@ -44,11 +43,7 @@ from .utils import group_chunks
 
 
 def get_expected_stop_reason(model: str):
-    return (
-        StopReason.end_of_message
-        if ("Llama3.1" in model or "Llama-3.1" in model)
-        else StopReason.end_of_turn
-    )
+    return StopReason.end_of_message if ("Llama3.1" in model or "Llama-3.1" in model) else StopReason.end_of_turn
 
 
 @pytest.fixture
@@ -109,18 +104,6 @@ class TestInference:
     async def test_completion(self, inference_model, inference_stack):
         inference_impl, _ = inference_stack
 
-        provider = inference_impl.routing_table.get_provider_impl(inference_model)
-        if provider.__provider_spec__.provider_type not in (
-            "inline::meta-reference",
-            "remote::ollama",
-            "remote::tgi",
-            "remote::together",
-            "remote::fireworks",
-            "remote::nvidia",
-            "remote::cerebras",
-        ):
-            pytest.skip("Other inference providers don't support completion() yet")
-
         response = await inference_impl.completion(
             content="Micheael Jordan is born in ",
             stream=False,
@@ -153,12 +136,6 @@ class TestInference:
     @pytest.mark.asyncio(loop_scope="session")
     async def test_completion_logprobs(self, inference_model, inference_stack):
         inference_impl, _ = inference_stack
-
-        provider = inference_impl.routing_table.get_provider_impl(inference_model)
-        if provider.__provider_spec__.provider_type not in (
-            # "remote::nvidia", -- provider doesn't provide all logprobs
-        ):
-            pytest.skip("Other inference providers don't support completion() yet")
 
         response = await inference_impl.completion(
             content="Micheael Jordan is born in ",
@@ -197,41 +174,25 @@ class TestInference:
             1 <= len(chunks) <= 6
         )  # why 6 and not 5? the response may have an extra closing chunk, e.g. for usage or stop_reason
         for chunk in chunks:
-            if (
-                chunk.delta.type == "text" and chunk.delta.text
-            ):  # if there's a token, we expect logprobs
+            if chunk.delta:  # if there's a token, we expect logprobs
                 assert chunk.logprobs, "Logprobs should not be empty"
-                assert all(
-                    len(logprob.logprobs_by_token) == 3 for logprob in chunk.logprobs
-                )
+                assert all(len(logprob.logprobs_by_token) == 3 for logprob in chunk.logprobs)
             else:  # no token, no logprobs
                 assert not chunk.logprobs, "Logprobs should be empty"
 
+    @pytest.mark.parametrize("test_case", ["completion-01"])
     @pytest.mark.asyncio(loop_scope="session")
-    async def test_completion_structured_output(self, inference_model, inference_stack):
+    async def test_completion_structured_output(self, inference_model, inference_stack, test_case):
         inference_impl, _ = inference_stack
-
-        provider = inference_impl.routing_table.get_provider_impl(inference_model)
-        if provider.__provider_spec__.provider_type not in (
-            "inline::meta-reference",
-            "remote::ollama",
-            "remote::tgi",
-            "remote::together",
-            "remote::fireworks",
-            "remote::nvidia",
-            "remote::vllm",
-            "remote::cerebras",
-        ):
-            pytest.skip(
-                "Other inference providers don't support structured output in completions yet"
-            )
 
         class Output(BaseModel):
             name: str
             year_born: str
             year_retired: str
 
-        user_input = "Michael Jordan was born in 1963. He played basketball for the Chicago Bulls. He retired in 2003."
+        tc = TestCase(test_case)
+
+        user_input = tc["user_input"]
         response = await inference_impl.completion(
             model_id=inference_model,
             content=user_input,
@@ -247,9 +208,10 @@ class TestInference:
         assert isinstance(response.content, str)
 
         answer = Output.model_validate_json(response.content)
-        assert answer.name == "Michael Jordan"
-        assert answer.year_born == "1963"
-        assert answer.year_retired == "2003"
+        expected = tc["expected"]
+        assert answer.name == expected["name"]
+        assert answer.year_born == expected["year_born"]
+        assert answer.year_retired == expected["year_retired"]
 
     @pytest.mark.asyncio(loop_scope="session")
     async def test_chat_completion_non_streaming(
@@ -268,23 +230,10 @@ class TestInference:
         assert isinstance(response.completion_message.content, str)
         assert len(response.completion_message.content) > 0
 
+    @pytest.mark.parametrize("test_case", ["chat_completion-01"])
     @pytest.mark.asyncio(loop_scope="session")
-    async def test_structured_output(
-        self, inference_model, inference_stack, common_params
-    ):
+    async def test_structured_output(self, inference_model, inference_stack, common_params, test_case):
         inference_impl, _ = inference_stack
-
-        provider = inference_impl.routing_table.get_provider_impl(inference_model)
-        if provider.__provider_spec__.provider_type not in (
-            "inline::meta-reference",
-            "remote::ollama",
-            "remote::fireworks",
-            "remote::tgi",
-            "remote::together",
-            "remote::vllm",
-            "remote::nvidia",
-        ):
-            pytest.skip("Other inference providers don't support structured output yet")
 
         class AnswerFormat(BaseModel):
             first_name: str
@@ -292,20 +241,12 @@ class TestInference:
             year_of_birth: int
             num_seasons_in_nba: int
 
+        tc = TestCase(test_case)
+        messages = [TypeAdapter(Message).validate_python(m) for m in tc["messages"]]
+
         response = await inference_impl.chat_completion(
             model_id=inference_model,
-            messages=[
-                # we include context about Michael Jordan in the prompt so that the test is
-                # focused on the funtionality of the model and not on the information embedded
-                # in the model. Llama 3.2 3B Instruct tends to think MJ played for 14 seasons.
-                SystemMessage(
-                    content=(
-                        "You are a helpful assistant.\n\n"
-                        "Michael Jordan was born in 1963. He played basketball for the Chicago Bulls for 15 seasons."
-                    )
-                ),
-                UserMessage(content="Please give me information about Michael Jordan."),
-            ],
+            messages=messages,
             stream=False,
             response_format=JsonSchemaResponseFormat(
                 json_schema=AnswerFormat.model_json_schema(),
@@ -318,10 +259,11 @@ class TestInference:
         assert isinstance(response.completion_message.content, str)
 
         answer = AnswerFormat.model_validate_json(response.completion_message.content)
-        assert answer.first_name == "Michael"
-        assert answer.last_name == "Jordan"
-        assert answer.year_of_birth == 1963
-        assert answer.num_seasons_in_nba == 15
+        expected = tc["expected"]
+        assert answer.first_name == expected["first_name"]
+        assert answer.last_name == expected["last_name"]
+        assert answer.year_of_birth == expected["year_of_birth"]
+        assert answer.num_seasons_in_nba == expected["num_seasons_in_nba"]
 
         response = await inference_impl.chat_completion(
             model_id=inference_model,
@@ -340,9 +282,7 @@ class TestInference:
             AnswerFormat.model_validate_json(response.completion_message.content)
 
     @pytest.mark.asyncio(loop_scope="session")
-    async def test_chat_completion_streaming(
-        self, inference_model, inference_stack, common_params, sample_messages
-    ):
+    async def test_chat_completion_streaming(self, inference_model, inference_stack, common_params, sample_messages):
         inference_impl, _ = inference_stack
         response = [
             r
@@ -355,9 +295,7 @@ class TestInference:
         ]
 
         assert len(response) > 0
-        assert all(
-            isinstance(chunk, ChatCompletionResponseStreamChunk) for chunk in response
-        )
+        assert all(isinstance(chunk, ChatCompletionResponseStreamChunk) for chunk in response)
         grouped = group_chunks(response)
         assert len(grouped[ChatCompletionResponseEventType.start]) == 1
         assert len(grouped[ChatCompletionResponseEventType.progress]) > 0
@@ -376,14 +314,6 @@ class TestInference:
         sample_tool_definition,
     ):
         inference_impl, _ = inference_stack
-        provider = inference_impl.routing_table.get_provider_impl(inference_model)
-        if (
-            provider.__provider_spec__.provider_type == "remote::groq"
-            and "Llama-3.2" in inference_model
-        ):
-            # TODO(aidand): Remove this skip once Groq's tool calling for Llama3.2 works better
-            pytest.skip("Groq's tool calling for Llama3.2 doesn't work very well")
-
         messages = sample_messages + [
             UserMessage(
                 content="What's the weather like in San Francisco?",
@@ -423,14 +353,6 @@ class TestInference:
         sample_tool_definition,
     ):
         inference_impl, _ = inference_stack
-        provider = inference_impl.routing_table.get_provider_impl(inference_model)
-        if (
-            provider.__provider_spec__.provider_type == "remote::groq"
-            and "Llama-3.2" in inference_model
-        ):
-            # TODO(aidand): Remove this skip once Groq's tool calling for Llama3.2 works better
-            pytest.skip("Groq's tool calling for Llama3.2 doesn't work very well")
-
         messages = sample_messages + [
             UserMessage(
                 content="What's the weather like in San Francisco?",
@@ -448,9 +370,7 @@ class TestInference:
             )
         ]
         assert len(response) > 0
-        assert all(
-            isinstance(chunk, ChatCompletionResponseStreamChunk) for chunk in response
-        )
+        assert all(isinstance(chunk, ChatCompletionResponseStreamChunk) for chunk in response)
         grouped = group_chunks(response)
         assert len(grouped[ChatCompletionResponseEventType.start]) == 1
         assert len(grouped[ChatCompletionResponseEventType.progress]) > 0
@@ -465,13 +385,10 @@ class TestInference:
 
         if "Llama3.1" in inference_model:
             assert all(
-                chunk.event.delta.type == "tool_call"
-                for chunk in grouped[ChatCompletionResponseEventType.progress]
+                chunk.event.delta.type == "tool_call" for chunk in grouped[ChatCompletionResponseEventType.progress]
             )
             first = grouped[ChatCompletionResponseEventType.progress][0]
-            if not isinstance(
-                first.event.delta.tool_call, ToolCall
-            ):  # first chunk may contain entire call
+            if not isinstance(first.event.delta.tool_call, ToolCall):  # first chunk may contain entire call
                 assert first.event.delta.parse_status == ToolCallParseStatus.started
 
         last = grouped[ChatCompletionResponseEventType.progress][-1]

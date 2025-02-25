@@ -83,9 +83,7 @@ async def agents_stack(
         if fixture.provider_data:
             provider_data.update(fixture.provider_data)
 
-    inference_models = (
-        inference_model if isinstance(inference_model, list) else [inference_model]
-    )
+    inference_models = inference_model if isinstance(inference_model, list) else [inference_model]
 
     # NOTE: meta-reference provider needs 1 provider per model, lookup provider_id from provider config
     model_to_provider_id = {}

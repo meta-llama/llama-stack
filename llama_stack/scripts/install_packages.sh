@@ -11,5 +11,5 @@ VERSION="$1"
 set -euo pipefail
 set -x
 
-pip install -U --extra-index-url https://test.pypi.org/simple \
+uv pip install -U --extra-index-url https://test.pypi.org/simple \
   llama-stack==$VERSION llama-models==$VERSION llama-stack-client==$VERSION

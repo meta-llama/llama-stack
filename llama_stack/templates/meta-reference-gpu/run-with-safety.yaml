@@ -90,8 +90,8 @@ providers:
   - provider_id: code-interpreter
     provider_type: inline::code-interpreter
     config: {}
-  - provider_id: memory-runtime
-    provider_type: inline::memory-runtime
+  - provider_id: rag-runtime
+    provider_type: inline::rag-runtime
     config: {}
   - provider_id: model-context-protocol
     provider_type: remote::model-context-protocol
@@ -118,11 +118,13 @@ shields:
 vector_dbs: []
 datasets: []
 scoring_fns: []
-eval_tasks: []
+benchmarks: []
 tool_groups:
 - toolgroup_id: builtin::websearch
   provider_id: tavily-search
-- toolgroup_id: builtin::memory
-  provider_id: memory-runtime
+- toolgroup_id: builtin::rag
+  provider_id: rag-runtime
 - toolgroup_id: builtin::code_interpreter
   provider_id: code-interpreter
+server:
+  port: 8321

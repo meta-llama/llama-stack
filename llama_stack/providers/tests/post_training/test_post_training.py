@@ -95,7 +95,4 @@ class TestPostTraining:
         assert isinstance(job_artifacts.checkpoints[0], Checkpoint)
         assert job_artifacts.checkpoints[0].identifier == "Llama3.2-3B-Instruct-sft-0"
         assert job_artifacts.checkpoints[0].epoch == 0
-        assert (
-            "/.llama/checkpoints/Llama3.2-3B-Instruct-sft-0"
-            in job_artifacts.checkpoints[0].path
-        )
+        assert "/.llama/checkpoints/Llama3.2-3B-Instruct-sft-0" in job_artifacts.checkpoints[0].path

@@ -7,34 +7,32 @@
 import json
 
 import pandas as pd
-
 import streamlit as st
-
 from modules.api import llama_stack_api
 
 
-def select_eval_task_1():
-    # Select Eval Tasks
+def select_benchmark_1():
+    # Select Benchmarks
     st.subheader("1. Choose An Eval Task")
-    eval_tasks = llama_stack_api.client.eval_tasks.list()
-    eval_tasks = {et.identifier: et for et in eval_tasks}
-    eval_tasks_names = list(eval_tasks.keys())
-    selected_eval_task = st.selectbox(
+    benchmarks = llama_stack_api.client.benchmarks.list()
+    benchmarks = {et.identifier: et for et in benchmarks}
+    benchmarks_names = list(benchmarks.keys())
+    selected_benchmark = st.selectbox(
         "Choose an eval task.",
-        options=eval_tasks_names,
+        options=benchmarks_names,
         help="Choose an eval task. Each eval task is parameterized by a dataset, and list of scoring functions.",
     )
     with st.expander("View Eval Task"):
-        st.json(eval_tasks[selected_eval_task], expanded=True)
+        st.json(benchmarks[selected_benchmark], expanded=True)
 
-    st.session_state["selected_eval_task"] = selected_eval_task
-    st.session_state["eval_tasks"] = eval_tasks
+    st.session_state["selected_benchmark"] = selected_benchmark
+    st.session_state["benchmarks"] = benchmarks
     if st.button("Confirm", key="confirm_1"):
-        st.session_state["selected_eval_task_1_next"] = True
+        st.session_state["selected_benchmark_1_next"] = True
 
 
 def define_eval_candidate_2():
-    if not st.session_state.get("selected_eval_task_1_next", None):
+    if not st.session_state.get("selected_benchmark_1_next", None):
         return
 
     st.subheader("2. Define Eval Candidate")
@@ -163,11 +161,11 @@ def run_evaluation_3():
         Review the configurations that will be used for this evaluation run, make any necessary changes, and then click the "Run Evaluation" button.
         """
     )
-    selected_eval_task = st.session_state["selected_eval_task"]
-    eval_tasks = st.session_state["eval_tasks"]
+    selected_benchmark = st.session_state["selected_benchmark"]
+    benchmarks = st.session_state["benchmarks"]
     eval_candidate = st.session_state["eval_candidate"]
 
-    dataset_id = eval_tasks[selected_eval_task].dataset_id
+    dataset_id = benchmarks[selected_benchmark].dataset_id
     rows = llama_stack_api.client.datasetio.get_rows_paginated(
         dataset_id=dataset_id,
         rows_in_page=-1,
@@ -182,20 +180,19 @@ def run_evaluation_3():
         help="Number of examples from the dataset to evaluate. ",
     )
 
-    eval_task_config = {
+    benchmark_config = {
         "type": "benchmark",
         "eval_candidate": eval_candidate,
         "scoring_params": {},
     }
 
     with st.expander("View Evaluation Task", expanded=True):
-        st.json(eval_tasks[selected_eval_task], expanded=True)
+        st.json(benchmarks[selected_benchmark], expanded=True)
     with st.expander("View Evaluation Task Configuration", expanded=True):
-        st.json(eval_task_config, expanded=True)
+        st.json(benchmark_config, expanded=True)
 
     # Add run button and handle evaluation
     if st.button("Run Evaluation"):
-
         progress_text = "Running evaluation..."
         progress_bar = st.progress(0, text=progress_text)
         rows = rows.rows
@@ -212,10 +209,10 @@ def run_evaluation_3():
             progress_bar.progress(progress, text=progress_text)
             # Run evaluation for current row
             eval_res = llama_stack_api.client.eval.evaluate_rows(
-                task_id=selected_eval_task,
+                benchmark_id=selected_benchmark,
                 input_rows=[r],
-                scoring_functions=eval_tasks[selected_eval_task].scoring_functions,
-                task_config=eval_task_config,
+                scoring_functions=benchmarks[selected_benchmark].scoring_functions,
+                task_config=benchmark_config,
             )
 
             for k in r.keys():
@@ -228,14 +225,12 @@ def run_evaluation_3():
                     output_res[k] = []
                 output_res[k].append(eval_res.generations[0][k])
 
-            for scoring_fn in eval_tasks[selected_eval_task].scoring_functions:
+            for scoring_fn in benchmarks[selected_benchmark].scoring_functions:
                 if scoring_fn not in output_res:
                     output_res[scoring_fn] = []
                 output_res[scoring_fn].append(eval_res.scores[scoring_fn].score_rows[0])
 
-            progress_text_container.write(
-                f"Expand to see current processed result ({i + 1} / {len(rows)})"
-            )
+            progress_text_container.write(f"Expand to see current processed result ({i + 1} / {len(rows)})")
             results_container.json(eval_res, expanded=2)
 
         progress_bar.progress(1.0, text="Evaluation complete!")
@@ -247,11 +242,10 @@ def run_evaluation_3():
 
 
 def native_evaluation_page():
-
     st.set_page_config(page_title="Evaluations (Generation + Scoring)", page_icon="🦙")
     st.title("📊 Evaluations (Generation + Scoring)")
 
-    select_eval_task_1()
+    select_benchmark_1()
     define_eval_candidate_2()
     run_evaluation_3()
 

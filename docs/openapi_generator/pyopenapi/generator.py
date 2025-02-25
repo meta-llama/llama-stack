@@ -4,15 +4,15 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import collections
 import hashlib
 import ipaddress
 import typing
+from dataclasses import make_dataclass
 from typing import Any, Dict, Set, Union
 
-from ..strong_typing.core import JsonType
-from ..strong_typing.docstring import Docstring, parse_type
-from ..strong_typing.inspection import (
+from llama_stack.strong_typing.core import JsonType
+from llama_stack.strong_typing.docstring import Docstring, parse_type
+from llama_stack.strong_typing.inspection import (
     is_generic_list,
     is_type_optional,
     is_type_union,
@@ -20,15 +20,15 @@ from ..strong_typing.inspection import (
     unwrap_optional_type,
     unwrap_union_types,
 )
-from ..strong_typing.name import python_type_to_name
-from ..strong_typing.schema import (
+from llama_stack.strong_typing.name import python_type_to_name
+from llama_stack.strong_typing.schema import (
     get_schema_identifier,
     JsonSchemaGenerator,
     register_schema,
     Schema,
     SchemaOptions,
 )
-from ..strong_typing.serialization import json_dump_string, object_to_json
+from llama_stack.strong_typing.serialization import json_dump_string, object_to_json
 
 from .operations import (
     EndpointOperation,
@@ -177,20 +177,37 @@ class ContentBuilder:
     ) -> Dict[str, MediaType]:
         "Creates the content subtree for a request or response."
 
-        def has_iterator_type(t):
-            if typing.get_origin(t) is typing.Union:
-                return any(has_iterator_type(a) for a in typing.get_args(t))
+        def is_iterator_type(t):
+            return "StreamChunk" in str(t)
+
+        def get_media_type(t):
+            if is_generic_list(t):
+                return "application/jsonl"
+            elif is_iterator_type(t):
+                return "text/event-stream"
             else:
-                # TODO: needs a proper fix where we let all types correctly flow upwards
-                # and then test against AsyncIterator
-                return "StreamChunk" in str(t)
+                return "application/json"
+
+        if typing.get_origin(payload_type) is typing.Union:
+            media_types = []
+            item_types = []
+            for x in typing.get_args(payload_type):
+                media_types.append(get_media_type(x))
+                item_types.append(x)
+
+            if len(set(media_types)) == 1:
+                # all types have the same media type
+                return {media_types[0]: self.build_media_type(payload_type, examples)}
+            else:
+                # different types have different media types
+                return {
+                    media_type: self.build_media_type(item_type, examples)
+                    for media_type, item_type in zip(media_types, item_types)
+                }
 
         if is_generic_list(payload_type):
             media_type = "application/jsonl"
             item_type = unwrap_generic_list(payload_type)
-        elif has_iterator_type(payload_type):
-            item_type = payload_type
-            media_type = "text/event-stream"
         else:
             media_type = "application/json"
             item_type = payload_type
@@ -233,7 +250,9 @@ class ContentBuilder:
             value = sample_transformer(object_to_json(example))
 
             hash_string = (
-                hashlib.md5(json_dump_string(value).encode("utf-8")).digest().hex()
+                hashlib.sha256(json_dump_string(value).encode("utf-8"))
+                .digest()
+                .hex()[:16]
             )
             name = f"ex-{hash_string}"
 
@@ -274,6 +293,20 @@ class StatusResponse:
     status_code: str
     types: List[type] = dataclasses.field(default_factory=list)
     examples: List[Any] = dataclasses.field(default_factory=list)
+
+
+def create_docstring_for_request(
+    request_name: str, fields: List[Tuple[str, type, Any]], doc_params: Dict[str, str]
+) -> str:
+    """Creates a ReST-style docstring for a dynamically generated request dataclass."""
+    lines = ["\n"]  # Short description
+
+    # Add parameter documentation in ReST format
+    for name, type_ in fields:
+        desc = doc_params.get(name, "")
+        lines.append(f":param {name}: {desc}")
+
+    return "\n".join(lines)
 
 
 class ResponseBuilder:
@@ -403,14 +436,16 @@ class Generator:
         self.responses = {}
 
     def _build_type_tag(self, ref: str, schema: Schema) -> Tag:
-        definition = f'<SchemaDefinition schemaRef="#/components/schemas/{ref}" />'
+        # Don't include schema definition in the tag description because for one,
+        # it is not very valuable and for another, it causes string formatting
+        # discrepancies via the Stainless Studio.
+        #
+        # definition = f'<SchemaDefinition schemaRef="#/components/schemas/{ref}" />'
         title = typing.cast(str, schema.get("title"))
         description = typing.cast(str, schema.get("description"))
         return Tag(
             name=ref,
-            description="\n\n".join(
-                s for s in (title, description, definition) if s is not None
-            ),
+            description="\n\n".join(s for s in (title, description) if s is not None),
         )
 
     def _build_extra_tag_groups(
@@ -442,6 +477,7 @@ class Generator:
             "SyntheticDataGeneration",
             "PostTraining",
             "BatchInference",
+            "Files",
         ]:
             op.defining_class.__name__ = f"{op.defining_class.__name__} (Coming Soon)"
             print(op.defining_class.__name__)
@@ -484,36 +520,53 @@ class Generator:
 
         # parameters passed anywhere
         parameters = path_parameters + query_parameters
-        parameters += [
-            Parameter(
-                name="X-LlamaStack-Provider-Data",
-                in_=ParameterLocation.Header,
-                description="JSON-encoded provider data which will be made available to the adapter servicing the API",
-                required=False,
-                schema=self.schema_builder.classdef_to_ref(str),
-            )
-        ]
-        parameters += [
-            Parameter(
-                name="X-LlamaStack-Client-Version",
-                in_=ParameterLocation.Header,
-                description="Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                required=False,
-                schema=self.schema_builder.classdef_to_ref(str),
-            )
-        ]
 
-        # data passed in payload
-        if op.request_params:
+        webmethod = getattr(op.func_ref, "__webmethod__", None)
+        raw_bytes_request_body = False
+        if webmethod:
+            raw_bytes_request_body = getattr(webmethod, "raw_bytes_request_body", False)
+
+        # data passed in request body as raw bytes cannot have request parameters
+        if raw_bytes_request_body and op.request_params:
+            raise ValueError("Cannot have both raw bytes request body and request parameters")
+
+        # data passed in request body as raw bytes
+        if raw_bytes_request_body:
+            requestBody = RequestBody(
+                content={
+                    "application/octet-stream": {
+                        "schema": {
+                            "type": "string",
+                            "format": "binary",
+                        }
+                    }
+                },
+                required=True,
+            )
+        # data passed in payload as JSON and mapped to request parameters
+        elif op.request_params:
             builder = ContentBuilder(self.schema_builder)
             first = next(iter(op.request_params))
             request_name, request_type = first
 
-            from dataclasses import make_dataclass
-
             op_name = "".join(word.capitalize() for word in op.name.split("_"))
             request_name = f"{op_name}Request"
-            request_type = make_dataclass(request_name, op.request_params)
+            fields = [
+                (
+                    name,
+                    type_,
+                )
+                for name, type_ in op.request_params
+            ]
+            request_type = make_dataclass(
+                request_name,
+                fields,
+                namespace={
+                    "__doc__": create_docstring_for_request(
+                        request_name, fields, doc_params
+                    )
+                },
+            )
 
             requestBody = RequestBody(
                 content={
@@ -614,14 +667,20 @@ class Generator:
         else:
             callbacks = None
 
+        description = "\n".join(
+            filter(None, [doc_string.short_description, doc_string.long_description])
+        )
+
         return Operation(
             tags=[op.defining_class.__name__],
-            summary=doc_string.short_description,
-            description=doc_string.long_description,
+            summary=None,
+            # summary=doc_string.short_description,
+            description=description,
             parameters=parameters,
             requestBody=requestBody,
             responses=responses,
             callbacks=callbacks,
+            deprecated=True if "DEPRECATED" in op.func_name else None,
             security=[] if op.public else None,
         )
 
@@ -649,6 +708,7 @@ class Generator:
                 raise NotImplementedError(f"unknown HTTP method: {op.http_method}")
 
             route = op.get_route()
+            route = route.replace(":path", "")
             print(f"route: {route}")
             if route in paths:
                 paths[route].update(pathItem)
@@ -665,12 +725,6 @@ class Generator:
                     displayName=doc_string.short_description,
                 )
             )
-
-        # types that are produced/consumed by operations
-        type_tags = [
-            self._build_type_tag(ref, schema)
-            for ref, schema in self.schema_builder.schemas.items()
-        ]
 
         # types that are emitted by events
         event_tags: List[Tag] = []
@@ -698,7 +752,6 @@ class Generator:
         # list all operations and types
         tags: List[Tag] = []
         tags.extend(operation_tags)
-        tags.extend(type_tags)
         tags.extend(event_tags)
         for extra_tag_group in extra_tag_groups.values():
             tags.extend(extra_tag_group)
@@ -711,13 +764,6 @@ class Generator:
                 TagGroup(
                     name=self.options.map("Operations"),
                     tags=sorted(tag.name for tag in operation_tags),
-                )
-            )
-        if type_tags:
-            tag_groups.append(
-                TagGroup(
-                    name=self.options.map("Types"),
-                    tags=sorted(tag.name for tag in type_tags),
                 )
             )
         if event_tags:

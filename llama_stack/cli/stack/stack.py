@@ -10,7 +10,6 @@ from importlib.metadata import version
 from llama_stack.cli.subcommand import Subcommand
 
 from .build import StackBuild
-from .configure import StackConfigure
 from .list_apis import StackListApis
 from .list_providers import StackListProviders
 from .run import StackRun
@@ -31,11 +30,12 @@ class StackParser(Subcommand):
             version=f"{version('llama-stack')}",
         )
 
+        self.parser.set_defaults(func=lambda args: self.parser.print_help())
+
         subparsers = self.parser.add_subparsers(title="stack_subcommands")
 
         # Add sub-commands
         StackBuild.create(subparsers)
-        StackConfigure.create(subparsers)
         StackListApis.create(subparsers)
         StackListProviders.create(subparsers)
         StackRun.create(subparsers)

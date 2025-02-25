@@ -9,6 +9,9 @@
 LLAMA_MODELS_DIR=${LLAMA_MODELS_DIR:-}
 LLAMA_STACK_DIR=${LLAMA_STACK_DIR:-}
 TEST_PYPI_VERSION=${TEST_PYPI_VERSION:-}
+# This timeout (in seconds) is necessary when installing PyTorch via uv since it's likely to time out
+# Reference: https://github.com/astral-sh/uv/pull/1694
+UV_HTTP_TIMEOUT=${UV_HTTP_TIMEOUT:-500}
 
 if [ -n "$LLAMA_STACK_DIR" ]; then
   echo "Using llama-stack-dir=$LLAMA_STACK_DIR"
@@ -78,10 +81,12 @@ ensure_conda_env_python310() {
   eval "$(conda shell.bash hook)"
   conda deactivate && conda activate "${env_name}"
 
+  $CONDA_PREFIX/bin/pip install uv
+
   if [ -n "$TEST_PYPI_VERSION" ]; then
     # these packages are damaged in test-pypi, so install them first
-    $CONDA_PREFIX/bin/pip install fastapi libcst
-    $CONDA_PREFIX/bin/pip install --extra-index-url https://test.pypi.org/simple/ \
+    uv pip install fastapi libcst
+    uv pip install --extra-index-url https://test.pypi.org/simple/ \
       llama-models==$TEST_PYPI_VERSION \
       llama-stack-client==$TEST_PYPI_VERSION \
       llama-stack==$TEST_PYPI_VERSION \
@@ -90,7 +95,7 @@ ensure_conda_env_python310() {
       IFS='#' read -ra parts <<<"$special_pip_deps"
       for part in "${parts[@]}"; do
         echo "$part"
-        $CONDA_PREFIX/bin/pip install $part
+        uv pip install $part
       done
     fi
   else
@@ -102,7 +107,7 @@ ensure_conda_env_python310() {
       fi
 
       printf "Installing from LLAMA_STACK_DIR: $LLAMA_STACK_DIR\n"
-      $CONDA_PREFIX/bin/pip install --no-cache-dir -e "$LLAMA_STACK_DIR"
+      uv pip install --no-cache-dir -e "$LLAMA_STACK_DIR"
     else
       PYPI_VERSION="${PYPI_VERSION:-}"
       if [ -n "$PYPI_VERSION" ]; then
@@ -110,7 +115,7 @@ ensure_conda_env_python310() {
       else
         SPEC_VERSION="llama-stack"
       fi
-      $CONDA_PREFIX/bin/pip install --no-cache-dir $SPEC_VERSION
+      uv pip install --no-cache-dir $SPEC_VERSION
     fi
 
     if [ -n "$LLAMA_MODELS_DIR" ]; then
@@ -120,18 +125,18 @@ ensure_conda_env_python310() {
       fi
 
       printf "Installing from LLAMA_MODELS_DIR: $LLAMA_MODELS_DIR\n"
-      $CONDA_PREFIX/bin/pip uninstall -y llama-models
-      $CONDA_PREFIX/bin/pip install --no-cache-dir -e "$LLAMA_MODELS_DIR"
+      uv pip uninstall llama-models
+      uv pip install --no-cache-dir -e "$LLAMA_MODELS_DIR"
     fi
 
     # Install pip dependencies
     printf "Installing pip dependencies\n"
-    $CONDA_PREFIX/bin/pip install $pip_dependencies
+    uv pip install $pip_dependencies
     if [ -n "$special_pip_deps" ]; then
       IFS='#' read -ra parts <<<"$special_pip_deps"
       for part in "${parts[@]}"; do
         echo "$part"
-        $CONDA_PREFIX/bin/pip install $part
+        uv pip install $part
       done
     fi
   fi

@@ -47,6 +47,4 @@ async def validate_input_dataset_schema(
     if dataset_type not in EXPECTED_DATASET_SCHEMA:
         raise ValueError(f"Dataset type {dataset_type} is not supported.")
 
-    validate_dataset_schema(
-        dataset_def.dataset_schema, EXPECTED_DATASET_SCHEMA[dataset_type]
-    )
+    validate_dataset_schema(dataset_def.dataset_schema, EXPECTED_DATASET_SCHEMA[dataset_type])

@@ -8,12 +8,12 @@ from typing import Dict
 
 from llama_stack.providers.datatypes import Api, ProviderSpec
 
-from .config import QdrantConfig
+from .config import QdrantVectorIOConfig
 
 
-async def get_adapter_impl(config: QdrantConfig, deps: Dict[Api, ProviderSpec]):
-    from .qdrant import QdrantVectorMemoryAdapter
+async def get_adapter_impl(config: QdrantVectorIOConfig, deps: Dict[Api, ProviderSpec]):
+    from .qdrant import QdrantVectorIOAdapter
 
-    impl = QdrantVectorMemoryAdapter(config, deps[Api.inference])
+    impl = QdrantVectorIOAdapter(config, deps[Api.inference])
     await impl.initialize()
     return impl

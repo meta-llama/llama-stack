@@ -11,14 +11,11 @@ from llama_stack.apis.scoring_functions import (
     ScoringFn,
 )
 
-
 equality = ScoringFn(
     identifier="basic::equality",
     description="Returns 1.0 if the input is equal to the target, 0.0 otherwise.",
     provider_id="basic",
     provider_resource_id="equality",
     return_type=NumberType(),
-    params=BasicScoringFnParams(
-        aggregation_functions=[AggregationFunctionType.accuracy]
-    ),
+    params=BasicScoringFnParams(aggregation_functions=[AggregationFunctionType.accuracy]),
 )

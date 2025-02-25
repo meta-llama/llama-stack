@@ -81,6 +81,11 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
         )
 
         global _TRACER_PROVIDER
+        # Initialize the correct span processor based on the provider state.
+        # This is needed since once the span processor is set, it cannot be unset.
+        # Recreating the telemetry adapter multiple times will result in duplicate span processors.
+        # Since the library client can be recreated multiple times in a notebook,
+        # the kernel will hold on to the span processor and cause duplicate spans to be written.
         if _TRACER_PROVIDER is None:
             provider = TracerProvider(resource=resource)
             trace.set_tracer_provider(provider)
@@ -96,18 +101,18 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
                         endpoint=self.config.otel_endpoint,
                     )
                 )
-                metric_provider = MeterProvider(
-                    resource=resource, metric_readers=[metric_reader]
-                )
+                metric_provider = MeterProvider(resource=resource, metric_readers=[metric_reader])
                 metrics.set_meter_provider(metric_provider)
-                self.meter = metrics.get_meter(__name__)
             if TelemetrySink.SQLITE in self.config.sinks:
-                trace.get_tracer_provider().add_span_processor(
-                    SQLiteSpanProcessor(self.config.sqlite_db_path)
-                )
-                self.trace_store = SQLiteTraceStore(self.config.sqlite_db_path)
+                trace.get_tracer_provider().add_span_processor(SQLiteSpanProcessor(self.config.sqlite_db_path))
             if TelemetrySink.CONSOLE in self.config.sinks:
                 trace.get_tracer_provider().add_span_processor(ConsoleSpanProcessor())
+
+        if TelemetrySink.OTEL in self.config.sinks:
+            self.meter = metrics.get_meter(__name__)
+        if TelemetrySink.SQLITE in self.config.sinks:
+            self.trace_store = SQLiteTraceStore(self.config.sqlite_db_path)
+
         self._lock = _global_lock
 
     async def initialize(self) -> None:
@@ -145,9 +150,7 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
                     timestamp=timestamp_ns,
                 )
             else:
-                print(
-                    f"Warning: No active span found for span_id {span_id}. Dropping event: {event}"
-                )
+                print(f"Warning: No active span found for span_id {span_id}. Dropping event: {event}")
 
     def _get_or_create_counter(self, name: str, unit: str) -> metrics.Counter:
         if name not in _GLOBAL_STORAGE["counters"]:
@@ -172,21 +175,15 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
             counter = self._get_or_create_counter(event.metric, event.unit)
             counter.add(event.value, attributes=event.attributes)
         elif isinstance(event.value, float):
-            up_down_counter = self._get_or_create_up_down_counter(
-                event.metric, event.unit
-            )
+            up_down_counter = self._get_or_create_up_down_counter(event.metric, event.unit)
             up_down_counter.add(event.value, attributes=event.attributes)
 
-    def _get_or_create_up_down_counter(
-        self, name: str, unit: str
-    ) -> metrics.UpDownCounter:
+    def _get_or_create_up_down_counter(self, name: str, unit: str) -> metrics.UpDownCounter:
         if name not in _GLOBAL_STORAGE["up_down_counters"]:
-            _GLOBAL_STORAGE["up_down_counters"][name] = (
-                self.meter.create_up_down_counter(
-                    name=name,
-                    unit=unit,
-                    description=f"UpDownCounter for {name}",
-                )
+            _GLOBAL_STORAGE["up_down_counters"][name] = self.meter.create_up_down_counter(
+                name=name,
+                unit=unit,
+                description=f"UpDownCounter for {name}",
             )
         return _GLOBAL_STORAGE["up_down_counters"][name]
 

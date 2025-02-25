@@ -15,7 +15,7 @@
 from docutils import nodes
 
 project = "llama-stack"
-copyright = "2024, Meta"
+copyright = "2025, Meta"
 author = "Meta"
 
 # -- General configuration ---------------------------------------------------
@@ -68,6 +68,7 @@ myst_substitutions = {
     "docker_hub": "https://hub.docker.com/repository/docker/llamastack",
 }
 
+suppress_warnings = ['myst.header']
 
 # Copy button settings
 copybutton_prompt_text = "$ "  # for bash prompts
@@ -92,25 +93,10 @@ html_theme_options = {
 
 html_static_path = ["../_static"]
 # html_logo = "../_static/llama-stack-logo.png"
-html_style = "../_static/css/my_theme.css"
-
-redoc = [
-    {
-        "name": "Llama Stack API",
-        "page": "references/api_reference/index",
-        "spec": "../resources/llama-stack-spec.yaml",
-        "opts": {
-            "suppress-warnings": True,
-            # "expand-responses": ["200", "201"],
-        },
-        "embed": True,
-    },
-]
-
-redoc_uri = "https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"
-
+# html_style = "../_static/css/my_theme.css"
 
 def setup(app):
+    app.add_css_file("css/my_theme.css")
     def dockerhub_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
         url = f"https://hub.docker.com/r/llamastack/{text}"
         node = nodes.reference(rawtext, text, refuri=url, **options)

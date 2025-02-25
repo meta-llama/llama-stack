@@ -28,7 +28,6 @@ def sample_documents():
         "memory_optimizations.rst",
         "chat.rst",
         "llama3.rst",
-        "datasets.rst",
         "qat_finetune.rst",
         "lora_finetune.rst",
     ]
@@ -53,9 +52,7 @@ class TestTools:
         tools_impl = tools_stack.impls[Api.tool_runtime]
 
         # Execute the tool
-        response = await tools_impl.invoke_tool(
-            tool_name="web_search", kwargs={"query": sample_search_query}
-        )
+        response = await tools_impl.invoke_tool(tool_name="web_search", kwargs={"query": sample_search_query})
 
         # Verify the response
         assert isinstance(response, ToolInvocationResult)
@@ -71,9 +68,7 @@ class TestTools:
 
         tools_impl = tools_stack.impls[Api.tool_runtime]
 
-        response = await tools_impl.invoke_tool(
-            tool_name="wolfram_alpha", kwargs={"query": sample_wolfram_alpha_query}
-        )
+        response = await tools_impl.invoke_tool(tool_name="wolfram_alpha", kwargs={"query": sample_wolfram_alpha_query})
 
         # Verify the response
         assert isinstance(response, ToolInvocationResult)
@@ -88,7 +83,7 @@ class TestTools:
         tools_impl = tools_stack.impls[Api.tool_runtime]
 
         # Register memory bank
-        await vector_dbs_impl.register(
+        await vector_dbs_impl.register_vector_db(
             vector_db_id="test_bank",
             embedding_model="all-MiniLM-L6-v2",
             embedding_dimension=384,

@@ -15,6 +15,7 @@ from llama_stack.apis.inference import (
     ResponseFormat,
     SamplingParams,
     ToolChoice,
+    ToolConfig,
     ToolDefinition,
     ToolPromptFormat,
 )
@@ -43,7 +44,6 @@ class SentenceTransformersInferenceImpl(
         pass
 
     async def register_model(self, model: Model) -> None:
-        _ = self._load_sentence_transformer_model(model.provider_resource_id)
         return model
 
     async def unregister_model(self, model_id: str) -> None:
@@ -71,5 +71,6 @@ class SentenceTransformersInferenceImpl(
         tool_prompt_format: Optional[ToolPromptFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
+        tool_config: Optional[ToolConfig] = None,
     ) -> AsyncGenerator:
         raise ValueError("Sentence transformers don't support chat completion")

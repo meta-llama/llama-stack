@@ -10,10 +10,10 @@ from functools import partial
 from typing import Any, Generator
 
 from llama_models.llama3.api.chat_format import ChatFormat
-from llama_models.llama3.api.datatypes import Model
 from llama_models.llama3.api.tokenizer import Tokenizer
-from llama_models.sku_list import resolve_model
 
+from llama_stack.models.llama.datatypes import Model
+from llama_stack.models.llama.sku_list import resolve_model
 from llama_stack.providers.utils.inference.prompt_adapter import (
     ChatCompletionRequestWithRawContent,
     CompletionRequestWithRawContent,
@@ -91,9 +91,7 @@ class LlamaModelParallelGenerator:
 
         self.group = ModelParallelProcessGroup(
             model_parallel_size,
-            init_model_cb=partial(
-                init_model_cb, self.config, self.model_id, self.llama_model
-            ),
+            init_model_cb=partial(init_model_cb, self.config, self.model_id, self.llama_model),
         )
         self.group.start()
         return self

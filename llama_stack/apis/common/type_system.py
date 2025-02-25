@@ -6,9 +6,10 @@
 
 from typing import Literal, Union
 
-from llama_models.schema_utils import json_schema_type, register_schema
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
+
+from llama_stack.schema_utils import json_schema_type, register_schema
 
 
 @json_schema_type
@@ -90,15 +91,18 @@ ParamType = register_schema(
     name="ParamType",
 )
 
+"""
 # TODO: recursive definition of ParamType in these containers
 # will cause infinite recursion in OpenAPI generation script
 # since we are going with ChatCompletionInputType and CompletionInputType
 # we don't need to worry about ArrayType/ObjectType/UnionType for now
-# ArrayType.model_rebuild()
-# ObjectType.model_rebuild()
-# UnionType.model_rebuild()
+ArrayType.model_rebuild()
+ObjectType.model_rebuild()
+UnionType.model_rebuild()
 
 
-# class CustomType(BaseModel):
-#     type: Literal["custom"] = "custom"
-#     validator_class: str
+class CustomType(BaseModel):
+pylint: disable=syntax-error
+    type: Literal["custom"] = "custom"
+    validator_class: str
+"""

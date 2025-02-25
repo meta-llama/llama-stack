@@ -38,9 +38,8 @@ class StackBuild(Subcommand):
 
         self.parser.add_argument(
             "--list-templates",
-            type=bool,
+            action="store_true",
             default=False,
-            action=argparse.BooleanOptionalAction,
             help="Show the available templates for building a Llama Stack distribution",
         )
 
@@ -56,12 +55,24 @@ class StackBuild(Subcommand):
             "--image-name",
             type=str,
             help=textwrap.dedent(
-                """[for image-type=conda] Name of the conda environment to use for the build. If
-not specified, currently active Conda environment will be used. If no Conda
-environment is active, you must specify a name.
+                """[for image-type=conda|venv] Name of the conda or virtual environment to use for
+the build. If not specified, currently active Conda environment will be used if found.
             """
             ),
             default=None,
+        )
+        self.parser.add_argument(
+            "--print-deps-only",
+            default=False,
+            action="store_true",
+            help="Print the dependencies for the stack only, without building the stack",
+        )
+
+        self.parser.add_argument(
+            "--run",
+            action="store_true",
+            default=False,
+            help="Run the stack after building using the same image type, name, and other applicable arguments",
         )
 
     def _run_stack_build_command(self, args: argparse.Namespace) -> None:
@@ -69,4 +80,4 @@ environment is active, you must specify a name.
         # can be fast to load and reduces dependencies
         from ._build import run_stack_build_command
 
-        return run_stack_build_command(self.parser, args)
+        return run_stack_build_command(args)

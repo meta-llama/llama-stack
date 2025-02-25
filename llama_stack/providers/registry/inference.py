@@ -61,7 +61,10 @@ def available_providers() -> List[ProviderSpec]:
         InlineProviderSpec(
             api=Api.inference,
             provider_type="inline::sentence-transformers",
-            pip_packages=["sentence-transformers"],
+            pip_packages=[
+                "torch torchvision --index-url https://download.pytorch.org/whl/cpu",
+                "sentence-transformers --no-deps",
+            ],
             module="llama_stack.providers.inline.inference.sentence_transformers",
             config_class="llama_stack.providers.inline.inference.sentence_transformers.config.SentenceTransformersInferenceConfig",
         ),
@@ -193,6 +196,36 @@ def available_providers() -> List[ProviderSpec]:
                 ],
                 module="llama_stack.providers.remote.inference.nvidia",
                 config_class="llama_stack.providers.remote.inference.nvidia.NVIDIAConfig",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
+                adapter_type="runpod",
+                pip_packages=["openai"],
+                module="llama_stack.providers.remote.inference.runpod",
+                config_class="llama_stack.providers.remote.inference.runpod.RunpodImplConfig",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
+                adapter_type="sambanova",
+                pip_packages=[
+                    "openai",
+                ],
+                module="llama_stack.providers.remote.inference.sambanova",
+                config_class="llama_stack.providers.remote.inference.sambanova.SambaNovaImplConfig",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
+                adapter_type="passthrough",
+                pip_packages=[],
+                module="llama_stack.providers.remote.inference.passthrough",
+                config_class="llama_stack.providers.remote.inference.passthrough.PassthroughImplConfig",
+                provider_data_validator="llama_stack.providers.remote.inference.passthrough.PassthroughProviderDataValidator",
             ),
         ),
     ]

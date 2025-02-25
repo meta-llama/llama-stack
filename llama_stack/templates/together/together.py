@@ -6,8 +6,6 @@
 
 from pathlib import Path
 
-from llama_models.sku_list import all_registered_models
-
 from llama_stack.apis.models.models import ModelType
 from llama_stack.distribution.datatypes import (
     ModelInput,
@@ -15,18 +13,19 @@ from llama_stack.distribution.datatypes import (
     ShieldInput,
     ToolGroupInput,
 )
+from llama_stack.models.llama.sku_list import all_registered_models
 from llama_stack.providers.inline.inference.sentence_transformers import (
     SentenceTransformersInferenceConfig,
 )
-from llama_stack.providers.inline.vector_io.faiss.config import FaissImplConfig
+from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOConfig
 from llama_stack.providers.remote.inference.together import TogetherImplConfig
-from llama_stack.providers.remote.inference.together.together import MODEL_ALIASES
+from llama_stack.providers.remote.inference.together.models import MODEL_ENTRIES
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
 
 def get_distribution_template() -> DistributionTemplate:
     providers = {
-        "inference": ["remote::together"],
+        "inference": ["remote::together", "inline::sentence-transformers"],
         "vector_io": ["inline::faiss", "remote::chromadb", "remote::pgvector"],
         "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],
@@ -38,7 +37,7 @@ def get_distribution_template() -> DistributionTemplate:
             "remote::brave-search",
             "remote::tavily-search",
             "inline::code-interpreter",
-            "inline::memory-runtime",
+            "inline::rag-runtime",
             "remote::model-context-protocol",
         ],
     }
@@ -51,7 +50,7 @@ def get_distribution_template() -> DistributionTemplate:
     vector_io_provider = Provider(
         provider_id="faiss",
         provider_type="inline::faiss",
-        config=FaissImplConfig.sample_run_config(f"distributions/{name}"),
+        config=FaissVectorIOConfig.sample_run_config(f"distributions/{name}"),
     )
     embedding_provider = Provider(
         provider_id="sentence-transformers",
@@ -59,16 +58,16 @@ def get_distribution_template() -> DistributionTemplate:
         config=SentenceTransformersInferenceConfig.sample_run_config(),
     )
 
-    core_model_to_hf_repo = {
-        m.descriptor(): m.huggingface_repo for m in all_registered_models()
-    }
+    core_model_to_hf_repo = {m.descriptor(): m.huggingface_repo for m in all_registered_models()}
     default_models = [
         ModelInput(
-            model_id=core_model_to_hf_repo[m.llama_model],
+            model_id=core_model_to_hf_repo[m.llama_model] if m.llama_model else m.provider_model_id,
             provider_model_id=m.provider_model_id,
             provider_id="together",
+            metadata=m.metadata,
+            model_type=m.model_type,
         )
-        for m in MODEL_ALIASES
+        for m in MODEL_ENTRIES
     ]
     default_tool_groups = [
         ToolGroupInput(
@@ -76,8 +75,8 @@ def get_distribution_template() -> DistributionTemplate:
             provider_id="tavily-search",
         ),
         ToolGroupInput(
-            toolgroup_id="builtin::memory",
-            provider_id="memory-runtime",
+            toolgroup_id="builtin::rag",
+            provider_id="rag-runtime",
         ),
         ToolGroupInput(
             toolgroup_id="builtin::code_interpreter",

@@ -16,12 +16,13 @@ from llama_stack.apis.inference import InterleavedContent
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import Chunk, QueryChunksResponse, VectorIO
 from llama_stack.providers.datatypes import Api, VectorDBsProtocolPrivate
-from llama_stack.providers.inline.vector_io.chroma import ChromaInlineImplConfig
+from llama_stack.providers.inline.vector_io.chroma import ChromaVectorIOConfig as InlineChromaVectorIOConfig
 from llama_stack.providers.utils.memory.vector_store import (
     EmbeddingIndex,
     VectorDBWithIndex,
 )
-from .config import ChromaRemoteImplConfig
+
+from .config import ChromaVectorIOConfig as RemoteChromaVectorIOConfig
 
 log = logging.getLogger(__name__)
 
@@ -42,21 +43,20 @@ class ChromaIndex(EmbeddingIndex):
         self.collection = collection
 
     async def add_chunks(self, chunks: List[Chunk], embeddings: NDArray):
-        assert len(chunks) == len(
-            embeddings
-        ), f"Chunk length {len(chunks)} does not match embedding length {len(embeddings)}"
+        assert len(chunks) == len(embeddings), (
+            f"Chunk length {len(chunks)} does not match embedding length {len(embeddings)}"
+        )
 
+        ids = [f"{c.metadata['document_id']}:chunk-{i}" for i, c in enumerate(chunks)]
         await maybe_await(
             self.collection.add(
                 documents=[chunk.model_dump_json() for chunk in chunks],
                 embeddings=embeddings,
-                ids=[f"{c.document_id}:chunk-{i}" for i, c in enumerate(chunks)],
+                ids=ids,
             )
         )
 
-    async def query(
-        self, embedding: NDArray, k: int, score_threshold: float
-    ) -> QueryChunksResponse:
+    async def query(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
         results = await maybe_await(
             self.collection.query(
                 query_embeddings=[embedding.tolist()],
@@ -69,7 +69,7 @@ class ChromaIndex(EmbeddingIndex):
 
         chunks = []
         scores = []
-        for dist, doc in zip(distances, documents):
+        for dist, doc in zip(distances, documents, strict=False):
             try:
                 doc = json.loads(doc)
                 chunk = Chunk(**doc)
@@ -89,7 +89,7 @@ class ChromaIndex(EmbeddingIndex):
 class ChromaVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
     def __init__(
         self,
-        config: Union[ChromaRemoteImplConfig, ChromaInlineImplConfig],
+        config: Union[RemoteChromaVectorIOConfig, InlineChromaVectorIOConfig],
         inference_api: Api.inference,
     ) -> None:
         log.info(f"Initializing ChromaVectorIOAdapter with url: {config}")
@@ -100,7 +100,7 @@ class ChromaVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
         self.cache = {}
 
     async def initialize(self) -> None:
-        if isinstance(self.config, ChromaRemoteImplConfig):
+        if isinstance(self.config, RemoteChromaVectorIOConfig):
             log.info(f"Connecting to Chroma server at: {self.config.url}")
             url = self.config.url.rstrip("/")
             parsed = urlparse(url)
@@ -108,9 +108,7 @@ class ChromaVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
             if parsed.path and parsed.path != "/":
                 raise ValueError("URL should not contain a path")
 
-            self.client = await chromadb.AsyncHttpClient(
-                host=parsed.hostname, port=parsed.port
-            )
+            self.client = await chromadb.AsyncHttpClient(host=parsed.hostname, port=parsed.port)
         else:
             log.info(f"Connecting to Chroma local db at: {self.config.db_path}")
             self.client = chromadb.PersistentClient(path=self.config.db_path)
@@ -140,11 +138,11 @@ class ChromaVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
         self,
         vector_db_id: str,
         chunks: List[Chunk],
-        embeddings: NDArray,
+        ttl_seconds: Optional[int] = None,
     ) -> None:
         index = await self._get_and_cache_vector_db_index(vector_db_id)
 
-        await index.insert_chunks(chunks, embeddings)
+        await index.insert_chunks(chunks)
 
     async def query_chunks(
         self,
@@ -156,9 +154,7 @@ class ChromaVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
 
         return await index.query_chunks(query, params)
 
-    async def _get_and_cache_vector_db_index(
-        self, vector_db_id: str
-    ) -> VectorDBWithIndex:
+    async def _get_and_cache_vector_db_index(self, vector_db_id: str) -> VectorDBWithIndex:
         if vector_db_id in self.cache:
             return self.cache[vector_db_id]
 
@@ -168,8 +164,6 @@ class ChromaVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
         collection = await maybe_await(self.client.get_collection(vector_db_id))
         if not collection:
             raise ValueError(f"Vector DB {vector_db_id} not found in Chroma")
-        index = VectorDBWithIndex(
-            vector_db, ChromaIndex(self.client, collection), self.inference_api
-        )
+        index = VectorDBWithIndex(vector_db, ChromaIndex(self.client, collection), self.inference_api)
         self.cache[vector_db_id] = index
         return index

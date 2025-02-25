@@ -1,26 +1,41 @@
 # Adding a New API Provider
 
-This guide contains references to walk you through adding a new API provider.
+This guide will walk you through the process of adding a new API provider to Llama Stack.
 
-1. First, decide which API your provider falls into (e.g. Inference, Safety, Agents, Memory).
-2. Decide whether your provider is a remote provider, or inline implementation. A remote provider is a provider that makes a remote request to a service. An inline provider is a provider where implementation is executed locally. Checkout the examples, and follow the structure to add your own API provider. Please find the following code pointers:
 
-    - {repopath}`Remote Providers::llama_stack/providers/remote`
-    - {repopath}`Inline Providers::llama_stack/providers/inline`
+- Begin by reviewing the [core concepts](../concepts/index.md) of Llama Stack and choose the API your provider belongs to (Inference, Safety, VectorIO, etc.)
+- Determine the provider type ({repopath}`Remote::llama_stack/providers/remote` or {repopath}`Inline::llama_stack/providers/inline`). Remote providers make requests to external services, while inline providers execute implementation locally.
+- Add your provider to the appropriate {repopath}`Registry::llama_stack/providers/registry/`. Specify pip dependencies necessary.
+- Update any distribution {repopath}`Templates::llama_stack/templates/` build.yaml and run.yaml files if they should include your provider by default. Run {repopath}`llama_stack/scripts/distro_codegen.py` if necessary. Note that `distro_codegen.py` will fail if the new provider causes any distribution template to attempt to import provider-specific dependencies. This usually means the distribution's `get_distribution_template()` code path should only import any necessary Config or model alias definitions from each provider and not the provider's actual implementation.
 
-3. [Build a Llama Stack distribution](https://llama-stack.readthedocs.io/en/latest/distributions/building_distro.html) with your API provider.
-4. Test your code!
 
-## Testing your newly added API providers
+Here are some example PRs to help you get started:
+   - [Grok Inference Implementation](https://github.com/meta-llama/llama-stack/pull/609)
+   - [Nvidia Inference Implementation](https://github.com/meta-llama/llama-stack/pull/355)
+   - [Model context protocol Tool Runtime](https://github.com/meta-llama/llama-stack/pull/665)
 
-1. Start with an _integration test_ for your provider. That means we will instantiate the real provider, pass it real configuration and if it is a remote service, we will actually hit the remote service. We **strongly** discourage mocking for these tests at the provider level. Llama Stack is first and foremost about integration so we need to make sure stuff works end-to-end. See {repopath}`llama_stack/providers/tests/inference/test_text_inference.py` for an example.
 
-2. In addition, if you want to unit test functionality within your provider, feel free to do so. You can find some tests in `tests/` but they aren't well-supported so far.
+## Testing the Provider
 
-3. Test with a client-server Llama Stack setup. (a) Start a Llama Stack server with your own distribution which includes the new provider. (b) Send a client request to the server. See `llama_stack/apis/<api>/client.py` for how this is done. These client scripts can serve as lightweight tests.
+### 1. Integration Testing
+- Create integration tests that use real provider instances and configurations
+- For remote services, test actual API interactions
+- Avoid mocking at the provider level since adapter layers tend to be thin
+- Reference examples in {repopath}`tests/client-sdk`
 
-You can find more complex client scripts [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main) repo. Note down which scripts works and do not work with your distribution.
+### 2. Unit Testing (Optional)
+- Add unit tests for provider-specific functionality
+- See examples in {repopath}`llama_stack/providers/tests/inference/test_text_inference.py`
 
-## Submit your PR
+### 3. End-to-End Testing
+1. Start a Llama Stack server with your new provider
+2. Test using client requests
+3. Verify compatibility with existing client scripts in the [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main) repository
+4. Document which scripts are compatible with your provider
 
-After you have fully tested your newly added API provider, submit a PR with the attached test plan. You must have a Test Plan in the summary section of your PR.
+## Submitting Your PR
+
+1. Ensure all tests pass
+2. Include a comprehensive test plan in your PR summary
+3. Document any known limitations or considerations
+4. Submit your pull request for review

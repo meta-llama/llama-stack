@@ -6,11 +6,9 @@
 
 import json
 import logging
-
 from typing import Any, Dict, List
 
 from llama_stack.apis.inference import Message
-
 from llama_stack.apis.safety import (
     RunShieldResponse,
     Safety,
@@ -22,7 +20,6 @@ from llama_stack.providers.datatypes import ShieldsProtocolPrivate
 from llama_stack.providers.utils.bedrock.client import create_bedrock_client
 
 from .config import BedrockSafetyConfig
-
 
 logger = logging.getLogger(__name__)
 
@@ -83,9 +80,7 @@ class BedrockSafetyAdapter(Safety, ShieldsProtocolPrivate):
         content_messages = []
         for message in messages:
             content_messages.append({"text": {"text": message.content}})
-        logger.debug(
-            f"run_shield::final:messages::{json.dumps(content_messages, indent=2)}:"
-        )
+        logger.debug(f"run_shield::final:messages::{json.dumps(content_messages, indent=2)}:")
 
         response = self.bedrock_runtime_client.apply_guardrail(
             guardrailIdentifier=shield.provider_resource_id,

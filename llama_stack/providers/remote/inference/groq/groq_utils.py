@@ -15,9 +15,6 @@ from groq.types.chat.chat_completion_assistant_message_param import (
 )
 from groq.types.chat.chat_completion_chunk import ChatCompletionChunk
 from groq.types.chat.chat_completion_message_param import ChatCompletionMessageParam
-from groq.types.chat.chat_completion_message_tool_call import (
-    ChatCompletionMessageToolCall,
-)
 from groq.types.chat.chat_completion_system_message_param import (
     ChatCompletionSystemMessageParam,
 )
@@ -27,8 +24,6 @@ from groq.types.chat.chat_completion_user_message_param import (
 )
 from groq.types.chat.completion_create_params import CompletionCreateParams
 from groq.types.shared.function_definition import FunctionDefinition
-
-from llama_models.llama3.api.datatypes import ToolParamDefinition
 
 from llama_stack.apis.common.content_types import (
     TextDelta,
@@ -48,7 +43,10 @@ from llama_stack.apis.inference import (
     ToolDefinition,
     ToolPromptFormat,
 )
+from llama_stack.models.llama.datatypes import ToolParamDefinition
 from llama_stack.providers.utils.inference.openai_compat import (
+    UnparseableToolCall,
+    convert_tool_call,
     get_sampling_strategy_options,
 )
 
@@ -77,7 +75,7 @@ def convert_chat_completion_request(
         # so we exclude it for now
         warnings.warn("repetition_penalty is not supported")
 
-    if request.tool_prompt_format != ToolPromptFormat.json:
+    if request.tool_config.tool_prompt_format != ToolPromptFormat.json:
         warnings.warn("tool_prompt_format is not used by Groq. Ignoring.")
 
     sampling_options = get_sampling_strategy_options(request.sampling_params)
@@ -91,7 +89,7 @@ def convert_chat_completion_request(
         temperature=sampling_options.get("temperature", 1.0),
         top_p=sampling_options.get("top_p", 1.0),
         tools=[_convert_groq_tool_definition(tool) for tool in request.tools or []],
-        tool_choice=request.tool_choice.value if request.tool_choice else None,
+        tool_choice=(request.tool_config.tool_choice.value if request.tool_config.tool_choice else None),
     )
 
 
@@ -101,9 +99,7 @@ def _convert_message(message: Message) -> ChatCompletionMessageParam:
     elif message.role == "user":
         return ChatCompletionUserMessageParam(role="user", content=message.content)
     elif message.role == "assistant":
-        return ChatCompletionAssistantMessageParam(
-            role="assistant", content=message.content
-        )
+        return ChatCompletionAssistantMessageParam(role="assistant", content=message.content)
     else:
         raise ValueError(f"Invalid message role: {message.role}")
 
@@ -119,10 +115,7 @@ def _convert_groq_tool_definition(tool_definition: ToolDefinition) -> dict:
         function=FunctionDefinition(
             name=tool_definition.tool_name,
             description=tool_definition.description,
-            parameters={
-                key: _convert_groq_tool_parameter(param)
-                for key, param in tool_parameters.items()
-            },
+            parameters={key: _convert_groq_tool_parameter(param) for key, param in tool_parameters.items()},
         ),
     )
 
@@ -146,19 +139,27 @@ def convert_chat_completion_response(
     # groq only supports n=1 at time of writing, so there is only one choice
     choice = response.choices[0]
     if choice.finish_reason == "tool_calls":
-        tool_calls = [
-            _convert_groq_tool_call(tool_call)
-            for tool_call in choice.message.tool_calls
-        ]
-        return ChatCompletionResponse(
-            completion_message=CompletionMessage(
-                tool_calls=tool_calls,
-                stop_reason=StopReason.end_of_message,
-                # Content is not optional
-                content="",
-            ),
-            logprobs=None,
-        )
+        tool_calls = [convert_tool_call(tool_call) for tool_call in choice.message.tool_calls]
+        if any(isinstance(tool_call, UnparseableToolCall) for tool_call in tool_calls):
+            # If we couldn't parse a tool call, jsonify the tool calls and return them
+            return ChatCompletionResponse(
+                completion_message=CompletionMessage(
+                    stop_reason=StopReason.end_of_message,
+                    content=json.dumps(tool_calls, default=lambda x: x.model_dump()),
+                ),
+                logprobs=None,
+            )
+        else:
+            # Otherwise, return tool calls as normal
+            return ChatCompletionResponse(
+                completion_message=CompletionMessage(
+                    tool_calls=tool_calls,
+                    stop_reason=StopReason.end_of_message,
+                    # Content is not optional
+                    content="",
+                ),
+                logprobs=None,
+            )
     else:
         return ChatCompletionResponse(
             completion_message=CompletionMessage(
@@ -208,21 +209,31 @@ async def convert_chat_completion_response_stream(
         elif choice.delta.tool_calls:
             # We assume there is only one tool call per chunk, but emit a warning in case we're wrong
             if len(choice.delta.tool_calls) > 1:
-                warnings.warn(
-                    "Groq returned multiple tool calls in one chunk. Using the first one, ignoring the rest."
-                )
+                warnings.warn("Groq returned multiple tool calls in one chunk. Using the first one, ignoring the rest.")
 
             # We assume Groq produces fully formed tool calls for each chunk
-            tool_call = _convert_groq_tool_call(choice.delta.tool_calls[0])
-            yield ChatCompletionResponseStreamChunk(
-                event=ChatCompletionResponseEvent(
-                    event_type=event_type,
-                    delta=ToolCallDelta(
-                        tool_call=tool_call,
-                        parse_status=ToolCallParseStatus.succeeded,
-                    ),
+            tool_call = convert_tool_call(choice.delta.tool_calls[0])
+            if isinstance(tool_call, ToolCall):
+                yield ChatCompletionResponseStreamChunk(
+                    event=ChatCompletionResponseEvent(
+                        event_type=event_type,
+                        delta=ToolCallDelta(
+                            tool_call=tool_call,
+                            parse_status=ToolCallParseStatus.succeeded,
+                        ),
+                    )
                 )
-            )
+            else:
+                # Otherwise it's an UnparseableToolCall - return the raw tool call
+                yield ChatCompletionResponseStreamChunk(
+                    event=ChatCompletionResponseEvent(
+                        event_type=event_type,
+                        delta=ToolCallDelta(
+                            tool_call=tool_call.model_dump_json(),
+                            parse_status=ToolCallParseStatus.failed,
+                        ),
+                    )
+                )
         else:
             yield ChatCompletionResponseStreamChunk(
                 event=ChatCompletionResponseEvent(
@@ -232,14 +243,3 @@ async def convert_chat_completion_response_stream(
                 )
             )
         event_type = ChatCompletionResponseEventType.progress
-
-
-def _convert_groq_tool_call(tool_call: ChatCompletionMessageToolCall) -> ToolCall:
-    return ToolCall(
-        call_id=tool_call.id,
-        tool_name=tool_call.function.name,
-        # Note that Groq may return a string that is not valid JSON here
-        # So this may raise a 500 error. Going to leave this as is to see
-        # how big of an issue this is and what we can do about it.
-        arguments=json.loads(tool_call.function.arguments),
-    )

@@ -13,10 +13,7 @@ from llama_stack.distribution.datatypes import (
     ShieldInput,
     ToolGroupInput,
 )
-from llama_stack.providers.inline.inference.sentence_transformers import (
-    SentenceTransformersInferenceConfig,
-)
-from llama_stack.providers.inline.vector_io.faiss.config import FaissImplConfig
+from llama_stack.providers.inline.vector_io.sqlite_vec.config import SQLiteVectorIOConfig
 from llama_stack.providers.remote.inference.ollama import OllamaImplConfig
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
@@ -24,7 +21,7 @@ from llama_stack.templates.template import DistributionTemplate, RunConfigSettin
 def get_distribution_template() -> DistributionTemplate:
     providers = {
         "inference": ["remote::ollama"],
-        "vector_io": ["inline::faiss", "remote::chromadb", "remote::pgvector"],
+        "vector_io": ["inline::sqlite-vec", "remote::chromadb", "remote::pgvector"],
         "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],
         "telemetry": ["inline::meta-reference"],
@@ -35,7 +32,7 @@ def get_distribution_template() -> DistributionTemplate:
             "remote::brave-search",
             "remote::tavily-search",
             "inline::code-interpreter",
-            "inline::memory-runtime",
+            "inline::rag-runtime",
         ],
     }
     name = "ollama"
@@ -44,15 +41,10 @@ def get_distribution_template() -> DistributionTemplate:
         provider_type="remote::ollama",
         config=OllamaImplConfig.sample_run_config(),
     )
-    embedding_provider = Provider(
-        provider_id="sentence-transformers",
-        provider_type="inline::sentence-transformers",
-        config=SentenceTransformersInferenceConfig.sample_run_config(),
-    )
-    vector_io_provider = Provider(
-        provider_id="faiss",
-        provider_type="inline::faiss",
-        config=FaissImplConfig.sample_run_config(f"distributions/{name}"),
+    vector_io_provider_sqlite = Provider(
+        provider_id="sqlite-vec",
+        provider_type="inline::sqlite-vec",
+        config=SQLiteVectorIOConfig.sample_run_config(f"distributions/{name}"),
     )
 
     inference_model = ModelInput(
@@ -65,7 +57,8 @@ def get_distribution_template() -> DistributionTemplate:
     )
     embedding_model = ModelInput(
         model_id="all-MiniLM-L6-v2",
-        provider_id="sentence-transformers",
+        provider_id="ollama",
+        provider_model_id="all-minilm:latest",
         model_type=ModelType.embedding,
         metadata={
             "embedding_dimension": 384,
@@ -77,8 +70,8 @@ def get_distribution_template() -> DistributionTemplate:
             provider_id="tavily-search",
         ),
         ToolGroupInput(
-            toolgroup_id="builtin::memory",
-            provider_id="memory-runtime",
+            toolgroup_id="builtin::rag",
+            provider_id="rag-runtime",
         ),
         ToolGroupInput(
             toolgroup_id="builtin::code_interpreter",
@@ -97,19 +90,16 @@ def get_distribution_template() -> DistributionTemplate:
         run_configs={
             "run.yaml": RunConfigSettings(
                 provider_overrides={
-                    "inference": [inference_provider, embedding_provider],
-                    "vector_io": [vector_io_provider],
+                    "inference": [inference_provider],
+                    "vector_io": [vector_io_provider_sqlite],
                 },
-                default_models=[inference_model, embedding_model],
+                default_models=[inference_model],
                 default_tool_groups=default_tool_groups,
             ),
             "run-with-safety.yaml": RunConfigSettings(
                 provider_overrides={
-                    "inference": [
-                        inference_provider,
-                        embedding_provider,
-                    ],
-                    "vector_io": [vector_io_provider],
+                    "inference": [inference_provider],
+                    "vector_io": [vector_io_provider_sqlite],
                     "safety": [
                         Provider(
                             provider_id="llama-guard",

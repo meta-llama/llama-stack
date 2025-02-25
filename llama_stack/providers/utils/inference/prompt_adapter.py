@@ -13,25 +13,9 @@ import re
 from typing import List, Optional, Tuple, Union
 
 import httpx
-from llama_models.datatypes import is_multimodal, ModelFamily
+from llama_models.datatypes import StopReason
 from llama_models.llama3.api.chat_format import ChatFormat
-from llama_models.llama3.api.datatypes import (
-    RawContent,
-    RawContentItem,
-    RawMediaItem,
-    RawMessage,
-    RawTextItem,
-    Role,
-    ToolPromptFormat,
-)
-from llama_models.llama3.prompt_templates import (
-    BuiltinToolGenerator,
-    FunctionTagCustomToolGenerator,
-    JsonCustomToolGenerator,
-    PythonListCustomToolGenerator,
-    SystemDefaultGenerator,
-)
-from llama_models.sku_list import resolve_model
+from llama_models.llama3.api.tokenizer import Tokenizer
 from PIL import Image as PIL_Image
 
 from llama_stack.apis.common.content_types import (
@@ -47,9 +31,30 @@ from llama_stack.apis.inference import (
     ResponseFormat,
     ResponseFormatType,
     SystemMessage,
+    SystemMessageBehavior,
     ToolChoice,
+    ToolDefinition,
     UserMessage,
 )
+from llama_stack.models.llama.datatypes import (
+    ModelFamily,
+    RawContent,
+    RawContentItem,
+    RawMediaItem,
+    RawMessage,
+    RawTextItem,
+    Role,
+    ToolPromptFormat,
+    is_multimodal,
+)
+from llama_stack.models.llama.llama3.prompt_templates import (
+    BuiltinToolGenerator,
+    FunctionTagCustomToolGenerator,
+    JsonCustomToolGenerator,
+    PythonListCustomToolGenerator,
+    SystemDefaultGenerator,
+)
+from llama_stack.models.llama.sku_list import resolve_model
 from llama_stack.providers.utils.inference import supported_inference_models
 
 log = logging.getLogger(__name__)
@@ -61,6 +66,11 @@ class ChatCompletionRequestWithRawContent(ChatCompletionRequest):
 
 class CompletionRequestWithRawContent(CompletionRequest):
     content: RawContent
+
+
+def decode_assistant_message(content: str, stop_reason: StopReason) -> RawMessage:
+    formatter = ChatFormat(Tokenizer.get_instance())
+    return formatter.decode_assistant_message_from_content(content, stop_reason)
 
 
 def interleaved_content_as_str(content: InterleavedContent, sep: str = " ") -> str:
@@ -119,9 +129,7 @@ async def interleaved_content_convert_to_raw(
                 if image.url.uri.startswith("data"):
                     match = re.match(r"data:image/(\w+);base64,(.+)", image.url.uri)
                     if not match:
-                        raise ValueError(
-                            f"Invalid data URL format, {image.url.uri[:40]}..."
-                        )
+                        raise ValueError(f"Invalid data URL format, {image.url.uri[:40]}...")
                     _, image_data = match.groups()
                     data = base64.b64decode(image_data)
                 elif image.url.uri.startswith("file://"):
@@ -135,7 +143,8 @@ async def interleaved_content_convert_to_raw(
                 else:
                     raise ValueError("Unsupported URL type")
             elif image.data:
-                data = image.data
+                # data is a base64 encoded string, decode it to bytes for RawMediaItem
+                data = base64.b64decode(image.data)
             else:
                 raise ValueError("No data or URL provided")
 
@@ -184,8 +193,11 @@ async def localize_image_content(media: ImageContentItem) -> Tuple[bytes, str]:
 
         return content, format
     else:
-        pil_image = PIL_Image.open(io.BytesIO(image.data))
-        return image.data, pil_image.format
+        # data is a base64 encoded string, decode it to bytes first
+        # TODO(mf): do this more efficiently, decode less
+        data_bytes = base64.b64decode(image.data)
+        pil_image = PIL_Image.open(io.BytesIO(data_bytes))
+        return data_bytes, pil_image.format
 
 
 async def convert_image_content_to_url(
@@ -197,33 +209,27 @@ async def convert_image_content_to_url(
 
     content, format = await localize_image_content(media)
     if include_format:
-        return f"data:image/{format};base64," + base64.b64encode(content).decode(
-            "utf-8"
-        )
+        return f"data:image/{format};base64," + base64.b64encode(content).decode("utf-8")
     else:
         return base64.b64encode(content).decode("utf-8")
 
 
-async def completion_request_to_prompt(
-    request: CompletionRequest, formatter: ChatFormat
-) -> str:
-    content = augment_content_with_response_format_prompt(
-        request.response_format, request.content
-    )
+async def completion_request_to_prompt(request: CompletionRequest) -> str:
+    content = augment_content_with_response_format_prompt(request.response_format, request.content)
     request.content = content
     request = await convert_request_to_raw(request)
+
+    formatter = ChatFormat(tokenizer=Tokenizer.get_instance())
     model_input = formatter.encode_content(request.content)
     return formatter.tokenizer.decode(model_input.tokens)
 
 
-async def completion_request_to_prompt_model_input_info(
-    request: CompletionRequest, formatter: ChatFormat
-) -> Tuple[str, int]:
-    content = augment_content_with_response_format_prompt(
-        request.response_format, request.content
-    )
+async def completion_request_to_prompt_model_input_info(request: CompletionRequest) -> Tuple[str, int]:
+    content = augment_content_with_response_format_prompt(request.response_format, request.content)
     request.content = content
     request = await convert_request_to_raw(request)
+
+    formatter = ChatFormat(tokenizer=Tokenizer.get_instance())
     model_input = formatter.encode_content(request.content)
     return (formatter.tokenizer.decode(model_input.tokens), len(model_input.tokens))
 
@@ -240,23 +246,29 @@ def augment_content_with_response_format_prompt(response_format, content):
     return content
 
 
-async def chat_completion_request_to_prompt(
-    request: ChatCompletionRequest, llama_model: str, formatter: ChatFormat
-) -> str:
+async def chat_completion_request_to_prompt(request: ChatCompletionRequest, llama_model: str) -> str:
     messages = chat_completion_request_to_messages(request, llama_model)
     request.messages = messages
     request = await convert_request_to_raw(request)
-    model_input = formatter.encode_dialog_prompt(request.messages)
+
+    formatter = ChatFormat(tokenizer=Tokenizer.get_instance())
+    model_input = formatter.encode_dialog_prompt(
+        request.messages, tool_prompt_format=request.tool_config.tool_prompt_format
+    )
     return formatter.tokenizer.decode(model_input.tokens)
 
 
 async def chat_completion_request_to_model_input_info(
-    request: ChatCompletionRequest, llama_model: str, formatter: ChatFormat
+    request: ChatCompletionRequest, llama_model: str
 ) -> Tuple[str, int]:
     messages = chat_completion_request_to_messages(request, llama_model)
     request.messages = messages
     request = await convert_request_to_raw(request)
-    model_input = formatter.encode_dialog_prompt(request.messages)
+
+    formatter = ChatFormat(tokenizer=Tokenizer.get_instance())
+    model_input = formatter.encode_dialog_prompt(
+        request.messages, tool_prompt_format=request.tool_config.tool_prompt_format
+    )
     return (
         formatter.tokenizer.decode(model_input.tokens),
         len(model_input.tokens),
@@ -284,8 +296,7 @@ def chat_completion_request_to_messages(
         return request.messages
 
     if model.model_family == ModelFamily.llama3_1 or (
-        model.model_family == ModelFamily.llama3_2
-        and is_multimodal(model.core_model_id)
+        model.model_family == ModelFamily.llama3_2 and is_multimodal(model.core_model_id)
     ):
         # llama3.1 and llama3.2 multimodal models follow the same tool prompt format
         messages = augment_messages_for_tools_llama_3_1(request)
@@ -316,16 +327,12 @@ def response_format_prompt(fmt: Optional[ResponseFormat]):
 def augment_messages_for_tools_llama_3_1(
     request: ChatCompletionRequest,
 ) -> List[Message]:
-    assert request.tool_choice == ToolChoice.auto, "Only `ToolChoice.auto` supported"
-
     existing_messages = request.messages
     existing_system_message = None
     if existing_messages[0].role == Role.system.value:
         existing_system_message = existing_messages.pop(0)
 
-    assert (
-        existing_messages[0].role != Role.system.value
-    ), "Should only have 1 system message"
+    assert existing_messages[0].role != Role.system.value, "Should only have 1 system message"
 
     messages = []
 
@@ -357,15 +364,17 @@ def augment_messages_for_tools_llama_3_1(
         if isinstance(existing_system_message.content, str):
             sys_content += _process(existing_system_message.content)
         elif isinstance(existing_system_message.content, list):
-            sys_content += "\n".join(
-                [_process(c) for c in existing_system_message.content]
-            )
+            sys_content += "\n".join([_process(c) for c in existing_system_message.content])
+
+    tool_choice_prompt = _get_tool_choice_prompt(request.tool_config.tool_choice, request.tools)
+    if tool_choice_prompt:
+        sys_content += "\n" + tool_choice_prompt
 
     messages.append(SystemMessage(content=sys_content))
 
     has_custom_tools = any(isinstance(dfn.tool_name, str) for dfn in request.tools)
     if has_custom_tools:
-        fmt = request.tool_prompt_format or ToolPromptFormat.json
+        fmt = request.tool_config.tool_prompt_format or ToolPromptFormat.json
         if fmt == ToolPromptFormat.json:
             tool_gen = JsonCustomToolGenerator()
         elif fmt == ToolPromptFormat.function_tag:
@@ -386,18 +395,13 @@ def augment_messages_for_tools_llama_3_1(
 def augment_messages_for_tools_llama_3_2(
     request: ChatCompletionRequest,
 ) -> List[Message]:
-    assert request.tool_choice == ToolChoice.auto, "Only `ToolChoice.auto` supported"
-
     existing_messages = request.messages
     existing_system_message = None
     if existing_messages[0].role == Role.system.value:
         existing_system_message = existing_messages.pop(0)
 
-    assert (
-        existing_messages[0].role != Role.system.value
-    ), "Should only have 1 system message"
+    assert existing_messages[0].role != Role.system.value, "Should only have 1 system message"
 
-    messages = []
     sys_content = ""
     custom_tools, builtin_tools = [], []
     for t in request.tools:
@@ -406,7 +410,6 @@ def augment_messages_for_tools_llama_3_2(
         else:
             builtin_tools.append(t)
 
-    tool_template = None
     if builtin_tools:
         tool_gen = BuiltinToolGenerator()
         tool_template = tool_gen.gen(builtin_tools)
@@ -416,25 +419,57 @@ def augment_messages_for_tools_llama_3_2(
 
     custom_tools = [dfn for dfn in request.tools if isinstance(dfn.tool_name, str)]
     if custom_tools:
-        fmt = request.tool_prompt_format or ToolPromptFormat.python_list
+        fmt = request.tool_config.tool_prompt_format or ToolPromptFormat.python_list
         if fmt != ToolPromptFormat.python_list:
-            raise ValueError(
-                f"Non supported ToolPromptFormat {request.tool_prompt_format}"
-            )
+            raise ValueError(f"Non supported ToolPromptFormat {request.tool_config.tool_prompt_format}")
 
-        tool_gen = PythonListCustomToolGenerator()
-        tool_template = tool_gen.gen(custom_tools)
+        system_prompt = None
+        if existing_system_message and request.tool_config.system_message_behavior == SystemMessageBehavior.replace:
+            system_prompt = existing_system_message.content
+
+        tool_template = PythonListCustomToolGenerator().gen(custom_tools, system_prompt)
 
         sys_content += tool_template.render()
         sys_content += "\n"
 
-    if existing_system_message:
-        sys_content += interleaved_content_as_str(
-            existing_system_message.content, sep="\n"
-        )
+    if existing_system_message and (
+        request.tool_config.system_message_behavior == SystemMessageBehavior.append or not custom_tools
+    ):
+        sys_content += interleaved_content_as_str(existing_system_message.content, sep="\n")
 
-    messages.append(SystemMessage(content=sys_content))
+    tool_choice_prompt = _get_tool_choice_prompt(request.tool_config.tool_choice, request.tools)
+    if tool_choice_prompt:
+        sys_content += "\n" + tool_choice_prompt
 
-    # Add back existing messages from the request
-    messages += existing_messages
+    messages = [SystemMessage(content=sys_content.strip("\n")), *existing_messages]
     return messages
+
+
+def _get_tool_choice_prompt(tool_choice: ToolChoice | str, tools: List[ToolDefinition]) -> str:
+    if tool_choice == ToolChoice.auto:
+        return ""
+    elif tool_choice == ToolChoice.required:
+        return "You MUST use one of the provided functions/tools to answer the user query."
+    elif tool_choice == ToolChoice.none:
+        # tools are already not passed in
+        return ""
+    else:
+        # specific tool
+        return f"You MUST use the tool `{tool_choice}` to answer the user query."
+
+
+def get_default_tool_prompt_format(model: str) -> ToolPromptFormat:
+    llama_model = resolve_model(model)
+    if llama_model is None:
+        return ToolPromptFormat.json
+
+    if llama_model.model_family == ModelFamily.llama3_1 or (
+        llama_model.model_family == ModelFamily.llama3_2 and is_multimodal(llama_model.core_model_id)
+    ):
+        # llama3.1 and llama3.2 multimodal models follow the same tool prompt format
+        return ToolPromptFormat.json
+    elif llama_model.model_family in (ModelFamily.llama3_2, ModelFamily.llama3_3):
+        # llama3.2 and llama3.3 models follow the same tool prompt format
+        return ToolPromptFormat.python_list
+    else:
+        return ToolPromptFormat.json

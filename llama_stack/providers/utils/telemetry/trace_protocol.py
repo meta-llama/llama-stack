@@ -11,10 +11,12 @@ from typing import Any, AsyncGenerator, Callable, Type, TypeVar
 
 from pydantic import BaseModel
 
+from llama_stack.models.llama.datatypes import Primitive
+
 T = TypeVar("T")
 
 
-def serialize_value(value: Any) -> Any:
+def serialize_value(value: Any) -> Primitive:
     """Serialize a single value into JSON-compatible format."""
     if value is None:
         return ""
@@ -24,10 +26,6 @@ def serialize_value(value: Any) -> Any:
         return value._name_
     elif isinstance(value, BaseModel):
         return value.model_dump_json()
-    elif isinstance(value, (list, tuple, set)):
-        return [serialize_value(item) for item in value]
-    elif isinstance(value, dict):
-        return {str(k): serialize_value(v) for k, v in value.items()}
     else:
         return str(value)
 
@@ -45,16 +43,12 @@ def trace_protocol(cls: Type[T]) -> Type[T]:
         def create_span_context(self: Any, *args: Any, **kwargs: Any) -> tuple:
             class_name = self.__class__.__name__
             method_name = method.__name__
-            span_type = (
-                "async_generator" if is_async_gen else "async" if is_async else "sync"
-            )
+            span_type = "async_generator" if is_async_gen else "async" if is_async else "sync"
             sig = inspect.signature(method)
             param_names = list(sig.parameters.keys())[1:]  # Skip 'self'
             combined_args = {}
             for i, arg in enumerate(args):
-                param_name = (
-                    param_names[i] if i < len(param_names) else f"position_{i + 1}"
-                )
+                param_name = param_names[i] if i < len(param_names) else f"position_{i + 1}"
                 combined_args[param_name] = serialize_value(arg)
             for k, v in kwargs.items():
                 combined_args[str(k)] = serialize_value(v)
@@ -70,14 +64,10 @@ def trace_protocol(cls: Type[T]) -> Type[T]:
             return class_name, method_name, span_attributes
 
         @wraps(method)
-        async def async_gen_wrapper(
-            self: Any, *args: Any, **kwargs: Any
-        ) -> AsyncGenerator:
+        async def async_gen_wrapper(self: Any, *args: Any, **kwargs: Any) -> AsyncGenerator:
             from llama_stack.providers.utils.telemetry import tracing
 
-            class_name, method_name, span_attributes = create_span_context(
-                self, *args, **kwargs
-            )
+            class_name, method_name, span_attributes = create_span_context(self, *args, **kwargs)
 
             with tracing.span(f"{class_name}.{method_name}", span_attributes) as span:
                 try:
@@ -92,9 +82,7 @@ def trace_protocol(cls: Type[T]) -> Type[T]:
         async def async_wrapper(self: Any, *args: Any, **kwargs: Any) -> Any:
             from llama_stack.providers.utils.telemetry import tracing
 
-            class_name, method_name, span_attributes = create_span_context(
-                self, *args, **kwargs
-            )
+            class_name, method_name, span_attributes = create_span_context(self, *args, **kwargs)
 
             with tracing.span(f"{class_name}.{method_name}", span_attributes) as span:
                 try:
@@ -109,9 +97,7 @@ def trace_protocol(cls: Type[T]) -> Type[T]:
         def sync_wrapper(self: Any, *args: Any, **kwargs: Any) -> Any:
             from llama_stack.providers.utils.telemetry import tracing
 
-            class_name, method_name, span_attributes = create_span_context(
-                self, *args, **kwargs
-            )
+            class_name, method_name, span_attributes = create_span_context(self, *args, **kwargs)
 
             with tracing.span(f"{class_name}.{method_name}", span_attributes) as span:
                 try:

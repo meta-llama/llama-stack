@@ -6,24 +6,30 @@
 
 from typing import Any, AsyncGenerator, Dict, List, Optional
 
-from llama_stack.apis.common.content_types import InterleavedContent, URL
+from llama_stack.apis.common.content_types import (
+    URL,
+    InterleavedContent,
+    InterleavedContentItem,
+)
 from llama_stack.apis.datasetio import DatasetIO, PaginatedRowsResult
 from llama_stack.apis.eval import (
-    AppEvalTaskConfig,
+    BenchmarkConfig,
     Eval,
-    EvalTaskConfig,
     EvaluateResponse,
     Job,
     JobStatus,
 )
 from llama_stack.apis.inference import (
     EmbeddingsResponse,
+    EmbeddingTaskType,
     Inference,
     LogProbConfig,
     Message,
     ResponseFormat,
     SamplingParams,
+    TextTruncation,
     ToolChoice,
+    ToolConfig,
     ToolDefinition,
     ToolPromptFormat,
 )
@@ -46,6 +52,7 @@ from llama_stack.apis.tools import (
 )
 from llama_stack.apis.vector_io import Chunk, QueryChunksResponse, VectorIO
 from llama_stack.providers.datatypes import RoutingTable
+from llama_stack.providers.utils.inference.prompt_adapter import get_default_tool_prompt_format
 
 
 class VectorIORouter(VectorIO):
@@ -85,9 +92,7 @@ class VectorIORouter(VectorIO):
         chunks: List[Chunk],
         ttl_seconds: Optional[int] = None,
     ) -> None:
-        return await self.routing_table.get_provider_impl(vector_db_id).insert_chunks(
-            vector_db_id, chunks, ttl_seconds
-        )
+        return await self.routing_table.get_provider_impl(vector_db_id).insert_chunks(vector_db_id, chunks, ttl_seconds)
 
     async def query_chunks(
         self,
@@ -95,9 +100,7 @@ class VectorIORouter(VectorIO):
         query: InterleavedContent,
         params: Optional[Dict[str, Any]] = None,
     ) -> QueryChunksResponse:
-        return await self.routing_table.get_provider_impl(vector_db_id).query_chunks(
-            vector_db_id, query, params
-        )
+        return await self.routing_table.get_provider_impl(vector_db_id).query_chunks(vector_db_id, query, params)
 
 
 class InferenceRouter(Inference):
@@ -123,9 +126,7 @@ class InferenceRouter(Inference):
         metadata: Optional[Dict[str, Any]] = None,
         model_type: Optional[ModelType] = None,
     ) -> None:
-        await self.routing_table.register_model(
-            model_id, provider_model_id, provider_id, metadata, model_type
-        )
+        await self.routing_table.register_model(model_id, provider_model_id, provider_id, metadata, model_type)
 
     async def chat_completion(
         self,
@@ -134,28 +135,56 @@ class InferenceRouter(Inference):
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
         tools: Optional[List[ToolDefinition]] = None,
-        tool_choice: Optional[ToolChoice] = ToolChoice.auto,
+        tool_choice: Optional[ToolChoice] = None,
         tool_prompt_format: Optional[ToolPromptFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
+        tool_config: Optional[ToolConfig] = None,
     ) -> AsyncGenerator:
         model = await self.routing_table.get_model(model_id)
         if model is None:
             raise ValueError(f"Model '{model_id}' not found")
         if model.model_type == ModelType.embedding:
-            raise ValueError(
-                f"Model '{model_id}' is an embedding model and does not support chat completions"
-            )
+            raise ValueError(f"Model '{model_id}' is an embedding model and does not support chat completions")
+        if tool_config:
+            if tool_choice and tool_choice != tool_config.tool_choice:
+                raise ValueError("tool_choice and tool_config.tool_choice must match")
+            if tool_prompt_format and tool_prompt_format != tool_config.tool_prompt_format:
+                raise ValueError("tool_prompt_format and tool_config.tool_prompt_format must match")
+        else:
+            params = {}
+            if tool_choice:
+                params["tool_choice"] = tool_choice
+            if tool_prompt_format:
+                params["tool_prompt_format"] = tool_prompt_format
+            tool_config = ToolConfig(**params)
+
+        tool_config.tool_prompt_format = tool_config.tool_prompt_format or get_default_tool_prompt_format(model_id)
+
+        tools = tools or []
+        if tool_config.tool_choice == ToolChoice.none:
+            tools = []
+        elif tool_config.tool_choice == ToolChoice.auto:
+            pass
+        elif tool_config.tool_choice == ToolChoice.required:
+            pass
+        else:
+            # verify tool_choice is one of the tools
+            tool_names = [t.tool_name if isinstance(t.tool_name, str) else t.tool_name.value for t in tools]
+            if tool_config.tool_choice not in tool_names:
+                raise ValueError(f"Tool choice {tool_config.tool_choice} is not one of the tools: {tool_names}")
+
         params = dict(
             model_id=model_id,
             messages=messages,
             sampling_params=sampling_params,
-            tools=tools or [],
+            tools=tools,
             tool_choice=tool_choice,
             tool_prompt_format=tool_prompt_format,
             response_format=response_format,
             stream=stream,
             logprobs=logprobs,
+            tool_config=tool_config,
         )
         provider = self.routing_table.get_provider_impl(model_id)
         if stream:
@@ -176,9 +205,7 @@ class InferenceRouter(Inference):
         if model is None:
             raise ValueError(f"Model '{model_id}' not found")
         if model.model_type == ModelType.embedding:
-            raise ValueError(
-                f"Model '{model_id}' is an embedding model and does not support chat completions"
-            )
+            raise ValueError(f"Model '{model_id}' is an embedding model and does not support chat completions")
         provider = self.routing_table.get_provider_impl(model_id)
         params = dict(
             model_id=model_id,
@@ -196,18 +223,22 @@ class InferenceRouter(Inference):
     async def embeddings(
         self,
         model_id: str,
-        contents: List[InterleavedContent],
+        contents: List[str] | List[InterleavedContentItem],
+        text_truncation: Optional[TextTruncation] = TextTruncation.none,
+        output_dimension: Optional[int] = None,
+        task_type: Optional[EmbeddingTaskType] = None,
     ) -> EmbeddingsResponse:
         model = await self.routing_table.get_model(model_id)
         if model is None:
             raise ValueError(f"Model '{model_id}' not found")
         if model.model_type == ModelType.llm:
-            raise ValueError(
-                f"Model '{model_id}' is an LLM model and does not support embeddings"
-            )
+            raise ValueError(f"Model '{model_id}' is an LLM model and does not support embeddings")
         return await self.routing_table.get_provider_impl(model_id).embeddings(
             model_id=model_id,
             contents=contents,
+            text_truncation=text_truncation,
+            output_dimension=output_dimension,
+            task_type=task_type,
         )
 
 
@@ -231,9 +262,7 @@ class SafetyRouter(Safety):
         provider_id: Optional[str] = None,
         params: Optional[Dict[str, Any]] = None,
     ) -> Shield:
-        return await self.routing_table.register_shield(
-            shield_id, provider_shield_id, provider_id, params
-        )
+        return await self.routing_table.register_shield(shield_id, provider_shield_id, provider_id, params)
 
     async def run_shield(
         self,
@@ -268,9 +297,7 @@ class DatasetIORouter(DatasetIO):
         page_token: Optional[str] = None,
         filter_condition: Optional[str] = None,
     ) -> PaginatedRowsResult:
-        return await self.routing_table.get_provider_impl(
-            dataset_id
-        ).get_rows_paginated(
+        return await self.routing_table.get_provider_impl(dataset_id).get_rows_paginated(
             dataset_id=dataset_id,
             rows_in_page=rows_in_page,
             page_token=page_token,
@@ -305,9 +332,7 @@ class ScoringRouter(Scoring):
     ) -> ScoreBatchResponse:
         res = {}
         for fn_identifier in scoring_functions.keys():
-            score_response = await self.routing_table.get_provider_impl(
-                fn_identifier
-            ).score_batch(
+            score_response = await self.routing_table.get_provider_impl(fn_identifier).score_batch(
                 dataset_id=dataset_id,
                 scoring_functions={fn_identifier: scoring_functions[fn_identifier]},
             )
@@ -328,9 +353,7 @@ class ScoringRouter(Scoring):
         res = {}
         # look up and map each scoring function to its provider impl
         for fn_identifier in scoring_functions.keys():
-            score_response = await self.routing_table.get_provider_impl(
-                fn_identifier
-            ).score(
+            score_response = await self.routing_table.get_provider_impl(fn_identifier).score(
                 input_rows=input_rows,
                 scoring_functions={fn_identifier: scoring_functions[fn_identifier]},
             )
@@ -354,23 +377,23 @@ class EvalRouter(Eval):
 
     async def run_eval(
         self,
-        task_id: str,
-        task_config: AppEvalTaskConfig,
+        benchmark_id: str,
+        task_config: BenchmarkConfig,
     ) -> Job:
-        return await self.routing_table.get_provider_impl(task_id).run_eval(
-            task_id=task_id,
+        return await self.routing_table.get_provider_impl(benchmark_id).run_eval(
+            benchmark_id=benchmark_id,
             task_config=task_config,
         )
 
     async def evaluate_rows(
         self,
-        task_id: str,
+        benchmark_id: str,
         input_rows: List[Dict[str, Any]],
         scoring_functions: List[str],
-        task_config: EvalTaskConfig,
+        task_config: BenchmarkConfig,
     ) -> EvaluateResponse:
-        return await self.routing_table.get_provider_impl(task_id).evaluate_rows(
-            task_id=task_id,
+        return await self.routing_table.get_provider_impl(benchmark_id).evaluate_rows(
+            benchmark_id=benchmark_id,
             input_rows=input_rows,
             scoring_functions=scoring_functions,
             task_config=task_config,
@@ -378,30 +401,28 @@ class EvalRouter(Eval):
 
     async def job_status(
         self,
-        task_id: str,
+        benchmark_id: str,
         job_id: str,
     ) -> Optional[JobStatus]:
-        return await self.routing_table.get_provider_impl(task_id).job_status(
-            task_id, job_id
-        )
+        return await self.routing_table.get_provider_impl(benchmark_id).job_status(benchmark_id, job_id)
 
     async def job_cancel(
         self,
-        task_id: str,
+        benchmark_id: str,
         job_id: str,
     ) -> None:
-        await self.routing_table.get_provider_impl(task_id).job_cancel(
-            task_id,
+        await self.routing_table.get_provider_impl(benchmark_id).job_cancel(
+            benchmark_id,
             job_id,
         )
 
     async def job_result(
         self,
-        task_id: str,
+        benchmark_id: str,
         job_id: str,
     ) -> EvaluateResponse:
-        return await self.routing_table.get_provider_impl(task_id).job_result(
-            task_id,
+        return await self.routing_table.get_provider_impl(benchmark_id).job_result(
+            benchmark_id,
             job_id,
         )
 
@@ -420,9 +441,9 @@ class ToolRuntimeRouter(ToolRuntime):
             vector_db_ids: List[str],
             query_config: Optional[RAGQueryConfig] = None,
         ) -> RAGQueryResult:
-            return await self.routing_table.get_provider_impl(
-                "query_from_memory"
-            ).query(content, vector_db_ids, query_config)
+            return await self.routing_table.get_provider_impl("query_from_memory").query(
+                content, vector_db_ids, query_config
+            )
 
         async def insert(
             self,
@@ -430,9 +451,9 @@ class ToolRuntimeRouter(ToolRuntime):
             vector_db_id: str,
             chunk_size_in_tokens: int = 512,
         ) -> None:
-            return await self.routing_table.get_provider_impl(
-                "insert_into_memory"
-            ).insert(documents, vector_db_id, chunk_size_in_tokens)
+            return await self.routing_table.get_provider_impl("insert_into_memory").insert(
+                documents, vector_db_id, chunk_size_in_tokens
+            )
 
     def __init__(
         self,
@@ -460,6 +481,4 @@ class ToolRuntimeRouter(ToolRuntime):
     async def list_runtime_tools(
         self, tool_group_id: Optional[str] = None, mcp_endpoint: Optional[URL] = None
     ) -> List[ToolDef]:
-        return await self.routing_table.get_provider_impl(tool_group_id).list_tools(
-            tool_group_id, mcp_endpoint
-        )
+        return await self.routing_table.get_provider_impl(tool_group_id).list_tools(tool_group_id, mcp_endpoint)

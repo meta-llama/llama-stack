@@ -8,14 +8,11 @@ import pytest
 import pytest_asyncio
 
 from llama_stack.apis.models import ModelInput
-
 from llama_stack.apis.shields import ShieldInput
-
 from llama_stack.distribution.datatypes import Api, Provider
 from llama_stack.providers.inline.safety.llama_guard import LlamaGuardConfig
 from llama_stack.providers.inline.safety.prompt_guard import PromptGuardConfig
 from llama_stack.providers.remote.safety.bedrock import BedrockSafetyConfig
-
 from llama_stack.providers.tests.resolver import construct_stack_for_test
 
 from ..conftest import ProviderFixture, remote_stack_fixture

@@ -7,7 +7,6 @@
 from typing import Any, Dict, Optional
 
 from llama_stack.apis.scoring import ScoringResultRow
-
 from llama_stack.apis.scoring_functions import ScoringFnParams
 from llama_stack.providers.utils.scoring.base_scoring_fn import RegisteredBaseScoringFn
 
@@ -32,9 +31,7 @@ class EqualityScoringFn(RegisteredBaseScoringFn):
         scoring_params: Optional[ScoringFnParams] = None,
     ) -> ScoringResultRow:
         assert "expected_answer" in input_row, "Expected answer not found in input row."
-        assert (
-            "generated_answer" in input_row
-        ), "Generated answer not found in input row."
+        assert "generated_answer" in input_row, "Generated answer not found in input row."
 
         expected_answer = input_row["expected_answer"]
         generated_answer = input_row["generated_answer"]

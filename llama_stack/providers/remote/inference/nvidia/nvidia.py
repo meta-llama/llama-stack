@@ -4,14 +4,17 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import logging
 import warnings
 from typing import AsyncIterator, List, Optional, Union
 
-from llama_models.datatypes import SamplingParams
-from llama_models.llama3.api.datatypes import ToolDefinition, ToolPromptFormat
-from llama_models.sku_list import CoreModelId
 from openai import APIConnectionError, AsyncOpenAI
 
+from llama_stack.apis.common.content_types import (
+    InterleavedContent,
+    InterleavedContentItem,
+    TextContentItem,
+)
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
     ChatCompletionResponse,
@@ -20,20 +23,27 @@ from llama_stack.apis.inference import (
     CompletionResponse,
     CompletionResponseStreamChunk,
     EmbeddingsResponse,
+    EmbeddingTaskType,
     Inference,
-    InterleavedContent,
     LogProbConfig,
     Message,
     ResponseFormat,
+    TextTruncation,
     ToolChoice,
+    ToolConfig,
+)
+from llama_stack.models.llama.datatypes import (
+    SamplingParams,
+    ToolDefinition,
+    ToolPromptFormat,
 )
 from llama_stack.providers.utils.inference.model_registry import (
-    build_model_alias,
     ModelRegistryHelper,
 )
 from llama_stack.providers.utils.inference.prompt_adapter import content_has_media
 
 from . import NVIDIAConfig
+from .models import _MODEL_ENTRIES
 from .openai_utils import (
     convert_chat_completion_request,
     convert_completion_request,
@@ -44,60 +54,20 @@ from .openai_utils import (
 )
 from .utils import _is_nvidia_hosted, check_health
 
-_MODEL_ALIASES = [
-    build_model_alias(
-        "meta/llama3-8b-instruct",
-        CoreModelId.llama3_8b_instruct.value,
-    ),
-    build_model_alias(
-        "meta/llama3-70b-instruct",
-        CoreModelId.llama3_70b_instruct.value,
-    ),
-    build_model_alias(
-        "meta/llama-3.1-8b-instruct",
-        CoreModelId.llama3_1_8b_instruct.value,
-    ),
-    build_model_alias(
-        "meta/llama-3.1-70b-instruct",
-        CoreModelId.llama3_1_70b_instruct.value,
-    ),
-    build_model_alias(
-        "meta/llama-3.1-405b-instruct",
-        CoreModelId.llama3_1_405b_instruct.value,
-    ),
-    build_model_alias(
-        "meta/llama-3.2-1b-instruct",
-        CoreModelId.llama3_2_1b_instruct.value,
-    ),
-    build_model_alias(
-        "meta/llama-3.2-3b-instruct",
-        CoreModelId.llama3_2_3b_instruct.value,
-    ),
-    build_model_alias(
-        "meta/llama-3.2-11b-vision-instruct",
-        CoreModelId.llama3_2_11b_vision_instruct.value,
-    ),
-    build_model_alias(
-        "meta/llama-3.2-90b-vision-instruct",
-        CoreModelId.llama3_2_90b_vision_instruct.value,
-    ),
-    # TODO(mf): how do we handle Nemotron models?
-    # "Llama3.1-Nemotron-51B-Instruct" -> "meta/llama-3.1-nemotron-51b-instruct",
-]
+logger = logging.getLogger(__name__)
 
 
 class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
     def __init__(self, config: NVIDIAConfig) -> None:
         # TODO(mf): filter by available models
-        ModelRegistryHelper.__init__(self, model_aliases=_MODEL_ALIASES)
+        ModelRegistryHelper.__init__(self, model_entries=_MODEL_ENTRIES)
 
-        print(f"Initializing NVIDIAInferenceAdapter({config.url})...")
+        logger.info(f"Initializing NVIDIAInferenceAdapter({config.url})...")
 
         if _is_nvidia_hosted(config):
             if not config.api_key:
                 raise RuntimeError(
-                    "API key is required for hosted NVIDIA NIM. "
-                    "Either provide an API key or use a self-hosted NIM."
+                    "API key is required for hosted NVIDIA NIM. Either provide an API key or use a self-hosted NIM."
                 )
         # elif self._config.api_key:
         #
@@ -113,11 +83,7 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
         # make sure the client lives longer than any async calls
         self._client = AsyncOpenAI(
             base_url=f"{self._config.url}/v1",
-            api_key=(
-                self._config.api_key.get_secret_value()
-                if self._config.api_key
-                else "NO KEY"
-            ),
+            api_key=(self._config.api_key.get_secret_value() if self._config.api_key else "NO KEY"),
             timeout=self._config.timeout,
         )
 
@@ -150,9 +116,7 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
         try:
             response = await self._client.completions.create(**request)
         except APIConnectionError as e:
-            raise ConnectionError(
-                f"Failed to connect to NVIDIA NIM at {self._config.url}: {e}"
-            ) from e
+            raise ConnectionError(f"Failed to connect to NVIDIA NIM at {self._config.url}: {e}") from e
 
         if stream:
             return convert_openai_completion_stream(response)
@@ -163,9 +127,41 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
     async def embeddings(
         self,
         model_id: str,
-        contents: List[InterleavedContent],
+        contents: List[str] | List[InterleavedContentItem],
+        text_truncation: Optional[TextTruncation] = TextTruncation.none,
+        output_dimension: Optional[int] = None,
+        task_type: Optional[EmbeddingTaskType] = None,
     ) -> EmbeddingsResponse:
-        raise NotImplementedError()
+        if any(content_has_media(content) for content in contents):
+            raise NotImplementedError("Media is not supported")
+
+        #
+        # Llama Stack: contents = List[str] | List[InterleavedContentItem]
+        #  ->
+        # OpenAI: input = str | List[str]
+        #
+        # we can ignore str and always pass List[str] to OpenAI
+        #
+        flat_contents = [
+            item.text if isinstance(item, TextContentItem) else item
+            for content in contents
+            for item in (content if isinstance(content, list) else [content])
+        ]
+        input = [content.text if isinstance(content, TextContentItem) else content for content in flat_contents]
+        model = self.get_provider_model_id(model_id)
+
+        response = await self._client.embeddings.create(
+            model=model,
+            input=input,
+            # extra_body={"input_type": "passage"|"query"},  # TODO(mf): how to tell caller's intent?
+        )
+
+        #
+        # OpenAI: CreateEmbeddingResponse(data=[Embedding(embedding=List[float], ...)], ...)
+        #  ->
+        # Llama Stack: EmbeddingsResponse(embeddings=List[List[float]])
+        #
+        return EmbeddingsResponse(embeddings=[embedding.embedding for embedding in response.data])
 
     async def chat_completion(
         self,
@@ -178,25 +174,23 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
         tool_prompt_format: Optional[ToolPromptFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
-    ) -> Union[
-        ChatCompletionResponse, AsyncIterator[ChatCompletionResponseStreamChunk]
-    ]:
+        tool_config: Optional[ToolConfig] = None,
+    ) -> Union[ChatCompletionResponse, AsyncIterator[ChatCompletionResponseStreamChunk]]:
         if tool_prompt_format:
             warnings.warn("tool_prompt_format is not supported by NVIDIA NIM, ignoring")
 
         await check_health(self._config)  # this raises errors
 
-        request = convert_chat_completion_request(
+        request = await convert_chat_completion_request(
             request=ChatCompletionRequest(
                 model=self.get_provider_model_id(model_id),
                 messages=messages,
                 sampling_params=sampling_params,
                 response_format=response_format,
                 tools=tools,
-                tool_choice=tool_choice,
-                tool_prompt_format=tool_prompt_format,
                 stream=stream,
                 logprobs=logprobs,
+                tool_config=tool_config,
             ),
             n=1,
         )
@@ -204,9 +198,7 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
         try:
             response = await self._client.chat.completions.create(**request)
         except APIConnectionError as e:
-            raise ConnectionError(
-                f"Failed to connect to NVIDIA NIM at {self._config.url}: {e}"
-            ) from e
+            raise ConnectionError(f"Failed to connect to NVIDIA NIM at {self._config.url}: {e}") from e
 
         if stream:
             return convert_openai_chat_completion_stream(response)

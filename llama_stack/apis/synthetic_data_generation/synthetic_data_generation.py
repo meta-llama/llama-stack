@@ -5,14 +5,12 @@
 # the root directory of this source tree.
 
 from enum import Enum
-
 from typing import Any, Dict, List, Optional, Protocol, Union
-
-from llama_models.schema_utils import json_schema_type, webmethod
 
 from pydantic import BaseModel
 
 from llama_stack.apis.inference import Message
+from llama_stack.schema_utils import json_schema_type, webmethod
 
 
 class FilteringFunction(Enum):

@@ -15,7 +15,7 @@ class ModelVerifyDownload(Subcommand):
         self.parser = subparsers.add_parser(
             "verify-download",
             prog="llama model verify-download",
-            description="Verify the downloaded checkpoints' checksums",
+            description="Verify the downloaded checkpoints' checksums for models downloaded from Meta",
             formatter_class=argparse.RawTextHelpFormatter,
         )
 

@@ -6,11 +6,10 @@
 
 from pathlib import Path
 
-from llama_models.sku_list import all_registered_models
-
 from llama_stack.distribution.datatypes import ModelInput, Provider, ToolGroupInput
+from llama_stack.models.llama.sku_list import all_registered_models
 from llama_stack.providers.remote.inference.nvidia import NVIDIAConfig
-from llama_stack.providers.remote.inference.nvidia.nvidia import _MODEL_ALIASES
+from llama_stack.providers.remote.inference.nvidia.models import _MODEL_ENTRIES
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
 
@@ -28,7 +27,7 @@ def get_distribution_template() -> DistributionTemplate:
             "remote::brave-search",
             "remote::tavily-search",
             "inline::code-interpreter",
-            "inline::memory-runtime",
+            "inline::rag-runtime",
             "remote::model-context-protocol",
         ],
     }
@@ -39,16 +38,16 @@ def get_distribution_template() -> DistributionTemplate:
         config=NVIDIAConfig.sample_run_config(),
     )
 
-    core_model_to_hf_repo = {
-        m.descriptor(): m.huggingface_repo for m in all_registered_models()
-    }
+    core_model_to_hf_repo = {m.descriptor(): m.huggingface_repo for m in all_registered_models()}
     default_models = [
         ModelInput(
-            model_id=core_model_to_hf_repo[m.llama_model],
+            model_id=core_model_to_hf_repo[m.llama_model] if m.llama_model else m.provider_model_id,
             provider_model_id=m.provider_model_id,
             provider_id="nvidia",
+            model_type=m.model_type,
+            metadata=m.metadata,
         )
-        for m in _MODEL_ALIASES
+        for m in _MODEL_ENTRIES
     ]
     default_tool_groups = [
         ToolGroupInput(
@@ -56,8 +55,8 @@ def get_distribution_template() -> DistributionTemplate:
             provider_id="tavily-search",
         ),
         ToolGroupInput(
-            toolgroup_id="builtin::memory",
-            provider_id="memory-runtime",
+            toolgroup_id="builtin::rag",
+            provider_id="rag-runtime",
         ),
         ToolGroupInput(
             toolgroup_id="builtin::code_interpreter",

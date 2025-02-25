@@ -11,10 +11,8 @@ from ..conftest import (
     get_provider_fixture_overrides_from_test_config,
     get_test_config_for_api,
 )
-
 from ..inference.fixtures import INFERENCE_FIXTURES
 from .fixtures import VECTOR_IO_FIXTURES
-
 
 DEFAULT_PROVIDER_COMBINATIONS = [
     pytest.param(
@@ -28,9 +26,25 @@ DEFAULT_PROVIDER_COMBINATIONS = [
     pytest.param(
         {
             "inference": "ollama",
+            "vector_io": "pgvector",
+        },
+        id="pgvector",
+        marks=pytest.mark.pgvector,
+    ),
+    pytest.param(
+        {
+            "inference": "ollama",
             "vector_io": "faiss",
         },
         id="ollama",
+        marks=pytest.mark.ollama,
+    ),
+    pytest.param(
+        {
+            "inference": "ollama",
+            "vector_io": "sqlite_vec",
+        },
+        id="sqlite_vec",
         marks=pytest.mark.ollama,
     ),
     pytest.param(
@@ -43,7 +57,7 @@ DEFAULT_PROVIDER_COMBINATIONS = [
     ),
     pytest.param(
         {
-            "inference": "bedrock",
+            "inference": "ollama",
             "vector_io": "qdrant",
         },
         id="qdrant",
@@ -77,7 +91,7 @@ def pytest_generate_tests(metafunc):
         if model:
             params = [pytest.param(model, id="")]
         else:
-            params = [pytest.param("all-MiniLM-L6-v2", id="")]
+            params = [pytest.param("all-minilm:l6-v2", id="")]
 
         metafunc.parametrize("embedding_model", params, indirect=True)
 
@@ -87,9 +101,7 @@ def pytest_generate_tests(metafunc):
             "vector_io": VECTOR_IO_FIXTURES,
         }
         combinations = (
-            get_provider_fixture_overrides_from_test_config(
-                metafunc.config, "vector_io", DEFAULT_PROVIDER_COMBINATIONS
-            )
+            get_provider_fixture_overrides_from_test_config(metafunc.config, "vector_io", DEFAULT_PROVIDER_COMBINATIONS)
             or get_provider_fixture_overrides(metafunc.config, available_fixtures)
             or DEFAULT_PROVIDER_COMBINATIONS
         )

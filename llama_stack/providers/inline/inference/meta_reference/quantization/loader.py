@@ -12,21 +12,16 @@ import os
 from typing import Any, Dict, List, Optional
 
 import torch
-
 from fairscale.nn.model_parallel.layers import ColumnParallelLinear, RowParallelLinear
 from fairscale.nn.model_parallel.mappings import reduce_from_model_parallel_region
-
-from llama_models.datatypes import CheckpointQuantizationFormat
-
 from llama_models.llama3.api.args import ModelArgs
 from llama_models.llama3.reference_impl.model import Transformer, TransformerBlock
-from llama_models.sku_list import resolve_model
-
-from torch import nn, Tensor
-
+from torch import Tensor, nn
 from torchao.quantization.GPTQ import Int8DynActInt4WeightLinear
 
 from llama_stack.apis.inference import QuantizationType
+from llama_stack.models.llama.datatypes import CheckpointQuantizationFormat
+from llama_stack.models.llama.sku_list import resolve_model
 
 from ..config import MetaReferenceQuantizedInferenceConfig
 
@@ -63,12 +58,8 @@ def convert_to_fp8_quantized_model(
     # Move weights to GPU with quantization
     if llama_model.quantization_format == CheckpointQuantizationFormat.fp8_mixed.value:
         log.info("Loading fp8 scales...")
-        fp8_scales_path = os.path.join(
-            checkpoint_dir, f"fp8_scales_{get_model_parallel_rank()}.pt"
-        )
-        assert os.path.isfile(
-            fp8_scales_path
-        ), f"fp8_scales_path not found for rank {get_model_parallel_rank()}"
+        fp8_scales_path = os.path.join(checkpoint_dir, f"fp8_scales_{get_model_parallel_rank()}.pt")
+        assert os.path.isfile(fp8_scales_path), f"fp8_scales_path not found for rank {get_model_parallel_rank()}"
         fp8_scales = torch.load(fp8_scales_path, weights_only=True)
 
         for block in model.layers:
@@ -81,9 +72,7 @@ def convert_to_fp8_quantized_model(
                     param = getattr(block.feed_forward, key)
                     param.weight = load_fp8(
                         param.weight,
-                        fp8_scales[
-                            f"{block.layer_id}_feed_forward.{key}_{get_model_parallel_rank()}"
-                        ],
+                        fp8_scales[f"{block.layer_id}_feed_forward.{key}_{get_model_parallel_rank()}"],
                         fp8_activation_scale_ub,
                     )
     else:
@@ -172,9 +161,7 @@ class Int8DynActInt4WeightLinearLoRA(Int8DynActInt4WeightLinear):
         if prefix + "zeros" not in state_dict:
             # Zero-point may not be saved in the state dict. In this case, we assume it's zero.
             assert prefix + "scales" in state_dict
-            state_dict[prefix + "zeros"] = torch.zeros_like(
-                state_dict[prefix + "scales"]
-            )
+            state_dict[prefix + "zeros"] = torch.zeros_like(state_dict[prefix + "scales"])
 
     def forward(self, input_: torch.Tensor) -> torch.Tensor:
         module_out = super().forward(input_)
@@ -229,9 +216,7 @@ class Int8WeightLinear(torch.nn.Linear):
         bias: Whether to use bias.
     """
 
-    def __init__(
-        self, in_features: int, out_features: int, bias: bool = True, device=None
-    ) -> None:
+    def __init__(self, in_features: int, out_features: int, bias: bool = True, device=None) -> None:
         super().__init__(in_features, out_features, bias, device=device)
 
         self._register_load_state_dict_pre_hook(self.load_hook)
@@ -295,9 +280,7 @@ def _prepare_model_int4_weight_int8_dynamic_activation(
             del module
             setattr(model, module_name, quantized_module)
         else:
-            _prepare_model_int4_weight_int8_dynamic_activation(
-                module, group_size, lora_rank, lora_scale
-            )
+            _prepare_model_int4_weight_int8_dynamic_activation(module, group_size, lora_rank, lora_scale)
 
     return model
 
@@ -321,9 +304,7 @@ def convert_to_int4_quantized_model(
 
     group_size = model_args.quantization_args.group_size
     if group_size is None:
-        raise ValueError(
-            "'group_size' cannot be None in 'quantization_args'. Please specify it."
-        )
+        raise ValueError("'group_size' cannot be None in 'quantization_args'. Please specify it.")
 
     if model_args.lora_args is None:
         # Certain quantized models (e.g., SpinQuant) may not have LoRA.
@@ -333,8 +314,6 @@ def convert_to_int4_quantized_model(
         lora_rank = model_args.lora_args.rank
         lora_scale = model_args.lora_args.scale
 
-    _prepare_model_int4_weight_int8_dynamic_activation(
-        model, group_size, lora_rank, lora_scale
-    )
+    _prepare_model_int4_weight_int8_dynamic_activation(model, group_size, lora_rank, lora_scale)
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     return model.to(device)

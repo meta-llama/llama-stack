@@ -6,12 +6,13 @@
 
 from typing import Optional
 
-from llama_models.schema_utils import json_schema_type
 from pydantic import BaseModel
+
+from llama_stack.schema_utils import json_schema_type
 
 
 @json_schema_type
-class QdrantConfig(BaseModel):
+class QdrantVectorIOConfig(BaseModel):
     location: Optional[str] = None
     url: Optional[str] = None
     port: Optional[int] = 6333

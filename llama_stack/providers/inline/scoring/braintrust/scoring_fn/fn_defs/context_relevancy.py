@@ -14,13 +14,10 @@ from llama_stack.apis.scoring_functions import (
 context_relevancy_fn_def = ScoringFn(
     identifier="braintrust::context-relevancy",
     description=(
-        "Assesses how relevant the provided context is to the given question. "
-        "See: github.com/braintrustdata/autoevals"
+        "Assesses how relevant the provided context is to the given question. See: github.com/braintrustdata/autoevals"
     ),
     provider_id="braintrust",
     provider_resource_id="context-relevancy",
     return_type=NumberType(),
-    params=BasicScoringFnParams(
-        aggregation_functions=[AggregationFunctionType.average]
-    ),
+    params=BasicScoringFnParams(aggregation_functions=[AggregationFunctionType.average]),
 )

@@ -12,12 +12,13 @@ import pytest_asyncio
 
 from llama_stack.apis.models import ModelInput, ModelType
 from llama_stack.distribution.datatypes import Api, Provider
-
-from llama_stack.providers.inline.vector_io.chroma import ChromaInlineImplConfig
-from llama_stack.providers.inline.vector_io.faiss import FaissImplConfig
-from llama_stack.providers.remote.vector_io.chroma import ChromaRemoteImplConfig
-from llama_stack.providers.remote.vector_io.pgvector import PGVectorConfig
-from llama_stack.providers.remote.vector_io.weaviate import WeaviateConfig
+from llama_stack.providers.inline.vector_io.chroma import ChromaVectorIOConfig as InlineChromaVectorIOConfig
+from llama_stack.providers.inline.vector_io.faiss import FaissVectorIOConfig
+from llama_stack.providers.inline.vector_io.sqlite_vec import SQLiteVectorIOConfig
+from llama_stack.providers.remote.vector_io.chroma import ChromaVectorIOConfig
+from llama_stack.providers.remote.vector_io.pgvector import PGVectorVectorIOConfig
+from llama_stack.providers.remote.vector_io.qdrant import QdrantVectorIOConfig
+from llama_stack.providers.remote.vector_io.weaviate import WeaviateVectorIOConfig
 from llama_stack.providers.tests.resolver import construct_stack_for_test
 from llama_stack.providers.utils.kvstore.config import SqliteKVStoreConfig
 
@@ -45,7 +46,23 @@ def vector_io_faiss() -> ProviderFixture:
             Provider(
                 provider_id="faiss",
                 provider_type="inline::faiss",
-                config=FaissImplConfig(
+                config=FaissVectorIOConfig(
+                    kvstore=SqliteKVStoreConfig(db_path=temp_file.name).model_dump(),
+                ).model_dump(),
+            )
+        ],
+    )
+
+
+@pytest.fixture(scope="session")
+def vector_io_sqlite_vec() -> ProviderFixture:
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".db")
+    return ProviderFixture(
+        providers=[
+            Provider(
+                provider_id="sqlite_vec",
+                provider_type="inline::sqlite-vec",
+                config=SQLiteVectorIOConfig(
                     kvstore=SqliteKVStoreConfig(db_path=temp_file.name).model_dump(),
                 ).model_dump(),
             )
@@ -60,7 +77,7 @@ def vector_io_pgvector() -> ProviderFixture:
             Provider(
                 provider_id="pgvector",
                 provider_type="remote::pgvector",
-                config=PGVectorConfig(
+                config=PGVectorVectorIOConfig(
                     host=os.getenv("PGVECTOR_HOST", "localhost"),
                     port=os.getenv("PGVECTOR_PORT", 5432),
                     db=get_env_or_fail("PGVECTOR_DB"),
@@ -79,7 +96,7 @@ def vector_io_weaviate() -> ProviderFixture:
             Provider(
                 provider_id="weaviate",
                 provider_type="remote::weaviate",
-                config=WeaviateConfig().model_dump(),
+                config=WeaviateVectorIOConfig().model_dump(),
             )
         ],
         provider_data=dict(
@@ -93,12 +110,12 @@ def vector_io_weaviate() -> ProviderFixture:
 def vector_io_chroma() -> ProviderFixture:
     url = os.getenv("CHROMA_URL")
     if url:
-        config = ChromaRemoteImplConfig(url=url)
+        config = ChromaVectorIOConfig(url=url)
         provider_type = "remote::chromadb"
     else:
         if not os.getenv("CHROMA_DB_PATH"):
             raise ValueError("CHROMA_DB_PATH or CHROMA_URL must be set")
-        config = ChromaInlineImplConfig(db_path=os.getenv("CHROMA_DB_PATH"))
+        config = InlineChromaVectorIOConfig(db_path=os.getenv("CHROMA_DB_PATH"))
         provider_type = "inline::chromadb"
     return ProviderFixture(
         providers=[
@@ -111,7 +128,26 @@ def vector_io_chroma() -> ProviderFixture:
     )
 
 
-VECTOR_IO_FIXTURES = ["faiss", "pgvector", "weaviate", "chroma"]
+@pytest.fixture(scope="session")
+def vector_io_qdrant() -> ProviderFixture:
+    url = os.getenv("QDRANT_URL")
+    if url:
+        config = QdrantVectorIOConfig(url=url)
+        provider_type = "remote::qdrant"
+    else:
+        raise ValueError("QDRANT_URL must be set")
+    return ProviderFixture(
+        providers=[
+            Provider(
+                provider_id="qdrant",
+                provider_type=provider_type,
+                config=config.model_dump(),
+            )
+        ]
+    )
+
+
+VECTOR_IO_FIXTURES = ["faiss", "pgvector", "weaviate", "chroma", "qdrant", "sqlite_vec"]
 
 
 @pytest_asyncio.fixture(scope="session")

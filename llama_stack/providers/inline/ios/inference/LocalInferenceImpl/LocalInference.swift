@@ -40,7 +40,7 @@ public class LocalInference: Inference {
 
   public func chatCompletion(request: Components.Schemas.ChatCompletionRequest) -> AsyncStream<Components.Schemas.ChatCompletionResponseStreamChunk> {
     return AsyncStream { continuation in
-      runnerQueue.async {
+      let workItem = DispatchWorkItem {
         do {
           var tokens: [String] = []
 
@@ -69,9 +69,10 @@ public class LocalInference: Inference {
               continuation.yield(
                 Components.Schemas.ChatCompletionResponseStreamChunk(
                   event: Components.Schemas.ChatCompletionResponseEvent(
-                    delta: .ToolCallDelta(Components.Schemas.ToolCallDelta(
-                      content: .case1(""),
-                      parse_status: Components.Schemas.ToolCallParseStatus.started
+                    delta: .tool_call(Components.Schemas.ToolCallDelta(
+                      parse_status: Components.Schemas.ToolCallParseStatus.started,
+                      tool_call: .case1(""),
+                      _type: Components.Schemas.ToolCallDelta._typePayload.tool_call
                       )
                     ),
                     event_type: .progress
@@ -95,14 +96,18 @@ public class LocalInference: Inference {
               text = token
             }
 
-            var delta: Components.Schemas.ChatCompletionResponseEvent.deltaPayload
+            var delta: Components.Schemas.ContentDelta
             if ipython {
-              delta = .ToolCallDelta(Components.Schemas.ToolCallDelta(
-                content: .case1(text),
-                parse_status: .in_progress
+              delta = .tool_call(Components.Schemas.ToolCallDelta(
+                parse_status: .in_progress,
+                tool_call: .case1(text),
+                _type: .tool_call
               ))
             } else {
-              delta = .case1(text)
+              delta = .text(Components.Schemas.TextDelta(
+                text: text,
+                _type: Components.Schemas.TextDelta._typePayload.text)
+              )
             }
 
             if stopReason == nil {
@@ -129,7 +134,12 @@ public class LocalInference: Inference {
             continuation.yield(
               Components.Schemas.ChatCompletionResponseStreamChunk(
                 event: Components.Schemas.ChatCompletionResponseEvent(
-                  delta: .ToolCallDelta(Components.Schemas.ToolCallDelta(content: .case1(""), parse_status: .failure)),
+                  delta: .tool_call(Components.Schemas.ToolCallDelta(
+                    parse_status: Components.Schemas.ToolCallParseStatus.failed,
+                    tool_call: .case1(""),
+                    _type: Components.Schemas.ToolCallDelta._typePayload.tool_call
+                    )
+                  ),
                   event_type: .progress
                 )
                 // TODO: stopReason
@@ -141,10 +151,12 @@ public class LocalInference: Inference {
             continuation.yield(
               Components.Schemas.ChatCompletionResponseStreamChunk(
                 event: Components.Schemas.ChatCompletionResponseEvent(
-                  delta: .ToolCallDelta(Components.Schemas.ToolCallDelta(
-                    content: .ToolCall(toolCall),
-                    parse_status: .success
-                  )),
+                  delta: .tool_call(Components.Schemas.ToolCallDelta(
+                    parse_status: Components.Schemas.ToolCallParseStatus.succeeded,
+                    tool_call: Components.Schemas.ToolCallDelta.tool_callPayload.ToolCall(toolCall),
+                    _type: Components.Schemas.ToolCallDelta._typePayload.tool_call
+                    )
+                  ),
                   event_type: .progress
                 )
                 // TODO: stopReason
@@ -155,7 +167,10 @@ public class LocalInference: Inference {
           continuation.yield(
             Components.Schemas.ChatCompletionResponseStreamChunk(
               event: Components.Schemas.ChatCompletionResponseEvent(
-                delta: .case1(""),
+                delta: .text(Components.Schemas.TextDelta(
+                  text: "",
+                  _type: Components.Schemas.TextDelta._typePayload.text)
+                ),
                 event_type: .complete
               )
               // TODO: stopReason
@@ -166,6 +181,7 @@ public class LocalInference: Inference {
           print("Inference error: " + error.localizedDescription)
         }
       }
+      runnerQueue.async(execute: workItem)
     }
   }
 }

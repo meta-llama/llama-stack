@@ -16,11 +16,7 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 import httpx
-
-from llama_models.datatypes import Model
-from llama_models.sku_list import LlamaDownloadInfo
 from pydantic import BaseModel, ConfigDict
-
 from rich.console import Console
 from rich.progress import (
     BarColumn,
@@ -33,6 +29,8 @@ from rich.progress import (
 from termcolor import cprint
 
 from llama_stack.cli.subcommand import Subcommand
+from llama_stack.models.llama.datatypes import Model
+from llama_stack.models.llama.sku_list import LlamaDownloadInfo
 
 
 class Download(Subcommand):
@@ -58,7 +56,7 @@ def setup_download_parser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--model-id",
         required=False,
-        help="See `llama model list` or `llama model list --show-all` for the list of available models",
+        help="See `llama model list` or `llama model list --show-all` for the list of available models. Specify multiple model IDs with commas, e.g. --model-id Llama3.2-1B,Llama3.2-3B",
     )
     parser.add_argument(
         "--hf-token",
@@ -85,8 +83,7 @@ def setup_download_parser(parser: argparse.ArgumentParser) -> None:
         type=str,
         required=False,
         default="*.safetensors",
-        help="""
-For source=huggingface, files matching any of the patterns are not downloaded. Defaults to ignoring
+        help="""For source=huggingface, files matching any of the patterns are not downloaded. Defaults to ignoring
 safetensors files to avoid downloading duplicate weights.
 """,
     )
@@ -147,9 +144,7 @@ class ParallelDownloader:
             "follow_redirects": True,
         }
 
-    async def retry_with_exponential_backoff(
-        self, task: DownloadTask, func, *args, **kwargs
-    ):
+    async def retry_with_exponential_backoff(self, task: DownloadTask, func, *args, **kwargs):
         last_exception = None
         for attempt in range(task.max_retries):
             try:
@@ -166,13 +161,9 @@ class ParallelDownloader:
                     continue
         raise last_exception
 
-    async def get_file_info(
-        self, client: httpx.AsyncClient, task: DownloadTask
-    ) -> None:
+    async def get_file_info(self, client: httpx.AsyncClient, task: DownloadTask) -> None:
         async def _get_info():
-            response = await client.head(
-                task.url, headers={"Accept-Encoding": "identity"}, **self.client_options
-            )
+            response = await client.head(task.url, headers={"Accept-Encoding": "identity"}, **self.client_options)
             response.raise_for_status()
             return response
 
@@ -201,14 +192,10 @@ class ParallelDownloader:
             return False
         return os.path.getsize(task.output_file) == task.total_size
 
-    async def download_chunk(
-        self, client: httpx.AsyncClient, task: DownloadTask, start: int, end: int
-    ) -> None:
+    async def download_chunk(self, client: httpx.AsyncClient, task: DownloadTask, start: int, end: int) -> None:
         async def _download_chunk():
             headers = {"Range": f"bytes={start}-{end}"}
-            async with client.stream(
-                "GET", task.url, headers=headers, **self.client_options
-            ) as response:
+            async with client.stream("GET", task.url, headers=headers, **self.client_options) as response:
                 response.raise_for_status()
 
                 with open(task.output_file, "ab") as file:
@@ -225,8 +212,7 @@ class ParallelDownloader:
             await self.retry_with_exponential_backoff(task, _download_chunk)
         except Exception as e:
             raise DownloadError(
-                f"Failed to download chunk {start}-{end} after "
-                f"{task.max_retries} attempts: {str(e)}"
+                f"Failed to download chunk {start}-{end} after {task.max_retries} attempts: {str(e)}"
             ) from e
 
     async def prepare_download(self, task: DownloadTask) -> None:
@@ -244,9 +230,7 @@ class ParallelDownloader:
                 # Check if file is already downloaded
                 if os.path.exists(task.output_file):
                     if self.verify_file_integrity(task):
-                        self.console.print(
-                            f"[green]Already downloaded {task.output_file}[/green]"
-                        )
+                        self.console.print(f"[green]Already downloaded {task.output_file}[/green]")
                         self.progress.update(task.task_id, completed=task.total_size)
                         return
 
@@ -259,9 +243,7 @@ class ParallelDownloader:
 
                     current_pos = task.downloaded_size
                     while current_pos < task.total_size:
-                        chunk_end = min(
-                            current_pos + chunk_size - 1, task.total_size - 1
-                        )
+                        chunk_end = min(current_pos + chunk_size - 1, task.total_size - 1)
                         chunks.append((current_pos, chunk_end))
                         current_pos = chunk_end + 1
 
@@ -273,18 +255,12 @@ class ParallelDownloader:
                     raise DownloadError(f"Download failed: {str(e)}") from e
 
         except Exception as e:
-            self.progress.update(
-                task.task_id, description=f"[red]Failed: {task.output_file}[/red]"
-            )
-            raise DownloadError(
-                f"Download failed for {task.output_file}: {str(e)}"
-            ) from e
+            self.progress.update(task.task_id, description=f"[red]Failed: {task.output_file}[/red]")
+            raise DownloadError(f"Download failed for {task.output_file}: {str(e)}") from e
 
     def has_disk_space(self, tasks: List[DownloadTask]) -> bool:
         try:
-            total_remaining_size = sum(
-                task.total_size - task.downloaded_size for task in tasks
-            )
+            total_remaining_size = sum(task.total_size - task.downloaded_size for task in tasks)
             dir_path = os.path.dirname(os.path.abspath(tasks[0].output_file))
             free_space = shutil.disk_usage(dir_path).free
 
@@ -314,9 +290,7 @@ class ParallelDownloader:
         with self.progress:
             for task in tasks:
                 desc = f"Downloading {Path(task.output_file).name}"
-                task.task_id = self.progress.add_task(
-                    desc, total=task.total_size, completed=task.downloaded_size
-                )
+                task.task_id = self.progress.add_task(desc, total=task.total_size, completed=task.downloaded_size)
 
             semaphore = asyncio.Semaphore(self.max_concurrent_downloads)
 
@@ -332,9 +306,7 @@ class ParallelDownloader:
         if failed_tasks:
             self.console.print("\n[red]Some downloads failed:[/red]")
             for task, error in failed_tasks:
-                self.console.print(
-                    f"[red]- {Path(task.output_file).name}: {error}[/red]"
-                )
+                self.console.print(f"[red]- {Path(task.output_file).name}: {error}[/red]")
             raise DownloadError(f"{len(failed_tasks)} downloads failed")
 
 
@@ -396,11 +368,7 @@ def _meta_download(
         output_file = str(output_dir / f)
         url = meta_url.replace("*", f"{info.folder}/{f}")
         total_size = info.pth_size if "consolidated" in f else 0
-        tasks.append(
-            DownloadTask(
-                url=url, output_file=output_file, total_size=total_size, max_retries=3
-            )
-        )
+        tasks.append(DownloadTask(url=url, output_file=output_file, total_size=total_size, max_retries=3))
 
     # Initialize and run parallel downloader
     downloader = ParallelDownloader(max_concurrent_downloads=max_concurrent_downloads)
@@ -446,14 +414,10 @@ def _download_from_manifest(manifest_file: str, max_concurrent_downloads: int):
         os.makedirs(output_dir, exist_ok=True)
 
         if any(output_dir.iterdir()):
-            console.print(
-                f"[yellow]Output directory {output_dir} is not empty.[/yellow]"
-            )
+            console.print(f"[yellow]Output directory {output_dir} is not empty.[/yellow]")
 
             while True:
-                resp = input(
-                    "Do you want to (C)ontinue download or (R)estart completely? (continue/restart): "
-                )
+                resp = input("Do you want to (C)ontinue download or (R)estart completely? (continue/restart): ")
                 if resp.lower() in ["restart", "r"]:
                     shutil.rmtree(output_dir)
                     os.makedirs(output_dir, exist_ok=True)
@@ -471,9 +435,7 @@ def _download_from_manifest(manifest_file: str, max_concurrent_downloads: int):
         ]
 
         # Initialize and run parallel downloader
-        downloader = ParallelDownloader(
-            max_concurrent_downloads=max_concurrent_downloads
-        )
+        downloader = ParallelDownloader(max_concurrent_downloads=max_concurrent_downloads)
         asyncio.run(downloader.download_all(tasks))
 
 
@@ -491,7 +453,7 @@ def run_download_cmd(args: argparse.Namespace, parser: argparse.ArgumentParser):
         # Handle comma-separated model IDs
         model_ids = [model_id.strip() for model_id in args.model_id.split(",")]
 
-        from llama_models.sku_list import llama_meta_net_info, resolve_model
+        from llama_stack.models.llama.sku_list import llama_meta_net_info, resolve_model
 
         from .model.safety_models import (
             prompt_guard_download_info,

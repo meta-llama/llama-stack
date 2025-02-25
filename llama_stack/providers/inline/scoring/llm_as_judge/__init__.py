@@ -16,8 +16,6 @@ async def get_provider_impl(
 ):
     from .scoring import LlmAsJudgeScoringImpl
 
-    impl = LlmAsJudgeScoringImpl(
-        config, deps[Api.datasetio], deps[Api.datasets], deps[Api.inference]
-    )
+    impl = LlmAsJudgeScoringImpl(config, deps[Api.datasetio], deps[Api.datasets], deps[Api.inference])
     await impl.initialize()
     return impl

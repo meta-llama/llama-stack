@@ -10,7 +10,7 @@ from llama_stack.providers.inline.inference.sentence_transformers import (
     SentenceTransformersInferenceConfig,
 )
 from llama_stack.providers.inline.inference.vllm import VLLMConfig
-from llama_stack.providers.inline.vector_io.faiss.config import FaissImplConfig
+from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOConfig
 from llama_stack.templates.template import (
     DistributionTemplate,
     RunConfigSettings,
@@ -20,7 +20,7 @@ from llama_stack.templates.template import (
 
 def get_distribution_template() -> DistributionTemplate:
     providers = {
-        "inference": ["inline::vllm"],
+        "inference": ["inline::vllm", "inline::sentence-transformers"],
         "vector_io": ["inline::faiss", "remote::chromadb", "remote::pgvector"],
         "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],
@@ -32,7 +32,7 @@ def get_distribution_template() -> DistributionTemplate:
             "remote::brave-search",
             "remote::tavily-search",
             "inline::code-interpreter",
-            "inline::memory-runtime",
+            "inline::rag-runtime",
             "remote::model-context-protocol",
         ],
     }
@@ -46,7 +46,7 @@ def get_distribution_template() -> DistributionTemplate:
     vector_io_provider = Provider(
         provider_id="faiss",
         provider_type="inline::faiss",
-        config=FaissImplConfig.sample_run_config(f"distributions/{name}"),
+        config=FaissVectorIOConfig.sample_run_config(f"distributions/{name}"),
     )
     embedding_provider = Provider(
         provider_id="sentence-transformers",
@@ -72,8 +72,8 @@ def get_distribution_template() -> DistributionTemplate:
             provider_id="tavily-search",
         ),
         ToolGroupInput(
-            toolgroup_id="builtin::memory",
-            provider_id="memory-runtime",
+            toolgroup_id="builtin::rag",
+            provider_id="rag-runtime",
         ),
         ToolGroupInput(
             toolgroup_id="builtin::code_interpreter",

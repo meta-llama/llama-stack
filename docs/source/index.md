@@ -1,23 +1,35 @@
+
+```{admonition} News
+:class: tip
+
+Llama Stack 0.1.3 is now available! See the [release notes](https://github.com/meta-llama/llama-stack/releases/tag/v0.1.3) for more details.
+```
+
 # Llama Stack
 
-Llama Stack defines and standardizes the set of core building blocks needed to bring generative AI applications to market. These building blocks are presented in the form of interoperable APIs with a broad set of Service Providers providing their implementations.
+
+Llama Stack defines and standardizes the core building blocks needed to bring generative AI applications to market. It provides a unified set of APIs with implementations from leading service providers, enabling seamless transitions between development and production environments. More specifically, it provides
+
+- **Unified API layer** for Inference, RAG, Agents, Tools, Safety, Evals, and Telemetry.
+- **Plugin architecture** to support the rich ecosystem of implementations of the different APIs in different environments like local development, on-premises, cloud, and mobile.
+- **Prepackaged verified distributions** which offer a one-stop solution for developers to get started quickly and reliably in any environment
+- **Multiple developer interfaces** like CLI and SDKs for Python, Node, iOS, and Android
+- **Standalone applications** as examples for how to build production-grade AI applications with Llama Stack
+
+We focus on making it easy to build production applications with the Llama model family - from the latest Llama 3.3 to specialized models like Llama Guard for safety.
 
 ```{image} ../_static/llama-stack.png
 :alt: Llama Stack
 :width: 400px
 ```
 
-Our goal is to provide pre-packaged implementations which can be operated in a variety of deployment environments: developers start iterating with Desktops or their mobile devices and can seamlessly transition to on-prem or public cloud deployments. At every point in this transition, the same set of APIs and the same developer experience is available.
-
-```{note}
-The Stack APIs are rapidly improving but still a work-in-progress. We invite feedback as well as direct contributions.
-```
+Our goal is to provide pre-packaged implementations (aka "distributions") which can be run in a variety of deployment environments. LlamaStack can assist you in your entire app development lifecycle - start iterating on local, mobile or desktop and seamlessly transition to on-prem or public cloud deployments. At every point in this transition, the same set of APIs and the same developer experience is available.
 
 ## Quick Links
 
 - New to Llama Stack? Start with the [Introduction](introduction/index) to understand our motivation and vision.
 - Ready to build? Check out the [Quick Start](getting_started/index) to get started.
-- Need specific providers? Browse [Distributions](distributions/index) to see all the options available.
+- Need specific providers? Browse [Distributions](distributions/selection) to see all the options available.
 - Want to contribute? See the [Contributing](contributing/index) guide.
 
 ## Available SDKs
@@ -33,33 +45,54 @@ We have a number of client-side SDKs available for different languages.
 
 ## Supported Llama Stack Implementations
 
-A number of "adapters" are available for some popular Inference and Memory (Vector Store) providers. For other APIs (particularly Safety and Agents), we provide *reference implementations* you can use to get started. We expect this list to grow over time. We are slowly onboarding more providers to the ecosystem as we get more confidence in the APIs.
+A number of "adapters" are available for some popular Inference and Vector Store providers. For other APIs (particularly Safety and Agents), we provide *reference implementations* you can use to get started. We expect this list to grow over time. We are slowly onboarding more providers to the ecosystem as we get more confidence in the APIs.
 
-|  **API Provider** |  **Environments** | **Agents** | **Inference** | **Memory** | **Safety** | **Telemetry** |
-| :----: | :----: | :----: | :----: | :----: | :----: | :----: |
-|  Meta Reference  |  Single Node | Y  |  Y  |  Y  |  Y  |  Y  |
-|  Cerebras  |  Single Node  |   | Y  |    |    |   |
-|  Fireworks  |  Hosted  | Y  | Y  |  Y  |    |   |
-|  AWS Bedrock  |  Hosted  |    |  Y  |    | Y  | |
-|  Together  |  Hosted  |  Y  |  Y  |   | Y  |  |
-|  Ollama  | Single Node   |    |  Y  |    |   |
-|  TGI  |  Hosted and Single Node  |    |  Y  |    |   |
-|  [NVIDIA NIM](https://build.nvidia.com/nim?filters=nimType%3Anim_type_run_anywhere&q=llama)  |  Hosted and Single Node  |    |  Y  |    |   |
-| Chroma | Single Node |  |  | Y |  |  |
-| Postgres | Single Node |  |  | Y |  |  |
-| PyTorch ExecuTorch | On-device iOS | Y  | Y  |  |  |
-| PyTorch ExecuTorch | On-device Android |  | Y  |  |  |
+**Inference API**
+|  **Provider** |  **Environments** |
+| :----: | :----: |
+|  Meta Reference  |  Single Node |
+|  Ollama  | Single Node   |
+|  Fireworks  |  Hosted  |
+|  Together  |  Hosted  |
+|  NVIDIA NIM  |  Hosted and Single Node  |
+|  vLLM  | Hosted and Single Node |
+|  TGI  |  Hosted and Single Node  |
+|  AWS Bedrock  |  Hosted  |
+|  Cerebras  |  Hosted  |
+|  Groq  |  Hosted  |
+|  SambaNova  |  Hosted  |
+| PyTorch ExecuTorch | On-device iOS, Android |
+
+**Vector IO API**
+|  **Provider** |  **Environments** |
+| :----: | :----: |
+|  FAISS | Single Node |
+|  SQLite-Vec| Single Node |
+|  Chroma | Hosted and Single Node |
+|  Postgres (PGVector) | Hosted and Single Node |
+|  Weaviate | Hosted |
+
+**Safety API**
+|  **Provider** |  **Environments** |
+| :----: | :----: |
+|  Llama Guard | Depends on Inference Provider |
+|  Prompt Guard | Single Node |
+|  Code Scanner | Single Node |
+|  AWS Bedrock | Hosted |
+
 
 ```{toctree}
 :hidden:
 :maxdepth: 3
 
+self
 introduction/index
 getting_started/index
 concepts/index
+providers/index
 distributions/index
+distributions/selection
 building_applications/index
-benchmark_evaluations/index
 playground/index
 contributing/index
 references/index
