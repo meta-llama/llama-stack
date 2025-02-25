@@ -12,9 +12,7 @@ from .config import MilvusVectorIOConfig
 
 
 async def get_provider_impl(config: MilvusVectorIOConfig, deps: Dict[Api, ProviderSpec]):
-    from .milvus import MilvusVectorIOAdapter
-
-    assert isinstance(config, MilvusVectorIOConfig), f"Unexpected config type: {type(config)}"
+    from llama_stack.providers.remote.vector_io.milvus.milvus import MilvusVectorIOAdapter
 
     impl = MilvusVectorIOAdapter(config, deps[Api.inference])
     await impl.initialize()

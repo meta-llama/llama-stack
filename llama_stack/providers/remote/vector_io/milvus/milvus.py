@@ -5,8 +5,11 @@
 # the root directory of this source tree.
 
 import logging
-from typing import Any, Dict, List, Optional
+import os
+from typing import Any, Dict, List, Optional, Union
 
+import hashlib
+import uuid
 from numpy.typing import NDArray
 from pymilvus import MilvusClient
 
@@ -14,20 +17,22 @@ from llama_stack.apis.inference import InterleavedContent
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import Chunk, QueryChunksResponse, VectorIO
 from llama_stack.providers.datatypes import Api, VectorDBsProtocolPrivate
+from llama_stack.providers.inline.vector_io.milvus import MilvusVectorIOConfig as InlineMilvusVectorIOConfig
 from llama_stack.providers.utils.memory.vector_store import (
     EmbeddingIndex,
     VectorDBWithIndex,
 )
 
-from .config import MilvusVectorIOConfig
+from .config import MilvusVectorIOConfig as RemoteMilvusVectorIOConfig
 
 logger = logging.getLogger(__name__)
 
 
 class MilvusIndex(EmbeddingIndex):
-    def __init__(self, client: MilvusClient, collection_name: str):
+    def __init__(self, client: MilvusClient, collection_name: str, consistency_level="Strong"):
         self.client = client
         self.collection_name = collection_name.replace("-", "_")
+        self.consistency_level = consistency_level
 
     async def delete(self):
         if self.client.has_collection(self.collection_name):
@@ -38,11 +43,11 @@ class MilvusIndex(EmbeddingIndex):
             f"Chunk length {len(chunks)} does not match embedding length {len(embeddings)}"
         )
         if not self.client.has_collection(self.collection_name):
-            self.client.create_collection(self.collection_name, dimension=len(embeddings[0]), auto_id=True)
+            self.client.create_collection(self.collection_name, dimension=len(embeddings[0]), auto_id=True, consistency_level=self.consistency_level)
 
         data = []
         for i, (chunk, embedding) in enumerate(zip(chunks, embeddings, strict=False)):
-            chunk_id = f"{chunk.metadata['document_id']}:chunk-{i}"
+            chunk_id = generate_chunk_id(chunk.metadata["document_id"], chunk.content)
 
             data.append(
                 {
@@ -51,10 +56,14 @@ class MilvusIndex(EmbeddingIndex):
                     "chunk_content": chunk.model_dump(),
                 }
             )
-        self.client.insert(
-            self.collection_name,
-            data=data,
-        )
+        try:
+            self.client.insert(
+                self.collection_name,
+                data=data,
+            )
+        except Exception as e:
+            logger.error(f"Error inserting chunks into Milvus collection {self.collection_name}: {e}")
+            raise e
 
     async def query(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
         search_res = self.client.search(
@@ -70,14 +79,20 @@ class MilvusIndex(EmbeddingIndex):
 
 
 class MilvusVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
-    def __init__(self, config: MilvusVectorIOConfig, inference_api: Api.inference) -> None:
+    def __init__(self, config: Union[RemoteMilvusVectorIOConfig, InlineMilvusVectorIOConfig], inference_api: Api.inference) -> None:
         self.config = config
-        self.client = MilvusClient(**self.config.model_dump(exclude_none=True))
         self.cache = {}
+        self.client = None
         self.inference_api = inference_api
 
     async def initialize(self) -> None:
-        pass
+        if isinstance(self.config, RemoteMilvusVectorIOConfig):
+            logger.info(f"Connecting to Milvus server at {self.config.uri}")
+            self.client = MilvusClient(**self.config.model_dump(exclude_none=True))
+        else:
+            logger.info(f"Connecting to Milvus Lite at: {self.config.db_path}")
+            uri = os.path.expanduser(self.config.db_path)
+            self.client = MilvusClient(uri=uri)
 
     async def shutdown(self) -> None:
         self.client.close()
@@ -86,9 +101,13 @@ class MilvusVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
         self,
         vector_db: VectorDB,
     ) -> None:
+        if isinstance(self.config, RemoteMilvusVectorIOConfig):
+            consistency_level = self.config.consistency_level
+        else:
+            consistency_level = "Strong"
         index = VectorDBWithIndex(
             vector_db=vector_db,
-            index=MilvusIndex(self.client, vector_db.identifier),
+            index=MilvusIndex(self.client, vector_db.identifier, consistency_level=consistency_level),
             inference_api=self.inference_api,
         )
 
@@ -138,3 +157,10 @@ class MilvusVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
             raise ValueError(f"Vector DB {vector_db_id} not found")
 
         return await index.query_chunks(query, params)
+
+def generate_chunk_id(document_id: str, chunk_text: str) -> str:
+    """Generate a unique chunk ID using a hash of document ID and chunk text."""
+    hash_input = f"{document_id}:{chunk_text}".encode("utf-8")
+    return str(uuid.UUID(hashlib.md5(hash_input).hexdigest()))
+
+# TODO: refactor this generate_chunk_id along with the `sqlite-vec` implementation into a separate utils file

@@ -68,6 +68,7 @@ A number of "adapters" are available for some popular Inference and Vector Store
 |  FAISS | Single Node |
 |  SQLite-Vec| Single Node |
 |  Chroma | Hosted and Single Node |
+|  Milvus | Hosted and Single Node |
 |  Postgres (PGVector) | Hosted and Single Node |
 |  Weaviate | Hosted |
 
