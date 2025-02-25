@@ -804,6 +804,10 @@ class ChatAgent(ShieldRunnerMixin):
                         toolgroup_args,
                         tool_to_group,
                     )
+                    if tool_result.content is None:
+                        raise ValueError(
+                            f"Tool call result (id: {tool_call.call_id}, name: {tool_call.tool_name}) does not have any content"
+                        )
                     result_messages = [
                         ToolResponseMessage(
                             call_id=tool_call.call_id,
