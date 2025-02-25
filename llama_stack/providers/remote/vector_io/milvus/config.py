@@ -15,6 +15,7 @@ from llama_stack.schema_utils import json_schema_type
 class MilvusVectorIOConfig(BaseModel):
     uri: str
     token: Optional[str] = None
+    consistency_level: str = "Strong"
 
     @classmethod
     def sample_config(cls) -> Dict[str, Any]:

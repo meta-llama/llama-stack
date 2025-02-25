@@ -114,7 +114,7 @@ def available_providers() -> List[ProviderSpec]:
             Api.vector_io,
             AdapterSpec(
                 adapter_type="milvus",
-                pip_packages=EMBEDDING_DEPS + ["pymilvus"],
+                pip_packages=["pymilvus"],
                 module="llama_stack.providers.remote.vector_io.milvus",
                 config_class="llama_stack.providers.remote.vector_io.milvus.MilvusVectorIOConfig",
             ),
@@ -123,7 +123,7 @@ def available_providers() -> List[ProviderSpec]:
         InlineProviderSpec(
             api=Api.vector_io,
             provider_type="inline::milvus",
-            pip_packages=EMBEDDING_DEPS + ["pymilvus"],
+            pip_packages=["pymilvus"],
             module="llama_stack.providers.inline.vector_io.milvus",
             config_class="llama_stack.providers.inline.vector_io.milvus.MilvusVectorIOConfig",
             api_dependencies=[Api.inference],
