@@ -6,7 +6,7 @@ The `llama-stack-client` CLI allows you to query information about the distribut
 
 ### `llama-stack-client`
 ```bash
-$ llama-stack-client -h
+llama-stack-client -h
 
 usage: llama-stack-client [-h] {models,memory_banks,shields} ...
 
@@ -21,7 +21,7 @@ subcommands:
 
 ### `llama-stack-client configure`
 ```bash
-$ llama-stack-client configure
+llama-stack-client configure
 > Enter the host name of the Llama Stack distribution server: localhost
 > Enter the port number of the Llama Stack distribution server: 8321
 Done! You can now use the Llama Stack Client CLI with endpoint http://localhost:8321
@@ -29,7 +29,7 @@ Done! You can now use the Llama Stack Client CLI with endpoint http://localhost:
 
 ### `llama-stack-client providers list`
 ```bash
-$ llama-stack-client providers list
+llama-stack-client providers list
 ```
 ```
 +-----------+----------------+-----------------+
@@ -55,7 +55,7 @@ $ llama-stack-client providers list
 
 ### `llama-stack-client models list`
 ```bash
-$ llama-stack-client models list
+llama-stack-client models list
 ```
 ```
 +----------------------+----------------------+---------------+----------------------------------------------------------+
@@ -67,7 +67,7 @@ $ llama-stack-client models list
 
 ### `llama-stack-client models get`
 ```bash
-$ llama-stack-client models get Llama3.1-8B-Instruct
+llama-stack-client models get Llama3.1-8B-Instruct
 ```
 
 ```
@@ -80,7 +80,7 @@ $ llama-stack-client models get Llama3.1-8B-Instruct
 
 
 ```bash
-$ llama-stack-client models get Random-Model
+llama-stack-client models get Random-Model
 
 Model RandomModel is not found at distribution endpoint host:port. Please ensure endpoint is serving specified model.
 ```
@@ -88,26 +88,26 @@ Model RandomModel is not found at distribution endpoint host:port. Please ensure
 ### `llama-stack-client models register`
 
 ```bash
-$ llama-stack-client models register <model_id> [--provider-id <provider_id>] [--provider-model-id <provider_model_id>] [--metadata <metadata>]
+llama-stack-client models register <model_id> [--provider-id <provider_id>] [--provider-model-id <provider_model_id>] [--metadata <metadata>]
 ```
 
 ### `llama-stack-client models update`
 
 ```bash
-$ llama-stack-client models update <model_id> [--provider-id <provider_id>] [--provider-model-id <provider_model_id>] [--metadata <metadata>]
+llama-stack-client models update <model_id> [--provider-id <provider_id>] [--provider-model-id <provider_model_id>] [--metadata <metadata>]
 ```
 
 ### `llama-stack-client models delete`
 
 ```bash
-$ llama-stack-client models delete <model_id>
+llama-stack-client models delete <model_id>
 ```
 
 ## Vector DB Management
 
 ### `llama-stack-client vector_dbs list`
 ```bash
-$ llama-stack-client vector_dbs list
+llama-stack-client vector_dbs list
 ```
 ```
 +--------------+----------------+---------------------+---------------+------------------------+
@@ -120,7 +120,7 @@ $ llama-stack-client vector_dbs list
 
 ### `llama-stack-client vector_dbs register`
 ```bash
-$ llama-stack-client vector_dbs register <vector-db-id> [--provider-id <provider-id>] [--provider-vector-db-id <provider-vector-db-id>] [--embedding-model <embedding-model>] [--embedding-dimension <embedding-dimension>]
+llama-stack-client vector_dbs register <vector-db-id> [--provider-id <provider-id>] [--provider-vector-db-id <provider-vector-db-id>] [--embedding-model <embedding-model>] [--embedding-dimension <embedding-dimension>]
 ```
 
 Options:
@@ -131,13 +131,13 @@ Options:
 
 ### `llama-stack-client vector_dbs unregister`
 ```bash
-$ llama-stack-client vector_dbs unregister <vector-db-id>
+llama-stack-client vector_dbs unregister <vector-db-id>
 ```
 
 ## Shield Management
 ### `llama-stack-client shields list`
 ```bash
-$ llama-stack-client shields list
+llama-stack-client shields list
 ```
 
 ```
@@ -150,7 +150,7 @@ $ llama-stack-client shields list
 
 ### `llama-stack-client shields register`
 ```bash
-$ llama-stack-client shields register --shield-id <shield-id> [--provider-id <provider-id>] [--provider-shield-id <provider-shield-id>] [--params <params>]
+llama-stack-client shields register --shield-id <shield-id> [--provider-id <provider-id>] [--provider-shield-id <provider-shield-id>] [--params <params>]
 ```
 
 Options:
@@ -163,12 +163,12 @@ Options:
 
 ### `llama-stack-client benchmarks list`
 ```bash
-$ llama-stack-client benchmarks list
+llama-stack-client benchmarks list
 ```
 
 ### `llama-stack-client benchmarks register`
 ```bash
-$ llama-stack-client benchmarks register --eval-task-id <eval-task-id> --dataset-id <dataset-id> --scoring-functions <function1> [<function2> ...] [--provider-id <provider-id>] [--provider-eval-task-id <provider-eval-task-id>] [--metadata <metadata>]
+llama-stack-client benchmarks register --eval-task-id <eval-task-id> --dataset-id <dataset-id> --scoring-functions <function1> [<function2> ...] [--provider-id <provider-id>] [--provider-eval-task-id <provider-eval-task-id>] [--metadata <metadata>]
 ```
 
 Options:
@@ -182,7 +182,7 @@ Options:
 ## Eval execution
 ### `llama-stack-client eval run-benchmark`
 ```bash
-$ llama-stack-client eval run-benchmark <eval-task-id1> [<eval-task-id2> ...] --eval-task-config <config-file> --output-dir <output-dir> [--num-examples <num>] [--visualize]
+llama-stack-client eval run-benchmark <eval-task-id1> [<eval-task-id2> ...] --eval-task-config <config-file> --output-dir <output-dir> [--num-examples <num>] [--visualize]
 ```
 
 Options:
@@ -207,7 +207,7 @@ Example benchmark_config.json:
 
 ### `llama-stack-client eval run-scoring`
 ```bash
-$ llama-stack-client eval run-scoring <eval-task-id> --eval-task-config <config-file> --output-dir <output-dir> [--num-examples <num>] [--visualize]
+llama-stack-client eval run-scoring <eval-task-id> --eval-task-config <config-file> --output-dir <output-dir> [--num-examples <num>] [--visualize]
 ```
 
 Options:
@@ -220,7 +220,7 @@ Options:
 
 ### `llama-stack-client toolgroups list`
 ```bash
-$ llama-stack-client toolgroups list
+llama-stack-client toolgroups list
 ```
 ```
 +---------------------------+------------------+------+---------------+
@@ -236,14 +236,14 @@ $ llama-stack-client toolgroups list
 
 ### `llama-stack-client toolgroups get`
 ```bash
-$ llama-stack-client toolgroups get <toolgroup_id>
+llama-stack-client toolgroups get <toolgroup_id>
 ```
 
 Shows detailed information about a specific toolgroup. If the toolgroup is not found, displays an error message.
 
 ### `llama-stack-client toolgroups register`
 ```bash
-$ llama-stack-client toolgroups register <toolgroup_id> [--provider-id <provider-id>] [--provider-toolgroup-id <provider-toolgroup-id>] [--mcp-config <mcp-config>] [--args <args>]
+llama-stack-client toolgroups register <toolgroup_id> [--provider-id <provider-id>] [--provider-toolgroup-id <provider-toolgroup-id>] [--mcp-config <mcp-config>] [--args <args>]
 ```
 
 Options:
@@ -254,5 +254,5 @@ Options:
 
 ### `llama-stack-client toolgroups unregister`
 ```bash
-$ llama-stack-client toolgroups unregister <toolgroup_id>
+llama-stack-client toolgroups unregister <toolgroup_id>
 ```
