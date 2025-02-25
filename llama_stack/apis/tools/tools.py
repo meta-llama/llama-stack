@@ -72,6 +72,7 @@ class ToolInvocationResult(BaseModel):
     content: InterleavedContent
     error_message: Optional[str] = None
     error_code: Optional[int] = None
+    metadata: Optional[Dict[str, Any]] = None
 
 
 class ToolStore(Protocol):

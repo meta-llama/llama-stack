@@ -90,7 +90,6 @@ class TestClientTool(ClientTool):
 def agent_config(llama_stack_client, text_model_id):
     available_shields = [shield.identifier for shield in llama_stack_client.shields.list()]
     available_shields = available_shields[:1]
-    print(f"Using shield: {available_shields}")
     agent_config = AgentConfig(
         model=text_model_id,
         instructions="You are a helpful assistant",
@@ -326,17 +325,16 @@ def test_custom_tool(llama_stack_client, agent_config):
 
 
 def test_tool_choice(llama_stack_client, agent_config):
-    data = [
-        ("required", '{"type": "function"'),
-        ("none", None),
-        ("get_boiling_point", '{"type": "function", "name": "get_boiling_point"'),
-    ]
-    client_tool = TestClientTool()
-    for tool_choice, expected_tool in data:
-        agent_config["tool_config"] = {"tool_choice": tool_choice}
-        agent_config["client_tools"] = [client_tool.get_tool_definition()]
+    def run_agent(tool_choice):
+        client_tool = TestClientTool()
 
-        agent = Agent(llama_stack_client, agent_config, client_tools=(client_tool,))
+        test_agent_config = {
+            **agent_config,
+            "tool_config": {"tool_choice": tool_choice},
+            "client_tools": [client_tool.get_tool_definition()],
+        }
+
+        agent = Agent(llama_stack_client, test_agent_config, client_tools=(client_tool,))
         session_id = agent.create_session(f"test-session-{uuid4()}")
 
         response = agent.create_turn(
@@ -347,14 +345,19 @@ def test_tool_choice(llama_stack_client, agent_config):
                 },
             ],
             session_id=session_id,
+            stream=False,
         )
 
-        logs = [str(log) for log in EventLogger().log(response) if log is not None]
-        logs_str = "".join(logs)
-        if expected_tool:
-            assert expected_tool in logs_str
-        else:
-            assert '{"type": "function"' not in logs_str
+        return [step for step in response.steps if step.step_type == "tool_execution"]
+
+    tool_execution_steps = run_agent("required")
+    assert len(tool_execution_steps) > 0
+
+    tool_execution_steps = run_agent("none")
+    assert len(tool_execution_steps) == 0
+
+    tool_execution_steps = run_agent("get_boiling_point")
+    assert len(tool_execution_steps) >= 1 and tool_execution_steps[0].tool_calls[0].tool_name == "get_boiling_point"
 
 
 # TODO: fix this flaky test
@@ -382,7 +385,6 @@ def xtest_override_system_message_behavior(llama_stack_client, agent_config):
 
     logs = [str(log) for log in EventLogger().log(response) if log is not None]
     logs_str = "".join(logs)
-    print(logs_str)
     # can't tell a joke: "I don't have a function"
     assert "function" in logs_str
 
@@ -421,7 +423,6 @@ def xtest_override_system_message_behavior(llama_stack_client, agent_config):
 
     logs = [str(log) for log in EventLogger().log(response) if log is not None]
     logs_str = "".join(logs)
-    print(logs_str)
     assert "bicycle" in logs_str
 
     response = agent.create_turn(
@@ -436,7 +437,6 @@ def xtest_override_system_message_behavior(llama_stack_client, agent_config):
 
     logs = [str(log) for log in EventLogger().log(response) if log is not None]
     logs_str = "".join(logs)
-    print(logs_str)
     assert "-100" in logs_str
     assert "get_boiling_point" in logs_str
 
@@ -457,6 +457,7 @@ def test_rag_agent(llama_stack_client, agent_config):
         vector_db_id=vector_db_id,
         embedding_model="all-MiniLM-L6-v2",
         embedding_dimension=384,
+        provider_id="faiss",
     )
     llama_stack_client.tool_runtime.rag_tool.insert(
         documents=documents,
@@ -488,15 +489,17 @@ def test_rag_agent(llama_stack_client, agent_config):
         ),
     ]
     for prompt, expected_kw in user_prompts:
-        print(f"User> {prompt}")
         response = rag_agent.create_turn(
             messages=[{"role": "user", "content": prompt}],
             session_id=session_id,
+            stream=False,
         )
-        logs = [str(log) for log in EventLogger().log(response) if log is not None]
-        logs_str = "".join(logs)
-        assert "Tool:query_from_memory" in logs_str
-        assert expected_kw in logs_str.lower()
+        # rag is called
+        tool_execution_step = next(step for step in response.steps if step.step_type == "tool_execution")
+        assert tool_execution_step.tool_calls[0].tool_name == "query_from_memory"
+        # document ids are present in metadata
+        assert "num-0" in tool_execution_step.tool_responses[0].metadata["document_ids"]
+        assert expected_kw in response.output_message.content.lower()
 
 
 def test_rag_and_code_agent(llama_stack_client, agent_config):
@@ -552,7 +555,6 @@ def test_rag_and_code_agent(llama_stack_client, agent_config):
     ]
 
     for prompt, docs, tool_name in user_prompts:
-        print(f"User> {prompt}")
         session_id = agent.create_session(f"test-session-{uuid4()}")
         response = agent.create_turn(
             messages=[{"role": "user", "content": prompt}],

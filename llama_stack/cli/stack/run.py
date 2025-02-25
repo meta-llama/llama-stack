@@ -74,10 +74,6 @@ class StackRun(Subcommand):
         )
 
     def _run_stack_run_cmd(self, args: argparse.Namespace) -> None:
-        import importlib.resources
-        import json
-        import subprocess
-
         import yaml
         from termcolor import cprint
 
@@ -87,7 +83,7 @@ class StackRun(Subcommand):
             BUILDS_BASE_DIR,
             DISTRIBS_BASE_DIR,
         )
-        from llama_stack.distribution.utils.exec import run_with_pty
+        from llama_stack.distribution.utils.exec import formulate_run_args, run_with_pty
 
         if not args.config:
             self.parser.error("Must specify a config file to run")
@@ -125,70 +121,7 @@ class StackRun(Subcommand):
         config_dict = yaml.safe_load(config_file.read_text())
         config = parse_and_maybe_upgrade_config(config_dict)
 
-        if args.image_type == ImageType.container.value or config.container_image:
-            script = importlib.resources.files("llama_stack") / "distribution/start_container.sh"
-            image_name = f"distribution-{template_name}" if template_name else config.container_image
-            run_args = [script, image_name]
-        elif args.image_type == ImageType.conda.value:
-            current_conda_env = os.environ.get("CONDA_DEFAULT_ENV")
-            image_name = args.image_name or current_conda_env
-            if not image_name:
-                cprint(
-                    "No current conda environment detected, please specify a conda environment name with --image-name",
-                    color="red",
-                )
-                return
-
-            def get_conda_prefix(env_name):
-                # Conda "base" environment does not end with "base" in the
-                # prefix, so should be handled separately.
-                if env_name == "base":
-                    return os.environ.get("CONDA_PREFIX")
-                # Get conda environments info
-                conda_env_info = json.loads(subprocess.check_output(["conda", "info", "--envs", "--json"]).decode())
-                envs = conda_env_info["envs"]
-                for envpath in envs:
-                    if envpath.endswith(env_name):
-                        return envpath
-                return None
-
-            print(f"Using conda environment: {image_name}")
-            conda_prefix = get_conda_prefix(image_name)
-            if not conda_prefix:
-                cprint(
-                    f"Conda environment {image_name} does not exist.",
-                    color="red",
-                )
-                return
-
-            build_file = Path(conda_prefix) / "llamastack-build.yaml"
-            if not build_file.exists():
-                cprint(
-                    f"Build file {build_file} does not exist.\n\nPlease run `llama stack build` or specify the correct conda environment name with --image-name",
-                    color="red",
-                )
-                return
-
-            script = importlib.resources.files("llama_stack") / "distribution/start_conda_env.sh"
-            run_args = [
-                script,
-                image_name,
-            ]
-        else:
-            # else must be venv since that is the only valid option left.
-            current_venv = os.environ.get("VIRTUAL_ENV")
-            venv = args.image_name or current_venv
-            if not venv:
-                cprint(
-                    "No current virtual environment detected, please specify a virtual environment name with --image-name",
-                    color="red",
-                )
-                return
-            script = importlib.resources.files("llama_stack") / "distribution/start_venv.sh"
-            run_args = [
-                script,
-                venv,
-            ]
+        run_args = formulate_run_args(args.image_type, args.image_name, config, template_name)
 
         run_args.extend([str(config_file), str(args.port)])
         if args.disable_ipv6:

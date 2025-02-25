@@ -209,15 +209,14 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProv
         input_dict = {}
         media_present = request_has_media(request)
 
+        llama_model = self.get_llama_model(request.model)
         if isinstance(request, ChatCompletionRequest):
-            if media_present:
+            if media_present or not llama_model:
                 input_dict["messages"] = [
                     await convert_message_to_openai_dict(m, download=True) for m in request.messages
                 ]
             else:
-                input_dict["prompt"] = await chat_completion_request_to_prompt(
-                    request, self.get_llama_model(request.model)
-                )
+                input_dict["prompt"] = await chat_completion_request_to_prompt(request, llama_model)
         else:
             assert not media_present, "Fireworks does not support media for Completion requests"
             input_dict["prompt"] = await completion_request_to_prompt(request)
