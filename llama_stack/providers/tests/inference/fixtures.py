@@ -197,7 +197,7 @@ def inference_nvidia() -> ProviderFixture:
             Provider(
                 provider_id="nvidia",
                 provider_type="remote::nvidia",
-                config=NVIDIAConfig().model_dump(),
+                config=NVIDIAConfig(api_key=get_env_or_fail("NVIDIA_API_KEY")).model_dump(),
             )
         ],
     )
