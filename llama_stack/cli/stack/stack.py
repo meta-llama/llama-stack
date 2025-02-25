@@ -8,6 +8,7 @@ import argparse
 from importlib.metadata import version
 
 from llama_stack.cli.subcommand import Subcommand
+from llama_stack.cli.utils import print_subcommand_description
 
 from .build import StackBuild
 from .list_apis import StackListApis
@@ -41,11 +42,4 @@ class StackParser(Subcommand):
         StackListProviders.create(subparsers)
         StackRun.create(subparsers)
 
-        self.print_subcommand_description(subparsers)
-
-    def print_subcommand_description(self, subparsers: argparse._SubParsersAction):
-        description_text = ""
-        for name, subcommand in subparsers.choices.items():
-            description = subcommand.description
-            description_text += f"  {name:<21} {description}\n"
-        self.parser.epilog = description_text
+        print_subcommand_description(self.parser, subparsers)
