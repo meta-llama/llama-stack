@@ -183,7 +183,7 @@ class ChatAgent(ShieldRunnerMixin):
 
             turn_id = str(uuid.uuid4())
             span.set_attribute("turn_id", turn_id)
-            start_time = datetime.now()
+            start_time = datetime.now().astimezone().isoformat()
             yield AgentTurnResponseStreamChunk(
                 event=AgentTurnResponseEvent(
                     payload=AgentTurnResponseTurnStartPayload(
@@ -225,7 +225,7 @@ class ChatAgent(ShieldRunnerMixin):
                 input_messages=request.messages,
                 output_message=output_message,
                 started_at=start_time,
-                completed_at=datetime.now(),
+                completed_at=datetime.now().astimezone().isoformat(),
                 steps=steps,
             )
             await self.storage.add_turn_to_session(request.session_id, turn)
@@ -280,7 +280,7 @@ class ChatAgent(ShieldRunnerMixin):
             in_progress_tool_call_step = await self.storage.get_in_progress_tool_call_step(
                 request.session_id, request.turn_id
             )
-            now = datetime.now()
+            now = datetime.now().astimezone().isoformat()
             tool_execution_step = ToolExecutionStep(
                 step_id=(in_progress_tool_call_step.step_id if in_progress_tool_call_step else str(uuid.uuid4())),
                 turn_id=request.turn_id,
@@ -328,7 +328,7 @@ class ChatAgent(ShieldRunnerMixin):
 
             assert output_message is not None
 
-            last_turn_start_time = datetime.now()
+            last_turn_start_time = datetime.now().astimezone().isoformat()
             if len(turns) > 0:
                 last_turn_start_time = turns[-1].started_at
 
@@ -338,7 +338,7 @@ class ChatAgent(ShieldRunnerMixin):
                 input_messages=last_turn_messages,
                 output_message=output_message,
                 started_at=last_turn_start_time,
-                completed_at=datetime.now(),
+                completed_at=datetime.now().astimezone().isoformat(),
                 steps=steps,
             )
             await self.storage.add_turn_to_session(request.session_id, turn)
@@ -432,7 +432,7 @@ class ChatAgent(ShieldRunnerMixin):
                 return
 
             step_id = str(uuid.uuid4())
-            shield_call_start_time = datetime.now()
+            shield_call_start_time = datetime.now().astimezone().isoformat()
             try:
                 yield AgentTurnResponseStreamChunk(
                     event=AgentTurnResponseEvent(
@@ -456,7 +456,7 @@ class ChatAgent(ShieldRunnerMixin):
                                 turn_id=turn_id,
                                 violation=e.violation,
                                 started_at=shield_call_start_time,
-                                completed_at=datetime.now(),
+                                completed_at=datetime.now().astimezone().isoformat(),
                             ),
                         )
                     )
@@ -479,7 +479,7 @@ class ChatAgent(ShieldRunnerMixin):
                             turn_id=turn_id,
                             violation=None,
                             started_at=shield_call_start_time,
-                            completed_at=datetime.now(),
+                            completed_at=datetime.now().astimezone().isoformat(),
                         ),
                     )
                 )
@@ -613,7 +613,7 @@ class ChatAgent(ShieldRunnerMixin):
             client_tools[tool.name] = tool
         while True:
             step_id = str(uuid.uuid4())
-            inference_start_time = datetime.now()
+            inference_start_time = datetime.now().astimezone().isoformat()
             yield AgentTurnResponseStreamChunk(
                 event=AgentTurnResponseEvent(
                     payload=AgentTurnResponseStepStartPayload(
@@ -713,7 +713,7 @@ class ChatAgent(ShieldRunnerMixin):
                             turn_id=turn_id,
                             model_response=copy.deepcopy(message),
                             started_at=inference_start_time,
-                            completed_at=datetime.now(),
+                            completed_at=datetime.now().astimezone().isoformat(),
                         ),
                     )
                 )
@@ -778,7 +778,7 @@ class ChatAgent(ShieldRunnerMixin):
                             turn_id=turn_id,
                             tool_calls=[tool_call],
                             tool_responses=[],
-                            started_at=datetime.now(),
+                            started_at=datetime.now().astimezone().isoformat(),
                         ),
                     )
                     yield message
@@ -795,7 +795,7 @@ class ChatAgent(ShieldRunnerMixin):
                         "input": message.model_dump_json(),
                     },
                 ) as span:
-                    tool_execution_start_time = datetime.now()
+                    tool_execution_start_time = datetime.now().astimezone().isoformat()
                     tool_call = message.tool_calls[0]
                     tool_result = await execute_tool_call_maybe(
                         self.tool_runtime_api,
