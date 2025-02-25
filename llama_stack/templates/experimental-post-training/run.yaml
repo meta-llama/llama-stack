@@ -21,6 +21,10 @@ providers:
       max_seq_len: 4096
       checkpoint_dir: null
       create_distributed_process_group: False
+  - provider_id: ollama
+    provider_type: remote::ollama
+    config:
+      url: ${env.OLLAMA_URL:http://localhost:11434}
   eval:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -55,7 +59,7 @@ providers:
       persistence_store:
         type: sqlite
         namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/meta-reference-gpu}/agents_store.db
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/experimental-post-training}/agents_store.db
   safety:
   - provider_id: llama-guard
     provider_type: inline::llama-guard
@@ -67,7 +71,7 @@ providers:
       kvstore:
         type: sqlite
         namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/meta-reference-gpu}/faiss_store.db
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/experimental-post-training}/faiss_store.db
   tool_runtime:
   - provider_id: brave-search
     provider_type: remote::brave-search
@@ -79,7 +83,7 @@ providers:
 metadata_store:
   namespace: null
   type: sqlite
-  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/meta-reference-gpu}/registry.db
+  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/experimental-post-training}/registry.db
 models: []
 shields: []
 vector_dbs: []
