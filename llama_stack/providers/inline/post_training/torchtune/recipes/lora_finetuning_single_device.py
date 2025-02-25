@@ -117,6 +117,7 @@ class LoraFinetuningSingleDevice:
             self.checkpoint_dir = model_checkpoint_dir(model)
 
         self._output_dir = str(DEFAULT_CHECKPOINT_DIR)
+        self._checkpoint_format = config.checkpoint_format
 
         self.seed = training.set_seed(seed=config.torch_seed)
         self.epochs_run = 0
@@ -419,6 +420,7 @@ class LoraFinetuningSingleDevice:
         return self._checkpointer.save_checkpoint(
             ckpt_dict,
             epoch=epoch,
+            checkpoint_format=self._checkpoint_format,
         )
 
     async def _loss_step(self, batch: Dict[str, torch.Tensor]) -> torch.Tensor:
@@ -460,7 +462,7 @@ class LoraFinetuningSingleDevice:
         for curr_epoch in range(self.epochs_run, self.total_epochs):
             # Update the sampler to ensure data is correctly shuffled across epochs
             # in case shuffle is True
-            metric_logger = DiskLogger(log_dir=self._output_dir + f"/{self.model_id}-sft-{curr_epoch}")
+            metric_logger = DiskLogger(log_dir=self._output_dir + f"/{self.model_id}-sft-{curr_epoch}/log")
             self._training_sampler.set_epoch(curr_epoch)
             loss_to_log = 0.0
 
