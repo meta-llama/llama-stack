@@ -40,6 +40,10 @@ from llama_stack.models.llama.datatypes import (
 from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
 )
+from llama_stack.providers.utils.inference.openai_compat import (
+    convert_openai_chat_completion_choice,
+    convert_openai_chat_completion_stream,
+)
 from llama_stack.providers.utils.inference.prompt_adapter import content_has_media
 
 from . import NVIDIAConfig
@@ -47,8 +51,6 @@ from .models import _MODEL_ENTRIES
 from .openai_utils import (
     convert_chat_completion_request,
     convert_completion_request,
-    convert_openai_chat_completion_choice,
-    convert_openai_chat_completion_stream,
     convert_openai_completion_choice,
     convert_openai_completion_stream,
 )
