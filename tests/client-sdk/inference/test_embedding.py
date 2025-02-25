@@ -188,3 +188,39 @@ def test_embedding_task_type(llama_stack_client, embedding_model_id):
         model_id=embedding_model_id, contents=[DUMMY_STRING], task_type="document"
     )
     assert query_embedding.embeddings != document_embedding.embeddings
+
+
+@pytest.mark.parametrize(
+    "text_truncation",
+    [
+        None,
+        "none",
+        "end",
+        "start",
+    ],
+)
+def test_embedding_text_truncation(llama_stack_client, embedding_model_id, text_truncation):
+    response = llama_stack_client.inference.embeddings(
+        model_id=embedding_model_id, contents=[DUMMY_STRING], text_truncation=text_truncation
+    )
+    assert isinstance(response, EmbeddingsResponse)
+    assert len(response.embeddings) == 1
+    assert isinstance(response.embeddings[0], list)
+    assert isinstance(response.embeddings[0][0], float)
+
+
+@pytest.mark.parametrize(
+    "text_truncation",
+    [
+        "NONE",
+        "END",
+        "START",
+        "left",
+        "right",
+    ],
+)
+def test_embedding_text_truncation_error(llama_stack_client, embedding_model_id, text_truncation):
+    with pytest.raises(BadRequestError) as excinfo:
+        llama_stack_client.inference.embeddings(
+            model_id=embedding_model_id, contents=[DUMMY_STRING], text_truncation=text_truncation
+        )

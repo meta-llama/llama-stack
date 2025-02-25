@@ -154,8 +154,6 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
                 TextTruncation.end: "END",
                 TextTruncation.start: "START",
             }
-            if text_truncation not in text_truncation_options:
-                raise ValueError(f"Invalid text_truncation: {text_truncation}")
             extra_body["truncate"] = text_truncation_options[text_truncation]
 
         if output_dimension is not None:
@@ -166,8 +164,6 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
                 EmbeddingTaskType.document: "passage",
                 EmbeddingTaskType.query: "query",
             }
-            if task_type not in task_type_options:
-                raise ValueError(f"Invalid task_type: {task_type}")
             extra_body["input_type"] = task_type_options[task_type]
 
         try:
