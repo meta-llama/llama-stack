@@ -70,6 +70,11 @@ $ uv pip install -e .
 $ source .venv/bin/activate
 ```
 
+Note that you can modify the existing `.env.dev` dotenv file for running tests via the following:
+```bash
+$ uv run --env-file .env.dev -- python <your-test-script>
+```
+
 ## Pre-commit Hooks
 
 We use [pre-commit](https://pre-commit.com/) to run linting and formatting checks on your code. You can install the pre-commit hooks by running:
