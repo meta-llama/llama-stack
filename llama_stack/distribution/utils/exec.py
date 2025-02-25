@@ -24,14 +24,13 @@ from llama_stack.distribution.utils.image_types import ImageType
 
 
 def formulate_run_args(image_type, image_name, config, template_name) -> list:
+    env_name = ""
     if image_type == ImageType.container.value or config.container_image:
-        script = importlib.resources.files("llama_stack") / "distribution/start_container.sh"
-        image_name = f"distribution-{template_name}" if template_name else config.container_image
-        run_args = [script, image_name]
+        env_name = f"distribution-{template_name}" if template_name else config.container_image
     elif image_type == ImageType.conda.value:
         current_conda_env = os.environ.get("CONDA_DEFAULT_ENV")
-        image_name = image_name or current_conda_env
-        if not image_name:
+        env_name = image_name or current_conda_env
+        if not env_name:
             cprint(
                 "No current conda environment detected, please specify a conda environment name with --image-name",
                 color="red",
@@ -51,11 +50,11 @@ def formulate_run_args(image_type, image_name, config, template_name) -> list:
                     return envpath
             return None
 
-        print(f"Using conda environment: {image_name}")
-        conda_prefix = get_conda_prefix(image_name)
+        print(f"Using conda environment: {env_name}")
+        conda_prefix = get_conda_prefix(env_name)
         if not conda_prefix:
             cprint(
-                f"Conda environment {image_name} does not exist.",
+                f"Conda environment {env_name} does not exist.",
                 color="red",
             )
             return
@@ -67,21 +66,25 @@ def formulate_run_args(image_type, image_name, config, template_name) -> list:
                 color="red",
             )
             return
-
-        script = importlib.resources.files("llama_stack") / "distribution/start_conda_env.sh"
-        run_args = [
-            script,
-            image_name,
-        ]
     else:
         # else must be venv since that is the only valid option left.
         current_venv = os.environ.get("VIRTUAL_ENV")
-        venv = image_name or current_venv
-        script = importlib.resources.files("llama_stack") / "distribution/start_venv.sh"
-        run_args = [
-            script,
-            venv,
-        ]
+        env_name = image_name or current_venv
+        if not env_name:
+            cprint(
+                "No current virtual environment detected, please specify a virtual environment name with --image-name",
+                color="red",
+            )
+            return
+        print(f"Using virtual environment: {env_name}")
+
+    script = importlib.resources.files("llama_stack") / "distribution/start_stack.sh"
+    run_args = [
+        script,
+        image_type,
+        env_name,
+    ]
+
     return run_args
 
 
