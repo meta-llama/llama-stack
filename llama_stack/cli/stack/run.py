@@ -5,12 +5,16 @@
 # the root directory of this source tree.
 
 import argparse
+import logging
 import os
+import sys
 from pathlib import Path
 
 from llama_stack.cli.subcommand import Subcommand
 
 REPO_ROOT = Path(__file__).parent.parent.parent.parent
+
+logger = logging.getLogger(__name__)
 
 
 class StackRun(Subcommand):
@@ -70,7 +74,6 @@ class StackRun(Subcommand):
             type=str,
             help="Image Type used during the build. This can be either conda or container or venv.",
             choices=["conda", "container", "venv"],
-            default="conda",
         )
 
     def _run_stack_run_cmd(self, args: argparse.Namespace) -> None:
@@ -121,28 +124,51 @@ class StackRun(Subcommand):
         config_dict = yaml.safe_load(config_file.read_text())
         config = parse_and_maybe_upgrade_config(config_dict)
 
-        run_args = formulate_run_args(args.image_type, args.image_name, config, template_name)
+        # If the image type and name are not provided, we assume the user wants to run using system
+        # packages and directly run the server code.
+        if not args.image_type and not args.image_name:
+            logger.info("No image type or image name provided. Assuming system packages.")
+            # Import and run the server directly
+            try:
+                from llama_stack.distribution.server.server import main as server_main
 
-        run_args.extend([str(config_file), str(args.port)])
-        if args.disable_ipv6:
-            run_args.append("--disable-ipv6")
+                # Remove the first argument which is the command name, the second argument which is
+                # the config file, the third argument which is the pass to the config file.
+                sys.argv = sys.argv[3:]
 
-        for env_var in args.env:
-            if "=" not in env_var:
-                cprint(
-                    f"Environment variable '{env_var}' must be in KEY=VALUE format",
-                    color="red",
-                )
-                return
-            key, value = env_var.split("=", 1)  # split on first = only
-            if not key:
-                cprint(
-                    f"Environment variable '{env_var}' has empty key",
-                    color="red",
-                )
-                return
-            run_args.extend(["--env", f"{key}={value}"])
+                # Build final sys.argv to pass to the server and add the config file
+                sys.argv = ["server"] + sys.argv[1:]
+                sys.argv.extend(["--yaml-config", str(config_file)])
 
-        if args.tls_keyfile and args.tls_certfile:
-            run_args.extend(["--tls-keyfile", args.tls_keyfile, "--tls-certfile", args.tls_certfile])
-        run_with_pty(run_args)
+                # Run the server
+                server_main()
+            except Exception as e:
+                self.parser.error(f"Failed to run server: {e}")
+            except ImportError as e:
+                self.parser.error(f"Failed to import server module: {e}")
+        else:
+            run_args = formulate_run_args(args.image_type, args.image_name, config, template_name)
+
+            run_args.extend([str(config_file), str(args.port)])
+            if args.disable_ipv6:
+                run_args.append("--disable-ipv6")
+
+            for env_var in args.env:
+                if "=" not in env_var:
+                    cprint(
+                        f"Environment variable '{env_var}' must be in KEY=VALUE format",
+                        color="red",
+                    )
+                    return
+                key, value = env_var.split("=", 1)  # split on first = only
+                if not key:
+                    cprint(
+                        f"Environment variable '{env_var}' has empty key",
+                        color="red",
+                    )
+                    return
+                run_args.extend(["--env", f"{key}={value}"])
+
+            if args.tls_keyfile and args.tls_certfile:
+                run_args.extend(["--tls-keyfile", args.tls_keyfile, "--tls-certfile", args.tls_certfile])
+            run_with_pty(run_args)
