@@ -162,7 +162,7 @@ class SQLiteVecVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
 
     async def initialize(self) -> None:
         # Open a connection to the SQLite database (the file is specified in the config).
-        self.connection = sqlite3.connect(self.config.db_path,check_same_thread=False)
+        self.connection = sqlite3.connect(self.config.db_path, check_same_thread=False)
         self.connection.enable_load_extension(True)
         sqlite_vec.load(self.connection)
         self.connection.enable_load_extension(False)
