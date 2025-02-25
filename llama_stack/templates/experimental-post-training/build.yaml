@@ -16,7 +16,6 @@ distribution_spec:
     - inline::torchtune
     datasetio:
     - inline::localfs
-    - remote::huggingface
     telemetry:
     - inline::meta-reference
     agents:
