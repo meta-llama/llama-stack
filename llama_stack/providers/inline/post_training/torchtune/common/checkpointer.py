@@ -168,6 +168,7 @@ class TorchtuneCheckpointer:
                 raise ValueError(
                     "Adapter checkpoint not found in state_dict. Please ensure that the state_dict contains adapter weights."
                 )
+
         elif checkpoint_format == "hf":
             # Note: for saving hugging face format checkpoints, we only suppport saving adapter weights now
 
@@ -261,5 +262,4 @@ class TorchtuneCheckpointer:
             )
         else:
             raise ValueError(f"Unsupported checkpoint format: {format}")
-
         return str(model_file_path)
