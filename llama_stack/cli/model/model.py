@@ -13,6 +13,7 @@ from llama_stack.cli.model.prompt_format import ModelPromptFormat
 from llama_stack.cli.model.remove import ModelRemove
 from llama_stack.cli.model.verify_download import ModelVerifyDownload
 from llama_stack.cli.subcommand import Subcommand
+from llama_stack.cli.utils import print_subcommand_description
 
 
 class ModelParser(Subcommand):
@@ -24,6 +25,7 @@ class ModelParser(Subcommand):
             "model",
             prog="llama model",
             description="Work with llama models",
+            formatter_class=argparse.RawTextHelpFormatter,
         )
 
         self.parser.set_defaults(func=lambda args: self.parser.print_help())
@@ -37,3 +39,5 @@ class ModelParser(Subcommand):
         ModelDescribe.create(subparsers)
         ModelVerifyDownload.create(subparsers)
         ModelRemove.create(subparsers)
+
+        print_subcommand_description(self.parser, subparsers)
