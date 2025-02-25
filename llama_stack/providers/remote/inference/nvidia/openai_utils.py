@@ -319,7 +319,7 @@ async def convert_chat_completion_request(
             payload.update(temperature=strategy.temperature)
         elif isinstance(strategy, TopKSamplingStrategy):
             if strategy.top_k != -1 and strategy.top_k < 1:
-                warnings.warn("top_k must be -1 or >= 1")
+                warnings.warn("top_k must be -1 or >= 1", stacklevel=2)
             nvext.update(top_k=strategy.top_k)
         elif isinstance(strategy, GreedySamplingStrategy):
             nvext.update(top_k=-1)
@@ -531,7 +531,9 @@ async def convert_openai_chat_completion_stream(
             # it is possible to have parallel tool calls in stream, but
             # ChatCompletionResponseEvent only supports one per stream
             if len(choice.delta.tool_calls) > 1:
-                warnings.warn("multiple tool calls found in a single delta, using the first, ignoring the rest")
+                warnings.warn(
+                    "multiple tool calls found in a single delta, using the first, ignoring the rest", stacklevel=2
+                )
 
             # NIM only produces fully formed tool calls, so we can assume success
             yield ChatCompletionResponseStreamChunk(
@@ -614,7 +616,7 @@ def convert_completion_request(
             payload.update(top_p=request.sampling_params.top_p)
         elif request.sampling_params.strategy == "top_k":
             if request.sampling_params.top_k != -1 and request.sampling_params.top_k < 1:
-                warnings.warn("top_k must be -1 or >= 1")
+                warnings.warn("top_k must be -1 or >= 1", stacklevel=2)
             nvext.update(top_k=request.sampling_params.top_k)
         elif request.sampling_params.strategy == "greedy":
             nvext.update(top_k=-1)

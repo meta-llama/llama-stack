@@ -115,8 +115,8 @@ async def resolve_impls(
     - flatmaps, sorts and resolves the providers in dependency order
     - for each API, produces either a (local, passthrough or router) implementation
     """
-    routing_table_apis = set(x.routing_table_api for x in builtin_automatically_routed_apis())
-    router_apis = set(x.router_api for x in builtin_automatically_routed_apis())
+    routing_table_apis = {x.routing_table_api for x in builtin_automatically_routed_apis()}
+    router_apis = {x.router_api for x in builtin_automatically_routed_apis()}
 
     providers_with_specs = {}
 

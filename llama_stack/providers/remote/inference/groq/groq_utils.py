@@ -61,11 +61,11 @@ def convert_chat_completion_request(
 
     if request.logprobs:
         # Groq doesn't support logprobs at the time of writing
-        warnings.warn("logprobs are not supported yet")
+        warnings.warn("logprobs are not supported yet", stacklevel=2)
 
     if request.response_format:
         # Groq's JSON mode is beta at the time of writing
-        warnings.warn("response_format is not supported yet")
+        warnings.warn("response_format is not supported yet", stacklevel=2)
 
     if request.sampling_params.repetition_penalty != 1.0:
         # groq supports frequency_penalty, but frequency_penalty and sampling_params.repetition_penalty
@@ -73,10 +73,10 @@ def convert_chat_completion_request(
         # frequency_penalty defaults to 0 is a float between -2.0 and 2.0
         # repetition_penalty defaults to 1 and is often set somewhere between 1.0 and 2.0
         # so we exclude it for now
-        warnings.warn("repetition_penalty is not supported")
+        warnings.warn("repetition_penalty is not supported", stacklevel=2)
 
     if request.tool_config.tool_prompt_format != ToolPromptFormat.json:
-        warnings.warn("tool_prompt_format is not used by Groq. Ignoring.")
+        warnings.warn("tool_prompt_format is not used by Groq. Ignoring.", stacklevel=2)
 
     sampling_options = get_sampling_strategy_options(request.sampling_params)
     return CompletionCreateParams(
@@ -209,7 +209,10 @@ async def convert_chat_completion_response_stream(
         elif choice.delta.tool_calls:
             # We assume there is only one tool call per chunk, but emit a warning in case we're wrong
             if len(choice.delta.tool_calls) > 1:
-                warnings.warn("Groq returned multiple tool calls in one chunk. Using the first one, ignoring the rest.")
+                warnings.warn(
+                    "Groq returned multiple tool calls in one chunk. Using the first one, ignoring the rest.",
+                    stacklevel=2,
+                )
 
             # We assume Groq produces fully formed tool calls for each chunk
             tool_call = convert_tool_call(choice.delta.tool_calls[0])

@@ -39,7 +39,7 @@ class Testeval:
 
     @pytest.mark.asyncio
     async def test_eval_evaluate_rows(self, eval_stack, inference_model, judge_model):
-        eval_impl, benchmarks_impl, datasetio_impl, datasets_impl, models_impl = (
+        eval_impl, benchmarks_impl, datasetio_impl, datasets_impl, _ = (
             eval_stack[Api.eval],
             eval_stack[Api.benchmarks],
             eval_stack[Api.datasetio],
@@ -92,7 +92,7 @@ class Testeval:
 
     @pytest.mark.asyncio
     async def test_eval_run_eval(self, eval_stack, inference_model, judge_model):
-        eval_impl, benchmarks_impl, datasets_impl, models_impl = (
+        eval_impl, benchmarks_impl, datasets_impl, _ = (
             eval_stack[Api.eval],
             eval_stack[Api.benchmarks],
             eval_stack[Api.datasets],
@@ -131,7 +131,7 @@ class Testeval:
 
     @pytest.mark.asyncio
     async def test_eval_run_benchmark_eval(self, eval_stack, inference_model):
-        eval_impl, benchmarks_impl, datasets_impl, models_impl = (
+        eval_impl, benchmarks_impl, datasets_impl, _ = (
             eval_stack[Api.eval],
             eval_stack[Api.benchmarks],
             eval_stack[Api.datasets],

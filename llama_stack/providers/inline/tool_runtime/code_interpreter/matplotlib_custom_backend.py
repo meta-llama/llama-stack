@@ -19,6 +19,8 @@ from matplotlib.backend_bases import FigureManagerBase
 # Import necessary components from Matplotlib
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 
+from llama_stack.providers.inline.tool_runtime.code_interpreter.code_env_prefix import _open_connections
+
 log = logging.getLogger(__name__)
 
 
