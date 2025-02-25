@@ -5,7 +5,10 @@
 # the root directory of this source tree.
 
 import logging
-from typing import List, Optional
+from typing import TYPE_CHECKING, List, Optional
+
+if TYPE_CHECKING:
+    from sentence_transformers import SentenceTransformer
 
 from llama_stack.apis.inference import (
     EmbeddingsResponse,
@@ -40,7 +43,7 @@ class SentenceTransformerEmbeddingMixin:
         )
         return EmbeddingsResponse(embeddings=embeddings)
 
-    def _load_sentence_transformer_model(self, model: str) -> "SentenceTransformer":
+    def _load_sentence_transformer_model(self, model: str) -> SentenceTransformer:
         global EMBEDDING_MODELS
 
         loaded_model = EMBEDDING_MODELS.get(model)

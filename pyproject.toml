@@ -129,7 +129,6 @@ ignore = [
     "E721",
     "E741",
     "F405",
-    "F821",
     "F841",
     "C408", # ignored because we like the dict keyword argument syntax
     "E302",
