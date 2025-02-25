@@ -22,6 +22,9 @@ from openai.types.chat import (
     ChatCompletionContentPartParam as OpenAIChatCompletionContentPartParam,
 )
 from openai.types.chat import (
+    ChatCompletionContentPartTextParam as OpenAIChatCompletionContentPartTextParam,
+)
+from openai.types.chat import (
     ChatCompletionMessageParam as OpenAIChatCompletionMessage,
 )
 from openai.types.chat import ChatCompletionMessageToolCall
@@ -519,8 +522,12 @@ async def convert_message_to_openai_dict_new(message: Message | Dict) -> OpenAIC
         content: InterleavedContent,
     ) -> Union[str, Iterable[OpenAIChatCompletionContentPartParam]]:
         # Llama Stack and OpenAI spec match for str and text input
-        if isinstance(content, str) or isinstance(content, TextContentItem):
+        if isinstance(content, str):
             return content
+        elif isinstance(content, TextContentItem):
+            return OpenAIChatCompletionContentPartTextParam(
+                text=content.text,
+            )
         elif isinstance(content, ImageContentItem):
             return OpenAIChatCompletionContentPartImageParam(
                 image_url=OpenAIImageURL(url=await convert_image_content_to_url(content)),
