@@ -9,6 +9,7 @@ import importlib.resources
 import json
 import os
 import shutil
+import sys
 import textwrap
 from functools import lru_cache
 from pathlib import Path
@@ -23,10 +24,10 @@ from termcolor import cprint
 from llama_stack.cli.table import print_table
 from llama_stack.distribution.build import (
     SERVER_DEPENDENCIES,
-    ImageType,
     build_image,
     get_provider_dependencies,
 )
+from llama_stack.distribution.configure import parse_and_maybe_upgrade_config
 from llama_stack.distribution.datatypes import (
     BuildConfig,
     DistributionSpec,
@@ -37,6 +38,8 @@ from llama_stack.distribution.distribution import get_provider_registry
 from llama_stack.distribution.resolver import InvalidProviderError
 from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
+from llama_stack.distribution.utils.exec import formulate_run_args, in_notebook, run_with_pty
+from llama_stack.distribution.utils.image_types import ImageType
 from llama_stack.providers.datatypes import Api
 
 TEMPLATES_PATH = Path(__file__).parent.parent.parent / "templates"
@@ -59,8 +62,16 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
     if args.list_templates:
         return _run_template_list_cmd()
 
-    current_conda_env = os.environ.get("CONDA_DEFAULT_ENV")
-    image_name = args.image_name or current_conda_env
+    if args.image_type == "venv":
+        current_venv = os.environ.get("VIRTUAL_ENV")
+        image_name = args.image_name or current_venv
+        if not image_name and in_notebook():
+            image_name = "__system__"
+    elif args.image_type == "conda":
+        current_conda_env = os.environ.get("CONDA_DEFAULT_ENV")
+        image_name = args.image_name or current_conda_env
+    else:
+        image_name = args.image_name
 
     if args.template:
         available_templates = available_templates_specs()
@@ -69,7 +80,7 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
                 f"Could not find template {args.template}. Please run `llama stack build --list-templates` to check out the available templates",
                 color="red",
             )
-            return
+            sys.exit(1)
         build_config = available_templates[args.template]
         if args.image_type:
             build_config.image_type = args.image_type
@@ -78,7 +89,7 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
                 f"Please specify a image-type (container | conda | venv) for {args.template}",
                 color="red",
             )
-            return
+            sys.exit(1)
     elif not args.config and not args.template:
         name = prompt(
             "> Enter a name for your Llama Stack (e.g. my-local-stack): ",
@@ -159,14 +170,14 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
                     f"Could not parse config file {args.config}: {e}",
                     color="red",
                 )
-                return
+                sys.exit(1)
 
         if build_config.image_type == ImageType.container.value and not args.image_name:
             cprint(
                 "Please specify --image-name when building a container from a config file",
                 color="red",
             )
-            return
+            sys.exit(1)
 
     if args.print_deps_only:
         print(f"# Dependencies for {args.template or args.config or image_name}")
@@ -177,19 +188,41 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
             print(f"uv pip install {special_dep}")
         return
 
-    _run_stack_build_command_from_build_config(
-        build_config,
-        image_name=image_name,
-        config_path=args.config,
-        template_name=args.template,
-    )
+    try:
+        run_config = _run_stack_build_command_from_build_config(
+            build_config,
+            image_name=image_name,
+            config_path=args.config,
+            template_name=args.template,
+        )
+
+    except (Exception, RuntimeError) as exc:
+        cprint(
+            f"Error building stack: {exc}",
+            color="red",
+        )
+        sys.exit(1)
+    if run_config is None:
+        cprint(
+            "Run config path is empty",
+            color="red",
+        )
+        sys.exit(1)
+
+    if args.run:
+        run_config = Path(run_config)
+        config_dict = yaml.safe_load(run_config.read_text())
+        config = parse_and_maybe_upgrade_config(config_dict)
+        run_args = formulate_run_args(args.image_type, args.image_name, config, args.template)
+        run_args.extend([run_config, str(os.getenv("LLAMA_STACK_PORT", 8321))])
+        run_with_pty(run_args)
 
 
 def _generate_run_config(
     build_config: BuildConfig,
     build_dir: Path,
     image_name: str,
-) -> None:
+) -> str:
     """
     Generate a run.yaml template file for user to edit from a build.yaml file
     """
@@ -239,6 +272,7 @@ def _generate_run_config(
         f"You can now run your stack with `llama stack run {run_config_file}`",
         color="green",
     )
+    return run_config_file
 
 
 def _run_stack_build_command_from_build_config(
@@ -246,7 +280,7 @@ def _run_stack_build_command_from_build_config(
     image_name: Optional[str] = None,
     template_name: Optional[str] = None,
     config_path: Optional[str] = None,
-) -> None:
+) -> str:
     if build_config.image_type == ImageType.container.value:
         if template_name:
             image_name = f"distribution-{template_name}"
@@ -256,6 +290,9 @@ def _run_stack_build_command_from_build_config(
     elif build_config.image_type == ImageType.conda.value:
         if not image_name:
             raise ValueError("Please specify an image name when building a conda image")
+    elif build_config.image_type == ImageType.venv.value:
+        if not image_name:
+            raise ValueError("Please specify an image name when building a venv image")
 
     if template_name:
         build_dir = DISTRIBS_BASE_DIR / template_name
@@ -276,7 +313,7 @@ def _run_stack_build_command_from_build_config(
         template_or_config=template_name or config_path,
     )
     if return_code != 0:
-        return
+        raise RuntimeError(f"Failed to build image {image_name}")
 
     if template_name:
         # copy run.yaml from template to build_dir instead of generating it again
@@ -286,8 +323,9 @@ def _run_stack_build_command_from_build_config(
             shutil.copy(path, run_config_file)
 
         cprint("Build Successful!", color="green")
+        return template_path
     else:
-        _generate_run_config(build_config, build_dir, image_name)
+        return _generate_run_config(build_config, build_dir, image_name)
 
 
 def _run_template_list_cmd() -> None:

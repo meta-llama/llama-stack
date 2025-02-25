@@ -178,8 +178,9 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
 
         input_dict = {}
         media_present = request_has_media(request)
+        llama_model = self.register_helper.get_llama_model(request.model)
         if isinstance(request, ChatCompletionRequest):
-            if media_present:
+            if media_present or not llama_model:
                 contents = [await convert_message_to_openai_dict_for_ollama(m) for m in request.messages]
                 # flatten the list of lists
                 input_dict["messages"] = [item for sublist in contents for item in sublist]
@@ -187,7 +188,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
                 input_dict["raw"] = True
                 input_dict["prompt"] = await chat_completion_request_to_prompt(
                     request,
-                    self.register_helper.get_llama_model(request.model),
+                    llama_model,
                 )
         else:
             assert not media_present, "Ollama does not support media for Completion requests"
@@ -280,7 +281,10 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         return EmbeddingsResponse(embeddings=embeddings)
 
     async def register_model(self, model: Model) -> Model:
+        model = await self.register_helper.register_model(model)
         if model.model_type == ModelType.embedding:
+            log.info(f"Pulling embedding model `{model.provider_resource_id}` if necessary...")
+            await self.client.pull(model.provider_resource_id)
             response = await self.client.list()
         else:
             response = await self.client.ps()
@@ -290,7 +294,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
                 f"Model '{model.provider_resource_id}' is not available in Ollama. Available models: {', '.join(available_models)}"
             )
 
-        return await self.register_helper.register_model(model)
+        return model
 
 
 async def convert_message_to_openai_dict_for_ollama(message: Message) -> List[dict]:

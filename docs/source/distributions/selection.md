@@ -17,7 +17,7 @@ Which templates / distributions to choose depends on the hardware you have for r
   - {dockerhub}`distribution-nvidia` ([Guide](self_hosted_distro/nvidia))
 
 - **Are you running on a "regular" desktop or laptop ?** We suggest using the ollama template for quick prototyping and get started without having to worry about needing GPUs.
-  - {dockerhub}`distribution-ollama` ([link](self_hosted_distro/ollama))
+  - {dockerhub}`distribution-ollama` ([Guide](self_hosted_distro/ollama))
 
 - **Do you have an API key for a remote inference provider like Fireworks, Together, etc.?**  If so, we suggest:
   - {dockerhub}`distribution-together` ([Guide](self_hosted_distro/together))
@@ -28,7 +28,7 @@ Which templates / distributions to choose depends on the hardware you have for r
   - [Android](ondevice_distro/android_sdk)
 
 
-- **If none of the above fit your needs, you can also build your own [custom distribution](building_distro).**
+- **If none of the above fit your needs, you can also build your own [custom distribution](building_distro.md).**
 
 ### Distribution Details
 

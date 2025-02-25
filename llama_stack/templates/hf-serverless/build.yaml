@@ -4,6 +4,7 @@ distribution_spec:
   providers:
     inference:
     - remote::hf::serverless
+    - inline::sentence-transformers
     vector_io:
     - inline::faiss
     - remote::chromadb

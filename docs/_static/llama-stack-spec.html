@@ -2315,6 +2315,70 @@
                 }
             }
         },
+        "/v1/agents/{agent_id}/session/{session_id}/turn/{turn_id}/resume": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "A Turn object if stream is False, otherwise an AsyncIterator of AgentTurnResponseStreamChunk objects.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Turn"
+                                }
+                            },
+                            "text/event-stream": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AgentTurnResponseStreamChunk"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Agents"
+                ],
+                "description": "Resume an agent turn with executed tool call responses.\nWhen a Turn has the status `awaiting_input` due to pending input from client side tool calls, this endpoint can be used to submit the outputs from the tool calls once they are ready.",
+                "parameters": [
+                    {
+                        "name": "agent_id",
+                        "in": "path",
+                        "description": "The ID of the agent to resume.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "session_id",
+                        "in": "path",
+                        "description": "The ID of the session to resume.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "turn_id",
+                        "in": "path",
+                        "description": "The ID of the turn to resume.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ResumeAgentTurnRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/v1/eval/benchmarks/{benchmark_id}/jobs": {
             "post": {
                 "responses": {
@@ -4226,6 +4290,9 @@
                     },
                     "tool_config": {
                         "$ref": "#/components/schemas/ToolConfig"
+                    },
+                    "allow_turn_resume": {
+                        "type": "boolean"
                     }
                 },
                 "additionalProperties": false,
@@ -4454,6 +4521,31 @@
                     },
                     "content": {
                         "$ref": "#/components/schemas/InterleavedContent"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
                     }
                 },
                 "additionalProperties": false,
@@ -4612,6 +4704,9 @@
                     },
                     {
                         "$ref": "#/components/schemas/AgentTurnResponseTurnCompletePayload"
+                    },
+                    {
+                        "$ref": "#/components/schemas/AgentTurnResponseTurnAwaitingInputPayload"
                     }
                 ],
                 "discriminator": {
@@ -4621,7 +4716,8 @@
                         "step_progress": "#/components/schemas/AgentTurnResponseStepProgressPayload",
                         "step_complete": "#/components/schemas/AgentTurnResponseStepCompletePayload",
                         "turn_start": "#/components/schemas/AgentTurnResponseTurnStartPayload",
-                        "turn_complete": "#/components/schemas/AgentTurnResponseTurnCompletePayload"
+                        "turn_complete": "#/components/schemas/AgentTurnResponseTurnCompletePayload",
+                        "turn_awaiting_input": "#/components/schemas/AgentTurnResponseTurnAwaitingInputPayload"
                     }
                 }
             },
@@ -4783,6 +4879,25 @@
                 ],
                 "title": "AgentTurnResponseStreamChunk",
                 "description": "streamed agent turn completion response."
+            },
+            "AgentTurnResponseTurnAwaitingInputPayload": {
+                "type": "object",
+                "properties": {
+                    "event_type": {
+                        "type": "string",
+                        "const": "turn_awaiting_input",
+                        "default": "turn_awaiting_input"
+                    },
+                    "turn": {
+                        "$ref": "#/components/schemas/Turn"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "event_type",
+                    "turn"
+                ],
+                "title": "AgentTurnResponseTurnAwaitingInputPayload"
             },
             "AgentTurnResponseTurnCompletePayload": {
                 "type": "object",
@@ -6656,6 +6771,31 @@
                     },
                     "error_code": {
                         "type": "integer"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
                     }
                 },
                 "additionalProperties": false,
@@ -7505,9 +7645,37 @@
                 "properties": {
                     "content": {
                         "$ref": "#/components/schemas/InterleavedContent"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
                     }
                 },
                 "additionalProperties": false,
+                "required": [
+                    "metadata"
+                ],
                 "title": "RAGQueryResult"
             },
             "QueryChunksRequest": {
@@ -8045,6 +8213,27 @@
                     "embedding_model"
                 ],
                 "title": "RegisterVectorDbRequest"
+            },
+            "ResumeAgentTurnRequest": {
+                "type": "object",
+                "properties": {
+                    "tool_responses": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ToolResponseMessage"
+                        },
+                        "description": "The tool call responses to resume the turn with."
+                    },
+                    "stream": {
+                        "type": "boolean",
+                        "description": "Whether to stream the response."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "tool_responses"
+                ],
+                "title": "ResumeAgentTurnRequest"
             },
             "RunEvalRequest": {
                 "type": "object",

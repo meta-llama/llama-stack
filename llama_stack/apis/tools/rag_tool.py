@@ -26,6 +26,7 @@ class RAGDocument(BaseModel):
 @json_schema_type
 class RAGQueryResult(BaseModel):
     content: Optional[InterleavedContent] = None
+    metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
 @json_schema_type

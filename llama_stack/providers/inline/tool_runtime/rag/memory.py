@@ -119,10 +119,10 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
 
         # sort by score
         chunks, scores = zip(*sorted(zip(chunks, scores, strict=False), key=lambda x: x[1], reverse=True), strict=False)
-
+        chunks = chunks[: query_config.max_chunks]
         tokens = 0
         picked = []
-        for c in chunks[: query_config.max_chunks]:
+        for c in chunks:
             metadata = c.metadata
             tokens += metadata["token_count"]
             if tokens > query_config.max_tokens_in_context:
@@ -146,6 +146,9 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
                     text="\n=== END-RETRIEVED-CONTEXT ===\n",
                 ),
             ],
+            metadata={
+                "document_ids": [c.metadata["document_id"] for c in chunks[: len(picked)]],
+            },
         )
 
     async def list_runtime_tools(

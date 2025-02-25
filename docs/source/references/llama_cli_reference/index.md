@@ -171,7 +171,7 @@ The `llama model` command helps you explore the model’s interface.
 llama model --help
 ```
 ```
-usage: llama model [-h] {download,list,prompt-format,describe} ...
+usage: llama model [-h] {download,list,prompt-format,describe,verify-download,remove} ...
 
 Work with llama models
 
@@ -179,15 +179,15 @@ options:
   -h, --help            show this help message and exit
 
 model_subcommands:
-  {download,list,prompt-format,describe}
+  {download,list,prompt-format,describe,verify-download,remove}
 ```
+
+### Describe
 
 You can use the describe command to know more about a model:
 ```
 llama model describe -m Llama3.2-3B-Instruct
 ```
-### Describe
-
 ```
 +-----------------------------+----------------------------------+
 | Model                       | Llama3.2-3B-Instruct             |
@@ -234,3 +234,10 @@ llama model prompt-format -m Llama3.2-3B-Instruct
 You will be shown a Markdown formatted description of the model interface and how prompts / messages are formatted for various scenarios.
 
 **NOTE**: Outputs in terminal are color printed to show special tokens.
+
+### Remove model
+You can run `llama model remove` to remove unecessary model:
+
+```
+llama model remove -m Llama-Guard-3-8B-int8
+```

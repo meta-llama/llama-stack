@@ -36,12 +36,12 @@ def single_entry_vector_db_registry(llama_stack_client, empty_vector_db_registry
 
 
 @pytest.mark.parametrize("provider_id", INLINE_VECTOR_DB_PROVIDERS)
-def test_vector_db_retrieve(llama_stack_client, embedding_model, empty_vector_db_registry, provider_id):
+def test_vector_db_retrieve(llama_stack_client, embedding_model_id, empty_vector_db_registry, provider_id):
     # Register a memory bank first
     vector_db_id = f"test_vector_db_{random.randint(1000, 9999)}"
     llama_stack_client.vector_dbs.register(
         vector_db_id=vector_db_id,
-        embedding_model=embedding_model,
+        embedding_model=embedding_model_id,
         embedding_dimension=384,
         provider_id=provider_id,
     )
@@ -50,7 +50,7 @@ def test_vector_db_retrieve(llama_stack_client, embedding_model, empty_vector_db
     response = llama_stack_client.vector_dbs.retrieve(vector_db_id=vector_db_id)
     assert response is not None
     assert response.identifier == vector_db_id
-    assert response.embedding_model == embedding_model
+    assert response.embedding_model == embedding_model_id
     assert response.provider_id == provider_id
     assert response.provider_resource_id == vector_db_id
 
@@ -61,11 +61,11 @@ def test_vector_db_list(llama_stack_client, empty_vector_db_registry):
 
 
 @pytest.mark.parametrize("provider_id", INLINE_VECTOR_DB_PROVIDERS)
-def test_vector_db_register(llama_stack_client, embedding_model, empty_vector_db_registry, provider_id):
+def test_vector_db_register(llama_stack_client, embedding_model_id, empty_vector_db_registry, provider_id):
     vector_db_id = f"test_vector_db_{random.randint(1000, 9999)}"
     llama_stack_client.vector_dbs.register(
         vector_db_id=vector_db_id,
-        embedding_model=embedding_model,
+        embedding_model=embedding_model_id,
         embedding_dimension=384,
         provider_id=provider_id,
     )
