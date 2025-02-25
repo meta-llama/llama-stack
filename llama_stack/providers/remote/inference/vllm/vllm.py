@@ -169,7 +169,7 @@ async def _process_vllm_chat_completion_stream_response(
                 args = {} if not args_str else json.loads(args_str)
             except Exception as e:
                 log.warning(f"Failed to parse tool call buffer arguments: {args_str} \nError: {e}")
-            if args is not None:
+            if args:
                 yield ChatCompletionResponseStreamChunk(
                     event=ChatCompletionResponseEvent(
                         event_type=event_type,
@@ -183,7 +183,7 @@ async def _process_vllm_chat_completion_stream_response(
                         ),
                     )
                 )
-            else:
+            elif args_str:
                 yield ChatCompletionResponseStreamChunk(
                     event=ChatCompletionResponseEvent(
                         event_type=ChatCompletionResponseEventType.progress,

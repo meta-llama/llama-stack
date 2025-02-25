@@ -909,7 +909,19 @@ class ChatAgent(ShieldRunnerMixin):
                     if tool_def_map.get(built_in_type, None):
                         raise ValueError(f"Tool {built_in_type} already exists")
 
-                    tool_def_map[built_in_type] = ToolDefinition(tool_name=built_in_type)
+                    tool_def_map[built_in_type] = ToolDefinition(
+                        tool_name=built_in_type,
+                        description=tool_def.description,
+                        parameters={
+                            param.name: ToolParamDefinition(
+                                param_type=param.parameter_type,
+                                description=param.description,
+                                required=param.required,
+                                default=param.default,
+                            )
+                            for param in tool_def.parameters
+                        },
+                    )
                     tool_to_group[built_in_type] = tool_def.toolgroup_id
                     continue
 
