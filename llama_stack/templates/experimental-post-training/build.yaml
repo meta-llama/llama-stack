@@ -6,6 +6,7 @@ distribution_spec:
   providers:
     inference:
     - inline::meta-reference
+    - remote::ollama
     eval:
     - inline::meta-reference
     scoring:

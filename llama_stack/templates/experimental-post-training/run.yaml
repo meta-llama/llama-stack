@@ -21,6 +21,10 @@ providers:
       max_seq_len: 4096
       checkpoint_dir: null
       create_distributed_process_group: False
+  - provider_id: ollama
+    provider_type: remote::ollama
+    config:
+      url: ${env.OLLAMA_URL:http://localhost:11434}
   eval:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
