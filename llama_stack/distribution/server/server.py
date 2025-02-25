@@ -142,7 +142,7 @@ def handle_signal(app, signum, _) -> None:
         not block the current execution.
     """
     signame = signal.Signals(signum).name
-    print(f"Received signal {signame} ({signum}). Exiting gracefully...")
+    logger.info(f"Received signal {signame} ({signum}). Exiting gracefully...")
 
     async def shutdown():
         try:
@@ -184,9 +184,9 @@ def handle_signal(app, signum, _) -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("Starting up")
+    logger.info("Starting up")
     yield
-    print("Shutting down")
+    logger.info("Shutting down")
     for impl in app.__llama_stack_impls__.values():
         await impl.shutdown()
 
@@ -352,10 +352,10 @@ def main():
         for env_pair in args.env:
             try:
                 key, value = validate_env_pair(env_pair)
-                print(f"Setting CLI environment variable {key} => {value}")
+                logger.info(f"Setting CLI environment variable {key} => {value}")
                 os.environ[key] = value
             except ValueError as e:
-                print(f"Error: {str(e)}")
+                logger.error(f"Error: {str(e)}")
                 sys.exit(1)
 
     if args.yaml_config:
@@ -363,12 +363,12 @@ def main():
         config_file = Path(args.yaml_config)
         if not config_file.exists():
             raise ValueError(f"Config file {config_file} does not exist")
-        print(f"Using config file: {config_file}")
+        logger.info(f"Using config file: {config_file}")
     elif args.template:
         config_file = Path(REPO_ROOT) / "llama_stack" / "templates" / args.template / "run.yaml"
         if not config_file.exists():
             raise ValueError(f"Template {args.template} does not exist")
-        print(f"Using template {args.template} config file: {config_file}")
+        logger.info(f"Using template {args.template} config file: {config_file}")
     else:
         raise ValueError("Either --yaml-config or --template must be provided")
 
@@ -376,9 +376,9 @@ def main():
         config = replace_env_vars(yaml.safe_load(fp))
         config = StackRunConfig(**config)
 
-    print("Run configuration:")
+    logger.info("Run configuration:")
     safe_config = redact_sensitive_fields(config.model_dump())
-    print(yaml.dump(safe_config, indent=2))
+    logger.info(yaml.dump(safe_config, indent=2))
 
     app = FastAPI(lifespan=lifespan)
     app.add_middleware(TracingMiddleware)
@@ -387,7 +387,8 @@ def main():
 
     try:
         impls = asyncio.run(construct_stack(config))
-    except InvalidProviderError:
+    except InvalidProviderError as e:
+        logger.error(f"Error: {str(e)}")
         sys.exit(1)
 
     if Api.telemetry in impls:
@@ -432,7 +433,7 @@ def main():
                     )
                 )
 
-        cprint(f"Serving API {api_str}", "white", attrs=["bold"])
+        logger.info(f"Serving API {api_str}")
         for endpoint in endpoints:
             cprint(f" {endpoint.method.upper()} {endpoint.route}", "white")
 
@@ -462,10 +463,10 @@ def main():
             "ssl_keyfile": keyfile,
             "ssl_certfile": certfile,
         }
-        print(f"HTTPS enabled with certificates:\n  Key: {keyfile}\n  Cert: {certfile}")
+        logger.info(f"HTTPS enabled with certificates:\n  Key: {keyfile}\n  Cert: {certfile}")
 
     listen_host = ["::", "0.0.0.0"] if not args.disable_ipv6 else "0.0.0.0"
-    print(f"Listening on {listen_host}:{port}")
+    logger.info(f"Listening on {listen_host}:{port}")
 
     uvicorn_config = {
         "app": app,
