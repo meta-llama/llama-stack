@@ -1,4 +1,5 @@
 .env
+.env.dev
 __pycache__
 dist
 *.egg-info
