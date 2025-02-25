@@ -107,7 +107,7 @@ def test_embedding_text(llama_stack_client, embedding_model_id, contents):
         "list[url,string,base64,text]",
     ],
 )
-@pytest.mark.skip(reason="Media is not supported")
+@pytest.mark.xfail(reason="Media is not supported")
 def test_embedding_image(llama_stack_client, embedding_model_id, contents):
     response = llama_stack_client.inference.embeddings(model_id=embedding_model_id, contents=contents)
     assert isinstance(response, EmbeddingsResponse)
