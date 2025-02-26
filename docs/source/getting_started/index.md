@@ -102,12 +102,18 @@ Let's use the `llama-stack-client` CLI to check the connectivity to the server.
 $ llama-stack-client configure --endpoint http://localhost:$LLAMA_STACK_PORT
 > Enter the API key (leave empty if no key is needed):
 Done! You can now use the Llama Stack Client CLI with endpoint http://localhost:8321
+
 $ llama-stack-client models list
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━┓
-┃ identifier                       ┃ provider_id ┃ provider_resource_id      ┃ metadata ┃
-┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━┩
-│ meta-llama/Llama-3.2-3B-Instruct │ ollama      │ llama3.2:3b-instruct-fp16 │          │
-└──────────────────────────────────┴─────────────┴───────────────────────────┴──────────┘
+
+Available Models
+
+┏━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━━┓
+┃ model_type   ┃ identifier                           ┃ provider_resource_id         ┃ metadata  ┃ provider_id ┃
+┡━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━━┩
+│ llm          │ meta-llama/Llama-3.2-3B-Instruct     │ llama3.2:3b-instruct-fp16    │           │ ollama      │
+└──────────────┴──────────────────────────────────────┴──────────────────────────────┴───────────┴─────────────┘
+
+Total models: 1
 ```
 
 You can test basic Llama inference completion using the CLI too.
