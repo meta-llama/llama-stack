@@ -746,7 +746,7 @@ class ChatAgent(ShieldRunnerMixin):
                                     )
                                 ],
                                 started_at=tool_execution_start_time,
-                                completed_at=datetime.now(),
+                                completed_at=datetime.now().astimezone().isoformat(),
                             ),
                         )
                     )
