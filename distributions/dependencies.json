@@ -200,9 +200,7 @@
     "sentencepiece",
     "tqdm",
     "transformers",
-    "uvicorn",
-    "sentence-transformers --no-deps",
-    "torch torchvision --index-url https://download.pytorch.org/whl/cpu"
+    "uvicorn"
   ],
   "hf-endpoint": [
     "aiohttp",
