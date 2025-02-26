@@ -106,7 +106,7 @@ It would be best to start with a template and understand the structure of the co
 llama stack build
 
 > Enter a name for your Llama Stack (e.g. my-local-stack): my-stack
-> Enter the image type you want your Llama Stack to be built as (container or conda): conda
+> Enter the image type you want your Llama Stack to be built as (container or conda or venv): conda
 
 Llama Stack is composed of several APIs working together. Let's select
 the provider types (implementations) you want to use for these APIs.
@@ -187,7 +187,7 @@ usage: llama stack run [-h] [--port PORT] [--image-name IMAGE_NAME] [--disable-i
                        [--tls-certfile TLS_CERTFILE] [--image-type {conda,container,venv}]
                        config
 
-start the server for a Llama Stack Distribution. You should have already built (or downloaded) and configured the distribution.
+Start the server for a Llama Stack Distribution. You should have already built (or downloaded) and configured the distribution.
 
 positional arguments:
   config                Path to config file to use for the run
