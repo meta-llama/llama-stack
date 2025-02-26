@@ -243,7 +243,7 @@ agent_config = AgentConfig(
     # Define tools available to the agent
     toolgroups=[
         {
-            "name": "builtin::rag",
+            "name": "builtin::rag/knowledge_search",
             "args": {
                 "vector_db_ids": [vector_db_id],
             },
