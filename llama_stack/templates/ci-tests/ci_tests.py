@@ -97,7 +97,7 @@ def get_distribution_template() -> DistributionTemplate:
         container_image=None,
         template_path=None,
         providers=providers,
-        default_models=[],
+        default_models=default_models + [embedding_model],
         run_configs={
             "run.yaml": RunConfigSettings(
                 provider_overrides={
