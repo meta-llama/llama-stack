@@ -1077,6 +1077,8 @@ async def execute_tool_call_maybe(
     tool_to_group: Dict[str, str],
 ) -> ToolInvocationResult:
     name = tool_call.tool_name
+    if not name:
+        raise ValueError("Tool call has an empty name. Tool call may not have been invoked.")
     group_name = tool_to_group.get(name, None)
     if group_name is None:
         raise ValueError(f"Tool {name} not found in any tool group")
