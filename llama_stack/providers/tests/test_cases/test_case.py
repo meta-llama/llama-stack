@@ -9,7 +9,10 @@ import pathlib
 
 
 class TestCase:
-    _apis = ["chat_completion", "completion"]
+    _apis = [
+        "inference/chat_completion",
+        "inference/completion",
+    ]
     _jsonblob = {}
 
     def __init__(self, name):
@@ -17,7 +20,12 @@ class TestCase:
         if self._jsonblob == {}:
             for api in self._apis:
                 with open(pathlib.Path(__file__).parent / f"{api}.json", "r") as f:
-                    TestCase._jsonblob.update({f"{api}-{k}": v for k, v in json.load(f).items()})
+                    coloned = api.replace("/", ":")
+                    try:
+                        loaded = json.load(f)
+                    except json.JSONDecodeError as e:
+                        raise ValueError(f"There is a syntax error in {api}.json: {e}") from e
+                    TestCase._jsonblob.update({f"{coloned}:{k}": v for k, v in loaded.items()})
 
         # loading this test case
         tc = self._jsonblob.get(name)
@@ -25,7 +33,6 @@ class TestCase:
             raise ValueError(f"Test case {name} not found")
 
         # these are the only fields we need
-        self.name = tc.get("name")
         self.data = tc.get("data")
 
     def __getitem__(self, key):

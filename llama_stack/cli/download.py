@@ -343,7 +343,7 @@ def _hf_download(
             "You can find your token by visiting https://huggingface.co/settings/tokens"
         )
     except RepositoryNotFoundError:
-        parser.error(f"Repository '{repo_id}' not found on the Hugging Face Hub.")
+        parser.error(f"Repository '{repo_id}' not found on the Hugging Face Hub or incorrect Hugging Face token.")
     except Exception as e:
         parser.error(e)
 

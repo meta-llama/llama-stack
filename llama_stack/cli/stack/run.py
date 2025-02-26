@@ -5,12 +5,15 @@
 # the root directory of this source tree.
 
 import argparse
+import logging
 import os
 from pathlib import Path
 
 from llama_stack.cli.subcommand import Subcommand
 
 REPO_ROOT = Path(__file__).parent.parent.parent.parent
+
+logger = logging.getLogger(__name__)
 
 
 class StackRun(Subcommand):
@@ -75,7 +78,6 @@ class StackRun(Subcommand):
 
     def _run_stack_run_cmd(self, args: argparse.Namespace) -> None:
         import yaml
-        from termcolor import cprint
 
         from llama_stack.distribution.build import ImageType
         from llama_stack.distribution.configure import parse_and_maybe_upgrade_config
@@ -84,10 +86,6 @@ class StackRun(Subcommand):
             DISTRIBS_BASE_DIR,
         )
         from llama_stack.distribution.utils.exec import formulate_run_args, run_with_pty
-
-        if not args.config:
-            self.parser.error("Must specify a config file to run")
-            return
 
         config_file = Path(args.config)
         has_yaml_suffix = args.config.endswith(".yaml")
@@ -115,11 +113,23 @@ class StackRun(Subcommand):
             self.parser.error(
                 f"File {str(config_file)} does not exist.\n\nPlease run `llama stack build` to generate (and optionally edit) a run.yaml file"
             )
-            return
 
-        print(f"Using run configuration: {config_file}")
-        config_dict = yaml.safe_load(config_file.read_text())
-        config = parse_and_maybe_upgrade_config(config_dict)
+        if not config_file.is_file():
+            self.parser.error(
+                f"Config file must be a valid file path, '{config_file}’ is not a file: type={type(config_file)}"
+            )
+
+        logger.info(f"Using run configuration: {config_file}")
+
+        try:
+            config_dict = yaml.safe_load(config_file.read_text())
+        except yaml.parser.ParserError as e:
+            self.parser.error(f"failed to load config file '{config_file}':\n {e}")
+
+        try:
+            config = parse_and_maybe_upgrade_config(config_dict)
+        except AttributeError as e:
+            self.parser.error(f"failed to parse config file '{config_file}':\n {e}")
 
         run_args = formulate_run_args(args.image_type, args.image_name, config, template_name)
 
@@ -129,18 +139,10 @@ class StackRun(Subcommand):
 
         for env_var in args.env:
             if "=" not in env_var:
-                cprint(
-                    f"Environment variable '{env_var}' must be in KEY=VALUE format",
-                    color="red",
-                )
-                return
+                self.parser.error(f"Environment variable '{env_var}' must be in KEY=VALUE format")
             key, value = env_var.split("=", 1)  # split on first = only
             if not key:
-                cprint(
-                    f"Environment variable '{env_var}' has empty key",
-                    color="red",
-                )
-                return
+                self.parser.error(f"Environment variable '{env_var}' has empty key")
             run_args.extend(["--env", f"{key}={value}"])
 
         if args.tls_keyfile and args.tls_certfile:

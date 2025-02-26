@@ -21,6 +21,10 @@ providers:
       max_seq_len: 4096
       checkpoint_dir: null
       create_distributed_process_group: False
+  - provider_id: ollama
+    provider_type: remote::ollama
+    config:
+      url: ${env.OLLAMA_URL:http://localhost:11434}
   eval:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -34,9 +38,6 @@ providers:
     config:
       openai_api_key: ${env.OPENAI_API_KEY:}
   datasetio:
-  - provider_id: huggingface-0
-    provider_type: remote::huggingface
-    config: {}
   - provider_id: localfs
     provider_type: inline::localfs
     config: {}
@@ -47,7 +48,9 @@ providers:
   post_training:
   - provider_id: torchtune-post-training
     provider_type: inline::torchtune
-    config: {}
+    config: {
+      checkpoint_format: huggingface
+    }
   agents:
   - provider_id: meta-reference
     provider_type: inline::meta-reference

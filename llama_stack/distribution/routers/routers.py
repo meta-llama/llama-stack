@@ -441,7 +441,7 @@ class ToolRuntimeRouter(ToolRuntime):
             vector_db_ids: List[str],
             query_config: Optional[RAGQueryConfig] = None,
         ) -> RAGQueryResult:
-            return await self.routing_table.get_provider_impl("query_from_memory").query(
+            return await self.routing_table.get_provider_impl("knowledge_search").query(
                 content, vector_db_ids, query_config
             )
 

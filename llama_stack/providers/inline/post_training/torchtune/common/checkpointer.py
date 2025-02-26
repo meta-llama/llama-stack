@@ -4,15 +4,25 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import json
 import os
 import shutil
 from pathlib import Path
 from typing import Any, Dict, List
 
 import torch
+from safetensors.torch import save_file
 from torchtune import training
 from torchtune.models import convert_weights
-from torchtune.training.checkpointing._utils import ModelType, safe_torch_load
+from torchtune.training.checkpointing._utils import (
+    ADAPTER_CONFIG_FNAME,
+    ADAPTER_MODEL_FNAME,
+    REPO_ID_FNAME,
+    SUFFIXES_TO_NOT_COPY,
+    ModelType,
+    copy_files,
+    safe_torch_load,
+)
 from torchtune.utils._logging import get_logger
 
 logger = get_logger("DEBUG")
@@ -75,9 +85,24 @@ class TorchtuneCheckpointer:
         state_dict: Dict[str, Any],
         epoch: int,
         adapter_only: bool = False,
+        checkpoint_format: str = "meta",
     ) -> str:
         model_file_path = Path(self._output_dir) / f"{self._model_id}-{self._training_algorithm}-{epoch}"
+        if checkpoint_format == "meta":
+            self._save_meta_format_checkpoint(model_file_path, state_dict, adapter_only)
+        elif checkpoint_format == "huggingface":
+            # Note: for saving hugging face format checkpoints, we only suppport saving adapter weights now
+            self._save_hf_format_checkpoint(model_file_path, state_dict)
+        else:
+            raise ValueError(f"Unsupported checkpoint format: {format}")
+        return str(model_file_path)
 
+    def _save_meta_format_checkpoint(
+        self,
+        model_file_path: Path,
+        state_dict: Dict[str, Any],
+        adapter_only: bool = False,
+    ) -> None:
         model_file_path.mkdir(parents=True, exist_ok=True)
 
         # copy the related files for inference
@@ -140,6 +165,76 @@ class TorchtuneCheckpointer:
                 "Adapter checkpoint not found in state_dict. Please ensure that the state_dict contains adapter weights."
             )
 
-        print("model_file_path", str(model_file_path))
+    def _save_hf_format_checkpoint(
+        self,
+        model_file_path: Path,
+        state_dict: Dict[str, Any],
+    ) -> None:
+        # the config.json file contains model params needed for state dict conversion
+        config = json.loads(Path.joinpath(self._checkpoint_dir.parent, "config.json").read_text())
 
-        return str(model_file_path)
+        # repo_id is necessary for when saving an adapter config, so its compatible with HF.
+        # This json file is produced and saved in the download step.
+        # contents are {"repo_id": "some_model/some_model_version"}
+        repo_id_path = Path.joinpath(self._checkpoint_dir.parent, REPO_ID_FNAME).with_suffix(".json")
+        self.repo_id = None
+        if repo_id_path.exists():
+            with open(repo_id_path, "r") as json_file:
+                data = json.load(json_file)
+                self.repo_id = data.get("repo_id")
+
+        if training.ADAPTER_KEY in state_dict:
+            # TODO: saving it "as is" is a requirement because, if we only save with
+            # convert_weights.tune_to_peft_adapter_weights, we do NOT have a fn
+            # convert_weights.peft_to_tune. The .pt format is not needed, but
+            # it is an easy way to distinguish the adapters. Ideally we should save only one.
+            output_path = Path.joinpath(model_file_path, ADAPTER_MODEL_FNAME).with_suffix(".pt")
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            torch.save(state_dict[training.ADAPTER_KEY], output_path)
+            logger.info(
+                f"Adapter checkpoint of size {os.path.getsize(output_path) / 1024**3:.2f} GiB saved to {output_path}"
+            )
+
+            state_dict[training.ADAPTER_KEY] = convert_weights.tune_to_peft_adapter_weights(
+                state_dict[training.ADAPTER_KEY],
+                num_heads=config["num_attention_heads"],
+                num_kv_heads=config["num_key_value_heads"],
+                dim=config["hidden_size"],
+                head_dim=config.get("head_dim", None),
+            )
+            output_path = Path.joinpath(model_file_path, "adapter", ADAPTER_MODEL_FNAME)
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_path = output_path.with_suffix(".safetensors")
+            save_file(
+                state_dict[training.ADAPTER_KEY],
+                output_path,
+                metadata={"format": "pt"},
+            )
+            logger.info(
+                f"Adapter checkpoint of size {os.path.getsize(output_path) / 1024**3:.2f} GiB saved to {output_path}"
+            )
+        else:
+            raise ValueError(
+                "Adapter checkpoint not found in state_dict. Please ensure that the state_dict contains adapter weights."
+            )
+
+        if training.ADAPTER_CONFIG in state_dict:
+            state_dict[training.ADAPTER_CONFIG] = convert_weights.tune_to_peft_adapter_config(
+                adapter_config=state_dict[training.ADAPTER_CONFIG],
+                base_model_name_or_path=self.repo_id,
+            )
+
+            output_path = Path.joinpath(model_file_path, "adapter", ADAPTER_CONFIG_FNAME).with_suffix(".json")
+            with open(output_path, "w") as f:
+                json.dump(state_dict[training.ADAPTER_CONFIG], f)
+            logger.info(
+                f"Adapter checkpoint of size {os.path.getsize(output_path) / 1024**3:.2f} GiB saved to {output_path}"
+            )
+
+        # Save all files in ckpt_dir, except model weights and mapping, to output_dir/epoch_{epoch}
+        # So its easy to run inference with the model using this epoch's checkpoint
+        copy_files(
+            self._checkpoint_dir.parent,
+            model_file_path,
+            ignore_suffixes=SUFFIXES_TO_NOT_COPY,
+        )

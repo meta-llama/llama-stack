@@ -1,0 +1,43 @@
+{
+    "sanity": {
+        "data": {
+            "content": "Complete the sentence using one word: Roses are red, violets are "
+        }
+    },
+    "non_streaming": {
+        "data": {
+            "content": "Micheael Jordan is born in ",
+            "expected": "1963"
+        }
+    },
+    "streaming": {
+        "data": {
+            "content": "Roses are red,"
+        }
+    },
+    "log_probs": {
+        "data": {
+            "content": "Complete the sentence: Micheael Jordan is born in "
+        }
+    },
+    "logprobs_non_streaming": {
+        "data": {
+            "content": "Micheael Jordan is born in "
+        }
+    },
+    "logprobs_streaming": {
+        "data": {
+            "content": "Roses are red,"
+        }
+    },
+    "structured_output": {
+        "data": {
+            "user_input": "Michael Jordan was born in 1963. He played basketball for the Chicago Bulls. He retired in 2003.",
+            "expected": {
+                "name": "Michael Jordan",
+                "year_born": "1963",
+                "year_retired": "2003"
+            }
+        }
+    }
+}

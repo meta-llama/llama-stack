@@ -210,6 +210,33 @@ def available_providers() -> List[ProviderSpec]:
         remote_provider_spec(
             api=Api.inference,
             adapter=AdapterSpec(
+                adapter_type="openai",
+                pip_packages=["litellm"],
+                module="llama_stack.providers.remote.inference.openai",
+                config_class="llama_stack.providers.remote.inference.openai.OpenAIConfig",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
+                adapter_type="anthropic",
+                pip_packages=["litellm"],
+                module="llama_stack.providers.remote.inference.anthropic",
+                config_class="llama_stack.providers.remote.inference.anthropic.AnthropicConfig",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
+                adapter_type="gemini",
+                pip_packages=["litellm"],
+                module="llama_stack.providers.remote.inference.gemini",
+                config_class="llama_stack.providers.remote.inference.gemini.GeminiConfig",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
                 adapter_type="sambanova",
                 pip_packages=[
                     "openai",

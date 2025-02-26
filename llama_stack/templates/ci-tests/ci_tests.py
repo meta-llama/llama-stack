@@ -57,17 +57,6 @@ def get_distribution_template() -> DistributionTemplate:
         config=SentenceTransformersInferenceConfig.sample_run_config(),
     )
 
-    core_model_to_hf_repo = {m.descriptor(): m.huggingface_repo for m in all_registered_models()}
-    default_models = [
-        ModelInput(
-            model_id=core_model_to_hf_repo[m.llama_model] if m.llama_model else m.provider_model_id,
-            provider_model_id=m.provider_model_id,
-            provider_id="fireworks",
-            metadata=m.metadata,
-            model_type=m.model_type,
-        )
-        for m in MODEL_ENTRIES
-    ]
     default_tool_groups = [
         ToolGroupInput(
             toolgroup_id="builtin::websearch",
@@ -81,6 +70,16 @@ def get_distribution_template() -> DistributionTemplate:
             toolgroup_id="builtin::code_interpreter",
             provider_id="code-interpreter",
         ),
+    ]
+    core_model_to_hf_repo = {m.descriptor(): m.huggingface_repo for m in all_registered_models()}
+    default_models = [
+        ModelInput(
+            model_id=core_model_to_hf_repo[m.llama_model] if m.llama_model else m.provider_model_id,
+            provider_id="fireworks",
+            model_type=m.model_type,
+            metadata=m.metadata,
+        )
+        for m in MODEL_ENTRIES
     ]
     embedding_model = ModelInput(
         model_id="all-MiniLM-L6-v2",
@@ -98,7 +97,7 @@ def get_distribution_template() -> DistributionTemplate:
         container_image=None,
         template_path=None,
         providers=providers,
-        default_models=default_models,
+        default_models=default_models + [embedding_model],
         run_configs={
             "run.yaml": RunConfigSettings(
                 provider_overrides={
