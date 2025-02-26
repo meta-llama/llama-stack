@@ -91,7 +91,7 @@ agent_config = AgentConfig(
     enable_session_persistence=False,
     toolgroups=[
         {
-            "name": "builtin::rag",
+            "name": "builtin::rag/knowledge_search",
             "args": {
                 "vector_db_ids": [vector_db_id],
             },

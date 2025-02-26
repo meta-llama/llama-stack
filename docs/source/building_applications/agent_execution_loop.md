@@ -7,12 +7,12 @@ Each agent turn follows these key steps:
 1. **Initial Safety Check**: The user's input is first screened through configured safety shields
 
 2. **Context Retrieval**:
-   - If RAG is enabled, the agent queries relevant documents from memory banks
-   - For new documents, they are first inserted into the memory bank
-   - Retrieved context is augmented to the user's prompt
+   - If RAG is enabled, the agent can choose to query relevant documents from memory banks. You can use the `instructions` field to steer the agent.
+   - For new documents, they are first inserted into the memory bank.
+   - Retrieved context is provided to the LLM as a tool response in the message history.
 
 3. **Inference Loop**: The agent enters its main execution loop:
-   - The LLM receives the augmented prompt (with context and/or previous tool outputs)
+   - The LLM receives a user prompt (with previous tool outputs)
    - The LLM generates a response, potentially with tool calls
    - If tool calls are present:
      - Tool inputs are safety-checked
@@ -40,19 +40,16 @@ sequenceDiagram
     S->>E: Input Safety Check
     deactivate S
 
-    E->>M: 2.1 Query Context
-    M-->>E: 2.2 Retrieved Documents
-
     loop Inference Loop
-        E->>L: 3.1 Augment with Context
-        L-->>E: 3.2 Response (with/without tool calls)
+        E->>L: 2.1 Augment with Context
+        L-->>E: 2.2 Response (with/without tool calls)
 
         alt Has Tool Calls
             E->>S: Check Tool Input
-            S->>T: 4.1 Execute Tool
-            T-->>E: 4.2 Tool Response
-            E->>L: 5.1 Tool Response
-            L-->>E: 5.2 Synthesized Response
+            S->>T: 3.1 Execute Tool
+            T-->>E: 3.2 Tool Response
+            E->>L: 4.1 Tool Response
+            L-->>E: 4.2 Synthesized Response
         end
 
         opt Stop Conditions
@@ -64,7 +61,7 @@ sequenceDiagram
     end
 
     E->>S: Output Safety Check
-    S->>U: 6. Final Response
+    S->>U: 5. Final Response
 ```
 
 Each step in this process can be monitored and controlled through configurations. Here's an example that demonstrates monitoring the agent's execution:
@@ -77,7 +74,10 @@ agent_config = AgentConfig(
     instructions="You are a helpful assistant",
     # Enable both RAG and tool usage
     toolgroups=[
-        {"name": "builtin::rag", "args": {"vector_db_ids": ["my_docs"]}},
+        {
+            "name": "builtin::rag/knowledge_search",
+            "args": {"vector_db_ids": ["my_docs"]},
+        },
         "builtin::code_interpreter",
     ],
     # Configure safety

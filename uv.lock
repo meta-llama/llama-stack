@@ -1,5 +1,4 @@
 version = 1
-revision = 1
 requires-python = ">=3.10"
 resolution-markers = [
     "(python_full_version < '3.11' and platform_machine != 'aarch64' and sys_platform == 'linux') or (python_full_version < '3.11' and sys_platform != 'darwin' and sys_platform != 'linux')",
@@ -913,6 +912,7 @@ docs = [
     { name = "sphinxcontrib-mermaid" },
     { name = "sphinxcontrib-redoc" },
     { name = "sphinxcontrib-video" },
+    { name = "tomli" },
 ]
 test = [
     { name = "aiosqlite" },
@@ -971,13 +971,13 @@ requires-dist = [
     { name = "sphinxcontrib-redoc", marker = "extra == 'docs'" },
     { name = "sphinxcontrib-video", marker = "extra == 'docs'" },
     { name = "termcolor" },
+    { name = "tomli", marker = "extra == 'docs'" },
     { name = "torch", marker = "extra == 'test'", specifier = ">=2.6.0", index = "https://download.pytorch.org/whl/cpu" },
     { name = "torchvision", marker = "extra == 'test'", specifier = ">=0.21.0", index = "https://download.pytorch.org/whl/cpu" },
     { name = "types-requests", marker = "extra == 'dev'" },
     { name = "types-setuptools", marker = "extra == 'dev'" },
     { name = "uvicorn", marker = "extra == 'dev'" },
 ]
-provides-extras = ["dev", "test", "docs"]
 
 [[package]]
 name = "llama-stack-client"
