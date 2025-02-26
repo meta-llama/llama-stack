@@ -73,6 +73,7 @@ class StackRun(Subcommand):
             type=str,
             help="Image Type used during the build. This can be either conda or container or venv.",
             choices=["conda", "container", "venv"],
+            default="conda",
         )
 
     def _run_stack_run_cmd(self, args: argparse.Namespace) -> None:
