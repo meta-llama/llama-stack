@@ -177,7 +177,6 @@ class ChatAgent(ShieldRunnerMixin):
             assert request.stream is True, "Non-streaming not supported"
 
             session_info = await self.storage.get_session_info(request.session_id)
-            print("SESSION INFO", session_info)
             if session_info is None:
                 raise ValueError(f"Session {request.session_id} not found")
 
