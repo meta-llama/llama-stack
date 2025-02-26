@@ -527,6 +527,7 @@ async def convert_message_to_openai_dict_new(message: Message | Dict) -> OpenAIC
         elif isinstance(content, TextContentItem):
             return OpenAIChatCompletionContentPartTextParam(
                 text=content.text,
+                type="text",
             )
         elif isinstance(content, ImageContentItem):
             return OpenAIChatCompletionContentPartImageParam(
