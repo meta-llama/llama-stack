@@ -46,9 +46,10 @@ def pytest_generate_tests(metafunc):
             if ("Vision" in cls_name and "Vision" in model) or ("Vision" not in cls_name and "Vision" not in model):
                 params.append(pytest.param(model, id=model))
 
+        print(f"params: {params}")
         if not params:
             model = metafunc.config.getoption("--inference-model")
-            params = [pytest.param(model, id="")]
+            params = [pytest.param(model, id=model)]
 
         metafunc.parametrize(
             "inference_model",
