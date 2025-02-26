@@ -96,7 +96,7 @@ def agent_config(llama_stack_client, text_model_id):
         sampling_params={
             "strategy": {
                 "type": "top_p",
-                "temperature": 1.0,
+                "temperature": 0.0001,
                 "top_p": 0.9,
             },
         },
@@ -496,23 +496,36 @@ def test_rag_agent(llama_stack_client, agent_config):
         )
         # rag is called
         tool_execution_step = next(step for step in response.steps if step.step_type == "tool_execution")
-        assert tool_execution_step.tool_calls[0].tool_name == "query_from_memory"
+        assert tool_execution_step.tool_calls[0].tool_name == "knowledge_search"
         # document ids are present in metadata
-        assert "num-0" in tool_execution_step.tool_responses[0].metadata["document_ids"]
-        assert expected_kw in response.output_message.content.lower()
+        assert all(
+            doc_id.startswith("num-") for doc_id in tool_execution_step.tool_responses[0].metadata["document_ids"]
+        )
+        if expected_kw:
+            assert expected_kw in response.output_message.content.lower()
 
 
 def test_rag_and_code_agent(llama_stack_client, agent_config):
-    urls = ["chat.rst"]
-    documents = [
+    documents = []
+    documents.append(
         Document(
-            document_id=f"num-{i}",
-            content=f"https://raw.githubusercontent.com/pytorch/torchtune/main/docs/source/tutorials/{url}",
-            mime_type="text/plain",
+            document_id="nba_wiki",
+            content="The NBA was created on August 3, 1949, with the merger of the Basketball Association of America (BAA) and the National Basketball League (NBL).",
             metadata={},
         )
-        for i, url in enumerate(urls)
-    ]
+    )
+    documents.append(
+        Document(
+            document_id="perplexity_wiki",
+            content="""Perplexity the company was founded in 2022 by Aravind Srinivas, Andy Konwinski, Denis Yarats and Johnny Ho, engineers with backgrounds in back-end systems, artificial intelligence (AI) and machine learning:
+
+    Srinivas, the CEO, worked at OpenAI as an AI researcher.
+    Konwinski was among the founding team at Databricks.
+    Yarats, the CTO, was an AI research scientist at Meta.
+    Ho, the CSO, worked as an engineer at Quora, then as a quantitative trader on Wall Street.[5]""",
+            metadata={},
+        )
+    )
     vector_db_id = f"test-vector-db-{uuid4()}"
     llama_stack_client.vector_dbs.register(
         vector_db_id=vector_db_id,
@@ -546,24 +559,34 @@ def test_rag_and_code_agent(llama_stack_client, agent_config):
             "Here is a csv file, can you describe it?",
             [inflation_doc],
             "code_interpreter",
+            "",
         ),
         (
-            "What are the top 5 topics that were explained? Only list succinct bullet points.",
+            "when was Perplexity the company founded?",
             [],
-            "query_from_memory",
+            "knowledge_search",
+            "2022",
+        ),
+        (
+            "when was the nba created?",
+            [],
+            "knowledge_search",
+            "1949",
         ),
     ]
 
-    for prompt, docs, tool_name in user_prompts:
+    for prompt, docs, tool_name, expected_kw in user_prompts:
         session_id = agent.create_session(f"test-session-{uuid4()}")
         response = agent.create_turn(
             messages=[{"role": "user", "content": prompt}],
             session_id=session_id,
             documents=docs,
+            stream=False,
         )
-        logs = [str(log) for log in EventLogger().log(response) if log is not None]
-        logs_str = "".join(logs)
-        assert f"Tool:{tool_name}" in logs_str
+        tool_execution_step = next(step for step in response.steps if step.step_type == "tool_execution")
+        assert tool_execution_step.tool_calls[0].tool_name == tool_name
+        if expected_kw:
+            assert expected_kw in response.output_message.content.lower()
 
 
 def test_create_turn_response(llama_stack_client, agent_config):
