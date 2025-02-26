@@ -7,8 +7,6 @@
 import argparse
 import json
 
-from termcolor import colored
-
 from llama_stack.cli.subcommand import Subcommand
 from llama_stack.cli.table import print_table
 from llama_stack.models.llama.sku_list import resolve_model
@@ -52,11 +50,12 @@ class ModelDescribe(Subcommand):
             )
             return
 
+        headers = [
+            "Model",
+            model.descriptor(),
+        ]
+
         rows = [
-            (
-                colored("Model", "white", attrs=["bold"]),
-                colored(model.descriptor(), "white", attrs=["bold"]),
-            ),
             ("Hugging Face ID", model.huggingface_repo or "<Not Available>"),
             ("Description", model.description),
             ("Context Length", f"{model.max_seq_length // 1024}K tokens"),
@@ -77,5 +76,6 @@ class ModelDescribe(Subcommand):
 
         print_table(
             rows,
+            headers,
             separate_rows=True,
         )
