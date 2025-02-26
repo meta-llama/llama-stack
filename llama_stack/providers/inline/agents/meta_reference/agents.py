@@ -194,22 +194,16 @@ class MetaReferenceAgentsImpl(Agents):
             yield event
 
     async def get_agents_turn(self, agent_id: str, session_id: str, turn_id: str) -> Turn:
-        pass
-        # turn = await self.persistence_store.get(f"session:{agent_id}:{session_id}:{turn_id}")
-        # turn = json.loads(turn)
-        # turn = Turn(**turn)
-        # return turn
+        agent = await self.get_agent(agent_id)
+        turn = await agent.storage.get_session_turn(session_id, turn_id)
+        return turn
 
     async def get_agents_step(self, agent_id: str, session_id: str, turn_id: str, step_id: str) -> AgentStepResponse:
-        pass
-        # turn = await self.persistence_store.get(f"session:{agent_id}:{session_id}:{turn_id}")
-        # turn = json.loads(turn)
-        # turn = Turn(**turn)
-        # steps = turn.steps
-        # for step in steps:
-        #     if step.step_id == step_id:
-        #         return AgentStepResponse(step=step)
-        # raise ValueError(f"Provided step_id {step_id} could not be found")
+        turn = await self.get_agents_turn(agent_id, session_id, turn_id)
+        for step in turn.steps:
+            if step.step_id == step_id:
+                return AgentStepResponse(step=step)
+        raise ValueError(f"Provided step_id {step_id} could not be found")
 
     async def get_agents_session(
         self,
@@ -219,7 +213,8 @@ class MetaReferenceAgentsImpl(Agents):
     ) -> Session:
         agent = await self.get_agent(agent_id)
         session_info = await agent.storage.get_session_info(session_id)
-        print(session_info)
+        if session_info is None:
+            raise ValueError(f"Session {session_id} not found")
         turns = await agent.storage.get_session_turns(session_id)
         if turn_ids:
             turns = [turn for turn in turns if turn.turn_id in turn_ids]

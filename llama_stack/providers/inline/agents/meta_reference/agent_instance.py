@@ -61,7 +61,12 @@ from llama_stack.apis.inference import (
     UserMessage,
 )
 from llama_stack.apis.safety import Safety
-from llama_stack.apis.tools import RAGDocument, ToolGroups, ToolInvocationResult, ToolRuntime
+from llama_stack.apis.tools import (
+    RAGDocument,
+    ToolGroups,
+    ToolInvocationResult,
+    ToolRuntime,
+)
 from llama_stack.apis.vector_io import VectorIO
 from llama_stack.models.llama.datatypes import (
     BuiltinTool,
@@ -172,6 +177,7 @@ class ChatAgent(ShieldRunnerMixin):
             assert request.stream is True, "Non-streaming not supported"
 
             session_info = await self.storage.get_session_info(request.session_id)
+            print("SESSION INFO", session_info)
             if session_info is None:
                 raise ValueError(f"Session {request.session_id} not found")
 
