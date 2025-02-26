@@ -276,6 +276,10 @@ async def instantiate_providers(
             api = Api(api_str)
             impls[api] = impl
 
+    # Add the list of implementations to the inspect provider, which will later be used to
+    # retrieve the health status of each provider
+    impls[Api("inspect")].impls = impls
+
     return impls
 
 

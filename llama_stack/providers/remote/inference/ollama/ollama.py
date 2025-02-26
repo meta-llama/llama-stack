@@ -34,8 +34,9 @@ from llama_stack.apis.inference import (
     ToolDefinition,
     ToolPromptFormat,
 )
+from llama_stack.apis.inspect import Inspect
 from llama_stack.apis.models import Model, ModelType
-from llama_stack.providers.datatypes import ModelsProtocolPrivate
+from llama_stack.providers.datatypes import HealthResponse, HealthStatus, ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
 )
@@ -62,7 +63,7 @@ from .models import model_entries
 log = logging.getLogger(__name__)
 
 
-class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
+class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate, Inspect):
     def __init__(self, url: str) -> None:
         self.register_helper = ModelRegistryHelper(model_entries)
         self.url = url
@@ -298,6 +299,17 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
             )
 
         return model
+
+    async def health(self) -> HealthResponse:
+        """
+        Performs a health check by initializing the service.
+        This method is used by the inspect API endpoint to verify that the service is running
+        correctly.
+        Returns:
+            HealthResponse: A dictionary containing the health status.
+        """
+        await self.initialize()
+        return HealthResponse(status=HealthStatus.OK)
 
 
 async def convert_message_to_openai_dict_for_ollama(message: Message) -> List[dict]:

@@ -4,11 +4,17 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import List, Protocol, runtime_checkable
+from typing import Any, Dict, List, Protocol, runtime_checkable
 
 from pydantic import BaseModel
 
+from llama_stack.providers.datatypes import HealthStatus
 from llama_stack.schema_utils import json_schema_type, webmethod
+
+
+@json_schema_type
+class HealthInfo(BaseModel):
+    status: HealthStatus
 
 
 @json_schema_type
@@ -16,6 +22,7 @@ class ProviderInfo(BaseModel):
     api: str
     provider_id: str
     provider_type: str
+    health: Dict[str, Any]
 
 
 @json_schema_type
@@ -23,12 +30,6 @@ class RouteInfo(BaseModel):
     route: str
     method: str
     provider_types: List[str]
-
-
-@json_schema_type
-class HealthInfo(BaseModel):
-    status: str
-    # TODO: add a provider level status
 
 
 @json_schema_type
