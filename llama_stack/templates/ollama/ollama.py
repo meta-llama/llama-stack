@@ -13,6 +13,7 @@ from llama_stack.distribution.datatypes import (
     ShieldInput,
     ToolGroupInput,
 )
+from llama_stack.providers.inline.vector_io.qdrant.config import QdrantVectorIOConfig
 from llama_stack.providers.inline.vector_io.sqlite_vec.config import SQLiteVectorIOConfig
 from llama_stack.providers.remote.inference.ollama import OllamaImplConfig
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
@@ -21,7 +22,7 @@ from llama_stack.templates.template import DistributionTemplate, RunConfigSettin
 def get_distribution_template() -> DistributionTemplate:
     providers = {
         "inference": ["remote::ollama"],
-        "vector_io": ["inline::sqlite-vec", "remote::chromadb", "remote::pgvector"],
+        "vector_io": ["inline::sqlite-vec", "inline::qdrant", "remote::chromadb", "remote::pgvector"],
         "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],
         "telemetry": ["inline::meta-reference"],
@@ -46,6 +47,11 @@ def get_distribution_template() -> DistributionTemplate:
         provider_id="sqlite-vec",
         provider_type="inline::sqlite-vec",
         config=SQLiteVectorIOConfig.sample_run_config(f"distributions/{name}"),
+    )
+    vector_io_provider_qdrant = Provider(
+        provider_id="qdrant",
+        provider_type="inline::qdrant",
+        config=QdrantVectorIOConfig.sample_run_config(f"distributions/{name}"),
     )
 
     inference_model = ModelInput(
@@ -92,7 +98,7 @@ def get_distribution_template() -> DistributionTemplate:
             "run.yaml": RunConfigSettings(
                 provider_overrides={
                     "inference": [inference_provider],
-                    "vector_io": [vector_io_provider_sqlite],
+                    "vector_io": [vector_io_provider_sqlite, vector_io_provider_qdrant],
                 },
                 default_models=[inference_model],
                 default_tool_groups=default_tool_groups,
@@ -100,7 +106,7 @@ def get_distribution_template() -> DistributionTemplate:
             "run-with-safety.yaml": RunConfigSettings(
                 provider_overrides={
                     "inference": [inference_provider],
-                    "vector_io": [vector_io_provider_sqlite],
+                    "vector_io": [vector_io_provider_sqlite, vector_io_provider_qdrant],
                     "safety": [
                         Provider(
                             provider_id="llama-guard",
