@@ -530,8 +530,6 @@ class ChatAgent(ShieldRunnerMixin):
                 toolgroups.add(toolgroup)
 
         tool_defs, tool_to_group = await self._get_tool_defs(toolgroups_for_turn)
-        if documents:
-            await self.handle_documents(session_id, documents, input_messages, tool_defs)
 
         output_attachments = []
 
