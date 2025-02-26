@@ -43,7 +43,7 @@ class SentenceTransformerEmbeddingMixin:
         )
         return EmbeddingsResponse(embeddings=embeddings)
 
-    def _load_sentence_transformer_model(self, model: str) -> SentenceTransformer:
+    def _load_sentence_transformer_model(self, model: str) -> "SentenceTransformer":
         global EMBEDDING_MODELS
 
         loaded_model = EMBEDDING_MODELS.get(model)
