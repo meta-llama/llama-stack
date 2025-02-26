@@ -19,6 +19,16 @@ PROVIDER_TOOL_PROMPT_FORMAT = {
 PROVIDER_LOGPROBS_TOP_K = {"remote::together", "remote::fireworks", "remote::vllm"}
 
 
+def skip_if_model_doesnt_support_completion(client_with_models, model_id):
+    models = {m.identifier: m for m in client_with_models.models.list()}
+    provider_id = models[model_id].provider_id
+    providers = {p.provider_id: p for p in client_with_models.providers.list()}
+    provider = providers[provider_id]
+    print(f"Provider: {provider.provider_type} for model {model_id}")
+    if provider.provider_type in ("remote::openai", "remote::anthropic", "remote::gemini"):
+        pytest.skip(f"Model {model_id} hosted by {provider.provider_type} doesn't support completion")
+
+
 @pytest.fixture(scope="session")
 def provider_tool_format(inference_provider_type):
     return (
@@ -35,6 +45,7 @@ def provider_tool_format(inference_provider_type):
     ],
 )
 def test_text_completion_non_streaming(client_with_models, text_model_id, test_case):
+    skip_if_model_doesnt_support_completion(client_with_models, text_model_id)
     tc = TestCase(test_case)
 
     response = client_with_models.inference.completion(
@@ -56,6 +67,7 @@ def test_text_completion_non_streaming(client_with_models, text_model_id, test_c
     ],
 )
 def test_text_completion_streaming(client_with_models, text_model_id, test_case):
+    skip_if_model_doesnt_support_completion(client_with_models, text_model_id)
     tc = TestCase(test_case)
 
     response = client_with_models.inference.completion(
@@ -79,6 +91,7 @@ def test_text_completion_streaming(client_with_models, text_model_id, test_case)
     ],
 )
 def test_text_completion_log_probs_non_streaming(client_with_models, text_model_id, inference_provider_type, test_case):
+    skip_if_model_doesnt_support_completion(client_with_models, text_model_id)
     if inference_provider_type not in PROVIDER_LOGPROBS_TOP_K:
         pytest.xfail(f"{inference_provider_type} doesn't support log probs yet")
 
@@ -107,6 +120,7 @@ def test_text_completion_log_probs_non_streaming(client_with_models, text_model_
     ],
 )
 def test_text_completion_log_probs_streaming(client_with_models, text_model_id, inference_provider_type, test_case):
+    skip_if_model_doesnt_support_completion(client_with_models, text_model_id)
     if inference_provider_type not in PROVIDER_LOGPROBS_TOP_K:
         pytest.xfail(f"{inference_provider_type} doesn't support log probs yet")
 
@@ -139,6 +153,8 @@ def test_text_completion_log_probs_streaming(client_with_models, text_model_id, 
     ],
 )
 def test_text_completion_structured_output(client_with_models, text_model_id, test_case):
+    skip_if_model_doesnt_support_completion(client_with_models, text_model_id)
+
     class AnswerFormat(BaseModel):
         name: str
         year_born: str
@@ -237,9 +253,7 @@ def test_text_chat_completion_with_tool_calling_and_non_streaming(
         tool_prompt_format=tool_prompt_format,
         stream=False,
     )
-    # No content is returned for the system message since we expect the
-    # response to be a tool call
-    assert response.completion_message.content == ""
+    # some models can return content for the response in addition to the tool call
     assert response.completion_message.role == "assistant"
 
     assert len(response.completion_message.tool_calls) == 1

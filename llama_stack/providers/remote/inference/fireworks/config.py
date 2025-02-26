@@ -23,8 +23,8 @@ class FireworksImplConfig(BaseModel):
     )
 
     @classmethod
-    def sample_run_config(cls, **kwargs) -> Dict[str, Any]:
+    def sample_run_config(cls, api_key: str = "${env.FIREWORKS_API_KEY}", **kwargs) -> Dict[str, Any]:
         return {
             "url": "https://api.fireworks.ai/inference/v1",
-            "api_key": "${env.FIREWORKS_API_KEY}",
+            "api_key": api_key,
         }

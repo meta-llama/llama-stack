@@ -40,7 +40,7 @@
   "tool_calling": {
     "data": {
       "messages": [
-        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "system", "content": "Pretend you are a weather assistant."},
         {"role": "user", "content": "What's the weather like in San Francisco?"}
       ],
       "tools": [
@@ -65,7 +65,7 @@
       "messages": [
         {
           "role": "system",
-          "content": "You are a helpful assistant."
+          "content": "Pretend you are a weather assistant."
         },
         {
           "role": "user",

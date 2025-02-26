@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+from typing import List, Tuple
 
 from llama_stack.apis.models.models import ModelType
 from llama_stack.distribution.datatypes import (
@@ -17,14 +18,74 @@ from llama_stack.providers.inline.inference.sentence_transformers import (
     SentenceTransformersInferenceConfig,
 )
 from llama_stack.providers.inline.vector_io.sqlite_vec.config import SQLiteVectorIOConfig
+from llama_stack.providers.remote.inference.anthropic.config import AnthropicConfig
+from llama_stack.providers.remote.inference.anthropic.models import MODEL_ENTRIES as ANTHROPIC_MODEL_ENTRIES
 from llama_stack.providers.remote.inference.fireworks.config import FireworksImplConfig
-from llama_stack.providers.remote.inference.fireworks.models import MODEL_ENTRIES
+from llama_stack.providers.remote.inference.fireworks.models import MODEL_ENTRIES as FIREWORKS_MODEL_ENTRIES
+from llama_stack.providers.remote.inference.gemini.config import GeminiConfig
+from llama_stack.providers.remote.inference.gemini.models import MODEL_ENTRIES as GEMINI_MODEL_ENTRIES
+from llama_stack.providers.remote.inference.openai.config import OpenAIConfig
+from llama_stack.providers.remote.inference.openai.models import MODEL_ENTRIES as OPENAI_MODEL_ENTRIES
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
+
+
+def get_inference_providers() -> Tuple[List[Provider], List[ModelInput]]:
+    # in this template, we allow each API key to be optional
+    providers = [
+        (
+            "openai",
+            OPENAI_MODEL_ENTRIES,
+            OpenAIConfig.sample_run_config(api_key="${env.OPENAI_API_KEY:}"),
+        ),
+        (
+            "fireworks",
+            FIREWORKS_MODEL_ENTRIES,
+            FireworksImplConfig.sample_run_config(api_key="${env.FIREWORKS_API_KEY:}"),
+        ),
+        (
+            "anthropic",
+            ANTHROPIC_MODEL_ENTRIES,
+            AnthropicConfig.sample_run_config(api_key="${env.ANTHROPIC_API_KEY:}"),
+        ),
+        (
+            "gemini",
+            GEMINI_MODEL_ENTRIES,
+            GeminiConfig.sample_run_config(api_key="${env.GEMINI_API_KEY:}"),
+        ),
+    ]
+    inference_providers = []
+    default_models = []
+    core_model_to_hf_repo = {m.descriptor(): m.huggingface_repo for m in all_registered_models()}
+    for provider_id, model_entries, config in providers:
+        inference_providers.append(
+            Provider(
+                provider_id=provider_id,
+                provider_type=f"remote::{provider_id}",
+                config=config,
+            )
+        )
+        default_models.extend(
+            ModelInput(
+                model_id=core_model_to_hf_repo[m.llama_model] if m.llama_model else m.provider_model_id,
+                provider_model_id=m.provider_model_id,
+                provider_id=provider_id,
+                model_type=m.model_type,
+                metadata=m.metadata,
+            )
+            for m in model_entries
+        )
+    return inference_providers, default_models
 
 
 def get_distribution_template() -> DistributionTemplate:
     providers = {
-        "inference": ["remote::fireworks", "inline::sentence-transformers"],
+        "inference": [
+            "remote::openai",
+            "remote::fireworks",
+            "remote::anthropic",
+            "remote::gemini",
+            "inline::sentence-transformers",
+        ],
         "vector_io": ["inline::sqlite-vec", "remote::chromadb", "remote::pgvector"],
         "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],
@@ -40,12 +101,8 @@ def get_distribution_template() -> DistributionTemplate:
             "remote::model-context-protocol",
         ],
     }
-    name = "ci-tests"
-    inference_provider = Provider(
-        provider_id="fireworks",
-        provider_type="remote::fireworks",
-        config=FireworksImplConfig.sample_run_config(),
-    )
+    name = "dev"
+
     vector_io_provider = Provider(
         provider_id="sqlite-vec",
         provider_type="inline::sqlite-vec",
@@ -71,24 +128,15 @@ def get_distribution_template() -> DistributionTemplate:
             provider_id="code-interpreter",
         ),
     ]
-    core_model_to_hf_repo = {m.descriptor(): m.huggingface_repo for m in all_registered_models()}
-    default_models = [
-        ModelInput(
-            model_id=core_model_to_hf_repo[m.llama_model] if m.llama_model else m.provider_model_id,
-            provider_id="fireworks",
-            model_type=m.model_type,
-            metadata=m.metadata,
-        )
-        for m in MODEL_ENTRIES
-    ]
     embedding_model = ModelInput(
         model_id="all-MiniLM-L6-v2",
-        provider_id="sentence-transformers",
+        provider_id=embedding_provider.provider_id,
         model_type=ModelType.embedding,
         metadata={
             "embedding_dimension": 384,
         },
     )
+    inference_providers, default_models = get_inference_providers()
 
     return DistributionTemplate(
         name=name,
@@ -97,11 +145,11 @@ def get_distribution_template() -> DistributionTemplate:
         container_image=None,
         template_path=None,
         providers=providers,
-        default_models=default_models + [embedding_model],
+        default_models=[],
         run_configs={
             "run.yaml": RunConfigSettings(
                 provider_overrides={
-                    "inference": [inference_provider, embedding_provider],
+                    "inference": inference_providers + [embedding_provider],
                     "vector_io": [vector_io_provider],
                 },
                 default_models=default_models + [embedding_model],
@@ -117,6 +165,10 @@ def get_distribution_template() -> DistributionTemplate:
             "FIREWORKS_API_KEY": (
                 "",
                 "Fireworks API Key",
+            ),
+            "OPENAI_API_KEY": (
+                "",
+                "OpenAI API Key",
             ),
         },
     )

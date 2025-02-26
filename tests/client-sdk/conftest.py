@@ -116,12 +116,14 @@ def client_with_models(llama_stack_client, text_model_id, vision_model_id, embed
     providers = [p for p in client.providers.list() if p.api == "inference"]
     assert len(providers) > 0, "No inference providers found"
     inference_providers = [p.provider_id for p in providers if p.provider_type != "inline::sentence-transformers"]
-    if text_model_id:
+
+    model_ids = [m.identifier for m in client.models.list()]
+    if text_model_id and text_model_id not in model_ids:
         client.models.register(model_id=text_model_id, provider_id=inference_providers[0])
-    if vision_model_id:
+    if vision_model_id and vision_model_id not in model_ids:
         client.models.register(model_id=vision_model_id, provider_id=inference_providers[0])
 
-    if embedding_model_id and embedding_dimension:
+    if embedding_model_id and embedding_dimension and embedding_model_id not in model_ids:
         # try to find a provider that supports embeddings, if sentence-transformers is not available
         selected_provider = None
         for p in providers:
