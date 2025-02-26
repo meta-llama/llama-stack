@@ -74,6 +74,7 @@ docs = [
     "sphinxcontrib.redoc",
     "sphinxcontrib.video",
     "sphinxcontrib.mermaid",
+    "tomli",
 ]
 
 [project.urls]
