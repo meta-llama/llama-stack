@@ -82,12 +82,39 @@ async def test_add_chunks(sqlite_vec_index, sample_chunks, sample_embeddings):
 
 
 @pytest.mark.asyncio
-async def test_query_chunks(sqlite_vec_index, sample_chunks, sample_embeddings):
+async def test_query_chunks_vector(sqlite_vec_index, sample_chunks, sample_embeddings):
     await sqlite_vec_index.add_chunks(sample_chunks, sample_embeddings)
+
     query_embedding = np.random.rand(EMBEDDING_DIMENSION).astype(np.float32)
-    response = await sqlite_vec_index.query(query_embedding, k=2, score_threshold=0.0)
+    response = await sqlite_vec_index.query(
+        query_embedding, query_str="", k=2, score_threshold=0.0, search_mode="vector"
+    )
     assert isinstance(response, QueryChunksResponse)
     assert len(response.chunks) == 2
+
+
+import pytest
+
+
+@pytest.mark.asyncio
+async def test_query_chunks_full_text_search(sqlite_vec_index, sample_chunks, sample_embeddings):
+    await sqlite_vec_index.add_chunks(sample_chunks, sample_embeddings)
+
+    query_str = "Sentence 5"
+    response = await sqlite_vec_index.query(
+        embedding=None, k=3, score_threshold=0.0, query_str=query_str, search_mode="keyword"
+    )
+
+    assert isinstance(response, QueryChunksResponse)
+    assert len(response.chunks) == 3, f"Expected at least one result, but got {len(response.chunks)}"
+
+    non_existent_query_str = "blablabla"
+    response_no_results = await sqlite_vec_index.query(
+        embedding=None, query_str=non_existent_query_str, k=1, score_threshold=0.0, search_mode="keyword"
+    )
+
+    assert isinstance(response_no_results, QueryChunksResponse)
+    assert len(response_no_results.chunks) == 0, f"Expected 0 results, but got {len(response_no_results.chunks)}"
 
 
 @pytest.mark.asyncio

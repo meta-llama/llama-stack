@@ -167,7 +167,9 @@ class EmbeddingIndex(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    async def query(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
+    async def query(
+        self, embedding: NDArray, k: int, score_threshold: float, query_str: Optional[str], search_mode: Optional[str]
+    ) -> QueryChunksResponse:
         raise NotImplementedError()
 
     @abstractmethod
@@ -193,9 +195,7 @@ class VectorDBWithIndex:
         await self.index.add_chunks(chunks, embeddings)
 
     async def query_chunks(
-        self,
-        query: InterleavedContent,
-        params: Optional[Dict[str, Any]] = None,
+        self, query: InterleavedContent, params: Optional[Dict[str, Any]] = None
     ) -> QueryChunksResponse:
         if params is None:
             params = {}
