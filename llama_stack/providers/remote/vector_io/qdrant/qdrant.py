@@ -6,7 +6,7 @@
 
 import logging
 import uuid
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from numpy.typing import NDArray
 from qdrant_client import AsyncQdrantClient, models
@@ -16,12 +16,13 @@ from llama_stack.apis.inference import InterleavedContent
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import Chunk, QueryChunksResponse, VectorIO
 from llama_stack.providers.datatypes import Api, VectorDBsProtocolPrivate
+from llama_stack.providers.inline.vector_io.qdrant import QdrantVectorIOConfig as InlineQdrantVectorIOConfig
 from llama_stack.providers.utils.memory.vector_store import (
     EmbeddingIndex,
     VectorDBWithIndex,
 )
 
-from .config import QdrantVectorIOConfig
+from .config import QdrantVectorIOConfig as RemoteQdrantVectorIOConfig
 
 log = logging.getLogger(__name__)
 CHUNK_ID_KEY = "_chunk_id"
@@ -99,7 +100,9 @@ class QdrantIndex(EmbeddingIndex):
 
 
 class QdrantVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
-    def __init__(self, config: QdrantVectorIOConfig, inference_api: Api.inference) -> None:
+    def __init__(
+        self, config: Union[RemoteQdrantVectorIOConfig, InlineQdrantVectorIOConfig], inference_api: Api.inference
+    ) -> None:
         self.config = config
         self.client = AsyncQdrantClient(**self.config.model_dump(exclude_none=True))
         self.cache = {}
