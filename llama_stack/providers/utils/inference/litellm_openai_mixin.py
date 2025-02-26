@@ -97,7 +97,6 @@ class LiteLLMOpenAIMixin(
         )
 
         params = await self._get_params(request)
-
         # unfortunately, we need to use synchronous litellm.completion here because litellm
         # caches various httpx.client objects in a non-eventloop aware manner
         response = litellm.completion(**params)

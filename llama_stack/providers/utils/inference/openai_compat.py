@@ -523,15 +523,19 @@ async def convert_message_to_openai_dict_new(message: Message | Dict) -> OpenAIC
     ) -> Union[str, Iterable[OpenAIChatCompletionContentPartParam]]:
         # Llama Stack and OpenAI spec match for str and text input
         if isinstance(content, str):
-            return content
+            return OpenAIChatCompletionContentPartTextParam(
+                type="text",
+                text=content,
+            )
         elif isinstance(content, TextContentItem):
             return OpenAIChatCompletionContentPartTextParam(
+                type="text",
                 text=content.text,
             )
         elif isinstance(content, ImageContentItem):
             return OpenAIChatCompletionContentPartImageParam(
-                image_url=OpenAIImageURL(url=await convert_image_content_to_url(content)),
                 type="image_url",
+                image_url=OpenAIImageURL(url=await convert_image_content_to_url(content)),
             )
         elif isinstance(content, List):
             return [await _convert_user_message_content(item) for item in content]
