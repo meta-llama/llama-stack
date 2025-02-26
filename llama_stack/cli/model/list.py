@@ -43,11 +43,13 @@ def _run_model_list_downloaded_cmd() -> None:
             ]
         )
 
+    print("\nDownloaded Models:\n")
     print_table(
         rows,
         headers,
         separate_rows=True,
     )
+    print(f"\nTotal models: {len(rows)}\n")
 
 
 class ModelList(Subcommand):
@@ -112,8 +114,10 @@ class ModelList(Subcommand):
         if len(rows) == 0:
             print(f"Did not find any model matching `{args.search}`.")
         else:
+            print("\nAvailable Models:\n")
             print_table(
                 rows,
                 headers,
                 separate_rows=True,
             )
+            print(f"\nTotal models: {len(rows)}\n")
