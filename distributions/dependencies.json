@@ -431,6 +431,7 @@
     "fire",
     "httpx",
     "matplotlib",
+    "mcp",
     "nltk",
     "numpy",
     "ollama",

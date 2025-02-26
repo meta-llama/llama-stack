@@ -33,6 +33,7 @@ def get_distribution_template() -> DistributionTemplate:
             "remote::tavily-search",
             "inline::code-interpreter",
             "inline::rag-runtime",
+            "remote::model-context-protocol",
         ],
     }
     name = "ollama"
