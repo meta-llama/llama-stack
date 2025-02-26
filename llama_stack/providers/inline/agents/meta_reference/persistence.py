@@ -21,6 +21,7 @@ log = logging.getLogger(__name__)
 class AgentSessionInfo(BaseModel):
     session_id: str
     session_name: str
+    # TODO: is this used anywhere?
     vector_db_id: Optional[str] = None
     started_at: datetime
 
@@ -31,6 +32,7 @@ class AgentPersistence:
         self.kvstore = kvstore
 
     async def create_session(self, name: str) -> str:
+        print("CREATE SESSION PERSISTANCE", name)
         session_id = str(uuid.uuid4())
         session_info = AgentSessionInfo(
             session_id=session_id,
