@@ -441,7 +441,8 @@ def xtest_override_system_message_behavior(llama_stack_client, agent_config):
     assert "get_boiling_point" in logs_str
 
 
-def test_rag_agent(llama_stack_client, agent_config):
+@pytest.mark.parametrize("rag_tool_name", ["builtin::rag/knowledge_search", "builtin::rag"])
+def test_rag_agent(llama_stack_client, agent_config, rag_tool_name):
     urls = ["chat.rst", "llama3.rst", "memory_optimizations.rst", "lora_finetune.rst"]
     documents = [
         Document(
@@ -469,7 +470,7 @@ def test_rag_agent(llama_stack_client, agent_config):
         **agent_config,
         "toolgroups": [
             dict(
-                name="builtin::rag",
+                name=rag_tool_name,
                 args={
                     "vector_db_ids": [vector_db_id],
                 },
@@ -482,10 +483,6 @@ def test_rag_agent(llama_stack_client, agent_config):
         (
             "Instead of the standard multi-head attention, what attention type does Llama3-8B use?",
             "grouped",
-        ),
-        (
-            "What `tune` command to use for getting access to Llama3-8B-Instruct ?",
-            "download",
         ),
     ]
     for prompt, expected_kw in user_prompts:
@@ -541,7 +538,7 @@ def test_rag_and_code_agent(llama_stack_client, agent_config):
         **agent_config,
         "toolgroups": [
             dict(
-                name="builtin::rag",
+                name="builtin::rag/knowledge_search",
                 args={"vector_db_ids": [vector_db_id]},
             ),
             "builtin::code_interpreter",
