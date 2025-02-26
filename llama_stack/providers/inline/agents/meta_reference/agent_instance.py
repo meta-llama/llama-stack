@@ -803,6 +803,11 @@ class ChatAgent(ShieldRunnerMixin):
 
             toolgroup_name, tool_name = self._parse_toolgroup_name(toolgroup_name_with_maybe_tool_name)
             tools = await self.tool_groups_api.list_tools(toolgroup_id=toolgroup_name)
+            if not tools.data:
+                available_tool_groups = ", ".join(
+                    [t.identifier for t in (await self.tool_groups_api.list_tool_groups()).data]
+                )
+                raise ValueError(f"Toolgroup {toolgroup_name} not found, available toolgroups: {available_tool_groups}")
             if tool_name is not None and not any(tool.identifier == tool_name for tool in tools.data):
                 raise ValueError(
                     f"Tool {tool_name} not found in toolgroup {toolgroup_name}. Available tools: {', '.join([tool.identifier for tool in tools.data])}"
