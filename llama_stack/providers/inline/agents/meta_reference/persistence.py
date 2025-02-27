@@ -21,6 +21,8 @@ log = logging.getLogger(__name__)
 class AgentSessionInfo(BaseModel):
     session_id: str
     session_name: str
+    # TODO: is this used anywhere?
+    vector_db_id: Optional[str] = None
     started_at: datetime
 
 
