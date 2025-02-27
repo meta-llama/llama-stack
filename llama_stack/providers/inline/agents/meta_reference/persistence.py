@@ -21,6 +21,7 @@ log = logging.getLogger(__name__)
 class AgentSessionInfo(BaseModel):
     session_id: str
     session_name: str
+    # TODO: is this used anywhere?
     vector_db_id: Optional[str] = None
     started_at: datetime
 
@@ -84,6 +85,14 @@ class AgentPersistence:
                 continue
         turns.sort(key=lambda x: (x.completed_at or datetime.min))
         return turns
+
+    async def get_session_turn(self, session_id: str, turn_id: str) -> Optional[Turn]:
+        value = await self.kvstore.get(
+            key=f"session:{self.agent_id}:{session_id}:{turn_id}",
+        )
+        if not value:
+            return None
+        return Turn(**json.loads(value))
 
     async def set_in_progress_tool_call_step(self, session_id: str, turn_id: str, step: ToolExecutionStep):
         await self.kvstore.set(
