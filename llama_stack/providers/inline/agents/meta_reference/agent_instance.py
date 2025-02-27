@@ -656,30 +656,27 @@ class ChatAgent(ShieldRunnerMixin):
                         )
                     )
                 )
-                tool_call = message.tool_calls[0]
-                yield AgentTurnResponseStreamChunk(
-                    event=AgentTurnResponseEvent(
-                        payload=AgentTurnResponseStepProgressPayload(
-                            step_type=StepType.tool_execution.value,
-                            step_id=step_id,
-                            tool_call=tool_call,
-                            delta=ToolCallDelta(
-                                parse_status=ToolCallParseStatus.in_progress,
-                                tool_call=tool_call,
-                            ),
-                        )
-                    )
-                )
 
-                # If tool is a client tool, yield CompletionMessage and return
-                if tool_call.tool_name in client_tools:
+                # Process all tool calls instead of just the first one
+                tool_responses = []
+                tool_execution_start_time = datetime.now().astimezone().isoformat()
+
+                # Check if any tool is a client tool
+                client_tool_found = False
+                for tool_call in message.tool_calls:
+                    if tool_call.tool_name in client_tools:
+                        client_tool_found = True
+                        break
+
+                # If any tool is a client tool, yield CompletionMessage and return
+                if client_tool_found:
                     await self.storage.set_in_progress_tool_call_step(
                         session_id,
                         turn_id,
                         ToolExecutionStep(
                             step_id=step_id,
                             turn_id=turn_id,
-                            tool_calls=[tool_call],
+                            tool_calls=message.tool_calls,
                             tool_responses=[],
                             started_at=datetime.now().astimezone().isoformat(),
                         ),
@@ -687,41 +684,86 @@ class ChatAgent(ShieldRunnerMixin):
                     yield message
                     return
 
-                # If tool is a builtin server tool, execute it
-                tool_name = tool_call.tool_name
-                if isinstance(tool_name, BuiltinTool):
-                    tool_name = tool_name.value
-                with tracing.span(
-                    "tool_execution",
-                    {
-                        "tool_name": tool_name,
-                        "input": message.model_dump_json(),
-                    },
-                ) as span:
-                    tool_execution_start_time = datetime.now().astimezone().isoformat()
-                    tool_call = message.tool_calls[0]
-                    tool_result = await execute_tool_call_maybe(
-                        self.tool_runtime_api,
-                        session_id,
-                        tool_call,
-                        toolgroup_args,
-                        tool_to_group,
-                    )
-                    if tool_result.content is None:
-                        raise ValueError(
-                            f"Tool call result (id: {tool_call.call_id}, name: {tool_call.tool_name}) does not have any content"
+                # Add the original message with tool calls to input_messages before processing tool calls
+                input_messages.append(message)
+
+                # Process all tool calls
+                for tool_call in message.tool_calls:
+                    yield AgentTurnResponseStreamChunk(
+                        event=AgentTurnResponseEvent(
+                            payload=AgentTurnResponseStepProgressPayload(
+                                step_type=StepType.tool_execution.value,
+                                step_id=step_id,
+                                tool_call=tool_call,
+                                delta=ToolCallDelta(
+                                    parse_status=ToolCallParseStatus.in_progress,
+                                    tool_call=tool_call,
+                                ),
+                            )
                         )
-                    result_messages = [
-                        ToolResponseMessage(
+                    )
+
+                    # Execute the tool call
+                    tool_name = tool_call.tool_name
+                    if isinstance(tool_name, BuiltinTool):
+                        tool_name = tool_name.value
+                    with tracing.span(
+                        "tool_execution",
+                        {
+                            "tool_name": tool_name,
+                            "input": tool_call.model_dump_json()
+                            if hasattr(tool_call, "model_dump_json")
+                            else str(tool_call),
+                        },
+                    ) as span:
+                        tool_result = await execute_tool_call_maybe(
+                            self.tool_runtime_api,
+                            session_id,
+                            tool_call,
+                            toolgroup_args,
+                            tool_to_group,
+                        )
+                        if tool_result.content is None:
+                            raise ValueError(
+                                f"Tool call result (id: {tool_call.call_id}, name: {tool_call.tool_name}) does not have any content"
+                            )
+
+                        result_message = ToolResponseMessage(
                             call_id=tool_call.call_id,
                             tool_name=tool_call.tool_name,
                             content=tool_result.content,
                         )
-                    ]
-                    assert len(result_messages) == 1, "Currently not supporting multiple messages"
-                    result_message = result_messages[0]
-                    span.set_attribute("output", result_message.model_dump_json())
 
+                        tool_responses.append(
+                            ToolResponse(
+                                call_id=result_message.call_id,
+                                tool_name=result_message.tool_name,
+                                content=result_message.content,
+                                metadata=tool_result.metadata,
+                            )
+                        )
+
+                        span.set_attribute(
+                            "output",
+                            result_message.model_dump_json()
+                            if hasattr(result_message, "model_dump_json")
+                            else str(result_message),
+                        )
+
+                        # TODO: add tool-input touchpoint and a "start" event for this step also
+                        # but that needs a lot more refactoring of Tool code potentially
+                        if (type(result_message.content) is str) and (
+                            out_attachment := _interpret_content_as_attachment(result_message.content)
+                        ):
+                            # NOTE: when we push this message back to the model, the model may ignore the
+                            # attached file path etc. since the model is trained to only provide a user message
+                            # with the summary. We keep all generated attachments and then attach them to final message
+                            output_attachments.append(out_attachment)
+
+                        # Add the result message to input_messages
+                        input_messages.append(result_message)
+
+                # Complete the tool execution step
                 yield AgentTurnResponseStreamChunk(
                     event=AgentTurnResponseEvent(
                         payload=AgentTurnResponseStepCompletePayload(
@@ -730,33 +772,14 @@ class ChatAgent(ShieldRunnerMixin):
                             step_details=ToolExecutionStep(
                                 step_id=step_id,
                                 turn_id=turn_id,
-                                tool_calls=[tool_call],
-                                tool_responses=[
-                                    ToolResponse(
-                                        call_id=result_message.call_id,
-                                        tool_name=result_message.tool_name,
-                                        content=result_message.content,
-                                        metadata=tool_result.metadata,
-                                    )
-                                ],
+                                tool_calls=message.tool_calls,
+                                tool_responses=tool_responses,
                                 started_at=tool_execution_start_time,
                                 completed_at=datetime.now().astimezone().isoformat(),
                             ),
                         )
                     )
                 )
-
-                # TODO: add tool-input touchpoint and a "start" event for this step also
-                # but that needs a lot more refactoring of Tool code potentially
-                if (type(result_message.content) is str) and (
-                    out_attachment := _interpret_content_as_attachment(result_message.content)
-                ):
-                    # NOTE: when we push this message back to the model, the model may ignore the
-                    # attached file path etc. since the model is trained to only provide a user message
-                    # with the summary. We keep all generated attachments and then attach them to final message
-                    output_attachments.append(out_attachment)
-
-                input_messages = input_messages + [message, result_message]
 
             n_iter += 1
 

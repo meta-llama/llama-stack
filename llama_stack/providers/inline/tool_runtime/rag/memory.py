@@ -127,7 +127,7 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
         tokens = 0
         picked = [
             TextContentItem(
-                text=f"knowledge_search tool found {len(chunks)} chunks:\nBEGIN of knowledge_search tool results.\n"
+                text=f"knowledge_search tool found {len(chunks)} chunks for query:\n{query}\nBEGIN of knowledge_search tool results.\n"
             )
         ]
         for i, c in enumerate(chunks):
