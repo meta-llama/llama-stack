@@ -11,6 +11,13 @@ from pydantic import BaseModel, Field
 from llama_stack.schema_utils import json_schema_type
 
 
+class GeminiProviderDataValidator(BaseModel):
+    gemini_api_key: Optional[str] = Field(
+        default=None,
+        description="API key for Gemini models",
+    )
+
+
 @json_schema_type
 class GeminiConfig(BaseModel):
     api_key: Optional[str] = Field(

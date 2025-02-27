@@ -11,6 +11,13 @@ from pydantic import BaseModel, Field
 from llama_stack.schema_utils import json_schema_type
 
 
+class OpenAIProviderDataValidator(BaseModel):
+    openai_api_key: Optional[str] = Field(
+        default=None,
+        description="API key for OpenAI models",
+    )
+
+
 @json_schema_type
 class OpenAIConfig(BaseModel):
     api_key: Optional[str] = Field(
