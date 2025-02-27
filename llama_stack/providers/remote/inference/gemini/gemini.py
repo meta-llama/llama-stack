@@ -12,11 +12,16 @@ from .models import MODEL_ENTRIES
 
 class GeminiInferenceAdapter(LiteLLMOpenAIMixin):
     def __init__(self, config: GeminiConfig) -> None:
-        LiteLLMOpenAIMixin.__init__(self, MODEL_ENTRIES)
+        LiteLLMOpenAIMixin.__init__(
+            self,
+            MODEL_ENTRIES,
+            api_key_from_config=config.api_key,
+            provider_data_api_key_field="gemini_api_key",
+        )
         self.config = config
 
     async def initialize(self) -> None:
-        pass
+        await super().initialize()
 
     async def shutdown(self) -> None:
-        pass
+        await super().shutdown()

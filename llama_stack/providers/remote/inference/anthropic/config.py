@@ -11,6 +11,13 @@ from pydantic import BaseModel, Field
 from llama_stack.schema_utils import json_schema_type
 
 
+class AnthropicProviderDataValidator(BaseModel):
+    anthropic_api_key: Optional[str] = Field(
+        default=None,
+        description="API key for Anthropic models",
+    )
+
+
 @json_schema_type
 class AnthropicConfig(BaseModel):
     api_key: Optional[str] = Field(

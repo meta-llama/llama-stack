@@ -16,9 +16,8 @@ from llama_stack.models.llama.sku_list import all_registered_models
 from llama_stack.providers.inline.inference.sentence_transformers import (
     SentenceTransformersInferenceConfig,
 )
-from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOConfig
 from llama_stack.providers.remote.inference.groq import GroqConfig
-from llama_stack.providers.remote.inference.groq.models import _MODEL_ENTRIES
+from llama_stack.providers.remote.inference.groq.models import MODEL_ENTRIES
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
 
@@ -52,11 +51,6 @@ def get_distribution_template() -> DistributionTemplate:
         provider_type="inline::sentence-transformers",
         config=SentenceTransformersInferenceConfig.sample_run_config(),
     )
-    vector_io_provider = Provider(
-        provider_id="faiss",
-        provider_type="inline::faiss",
-        config=FaissVectorIOConfig.sample_run_config(f"distributions/{name}"),
-    )
     embedding_model = ModelInput(
         model_id="all-MiniLM-L6-v2",
         provider_id="sentence-transformers",
@@ -69,11 +63,13 @@ def get_distribution_template() -> DistributionTemplate:
     core_model_to_hf_repo = {m.descriptor(): m.huggingface_repo for m in all_registered_models()}
     default_models = [
         ModelInput(
-            model_id=core_model_to_hf_repo[m.llama_model],
+            model_id=core_model_to_hf_repo[m.llama_model] if m.llama_model else m.provider_model_id,
             provider_model_id=m.provider_model_id,
             provider_id=name,
+            model_type=m.model_type,
+            metadata=m.metadata,
         )
-        for m in _MODEL_ENTRIES
+        for m in MODEL_ENTRIES
     ]
 
     default_tool_groups = [

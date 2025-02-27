@@ -146,6 +146,7 @@
     "fastapi",
     "fire",
     "fireworks-ai",
+    "groq",
     "httpx",
     "litellm",
     "matplotlib",
