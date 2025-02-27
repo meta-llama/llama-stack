@@ -521,23 +521,30 @@ async def convert_message_to_openai_dict_new(message: Message | Dict) -> OpenAIC
     async def _convert_message_content(
         content: InterleavedContent,
     ) -> Union[str, Iterable[OpenAIChatCompletionContentPartParam]]:
-        # Llama Stack and OpenAI spec match for str and text input
-        if isinstance(content, str):
-            return content
-        elif isinstance(content, TextContentItem):
-            return OpenAIChatCompletionContentPartTextParam(
-                type="text",
-                text=content.text,
-            )
-        elif isinstance(content, ImageContentItem):
-            return OpenAIChatCompletionContentPartImageParam(
-                type="image_url",
-                image_url=OpenAIImageURL(url=await convert_image_content_to_url(content)),
-            )
-        elif isinstance(content, List):
-            return [await _convert_message_content(item) for item in content]
+        async def impl():
+            # Llama Stack and OpenAI spec match for str and text input
+            if isinstance(content, str):
+                return content
+            elif isinstance(content, TextContentItem):
+                return OpenAIChatCompletionContentPartTextParam(
+                    type="text",
+                    text=content.text,
+                )
+            elif isinstance(content, ImageContentItem):
+                return OpenAIChatCompletionContentPartImageParam(
+                    type="image_url",
+                    image_url=OpenAIImageURL(url=await convert_image_content_to_url(content)),
+                )
+            elif isinstance(content, list):
+                return [await _convert_message_content(item) for item in content]
+            else:
+                raise ValueError(f"Unsupported content type: {type(content)}")
+
+        ret = await impl()
+        if isinstance(ret, str) or isinstance(ret, list):
+            return ret
         else:
-            raise ValueError(f"Unsupported content type: {type(content)}")
+            return [ret]
 
     out: OpenAIChatCompletionMessage = None
     if isinstance(message, UserMessage):
