@@ -6,7 +6,6 @@ distribution_spec:
     - remote::ollama
     vector_io:
     - inline::sqlite-vec
-    - inline::qdrant
     - remote::chromadb
     - remote::pgvector
     safety:

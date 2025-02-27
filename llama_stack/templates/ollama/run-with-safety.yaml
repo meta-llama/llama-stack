@@ -21,10 +21,6 @@ providers:
     provider_type: inline::sqlite-vec
     config:
       db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/sqlite_vec.db
-  - provider_id: qdrant
-    provider_type: inline::qdrant
-    config:
-      path: ${env.QDRANT_PATH:~/.llama/distributions/ollama}/qdrant.db
   safety:
   - provider_id: llama-guard
     provider_type: inline::llama-guard
