@@ -518,40 +518,44 @@ async def convert_message_to_openai_dict_new(message: Message | Dict) -> OpenAIC
     #  {"type": "image", "image": {"url": {"uri": ...}}} -> {"type": "image_url", "image_url": {"url": ...}}
     #  {"type": "image", "image": {"data": ...}} -> {"type": "image_url", "image_url": {"url": "data:image/?;base64,..."}}
     #  List[...] -> List[...]
-    async def _convert_user_message_content(
+    async def _convert_message_content(
         content: InterleavedContent,
     ) -> Union[str, Iterable[OpenAIChatCompletionContentPartParam]]:
-        # Llama Stack and OpenAI spec match for str and text input
-        if isinstance(content, str):
-            return OpenAIChatCompletionContentPartTextParam(
-                type="text",
-                text=content,
-            )
-        elif isinstance(content, TextContentItem):
-            return OpenAIChatCompletionContentPartTextParam(
-                type="text",
-                text=content.text,
-            )
-        elif isinstance(content, ImageContentItem):
-            return OpenAIChatCompletionContentPartImageParam(
-                type="image_url",
-                image_url=OpenAIImageURL(url=await convert_image_content_to_url(content)),
-            )
-        elif isinstance(content, List):
-            return [await _convert_user_message_content(item) for item in content]
+        async def impl():
+            # Llama Stack and OpenAI spec match for str and text input
+            if isinstance(content, str):
+                return content
+            elif isinstance(content, TextContentItem):
+                return OpenAIChatCompletionContentPartTextParam(
+                    type="text",
+                    text=content.text,
+                )
+            elif isinstance(content, ImageContentItem):
+                return OpenAIChatCompletionContentPartImageParam(
+                    type="image_url",
+                    image_url=OpenAIImageURL(url=await convert_image_content_to_url(content)),
+                )
+            elif isinstance(content, list):
+                return [await _convert_message_content(item) for item in content]
+            else:
+                raise ValueError(f"Unsupported content type: {type(content)}")
+
+        ret = await impl()
+        if isinstance(ret, str) or isinstance(ret, list):
+            return ret
         else:
-            raise ValueError(f"Unsupported content type: {type(content)}")
+            return [ret]
 
     out: OpenAIChatCompletionMessage = None
     if isinstance(message, UserMessage):
         out = OpenAIChatCompletionUserMessage(
             role="user",
-            content=await _convert_user_message_content(message.content),
+            content=await _convert_message_content(message.content),
         )
     elif isinstance(message, CompletionMessage):
         out = OpenAIChatCompletionAssistantMessage(
             role="assistant",
-            content=message.content,
+            content=await _convert_message_content(message.content),
             tool_calls=[
                 OpenAIChatCompletionMessageToolCall(
                     id=tool.call_id,
@@ -568,12 +572,12 @@ async def convert_message_to_openai_dict_new(message: Message | Dict) -> OpenAIC
         out = OpenAIChatCompletionToolMessage(
             role="tool",
             tool_call_id=message.call_id,
-            content=message.content,
+            content=await _convert_message_content(message.content),
         )
     elif isinstance(message, SystemMessage):
         out = OpenAIChatCompletionSystemMessage(
             role="system",
-            content=message.content,
+            content=await _convert_message_content(message.content),
         )
     else:
         raise ValueError(f"Unsupported message type: {type(message)}")
