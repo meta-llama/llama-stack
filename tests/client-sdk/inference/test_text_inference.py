@@ -9,7 +9,6 @@ from pydantic import BaseModel
 
 from llama_stack.models.llama.sku_list import resolve_model
 from llama_stack.providers.tests.test_cases.test_case import TestCase
-from llama_stack.providers.utils.inference.prompt_adapter import get_default_tool_prompt_format
 
 PROVIDER_LOGPROBS_TOP_K = {"remote::together", "remote::fireworks", "remote::vllm"}
 
@@ -38,13 +37,6 @@ def get_llama_model(client_with_models, model_id):
             return mid
 
     return model.metadata.get("llama_model", None)
-
-
-def get_tool_prompt_format(client_with_models, model_id):
-    llama_model = get_llama_model(client_with_models, model_id)
-    if not llama_model:
-        return None
-    return get_default_tool_prompt_format(llama_model)
 
 
 @pytest.mark.parametrize(
@@ -247,7 +239,6 @@ def test_text_chat_completion_streaming(client_with_models, text_model_id, test_
     ],
 )
 def test_text_chat_completion_with_tool_calling_and_non_streaming(client_with_models, text_model_id, test_case):
-    tool_prompt_format = get_tool_prompt_format(client_with_models, text_model_id)
     tc = TestCase(test_case)
 
     response = client_with_models.inference.chat_completion(
@@ -255,7 +246,6 @@ def test_text_chat_completion_with_tool_calling_and_non_streaming(client_with_mo
         messages=tc["messages"],
         tools=tc["tools"],
         tool_choice="auto",
-        tool_prompt_format=tool_prompt_format,
         stream=False,
     )
     # some models can return content for the response in addition to the tool call
@@ -286,7 +276,6 @@ def extract_tool_invocation_content(response):
     ],
 )
 def test_text_chat_completion_with_tool_calling_and_streaming(client_with_models, text_model_id, test_case):
-    tool_prompt_format = get_tool_prompt_format(client_with_models, text_model_id)
     tc = TestCase(test_case)
 
     response = client_with_models.inference.chat_completion(
@@ -294,7 +283,6 @@ def test_text_chat_completion_with_tool_calling_and_streaming(client_with_models
         messages=tc["messages"],
         tools=tc["tools"],
         tool_choice="auto",
-        tool_prompt_format=tool_prompt_format,
         stream=True,
     )
     tool_invocation_content = extract_tool_invocation_content(response)
@@ -310,8 +298,6 @@ def test_text_chat_completion_with_tool_calling_and_streaming(client_with_models
     ],
 )
 def test_text_chat_completion_with_tool_choice_required(client_with_models, text_model_id, test_case):
-    tool_prompt_format = get_tool_prompt_format(client_with_models, text_model_id)
-
     tc = TestCase(test_case)
 
     response = client_with_models.inference.chat_completion(
@@ -320,7 +306,6 @@ def test_text_chat_completion_with_tool_choice_required(client_with_models, text
         tools=tc["tools"],
         tool_config={
             "tool_choice": "required",
-            "tool_prompt_format": tool_prompt_format,
         },
         stream=True,
     )
@@ -337,14 +322,13 @@ def test_text_chat_completion_with_tool_choice_required(client_with_models, text
     ],
 )
 def test_text_chat_completion_with_tool_choice_none(client_with_models, text_model_id, test_case):
-    tool_prompt_format = get_tool_prompt_format(client_with_models, text_model_id)
     tc = TestCase(test_case)
 
     response = client_with_models.inference.chat_completion(
         model_id=text_model_id,
         messages=tc["messages"],
         tools=tc["tools"],
-        tool_config={"tool_choice": "none", "tool_prompt_format": tool_prompt_format},
+        tool_config={"tool_choice": "none"},
         stream=True,
     )
     tool_invocation_content = extract_tool_invocation_content(response)
