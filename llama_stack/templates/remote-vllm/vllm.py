@@ -95,7 +95,6 @@ def get_distribution_template() -> DistributionTemplate:
         description="Use (an external) vLLM server for running LLM inference",
         template_path=Path(__file__).parent / "doc_template.md",
         providers=providers,
-        default_models=[inference_model, safety_model],
         run_configs={
             "run.yaml": RunConfigSettings(
                 provider_overrides={

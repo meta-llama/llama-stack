@@ -24,7 +24,31 @@ from llama_stack.distribution.datatypes import (
 )
 from llama_stack.distribution.distribution import get_provider_registry
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
+from llama_stack.providers.utils.inference.model_registry import ProviderModelEntry
 from llama_stack.providers.utils.kvstore.config import SqliteKVStoreConfig
+
+
+def get_model_registry(available_models: Dict[str, List[ProviderModelEntry]]) -> List[ModelInput]:
+    models = []
+    for provider_id, entries in available_models.items():
+        for entry in entries:
+            ids = [entry.provider_model_id] + entry.aliases
+            for model_id in ids:
+                models.append(
+                    ModelInput(
+                        model_id=model_id,
+                        provider_model_id=entry.provider_model_id,
+                        provider_id=provider_id,
+                        model_type=entry.model_type,
+                        metadata=entry.metadata,
+                    )
+                )
+    return models
+
+
+class DefaultModel(BaseModel):
+    model_id: str
+    doc_string: str
 
 
 class RunConfigSettings(BaseModel):
@@ -110,7 +134,7 @@ class DistributionTemplate(BaseModel):
     run_config_env_vars: Optional[Dict[str, Tuple[str, str]]] = None
     container_image: Optional[str] = None
 
-    default_models: Optional[List[ModelInput]] = None
+    available_models_by_provider: Optional[Dict[str, List[ProviderModelEntry]]] = None
 
     def build_config(self) -> BuildConfig:
         return BuildConfig(
@@ -148,13 +172,32 @@ class DistributionTemplate(BaseModel):
             autoescape=True,
         )
         template = env.from_string(template)
+
+        default_models = []
+        if self.available_models_by_provider:
+            has_multiple_providers = len(self.available_models_by_provider.keys()) > 1
+            for provider_id, model_entries in self.available_models_by_provider.items():
+                for model_entry in model_entries:
+                    doc_parts = []
+                    if model_entry.aliases:
+                        doc_parts.append(f"aliases: {', '.join(model_entry.aliases)}")
+                    if has_multiple_providers:
+                        doc_parts.append(f"provider: {provider_id}")
+
+                    default_models.append(
+                        DefaultModel(
+                            model_id=model_entry.provider_model_id,
+                            doc_string=f"({' -- '.join(doc_parts)})" if doc_parts else "",
+                        )
+                    )
+
         return template.render(
             name=self.name,
             description=self.description,
             providers=self.providers,
             providers_table=providers_table,
             run_config_env_vars=self.run_config_env_vars,
-            default_models=self.default_models,
+            default_models=default_models,
         )
 
     def save_distribution(self, yaml_output_dir: Path, doc_output_dir: Path) -> None:

@@ -88,7 +88,6 @@ def get_distribution_template() -> DistributionTemplate:
         description="Use Meta Reference with fp8, int4 quantization for running LLM inference",
         template_path=Path(__file__).parent / "doc_template.md",
         providers=providers,
-        default_models=[inference_model],
         run_configs={
             "run.yaml": RunConfigSettings(
                 provider_overrides={
