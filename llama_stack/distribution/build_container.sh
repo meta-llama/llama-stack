@@ -165,6 +165,11 @@ EOF
   fi
 fi
 
+# remove uv after installation
+  add_to_container << EOF
+RUN pip uninstall -y uv
+EOF
+
 # if template_or_config ends with .yaml, it is not a template and we should not use the --template flag
 if [[ "$template_or_config" != *.yaml ]]; then
   add_to_container << EOF
