@@ -190,26 +190,31 @@ RUN mkdir -p /.llama /.cache
 RUN chmod -R g+rw /app /.llama /.cache
 EOF
 
-printf "Containerfile created successfully in $TEMP_DIR/Containerfile\n\n"
-cat $TEMP_DIR/Containerfile
+printf "Containerfile created successfully in %s/Containerfile\n\n" "$TEMP_DIR"
+cat "$TEMP_DIR"/Containerfile
 printf "\n"
 
-mounts=""
+# Start building the CLI arguments
+CLI_ARGS=()
+
+# Read CONTAINER_OPTS and put it in an array
+read -ra CLI_ARGS <<< "$CONTAINER_OPTS"
+
 if [ "$USE_COPY_NOT_MOUNT" != "true" ]; then
   if [ -n "$LLAMA_STACK_DIR" ]; then
-    mounts="$mounts -v $(readlink -f $LLAMA_STACK_DIR):$stack_mount"
+    CLI_ARGS+=("-v" "$(readlink -f "$LLAMA_STACK_DIR"):$stack_mount")
   fi
   if [ -n "$LLAMA_MODELS_DIR" ]; then
-    mounts="$mounts -v $(readlink -f $LLAMA_MODELS_DIR):$models_mount"
+    CLI_ARGS+=("-v" "$(readlink -f "$LLAMA_MODELS_DIR"):$models_mount")
   fi
   if [ -n "$LLAMA_STACK_CLIENT_DIR" ]; then
-    mounts="$mounts -v $(readlink -f $LLAMA_STACK_CLIENT_DIR):$client_mount"
+    CLI_ARGS+=("-v" "$(readlink -f "$LLAMA_STACK_CLIENT_DIR"):$client_mount")
   fi
 fi
 
 if command -v selinuxenabled &>/dev/null && selinuxenabled; then
   # Disable SELinux labels -- we don't want to relabel the llama-stack source dir
-  CONTAINER_OPTS="$CONTAINER_OPTS --security-opt label=disable"
+  CLI_ARGS+=("--security-opt" "label=disable")
 fi
 
 # Set version tag based on PyPI version
@@ -230,11 +235,11 @@ image_tag="$image_name:$version_tag"
 # Detect platform architecture
 ARCH=$(uname -m)
 if [ -n "$BUILD_PLATFORM" ]; then
-  PLATFORM="--platform $BUILD_PLATFORM"
+  CLI_ARGS+=("--platform $BUILD_PLATFORM")
 elif [ "$ARCH" = "arm64" ] || [ "$ARCH" = "aarch64" ]; then
-  PLATFORM="--platform linux/arm64"
+  CLI_ARGS+=("--platform" "linux/arm64")
 elif [ "$ARCH" = "x86_64" ]; then
-  PLATFORM="--platform linux/amd64"
+  CLI_ARGS+=("--platform" "linux/amd64")
 else
   echo "Unsupported architecture: $ARCH"
   exit 1
@@ -243,8 +248,13 @@ fi
 echo "PWD: $(pwd)"
 echo "Containerfile: $TEMP_DIR/Containerfile"
 set -x
-$CONTAINER_BINARY build $CONTAINER_OPTS $PLATFORM -t $image_tag \
-  -f "$TEMP_DIR/Containerfile" "." $mounts --progress=plain
+
+$CONTAINER_BINARY build \
+  "${CLI_ARGS[@]}" \
+  -t "$image_tag" \
+  -f "$TEMP_DIR/Containerfile" \
+  "." \
+  --progress=plain
 
 # clean up tmp/configs
 set +x
