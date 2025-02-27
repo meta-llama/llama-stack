@@ -591,8 +591,17 @@ class ChatAgent(ShieldRunnerMixin):
                     if event.stop_reason is not None:
                         stop_reason = event.stop_reason
                 span.set_attribute("stop_reason", stop_reason)
-                span.set_attribute("input", [m.model_dump_json() for m in input_messages])
-                span.set_attribute("output", f"content: {content} tool_calls: {tool_calls}")
+                span.set_attribute(
+                    "input",
+                    json.dumps([json.loads(m.model_dump_json()) for m in input_messages]),
+                )
+                output_attr = json.dumps(
+                    {
+                        "content": content,
+                        "tool_calls": [json.loads(t.model_dump_json()) for t in tool_calls],
+                    }
+                )
+                span.set_attribute("output", output_attr)
 
             stop_reason = stop_reason or StopReason.out_of_tokens
 
