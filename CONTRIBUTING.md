@@ -70,9 +70,17 @@ $ uv pip install -e .
 $ source .venv/bin/activate
 ```
 
-Note that you can modify the existing `.env.dev` dotenv file for running client SDK tests via the following:
+Note that you can create a dotenv file `.env` that includes necessary environment variables:
+```
+LLAMA_STACK_BASE_URL=http://localhost:8321
+LLAMA_STACK_CLIENT_LOG=debug
+LLAMA_STACK_PORT=8321
+LLAMA_STACK_CONFIG=
+```
+
+And then use this dotenv file when running client SDK tests via the following:
 ```bash
-$ uv run --env-file .env.dev -- pytest -v tests/client-sdk/inference/test_text_inference.py
+$ uv run --env-file .env -- pytest -v tests/client-sdk/inference/test_text_inference.py
 ```
 
 ## Pre-commit Hooks
