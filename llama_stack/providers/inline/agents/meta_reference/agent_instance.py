@@ -17,7 +17,6 @@ from typing import Any, AsyncGenerator, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 
 import httpx
-from rich.pretty import pprint
 
 from llama_stack.apis.agents import (
     AgentConfig,
@@ -187,18 +186,8 @@ class ChatAgent(ShieldRunnerMixin):
 
             turns = await self.storage.get_session_turns(request.session_id)
 
-            print("!! create and execute turn turns", len(turns))
-            pprint(turns)
-
             messages = await self.get_messages_from_turns(turns)
-
-            print("!! create and execute turn messages", len(messages))
-            pprint(messages)
-
             messages.extend(request.messages)
-
-            print("!! create and execute turn messages extended", len(messages))
-            pprint(messages)
 
             turn_id = str(uuid.uuid4())
             span.set_attribute("turn_id", turn_id)
@@ -284,13 +273,8 @@ class ChatAgent(ShieldRunnerMixin):
             if len(turns) == 0:
                 raise ValueError("No turns found for session")
 
-            pprint("!! resume turn turns")
-            pprint(turns)
             messages = await self.get_messages_from_turns(turns)
             messages.extend(request.tool_responses)
-
-            print("!! resume turn")
-            pprint(messages)
 
             last_turn = turns[-1]
             last_turn_messages = self.turn_to_messages(last_turn)
@@ -298,8 +282,6 @@ class ChatAgent(ShieldRunnerMixin):
                 x for x in last_turn_messages if isinstance(x, UserMessage) or isinstance(x, ToolResponseMessage)
             ]
 
-            print("last turn messages")
-            pprint(last_turn_messages)
             # TODO: figure out whether we should add the tool responses to the last turn messages
             last_turn_messages.extend(request.tool_responses)
 
@@ -405,9 +387,6 @@ class ChatAgent(ShieldRunnerMixin):
         documents: Optional[List[Document]] = None,
         toolgroups_for_turn: Optional[List[AgentToolGroup]] = None,
     ) -> AsyncGenerator:
-        print("!!RUN input messages")
-
-        pprint(input_messages)
         # Doing async generators makes downstream code much simpler and everything amenable to
         # streaming. However, it also makes things complicated here because AsyncGenerators cannot
         # return a "final value" for the `yield from` statement. we simulate that by yielding a
@@ -451,9 +430,6 @@ class ChatAgent(ShieldRunnerMixin):
                     return
                 else:
                     yield res
-
-        pprint("!!RUN final response")
-        pprint(messages)
 
         yield final_response
 
