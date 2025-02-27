@@ -185,7 +185,6 @@ class ChatAgent(ShieldRunnerMixin):
                 raise ValueError(f"Session {request.session_id} not found")
 
             turns = await self.storage.get_session_turns(request.session_id)
-
             messages = await self.get_messages_from_turns(turns)
             messages.extend(request.messages)
 
