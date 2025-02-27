@@ -37,11 +37,11 @@ The following environment variables can be configured:
 
 The following models are available by default:
 
-- `groq/llama3-8b-8192 `
+- `groq/llama3-8b-8192 (aliases: meta-llama/Llama-3.1-8B-Instruct)`
 - `groq/llama-3.1-8b-instant `
-- `groq/llama3-70b-8192 `
-- `groq/llama-3.3-70b-versatile `
-- `groq/llama-3.2-3b-preview `
+- `groq/llama3-70b-8192 (aliases: meta-llama/Llama-3-70B-Instruct)`
+- `groq/llama-3.3-70b-versatile (aliases: meta-llama/Llama-3.3-70B-Instruct)`
+- `groq/llama-3.2-3b-preview (aliases: meta-llama/Llama-3.2-3B-Instruct)`
 
 
 ### Prerequisite: API Keys
