@@ -47,6 +47,9 @@ CONTAINER_OPTS=${CONTAINER_OPTS:-}
 
 TEMP_DIR=$(mktemp -d)
 
+SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
+source "$SCRIPT_DIR/common.sh"
+
 add_to_container() {
   local input
   output_file="$TEMP_DIR/Containerfile"
@@ -57,6 +60,12 @@ add_to_container() {
     cat >>"$output_file"
   fi
 }
+
+# Check if container command is available
+if ! is_command_available $CONTAINER_BINARY; then
+  printf "${RED}Error: ${CONTAINER_BINARY} command not found. Is ${CONTAINER_BINARY} installed and in your PATH?${NC}" >&2
+  exit 1
+fi
 
 # Update and install UBI9 components if UBI9 base image is used
 if [[ $container_base == *"registry.access.redhat.com/ubi9"* ]]; then
@@ -202,7 +211,7 @@ if [ "$USE_COPY_NOT_MOUNT" != "true" ]; then
   fi
 fi
 
-if command -v selinuxenabled &>/dev/null && selinuxenabled; then
+if is_command_available selinuxenabled && selinuxenabled; then
   # Disable SELinux labels -- we don't want to relabel the llama-stack source dir
   CONTAINER_OPTS="$CONTAINER_OPTS --security-opt label=disable"
 fi
