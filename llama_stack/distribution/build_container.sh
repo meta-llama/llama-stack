@@ -20,26 +20,27 @@ UV_HTTP_TIMEOUT=${UV_HTTP_TIMEOUT:-500}
 # mounting is not supported by docker buildx, so we use COPY instead
 USE_COPY_NOT_MOUNT=${USE_COPY_NOT_MOUNT:-}
 
-if [ "$#" -lt 6 ]; then
+if [ "$#" -lt 4 ]; then
   # This only works for templates
-  echo "Usage: $0 <template_or_config> <image_name> <container_base> <build_file_path> <host_build_dir> <pip_dependencies> [<special_pip_deps>]" >&2
+  echo "Usage: $0 <template_or_config> <image_name> <container_base> <pip_dependencies> [<special_pip_deps>]" >&2
   exit 1
 fi
 
 set -euo pipefail
 
 template_or_config="$1"
-image_name="$2"
-container_base="$3"
-build_file_path="$4"
-host_build_dir="$5"
-pip_dependencies="$6"
-special_pip_deps="${7:-}"
+shift
+image_name="$1"
+shift
+container_base="$1"
+shift
+pip_dependencies="$1"
+shift
+special_pip_deps="${1:-}"
 
 
 # Define color codes
 RED='\033[0;31m'
-GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
 CONTAINER_BINARY=${CONTAINER_BINARY:-docker}
@@ -48,7 +49,6 @@ CONTAINER_OPTS=${CONTAINER_OPTS:-}
 TEMP_DIR=$(mktemp -d)
 
 add_to_container() {
-  local input
   output_file="$TEMP_DIR/Containerfile"
   if [ -t 0 ]; then
     printf '%s\n' "$1" >>"$output_file"
