@@ -7,6 +7,7 @@ distribution_spec:
     - remote::fireworks
     - remote::anthropic
     - remote::gemini
+    - remote::groq
     - inline::sentence-transformers
     vector_io:
     - inline::sqlite-vec

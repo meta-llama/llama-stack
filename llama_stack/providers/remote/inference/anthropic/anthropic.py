@@ -12,11 +12,16 @@ from .models import MODEL_ENTRIES
 
 class AnthropicInferenceAdapter(LiteLLMOpenAIMixin):
     def __init__(self, config: AnthropicConfig) -> None:
-        LiteLLMOpenAIMixin.__init__(self, MODEL_ENTRIES)
+        LiteLLMOpenAIMixin.__init__(
+            self,
+            MODEL_ENTRIES,
+            api_key_from_config=config.api_key,
+            provider_data_api_key_field="anthropic_api_key",
+        )
         self.config = config
 
     async def initialize(self) -> None:
-        pass
+        await super().initialize()
 
     async def shutdown(self) -> None:
-        pass
+        await super().shutdown()

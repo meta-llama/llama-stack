@@ -24,6 +24,8 @@ from llama_stack.providers.remote.inference.fireworks.config import FireworksImp
 from llama_stack.providers.remote.inference.fireworks.models import MODEL_ENTRIES as FIREWORKS_MODEL_ENTRIES
 from llama_stack.providers.remote.inference.gemini.config import GeminiConfig
 from llama_stack.providers.remote.inference.gemini.models import MODEL_ENTRIES as GEMINI_MODEL_ENTRIES
+from llama_stack.providers.remote.inference.groq.config import GroqConfig
+from llama_stack.providers.remote.inference.groq.models import MODEL_ENTRIES as GROQ_MODEL_ENTRIES
 from llama_stack.providers.remote.inference.openai.config import OpenAIConfig
 from llama_stack.providers.remote.inference.openai.models import MODEL_ENTRIES as OPENAI_MODEL_ENTRIES
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
@@ -52,6 +54,11 @@ def get_inference_providers() -> Tuple[List[Provider], List[ModelInput]]:
             GEMINI_MODEL_ENTRIES,
             GeminiConfig.sample_run_config(api_key="${env.GEMINI_API_KEY:}"),
         ),
+        (
+            "groq",
+            GROQ_MODEL_ENTRIES,
+            GroqConfig.sample_run_config(api_key="${env.GROQ_API_KEY:}"),
+        ),
     ]
     inference_providers = []
     default_models = []
@@ -78,14 +85,9 @@ def get_inference_providers() -> Tuple[List[Provider], List[ModelInput]]:
 
 
 def get_distribution_template() -> DistributionTemplate:
+    inference_providers, default_models = get_inference_providers()
     providers = {
-        "inference": [
-            "remote::openai",
-            "remote::fireworks",
-            "remote::anthropic",
-            "remote::gemini",
-            "inline::sentence-transformers",
-        ],
+        "inference": ([p.provider_type for p in inference_providers] + ["inline::sentence-transformers"]),
         "vector_io": ["inline::sqlite-vec", "remote::chromadb", "remote::pgvector"],
         "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],
@@ -136,7 +138,6 @@ def get_distribution_template() -> DistributionTemplate:
             "embedding_dimension": 384,
         },
     )
-    inference_providers, default_models = get_inference_providers()
 
     return DistributionTemplate(
         name=name,
