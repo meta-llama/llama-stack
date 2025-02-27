@@ -444,7 +444,6 @@
     "psycopg2-binary",
     "pymongo",
     "pypdf",
-    "qdrant-client",
     "redis",
     "requests",
     "scikit-learn",
