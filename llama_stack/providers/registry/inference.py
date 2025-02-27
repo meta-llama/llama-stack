@@ -231,7 +231,7 @@ def available_providers() -> List[ProviderSpec]:
             api=Api.inference,
             adapter=AdapterSpec(
                 adapter_type="groq",
-                pip_packages=["groq"],
+                pip_packages=["litellm"],
                 module="llama_stack.providers.remote.inference.groq",
                 config_class="llama_stack.providers.remote.inference.groq.GroqConfig",
                 provider_data_validator="llama_stack.providers.remote.inference.groq.config.GroqProviderDataValidator",
