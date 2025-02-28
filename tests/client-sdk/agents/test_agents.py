@@ -36,6 +36,8 @@ def get_boiling_point(liquid_name: str, celcius: bool = True) -> int:
             return -100
         else:
             return -212
+    else:
+        return -1
 
 
 @pytest.fixture(scope="session")
