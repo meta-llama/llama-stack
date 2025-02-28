@@ -53,17 +53,6 @@ class AgentPersistence:
 
         return AgentSessionInfo(**json.loads(value))
 
-    async def add_vector_db_to_session(self, session_id: str, vector_db_id: str):
-        session_info = await self.get_session_info(session_id)
-        if session_info is None:
-            raise ValueError(f"Session {session_id} not found")
-
-        session_info.vector_db_id = vector_db_id
-        await self.kvstore.set(
-            key=f"session:{self.agent_id}:{session_id}",
-            value=session_info.model_dump_json(),
-        )
-
     async def add_turn_to_session(self, session_id: str, turn: Turn):
         await self.kvstore.set(
             key=f"session:{self.agent_id}:{session_id}:{turn.turn_id}",
