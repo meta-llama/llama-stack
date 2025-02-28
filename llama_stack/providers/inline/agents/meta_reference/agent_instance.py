@@ -655,6 +655,9 @@ class ChatAgent(ShieldRunnerMixin):
 
             if n_iter >= self.agent_config.max_infer_iters:
                 log.info("Done with MAX iterations, exiting.")
+                # we always resume tool call, so we need a way to indicate to client that we are done
+                # currently let's do it with having the tool call be
+                message.stop_reason = StopReason.end_of_turn
                 yield message
                 break
 
@@ -704,6 +707,7 @@ class ChatAgent(ShieldRunnerMixin):
 
                 # If tool is a client tool, yield CompletionMessage and return
                 if tool_call.tool_name in client_tools:
+                    message.stop_reason = StopReason.end_of_message
                     await self.storage.set_in_progress_tool_call_step(
                         session_id,
                         turn_id,
