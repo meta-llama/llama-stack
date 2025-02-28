@@ -535,7 +535,7 @@ class ChatAgent(ShieldRunnerMixin):
 
         output_attachments = []
 
-        n_iter = 0
+        n_iter = await self.storage.get_num_infer_iters_in_turn(session_id, turn_id) or 0
         # Build a map of custom tools to their definitions for faster lookup
         client_tools = {}
         for tool in self.agent_config.client_tools:
@@ -783,6 +783,7 @@ class ChatAgent(ShieldRunnerMixin):
                 input_messages = input_messages + [message, result_message]
 
             n_iter += 1
+            await self.storage.set_num_infer_iters_in_turn(session_id, turn_id, n_iter)
 
     async def _get_tool_defs(
         self, toolgroups_for_turn: Optional[List[AgentToolGroup]] = None
