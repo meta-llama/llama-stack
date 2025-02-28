@@ -274,7 +274,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         # References:
         #   * https://platform.openai.com/docs/api-reference/chat/create#chat-create-tool_choice
         #   * https://github.com/vllm-project/vllm/pull/10000
-        if (tools is None or len(tools) == 0) and tool_config is not None:
+        if not tools and tool_config is not None:
             tool_config.tool_choice = ToolChoice.none
         request = ChatCompletionRequest(
             model=model.provider_resource_id,
