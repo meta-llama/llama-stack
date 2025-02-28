@@ -27,7 +27,9 @@ from openai.types.chat import (
 from openai.types.chat import (
     ChatCompletionMessageParam as OpenAIChatCompletionMessage,
 )
-from openai.types.chat import ChatCompletionMessageToolCall
+from openai.types.chat import (
+    ChatCompletionMessageToolCall,
+)
 from openai.types.chat import (
     ChatCompletionMessageToolCallParam as OpenAIChatCompletionMessageToolCall,
 )
@@ -199,7 +201,9 @@ def convert_openai_completion_logprobs_stream(text: str, logprobs: Optional[Unio
     return None
 
 
-def process_completion_response(response: OpenAICompatCompletionResponse) -> CompletionResponse:
+def process_completion_response(
+    response: OpenAICompatCompletionResponse,
+) -> CompletionResponse:
     choice = response.choices[0]
     # drop suffix <eot_id> if present and return stop reason as end of turn
     if choice.text.endswith("<|eot_id|>"):
@@ -492,7 +496,9 @@ class UnparseableToolCall(BaseModel):
     arguments: str = ""
 
 
-async def convert_message_to_openai_dict_new(message: Message | Dict) -> OpenAIChatCompletionMessage:
+async def convert_message_to_openai_dict_new(
+    message: Message | Dict,
+) -> OpenAIChatCompletionMessage:
     """
     Convert a Message to an OpenAI API-compatible dictionary.
     """
@@ -942,7 +948,7 @@ async def convert_openai_chat_completion_stream(
             )
             yield ChatCompletionResponseStreamChunk(
                 event=ChatCompletionResponseEvent(
-                    event_type=ChatCompletionResponseEventType.complete,
+                    event_type=ChatCompletionResponseEventType.progress,
                     delta=ToolCallDelta(
                         tool_call=tool_call,
                         parse_status=ToolCallParseStatus.succeeded,

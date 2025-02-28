@@ -13,14 +13,13 @@ from llama_stack.distribution.datatypes import (
     ShieldInput,
     ToolGroupInput,
 )
-from llama_stack.models.llama.sku_list import all_registered_models
 from llama_stack.providers.inline.inference.sentence_transformers import (
     SentenceTransformersInferenceConfig,
 )
 from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOConfig
 from llama_stack.providers.remote.inference.together import TogetherImplConfig
 from llama_stack.providers.remote.inference.together.models import MODEL_ENTRIES
-from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
+from llama_stack.templates.template import DistributionTemplate, RunConfigSettings, get_model_registry
 
 
 def get_distribution_template() -> DistributionTemplate:
@@ -57,18 +56,10 @@ def get_distribution_template() -> DistributionTemplate:
         provider_type="inline::sentence-transformers",
         config=SentenceTransformersInferenceConfig.sample_run_config(),
     )
-
-    core_model_to_hf_repo = {m.descriptor(): m.huggingface_repo for m in all_registered_models()}
-    default_models = [
-        ModelInput(
-            model_id=core_model_to_hf_repo[m.llama_model] if m.llama_model else m.provider_model_id,
-            provider_model_id=m.provider_model_id,
-            provider_id="together",
-            metadata=m.metadata,
-            model_type=m.model_type,
-        )
-        for m in MODEL_ENTRIES
-    ]
+    available_models = {
+        "together": MODEL_ENTRIES,
+    }
+    default_models = get_model_registry(available_models)
     default_tool_groups = [
         ToolGroupInput(
             toolgroup_id="builtin::websearch",
@@ -99,7 +90,7 @@ def get_distribution_template() -> DistributionTemplate:
         container_image=None,
         template_path=Path(__file__).parent / "doc_template.md",
         providers=providers,
-        default_models=default_models,
+        available_models_by_provider=available_models,
         run_configs={
             "run.yaml": RunConfigSettings(
                 provider_overrides={
