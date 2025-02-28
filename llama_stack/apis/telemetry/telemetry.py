@@ -203,13 +203,11 @@ class QuerySpanTreeResponse(BaseModel):
     data: dict[str, SpanWithStatus]
 
 
-@json_schema_type
 class MetricQueryType(Enum):
     RANGE = "range"
     INSTANT = "instant"
 
 
-@json_schema_type
 class MetricLabelOperator(Enum):
     EQUALS = "="
     NOT_EQUALS = "!="
@@ -217,7 +215,6 @@ class MetricLabelOperator(Enum):
     REGEX_NOT_MATCH = "!~"
 
 
-@json_schema_type
 class MetricLabelMatcher(BaseModel):
     name: str
     value: str
@@ -233,13 +230,12 @@ class MetricDataPoint(BaseModel):
 @json_schema_type
 class MetricSeries(BaseModel):
     metric: str
-    labels: Dict[str, str]
-    values: List[MetricDataPoint]
+    labels: dict[str, str]
+    values: list[MetricDataPoint]
 
 
-@json_schema_type
 class GetMetricsResponse(BaseModel):
-    data: List[MetricSeries]
+    data: list[MetricSeries]
 
 
 @runtime_checkable
@@ -292,8 +288,8 @@ class Telemetry(Protocol):
         self,
         metric_name: str,
         start_time: int,
-        end_time: Optional[int] = None,
-        step: Optional[str] = "1d",
+        end_time: int | None = None,
+        step: str | None = "1d",
         query_type: MetricQueryType = MetricQueryType.RANGE,
-        label_matchers: Optional[List[MetricLabelMatcher]] = None,
+        label_matchers: list[MetricLabelMatcher] | None = None,
     ) -> GetMetricsResponse: ...

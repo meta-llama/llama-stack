@@ -1251,6 +1251,58 @@
                 ]
             }
         },
+        "/v1/telemetry/metrics/{metric_name}": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GetMetricsResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Telemetry"
+                ],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "metric_name",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/GetMetricsRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/v1/models/{model_id}": {
             "get": {
                 "responses": {
@@ -7558,6 +7610,127 @@
                 ],
                 "title": "FileResponse",
                 "description": "Response representing a file entry."
+            },
+            "GetMetricsRequest": {
+                "type": "object",
+                "properties": {
+                    "start_time": {
+                        "type": "integer"
+                    },
+                    "end_time": {
+                        "type": "integer"
+                    },
+                    "step": {
+                        "type": "string"
+                    },
+                    "query_type": {
+                        "type": "string",
+                        "enum": [
+                            "range",
+                            "instant"
+                        ],
+                        "title": "MetricQueryType"
+                    },
+                    "label_matchers": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string"
+                                },
+                                "value": {
+                                    "type": "string"
+                                },
+                                "operator": {
+                                    "type": "string",
+                                    "enum": [
+                                        "=",
+                                        "!=",
+                                        "=~",
+                                        "!~"
+                                    ],
+                                    "title": "MetricLabelOperator",
+                                    "default": "="
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "name",
+                                "value",
+                                "operator"
+                            ],
+                            "title": "MetricLabelMatcher"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "start_time",
+                    "query_type"
+                ],
+                "title": "GetMetricsRequest"
+            },
+            "MetricDataPoint": {
+                "type": "object",
+                "properties": {
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "value": {
+                        "type": "number"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "timestamp",
+                    "value"
+                ],
+                "title": "MetricDataPoint"
+            },
+            "MetricSeries": {
+                "type": "object",
+                "properties": {
+                    "metric": {
+                        "type": "string"
+                    },
+                    "labels": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
+                    },
+                    "values": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricDataPoint"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "metric",
+                    "labels",
+                    "values"
+                ],
+                "title": "MetricSeries"
+            },
+            "GetMetricsResponse": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricSeries"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "data"
+                ],
+                "title": "GetMetricsResponse"
             },
             "Model": {
                 "type": "object",
