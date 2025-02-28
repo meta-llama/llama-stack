@@ -536,6 +536,8 @@ class ChatAgent(ShieldRunnerMixin):
         output_attachments = []
 
         n_iter = await self.storage.get_num_infer_iters_in_turn(session_id, turn_id) or 0
+        print("initial n_iter", n_iter)
+
         # Build a map of custom tools to their definitions for faster lookup
         client_tools = {}
         for tool in self.agent_config.client_tools:
@@ -612,6 +614,11 @@ class ChatAgent(ShieldRunnerMixin):
                 span.set_attribute("stop_reason", stop_reason)
                 span.set_attribute("input", [m.model_dump_json() for m in input_messages])
                 span.set_attribute("output", f"content: {content} tool_calls: {tool_calls}")
+
+            n_iter += 1
+            print(f"n_iter after update: {n_iter}")
+            await self.storage.set_num_infer_iters_in_turn(session_id, turn_id, n_iter)
+            print(self.agent_config.max_infer_iters)
 
             stop_reason = stop_reason or StopReason.out_of_tokens
 
@@ -781,9 +788,6 @@ class ChatAgent(ShieldRunnerMixin):
                     output_attachments.append(out_attachment)
 
                 input_messages = input_messages + [message, result_message]
-
-            n_iter += 1
-            await self.storage.set_num_infer_iters_in_turn(session_id, turn_id, n_iter)
 
     async def _get_tool_defs(
         self, toolgroups_for_turn: Optional[List[AgentToolGroup]] = None
