@@ -93,7 +93,7 @@ agent_config = AgentConfig(
         {
             "name": "builtin::rag/knowledge_search",
             "args": {
-                "vector_db_ids": vector_db_id,
+                "vector_db_ids": [vector_db_id],
             },
         }
     ],
