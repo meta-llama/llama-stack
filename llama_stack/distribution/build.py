@@ -15,7 +15,6 @@ from termcolor import cprint
 
 from llama_stack.distribution.datatypes import BuildConfig, Provider
 from llama_stack.distribution.distribution import get_provider_registry
-from llama_stack.distribution.utils.config_dirs import BUILDS_BASE_DIR
 from llama_stack.distribution.utils.exec import run_command, run_with_pty
 from llama_stack.distribution.utils.image_types import ImageType
 from llama_stack.providers.datatypes import Api
@@ -103,8 +102,6 @@ def build_image(
             template_or_config,
             image_name,
             container_base,
-            str(build_file_path),
-            str(BUILDS_BASE_DIR / ImageType.container.value),
             " ".join(normal_deps),
         ]
     elif build_config.image_type == ImageType.conda.value:
