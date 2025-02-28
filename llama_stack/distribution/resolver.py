@@ -127,6 +127,9 @@ async def resolve_impls(
 
         specs = {}
         for provider in providers:
+            if not provider.provider_id or provider.provider_id == "__disabled__":
+                continue
+
             if provider.provider_type not in provider_registry[api]:
                 raise ValueError(f"Provider `{provider.provider_type}` is not available for API `{api}`")
 
