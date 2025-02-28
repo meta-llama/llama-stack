@@ -318,14 +318,7 @@ class VectorDBsRoutingTable(CommonRoutingTableImpl, VectorDBs):
                 )
         model = await self.get_object_by_identifier("model", embedding_model)
         if model is None:
-            if embedding_model == "all-MiniLM-L6-v2":
-                raise ValueError(
-                    "Embeddings are now served via Inference providers. "
-                    "Please upgrade your run.yaml to include inline::sentence-transformer as an additional inference provider. "
-                    "See https://github.com/meta-llama/llama-stack/blob/main/llama_stack/templates/together/run.yaml for an example."
-                )
-            else:
-                raise ValueError(f"Model {embedding_model} not found")
+            raise ValueError(f"Model {embedding_model} not found")
         if model.model_type != ModelType.embedding:
             raise ValueError(f"Model {embedding_model} is not an embedding model")
         if "embedding_dimension" not in model.metadata:
