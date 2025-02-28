@@ -131,7 +131,6 @@ class LiteLLMOpenAIMixin(
         Recursively add additionalProperties: False to all object schemas
         """
         if isinstance(schema, dict):
-            # If this is an object schema
             if schema.get("type") == "object":
                 schema["additionalProperties"] = False
 
@@ -139,12 +138,10 @@ class LiteLLMOpenAIMixin(
                 if "properties" in schema and schema["properties"]:
                     schema["required"] = list(schema["properties"].keys())
 
-            # Handle properties within objects
             if "properties" in schema:
                 for prop_schema in schema["properties"].values():
                     self._add_additional_properties_recursive(prop_schema)
 
-            # Handle anyOf/allOf/oneOf/not
             for key in ["anyOf", "allOf", "oneOf"]:
                 if key in schema:
                     for sub_schema in schema[key]:
