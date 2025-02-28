@@ -261,7 +261,7 @@ rag_agent = Agent(client, agent_config)
 session_id = rag_agent.create_session("test-session")
 
 user_prompts = [
-    "What are the top 5 topics that were explained? Only list succinct bullet points.",
+    "How to optimize memory usage in torchtune? use the knowledge_search tool to get information.",
 ]
 
 # Run the agent loop by calling the `create_turn` method
