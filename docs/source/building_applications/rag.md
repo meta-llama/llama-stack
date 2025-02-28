@@ -93,14 +93,7 @@ agent_config = AgentConfig(
         {
             "name": "builtin::rag/knowledge_search",
             "args": {
-                # 'documents_db_id' holds the ID of the registered vector database
-                # where the provided documents will be ingested. This argument is mandatory
-                # when the 'documents' parameter is provided in a 'create_turn' invocation.
-                # When provided, 'documents_db_id' will also be used to extract contextual information
-                # for the query.
-                "documents_db_id": vector_db_id,
-                # Optionally, the 'vector_db_ids' argument can specify additional vector databases
-                # to use at query time.
+                "vector_db_ids": vector_db_id,
             },
         }
     ],
