@@ -270,6 +270,12 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         tool_config: Optional[ToolConfig] = None,
     ) -> AsyncGenerator:
         model = await self.model_store.get_model(model_id)
+        # This is to be consistent with OpenAI API and support vLLM <= v0.6.3
+        # References:
+        #   * https://platform.openai.com/docs/api-reference/chat/create#chat-create-tool_choice
+        #   * https://github.com/vllm-project/vllm/pull/10000
+        if not tools and tool_config is not None:
+            tool_config.tool_choice = ToolChoice.none
         request = ChatCompletionRequest(
             model=model.provider_resource_id,
             messages=messages,

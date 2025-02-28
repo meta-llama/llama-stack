@@ -38,7 +38,7 @@ The API is **exactly identical** for both clients.
 :::{dropdown} Starting up the Llama Stack server
 The Llama Stack server can be configured flexibly so you can mix-and-match various providers for its individual API components -- beyond Inference, these include Vector IO, Agents, Telemetry, Evals, Post Training, etc.
 
-To get started quickly, we provide various container images for the server component that work with different inference providers out of the box. For this guide, we will use `llamastack/distribution-ollama` as the container image.
+To get started quickly, we provide various container images for the server component that work with different inference providers out of the box. For this guide, we will use `llamastack/distribution-ollama` as the container image. If you'd like to build your own image or customize the configurations, please check out [this guide](../references/index.md).
 
 Lets setup some environment variables that we will use in the rest of the guide.
 ```bash

@@ -55,6 +55,7 @@ def main(output_dir: str):
                 a set of endpoints and their corresponding interfaces that are tailored to
                 best leverage Llama Models.""",
             ),
+            include_standard_error_responses=True,
         ),
     )
 

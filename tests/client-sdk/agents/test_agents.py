@@ -4,20 +4,15 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import json
-from typing import Dict, List
 from uuid import uuid4
 
 import pytest
 from llama_stack_client.lib.agents.agent import Agent
-from llama_stack_client.lib.agents.client_tool import ClientTool
+from llama_stack_client.lib.agents.client_tool import client_tool
 from llama_stack_client.lib.agents.event_logger import EventLogger
-from llama_stack_client.types import ToolResponseMessage
 from llama_stack_client.types.agents.turn_create_params import Document as AgentDocument
 from llama_stack_client.types.memory_insert_params import Document
-from llama_stack_client.types.shared.completion_message import CompletionMessage
 from llama_stack_client.types.shared_params.agent_config import AgentConfig, ToolConfig
-from llama_stack_client.types.tool_def_param import Parameter
 
 from llama_stack.apis.agents.agents import (
     AgentConfig as Server__AgentConfig,
@@ -27,63 +22,22 @@ from llama_stack.apis.agents.agents import (
 )
 
 
-class TestClientTool(ClientTool):
-    """Tool to give boiling point of a liquid
-    Returns the correct value for polyjuice in Celcius and Fahrenheit
-    and returns -1 for other liquids
+@client_tool
+def get_boiling_point(liquid_name: str, celcius: bool = True) -> int:
     """
+    Returns the boiling point of a liquid in Celcius or Fahrenheit
 
-    def run(self, messages: List[CompletionMessage]) -> List[ToolResponseMessage]:
-        assert len(messages) == 1, "Expected single message"
-
-        message = messages[0]
-
-        tool_call = message.tool_calls[0]
-
-        try:
-            response = self.run_impl(**tool_call.arguments)
-            response_str = json.dumps(response, ensure_ascii=False)
-        except Exception as e:
-            response_str = f"Error when running tool: {e}"
-
-        message = ToolResponseMessage(
-            role="tool",
-            call_id=tool_call.call_id,
-            tool_name=tool_call.tool_name,
-            content=response_str,
-        )
-        return message
-
-    def get_name(self) -> str:
-        return "get_boiling_point"
-
-    def get_description(self) -> str:
-        return "Get the boiling point of imaginary liquids (eg. polyjuice)"
-
-    def get_params_definition(self) -> Dict[str, Parameter]:
-        return {
-            "liquid_name": Parameter(
-                name="liquid_name",
-                parameter_type="string",
-                description="The name of the liquid",
-                required=True,
-            ),
-            "celcius": Parameter(
-                name="celcius",
-                parameter_type="boolean",
-                description="Whether to return the boiling point in Celcius",
-                required=False,
-            ),
-        }
-
-    def run_impl(self, liquid_name: str, celcius: bool = True) -> int:
-        if liquid_name.lower() == "polyjuice":
-            if celcius:
-                return -100
-            else:
-                return -212
+    :param liquid_name: The name of the liquid
+    :param celcius: Whether to return the boiling point in Celcius
+    :return: The boiling point of the liquid in Celcius or Fahrenheit
+    """
+    if liquid_name.lower() == "polyjuice":
+        if celcius:
+            return -100
         else:
-            return -1
+            return -212
+    else:
+        return -1
 
 
 @pytest.fixture(scope="session")
@@ -298,7 +252,7 @@ def test_code_interpreter_for_attachments(llama_stack_client, agent_config):
 
 
 def test_custom_tool(llama_stack_client, agent_config):
-    client_tool = TestClientTool()
+    client_tool = get_boiling_point
     agent_config = {
         **agent_config,
         "toolgroups": ["builtin::websearch"],
@@ -326,7 +280,7 @@ def test_custom_tool(llama_stack_client, agent_config):
 
 def test_tool_choice(llama_stack_client, agent_config):
     def run_agent(tool_choice):
-        client_tool = TestClientTool()
+        client_tool = get_boiling_point
 
         test_agent_config = {
             **agent_config,
@@ -362,7 +316,7 @@ def test_tool_choice(llama_stack_client, agent_config):
 
 # TODO: fix this flaky test
 def xtest_override_system_message_behavior(llama_stack_client, agent_config):
-    client_tool = TestClientTool()
+    client_tool = get_boiling_point
     agent_config = {
         **agent_config,
         "instructions": "You are a pirate",
@@ -458,7 +412,6 @@ def test_rag_agent(llama_stack_client, agent_config, rag_tool_name):
         vector_db_id=vector_db_id,
         embedding_model="all-MiniLM-L6-v2",
         embedding_dimension=384,
-        provider_id="faiss",
     )
     llama_stack_client.tool_runtime.rag_tool.insert(
         documents=documents,
@@ -587,7 +540,7 @@ def test_rag_and_code_agent(llama_stack_client, agent_config):
 
 
 def test_create_turn_response(llama_stack_client, agent_config):
-    client_tool = TestClientTool()
+    client_tool = get_boiling_point
     agent_config = {
         **agent_config,
         "input_shields": [],

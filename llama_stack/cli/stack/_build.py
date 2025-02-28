@@ -141,7 +141,7 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
                 completer=WordCompleter(available_providers),
                 complete_while_typing=True,
                 validator=Validator.from_callable(
-                    lambda x: x in available_providers,
+                    lambda x: x in available_providers,  # noqa: B023 - see https://github.com/astral-sh/ruff/issues/7847
                     error_message="Invalid provider, use <TAB> to see options",
                 ),
             )

@@ -19,6 +19,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PaginatedRowsResult'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - DatasetIO
       description: ''
@@ -47,6 +57,16 @@ paths:
       responses:
         '200':
           description: OK
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - DatasetIO
       description: ''
@@ -66,6 +86,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BatchChatCompletionResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - BatchInference (Coming Soon)
       description: ''
@@ -85,6 +115,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BatchCompletionResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - BatchInference (Coming Soon)
       description: ''
@@ -100,6 +140,16 @@ paths:
       responses:
         '200':
           description: OK
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - PostTraining (Coming Soon)
       description: ''
@@ -124,6 +174,16 @@ paths:
             text/event-stream:
               schema:
                 $ref: '#/components/schemas/ChatCompletionResponseStreamChunk'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Inference
       description: >-
@@ -149,6 +209,16 @@ paths:
             text/event-stream:
               schema:
                 $ref: '#/components/schemas/CompletionResponseStreamChunk'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Inference
       description: >-
@@ -169,6 +239,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AgentCreateResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Agents
       description: ''
@@ -188,6 +268,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AgentSessionCreateResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Agents
       description: ''
@@ -217,6 +307,16 @@ paths:
             text/event-stream:
               schema:
                 $ref: '#/components/schemas/AgentTurnResponseStreamChunk'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Agents
       description: ''
@@ -246,6 +346,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListBucketResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Files (Coming Soon)
       description: List all buckets.
@@ -263,6 +373,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/FileUploadResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Files (Coming Soon)
       description: >-
@@ -279,6 +399,16 @@ paths:
       responses:
         '200':
           description: OK
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Agents
       description: ''
@@ -297,6 +427,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Session'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Agents
       description: ''
@@ -322,6 +462,16 @@ paths:
       responses:
         '200':
           description: OK
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Agents
       description: ''
@@ -345,6 +495,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/FileResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Files (Coming Soon)
       description: >-
@@ -371,6 +531,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/FileResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Files (Coming Soon)
       description: >-
@@ -401,6 +571,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/EmbeddingsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Inference
       description: >-
@@ -421,6 +601,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/EvaluateResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Eval
       description: ''
@@ -445,6 +635,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AgentStepResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Agents
       description: ''
@@ -478,6 +678,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Turn'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Agents
       description: ''
@@ -508,6 +718,16 @@ paths:
                 oneOf:
                   - $ref: '#/components/schemas/Benchmark'
                   - type: 'null'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Benchmarks
       description: ''
@@ -528,6 +748,16 @@ paths:
                 oneOf:
                   - $ref: '#/components/schemas/Dataset'
                   - type: 'null'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Datasets
       description: ''
@@ -541,6 +771,16 @@ paths:
       responses:
         '200':
           description: OK
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Datasets
       description: ''
@@ -561,6 +801,16 @@ paths:
                 oneOf:
                   - $ref: '#/components/schemas/Model'
                   - type: 'null'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Models
       description: ''
@@ -574,6 +824,16 @@ paths:
       responses:
         '200':
           description: OK
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Models
       description: ''
@@ -594,6 +854,16 @@ paths:
                 oneOf:
                   - $ref: '#/components/schemas/ScoringFn'
                   - type: 'null'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - ScoringFunctions
       description: ''
@@ -614,6 +884,16 @@ paths:
                 oneOf:
                   - $ref: '#/components/schemas/Shield'
                   - type: 'null'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Shields
       description: ''
@@ -632,6 +912,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Span'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Telemetry
       description: ''
@@ -655,6 +945,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/QuerySpanTreeResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Telemetry
       description: ''
@@ -679,6 +979,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Tool'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - ToolGroups
       description: ''
@@ -697,6 +1007,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ToolGroup'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - ToolGroups
       description: ''
@@ -710,6 +1030,16 @@ paths:
       responses:
         '200':
           description: OK
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - ToolGroups
       description: Unregister a tool group
@@ -728,6 +1058,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Trace'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Telemetry
       description: ''
@@ -748,6 +1088,16 @@ paths:
                 oneOf:
                   - $ref: '#/components/schemas/PostTrainingJobArtifactsResponse'
                   - type: 'null'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - PostTraining (Coming Soon)
       description: ''
@@ -768,6 +1118,16 @@ paths:
                 oneOf:
                   - $ref: '#/components/schemas/PostTrainingJobStatusResponse'
                   - type: 'null'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - PostTraining (Coming Soon)
       description: ''
@@ -786,6 +1146,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListPostTrainingJobsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - PostTraining (Coming Soon)
       description: ''
@@ -801,6 +1171,16 @@ paths:
                 oneOf:
                   - $ref: '#/components/schemas/FileUploadResponse'
                   - type: 'null'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Files (Coming Soon)
       description: >-
@@ -822,6 +1202,16 @@ paths:
                 oneOf:
                   - $ref: '#/components/schemas/FileResponse'
                   - type: 'null'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Files (Coming Soon)
       description: >-
@@ -852,6 +1242,16 @@ paths:
                 oneOf:
                   - $ref: '#/components/schemas/VectorDB'
                   - type: 'null'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - VectorDBs
       description: ''
@@ -865,6 +1265,16 @@ paths:
       responses:
         '200':
           description: OK
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - VectorDBs
       description: ''
@@ -883,6 +1293,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HealthInfo'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Inspect
       description: ''
@@ -892,6 +1312,16 @@ paths:
       responses:
         '200':
           description: OK
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - ToolRuntime
       description: >-
@@ -908,6 +1338,16 @@ paths:
       responses:
         '200':
           description: OK
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - VectorIO
       description: ''
@@ -927,6 +1367,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ToolInvocationResult'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - ToolRuntime
       description: Run a tool with the given arguments
@@ -948,6 +1398,16 @@ paths:
                 oneOf:
                   - $ref: '#/components/schemas/JobStatus'
                   - type: 'null'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Eval
       description: ''
@@ -966,6 +1426,16 @@ paths:
       responses:
         '200':
           description: OK
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Eval
       description: ''
@@ -989,6 +1459,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/EvaluateResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Eval
       description: ''
@@ -1012,6 +1492,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListBenchmarksResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Benchmarks
       description: ''
@@ -1020,6 +1510,16 @@ paths:
       responses:
         '200':
           description: OK
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Benchmarks
       description: ''
@@ -1039,6 +1539,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListDatasetsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Datasets
       description: ''
@@ -1047,6 +1557,16 @@ paths:
       responses:
         '200':
           description: OK
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Datasets
       description: ''
@@ -1066,6 +1586,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListFileResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Files (Coming Soon)
       description: List all files in a bucket.
@@ -1085,6 +1615,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListModelsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Models
       description: ''
@@ -1097,6 +1637,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Model'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Models
       description: ''
@@ -1116,6 +1666,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListProvidersResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Inspect
       description: ''
@@ -1129,6 +1689,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListRoutesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Inspect
       description: ''
@@ -1142,6 +1712,16 @@ paths:
             application/jsonl:
               schema:
                 $ref: '#/components/schemas/ToolDef'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - ToolRuntime
       description: ''
@@ -1165,6 +1745,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListScoringFunctionsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - ScoringFunctions
       description: ''
@@ -1173,6 +1763,16 @@ paths:
       responses:
         '200':
           description: OK
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - ScoringFunctions
       description: ''
@@ -1192,6 +1792,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListShieldsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Shields
       description: ''
@@ -1204,6 +1814,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Shield'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Shields
       description: ''
@@ -1223,6 +1843,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListToolGroupsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - ToolGroups
       description: List tool groups with optional provider
@@ -1231,6 +1861,16 @@ paths:
       responses:
         '200':
           description: OK
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - ToolGroups
       description: Register a tool group
@@ -1250,6 +1890,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListToolsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - ToolGroups
       description: List tools with optional tool group
@@ -1268,6 +1918,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListVectorDBsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - VectorDBs
       description: ''
@@ -1280,6 +1940,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VectorDB'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - VectorDBs
       description: ''
@@ -1295,6 +1965,16 @@ paths:
       responses:
         '200':
           description: OK
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Telemetry
       description: ''
@@ -1314,6 +1994,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PostTrainingJob'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - PostTraining (Coming Soon)
       description: ''
@@ -1333,6 +2023,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RAGQueryResult'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - ToolRuntime
       description: >-
@@ -1353,6 +2053,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/QueryChunksResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - VectorIO
       description: ''
@@ -1372,6 +2082,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/QuerySpansResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Telemetry
       description: ''
@@ -1391,6 +2111,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/QueryTracesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Telemetry
       description: ''
@@ -1415,6 +2145,16 @@ paths:
             text/event-stream:
               schema:
                 $ref: '#/components/schemas/AgentTurnResponseStreamChunk'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Agents
       description: >-
@@ -1457,6 +2197,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Job'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Eval
       description: ''
@@ -1481,6 +2231,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RunShieldResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Safety
       description: ''
@@ -1496,6 +2256,16 @@ paths:
       responses:
         '200':
           description: OK
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Telemetry
       description: ''
@@ -1515,6 +2285,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ScoreResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Scoring
       description: ''
@@ -1534,6 +2314,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ScoreBatchResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Scoring
       description: ''
@@ -1553,6 +2343,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PostTrainingJob'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - PostTraining (Coming Soon)
       description: ''
@@ -1572,6 +2372,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SyntheticDataGenerationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - SyntheticDataGeneration (Coming Soon)
       description: ''
@@ -1591,6 +2401,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VersionInfo'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
       tags:
         - Inspect
       description: ''
@@ -1599,6 +2419,34 @@ jsonSchemaDialect: >-
   https://json-schema.org/draft/2020-12/schema
 components:
   schemas:
+    Error:
+      type: object
+      properties:
+        status:
+          type: integer
+          description: HTTP status code
+        title:
+          type: string
+          description: >-
+            Error title, a short summary of the error which is invariant for an error
+            type
+        detail:
+          type: string
+          description: >-
+            Error detail, a longer human-readable description of the error
+        instance:
+          type: string
+          description: >-
+            (Optional) A URL which can be used to retrieve more information about
+            the specific occurrence of the error
+      additionalProperties: false
+      required:
+        - status
+        - title
+        - detail
+      title: Error
+      description: >-
+        Error response from the API. Roughly follows RFC 7807.
     AppendRowsRequest:
       type: object
       properties:
@@ -5626,7 +6474,51 @@ components:
       required:
         - version
       title: VersionInfo
-  responses: {}
+  responses:
+    BadRequest400:
+      description: The request was invalid or malformed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: 400
+            title: Bad Request
+            detail: The request was invalid or malformed
+    TooManyRequests429:
+      description: >-
+        The client has sent too many requests in a given amount of time
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: 429
+            title: Too Many Requests
+            detail: >-
+              You have exceeded the rate limit. Please try again later.
+    InternalServerError500:
+      description: >-
+        The server encountered an unexpected error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: 500
+            title: Internal Server Error
+            detail: >-
+              An unexpected error occurred. Our team has been notified.
+    DefaultError:
+      description: An unexpected error occurred
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: 0
+            title: Error
+            detail: An unexpected error occurred
 security:
   - Default: []
 tags:

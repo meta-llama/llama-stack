@@ -6,7 +6,7 @@
 import json
 import logging
 import warnings
-from typing import AsyncGenerator, Dict, Generator, Iterable, List, Optional, Union
+from typing import AsyncGenerator, Dict, Iterable, List, Optional, Union
 
 from openai import AsyncStream
 from openai.types.chat import (
@@ -605,7 +605,7 @@ def convert_tool_call(
             tool_name=tool_call.function.name,
             arguments=json.loads(tool_call.function.arguments),
         )
-    except Exception as e:
+    except Exception:
         return UnparseableToolCall(
             call_id=tool_call.id or "",
             tool_name=tool_call.function.name or "",
@@ -841,14 +841,13 @@ async def convert_openai_chat_completion_stream(
     Convert a stream of OpenAI chat completion chunks into a stream
     of ChatCompletionResponseStreamChunk.
     """
-
-    # generate a stream of ChatCompletionResponseEventType: start -> progress -> progress -> ...
-    def _event_type_generator() -> Generator[ChatCompletionResponseEventType, None, None]:
-        yield ChatCompletionResponseEventType.start
-        while True:
-            yield ChatCompletionResponseEventType.progress
-
-    event_type = _event_type_generator()
+    yield ChatCompletionResponseStreamChunk(
+        event=ChatCompletionResponseEvent(
+            event_type=ChatCompletionResponseEventType.start,
+            delta=TextDelta(text=""),
+        )
+    )
+    event_type = ChatCompletionResponseEventType.progress
 
     stop_reason = None
     toolcall_buffer = {}
@@ -868,7 +867,7 @@ async def convert_openai_chat_completion_stream(
             if choice.delta.content:
                 yield ChatCompletionResponseStreamChunk(
                     event=ChatCompletionResponseEvent(
-                        event_type=next(event_type),
+                        event_type=event_type,
                         delta=TextDelta(text=choice.delta.content),
                         logprobs=_convert_openai_logprobs(logprobs),
                     )
@@ -877,7 +876,9 @@ async def convert_openai_chat_completion_stream(
             # it is possible to have parallel tool calls in stream, but
             # ChatCompletionResponseEvent only supports one per stream
             if len(choice.delta.tool_calls) > 1:
-                warnings.warn("multiple tool calls found in a single delta, using the first, ignoring the rest")
+                warnings.warn(
+                    "multiple tool calls found in a single delta, using the first, ignoring the rest", stacklevel=2
+                )
 
             if not enable_incremental_tool_calls:
                 yield ChatCompletionResponseStreamChunk(
@@ -909,7 +910,7 @@ async def convert_openai_chat_completion_stream(
                 toolcall_buffer["content"] += delta
                 yield ChatCompletionResponseStreamChunk(
                     event=ChatCompletionResponseEvent(
-                        event_type=next(event_type),
+                        event_type=event_type,
                         delta=ToolCallDelta(
                             tool_call=delta,
                             parse_status=ToolCallParseStatus.in_progress,
@@ -920,7 +921,7 @@ async def convert_openai_chat_completion_stream(
         else:
             yield ChatCompletionResponseStreamChunk(
                 event=ChatCompletionResponseEvent(
-                    event_type=next(event_type),
+                    event_type=event_type,
                     delta=TextDelta(text=choice.delta.content or ""),
                     logprobs=_convert_openai_logprobs(logprobs),
                 )
@@ -931,7 +932,7 @@ async def convert_openai_chat_completion_stream(
         toolcall_buffer["content"] += delta
         yield ChatCompletionResponseStreamChunk(
             event=ChatCompletionResponseEvent(
-                event_type=next(event_type),
+                event_type=event_type,
                 delta=ToolCallDelta(
                     tool_call=delta,
                     parse_status=ToolCallParseStatus.in_progress,

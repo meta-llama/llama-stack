@@ -611,8 +611,17 @@ class ChatAgent(ShieldRunnerMixin):
                     if event.stop_reason is not None:
                         stop_reason = event.stop_reason
                 span.set_attribute("stop_reason", stop_reason)
-                span.set_attribute("input", [m.model_dump_json() for m in input_messages])
-                span.set_attribute("output", f"content: {content} tool_calls: {tool_calls}")
+                span.set_attribute(
+                    "input",
+                    json.dumps([json.loads(m.model_dump_json()) for m in input_messages]),
+                )
+                output_attr = json.dumps(
+                    {
+                        "content": content,
+                        "tool_calls": [json.loads(t.model_dump_json()) for t in tool_calls],
+                    }
+                )
+                span.set_attribute("output", output_attr)
 
             n_iter += 1
             await self.storage.set_num_infer_iters_in_turn(session_id, turn_id, n_iter)
@@ -796,10 +805,10 @@ class ChatAgent(ShieldRunnerMixin):
         self, toolgroups_for_turn: Optional[List[AgentToolGroup]] = None
     ) -> Tuple[List[ToolDefinition], Dict[str, str]]:
         # Determine which tools to include
-        agent_config_toolgroups = set(
-            (toolgroup.name if isinstance(toolgroup, AgentToolGroupWithArgs) else toolgroup)
+        agent_config_toolgroups = {
+            toolgroup.name if isinstance(toolgroup, AgentToolGroupWithArgs) else toolgroup
             for toolgroup in self.agent_config.toolgroups
-        )
+        }
         toolgroups_for_turn_set = (
             agent_config_toolgroups
             if toolgroups_for_turn is None

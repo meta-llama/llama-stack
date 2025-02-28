@@ -93,7 +93,7 @@ def get_distribution_template() -> DistributionTemplate:
                     "inference": [inference_provider],
                     "vector_io": [vector_io_provider_sqlite],
                 },
-                default_models=[inference_model],
+                default_models=[inference_model, embedding_model],
                 default_tool_groups=default_tool_groups,
             ),
             "run-with-safety.yaml": RunConfigSettings(
