@@ -52,7 +52,7 @@ ensure_conda_env_python310() {
   local python_version="3.10"
 
   # Check if conda command is available
-  if ! command -v conda &>/dev/null; then
+  if ! is_command_available conda; then
     printf "${RED}Error: conda command not found. Is Conda installed and in your PATH?${NC}" >&2
     exit 1
   fi
