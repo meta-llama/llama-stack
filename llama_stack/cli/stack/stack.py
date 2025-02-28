@@ -7,8 +7,8 @@
 import argparse
 from importlib.metadata import version
 
+from llama_stack.cli.stack.utils import print_subcommand_description
 from llama_stack.cli.subcommand import Subcommand
-from llama_stack.cli.utils import print_subcommand_description
 
 from .build import StackBuild
 from .list_apis import StackListApis
