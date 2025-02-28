@@ -73,7 +73,7 @@ If you're looking for more specific topics, we have a [Zero to Hero Guide](#next
    Open a new terminal and install `llama-stack`:
    ```bash
    conda activate ollama
-   pip install llama-stack==0.1.3
+   pip install -U llama-stack
    ```
 
 ---
