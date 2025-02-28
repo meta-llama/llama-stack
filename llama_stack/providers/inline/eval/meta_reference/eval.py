@@ -3,6 +3,7 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
+import json
 from typing import Any, Dict, List, Optional
 
 from tqdm import tqdm
@@ -116,7 +117,7 @@ class MetaReferenceEvalImpl(
         generations = []
         for i, x in tqdm(enumerate(input_rows)):
             assert ColumnName.chat_completion_input.value in x, "Invalid input row"
-            input_messages = eval(str(x[ColumnName.chat_completion_input.value]))
+            input_messages = json.loads(x[ColumnName.chat_completion_input.value])
             input_messages = [UserMessage(**x) for x in input_messages]
 
             # NOTE: only single-turn agent generation is supported. Create a new session for each input row
@@ -158,7 +159,7 @@ class MetaReferenceEvalImpl(
         generations = []
         for x in tqdm(input_rows):
             if ColumnName.completion_input.value in x:
-                input_content = eval(str(x[ColumnName.completion_input.value]))
+                input_content = json.loads(x[ColumnName.completion_input.value])
                 response = await self.inference_api.completion(
                     model=candidate.model,
                     content=input_content,
@@ -166,9 +167,8 @@ class MetaReferenceEvalImpl(
                 )
                 generations.append({ColumnName.generated_answer.value: response.completion_message.content})
             elif ColumnName.chat_completion_input.value in x:
-                chat_completion_input_str = str(x[ColumnName.chat_completion_input.value])
-                input_messages = eval(chat_completion_input_str)
-                input_messages = [UserMessage(**x) for x in input_messages]
+                chat_completion_input_json = json.loads(x[ColumnName.chat_completion_input.value])
+                input_messages = [UserMessage(**x) for x in chat_completion_input_json]
                 messages = []
                 if candidate.system_message:
                     messages.append(candidate.system_message)
