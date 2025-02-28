@@ -66,7 +66,7 @@ class RegisteredBaseScoringFn(BaseScoringFn):
         return self.__class__.__name__
 
     def get_supported_scoring_fn_defs(self) -> List[ScoringFn]:
-        return [x for x in self.supported_fn_defs_registry.values()]
+        return list(self.supported_fn_defs_registry.values())
 
     def register_scoring_fn_def(self, scoring_fn: ScoringFn) -> None:
         if scoring_fn.identifier in self.supported_fn_defs_registry:

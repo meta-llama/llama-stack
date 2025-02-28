@@ -176,7 +176,7 @@ def test_embedding_truncation_error(
 ):
     if inference_provider_type not in SUPPORTED_PROVIDERS:
         pytest.xfail(f"{inference_provider_type} doesn't support embedding model yet")
-    with pytest.raises(BadRequestError) as excinfo:
+    with pytest.raises(BadRequestError):
         llama_stack_client.inference.embeddings(
             model_id=embedding_model_id, contents=[DUMMY_LONG_TEXT], text_truncation=text_truncation
         )
@@ -243,7 +243,7 @@ def test_embedding_text_truncation_error(
 ):
     if inference_provider_type not in SUPPORTED_PROVIDERS:
         pytest.xfail(f"{inference_provider_type} doesn't support embedding model yet")
-    with pytest.raises(BadRequestError) as excinfo:
+    with pytest.raises(BadRequestError):
         llama_stack_client.inference.embeddings(
             model_id=embedding_model_id, contents=[DUMMY_STRING], text_truncation=text_truncation
         )

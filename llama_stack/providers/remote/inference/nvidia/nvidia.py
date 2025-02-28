@@ -198,7 +198,7 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
         tool_config: Optional[ToolConfig] = None,
     ) -> Union[ChatCompletionResponse, AsyncIterator[ChatCompletionResponseStreamChunk]]:
         if tool_prompt_format:
-            warnings.warn("tool_prompt_format is not supported by NVIDIA NIM, ignoring")
+            warnings.warn("tool_prompt_format is not supported by NVIDIA NIM, ignoring", stacklevel=2)
 
         await check_health(self._config)  # this raises errors
 

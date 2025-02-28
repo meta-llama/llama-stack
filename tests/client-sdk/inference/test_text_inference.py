@@ -139,7 +139,7 @@ def test_text_completion_log_probs_streaming(client_with_models, text_model_id, 
             "top_k": 1,
         },
     )
-    streamed_content = [chunk for chunk in response]
+    streamed_content = list(response)
     for chunk in streamed_content:
         if chunk.delta:  # if there's a token, we expect logprobs
             assert chunk.logprobs, "Logprobs should not be empty"
@@ -405,7 +405,7 @@ def test_text_chat_completion_tool_calling_tools_not_in_request(
                 assert delta.tool_call.tool_name == "get_object_namespace_list"
             if delta.type == "tool_call" and delta.parse_status == "failed":
                 # expect raw message that failed to parse in tool_call
-                assert type(delta.tool_call) == str
+                assert isinstance(delta.tool_call, str)
                 assert len(delta.tool_call) > 0
     else:
         for tc in response.completion_message.tool_calls:

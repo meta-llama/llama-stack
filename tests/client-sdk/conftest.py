@@ -117,7 +117,7 @@ def client_with_models(llama_stack_client, text_model_id, vision_model_id, embed
     assert len(providers) > 0, "No inference providers found"
     inference_providers = [p.provider_id for p in providers if p.provider_type != "inline::sentence-transformers"]
 
-    model_ids = set(m.identifier for m in client.models.list())
+    model_ids = {m.identifier for m in client.models.list()}
     model_ids.update(m.provider_resource_id for m in client.models.list())
 
     if text_model_id and text_model_id not in model_ids:
