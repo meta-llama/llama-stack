@@ -126,6 +126,40 @@ class LiteLLMOpenAIMixin(
         ):
             yield chunk
 
+    def _add_additional_properties_recursive(self, schema):
+        """
+        Recursively add additionalProperties: False to all object schemas
+        """
+        if isinstance(schema, dict):
+            # If this is an object schema
+            if schema.get("type") == "object":
+                schema["additionalProperties"] = False
+
+                # Add required field with all property keys if properties exist
+                if "properties" in schema and schema["properties"]:
+                    schema["required"] = list(schema["properties"].keys())
+
+            # Handle properties within objects
+            if "properties" in schema:
+                for prop_schema in schema["properties"].values():
+                    self._add_additional_properties_recursive(prop_schema)
+
+            # Handle anyOf/allOf/oneOf/not
+            for key in ["anyOf", "allOf", "oneOf"]:
+                if key in schema:
+                    for sub_schema in schema[key]:
+                        self._add_additional_properties_recursive(sub_schema)
+
+            if "not" in schema:
+                self._add_additional_properties_recursive(schema["not"])
+
+            # Handle $defs/$ref
+            if "$defs" in schema:
+                for def_schema in schema["$defs"].values():
+                    self._add_additional_properties_recursive(def_schema)
+
+        return schema
+
     async def _get_params(self, request: ChatCompletionRequest) -> dict:
         input_dict = {}
 
@@ -140,6 +174,10 @@ class LiteLLMOpenAIMixin(
             name = fmt["title"]
             del fmt["title"]
             fmt["additionalProperties"] = False
+
+            # Apply additionalProperties: False recursively to all objects
+            fmt = self._add_additional_properties_recursive(fmt)
+
             input_dict["response_format"] = {
                 "type": "json_schema",
                 "json_schema": {
