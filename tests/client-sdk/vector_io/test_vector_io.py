@@ -9,7 +9,7 @@ import random
 import pytest
 
 INLINE_VECTOR_DB_PROVIDERS = [
-    "chromadb",
+    "faiss",
     # TODO: add sqlite_vec to templates
     # "sqlite_vec",
 ]

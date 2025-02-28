@@ -128,6 +128,7 @@ async def resolve_impls(
         specs = {}
         for provider in providers:
             if not provider.provider_id or provider.provider_id == "__disabled__":
+                log.warning(f"Provider `{provider.provider_type}` for API `{api}` is disabled")
                 continue
 
             if provider.provider_type not in provider_registry[api]:
