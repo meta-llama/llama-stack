@@ -111,7 +111,8 @@
         "first_name": "Michael",
         "last_name": "Jordan",
         "year_of_birth": 1963,
-        "num_seasons_in_nba": 15
+        "num_seasons_in_nba": 15,
+        "year_for_draft": 1984
       }
     }
   },
