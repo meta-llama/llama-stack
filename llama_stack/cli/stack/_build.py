@@ -38,7 +38,7 @@ from llama_stack.distribution.distribution import get_provider_registry
 from llama_stack.distribution.resolver import InvalidProviderError
 from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
-from llama_stack.distribution.utils.exec import formulate_run_args, in_notebook, run_with_pty
+from llama_stack.distribution.utils.exec import formulate_run_args, run_with_pty
 from llama_stack.distribution.utils.image_types import ImageType
 from llama_stack.providers.datatypes import Api
 
@@ -65,8 +65,6 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
     if args.image_type == "venv":
         current_venv = os.environ.get("VIRTUAL_ENV")
         image_name = args.image_name or current_venv
-        if not image_name and in_notebook():
-            image_name = "__system__"
     elif args.image_type == "conda":
         current_conda_env = os.environ.get("CONDA_DEFAULT_ENV")
         image_name = args.image_name or current_conda_env
@@ -291,6 +289,8 @@ def _run_stack_build_command_from_build_config(
         if not image_name:
             raise ValueError("Please specify an image name when building a conda image")
     elif build_config.image_type == ImageType.venv.value:
+        if not image_name and os.environ.get("UV_SYSTEM_PYTHON"):
+            image_name = "__system__"
         if not image_name:
             raise ValueError("Please specify an image name when building a venv image")
 
