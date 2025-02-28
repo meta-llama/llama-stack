@@ -12,8 +12,8 @@ from llama_stack.cli.model.list import ModelList
 from llama_stack.cli.model.prompt_format import ModelPromptFormat
 from llama_stack.cli.model.remove import ModelRemove
 from llama_stack.cli.model.verify_download import ModelVerifyDownload
+from llama_stack.cli.stack.utils import print_subcommand_description
 from llama_stack.cli.subcommand import Subcommand
-from llama_stack.cli.utils import print_subcommand_description
 
 
 class ModelParser(Subcommand):
