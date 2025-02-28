@@ -841,12 +841,12 @@ async def convert_openai_chat_completion_stream(
     Convert a stream of OpenAI chat completion chunks into a stream
     of ChatCompletionResponseStreamChunk.
     """
-
-    # generate a stream of ChatCompletionResponseEventType: start -> progress -> progress -> ...
-    # def _event_type_generator() -> Generator[ChatCompletionResponseEventType, None, None]:
-    #     yield ChatCompletionResponseEventType.start
-    #     while True:
-    #         yield ChatCompletionResponseEventType.progress
+    yield ChatCompletionResponseStreamChunk(
+        event=ChatCompletionResponseEvent(
+            event_type=ChatCompletionResponseEventType.start,
+            delta=TextDelta(text=""),
+        )
+    )
     event_type = ChatCompletionResponseEventType.progress
 
     stop_reason = None
