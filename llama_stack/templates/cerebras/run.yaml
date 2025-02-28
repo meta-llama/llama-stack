@@ -91,9 +91,19 @@ metadata_store:
   db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/cerebras}/registry.db
 models:
 - metadata: {}
+  model_id: llama3.1-8b
+  provider_id: cerebras
+  provider_model_id: llama3.1-8b
+  model_type: llm
+- metadata: {}
   model_id: meta-llama/Llama-3.1-8B-Instruct
   provider_id: cerebras
   provider_model_id: llama3.1-8b
+  model_type: llm
+- metadata: {}
+  model_id: llama-3.3-70b
+  provider_id: cerebras
+  provider_model_id: llama-3.3-70b
   model_type: llm
 - metadata: {}
   model_id: meta-llama/Llama-3.3-70B-Instruct

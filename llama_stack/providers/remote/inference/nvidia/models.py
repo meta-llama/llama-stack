@@ -11,7 +11,7 @@ from llama_stack.providers.utils.inference.model_registry import (
     build_hf_repo_model_entry,
 )
 
-_MODEL_ENTRIES = [
+MODEL_ENTRIES = [
     build_hf_repo_model_entry(
         "meta/llama3-8b-instruct",
         CoreModelId.llama3_8b_instruct.value,
