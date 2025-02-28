@@ -9,7 +9,7 @@ import argparse
 from .download import Download
 from .model import ModelParser
 from .stack import StackParser
-from .utils import print_subcommand_description
+from .stack.utils import print_subcommand_description
 from .verify_download import VerifyDownload
 
 
