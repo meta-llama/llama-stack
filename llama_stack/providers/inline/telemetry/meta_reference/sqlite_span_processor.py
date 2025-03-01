@@ -28,7 +28,7 @@ class SQLiteSpanProcessor(SpanProcessor):
                 self._local.conn = sqlite3.connect(self.conn_string)
             except Exception as e:
                 print(f"Error connecting to SQLite database: {e}")
-                raise e
+                raise
         return self._local.conn
 
     def setup_database(self):
