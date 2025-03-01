@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 # All rights reserved.
@@ -20,26 +20,27 @@ UV_HTTP_TIMEOUT=${UV_HTTP_TIMEOUT:-500}
 # mounting is not supported by docker buildx, so we use COPY instead
 USE_COPY_NOT_MOUNT=${USE_COPY_NOT_MOUNT:-}
 
-if [ "$#" -lt 6 ]; then
+if [ "$#" -lt 4 ]; then
   # This only works for templates
-  echo "Usage: $0 <template_or_config> <image_name> <container_base> <build_file_path> <host_build_dir> <pip_dependencies> [<special_pip_deps>]" >&2
+  echo "Usage: $0 <template_or_config> <image_name> <container_base> <pip_dependencies> [<special_pip_deps>]" >&2
   exit 1
 fi
 
 set -euo pipefail
 
 template_or_config="$1"
-image_name="$2"
-container_base="$3"
-build_file_path="$4"
-host_build_dir="$5"
-pip_dependencies="$6"
-special_pip_deps="${7:-}"
+shift
+image_name="$1"
+shift
+container_base="$1"
+shift
+pip_dependencies="$1"
+shift
+special_pip_deps="${1:-}"
 
 
 # Define color codes
 RED='\033[0;31m'
-GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
 CONTAINER_BINARY=${CONTAINER_BINARY:-docker}
@@ -47,8 +48,10 @@ CONTAINER_OPTS=${CONTAINER_OPTS:-}
 
 TEMP_DIR=$(mktemp -d)
 
+SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
+source "$SCRIPT_DIR/common.sh"
+
 add_to_container() {
-  local input
   output_file="$TEMP_DIR/Containerfile"
   if [ -t 0 ]; then
     printf '%s\n' "$1" >>"$output_file"
@@ -58,15 +61,21 @@ add_to_container() {
   fi
 }
 
+# Check if container command is available
+if ! is_command_available $CONTAINER_BINARY; then
+  printf "${RED}Error: ${CONTAINER_BINARY} command not found. Is ${CONTAINER_BINARY} installed and in your PATH?${NC}" >&2
+  exit 1
+fi
+
 # Update and install UBI9 components if UBI9 base image is used
 if [[ $container_base == *"registry.access.redhat.com/ubi9"* ]]; then
   add_to_container << EOF
 FROM $container_base
 WORKDIR /app
 
-RUN microdnf -y update && microdnf install -y iputils net-tools wget \
+RUN dnf -y update && dnf install -y iputils net-tools wget \
     vim-minimal python3.11 python3.11-pip python3.11-wheel \
-    python3.11-setuptools && ln -s /bin/pip3.11 /bin/pip && ln -s /bin/python3.11 /bin/python && microdnf clean all
+    python3.11-setuptools && ln -s /bin/pip3.11 /bin/pip && ln -s /bin/python3.11 /bin/python && dnf clean all
 
 ENV UV_SYSTEM_PYTHON=1
 RUN pip install uv
@@ -150,12 +159,12 @@ EOF
     add_to_container << EOF
 RUN uv pip install --no-cache --extra-index-url https://test.pypi.org/simple/ \
   --index-strategy unsafe-best-match \
-  llama-models==$TEST_PYPI_VERSION llama-stack-client==$TEST_PYPI_VERSION llama-stack==$TEST_PYPI_VERSION
+  llama-stack==$TEST_PYPI_VERSION
 
 EOF
   else
     if [ -n "$PYPI_VERSION" ]; then
-      SPEC_VERSION="llama-stack==${PYPI_VERSION} llama-models==${PYPI_VERSION} llama-stack-client==${PYPI_VERSION}"
+      SPEC_VERSION="llama-stack==${PYPI_VERSION}"
     else
       SPEC_VERSION="llama-stack"
     fi
@@ -164,6 +173,11 @@ RUN uv pip install --no-cache $SPEC_VERSION
 EOF
   fi
 fi
+
+# remove uv after installation
+  add_to_container << EOF
+RUN pip uninstall -y uv
+EOF
 
 # if template_or_config ends with .yaml, it is not a template and we should not use the --template flag
 if [[ "$template_or_config" != *.yaml ]]; then
@@ -185,26 +199,31 @@ RUN mkdir -p /.llama /.cache
 RUN chmod -R g+rw /app /.llama /.cache
 EOF
 
-printf "Containerfile created successfully in $TEMP_DIR/Containerfile\n\n"
-cat $TEMP_DIR/Containerfile
+printf "Containerfile created successfully in %s/Containerfile\n\n" "$TEMP_DIR"
+cat "$TEMP_DIR"/Containerfile
 printf "\n"
 
-mounts=""
+# Start building the CLI arguments
+CLI_ARGS=()
+
+# Read CONTAINER_OPTS and put it in an array
+read -ra CLI_ARGS <<< "$CONTAINER_OPTS"
+
 if [ "$USE_COPY_NOT_MOUNT" != "true" ]; then
   if [ -n "$LLAMA_STACK_DIR" ]; then
-    mounts="$mounts -v $(readlink -f $LLAMA_STACK_DIR):$stack_mount"
+    CLI_ARGS+=("-v" "$(readlink -f "$LLAMA_STACK_DIR"):$stack_mount")
   fi
   if [ -n "$LLAMA_MODELS_DIR" ]; then
-    mounts="$mounts -v $(readlink -f $LLAMA_MODELS_DIR):$models_mount"
+    CLI_ARGS+=("-v" "$(readlink -f "$LLAMA_MODELS_DIR"):$models_mount")
   fi
   if [ -n "$LLAMA_STACK_CLIENT_DIR" ]; then
-    mounts="$mounts -v $(readlink -f $LLAMA_STACK_CLIENT_DIR):$client_mount"
+    CLI_ARGS+=("-v" "$(readlink -f "$LLAMA_STACK_CLIENT_DIR"):$client_mount")
   fi
 fi
 
-if command -v selinuxenabled &>/dev/null && selinuxenabled; then
+if is_command_available selinuxenabled && selinuxenabled; then
   # Disable SELinux labels -- we don't want to relabel the llama-stack source dir
-  CONTAINER_OPTS="$CONTAINER_OPTS --security-opt label=disable"
+  CLI_ARGS+=("--security-opt" "label=disable")
 fi
 
 # Set version tag based on PyPI version
@@ -225,11 +244,11 @@ image_tag="$image_name:$version_tag"
 # Detect platform architecture
 ARCH=$(uname -m)
 if [ -n "$BUILD_PLATFORM" ]; then
-  PLATFORM="--platform $BUILD_PLATFORM"
+  CLI_ARGS+=("--platform $BUILD_PLATFORM")
 elif [ "$ARCH" = "arm64" ] || [ "$ARCH" = "aarch64" ]; then
-  PLATFORM="--platform linux/arm64"
+  CLI_ARGS+=("--platform" "linux/arm64")
 elif [ "$ARCH" = "x86_64" ]; then
-  PLATFORM="--platform linux/amd64"
+  CLI_ARGS+=("--platform" "linux/amd64")
 else
   echo "Unsupported architecture: $ARCH"
   exit 1
@@ -238,8 +257,13 @@ fi
 echo "PWD: $(pwd)"
 echo "Containerfile: $TEMP_DIR/Containerfile"
 set -x
-$CONTAINER_BINARY build $CONTAINER_OPTS $PLATFORM -t $image_tag \
-  -f "$TEMP_DIR/Containerfile" "." $mounts --progress=plain
+
+$CONTAINER_BINARY build \
+  "${CLI_ARGS[@]}" \
+  -t "$image_tag" \
+  -f "$TEMP_DIR/Containerfile" \
+  "." \
+  --progress=plain
 
 # clean up tmp/configs
 set +x
