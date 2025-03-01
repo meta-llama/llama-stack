@@ -28,6 +28,5 @@ if [ ${#missing_packages[@]} -ne 0 ]; then
 fi
 
 stack_dir=$(dirname $(dirname $THIS_DIR))
-models_dir=$(dirname $stack_dir)/llama-models
-PYTHONPATH=$PYTHONPATH:$stack_dir:$models_dir \
+PYTHONPATH=$PYTHONPATH:$stack_dir \
   python -m docs.openapi_generator.generate $(dirname $THIS_DIR)/_static

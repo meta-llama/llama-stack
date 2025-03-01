@@ -160,5 +160,5 @@ exclude = [
 
 [[tool.mypy.overrides]]
 # packages that lack typing annotations, do not have stubs, or are unavailable.
-module = ["llama_models.*", "yaml", "fire"]
+module = ["yaml", "fire"]
 ignore_missing_imports = true

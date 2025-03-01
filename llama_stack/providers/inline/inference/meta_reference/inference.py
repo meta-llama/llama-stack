@@ -111,7 +111,7 @@ class MetaReferenceInferenceImpl(
         )
         if llama_model is None:
             raise ValueError(
-                "Please make sure your llama_model in model metadata or model identifier is in llama-models SKU list"
+                "Please make sure your llama_model in model metadata or model identifier is in Llama SKU list"
             )
 
         self.model_registry_helper = ModelRegistryHelper(

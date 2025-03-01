@@ -6,7 +6,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-LLAMA_MODELS_DIR=${LLAMA_MODELS_DIR:-}
 LLAMA_STACK_DIR=${LLAMA_STACK_DIR:-}
 LLAMA_STACK_CLIENT_DIR=${LLAMA_STACK_CLIENT_DIR:-}
 
@@ -116,7 +115,6 @@ EOF
 fi
 
 stack_mount="/app/llama-stack-source"
-models_mount="/app/llama-models-source"
 client_mount="/app/llama-stack-client-source"
 
 install_local_package() {
@@ -139,10 +137,6 @@ RUN uv pip install --no-cache -e $mount_point
 EOF
 }
 
-
-if [ -n "$LLAMA_MODELS_DIR" ]; then
-  install_local_package "$LLAMA_MODELS_DIR" "$models_mount" "LLAMA_MODELS_DIR"
-fi
 
 if [ -n "$LLAMA_STACK_CLIENT_DIR" ]; then
   install_local_package "$LLAMA_STACK_CLIENT_DIR" "$client_mount" "LLAMA_STACK_CLIENT_DIR"
@@ -213,9 +207,6 @@ if [ "$USE_COPY_NOT_MOUNT" != "true" ]; then
   if [ -n "$LLAMA_STACK_DIR" ]; then
     CLI_ARGS+=("-v" "$(readlink -f "$LLAMA_STACK_DIR"):$stack_mount")
   fi
-  if [ -n "$LLAMA_MODELS_DIR" ]; then
-    CLI_ARGS+=("-v" "$(readlink -f "$LLAMA_MODELS_DIR"):$models_mount")
-  fi
   if [ -n "$LLAMA_STACK_CLIENT_DIR" ]; then
     CLI_ARGS+=("-v" "$(readlink -f "$LLAMA_STACK_CLIENT_DIR"):$client_mount")
   fi
@@ -231,7 +222,7 @@ if [ -n "$PYPI_VERSION" ]; then
   version_tag="$PYPI_VERSION"
 elif [ -n "$TEST_PYPI_VERSION" ]; then
   version_tag="test-$TEST_PYPI_VERSION"
-elif [[ -n "$LLAMA_STACK_DIR" || -n "$LLAMA_MODELS_DIR" ]]; then
+elif [[ -n "$LLAMA_STACK_DIR" || -n "$LLAMA_STACK_CLIENT_DIR" ]]; then
   version_tag="dev"
 else
   URL="https://pypi.org/pypi/llama-stack/json"
