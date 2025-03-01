@@ -7,10 +7,13 @@
 import argparse
 import textwrap
 from io import StringIO
+from pathlib import Path
 
 from llama_stack.cli.subcommand import Subcommand
 from llama_stack.cli.table import print_table
 from llama_stack.models.llama.datatypes import CoreModelId, ModelFamily, is_multimodal, model_family
+
+ROOT_DIR = Path(__file__).parent.parent
 
 
 class ModelPromptFormat(Subcommand):
@@ -77,9 +80,9 @@ class ModelPromptFormat(Subcommand):
         if model_id not in supported_model_ids:
             self.parser.error(f"{model_id} is not a valid Model. Choose one from --\n {model_str}")
 
-        llama_3_1_file = importlib.resources.files("llama_models") / "llama3_1/prompt_format.md"
-        llama_3_2_text_file = importlib.resources.files("llama_models") / "llama3_2/text_prompt_format.md"
-        llama_3_2_vision_file = importlib.resources.files("llama_models") / "llama3_2/vision_prompt_format.md"
+        llama_3_1_file = ROOT_DIR / "models" / "llama" / "llama3_1" / "prompt_format.md"
+        llama_3_2_text_file = ROOT_DIR / "models" / "llama" / "llama3_2" / "text_prompt_format.md"
+        llama_3_2_vision_file = ROOT_DIR / "models" / "llama" / "llama3_2" / "vision_prompt_format.md"
         if model_family(model_id) == ModelFamily.llama3_1:
             with importlib.resources.as_file(llama_3_1_file) as f:
                 content = f.open("r").read()
