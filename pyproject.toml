@@ -26,7 +26,6 @@ dependencies = [
     "httpx",
     "huggingface-hub",
     "jsonschema",
-    "llama-models>=0.1.4",
     "llama-stack-client>=0.1.4",
     "prompt-toolkit",
     "python-dotenv",
@@ -75,6 +74,11 @@ docs = [
     "sphinxcontrib.video",
     "sphinxcontrib.mermaid",
     "tomli",
+]
+codegen = [
+    "rich",
+    "pydantic",
+    "jinja2",
 ]
 
 [project.urls]
