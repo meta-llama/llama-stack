@@ -37,7 +37,7 @@ class StackRun(Subcommand):
         self.parser.add_argument(
             "--port",
             type=int,
-            help="Port to run the server on. Defaults to 8321",
+            help="Port to run the server on. It can also be passed via the env var LLAMA_STACK_PORT. Defaults to 8321",
             default=int(os.getenv("LLAMA_STACK_PORT", 8321)),
         )
         self.parser.add_argument(

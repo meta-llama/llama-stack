@@ -194,7 +194,7 @@ positional arguments:
 
 options:
   -h, --help            show this help message and exit
-  --port PORT           Port to run the server on. Defaults to 8321
+  --port PORT           Port to run the server on. It can also be passed via the env var LLAMA_STACK_PORT. Defaults to 8321
   --image-name IMAGE_NAME
                         Name of the image to run. Defaults to the current conda environment
   --disable-ipv6        Disable IPv6 support
