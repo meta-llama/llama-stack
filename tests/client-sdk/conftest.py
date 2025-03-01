@@ -6,7 +6,7 @@
 import os
 
 import pytest
-from llama_stack_client import BadRequestError, LlamaStackClient
+from llama_stack_client import LlamaStackClient
 from report import Report
 
 from llama_stack import LlamaStackAsLibraryClient
@@ -109,28 +109,39 @@ def inference_provider_type(llama_stack_client):
     return inference_providers[0].provider_type
 
 
-@pytest.fixture(scope="session")
-def client_with_models(llama_stack_client, text_model_id, vision_model_id, embedding_model_id, embedding_dimension):
-    client = llama_stack_client
-
+def get_model_ids_and_providers(client):
     providers = [p for p in client.providers.list() if p.api == "inference"]
     assert len(providers) > 0, "No inference providers found"
     inference_providers = [p.provider_id for p in providers if p.provider_type != "inline::sentence-transformers"]
 
     model_ids = {m.identifier for m in client.models.list()}
     model_ids.update(m.provider_resource_id for m in client.models.list())
+    return model_ids, inference_providers, providers
 
-    try:
-        if text_model_id and text_model_id not in model_ids:
-            client.models.register(model_id=text_model_id, provider_id=inference_providers[0])
-    except BadRequestError:
-        pass
-    try:
-        if vision_model_id and vision_model_id not in model_ids:
-            client.models.register(model_id=vision_model_id, provider_id=inference_providers[0])
-    except BadRequestError:
-        pass
 
+@pytest.fixture(scope="session")
+def client_with_text_models(llama_stack_client, text_model_id):
+    client = llama_stack_client
+    model_ids, inference_providers, providers = get_model_ids_and_providers(llama_stack_client)
+
+    if text_model_id and text_model_id not in model_ids:
+        client.models.register(model_id=text_model_id, provider_id=inference_providers[0])
+    return client
+
+
+@pytest.fixture(scope="session")
+def client_with_vision_models(llama_stack_client, vision_model_id):
+    client = llama_stack_client
+    model_ids, inference_providers, providers = get_model_ids_and_providers(llama_stack_client)
+    if vision_model_id and vision_model_id not in model_ids:
+        client.models.register(model_id=vision_model_id, provider_id=inference_providers[0])
+    return client
+
+
+@pytest.fixture(scope="session")
+def client_with_embedding_models(llama_stack_client, embedding_model_id, embedding_dimension):
+    client = llama_stack_client
+    model_ids, inference_providers, providers = get_model_ids_and_providers(llama_stack_client)
     if embedding_model_id and embedding_dimension and embedding_model_id not in model_ids:
         # try to find a provider that supports embeddings, if sentence-transformers is not available
         selected_provider = None

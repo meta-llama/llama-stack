@@ -27,7 +27,7 @@ def base64_image_url(base64_image_data, image_path):
     return f"data:image/{image_path.suffix[1:]};base64,{base64_image_data}"
 
 
-def test_image_chat_completion_non_streaming(client_with_models, vision_model_id):
+def test_image_chat_completion_non_streaming(client_with_vision_models, vision_model_id):
     message = {
         "role": "user",
         "content": [
@@ -45,7 +45,7 @@ def test_image_chat_completion_non_streaming(client_with_models, vision_model_id
             },
         ],
     }
-    response = client_with_models.inference.chat_completion(
+    response = client_with_vision_models.inference.chat_completion(
         model_id=vision_model_id,
         messages=[message],
         stream=False,
@@ -55,7 +55,7 @@ def test_image_chat_completion_non_streaming(client_with_models, vision_model_id
     assert any(expected in message_content for expected in {"dog", "puppy", "pup"})
 
 
-def test_image_chat_completion_streaming(client_with_models, vision_model_id):
+def test_image_chat_completion_streaming(client_with_vision_models, vision_model_id):
     message = {
         "role": "user",
         "content": [
@@ -73,7 +73,7 @@ def test_image_chat_completion_streaming(client_with_models, vision_model_id):
             },
         ],
     }
-    response = client_with_models.inference.chat_completion(
+    response = client_with_vision_models.inference.chat_completion(
         model_id=vision_model_id,
         messages=[message],
         stream=True,
@@ -86,7 +86,9 @@ def test_image_chat_completion_streaming(client_with_models, vision_model_id):
 
 
 @pytest.mark.parametrize("type_", ["url", "data"])
-def test_image_chat_completion_base64(client_with_models, vision_model_id, base64_image_data, base64_image_url, type_):
+def test_image_chat_completion_base64(
+    client_with_vision_models, vision_model_id, base64_image_data, base64_image_url, type_
+):
     image_spec = {
         "url": {
             "type": "image",
@@ -114,7 +116,7 @@ def test_image_chat_completion_base64(client_with_models, vision_model_id, base6
             },
         ],
     }
-    response = client_with_models.inference.chat_completion(
+    response = client_with_vision_models.inference.chat_completion(
         model_id=vision_model_id,
         messages=[message],
         stream=False,
