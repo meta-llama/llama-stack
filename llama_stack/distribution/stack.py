@@ -155,18 +155,34 @@ def replace_env_vars(config: Any, path: str = "") -> Any:
         return result
 
     elif isinstance(config, str):
-        pattern = r"\${env\.([A-Z0-9_]+)(?::([^}]*))?}"
+        # Updated pattern to support both default values (:) and conditional values (+)
+        pattern = r"\${env\.([A-Z0-9_]+)(?:([:\+])([^}]*))?}"
 
         def get_env_var(match):
             env_var = match.group(1)
-            default_val = match.group(2)
+            operator = match.group(2)  # ':' for default, '+' for conditional
+            value_expr = match.group(3)
 
-            value = os.environ.get(env_var)
-            if not value:
-                if default_val is None:
-                    raise EnvVarError(env_var, path)
+            env_value = os.environ.get(env_var)
+
+            if operator == ":":  # Default value syntax: ${env.FOO:default}
+                if not env_value:
+                    if value_expr is None:
+                        raise EnvVarError(env_var, path)
+                    else:
+                        value = value_expr
                 else:
-                    value = default_val
+                    value = env_value
+            elif operator == "+":  # Conditional value syntax: ${env.FOO+value_if_set}
+                if env_value:
+                    value = value_expr
+                else:
+                    # If env var is not set, return empty string for the conditional case
+                    value = ""
+            else:  # No operator case: ${env.FOO}
+                if not env_value:
+                    raise EnvVarError(env_var, path)
+                value = env_value
 
             # expand "~" from the values
             return os.path.expanduser(value)
