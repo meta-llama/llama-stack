@@ -15,11 +15,8 @@ import textwrap
 from datetime import datetime
 from typing import Any, List, Optional
 
-from llama_models.datatypes import (
-    BuiltinTool,
-)
-
 from llama_stack.models.llama.datatypes import (
+    BuiltinTool,
     ToolDefinition,
     ToolParamDefinition,
 )

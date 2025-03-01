@@ -14,7 +14,7 @@
 import textwrap
 from pathlib import Path
 
-from llama_models.datatypes import (
+from llama_stack.models.llama.datatypes import (
     RawMediaItem,
     RawMessage,
     RawTextItem,

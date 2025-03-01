@@ -7,7 +7,6 @@ import json
 import logging
 from typing import AsyncGenerator, List, Optional, Union
 
-from llama_models.datatypes import StopReason, ToolCall
 from openai import OpenAI
 
 from llama_stack.apis.common.content_types import (
@@ -42,7 +41,7 @@ from llama_stack.apis.inference import (
     ToolPromptFormat,
 )
 from llama_stack.apis.models import Model, ModelType
-from llama_stack.models.llama.datatypes import BuiltinTool
+from llama_stack.models.llama.datatypes import BuiltinTool, StopReason, ToolCall
 from llama_stack.models.llama.sku_list import all_registered_models
 from llama_stack.providers.datatypes import ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.model_registry import (

@@ -23,13 +23,6 @@ from fairscale.nn.model_parallel.initialize import (
     initialize_model_parallel,
     model_parallel_is_initialized,
 )
-from llama_models.llama3.api.args import ModelArgs
-from llama_models.llama3.api.chat_format import ChatFormat, LLMInput
-from llama_models.llama3.api.tokenizer import Tokenizer
-from llama_models.llama3.reference_impl.model import Transformer
-from llama_models.llama3.reference_impl.multimodal.model import (
-    CrossAttentionTransformer,
-)
 from lmformatenforcer import JsonSchemaParser, TokenEnforcer, TokenEnforcerTokenizerData
 from pydantic import BaseModel
 
@@ -46,6 +39,13 @@ from llama_stack.models.llama.datatypes import (
     SamplingParams,
     TopPSamplingStrategy,
 )
+from llama_stack.models.llama.llama3.args import ModelArgs
+from llama_stack.models.llama.llama3.chat_format import ChatFormat, LLMInput
+from llama_stack.models.llama.llama3.model import Transformer
+from llama_stack.models.llama.llama3.multimodal.model import (
+    CrossAttentionTransformer,
+)
+from llama_stack.models.llama.llama3.tokenizer import Tokenizer
 from llama_stack.models.llama.sku_list import resolve_model
 from llama_stack.providers.utils.inference.prompt_adapter import (
     ChatCompletionRequestWithRawContent,

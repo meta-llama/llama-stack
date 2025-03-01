@@ -9,10 +9,9 @@ from copy import deepcopy
 from functools import partial
 from typing import Any, Generator
 
-from llama_models.llama3.api.chat_format import ChatFormat
-from llama_models.llama3.api.tokenizer import Tokenizer
-
 from llama_stack.models.llama.datatypes import Model
+from llama_stack.models.llama.llama3.chat_format import ChatFormat
+from llama_stack.models.llama.llama3.tokenizer import Tokenizer
 from llama_stack.models.llama.sku_list import resolve_model
 from llama_stack.providers.utils.inference.prompt_adapter import (
     ChatCompletionRequestWithRawContent,
