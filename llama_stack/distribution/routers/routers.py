@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import copy
 from typing import Any, AsyncGenerator, Dict, List, Optional
 
 from llama_stack.apis.common.content_types import (
@@ -159,6 +160,7 @@ class InferenceRouter(Inference):
                 params["tool_prompt_format"] = tool_prompt_format
             tool_config = ToolConfig(**params)
 
+        tool_config = copy.copy(tool_config)
         tool_config.tool_prompt_format = tool_config.tool_prompt_format or get_default_tool_prompt_format(model_id)
 
         tools = tools or []
