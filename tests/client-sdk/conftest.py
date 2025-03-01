@@ -6,7 +6,7 @@
 import os
 
 import pytest
-from llama_stack_client import LlamaStackClient
+from llama_stack_client import BadRequestError, LlamaStackClient
 from report import Report
 
 from llama_stack import LlamaStackAsLibraryClient
@@ -120,10 +120,16 @@ def client_with_models(llama_stack_client, text_model_id, vision_model_id, embed
     model_ids = {m.identifier for m in client.models.list()}
     model_ids.update(m.provider_resource_id for m in client.models.list())
 
-    if text_model_id and text_model_id not in model_ids:
-        client.models.register(model_id=text_model_id, provider_id=inference_providers[0])
-    if vision_model_id and vision_model_id not in model_ids:
-        client.models.register(model_id=vision_model_id, provider_id=inference_providers[0])
+    try:
+        if text_model_id and text_model_id not in model_ids:
+            client.models.register(model_id=text_model_id, provider_id=inference_providers[0])
+    except BadRequestError:
+        pass
+    try:
+        if vision_model_id and vision_model_id not in model_ids:
+            client.models.register(model_id=vision_model_id, provider_id=inference_providers[0])
+    except BadRequestError:
+        pass
 
     if embedding_model_id and embedding_dimension and embedding_model_id not in model_ids:
         # try to find a provider that supports embeddings, if sentence-transformers is not available
