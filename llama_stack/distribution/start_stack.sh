@@ -100,6 +100,12 @@ esac
 
 set -x
 
+# Check if container command is available
+if ! is_command_available $CONTAINER_BINARY; then
+  printf "${RED}Error: ${CONTAINER_BINARY} command not found. Is ${CONTAINER_BINARY} installed and in your PATH?${NC}" >&2
+  exit 1
+fi
+
 if [[ "$env_type" == "venv" || "$env_type" == "conda" ]]; then
     $PYTHON_BINARY -m llama_stack.distribution.server.server \
     --yaml-config "$yaml_config" \
