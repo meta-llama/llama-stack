@@ -533,6 +533,11 @@ class ChatAgent(ShieldRunnerMixin):
         if documents:
             await self.handle_documents(session_id, documents, input_messages, tool_defs)
 
+        session_info = await self.storage.get_session_info(session_id)
+        # if the session has a memory bank id, let the memory tool use it
+        if session_info and session_info.vector_db_id:
+            toolgroup_args[RAG_TOOL_GROUP]["vector_db_ids"].append(session_info.vector_db_id)
+
         output_attachments = []
 
         n_iter = 0

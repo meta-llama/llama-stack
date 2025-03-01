@@ -374,6 +374,67 @@ def test_rag_agent(llama_stack_client, agent_config, rag_tool_name):
             assert expected_kw in response.output_message.content.lower()
 
 
+def test_rag_agent_with_attachments(llama_stack_client, agent_config):
+    urls = ["chat.rst", "llama3.rst", "memory_optimizations.rst", "lora_finetune.rst"]
+    documents = [
+        Document(
+            document_id=f"num-{i}",
+            content=f"https://raw.githubusercontent.com/pytorch/torchtune/main/docs/source/tutorials/{url}",
+            mime_type="text/plain",
+            metadata={},
+        )
+        for i, url in enumerate(urls)
+    ]
+    agent_config = {
+        **agent_config,
+        "toolgroups": [
+            dict(
+                name="builtin::rag/knowledge_search",
+                args={
+                    "vector_db_ids": [],
+                },
+            )
+        ],
+    }
+    rag_agent = Agent(llama_stack_client, agent_config)
+    session_id = rag_agent.create_session(f"test-session-{uuid4()}")
+    user_prompts = [
+        (
+            "Instead of the standard multi-head attention, what attention type does Llama3-8B use?",
+            "grouped",
+        ),
+    ]
+    user_prompts = [
+        (
+            "I am attaching some documentation for Torchtune. Help me answer questions I will ask next.",
+            documents,
+        ),
+        (
+            "Tell me how to use LoRA",
+            None,
+        ),
+    ]
+
+    for prompt in user_prompts:
+        response = rag_agent.create_turn(
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt[0],
+                }
+            ],
+            documents=prompt[1],
+            session_id=session_id,
+            stream=False,
+        )
+
+    # rag is called
+    tool_execution_step = [step for step in response.steps if step.step_type == "tool_execution"]
+    assert len(tool_execution_step) >= 1
+    assert tool_execution_step[0].tool_calls[0].tool_name == "knowledge_search"
+    assert "lora" in response.output_message.content.lower()
+
+
 def test_rag_and_code_agent(llama_stack_client, agent_config):
     documents = []
     documents.append(
