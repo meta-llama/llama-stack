@@ -8,6 +8,8 @@ repos:
     rev: v5.0.0  # Latest stable version
     hooks:
     -   id: check-merge-conflict
+    -   id: trailing-whitespace
+        exclude: '\.py$'  # Exclude Python files as Ruff already handles them
     -   id: check-added-large-files
         args: ['--maxkb=1000']
     -   id: end-of-file-fixer
@@ -83,11 +85,8 @@ repos:
       - id: distro-codegen
         name: Distribution Template Codegen
         additional_dependencies:
-          - rich
-          - pydantic
-          - jinja2
           - uv==0.6.0
-        entry: uv run python -m llama_stack.scripts.distro_codegen
+        entry: uv run --extra codegen python -m llama_stack.scripts.distro_codegen
         language: python
         pass_filenames: false
         require_serial: true

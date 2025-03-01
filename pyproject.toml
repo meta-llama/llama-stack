@@ -75,6 +75,11 @@ docs = [
     "sphinxcontrib.mermaid",
     "tomli",
 ]
+codegen = [
+    "rich",
+    "pydantic",
+    "jinja2",
+]
 
 [project.urls]
 Homepage = "https://github.com/meta-llama/llama-stack"

@@ -871,6 +871,11 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
+codegen = [
+    { name = "jinja2" },
+    { name = "pydantic" },
+    { name = "rich" },
+]
 dev = [
     { name = "black" },
     { name = "fastapi" },
@@ -923,6 +928,7 @@ requires-dist = [
     { name = "groq", marker = "extra == 'test'" },
     { name = "httpx" },
     { name = "huggingface-hub" },
+    { name = "jinja2", marker = "extra == 'codegen'" },
     { name = "jsonschema" },
     { name = "llama-stack-client", specifier = ">=0.1.4" },
     { name = "lm-format-enforcer", marker = "extra == 'test'", specifier = ">=0.10.9" },
@@ -935,12 +941,14 @@ requires-dist = [
     { name = "pre-commit", marker = "extra == 'dev'" },
     { name = "prompt-toolkit" },
     { name = "pydantic", specifier = ">=2" },
+    { name = "pydantic", marker = "extra == 'codegen'" },
     { name = "pytest", marker = "extra == 'dev'" },
     { name = "pytest-asyncio", marker = "extra == 'dev'" },
     { name = "pytest-html", marker = "extra == 'dev'" },
     { name = "python-dotenv" },
     { name = "requests" },
     { name = "rich" },
+    { name = "rich", marker = "extra == 'codegen'" },
     { name = "ruamel-yaml", marker = "extra == 'dev'" },
     { name = "ruff", marker = "extra == 'dev'" },
     { name = "setuptools" },
