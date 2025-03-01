@@ -85,6 +85,7 @@ repos:
         additional_dependencies:
           - rich
           - pydantic
+          - jinja2
           - uv==0.6.0
         entry: uv run python -m llama_stack.scripts.distro_codegen
         language: python
