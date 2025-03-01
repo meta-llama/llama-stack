@@ -159,12 +159,12 @@ EOF
     add_to_container << EOF
 RUN uv pip install --no-cache --extra-index-url https://test.pypi.org/simple/ \
   --index-strategy unsafe-best-match \
-  llama-models==$TEST_PYPI_VERSION llama-stack-client==$TEST_PYPI_VERSION llama-stack==$TEST_PYPI_VERSION
+  llama-stack==$TEST_PYPI_VERSION
 
 EOF
   else
     if [ -n "$PYPI_VERSION" ]; then
-      SPEC_VERSION="llama-stack==${PYPI_VERSION} llama-models==${PYPI_VERSION} llama-stack-client==${PYPI_VERSION}"
+      SPEC_VERSION="llama-stack==${PYPI_VERSION}"
     else
       SPEC_VERSION="llama-stack"
     fi
