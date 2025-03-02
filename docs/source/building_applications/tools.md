@@ -127,7 +127,7 @@ MCP tools require:
 
 ## Adding Custom Tools
 
-When you want to use tools other than the built-in tools, you can implement a python function and decorate it with `@client_tool`. 
+When you want to use tools other than the built-in tools, you can implement a python function and decorate it with `@client_tool`.
 
 To define a custom tool, you need to use the `@client_tool` decorator.
 ```python
