@@ -8,6 +8,7 @@ from typing import AsyncGenerator, AsyncIterator, List, Optional, Union
 
 import litellm
 
+from llama_stack import logcat
 from llama_stack.apis.common.content_types import (
     InterleavedContent,
     InterleavedContentItem,
@@ -106,6 +107,8 @@ class LiteLLMOpenAIMixin(
         )
 
         params = await self._get_params(request)
+        logcat.debug("inference", f"params to litellm (openai compat): {params}")
+
         # unfortunately, we need to use synchronous litellm.completion here because litellm
         # caches various httpx.client objects in a non-eventloop aware manner
         response = litellm.completion(**params)
