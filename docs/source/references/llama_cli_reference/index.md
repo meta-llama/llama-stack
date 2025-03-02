@@ -38,7 +38,7 @@ llama --help
 ```
 
 ```
-usage: llama [-h] {download,model,stack} ...
+usage: llama [-h] {model,stack,download,verify-download} ...
 
 Welcome to the Llama CLI
 
@@ -46,7 +46,12 @@ options:
   -h, --help            show this help message and exit
 
 subcommands:
-  {download,model,stack}
+  {model,stack,download,verify-download}
+
+  model                 Work with llama models
+  stack                 Operations for the Llama Stack / Distributions
+  download              Download a model from llama.meta.com or Hugging Face Hub
+  verify-download       Verify integrity of downloaded model files
 ```
 
 ## Downloading models
@@ -212,6 +217,13 @@ options:
 
 model_subcommands:
   {download,list,prompt-format,describe,verify-download,remove}
+
+  download              Download a model from llama.meta.com or Hugging Face Hub
+  list                  Show available llama models
+  prompt-format         Show llama model message formats
+  describe              Show details about a llama model
+  verify-download       Verify the downloaded checkpoints' checksums for models downloaded from Meta
+  remove                Remove the downloaded llama model
 ```
 
 ### Describe

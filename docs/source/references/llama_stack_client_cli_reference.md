@@ -6,17 +6,33 @@ The `llama-stack-client` CLI allows you to query information about the distribut
 
 ### `llama-stack-client`
 ```bash
-llama-stack-client -h
+llama-stack-client --help
 
-usage: llama-stack-client [-h] {models,memory_banks,shields} ...
+Usage: llama-stack-client [OPTIONS] COMMAND [ARGS]...
 
-Welcome to the LlamaStackClient CLI
+  Welcome to the LlamaStackClient CLI
 
-options:
-  -h, --help            show this help message and exit
+Options:
+  --version        Show the version and exit.
+  --endpoint TEXT  Llama Stack distribution endpoint
+  --api-key TEXT   Llama Stack distribution API key
+  --config TEXT    Path to config file
+  --help           Show this message and exit.
 
-subcommands:
-  {models,memory_banks,shields}
+Commands:
+  configure          Configure Llama Stack Client CLI.
+  datasets           Manage datasets.
+  eval               Run evaluation tasks.
+  eval_tasks         Manage evaluation tasks.
+  inference          Inference (chat).
+  inspect            Inspect server configuration.
+  models             Manage GenAI models.
+  post_training      Post-training.
+  providers          Manage API providers.
+  scoring_functions  Manage scoring functions.
+  shields            Manage safety shield services.
+  toolgroups         Manage available tool groups.
+  vector_dbs         Manage vector databases.
 ```
 
 ### `llama-stack-client configure`
