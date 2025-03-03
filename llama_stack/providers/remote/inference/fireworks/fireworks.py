@@ -32,6 +32,7 @@ from llama_stack.apis.inference import (
     ToolPromptFormat,
 )
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
+from llama_stack.log import get_logger
 from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
 )
@@ -53,6 +54,8 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 
 from .config import FireworksImplConfig
 from .models import MODEL_ENTRIES
+
+logger = get_logger(name=__name__, category="inference")
 
 
 class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProviderData):
@@ -230,12 +233,15 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProv
             if input_dict["prompt"].startswith("<|begin_of_text|>"):
                 input_dict["prompt"] = input_dict["prompt"][len("<|begin_of_text|>") :]
 
-        return {
+        params = {
             "model": request.model,
             **input_dict,
             "stream": request.stream,
             **self._build_options(request.sampling_params, request.response_format, request.logprobs),
         }
+        logger.debug(f"params to fireworks: {params}")
+
+        return params
 
     async def embeddings(
         self,

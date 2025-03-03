@@ -5,15 +5,15 @@
 # the root directory of this source tree.
 
 import argparse
-import logging
 import os
 from pathlib import Path
 
 from llama_stack.cli.subcommand import Subcommand
+from llama_stack.log import get_logger
 
 REPO_ROOT = Path(__file__).parent.parent.parent.parent
 
-logger = logging.getLogger(__name__)
+logger = get_logger(name=__name__, category="server")
 
 
 class StackRun(Subcommand):

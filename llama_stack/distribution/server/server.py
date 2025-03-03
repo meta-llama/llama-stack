@@ -9,7 +9,6 @@ import asyncio
 import functools
 import inspect
 import json
-import logging
 import os
 import signal
 import sys
@@ -26,7 +25,6 @@ from fastapi import Path as FastapiPath
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, ValidationError
-from termcolor import cprint
 from typing_extensions import Annotated
 
 from llama_stack.distribution.datatypes import StackRunConfig
@@ -39,6 +37,7 @@ from llama_stack.distribution.stack import (
     replace_env_vars,
     validate_env_pair,
 )
+from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import Api
 from llama_stack.providers.inline.telemetry.meta_reference.config import TelemetryConfig
 from llama_stack.providers.inline.telemetry.meta_reference.telemetry import (
@@ -54,8 +53,7 @@ from .endpoints import get_all_api_endpoints
 
 REPO_ROOT = Path(__file__).parent.parent.parent.parent
 
-logging.basicConfig(level=logging.INFO, format="%(levelname)s %(asctime)s %(name)s:%(lineno)d: %(message)s")
-logger = logging.getLogger(__name__)
+logger = get_logger(name=__name__, category="server")
 
 
 def warn_with_traceback(message, category, filename, lineno, file=None, line=None):
@@ -209,7 +207,7 @@ async def sse_generator(event_gen):
             yield create_sse_event(item)
             await asyncio.sleep(0.01)
     except asyncio.CancelledError:
-        print("Generator cancelled")
+        logger.info("Generator cancelled")
         await event_gen.aclose()
     except Exception as e:
         logger.exception(f"Error in sse_generator: {e}")

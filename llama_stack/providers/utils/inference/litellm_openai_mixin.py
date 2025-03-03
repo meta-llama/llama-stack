@@ -32,6 +32,7 @@ from llama_stack.apis.inference import (
 )
 from llama_stack.apis.models.models import Model
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
+from llama_stack.log import get_logger
 from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
 )
@@ -45,6 +46,8 @@ from llama_stack.providers.utils.inference.openai_compat import (
 from llama_stack.providers.utils.inference.prompt_adapter import (
     interleaved_content_as_str,
 )
+
+logger = get_logger(name=__name__, category="inference")
 
 
 class LiteLLMOpenAIMixin(
@@ -108,6 +111,7 @@ class LiteLLMOpenAIMixin(
         )
 
         params = await self._get_params(request)
+        logger.debug(f"params to litellm (openai compat): {params}")
         # unfortunately, we need to use synchronous litellm.completion here because litellm
         # caches various httpx.client objects in a non-eventloop aware manner
         response = litellm.completion(**params)

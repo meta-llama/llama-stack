@@ -31,6 +31,7 @@ from llama_stack.apis.inference import (
     ToolPromptFormat,
 )
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
+from llama_stack.log import get_logger
 from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
 )
@@ -52,6 +53,8 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 
 from .config import TogetherImplConfig
 from .models import MODEL_ENTRIES
+
+logger = get_logger(name=__name__, category="inference")
 
 
 class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProviderData):
@@ -217,12 +220,13 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
             assert not media_present, "Together does not support media for Completion requests"
             input_dict["prompt"] = await completion_request_to_prompt(request)
 
-        return {
+        params = {
             "model": request.model,
             **input_dict,
             "stream": request.stream,
             **self._build_options(request.sampling_params, request.logprobs, request.response_format),
         }
+        logger.debug(f"params to together: {params}")
 
     async def embeddings(
         self,

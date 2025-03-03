@@ -162,5 +162,5 @@ module = ["yaml", "fire"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = "llama_stack.distribution.resolver"
-follow_imports = "normal"                    # This will force type checking on this module
+module = ["llama_stack.distribution.resolver", "llama_stack.log"]
+follow_imports = "normal"                                         # This will force type checking on this module
