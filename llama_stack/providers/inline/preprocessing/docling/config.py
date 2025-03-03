@@ -6,4 +6,6 @@
 from pydantic import BaseModel
 
 
-class InlineDoclingConfig(BaseModel): ...
+class InlineDoclingConfig(BaseModel):
+    chunk: bool
+    tokenizer: str

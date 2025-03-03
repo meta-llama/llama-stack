@@ -27,8 +27,11 @@ class PreprocessingInput(BaseModel):
 
 PreprocessorOptions = Dict[str, Any]
 
-# TODO: shouldn't be just a string
-PreprocessingResult = str
+
+@json_schema_type
+class PreprocessingResult(BaseModel):
+    metadata: dict[str, Any]
+    data: str
 
 
 @json_schema_type
