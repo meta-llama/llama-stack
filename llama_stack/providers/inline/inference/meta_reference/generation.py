@@ -39,12 +39,7 @@ from llama_stack.models.llama.datatypes import (
     SamplingParams,
     TopPSamplingStrategy,
 )
-from llama_stack.models.llama.llama3.args import ModelArgs
 from llama_stack.models.llama.llama3.chat_format import ChatFormat, LLMInput
-from llama_stack.models.llama.llama3.model import Transformer
-from llama_stack.models.llama.llama3.multimodal.model import (
-    CrossAttentionTransformer,
-)
 from llama_stack.models.llama.llama3.tokenizer import Tokenizer
 from llama_stack.models.llama.sku_list import resolve_model
 from llama_stack.providers.utils.inference.prompt_adapter import (
@@ -53,6 +48,9 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 )
 
 from .config import MetaReferenceInferenceConfig, MetaReferenceQuantizedInferenceConfig
+from .llama3.args import ModelArgs
+from .llama3.model import Transformer
+from .llama3.multimodal.model import CrossAttentionTransformer
 
 log = logging.getLogger(__name__)
 
