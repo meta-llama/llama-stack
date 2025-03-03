@@ -1,7 +1,7 @@
 ```{admonition} News
 :class: tip
 
-Llama Stack {{ llama_stack_version }} is now available! See the [release notes](https://github.com/meta-llama/llama-stack/releases/tag/v{{ llama_stack_version }}) for more details.
+Llama Stack {{ llama_stack_version }} is now available! See the {{ llama_stack_version_link }} for more details.
 ```
 
 # Llama Stack
