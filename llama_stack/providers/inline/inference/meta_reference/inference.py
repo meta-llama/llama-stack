@@ -55,7 +55,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 )
 
 from .config import MetaReferenceInferenceConfig
-from .generation import Llama
+from .llama3.generation import Llama3
 from .model_parallel import LlamaModelParallelGenerator
 
 log = logging.getLogger(__name__)
@@ -83,7 +83,7 @@ class MetaReferenceInferenceImpl(
             self.generator = LlamaModelParallelGenerator(self.config, model_id, llama_model)
             self.generator.start()
         else:
-            self.generator = Llama.build(self.config, model_id, llama_model)
+            self.generator = Llama3.build(self.config, model_id, llama_model)
 
         self.model_id = model_id
         self.llama_model = llama_model

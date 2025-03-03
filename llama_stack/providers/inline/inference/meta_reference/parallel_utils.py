@@ -36,7 +36,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
     CompletionRequestWithRawContent,
 )
 
-from .generation import TokenResult
+from .common import TokenResult
 
 log = logging.getLogger(__name__)
 
