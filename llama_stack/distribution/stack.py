@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 import importlib.resources
+import logging
 import os
 import re
 import tempfile
@@ -13,7 +14,6 @@ from typing import Any, Dict, Optional
 import yaml
 from termcolor import colored
 
-from llama_stack import logcat
 from llama_stack.apis.agents import Agents
 from llama_stack.apis.batch_inference import BatchInference
 from llama_stack.apis.benchmarks import Benchmarks
@@ -40,6 +40,8 @@ from llama_stack.distribution.resolver import ProviderRegistry, resolve_impls
 from llama_stack.distribution.store.registry import create_dist_registry
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
 from llama_stack.providers.datatypes import Api
+
+log = logging.getLogger(__name__)
 
 
 class LlamaStack(
@@ -101,10 +103,11 @@ async def register_resources(run_config: StackRunConfig, impls: Dict[Api, Any]):
         objects_to_process = response.data if hasattr(response, "data") else response
 
         for obj in objects_to_process:
-            logcat.debug(
-                "core",
+            log.info(
                 f"{rsrc.capitalize()}: {colored(obj.identifier, 'white', attrs=['bold'])} served by {colored(obj.provider_id, 'white', attrs=['bold'])}",
             )
+
+    log.info("")
 
 
 class EnvVarError(Exception):

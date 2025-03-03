@@ -151,7 +151,6 @@ exclude = [
     "llama_stack/distribution",
     "llama_stack/apis",
     "llama_stack/cli",
-    "llama_stack/logcat.py",
     "llama_stack/models",
     "llama_stack/strong_typing",
     "llama_stack/templates",

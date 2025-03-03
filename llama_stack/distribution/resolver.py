@@ -6,8 +6,9 @@
 import importlib
 import inspect
 from typing import Any, Dict, List, Set, Tuple
+import logging
+from typing import Any, Dict, List, Set
 
-from llama_stack import logcat
 from llama_stack.apis.agents import Agents
 from llama_stack.apis.benchmarks import Benchmarks
 from llama_stack.apis.datasetio import DatasetIO
@@ -49,6 +50,8 @@ from llama_stack.providers.datatypes import (
     ToolsProtocolPrivate,
     VectorDBsProtocolPrivate,
 )
+
+log = logging.getLogger(__name__)
 
 
 class InvalidProviderError(Exception):
@@ -184,7 +187,7 @@ def validate_and_prepare_providers(
         specs = {}
         for provider in providers:
             if not provider.provider_id or provider.provider_id == "__disabled__":
-                logcat.warning("core", f"Provider `{provider.provider_type}` for API `{api}` is disabled")
+                log.warning(f"Provider `{provider.provider_type}` for API `{api}` is disabled")
                 continue
 
             validate_provider(provider, api, provider_registry)
@@ -206,11 +209,10 @@ def validate_provider(provider: Provider, api: Api, provider_registry: ProviderR
 
     p = provider_registry[api][provider.provider_type]
     if p.deprecation_error:
-        logcat.error("core", p.deprecation_error)
+        log.error(p.deprecation_error)
         raise InvalidProviderError(p.deprecation_error)
     elif p.deprecation_warning:
-        logcat.warning(
-            "core",
+        log.warning(
             f"Provider `{provider.provider_type}` for API `{api}` is deprecated and will be removed in a future release: {p.deprecation_warning}",
         )
 
@@ -244,10 +246,10 @@ def sort_providers_by_deps(
         )
     )
 
-    logcat.debug("core", f"Resolved {len(sorted_providers)} providers")
+    log.info(f"Resolved {len(sorted_providers)} providers")
     for api_str, provider in sorted_providers:
-        logcat.debug("core", f" {api_str} => {provider.provider_id}")
-    return sorted_providers
+        log.debug(f" {api_str} => {provider.provider_id}")
+    log.debug("")
 
 
 async def instantiate_providers(
@@ -387,7 +389,7 @@ def check_protocol_compliance(obj: Any, protocol: Any) -> None:
                 obj_params = set(obj_sig.parameters)
                 obj_params.discard("self")
                 if not (proto_params <= obj_params):
-                    logcat.error("core", f"Method {name} incompatible proto: {proto_params} vs. obj: {obj_params}")
+                    log.error(f"Method {name} incompatible proto: {proto_params} vs. obj: {obj_params}")
                     missing_methods.append((name, "signature_mismatch"))
                 else:
                     # Check if the method is actually implemented in the class

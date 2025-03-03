@@ -10,7 +10,6 @@ from typing import AsyncGenerator, List, Optional, Union
 import httpx
 from ollama import AsyncClient
 
-from llama_stack import logcat
 from llama_stack.apis.common.content_types import (
     ImageContentItem,
     InterleavedContent,
@@ -208,14 +207,12 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
             else:
                 raise ValueError(f"Unknown response format type: {fmt.type}")
 
-        params = {
+        return {
             "model": request.model,
             **input_dict,
             "options": sampling_options,
             "stream": request.stream,
         }
-        logcat.debug("inference", f"params to ollama: {params}")
-        return params
 
     async def _nonstream_chat_completion(self, request: ChatCompletionRequest) -> ChatCompletionResponse:
         params = await self._get_params(request)

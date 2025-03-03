@@ -8,7 +8,6 @@ from typing import AsyncGenerator, List, Optional, Union
 
 from together import Together
 
-from llama_stack import logcat
 from llama_stack.apis.common.content_types import (
     InterleavedContent,
     InterleavedContentItem,
@@ -218,14 +217,12 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
             assert not media_present, "Together does not support media for Completion requests"
             input_dict["prompt"] = await completion_request_to_prompt(request)
 
-        params = {
+        return {
             "model": request.model,
             **input_dict,
             "stream": request.stream,
             **self._build_options(request.sampling_params, request.logprobs, request.response_format),
         }
-        logcat.debug("inference", f"params to together: {params}")
-        return params
 
     async def embeddings(
         self,
