@@ -98,9 +98,8 @@ case "$env_type" in
   *)
 esac
 
-set -x
-
 if [[ "$env_type" == "venv" || "$env_type" == "conda" ]]; then
+    set -x
     $PYTHON_BINARY -m llama_stack.distribution.server.server \
     --yaml-config "$yaml_config" \
     --port "$port" \
@@ -141,6 +140,8 @@ elif [[ "$env_type" == "container" ]]; then
         URL="https://pypi.org/pypi/llama-stack/json"
         version_tag=$(curl -s $URL | jq -r '.info.version')
     fi
+
+    set -x
 
     $CONTAINER_BINARY run $CONTAINER_OPTS -it \
     -p $port:$port \
