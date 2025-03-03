@@ -212,7 +212,7 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
         config_dict = yaml.safe_load(run_config.read_text())
         config = parse_and_maybe_upgrade_config(config_dict)
         run_args = formulate_run_args(args.image_type, args.image_name, config, args.template)
-        run_args.extend([run_config, str(os.getenv("LLAMA_STACK_PORT", 8321))])
+        run_args.extend([run_config, str(os.getenv("LLAMA_STACK_PORT", 8321)), "info"])
         run_with_pty(run_args)
 
 

@@ -27,7 +27,7 @@ error_handler() {
 trap 'error_handler ${LINENO}' ERR
 
 if [ $# -lt 3 ]; then
-  echo "Usage: $0 <env_type> <env_path_or_name> <yaml_config> <port> <script_args...>"
+  echo "Usage: $0 <env_type> <env_path_or_name> <yaml_config> <port> <log_level> <script_args...>"
   exit 1
 fi
 
@@ -42,6 +42,9 @@ yaml_config="$1"
 shift
 
 port="$1"
+shift
+
+log_level="$1"
 shift
 
 SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
@@ -103,6 +106,7 @@ if [[ "$env_type" == "venv" || "$env_type" == "conda" ]]; then
     $PYTHON_BINARY -m llama_stack.distribution.server.server \
     --yaml-config "$yaml_config" \
     --port "$port" \
+    --log-level "$log_level" \
     $env_vars \
     $other_args
 elif [[ "$env_type" == "container" ]]; then

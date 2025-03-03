@@ -32,6 +32,14 @@ class StackParser(Subcommand):
             version=f"{version('llama-stack')}",
         )
 
+        self.parser.add_argument(
+            "--log-level",
+            type=str,
+            choices=["debug", "info", "warning", "critical", "error"],
+            default="info",
+            help="Log level for the stack to use.",
+        )
+
         self.parser.set_defaults(func=lambda args: self.parser.print_help())
 
         subparsers = self.parser.add_subparsers(title="stack_subcommands")

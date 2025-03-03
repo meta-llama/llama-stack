@@ -133,7 +133,8 @@ class StackRun(Subcommand):
 
         run_args = formulate_run_args(args.image_type, args.image_name, config, template_name)
 
-        run_args.extend([str(config_file), str(args.port)])
+        run_args.extend([str(config_file), str(args.port), str(args.log_level)])
+        print(run_args)
         if args.disable_ipv6:
             run_args.append("--disable-ipv6")
 

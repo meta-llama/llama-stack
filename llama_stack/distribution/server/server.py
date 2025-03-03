@@ -313,8 +313,6 @@ class ClientVersionMiddleware:
 
 
 def main():
-    logcat.init()
-
     """Start the LlamaStack server."""
     parser = argparse.ArgumentParser(description="Start the LlamaStack server.")
     parser.add_argument(
@@ -347,8 +345,19 @@ def main():
         help="Path to TLS certificate file for HTTPS",
         required="--tls-keyfile" in sys.argv,
     )
+    parser.add_argument(
+        "--log-level",
+        type=str,
+        choices=["debug", "info", "warning", "critical", "error"],
+        default="info",
+        help="Log level for the running server to use.",
+    )
 
     args = parser.parse_args()
+
+    # convert info, debug, warning, critical, or error to valid logging level
+    log_level = logging._nameToLevel.get(args.log_level.upper(), logging.INFO)
+    logcat.init(default_level=log_level)
 
     if args.env:
         for env_pair in args.env:

@@ -183,9 +183,10 @@ Now, let's start the Llama Stack Distribution Server. You will need the YAML con
 
 ```
 llama stack run -h
-usage: llama stack run [-h] [--port PORT] [--image-name IMAGE_NAME] [--disable-ipv6] [--env KEY=VALUE] [--tls-keyfile TLS_KEYFILE]
-                       [--tls-certfile TLS_CERTFILE] [--image-type {conda,container,venv}]
+usage: llama stack run [-h] [--port PORT] [--image-name IMAGE_NAME] [--disable-ipv6] [--env KEY=VALUE] [--tls-keyfile TLS_KEYFILE] [--tls-certfile TLS_CERTFILE]
+                       [--image-type {conda,container,venv}]
                        config
+
 
 Start the server for a Llama Stack Distribution. You should have already built (or downloaded) and configured the distribution.
 
