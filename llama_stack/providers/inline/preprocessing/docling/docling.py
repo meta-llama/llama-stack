@@ -13,10 +13,10 @@ from llama_stack.apis.preprocessing import (
     Preprocessing,
     PreprocessingInput,
     PreprocessingResponse,
-    PreprocessingResult,
     Preprocessor,
     PreprocessorOptions,
 )
+from llama_stack.apis.vector_io import Chunk
 from llama_stack.providers.datatypes import PreprocessorsProtocolPrivate
 from llama_stack.providers.inline.preprocessing.docling import InlineDoclingConfig
 
@@ -56,7 +56,7 @@ class InclineDoclingPreprocessorImpl(Preprocessing, PreprocessorsProtocolPrivate
             converted_document = self.converter.convert(url).document
             if self.config.chunk:
                 result = self.chunker.chunk(converted_document)
-                results.extend([PreprocessingResult(data=chunk.text, metadata=chunk.meta) for chunk in result])
+                results.extend([Chunk(content=chunk.text, metadata=chunk.meta) for chunk in result])
             else:
                 result = converted_document.export_to_markdown()
                 results.append(result)
