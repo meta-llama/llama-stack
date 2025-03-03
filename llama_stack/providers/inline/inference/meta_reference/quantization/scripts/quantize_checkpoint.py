@@ -24,9 +24,9 @@ from fairscale.nn.model_parallel.initialize import (
 )
 from torch.nn.parameter import Parameter
 
-from llama_stack.models.llama.llama3.args import ModelArgs
-from llama_stack.models.llama.llama3.model import Transformer, TransformerBlock
 from llama_stack.models.llama.llama3.tokenizer import Tokenizer
+from llama_stack.providers.inline.inference.meta_reference.llama3.args import ModelArgs
+from llama_stack.providers.inline.inference.meta_reference.llama3.model import Transformer, TransformerBlock
 from llama_stack.providers.inline.inference.meta_reference.quantization.fp8_impls import (
     quantize_fp8,
 )
