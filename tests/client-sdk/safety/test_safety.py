@@ -42,7 +42,7 @@ def code_scanner_shield_id(available_shields):
 
 @pytest.fixture(scope="session")
 def model_providers(llama_stack_client):
-    return set([x.provider_id for x in llama_stack_client.providers.list() if x.api == "inference"])
+    return {x.provider_id for x in llama_stack_client.providers.list() if x.api == "inference"}
 
 
 def test_unsafe_examples(llama_stack_client, llama_guard_text_shield_id):

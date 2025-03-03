@@ -29,6 +29,11 @@ providers:
     provider_type: remote::gemini
     config:
       api_key: ${env.GEMINI_API_KEY:}
+  - provider_id: groq
+    provider_type: remote::groq
+    config:
+      url: https://api.groq.com
+      api_key: ${env.GROQ_API_KEY:}
   - provider_id: sentence-transformers
     provider_type: inline::sentence-transformers
     config: {}
@@ -37,6 +42,18 @@ providers:
     provider_type: inline::sqlite-vec
     config:
       db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/dev}/sqlite_vec.db
+  - provider_id: ${env.ENABLE_CHROMADB+chromadb}
+    provider_type: remote::chromadb
+    config:
+      url: ${env.CHROMADB_URL:}
+  - provider_id: ${env.ENABLE_PGVECTOR+pgvector}
+    provider_type: remote::pgvector
+    config:
+      host: ${env.PGVECTOR_HOST:localhost}
+      port: ${env.PGVECTOR_PORT:5432}
+      db: ${env.PGVECTOR_DB:}
+      user: ${env.PGVECTOR_USER:}
+      password: ${env.PGVECTOR_PASSWORD:}
   safety:
   - provider_id: llama-guard
     provider_type: inline::llama-guard
@@ -132,9 +149,19 @@ models:
   provider_model_id: openai/text-embedding-3-large
   model_type: embedding
 - metadata: {}
+  model_id: accounts/fireworks/models/llama-v3p1-8b-instruct
+  provider_id: fireworks
+  provider_model_id: accounts/fireworks/models/llama-v3p1-8b-instruct
+  model_type: llm
+- metadata: {}
   model_id: meta-llama/Llama-3.1-8B-Instruct
   provider_id: fireworks
   provider_model_id: accounts/fireworks/models/llama-v3p1-8b-instruct
+  model_type: llm
+- metadata: {}
+  model_id: accounts/fireworks/models/llama-v3p1-70b-instruct
+  provider_id: fireworks
+  provider_model_id: accounts/fireworks/models/llama-v3p1-70b-instruct
   model_type: llm
 - metadata: {}
   model_id: meta-llama/Llama-3.1-70B-Instruct
@@ -142,9 +169,19 @@ models:
   provider_model_id: accounts/fireworks/models/llama-v3p1-70b-instruct
   model_type: llm
 - metadata: {}
+  model_id: accounts/fireworks/models/llama-v3p1-405b-instruct
+  provider_id: fireworks
+  provider_model_id: accounts/fireworks/models/llama-v3p1-405b-instruct
+  model_type: llm
+- metadata: {}
   model_id: meta-llama/Llama-3.1-405B-Instruct-FP8
   provider_id: fireworks
   provider_model_id: accounts/fireworks/models/llama-v3p1-405b-instruct
+  model_type: llm
+- metadata: {}
+  model_id: accounts/fireworks/models/llama-v3p2-1b-instruct
+  provider_id: fireworks
+  provider_model_id: accounts/fireworks/models/llama-v3p2-1b-instruct
   model_type: llm
 - metadata: {}
   model_id: meta-llama/Llama-3.2-1B-Instruct
@@ -152,9 +189,19 @@ models:
   provider_model_id: accounts/fireworks/models/llama-v3p2-1b-instruct
   model_type: llm
 - metadata: {}
+  model_id: accounts/fireworks/models/llama-v3p2-3b-instruct
+  provider_id: fireworks
+  provider_model_id: accounts/fireworks/models/llama-v3p2-3b-instruct
+  model_type: llm
+- metadata: {}
   model_id: meta-llama/Llama-3.2-3B-Instruct
   provider_id: fireworks
   provider_model_id: accounts/fireworks/models/llama-v3p2-3b-instruct
+  model_type: llm
+- metadata: {}
+  model_id: accounts/fireworks/models/llama-v3p2-11b-vision-instruct
+  provider_id: fireworks
+  provider_model_id: accounts/fireworks/models/llama-v3p2-11b-vision-instruct
   model_type: llm
 - metadata: {}
   model_id: meta-llama/Llama-3.2-11B-Vision-Instruct
@@ -162,9 +209,19 @@ models:
   provider_model_id: accounts/fireworks/models/llama-v3p2-11b-vision-instruct
   model_type: llm
 - metadata: {}
+  model_id: accounts/fireworks/models/llama-v3p2-90b-vision-instruct
+  provider_id: fireworks
+  provider_model_id: accounts/fireworks/models/llama-v3p2-90b-vision-instruct
+  model_type: llm
+- metadata: {}
   model_id: meta-llama/Llama-3.2-90B-Vision-Instruct
   provider_id: fireworks
   provider_model_id: accounts/fireworks/models/llama-v3p2-90b-vision-instruct
+  model_type: llm
+- metadata: {}
+  model_id: accounts/fireworks/models/llama-v3p3-70b-instruct
+  provider_id: fireworks
+  provider_model_id: accounts/fireworks/models/llama-v3p3-70b-instruct
   model_type: llm
 - metadata: {}
   model_id: meta-llama/Llama-3.3-70B-Instruct
@@ -172,9 +229,19 @@ models:
   provider_model_id: accounts/fireworks/models/llama-v3p3-70b-instruct
   model_type: llm
 - metadata: {}
+  model_id: accounts/fireworks/models/llama-guard-3-8b
+  provider_id: fireworks
+  provider_model_id: accounts/fireworks/models/llama-guard-3-8b
+  model_type: llm
+- metadata: {}
   model_id: meta-llama/Llama-Guard-3-8B
   provider_id: fireworks
   provider_model_id: accounts/fireworks/models/llama-guard-3-8b
+  model_type: llm
+- metadata: {}
+  model_id: accounts/fireworks/models/llama-guard-3-11b-vision
+  provider_id: fireworks
+  provider_model_id: accounts/fireworks/models/llama-guard-3-11b-vision
   model_type: llm
 - metadata: {}
   model_id: meta-llama/Llama-Guard-3-11B-Vision
@@ -241,6 +308,51 @@ models:
   provider_id: gemini
   provider_model_id: gemini/text-embedding-004
   model_type: embedding
+- metadata: {}
+  model_id: groq/llama3-8b-8192
+  provider_id: groq
+  provider_model_id: groq/llama3-8b-8192
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-3.1-8B-Instruct
+  provider_id: groq
+  provider_model_id: groq/llama3-8b-8192
+  model_type: llm
+- metadata: {}
+  model_id: groq/llama-3.1-8b-instant
+  provider_id: groq
+  provider_model_id: groq/llama-3.1-8b-instant
+  model_type: llm
+- metadata: {}
+  model_id: groq/llama3-70b-8192
+  provider_id: groq
+  provider_model_id: groq/llama3-70b-8192
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-3-70B-Instruct
+  provider_id: groq
+  provider_model_id: groq/llama3-70b-8192
+  model_type: llm
+- metadata: {}
+  model_id: groq/llama-3.3-70b-versatile
+  provider_id: groq
+  provider_model_id: groq/llama-3.3-70b-versatile
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-3.3-70B-Instruct
+  provider_id: groq
+  provider_model_id: groq/llama-3.3-70b-versatile
+  model_type: llm
+- metadata: {}
+  model_id: groq/llama-3.2-3b-preview
+  provider_id: groq
+  provider_model_id: groq/llama-3.2-3b-preview
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-3.2-3B-Instruct
+  provider_id: groq
+  provider_model_id: groq/llama-3.2-3b-preview
+  model_type: llm
 - metadata:
     embedding_dimension: 384
   model_id: all-MiniLM-L6-v2

@@ -38,7 +38,7 @@ The API is **exactly identical** for both clients.
 :::{dropdown} Starting up the Llama Stack server
 The Llama Stack server can be configured flexibly so you can mix-and-match various providers for its individual API components -- beyond Inference, these include Vector IO, Agents, Telemetry, Evals, Post Training, etc.
 
-To get started quickly, we provide various container images for the server component that work with different inference providers out of the box. For this guide, we will use `llamastack/distribution-ollama` as the container image.
+To get started quickly, we provide various container images for the server component that work with different inference providers out of the box. For this guide, we will use `llamastack/distribution-ollama` as the container image. If you'd like to build your own image or customize the configurations, please check out [this guide](../references/index.md).
 
 Lets setup some environment variables that we will use in the rest of the guide.
 ```bash
@@ -102,12 +102,18 @@ Let's use the `llama-stack-client` CLI to check the connectivity to the server.
 $ llama-stack-client configure --endpoint http://localhost:$LLAMA_STACK_PORT
 > Enter the API key (leave empty if no key is needed):
 Done! You can now use the Llama Stack Client CLI with endpoint http://localhost:8321
+
 $ llama-stack-client models list
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━┓
-┃ identifier                       ┃ provider_id ┃ provider_resource_id      ┃ metadata ┃
-┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━┩
-│ meta-llama/Llama-3.2-3B-Instruct │ ollama      │ llama3.2:3b-instruct-fp16 │          │
-└──────────────────────────────────┴─────────────┴───────────────────────────┴──────────┘
+
+Available Models
+
+┏━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━━┓
+┃ model_type   ┃ identifier                           ┃ provider_resource_id         ┃ metadata  ┃ provider_id ┃
+┡━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━━┩
+│ llm          │ meta-llama/Llama-3.2-3B-Instruct     │ llama3.2:3b-instruct-fp16    │           │ ollama      │
+└──────────────┴──────────────────────────────────────┴──────────────────────────────┴───────────┴─────────────┘
+
+Total models: 1
 ```
 
 You can test basic Llama inference completion using the CLI too.
@@ -255,7 +261,7 @@ rag_agent = Agent(client, agent_config)
 session_id = rag_agent.create_session("test-session")
 
 user_prompts = [
-    "What are the top 5 topics that were explained? Only list succinct bullet points.",
+    "How to optimize memory usage in torchtune? use the knowledge_search tool to get information.",
 ]
 
 # Run the agent loop by calling the `create_turn` method

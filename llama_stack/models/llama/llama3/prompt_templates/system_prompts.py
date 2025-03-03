@@ -15,11 +15,8 @@ import textwrap
 from datetime import datetime
 from typing import Any, List, Optional
 
-from llama_models.datatypes import (
-    BuiltinTool,
-)
-
 from llama_stack.models.llama.datatypes import (
+    BuiltinTool,
     ToolDefinition,
     ToolParamDefinition,
 )
@@ -226,10 +223,9 @@ class FunctionTagCustomToolGenerator(PromptTemplateGeneratorBase):
 class PythonListCustomToolGenerator(PromptTemplateGeneratorBase):  # noqa: N801
     DEFAULT_PROMPT = textwrap.dedent(
         """
+        You are a helpful assistant. You have access to functions, but you should only use them if they are required.
         You are an expert in composing functions. You are given a question and a set of possible functions.
-        Based on the question, you will need to make one or more function/tool calls to achieve the purpose.
-        If none of the function can be used, point it out. If the given question lacks the parameters required by the function,
-        also point it out. You should only return the function call in tools call sections.
+        Based on the question, you may or may not need to make one function/tool call to achieve the purpose.
 
         {{ function_description }}
         """.strip("\n")

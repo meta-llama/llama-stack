@@ -32,7 +32,7 @@ Llama Stack standardizes the core building blocks that simplify AI application d
 By reducing friction and complexity, Llama Stack empowers developers to focus on what they do best: building transformative generative AI applications.
 
 ### API Providers
-Here is a list of the various API providers and available distributions that can help developers get started easily with Llama Stack. 
+Here is a list of the various API providers and available distributions that can help developers get started easily with Llama Stack.
 
 | **API Provider Builder** |    **Environments**    | **Agents** | **Inference** | **Memory** | **Safety** | **Telemetry** |
 |:------------------------:|:----------------------:|:----------:|:-------------:|:----------:|:----------:|:-------------:|

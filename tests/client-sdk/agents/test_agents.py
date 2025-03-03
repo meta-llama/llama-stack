@@ -4,20 +4,15 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import json
-from typing import Dict, List
 from uuid import uuid4
 
 import pytest
 from llama_stack_client.lib.agents.agent import Agent
-from llama_stack_client.lib.agents.client_tool import ClientTool
+from llama_stack_client.lib.agents.client_tool import client_tool
 from llama_stack_client.lib.agents.event_logger import EventLogger
-from llama_stack_client.types import ToolResponseMessage
 from llama_stack_client.types.agents.turn_create_params import Document as AgentDocument
 from llama_stack_client.types.memory_insert_params import Document
-from llama_stack_client.types.shared.completion_message import CompletionMessage
 from llama_stack_client.types.shared_params.agent_config import AgentConfig, ToolConfig
-from llama_stack_client.types.tool_def_param import Parameter
 
 from llama_stack.apis.agents.agents import (
     AgentConfig as Server__AgentConfig,
@@ -27,63 +22,22 @@ from llama_stack.apis.agents.agents import (
 )
 
 
-class TestClientTool(ClientTool):
-    """Tool to give boiling point of a liquid
-    Returns the correct value for polyjuice in Celcius and Fahrenheit
-    and returns -1 for other liquids
+@client_tool
+def get_boiling_point(liquid_name: str, celcius: bool = True) -> int:
     """
+    Returns the boiling point of a liquid in Celcius or Fahrenheit
 
-    def run(self, messages: List[CompletionMessage]) -> List[ToolResponseMessage]:
-        assert len(messages) == 1, "Expected single message"
-
-        message = messages[0]
-
-        tool_call = message.tool_calls[0]
-
-        try:
-            response = self.run_impl(**tool_call.arguments)
-            response_str = json.dumps(response, ensure_ascii=False)
-        except Exception as e:
-            response_str = f"Error when running tool: {e}"
-
-        message = ToolResponseMessage(
-            role="tool",
-            call_id=tool_call.call_id,
-            tool_name=tool_call.tool_name,
-            content=response_str,
-        )
-        return message
-
-    def get_name(self) -> str:
-        return "get_boiling_point"
-
-    def get_description(self) -> str:
-        return "Get the boiling point of imaginary liquids (eg. polyjuice)"
-
-    def get_params_definition(self) -> Dict[str, Parameter]:
-        return {
-            "liquid_name": Parameter(
-                name="liquid_name",
-                parameter_type="string",
-                description="The name of the liquid",
-                required=True,
-            ),
-            "celcius": Parameter(
-                name="celcius",
-                parameter_type="boolean",
-                description="Whether to return the boiling point in Celcius",
-                required=False,
-            ),
-        }
-
-    def run_impl(self, liquid_name: str, celcius: bool = True) -> int:
-        if liquid_name.lower() == "polyjuice":
-            if celcius:
-                return -100
-            else:
-                return -212
+    :param liquid_name: The name of the liquid
+    :param celcius: Whether to return the boiling point in Celcius
+    :return: The boiling point of the liquid in Celcius or Fahrenheit
+    """
+    if liquid_name.lower() == "polyjuice":
+        if celcius:
+            return -100
         else:
-            return -1
+            return -212
+    else:
+        return -1
 
 
 @pytest.fixture(scope="session")
@@ -298,7 +252,7 @@ def test_code_interpreter_for_attachments(llama_stack_client, agent_config):
 
 
 def test_custom_tool(llama_stack_client, agent_config):
-    client_tool = TestClientTool()
+    client_tool = get_boiling_point
     agent_config = {
         **agent_config,
         "toolgroups": ["builtin::websearch"],
@@ -324,9 +278,36 @@ def test_custom_tool(llama_stack_client, agent_config):
     assert "get_boiling_point" in logs_str
 
 
+def test_custom_tool_infinite_loop(llama_stack_client, agent_config):
+    client_tool = get_boiling_point
+    agent_config = {
+        **agent_config,
+        "instructions": "You are a helpful assistant Always respond with tool calls no matter what. ",
+        "client_tools": [client_tool.get_tool_definition()],
+        "max_infer_iters": 5,
+    }
+
+    agent = Agent(llama_stack_client, agent_config, client_tools=(client_tool,))
+    session_id = agent.create_session(f"test-session-{uuid4()}")
+
+    response = agent.create_turn(
+        messages=[
+            {
+                "role": "user",
+                "content": "Get the boiling point of polyjuice with a tool call.",
+            },
+        ],
+        session_id=session_id,
+        stream=False,
+    )
+
+    num_tool_calls = sum([1 if step.step_type == "tool_execution" else 0 for step in response.steps])
+    assert num_tool_calls <= 5
+
+
 def test_tool_choice(llama_stack_client, agent_config):
     def run_agent(tool_choice):
-        client_tool = TestClientTool()
+        client_tool = get_boiling_point
 
         test_agent_config = {
             **agent_config,
@@ -360,87 +341,6 @@ def test_tool_choice(llama_stack_client, agent_config):
     assert len(tool_execution_steps) >= 1 and tool_execution_steps[0].tool_calls[0].tool_name == "get_boiling_point"
 
 
-# TODO: fix this flaky test
-def xtest_override_system_message_behavior(llama_stack_client, agent_config):
-    client_tool = TestClientTool()
-    agent_config = {
-        **agent_config,
-        "instructions": "You are a pirate",
-        "client_tools": [client_tool.get_tool_definition()],
-        "model": "meta-llama/Llama-3.2-3B-Instruct",
-    }
-
-    agent = Agent(llama_stack_client, agent_config, client_tools=(client_tool,))
-    session_id = agent.create_session(f"test-session-{uuid4()}")
-
-    response = agent.create_turn(
-        messages=[
-            {
-                "role": "user",
-                "content": "tell me a joke about bicycles",
-            },
-        ],
-        session_id=session_id,
-    )
-
-    logs = [str(log) for log in EventLogger().log(response) if log is not None]
-    logs_str = "".join(logs)
-    # can't tell a joke: "I don't have a function"
-    assert "function" in logs_str
-
-    # with system message behavior replace
-    instructions = """
-    You are a helpful assistant. You have access to functions, but you should only use them if they are required.
-
-    You are an expert in composing functions. You are given a question and a set of possible functions.
-    Based on the question, you may or may not need to make one or more function/tool calls to achieve the purpose.
-    If none of the function can be used, don't return [], instead answer the question directly without using functions. If the given question lacks the parameters required by the function,
-    also point it out.
-
-    {{ function_description }}
-    """
-    agent_config = {
-        **agent_config,
-        "instructions": instructions,
-        "client_tools": [client_tool.get_tool_definition()],
-        "tool_config": {
-            "system_message_behavior": "replace",
-        },
-    }
-
-    agent = Agent(llama_stack_client, agent_config, client_tools=(client_tool,))
-    session_id = agent.create_session(f"test-session-{uuid4()}")
-
-    response = agent.create_turn(
-        messages=[
-            {
-                "role": "user",
-                "content": "tell me a joke about bicycles",
-            },
-        ],
-        session_id=session_id,
-    )
-
-    logs = [str(log) for log in EventLogger().log(response) if log is not None]
-    logs_str = "".join(logs)
-    assert "bicycle" in logs_str
-
-    response = agent.create_turn(
-        messages=[
-            {
-                "role": "user",
-                "content": "What is the boiling point of polyjuice?",
-            },
-        ],
-        session_id=session_id,
-    )
-
-    logs = [str(log) for log in EventLogger().log(response) if log is not None]
-    logs_str = "".join(logs)
-    assert "-100" in logs_str
-    assert "get_boiling_point" in logs_str
-
-
 @pytest.mark.parametrize("rag_tool_name", ["builtin::rag/knowledge_search", "builtin::rag"])
 def test_rag_agent(llama_stack_client, agent_config, rag_tool_name):
     urls = ["chat.rst", "llama3.rst", "memory_optimizations.rst", "lora_finetune.rst"]
@@ -458,7 +358,6 @@ def test_rag_agent(llama_stack_client, agent_config, rag_tool_name):
         vector_db_id=vector_db_id,
         embedding_model="all-MiniLM-L6-v2",
         embedding_dimension=384,
-        provider_id="faiss",
     )
     llama_stack_client.tool_runtime.rag_tool.insert(
         documents=documents,
@@ -500,6 +399,67 @@ def test_rag_agent(llama_stack_client, agent_config, rag_tool_name):
         )
         if expected_kw:
             assert expected_kw in response.output_message.content.lower()
+
+
+def test_rag_agent_with_attachments(llama_stack_client, agent_config):
+    urls = ["chat.rst", "llama3.rst", "memory_optimizations.rst", "lora_finetune.rst"]
+    documents = [
+        Document(
+            document_id=f"num-{i}",
+            content=f"https://raw.githubusercontent.com/pytorch/torchtune/main/docs/source/tutorials/{url}",
+            mime_type="text/plain",
+            metadata={},
+        )
+        for i, url in enumerate(urls)
+    ]
+    agent_config = {
+        **agent_config,
+        "toolgroups": [
+            dict(
+                name="builtin::rag/knowledge_search",
+                args={
+                    "vector_db_ids": [],
+                },
+            )
+        ],
+    }
+    rag_agent = Agent(llama_stack_client, agent_config)
+    session_id = rag_agent.create_session(f"test-session-{uuid4()}")
+    user_prompts = [
+        (
+            "Instead of the standard multi-head attention, what attention type does Llama3-8B use?",
+            "grouped",
+        ),
+    ]
+    user_prompts = [
+        (
+            "I am attaching some documentation for Torchtune. Help me answer questions I will ask next.",
+            documents,
+        ),
+        (
+            "Tell me how to use LoRA",
+            None,
+        ),
+    ]
+
+    for prompt in user_prompts:
+        response = rag_agent.create_turn(
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt[0],
+                }
+            ],
+            documents=prompt[1],
+            session_id=session_id,
+            stream=False,
+        )
+
+    # rag is called
+    tool_execution_step = [step for step in response.steps if step.step_type == "tool_execution"]
+    assert len(tool_execution_step) >= 1
+    assert tool_execution_step[0].tool_calls[0].tool_name == "knowledge_search"
+    assert "lora" in response.output_message.content.lower()
 
 
 def test_rag_and_code_agent(llama_stack_client, agent_config):
@@ -587,7 +547,7 @@ def test_rag_and_code_agent(llama_stack_client, agent_config):
 
 
 def test_create_turn_response(llama_stack_client, agent_config):
-    client_tool = TestClientTool()
+    client_tool = get_boiling_point
     agent_config = {
         **agent_config,
         "input_shields": [],

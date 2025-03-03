@@ -8,7 +8,7 @@ import logging
 import warnings
 from typing import AsyncIterator, List, Optional, Union
 
-from openai import APIConnectionError, AsyncOpenAI
+from openai import APIConnectionError, AsyncOpenAI, BadRequestError
 
 from llama_stack.apis.common.content_types import (
     InterleavedContent,
@@ -47,7 +47,7 @@ from llama_stack.providers.utils.inference.openai_compat import (
 from llama_stack.providers.utils.inference.prompt_adapter import content_has_media
 
 from . import NVIDIAConfig
-from .models import _MODEL_ENTRIES
+from .models import MODEL_ENTRIES
 from .openai_utils import (
     convert_chat_completion_request,
     convert_completion_request,
@@ -62,7 +62,7 @@ logger = logging.getLogger(__name__)
 class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
     def __init__(self, config: NVIDIAConfig) -> None:
         # TODO(mf): filter by available models
-        ModelRegistryHelper.__init__(self, model_entries=_MODEL_ENTRIES)
+        ModelRegistryHelper.__init__(self, model_entries=MODEL_ENTRIES)
 
         logger.info(f"Initializing NVIDIAInferenceAdapter({config.url})...")
 
@@ -144,19 +144,38 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
         #
         # we can ignore str and always pass List[str] to OpenAI
         #
-        flat_contents = [
-            item.text if isinstance(item, TextContentItem) else item
-            for content in contents
-            for item in (content if isinstance(content, list) else [content])
-        ]
+        flat_contents = [content.text if isinstance(content, TextContentItem) else content for content in contents]
         input = [content.text if isinstance(content, TextContentItem) else content for content in flat_contents]
         model = self.get_provider_model_id(model_id)
 
-        response = await self._client.embeddings.create(
-            model=model,
-            input=input,
-            # extra_body={"input_type": "passage"|"query"},  # TODO(mf): how to tell caller's intent?
-        )
+        extra_body = {}
+
+        if text_truncation is not None:
+            text_truncation_options = {
+                TextTruncation.none: "NONE",
+                TextTruncation.end: "END",
+                TextTruncation.start: "START",
+            }
+            extra_body["truncate"] = text_truncation_options[text_truncation]
+
+        if output_dimension is not None:
+            extra_body["dimensions"] = output_dimension
+
+        if task_type is not None:
+            task_type_options = {
+                EmbeddingTaskType.document: "passage",
+                EmbeddingTaskType.query: "query",
+            }
+            extra_body["input_type"] = task_type_options[task_type]
+
+        try:
+            response = await self._client.embeddings.create(
+                model=model,
+                input=input,
+                extra_body=extra_body,
+            )
+        except BadRequestError as e:
+            raise ValueError(f"Failed to get embeddings: {e}") from e
 
         #
         # OpenAI: CreateEmbeddingResponse(data=[Embedding(embedding=List[float], ...)], ...)
@@ -179,7 +198,7 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
         tool_config: Optional[ToolConfig] = None,
     ) -> Union[ChatCompletionResponse, AsyncIterator[ChatCompletionResponseStreamChunk]]:
         if tool_prompt_format:
-            warnings.warn("tool_prompt_format is not supported by NVIDIA NIM, ignoring")
+            warnings.warn("tool_prompt_format is not supported by NVIDIA NIM, ignoring", stacklevel=2)
 
         await check_health(self._config)  # this raises errors
 

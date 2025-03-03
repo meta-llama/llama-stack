@@ -4,17 +4,12 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+
 import pytest
 from pydantic import BaseModel
 
+from llama_stack.models.llama.sku_list import resolve_model
 from llama_stack.providers.tests.test_cases.test_case import TestCase
-
-PROVIDER_TOOL_PROMPT_FORMAT = {
-    "remote::ollama": "json",
-    "remote::together": "json",
-    "remote::fireworks": "json",
-    "remote::vllm": "json",
-}
 
 PROVIDER_LOGPROBS_TOP_K = {"remote::together", "remote::fireworks", "remote::vllm"}
 
@@ -24,18 +19,25 @@ def skip_if_model_doesnt_support_completion(client_with_models, model_id):
     provider_id = models[model_id].provider_id
     providers = {p.provider_id: p for p in client_with_models.providers.list()}
     provider = providers[provider_id]
-    print(f"Provider: {provider.provider_type} for model {model_id}")
-    if provider.provider_type in ("remote::openai", "remote::anthropic", "remote::gemini"):
+    if provider.provider_type in ("remote::openai", "remote::anthropic", "remote::gemini", "remote::groq"):
         pytest.skip(f"Model {model_id} hosted by {provider.provider_type} doesn't support completion")
 
 
-@pytest.fixture(scope="session")
-def provider_tool_format(inference_provider_type):
-    return (
-        PROVIDER_TOOL_PROMPT_FORMAT[inference_provider_type]
-        if inference_provider_type in PROVIDER_TOOL_PROMPT_FORMAT
-        else None
-    )
+def get_llama_model(client_with_models, model_id):
+    models = {}
+    for m in client_with_models.models.list():
+        models[m.identifier] = m
+        models[m.provider_resource_id] = m
+
+    assert model_id in models, f"Model {model_id} not found"
+
+    model = models[model_id]
+    ids = (model.identifier, model.provider_resource_id)
+    for mid in ids:
+        if resolve_model(mid):
+            return mid
+
+    return model.metadata.get("llama_model", None)
 
 
 @pytest.mark.parametrize(
@@ -137,7 +139,7 @@ def test_text_completion_log_probs_streaming(client_with_models, text_model_id, 
             "top_k": 1,
         },
     )
-    streamed_content = [chunk for chunk in response]
+    streamed_content = list(response)
     for chunk in streamed_content:
         if chunk.delta:  # if there's a token, we expect logprobs
             assert chunk.logprobs, "Logprobs should not be empty"
@@ -237,12 +239,7 @@ def test_text_chat_completion_streaming(client_with_models, text_model_id, test_
         "inference:chat_completion:tool_calling",
     ],
 )
-def test_text_chat_completion_with_tool_calling_and_non_streaming(
-    client_with_models, text_model_id, provider_tool_format, test_case
-):
-    # TODO: more dynamic lookup on tool_prompt_format for model family
-    tool_prompt_format = "json" if "3.1" in text_model_id else "python_list"
-
+def test_text_chat_completion_with_tool_calling_and_non_streaming(client_with_models, text_model_id, test_case):
     tc = TestCase(test_case)
 
     response = client_with_models.inference.chat_completion(
@@ -250,7 +247,6 @@ def test_text_chat_completion_with_tool_calling_and_non_streaming(
         messages=tc["messages"],
         tools=tc["tools"],
         tool_choice="auto",
-        tool_prompt_format=tool_prompt_format,
         stream=False,
     )
     # some models can return content for the response in addition to the tool call
@@ -280,12 +276,7 @@ def extract_tool_invocation_content(response):
         "inference:chat_completion:tool_calling",
     ],
 )
-def test_text_chat_completion_with_tool_calling_and_streaming(
-    client_with_models, text_model_id, provider_tool_format, test_case
-):
-    # TODO: more dynamic lookup on tool_prompt_format for model family
-    tool_prompt_format = "json" if "3.1" in text_model_id else "python_list"
-
+def test_text_chat_completion_with_tool_calling_and_streaming(client_with_models, text_model_id, test_case):
     tc = TestCase(test_case)
 
     response = client_with_models.inference.chat_completion(
@@ -293,7 +284,6 @@ def test_text_chat_completion_with_tool_calling_and_streaming(
         messages=tc["messages"],
         tools=tc["tools"],
         tool_choice="auto",
-        tool_prompt_format=tool_prompt_format,
         stream=True,
     )
     tool_invocation_content = extract_tool_invocation_content(response)
@@ -308,15 +298,7 @@ def test_text_chat_completion_with_tool_calling_and_streaming(
         "inference:chat_completion:tool_calling",
     ],
 )
-def test_text_chat_completion_with_tool_choice_required(
-    client_with_models,
-    text_model_id,
-    provider_tool_format,
-    test_case,
-):
-    # TODO: more dynamic lookup on tool_prompt_format for model family
-    tool_prompt_format = "json" if "3.1" in text_model_id else "python_list"
-
+def test_text_chat_completion_with_tool_choice_required(client_with_models, text_model_id, test_case):
     tc = TestCase(test_case)
 
     response = client_with_models.inference.chat_completion(
@@ -325,7 +307,6 @@ def test_text_chat_completion_with_tool_choice_required(
         tools=tc["tools"],
         tool_config={
             "tool_choice": "required",
-            "tool_prompt_format": tool_prompt_format,
         },
         stream=True,
     )
@@ -341,14 +322,14 @@ def test_text_chat_completion_with_tool_choice_required(
         "inference:chat_completion:tool_calling",
     ],
 )
-def test_text_chat_completion_with_tool_choice_none(client_with_models, text_model_id, provider_tool_format, test_case):
+def test_text_chat_completion_with_tool_choice_none(client_with_models, text_model_id, test_case):
     tc = TestCase(test_case)
 
     response = client_with_models.inference.chat_completion(
         model_id=text_model_id,
         messages=tc["messages"],
         tools=tc["tools"],
-        tool_config={"tool_choice": "none", "tool_prompt_format": provider_tool_format},
+        tool_config={"tool_choice": "none"},
         stream=True,
     )
     tool_invocation_content = extract_tool_invocation_content(response)
@@ -362,11 +343,15 @@ def test_text_chat_completion_with_tool_choice_none(client_with_models, text_mod
     ],
 )
 def test_text_chat_completion_structured_output(client_with_models, text_model_id, test_case):
+    class NBAStats(BaseModel):
+        year_for_draft: int
+        num_seasons_in_nba: int
+
     class AnswerFormat(BaseModel):
         first_name: str
         last_name: str
         year_of_birth: int
-        num_seasons_in_nba: int
+        nba_stats: NBAStats
 
     tc = TestCase(test_case)
 
@@ -384,7 +369,8 @@ def test_text_chat_completion_structured_output(client_with_models, text_model_i
     assert answer.first_name == expected["first_name"]
     assert answer.last_name == expected["last_name"]
     assert answer.year_of_birth == expected["year_of_birth"]
-    assert answer.num_seasons_in_nba == expected["num_seasons_in_nba"]
+    assert answer.nba_stats.num_seasons_in_nba == expected["num_seasons_in_nba"]
+    assert answer.nba_stats.year_for_draft == expected["year_for_draft"]
 
 
 @pytest.mark.parametrize("streaming", [True, False])
@@ -419,7 +405,7 @@ def test_text_chat_completion_tool_calling_tools_not_in_request(
                 assert delta.tool_call.tool_name == "get_object_namespace_list"
             if delta.type == "tool_call" and delta.parse_status == "failed":
                 # expect raw message that failed to parse in tool_call
-                assert type(delta.tool_call) == str
+                assert isinstance(delta.tool_call, str)
                 assert len(delta.tool_call) > 0
     else:
         for tc in response.completion_message.tool_calls:

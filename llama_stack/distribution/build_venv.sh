@@ -9,8 +9,8 @@
 # TODO: combine this with build_conda_env.sh since it is almost identical
 # the only difference is that we don't do any conda-specific setup
 
-LLAMA_MODELS_DIR=${LLAMA_MODELS_DIR:-}
 LLAMA_STACK_DIR=${LLAMA_STACK_DIR:-}
+LLAMA_STACK_CLIENT_DIR=${LLAMA_STACK_CLIENT_DIR:-}
 TEST_PYPI_VERSION=${TEST_PYPI_VERSION:-}
 # This timeout (in seconds) is necessary when installing PyTorch via uv since it's likely to time out
 # Reference: https://github.com/astral-sh/uv/pull/1694
@@ -21,8 +21,8 @@ VIRTUAL_ENV=${VIRTUAL_ENV:-}
 if [ -n "$LLAMA_STACK_DIR" ]; then
   echo "Using llama-stack-dir=$LLAMA_STACK_DIR"
 fi
-if [ -n "$LLAMA_MODELS_DIR" ]; then
-  echo "Using llama-models-dir=$LLAMA_MODELS_DIR"
+if [ -n "$LLAMA_STACK_CLIENT_DIR" ]; then
+  echo "Using llama-stack-client-dir=$LLAMA_STACK_CLIENT_DIR"
 fi
 
 if [ "$#" -lt 2 ]; then
@@ -95,7 +95,7 @@ run() {
     # we are building a command line so word splitting is expected
     uv pip install --extra-index-url https://test.pypi.org/simple/ \
       --index-strategy unsafe-best-match \
-      llama-models=="$TEST_PYPI_VERSION" llama-stack=="$TEST_PYPI_VERSION" \
+      llama-stack=="$TEST_PYPI_VERSION" \
       $pip_dependencies
     if [ -n "$special_pip_deps" ]; then
       IFS='#' read -ra parts <<<"$special_pip_deps"
@@ -120,15 +120,14 @@ run() {
       uv pip install --no-cache-dir llama-stack
     fi
 
-    if [ -n "$LLAMA_MODELS_DIR" ]; then
-      if [ ! -d "$LLAMA_MODELS_DIR" ]; then
-        printf "${RED}Warning: LLAMA_MODELS_DIR is set but directory does not exist: %s${NC}\n" "$LLAMA_MODELS_DIR" >&2
+    if [ -n "$LLAMA_STACK_CLIENT_DIR" ]; then
+      if [ ! -d "$LLAMA_STACK_CLIENT_DIR" ]; then
+        printf "${RED}Warning: LLAMA_STACK_CLIENT_DIR is set but directory does not exist: %s${NC}\n" "$LLAMA_STACK_CLIENT_DIR" >&2
         exit 1
       fi
 
-      printf "Installing from LLAMA_MODELS_DIR: %s\n" "$LLAMA_MODELS_DIR"
-      uv pip uninstall llama-models
-      uv pip install --no-cache-dir -e "$LLAMA_MODELS_DIR"
+      printf "Installing from LLAMA_STACK_CLIENT_DIR: %s\n" "$LLAMA_STACK_CLIENT_DIR"
+      uv pip install --no-cache-dir -e "$LLAMA_STACK_CLIENT_DIR"
     fi
 
     # Install pip dependencies

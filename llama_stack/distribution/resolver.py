@@ -5,9 +5,9 @@
 # the root directory of this source tree.
 import importlib
 import inspect
-import logging
 from typing import Any, Dict, List, Set
 
+from llama_stack import logcat
 from llama_stack.apis.agents import Agents
 from llama_stack.apis.benchmarks import Benchmarks
 from llama_stack.apis.datasetio import DatasetIO
@@ -49,8 +49,6 @@ from llama_stack.providers.datatypes import (
     ToolsProtocolPrivate,
     VectorDBsProtocolPrivate,
 )
-
-log = logging.getLogger(__name__)
 
 
 class InvalidProviderError(Exception):
@@ -115,8 +113,8 @@ async def resolve_impls(
     - flatmaps, sorts and resolves the providers in dependency order
     - for each API, produces either a (local, passthrough or router) implementation
     """
-    routing_table_apis = set(x.routing_table_api for x in builtin_automatically_routed_apis())
-    router_apis = set(x.router_api for x in builtin_automatically_routed_apis())
+    routing_table_apis = {x.routing_table_api for x in builtin_automatically_routed_apis()}
+    router_apis = {x.router_api for x in builtin_automatically_routed_apis()}
 
     providers_with_specs = {}
 
@@ -127,16 +125,21 @@ async def resolve_impls(
 
         specs = {}
         for provider in providers:
+            if not provider.provider_id or provider.provider_id == "__disabled__":
+                logcat.warning("core", f"Provider `{provider.provider_type}` for API `{api}` is disabled")
+                continue
+
             if provider.provider_type not in provider_registry[api]:
                 raise ValueError(f"Provider `{provider.provider_type}` is not available for API `{api}`")
 
             p = provider_registry[api][provider.provider_type]
             if p.deprecation_error:
-                log.error(p.deprecation_error, "red", attrs=["bold"])
+                logcat.error("core", p.deprecation_error)
                 raise InvalidProviderError(p.deprecation_error)
 
             elif p.deprecation_warning:
-                log.warning(
+                logcat.warning(
+                    "core",
                     f"Provider `{provider.provider_type}` for API `{api}` is deprecated and will be removed in a future release: {p.deprecation_warning}",
                 )
             p.deps__ = [a.value for a in p.api_dependencies] + [a.value for a in p.optional_api_dependencies]
@@ -210,10 +213,10 @@ async def resolve_impls(
         )
     )
 
-    log.info(f"Resolved {len(sorted_providers)} providers")
+    logcat.debug("core", f"Resolved {len(sorted_providers)} providers")
     for api_str, provider in sorted_providers:
-        log.info(f" {api_str} => {provider.provider_id}")
-    log.info("")
+        logcat.debug("core", f" {api_str} => {provider.provider_id}")
+    logcat.debug("core", "")
 
     impls = {}
     inner_impls_by_provider_id = {f"inner-{x.value}": {} for x in router_apis}
@@ -350,7 +353,7 @@ def check_protocol_compliance(obj: Any, protocol: Any) -> None:
                 obj_params = set(obj_sig.parameters)
                 obj_params.discard("self")
                 if not (proto_params <= obj_params):
-                    log.error(f"Method {name} incompatible proto: {proto_params} vs. obj: {obj_params}")
+                    logcat.error("core", f"Method {name} incompatible proto: {proto_params} vs. obj: {obj_params}")
                     missing_methods.append((name, "signature_mismatch"))
                 else:
                     # Check if the method is actually implemented in the class

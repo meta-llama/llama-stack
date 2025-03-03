@@ -14,20 +14,19 @@
 from pathlib import Path
 from typing import List, Optional
 
-from llama_models.datatypes import (
+from termcolor import colored
+
+from llama_stack.models.llama.datatypes import (
     BuiltinTool,
     RawMessage,
     StopReason,
     ToolCall,
+    ToolDefinition,
     ToolPromptFormat,
 )
-from llama_models.llama3.api.chat_format import ChatFormat
-from llama_models.llama3.api.tokenizer import Tokenizer
-from termcolor import colored
-
-from llama_stack.models.llama.datatypes import ToolDefinition
 
 from . import template_data
+from .chat_format import ChatFormat
 from .prompt_templates import (
     BuiltinToolGenerator,
     FunctionTagCustomToolGenerator,
@@ -35,6 +34,7 @@ from .prompt_templates import (
     SystemDefaultGenerator,
     ToolResponseGenerator,
 )
+from .tokenizer import Tokenizer
 
 THIS_DIR = Path(__file__).parent
 

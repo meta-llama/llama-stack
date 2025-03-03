@@ -24,7 +24,6 @@ def single_entry_vector_db_registry(llama_stack_client, empty_vector_db_registry
         vector_db_id=vector_db_id,
         embedding_model="all-MiniLM-L6-v2",
         embedding_dimension=384,
-        provider_id="faiss",
     )
     vector_dbs = [vector_db.identifier for vector_db in llama_stack_client.vector_dbs.list()]
     return vector_dbs
@@ -121,7 +120,6 @@ def test_vector_db_insert_from_url_and_query(llama_stack_client, empty_vector_db
         vector_db_id=vector_db_id,
         embedding_model="all-MiniLM-L6-v2",
         embedding_dimension=384,
-        provider_id="faiss",
     )
 
     # list to check memory bank is successfully registered

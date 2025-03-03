@@ -65,7 +65,7 @@ We define the Llama Stack as a layer cake shown below.
 
 ![Figure 3: Llama Stack](../docs/resources/llama-stack.png)
 
-The API is defined in the [YAML](../docs/_static/llama-stack-spec.yaml) and [HTML](../docs/_static/llama-stack-spec.html) files. These files were generated using the Pydantic definitions in (api/datatypes.py and api/endpoints.py) files that are in the llama-models, llama-stack, and llama-agentic-system repositories.
+The API is defined in the [YAML](../docs/_static/llama-stack-spec.yaml) and [HTML](../docs/_static/llama-stack-spec.html) files.
 
 ## Sample implementations
 

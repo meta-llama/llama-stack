@@ -8,6 +8,7 @@ from typing import AsyncGenerator, AsyncIterator, List, Optional, Union
 
 import litellm
 
+from llama_stack import logcat
 from llama_stack.apis.common.content_types import (
     InterleavedContent,
     InterleavedContentItem,
@@ -31,6 +32,7 @@ from llama_stack.apis.inference import (
     ToolPromptFormat,
 )
 from llama_stack.apis.models.models import Model
+from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
 )
@@ -49,10 +51,18 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 class LiteLLMOpenAIMixin(
     ModelRegistryHelper,
     Inference,
+    NeedsRequestProviderData,
 ):
-    def __init__(self, model_entries) -> None:
-        self.model_entries = model_entries
+    def __init__(self, model_entries, api_key_from_config: str, provider_data_api_key_field: str):
         ModelRegistryHelper.__init__(self, model_entries)
+        self.api_key_from_config = api_key_from_config
+        self.provider_data_api_key_field = provider_data_api_key_field
+
+    async def initialize(self):
+        pass
+
+    async def shutdown(self):
+        pass
 
     async def register_model(self, model: Model) -> Model:
         model_id = self.get_provider_model_id(model.provider_resource_id)
@@ -97,6 +107,8 @@ class LiteLLMOpenAIMixin(
         )
 
         params = await self._get_params(request)
+        logcat.debug("inference", f"params to litellm (openai compat): {params}")
+
         # unfortunately, we need to use synchronous litellm.completion here because litellm
         # caches various httpx.client objects in a non-eventloop aware manner
         response = litellm.completion(**params)
@@ -117,6 +129,37 @@ class LiteLLMOpenAIMixin(
         ):
             yield chunk
 
+    def _add_additional_properties_recursive(self, schema):
+        """
+        Recursively add additionalProperties: False to all object schemas
+        """
+        if isinstance(schema, dict):
+            if schema.get("type") == "object":
+                schema["additionalProperties"] = False
+
+                # Add required field with all property keys if properties exist
+                if "properties" in schema and schema["properties"]:
+                    schema["required"] = list(schema["properties"].keys())
+
+            if "properties" in schema:
+                for prop_schema in schema["properties"].values():
+                    self._add_additional_properties_recursive(prop_schema)
+
+            for key in ["anyOf", "allOf", "oneOf"]:
+                if key in schema:
+                    for sub_schema in schema[key]:
+                        self._add_additional_properties_recursive(sub_schema)
+
+            if "not" in schema:
+                self._add_additional_properties_recursive(schema["not"])
+
+            # Handle $defs/$ref
+            if "$defs" in schema:
+                for def_schema in schema["$defs"].values():
+                    self._add_additional_properties_recursive(def_schema)
+
+        return schema
+
     async def _get_params(self, request: ChatCompletionRequest) -> dict:
         input_dict = {}
 
@@ -131,6 +174,10 @@ class LiteLLMOpenAIMixin(
             name = fmt["title"]
             del fmt["title"]
             fmt["additionalProperties"] = False
+
+            # Apply additionalProperties: False recursively to all objects
+            fmt = self._add_additional_properties_recursive(fmt)
+
             input_dict["response_format"] = {
                 "type": "json_schema",
                 "json_schema": {
@@ -144,8 +191,16 @@ class LiteLLMOpenAIMixin(
             if request.tool_config.tool_choice:
                 input_dict["tool_choice"] = request.tool_config.tool_choice.value
 
+        provider_data = self.get_request_provider_data()
+        key_field = self.provider_data_api_key_field
+        if provider_data and getattr(provider_data, key_field, None):
+            api_key = getattr(provider_data, key_field)
+        else:
+            api_key = self.api_key_from_config
+
         return {
             "model": request.model,
+            "api_key": api_key,
             **input_dict,
             "stream": request.stream,
             **get_sampling_options(request.sampling_params),

@@ -61,7 +61,12 @@ from llama_stack.apis.inference import (
     UserMessage,
 )
 from llama_stack.apis.safety import Safety
-from llama_stack.apis.tools import RAGDocument, ToolGroups, ToolInvocationResult, ToolRuntime
+from llama_stack.apis.tools import (
+    RAGDocument,
+    ToolGroups,
+    ToolInvocationResult,
+    ToolRuntime,
+)
 from llama_stack.apis.vector_io import VectorIO
 from llama_stack.models.llama.datatypes import (
     BuiltinTool,
@@ -120,13 +125,25 @@ class ChatAgent(ShieldRunnerMixin):
     def turn_to_messages(self, turn: Turn) -> List[Message]:
         messages = []
 
-        # We do not want to keep adding RAG context to the input messages
-        # May be this should be a parameter of the agentic instance
-        # that can define its behavior in a custom way
+        # NOTE: if a toolcall response is in a step, we do not add it when processing the input messages
+        tool_call_ids = set()
+        for step in turn.steps:
+            if step.step_type == StepType.tool_execution.value:
+                for response in step.tool_responses:
+                    tool_call_ids.add(response.call_id)
+
         for m in turn.input_messages:
             msg = m.model_copy()
+            # We do not want to keep adding RAG context to the input messages
+            # May be this should be a parameter of the agentic instance
+            # that can define its behavior in a custom way
             if isinstance(msg, UserMessage):
                 msg.context = None
+            if isinstance(msg, ToolResponseMessage):
+                if msg.call_id in tool_call_ids:
+                    # NOTE: do not add ToolResponseMessage here, we'll add them in tool_execution steps
+                    continue
+
             messages.append(msg)
 
         for step in turn.steps:
@@ -260,17 +277,24 @@ class ChatAgent(ShieldRunnerMixin):
                 raise ValueError(f"Session {request.session_id} not found")
 
             turns = await self.storage.get_session_turns(request.session_id)
+            if len(turns) == 0:
+                raise ValueError("No turns found for session")
+
             messages = await self.get_messages_from_turns(turns)
             messages.extend(request.tool_responses)
 
+            last_turn = turns[-1]
+            last_turn_messages = self.turn_to_messages(last_turn)
             last_turn_messages = [
-                x for x in messages if isinstance(x, UserMessage) or isinstance(x, ToolResponseMessage)
+                x for x in last_turn_messages if isinstance(x, UserMessage) or isinstance(x, ToolResponseMessage)
             ]
+
+            # TODO: figure out whether we should add the tool responses to the last turn messages
+            last_turn_messages.extend(request.tool_responses)
 
             # get the steps from the turn id
             steps = []
-            if len(turns) > 0:
-                steps = turns[-1].steps
+            steps = turns[-1].steps
 
             # mark tool execution step as complete
             # if there's no tool execution in progress step (due to storage, or tool call parsing on client),
@@ -509,9 +533,15 @@ class ChatAgent(ShieldRunnerMixin):
         if documents:
             await self.handle_documents(session_id, documents, input_messages, tool_defs)
 
+        session_info = await self.storage.get_session_info(session_id)
+        # if the session has a memory bank id, let the memory tool use it
+        if session_info and session_info.vector_db_id:
+            toolgroup_args[RAG_TOOL_GROUP]["vector_db_ids"].append(session_info.vector_db_id)
+
         output_attachments = []
 
-        n_iter = 0
+        n_iter = await self.storage.get_num_infer_iters_in_turn(session_id, turn_id) or 0
+
         # Build a map of custom tools to their definitions for faster lookup
         client_tools = {}
         for tool in self.agent_config.client_tools:
@@ -586,8 +616,20 @@ class ChatAgent(ShieldRunnerMixin):
                     if event.stop_reason is not None:
                         stop_reason = event.stop_reason
                 span.set_attribute("stop_reason", stop_reason)
-                span.set_attribute("input", [m.model_dump_json() for m in input_messages])
-                span.set_attribute("output", f"content: {content} tool_calls: {tool_calls}")
+                span.set_attribute(
+                    "input",
+                    json.dumps([json.loads(m.model_dump_json()) for m in input_messages]),
+                )
+                output_attr = json.dumps(
+                    {
+                        "content": content,
+                        "tool_calls": [json.loads(t.model_dump_json()) for t in tool_calls],
+                    }
+                )
+                span.set_attribute("output", output_attr)
+
+            n_iter += 1
+            await self.storage.set_num_infer_iters_in_turn(session_id, turn_id, n_iter)
 
             stop_reason = stop_reason or StopReason.out_of_tokens
 
@@ -624,6 +666,9 @@ class ChatAgent(ShieldRunnerMixin):
 
             if n_iter >= self.agent_config.max_infer_iters:
                 log.info("Done with MAX iterations, exiting.")
+                # NOTE: mark end_of_turn to indicate to client that we are done with the turn
+                # Do not continue the tool call loop after this point
+                message.stop_reason = StopReason.end_of_turn
                 yield message
                 break
 
@@ -673,6 +718,9 @@ class ChatAgent(ShieldRunnerMixin):
 
                 # If tool is a client tool, yield CompletionMessage and return
                 if tool_call.tool_name in client_tools:
+                    # NOTE: mark end_of_message to indicate to client that it may
+                    # call the tool and continue the conversation with the tool's response.
+                    message.stop_reason = StopReason.end_of_message
                     await self.storage.set_in_progress_tool_call_step(
                         session_id,
                         turn_id,
@@ -758,16 +806,14 @@ class ChatAgent(ShieldRunnerMixin):
 
                 input_messages = input_messages + [message, result_message]
 
-            n_iter += 1
-
     async def _get_tool_defs(
         self, toolgroups_for_turn: Optional[List[AgentToolGroup]] = None
     ) -> Tuple[List[ToolDefinition], Dict[str, str]]:
         # Determine which tools to include
-        agent_config_toolgroups = set(
-            (toolgroup.name if isinstance(toolgroup, AgentToolGroupWithArgs) else toolgroup)
+        agent_config_toolgroups = {
+            toolgroup.name if isinstance(toolgroup, AgentToolGroupWithArgs) else toolgroup
             for toolgroup in self.agent_config.toolgroups
-        )
+        }
         toolgroups_for_turn_set = (
             agent_config_toolgroups
             if toolgroups_for_turn is None
@@ -803,6 +849,11 @@ class ChatAgent(ShieldRunnerMixin):
 
             toolgroup_name, tool_name = self._parse_toolgroup_name(toolgroup_name_with_maybe_tool_name)
             tools = await self.tool_groups_api.list_tools(toolgroup_id=toolgroup_name)
+            if not tools.data:
+                available_tool_groups = ", ".join(
+                    [t.identifier for t in (await self.tool_groups_api.list_tool_groups()).data]
+                )
+                raise ValueError(f"Toolgroup {toolgroup_name} not found, available toolgroups: {available_tool_groups}")
             if tool_name is not None and not any(tool.identifier == tool_name for tool in tools.data):
                 raise ValueError(
                     f"Tool {tool_name} not found in toolgroup {toolgroup_name}. Available tools: {', '.join([tool.identifier for tool in tools.data])}"
@@ -1025,9 +1076,6 @@ async def execute_tool_call_maybe(
     group_name = tool_to_group.get(name, None)
     if group_name is None:
         raise ValueError(f"Tool {name} not found in any tool group")
-    # get the arguments generated by the model and augment with toolgroup arg overrides for the agent
-    tool_call_args = tool_call.arguments
-    tool_call_args.update(toolgroup_args.get(group_name, {}))
     if isinstance(name, BuiltinTool):
         if name == BuiltinTool.brave_search:
             name = WEB_SEARCH_TOOL
@@ -1036,10 +1084,12 @@ async def execute_tool_call_maybe(
 
     result = await tool_runtime_api.invoke_tool(
         tool_name=name,
-        kwargs=dict(
-            session_id=session_id,
-            **tool_call_args,
-        ),
+        kwargs={
+            "session_id": session_id,
+            # get the arguments generated by the model and augment with toolgroup arg overrides for the agent
+            **tool_call.arguments,
+            **toolgroup_args.get(group_name, {}),
+        },
     )
     return result
 
