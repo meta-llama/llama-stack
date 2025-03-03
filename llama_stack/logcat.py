@@ -161,7 +161,10 @@ def init(default_level: int = logging.INFO) -> None:
 
 
 def _should_log(level: int, category: str) -> bool:
-    category_level = _category_levels.get(category.lower(), _default_level)
+    category = category.lower()
+    if category not in _category_levels:
+        return False
+    category_level = _category_levels[category]
     return level >= category_level
 
 

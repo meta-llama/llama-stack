@@ -16,15 +16,8 @@ class TestLogcat(unittest.TestCase):
     def setUp(self):
         self.original_env = os.environ.get("LLAMA_STACK_LOGGING")
 
-        self.original_handlers = list(logcat._logger.handlers)
-        self.original_level = logcat._logger.level
-
         self.log_output = io.StringIO()
-        self.handler = logging.StreamHandler(self.log_output)
-        self.handler.setFormatter(logging.Formatter("[%(category)s] %(message)s"))
-
-        logcat._logger.handlers.clear()
-        logcat._logger.addHandler(self.handler)
+        self._init_logcat()
 
     def tearDown(self):
         if self.original_env is not None:
@@ -32,12 +25,12 @@ class TestLogcat(unittest.TestCase):
         else:
             os.environ.pop("LLAMA_STACK_LOGGING", None)
 
+    def _init_logcat(self):
+        logcat.init(default_level=logging.DEBUG)
+        self.handler = logging.StreamHandler(self.log_output)
+        self.handler.setFormatter(logging.Formatter("[%(category)s] %(message)s"))
         logcat._logger.handlers.clear()
-        for handler in self.original_handlers:
-            logcat._logger.addHandler(handler)
-        logcat._logger.setLevel(self.original_level)
-
-        logcat._initialize()
+        logcat._logger.addHandler(self.handler)
 
     def test_basic_logging(self):
         logcat.info("server", "Info message")
@@ -62,8 +55,7 @@ class TestLogcat(unittest.TestCase):
 
     def test_env_var_control(self):
         os.environ["LLAMA_STACK_LOGGING"] = "server=debug;inference=warning"
-
-        logcat._initialize()
+        self._init_logcat()
 
         # These should be visible based on the environment settings
         logcat.debug("server", "Server debug message")
