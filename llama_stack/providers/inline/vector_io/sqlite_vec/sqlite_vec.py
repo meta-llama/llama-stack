@@ -23,6 +23,7 @@ from llama_stack.providers.utils.memory.vector_store import EmbeddingIndex, Vect
 
 logger = logging.getLogger(__name__)
 
+
 def serialize_vector(vector: List[float]) -> bytes:
     """Serialize a list of floats into a compact binary representation."""
     return struct.pack(f"{len(vector)}f", *vector)
@@ -145,7 +146,6 @@ class SQLiteVecIndex(EmbeddingIndex):
             score = 1.0 / distance if distance != 0 else float("inf")
             scores.append(score)
         return QueryChunksResponse(chunks=chunks, scores=scores)
-
 
 
 class SQLiteVecVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
