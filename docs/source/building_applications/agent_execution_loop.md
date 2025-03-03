@@ -67,10 +67,17 @@ sequenceDiagram
 Each step in this process can be monitored and controlled through configurations. Here's an example that demonstrates monitoring the agent's execution:
 
 ```python
+from llama_stack_client import LlamaStackClient
+from llama_stack_client.lib.agents.agent import Agent
 from llama_stack_client.lib.agents.event_logger import EventLogger
+from llama_stack_client.types.agent_create_params import AgentConfig
 from rich.pretty import pprint
 
+# Replace host and port
+client = LlamaStackClient(base_url=f"http://{HOST}:{PORT}")
+
 agent_config = AgentConfig(
+    # Check with `llama-stack-client models list`
     model="Llama3.2-3B-Instruct",
     instructions="You are a helpful assistant",
     # Enable both RAG and tool usage
@@ -81,7 +88,7 @@ agent_config = AgentConfig(
         },
         "builtin::code_interpreter",
     ],
-    # Configure safety
+    # Configure safety (optional)
     input_shields=["llama_guard"],
     output_shields=["llama_guard"],
     # Control the inference loop
@@ -98,7 +105,7 @@ session_id = agent.create_session("monitored_session")
 # Stream the agent's execution steps
 response = agent.create_turn(
     messages=[{"role": "user", "content": "Analyze this code and run it"}],
-    attachments=[
+    documents=[
         {
             "content": "https://raw.githubusercontent.com/example/code.py",
             "mime_type": "text/plain",
@@ -114,7 +121,7 @@ for log in EventLogger().log(response):
 # Using non-streaming API, the response contains input, steps, and output.
 response = agent.create_turn(
     messages=[{"role": "user", "content": "Analyze this code and run it"}],
-    attachments=[
+    documents=[
         {
             "content": "https://raw.githubusercontent.com/example/code.py",
             "mime_type": "text/plain",
