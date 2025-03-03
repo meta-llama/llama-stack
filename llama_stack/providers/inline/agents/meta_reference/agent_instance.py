@@ -540,7 +540,8 @@ class ChatAgent(ShieldRunnerMixin):
 
         output_attachments = []
 
-        n_iter = 0
+        n_iter = await self.storage.get_num_infer_iters_in_turn(session_id, turn_id) or 0
+
         # Build a map of custom tools to their definitions for faster lookup
         client_tools = {}
         for tool in self.agent_config.client_tools:
@@ -627,6 +628,9 @@ class ChatAgent(ShieldRunnerMixin):
                 )
                 span.set_attribute("output", output_attr)
 
+            n_iter += 1
+            await self.storage.set_num_infer_iters_in_turn(session_id, turn_id, n_iter)
+
             stop_reason = stop_reason or StopReason.out_of_tokens
 
             # If tool calls are parsed successfully,
@@ -662,6 +666,9 @@ class ChatAgent(ShieldRunnerMixin):
 
             if n_iter >= self.agent_config.max_infer_iters:
                 log.info("Done with MAX iterations, exiting.")
+                # NOTE: mark end_of_turn to indicate to client that we are done with the turn
+                # Do not continue the tool call loop after this point
+                message.stop_reason = StopReason.end_of_turn
                 yield message
                 break
 
@@ -711,6 +718,9 @@ class ChatAgent(ShieldRunnerMixin):
 
                 # If tool is a client tool, yield CompletionMessage and return
                 if tool_call.tool_name in client_tools:
+                    # NOTE: mark end_of_message to indicate to client that it may
+                    # call the tool and continue the conversation with the tool's response.
+                    message.stop_reason = StopReason.end_of_message
                     await self.storage.set_in_progress_tool_call_step(
                         session_id,
                         turn_id,
@@ -795,8 +805,6 @@ class ChatAgent(ShieldRunnerMixin):
                     output_attachments.append(out_attachment)
 
                 input_messages = input_messages + [message, result_message]
-
-            n_iter += 1
 
     async def _get_tool_defs(
         self, toolgroups_for_turn: Optional[List[AgentToolGroup]] = None

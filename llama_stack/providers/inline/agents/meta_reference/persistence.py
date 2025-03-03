@@ -105,3 +105,15 @@ class AgentPersistence:
             key=f"in_progress_tool_call_step:{self.agent_id}:{session_id}:{turn_id}",
         )
         return ToolExecutionStep(**json.loads(value)) if value else None
+
+    async def set_num_infer_iters_in_turn(self, session_id: str, turn_id: str, num_infer_iters: int):
+        await self.kvstore.set(
+            key=f"num_infer_iters_in_turn:{self.agent_id}:{session_id}:{turn_id}",
+            value=str(num_infer_iters),
+        )
+
+    async def get_num_infer_iters_in_turn(self, session_id: str, turn_id: str) -> Optional[int]:
+        value = await self.kvstore.get(
+            key=f"num_infer_iters_in_turn:{self.agent_id}:{session_id}:{turn_id}",
+        )
+        return int(value) if value else None
