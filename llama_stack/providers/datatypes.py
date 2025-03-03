@@ -13,6 +13,7 @@ from llama_stack.apis.benchmarks import Benchmark
 from llama_stack.apis.datasets import Dataset
 from llama_stack.apis.datatypes import Api
 from llama_stack.apis.models import Model
+from llama_stack.apis.preprocessing import Preprocessor
 from llama_stack.apis.scoring_functions import ScoringFn
 from llama_stack.apis.shields import Shield
 from llama_stack.apis.tools import Tool
@@ -56,6 +57,12 @@ class ToolsProtocolPrivate(Protocol):
     async def register_tool(self, tool: Tool) -> None: ...
 
     async def unregister_tool(self, tool_id: str) -> None: ...
+
+
+class PreprocessorsProtocolPrivate(Protocol):
+    async def register_preprocessor(self, preprocessor: Preprocessor) -> None: ...
+
+    async def unregister_preprocessor(self, preprocessor_id: str) -> None: ...
 
 
 @json_schema_type

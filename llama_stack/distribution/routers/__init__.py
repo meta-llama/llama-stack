@@ -14,6 +14,7 @@ from .routing_tables import (
     BenchmarksRoutingTable,
     DatasetsRoutingTable,
     ModelsRoutingTable,
+    PreprocessorsRoutingTable,
     ScoringFunctionsRoutingTable,
     ShieldsRoutingTable,
     ToolGroupsRoutingTable,
@@ -35,6 +36,7 @@ async def get_routing_table_impl(
         "scoring_functions": ScoringFunctionsRoutingTable,
         "benchmarks": BenchmarksRoutingTable,
         "tool_groups": ToolGroupsRoutingTable,
+        "preprocessors": PreprocessorsRoutingTable,
     }
 
     if api.value not in api_to_tables:
@@ -50,6 +52,7 @@ async def get_auto_router_impl(api: Api, routing_table: RoutingTable, _deps) -> 
         DatasetIORouter,
         EvalRouter,
         InferenceRouter,
+        PreprocessingRouter,
         SafetyRouter,
         ScoringRouter,
         ToolRuntimeRouter,
@@ -64,6 +67,7 @@ async def get_auto_router_impl(api: Api, routing_table: RoutingTable, _deps) -> 
         "scoring": ScoringRouter,
         "eval": EvalRouter,
         "tool_runtime": ToolRuntimeRouter,
+        "preprocessing": PreprocessingRouter,
     }
     if api.value not in api_to_routers:
         raise ValueError(f"API {api.value} not found in router map")

@@ -51,6 +51,10 @@ def builtin_automatically_routed_apis() -> List[AutoRoutedApiInfo]:
             routing_table_api=Api.tool_groups,
             router_api=Api.tool_runtime,
         ),
+        AutoRoutedApiInfo(
+            routing_table_api=Api.preprocessors,
+            router_api=Api.preprocessing,
+        ),
     ]
 
 

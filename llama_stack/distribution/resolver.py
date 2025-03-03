@@ -17,6 +17,8 @@ from llama_stack.apis.inference import Inference
 from llama_stack.apis.inspect import Inspect
 from llama_stack.apis.models import Models
 from llama_stack.apis.post_training import PostTraining
+from llama_stack.apis.preprocessing import Preprocessing
+from llama_stack.apis.preprocessing.preprocessors import Preprocessors
 from llama_stack.apis.safety import Safety
 from llama_stack.apis.scoring import Scoring
 from llama_stack.apis.scoring_functions import ScoringFunctions
@@ -41,6 +43,7 @@ from llama_stack.providers.datatypes import (
     DatasetsProtocolPrivate,
     InlineProviderSpec,
     ModelsProtocolPrivate,
+    PreprocessorsProtocolPrivate,
     ProviderSpec,
     RemoteProviderConfig,
     RemoteProviderSpec,
@@ -77,6 +80,8 @@ def api_protocol_map() -> Dict[Api, Any]:
         Api.post_training: PostTraining,
         Api.tool_groups: ToolGroups,
         Api.tool_runtime: ToolRuntime,
+        Api.preprocessing: Preprocessing,
+        Api.preprocessors: Preprocessors,
     }
 
 
@@ -93,6 +98,7 @@ def additional_protocols_map() -> Dict[Api, Any]:
             Api.scoring_functions,
         ),
         Api.eval: (BenchmarksProtocolPrivate, Benchmarks, Api.benchmarks),
+        Api.preprocessing: (PreprocessorsProtocolPrivate, Preprocessors, Api.preprocessors),
     }
 
 

@@ -14,6 +14,7 @@ from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.common.type_system import ParamType
 from llama_stack.apis.datasets import Dataset, Datasets, ListDatasetsResponse
 from llama_stack.apis.models import ListModelsResponse, Model, Models, ModelType
+from llama_stack.apis.preprocessing.preprocessors import ListPreprocessorsResponse, Preprocessor, Preprocessors
 from llama_stack.apis.resource import ResourceType
 from llama_stack.apis.scoring_functions import (
     ListScoringFunctionsResponse,
@@ -66,6 +67,8 @@ async def register_object_with_provider(obj: RoutableObject, p: Any) -> Routable
         return await p.register_benchmark(obj)
     elif api == Api.tool_runtime:
         return await p.register_tool(obj)
+    elif api == Api.preprocessing:
+        return await p.register_preprocessor(obj)
     else:
         raise ValueError(f"Unknown API {api} for registering object with provider")
 
@@ -80,6 +83,8 @@ async def unregister_object_from_provider(obj: RoutableObject, p: Any) -> None:
         return await p.unregister_dataset(obj.identifier)
     elif api == Api.tool_runtime:
         return await p.unregister_tool(obj.identifier)
+    elif api == Api.preprocessing:
+        return await p.unregister_preprocessor(obj.identifier)
     else:
         raise ValueError(f"Unregister not supported for {api}")
 
@@ -127,6 +132,8 @@ class CommonRoutingTableImpl(RoutingTable):
                 p.benchmark_store = self
             elif api == Api.tool_runtime:
                 p.tool_store = self
+            elif api == Api.preprocessing:
+                p.preprocessor_store = self
 
     async def shutdown(self) -> None:
         for p in self.impls_by_provider_id.values():
@@ -148,6 +155,8 @@ class CommonRoutingTableImpl(RoutingTable):
                 return ("Eval", "benchmark")
             elif isinstance(self, ToolGroupsRoutingTable):
                 return ("Tools", "tool")
+            elif isinstance(self, PreprocessorsRoutingTable):
+                return ("Preprocessing", "preprocessor")
             else:
                 raise ValueError("Unknown routing table type")
 
@@ -536,3 +545,40 @@ class ToolGroupsRoutingTable(CommonRoutingTableImpl, ToolGroups):
 
     async def shutdown(self) -> None:
         pass
+
+
+class PreprocessorsRoutingTable(CommonRoutingTableImpl, Preprocessors):
+    async def list_preprocessors(self) -> ListPreprocessorsResponse:
+        return ListPreprocessorsResponse(data=await self.get_all_with_type(ResourceType.preprocessor.value))
+
+    async def get_preprocessor(self, preprocessor_id: str) -> Optional[Preprocessor]:
+        return await self.get_object_by_identifier("preprocessor", preprocessor_id)
+
+    async def register_preprocessor(
+        self,
+        preprocessor_id: str,
+        provider_id: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> Preprocessor:
+        if provider_id is None:
+            if len(self.impls_by_provider_id) == 1:
+                provider_id = list(self.impls_by_provider_id.keys())[0]
+            else:
+                raise ValueError(
+                    "No provider specified and multiple providers available. Please specify a provider_id."
+                )
+        preprocessor = Preprocessor(
+            identifier=preprocessor_id,
+            provider_resource_id=preprocessor_id,
+            provider_id=provider_id,
+            metadata=metadata,
+        )
+        preprocessor.provider_id = provider_id
+        await self.register_object(preprocessor)
+        return preprocessor
+
+    async def unregister_preprocessor(self, preprocessor_id: str) -> None:
+        existing_preprocessor = await self.get_preprocessor(preprocessor_id)
+        if existing_preprocessor is None:
+            raise ValueError(f"Preprocessor {preprocessor_id} not found")
+        await self.unregister_object(existing_preprocessor)

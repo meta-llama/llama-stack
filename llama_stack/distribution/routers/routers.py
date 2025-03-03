@@ -34,6 +34,7 @@ from llama_stack.apis.inference import (
     ToolPromptFormat,
 )
 from llama_stack.apis.models import ModelType
+from llama_stack.apis.preprocessing import Preprocessing, PreprocessingInput, PreprocessingResponse, PreprocessorOptions
 from llama_stack.apis.safety import RunShieldResponse, Safety
 from llama_stack.apis.scoring import (
     ScoreBatchResponse,
@@ -482,3 +483,28 @@ class ToolRuntimeRouter(ToolRuntime):
         self, tool_group_id: Optional[str] = None, mcp_endpoint: Optional[URL] = None
     ) -> List[ToolDef]:
         return await self.routing_table.get_provider_impl(tool_group_id).list_tools(tool_group_id, mcp_endpoint)
+
+
+class PreprocessingRouter(Preprocessing):
+    def __init__(
+        self,
+        routing_table: RoutingTable,
+    ) -> None:
+        self.routing_table = routing_table
+
+    async def initialize(self) -> None:
+        pass
+
+    async def shutdown(self) -> None:
+        pass
+
+    async def preprocess(
+        self,
+        preprocessor_id: str,
+        preprocessor_inputs: List[PreprocessingInput],
+        options: PreprocessorOptions,
+    ) -> PreprocessingResponse:
+        return await self.routing_table.get_provider_impl(preprocessor_id).preprocess(
+            preprocessor_inputs=preprocessor_inputs,
+            options=options,
+        )
