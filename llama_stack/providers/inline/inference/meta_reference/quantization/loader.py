@@ -20,10 +20,10 @@ from torchao.quantization.GPTQ import Int8DynActInt4WeightLinear
 
 from llama_stack.apis.inference import QuantizationType
 from llama_stack.models.llama.datatypes import CheckpointQuantizationFormat
-from llama_stack.models.llama.llama3.args import ModelArgs
-from llama_stack.models.llama.llama3.model import Transformer, TransformerBlock
 from llama_stack.models.llama.sku_list import resolve_model
 
+from ...llama3.args import ModelArgs
+from ...llama3.model import Transformer, TransformerBlock
 from ..config import MetaReferenceQuantizedInferenceConfig
 
 log = logging.getLogger(__name__)

@@ -24,7 +24,6 @@ from fairscale.nn.model_parallel.initialize import (
     model_parallel_is_initialized,
 )
 from lmformatenforcer import JsonSchemaParser, TokenEnforcer, TokenEnforcerTokenizerData
-from pydantic import BaseModel
 
 from llama_stack.apis.inference import (
     Fp8QuantizationConfig,
@@ -32,19 +31,13 @@ from llama_stack.apis.inference import (
     ResponseFormat,
     ResponseFormatType,
 )
-from llama_stack.distribution.utils.model_utils import model_local_dir
 from llama_stack.models.llama.datatypes import (
     GreedySamplingStrategy,
     Model,
     SamplingParams,
     TopPSamplingStrategy,
 )
-from llama_stack.models.llama.llama3.args import ModelArgs
 from llama_stack.models.llama.llama3.chat_format import ChatFormat, LLMInput
-from llama_stack.models.llama.llama3.model import Transformer
-from llama_stack.models.llama.llama3.multimodal.model import (
-    CrossAttentionTransformer,
-)
 from llama_stack.models.llama.llama3.tokenizer import Tokenizer
 from llama_stack.models.llama.sku_list import resolve_model
 from llama_stack.providers.utils.inference.prompt_adapter import (
@@ -52,33 +45,16 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
     CompletionRequestWithRawContent,
 )
 
-from .config import MetaReferenceInferenceConfig, MetaReferenceQuantizedInferenceConfig
+from ..common import TokenResult, model_checkpoint_dir
+from ..config import MetaReferenceInferenceConfig, MetaReferenceQuantizedInferenceConfig
+from .args import ModelArgs
+from .model import Transformer
+from .multimodal.model import CrossAttentionTransformer
 
 log = logging.getLogger(__name__)
 
 
-def model_checkpoint_dir(model_id) -> str:
-    checkpoint_dir = Path(model_local_dir(model_id))
-
-    paths = [Path(checkpoint_dir / f"consolidated.{ext}") for ext in ["pth", "00.pth"]]
-    if not any(p.exists() for p in paths):
-        checkpoint_dir = checkpoint_dir / "original"
-
-    assert checkpoint_dir.exists(), (
-        f"Could not find checkpoints in: {model_local_dir(model_id)}. "
-        f"If you try to use the native llama model, Please download model using `llama download --model-id {model_id}`"
-        f"Otherwise, please save you model checkpoint under {model_local_dir(model_id)}"
-    )
-    return str(checkpoint_dir)
-
-
-class TokenResult(BaseModel):
-    token: int
-    text: str
-    logprobs: Optional[List[float]] = None
-
-
-class Llama:
+class Llama3:
     @staticmethod
     def build(
         config: Union[MetaReferenceInferenceConfig, MetaReferenceQuantizedInferenceConfig],
@@ -170,7 +146,7 @@ class Llama:
 
         if isinstance(config, MetaReferenceQuantizedInferenceConfig):
             if isinstance(config.quantization, Fp8QuantizationConfig):
-                from .quantization.loader import convert_to_fp8_quantized_model
+                from ..quantization.loader import convert_to_fp8_quantized_model
 
                 # load on CPU in bf16 so that fp8 conversion does not find an
                 # unexpected (fp32, e.g.) datatype
@@ -183,7 +159,7 @@ class Llama:
                 model.load_state_dict(state_dict, strict=False)
                 model = convert_to_fp8_quantized_model(model, config, ckpt_dir)
             elif isinstance(config.quantization, Int4QuantizationConfig):
-                from .quantization.loader import convert_to_int4_quantized_model
+                from ..quantization.loader import convert_to_int4_quantized_model
 
                 model = Transformer(model_args)
                 model = convert_to_int4_quantized_model(model, model_args, config)
@@ -193,7 +169,7 @@ class Llama:
                     # Add a wrapper for adding hadamard transform for spinquant.
                     # This needs to be done after loading the state dict otherwise an error will be raised while
                     # loading the state dict.
-                    from .quantization.hadamard_utils import (
+                    from ..quantization.hadamard_utils import (
                         add_hadamard_transform_for_spinquant,
                     )
 
@@ -222,7 +198,7 @@ class Llama:
         model.to(device)
 
         log.info(f"Loaded in {time.time() - start_time:.2f} seconds")
-        return Llama(model, tokenizer, model_args, llama_model_id)
+        return Llama3(model, tokenizer, model_args, llama_model_id)
 
     def __init__(
         self,

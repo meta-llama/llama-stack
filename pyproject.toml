@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "llama_stack"
-version = "0.1.4"
+version = "0.1.5"
 authors = [{ name = "Meta Llama", email = "llama-oss@meta.com" }]
 description = "Llama Stack"
 readme = "README.md"
@@ -75,11 +75,7 @@ docs = [
     "sphinxcontrib.mermaid",
     "tomli",
 ]
-codegen = [
-    "rich",
-    "pydantic",
-    "jinja2",
-]
+codegen = ["rich", "pydantic", "jinja2"]
 
 [project.urls]
 Homepage = "https://github.com/meta-llama/llama-stack"
@@ -163,3 +159,7 @@ exclude = [
 # packages that lack typing annotations, do not have stubs, or are unavailable.
 module = ["yaml", "fire"]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "llama_stack.distribution.resolver"
+follow_imports = "normal"                    # This will force type checking on this module
