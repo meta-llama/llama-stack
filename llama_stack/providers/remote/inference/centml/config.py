@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field, SecretStr
 @json_schema_type
 class CentMLImplConfig(BaseModel):
     url: str = Field(
-        default="https://api.centml.com/openai/v1",
+        default="https://api.centml.org/openai/v1",
         description="The CentML API server URL",
     )
     api_key: Optional[SecretStr] = Field(
@@ -24,6 +24,6 @@ class CentMLImplConfig(BaseModel):
     @classmethod
     def sample_run_config(cls, **kwargs) -> Dict[str, Any]:
         return {
-            "url": "https://api.centml.com/openai/v1",
+            "url": "https://api.centml.org/openai/v1",
             "api_key": "${env.CENTML_API_KEY}",
         }
