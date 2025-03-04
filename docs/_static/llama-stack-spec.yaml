@@ -4357,13 +4357,13 @@ components:
           type: array
           items:
             type: string
-        task_config:
+        benchmark_config:
           $ref: '#/components/schemas/BenchmarkConfig'
       additionalProperties: false
       required:
         - input_rows
         - scoring_functions
-        - task_config
+        - benchmark_config
       title: EvaluateRowsRequest
     EvaluateResponse:
       type: object
@@ -6168,11 +6168,11 @@ components:
     RunEvalRequest:
       type: object
       properties:
-        task_config:
+        benchmark_config:
           $ref: '#/components/schemas/BenchmarkConfig'
       additionalProperties: false
       required:
-        - task_config
+        - benchmark_config
       title: RunEvalRequest
     Job:
       type: object

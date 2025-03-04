@@ -81,7 +81,10 @@ class VectorIORouter(VectorIO):
         provider_id: Optional[str] = None,
         provider_vector_db_id: Optional[str] = None,
     ) -> None:
-        logcat.debug("core", f"VectorIORouter.register_vector_db: {vector_db_id}, {embedding_model}")
+        logcat.debug(
+            "core",
+            f"VectorIORouter.register_vector_db: {vector_db_id}, {embedding_model}",
+        )
         await self.routing_table.register_vector_db(
             vector_db_id,
             embedding_model,
@@ -328,7 +331,10 @@ class DatasetIORouter(DatasetIO):
         page_token: Optional[str] = None,
         filter_condition: Optional[str] = None,
     ) -> PaginatedRowsResult:
-        logcat.debug("core", f"DatasetIORouter.get_rows_paginated: {dataset_id}, rows_in_page={rows_in_page}")
+        logcat.debug(
+            "core",
+            f"DatasetIORouter.get_rows_paginated: {dataset_id}, rows_in_page={rows_in_page}",
+        )
         return await self.routing_table.get_provider_impl(dataset_id).get_rows_paginated(
             dataset_id=dataset_id,
             rows_in_page=rows_in_page,
@@ -387,7 +393,10 @@ class ScoringRouter(Scoring):
         input_rows: List[Dict[str, Any]],
         scoring_functions: Dict[str, Optional[ScoringFnParams]] = None,
     ) -> ScoreResponse:
-        logcat.debug("core", f"ScoringRouter.score: {len(input_rows)} rows, {len(scoring_functions)} functions")
+        logcat.debug(
+            "core",
+            f"ScoringRouter.score: {len(input_rows)} rows, {len(scoring_functions)} functions",
+        )
         res = {}
         # look up and map each scoring function to its provider impl
         for fn_identifier in scoring_functions.keys():
@@ -419,12 +428,12 @@ class EvalRouter(Eval):
     async def run_eval(
         self,
         benchmark_id: str,
-        task_config: BenchmarkConfig,
+        benchmark_config: BenchmarkConfig,
     ) -> Job:
         logcat.debug("core", f"EvalRouter.run_eval: {benchmark_id}")
         return await self.routing_table.get_provider_impl(benchmark_id).run_eval(
             benchmark_id=benchmark_id,
-            task_config=task_config,
+            benchmark_config=benchmark_config,
         )
 
     async def evaluate_rows(
@@ -432,14 +441,14 @@ class EvalRouter(Eval):
         benchmark_id: str,
         input_rows: List[Dict[str, Any]],
         scoring_functions: List[str],
-        task_config: BenchmarkConfig,
+        benchmark_config: BenchmarkConfig,
     ) -> EvaluateResponse:
         logcat.debug("core", f"EvalRouter.evaluate_rows: {benchmark_id}, {len(input_rows)} rows")
         return await self.routing_table.get_provider_impl(benchmark_id).evaluate_rows(
             benchmark_id=benchmark_id,
             input_rows=input_rows,
             scoring_functions=scoring_functions,
-            task_config=task_config,
+            benchmark_config=benchmark_config,
         )
 
     async def job_status(

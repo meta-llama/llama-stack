@@ -63,7 +63,7 @@ class Eval(Protocol):
     async def run_eval(
         self,
         benchmark_id: str,
-        task_config: BenchmarkConfig,
+        benchmark_config: BenchmarkConfig,
     ) -> Job: ...
 
     @webmethod(route="/eval/benchmarks/{benchmark_id}/evaluations", method="POST")
@@ -72,7 +72,7 @@ class Eval(Protocol):
         benchmark_id: str,
         input_rows: List[Dict[str, Any]],
         scoring_functions: List[str],
-        task_config: BenchmarkConfig,
+        benchmark_config: BenchmarkConfig,
     ) -> EvaluateResponse: ...
 
     @webmethod(route="/eval/benchmarks/{benchmark_id}/jobs/{job_id}", method="GET")

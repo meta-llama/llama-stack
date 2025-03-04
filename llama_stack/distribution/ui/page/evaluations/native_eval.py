@@ -212,7 +212,7 @@ def run_evaluation_3():
                 benchmark_id=selected_benchmark,
                 input_rows=[r],
                 scoring_functions=benchmarks[selected_benchmark].scoring_functions,
-                task_config=benchmark_config,
+                benchmark_config=benchmark_config,
             )
 
             for k in r.keys():
