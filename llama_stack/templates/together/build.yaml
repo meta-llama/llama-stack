@@ -30,4 +30,5 @@ distribution_spec:
     - inline::code-interpreter
     - inline::rag-runtime
     - remote::model-context-protocol
+    - remote::wolfram-alpha
 image_type: conda

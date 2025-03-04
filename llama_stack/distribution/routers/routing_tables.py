@@ -366,7 +366,7 @@ class DatasetsRoutingTable(CommonRoutingTableImpl, Datasets):
                 provider_id = list(self.impls_by_provider_id.keys())[0]
             else:
                 raise ValueError(
-                    "No provider specified and multiple providers available. Please specify a provider_id."
+                    f"No provider specified and multiple providers available. Please specify a provider_id. Available providers: {self.impls_by_provider_id.keys()}"
                 )
         if metadata is None:
             metadata = {}

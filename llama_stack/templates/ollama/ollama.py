@@ -34,6 +34,7 @@ def get_distribution_template() -> DistributionTemplate:
             "inline::code-interpreter",
             "inline::rag-runtime",
             "remote::model-context-protocol",
+            "remote::wolfram-alpha",
         ],
     }
     name = "ollama"
@@ -77,6 +78,10 @@ def get_distribution_template() -> DistributionTemplate:
         ToolGroupInput(
             toolgroup_id="builtin::code_interpreter",
             provider_id="code-interpreter",
+        ),
+        ToolGroupInput(
+            toolgroup_id="builtin::wolfram_alpha",
+            provider_id="wolfram-alpha",
         ),
     ]
 
