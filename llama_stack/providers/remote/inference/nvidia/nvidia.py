@@ -85,7 +85,7 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
         # make sure the client lives longer than any async calls
         self._client = AsyncOpenAI(
             base_url=f"{self._config.url}/v1",
-            api_key=(self._config.api_key if self._config.api_key else "NO KEY"),
+            api_key=(self._config.api_key.get_secret_value() if self._config.api_key else "NO KEY"),
             timeout=self._config.timeout,
         )
 
