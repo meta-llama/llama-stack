@@ -87,7 +87,7 @@ response = client.eval.evaluate_rows(
     benchmark_id="meta-reference::mmmu",
     input_rows=eval_rows,
     scoring_functions=["basic::regex_parser_multiple_choice_answer"],
-    task_config={
+    benchmark_config={
         "type": "benchmark",
         "eval_candidate": {
             "type": "model",
@@ -145,7 +145,7 @@ response = client.eval.evaluate_rows(
     benchmark_id="meta-reference::simpleqa",
     input_rows=eval_rows.rows,
     scoring_functions=["llm-as-judge::405b-simpleqa"],
-    task_config={
+    benchmark_config={
         "type": "benchmark",
         "eval_candidate": {
             "type": "model",
@@ -195,7 +195,7 @@ response = client.eval.evaluate_rows(
     benchmark_id="meta-reference::simpleqa",
     input_rows=eval_rows.rows,
     scoring_functions=["llm-as-judge::405b-simpleqa"],
-    task_config={
+    benchmark_config={
         "type": "benchmark",
         "eval_candidate": {
             "type": "agent",

@@ -68,7 +68,7 @@ class Testeval:
             benchmark_id=benchmark_id,
             input_rows=rows.rows,
             scoring_functions=scoring_functions,
-            task_config=AppBenchmarkConfig(
+            benchmark_config=AppBenchmarkConfig(
                 eval_candidate=ModelCandidate(
                     model=inference_model,
                     sampling_params=SamplingParams(),
@@ -111,7 +111,7 @@ class Testeval:
         )
         response = await eval_impl.run_eval(
             benchmark_id=benchmark_id,
-            task_config=AppBenchmarkConfig(
+            benchmark_config=AppBenchmarkConfig(
                 eval_candidate=ModelCandidate(
                     model=inference_model,
                     sampling_params=SamplingParams(),
@@ -169,7 +169,7 @@ class Testeval:
         benchmark_id = "meta-reference-mmlu"
         response = await eval_impl.run_eval(
             benchmark_id=benchmark_id,
-            task_config=BenchmarkBenchmarkConfig(
+            benchmark_config=BenchmarkBenchmarkConfig(
                 eval_candidate=ModelCandidate(
                     model=inference_model,
                     sampling_params=SamplingParams(),

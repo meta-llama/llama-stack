@@ -6355,7 +6355,7 @@
                             "type": "string"
                         }
                     },
-                    "task_config": {
+                    "benchmark_config": {
                         "$ref": "#/components/schemas/BenchmarkConfig"
                     }
                 },
@@ -6363,7 +6363,7 @@
                 "required": [
                     "input_rows",
                     "scoring_functions",
-                    "task_config"
+                    "benchmark_config"
                 ],
                 "title": "EvaluateRowsRequest"
             },
@@ -9248,13 +9248,13 @@
             "RunEvalRequest": {
                 "type": "object",
                 "properties": {
-                    "task_config": {
+                    "benchmark_config": {
                         "$ref": "#/components/schemas/BenchmarkConfig"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "task_config"
+                    "benchmark_config"
                 ],
                 "title": "RunEvalRequest"
             },
