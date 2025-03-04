@@ -243,8 +243,7 @@ class ChatAgent(ShieldRunnerMixin):
                 steps=steps,
             )
             await self.storage.add_turn_to_session(request.session_id, turn)
-
-            if output_message.tool_calls and request.allow_turn_resume:
+            if output_message.tool_calls:
                 chunk = AgentTurnResponseStreamChunk(
                     event=AgentTurnResponseEvent(
                         payload=AgentTurnResponseTurnAwaitingInputPayload(
@@ -686,10 +685,16 @@ class ChatAgent(ShieldRunnerMixin):
                             message.content = [message.content] + output_attachments
                     yield message
                 else:
-                    logcat.debug("agents", f"completion message with EOM (iter: {n_iter}): {str(message)}")
+                    logcat.debug(
+                        "agents",
+                        f"completion message with EOM (iter: {n_iter}): {str(message)}",
+                    )
                     input_messages = input_messages + [message]
             else:
-                logcat.debug("agents", f"completion message (iter: {n_iter}) from the model: {str(message)}")
+                logcat.debug(
+                    "agents",
+                    f"completion message (iter: {n_iter}) from the model: {str(message)}",
+                )
                 # 1. Start the tool execution step and progress
                 step_id = str(uuid.uuid4())
                 yield AgentTurnResponseStreamChunk(

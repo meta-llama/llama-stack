@@ -296,9 +296,6 @@ class AgentTurnCreateRequest(AgentConfigOverridablePerTurn):
     stream: Optional[bool] = False
     tool_config: Optional[ToolConfig] = None
 
-    # TODO (xiyan): temporary flag, will remove for 0.1.5
-    allow_turn_resume: Optional[bool] = False
-
 
 @json_schema_type
 class AgentTurnResumeRequest(BaseModel):
@@ -355,7 +352,6 @@ class Agents(Protocol):
         documents: Optional[List[Document]] = None,
         toolgroups: Optional[List[AgentToolGroup]] = None,
         tool_config: Optional[ToolConfig] = None,
-        allow_turn_resume: Optional[bool] = False,
     ) -> Union[Turn, AsyncIterator[AgentTurnResponseStreamChunk]]: ...
 
     @webmethod(
