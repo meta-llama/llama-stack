@@ -3,6 +3,7 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
+import logging
 from typing import List
 
 from docling.document_converter import DocumentConverter
@@ -20,6 +21,8 @@ from llama_stack.apis.preprocessing import (
 from llama_stack.apis.vector_io import Chunk
 from llama_stack.providers.datatypes import PreprocessorsProtocolPrivate
 from llama_stack.providers.inline.preprocessing.docling import InlineDoclingConfig
+
+log = logging.getLogger(__name__)
 
 
 class InclineDoclingPreprocessorImpl(Preprocessing, PreprocessorsProtocolPrivate):
@@ -58,7 +61,10 @@ class InclineDoclingPreprocessorImpl(Preprocessing, PreprocessorsProtocolPrivate
             elif isinstance(inp.path_or_content, URL):
                 url = inp.path_or_content.uri
             else:
-                raise ValueError(f"Unexpected type {type(inp.path_or_content)} for input {inp.path_or_content}")
+                log.error(
+                    f"Unexpected type {type(inp.path_or_content)} for input {inp.path_or_content}, skipping this input."
+                )
+                continue
 
             converted_document = self.converter.convert(url).document
             if self.config.chunk:

@@ -26,8 +26,8 @@ class PreprocessingDataType(Enum):
 @json_schema_type
 class PreprocessingInput(BaseModel):
     preprocessor_input_id: str
-    preprocessor_input_type: Optional[PreprocessingDataType]
-    path_or_content: str | URL
+    preprocessor_input_type: Optional[PreprocessingDataType] = None
+    path_or_content: str | InterleavedContent | URL
 
 
 PreprocessorOptions = Dict[str, Any]
@@ -36,7 +36,7 @@ PreprocessorOptions = Dict[str, Any]
 @json_schema_type
 class PreprocessingResponse(BaseModel):
     status: bool
-    results: Optional[List[str | InterleavedContent | Chunk]]
+    results: Optional[List[str | InterleavedContent | Chunk]] = None
 
 
 class PreprocessorStore(Protocol):
