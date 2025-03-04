@@ -45,7 +45,7 @@ def get_distribution_template() -> DistributionTemplate:
     vector_io_provider_sqlite = Provider(
         provider_id="sqlite-vec",
         provider_type="inline::sqlite-vec",
-        config=SQLiteVectorIOConfig.sample_run_config(f"distributions/{name}"),
+        config=SQLiteVectorIOConfig.sample_run_config(f"~/.llama/distributions/{name}"),
     )
 
     inference_model = ModelInput(

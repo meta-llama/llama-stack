@@ -248,7 +248,7 @@ def _generate_run_config(
 
             config_type = instantiate_class_type(provider_registry[Api(api)][provider_type].config_class)
             if hasattr(config_type, "sample_run_config"):
-                config = config_type.sample_run_config(__distro_dir__=f"distributions/{image_name}")
+                config = config_type.sample_run_config(__distro_dir__=f"~/.llama/distributions/{image_name}")
             else:
                 config = {}
 
