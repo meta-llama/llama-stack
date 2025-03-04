@@ -58,7 +58,11 @@ class PGVectorIndex(EmbeddingIndex):
     def __init__(self, vector_db: VectorDB, dimension: int, conn):
         self.conn = conn
         with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
-            self.table_name = f"vector_store_{vector_db.identifier}"
+            # Sanitize the table name by replacing hyphens with underscores
+            # SQL doesn't allow hyphens in table names, and vector_db.identifier may contain hyphens
+            # when created with patterns like "test-vector-db-{uuid4()}"
+            sanitized_identifier = vector_db.identifier.replace("-", "_")
+            self.table_name = f"vector_store_{sanitized_identifier}"
 
             cur.execute(
                 f"""
