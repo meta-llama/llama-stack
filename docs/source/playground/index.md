@@ -92,6 +92,8 @@ Interactive pages for users to play with and explore Llama Stack API capabilitie
 
 ## Starting the Llama Stack Playground
 
+### Llama CLI
+
 To start the Llama Stack Playground, run the following commands:
 
 1. Start up the Llama Stack API server
@@ -106,4 +108,17 @@ llama stack run together
 cd llama_stack/distribution/ui
 pip install -r requirements.txt
 streamlit run app.py
+```
+
+### Docker
+
+Playground can also be started in a docker image:
+
+```sh
+export LLAMA_STACK_URL=http://localhost:11434
+
+docker run \
+  -p 8501:8501 \
+  -e LLAMA_STACK_ENDPOINT=$LLAMA_STACK_URL \
+  quay.io/jland/llama-stack-playground
 ```
