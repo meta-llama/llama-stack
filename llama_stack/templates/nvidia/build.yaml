@@ -18,6 +18,10 @@ distribution_spec:
     - inline::localfs
     scoring:
     - inline::basic
+    - inline::llm-as-judge
+    - inline::braintrust
+    post_training:
+    - remote::nvidia
     tool_runtime:
     - inline::rag-runtime
 image_type: conda

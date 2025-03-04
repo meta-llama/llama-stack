@@ -7,6 +7,7 @@ apis:
 - inference
 - safety
 - scoring
+- post_training
 - telemetry
 - tool_runtime
 - vector_io
@@ -65,6 +66,17 @@ providers:
   scoring:
   - provider_id: basic
     provider_type: inline::basic
+    config: {}
+  - provider_id: llm-as-judge
+    provider_type: inline::llm-as-judge
+    config: {}
+  - provider_id: braintrust
+    provider_type: inline::braintrust
+    config:
+      openai_api_key: ${env.OPENAI_API_KEY:}
+  post_training:
+  - provider_id: nvidia-customizer
+    provider_type: remote::nvidia
     config: {}
   tool_runtime:
   - provider_id: rag-runtime
