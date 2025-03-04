@@ -138,11 +138,9 @@ class AgentToolGroupWithArgs(BaseModel):
     args: Dict[str, Any]
 
 
-AgentToolGroup = register_schema(
-    Union[
-        str,
-        AgentToolGroupWithArgs,
-    ],
+AgentToolGroup = Union[str, AgentToolGroupWithArgs]
+register_schema(
+    AgentToolGroup,
     name="AgentTool",
 )
 
