@@ -29,7 +29,7 @@ from pydantic import BaseModel, ValidationError
 from typing_extensions import Annotated
 
 from llama_stack import logcat
-from llama_stack.distribution.datatypes import StackRunConfig
+from llama_stack.distribution.datatypes import LoggerConfig, StackRunConfig
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
 from llama_stack.distribution.request_headers import set_request_provider_data
 from llama_stack.distribution.resolver import InvalidProviderError
@@ -313,8 +313,6 @@ class ClientVersionMiddleware:
 
 
 def main():
-    logcat.init()
-
     """Start the LlamaStack server."""
     parser = argparse.ArgumentParser(description="Start the LlamaStack server.")
     parser.add_argument(
@@ -350,33 +348,40 @@ def main():
 
     args = parser.parse_args()
 
-    if args.env:
-        for env_pair in args.env:
-            try:
-                key, value = validate_env_pair(env_pair)
-                logcat.info("server", f"Setting CLI environment variable {key} => {value}")
-                os.environ[key] = value
-            except ValueError as e:
-                logcat.error("server", f"Error: {str(e)}")
-                sys.exit(1)
-
+    log_string = ""
     if args.yaml_config:
-        # if the user provided a config file, use it, even if template was specified
         config_file = Path(args.yaml_config)
         if not config_file.exists():
             raise ValueError(f"Config file {config_file} does not exist")
-        logcat.info("server", f"Using config file: {config_file}")
+        log_string = f"Using config file: {config_file}"
     elif args.template:
         config_file = Path(REPO_ROOT) / "llama_stack" / "templates" / args.template / "run.yaml"
         if not config_file.exists():
             raise ValueError(f"Template {args.template} does not exist")
-        logcat.info("server", f"Using template {args.template} config file: {config_file}")
+        log_string = f"Using template {args.template} config file: {config_file}"
     else:
         raise ValueError("Either --yaml-config or --template must be provided")
 
+    logger_config = None
     with open(config_file, "r") as fp:
-        config = replace_env_vars(yaml.safe_load(fp))
+        config_contents = yaml.safe_load(fp)
+        if config_contents["logger_config"]:
+            logger_config = LoggerConfig(**config_contents["logger_config"])
+        logcat.init(config=logger_config)
+        if args.env:
+            for env_pair in args.env:
+                try:
+                    key, value = validate_env_pair(env_pair)
+                    logcat.info("server", f"Setting CLI environment variable {key} => {value}")
+                    os.environ[key] = value
+                except ValueError as e:
+                    logcat.error("server", f"Error: {str(e)}")
+                    sys.exit(1)
+        config = replace_env_vars(config_contents)
         config = StackRunConfig(**config)
+
+    # now that the logger is initialized, print the line about which type of config we are using.
+    logcat.info("server", log_string)
 
     logcat.info("server", "Run configuration:")
     safe_config = redact_sensitive_fields(config.model_dump())
