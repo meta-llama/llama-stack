@@ -11,6 +11,7 @@ from docling_core.transforms.chunker.hybrid_chunker import HybridChunker
 from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.preprocessing import (
     Preprocessing,
+    PreprocessingDataType,
     PreprocessingInput,
     PreprocessingResponse,
     Preprocessor,
@@ -22,6 +23,12 @@ from llama_stack.providers.inline.preprocessing.docling import InlineDoclingConf
 
 
 class InclineDoclingPreprocessorImpl(Preprocessing, PreprocessorsProtocolPrivate):
+    # this preprocessor receives URLs / paths to documents as input
+    INPUT_TYPES = [PreprocessingDataType.document_uri]
+
+    # this preprocessor either only converts the documents into a text format, or also chunks them
+    OUTPUT_TYPES = [PreprocessingDataType.raw_text_document, PreprocessingDataType.chunks]
+
     def __init__(self, config: InlineDoclingConfig) -> None:
         self.config = config
         self.converter = DocumentConverter()

@@ -14,15 +14,19 @@ from llama_stack.apis.vector_io import Chunk
 from llama_stack.schema_utils import json_schema_type, webmethod
 
 
-class PreprocessingInputType(Enum):
-    document_content = "document_content"
-    document_path = "document_path"
+class PreprocessingDataType(Enum):
+    document_uri = "document_uri"
+    document_directory_uri = "document_directory_uri"
+
+    binary_document = "binary_document"
+    raw_text_document = "raw_text_document"
+    chunks = "chunks"
 
 
 @json_schema_type
 class PreprocessingInput(BaseModel):
     preprocessor_input_id: str
-    preprocessor_input_type: Optional[PreprocessingInputType]
+    preprocessor_input_type: Optional[PreprocessingDataType]
     path_or_content: str | URL
 
 
