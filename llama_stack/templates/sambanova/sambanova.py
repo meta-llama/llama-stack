@@ -46,7 +46,7 @@ def get_distribution_template() -> DistributionTemplate:
             provider_id="faiss",
             provider_type="inline::faiss",
             config=FaissVectorIOConfig.sample_run_config(
-                __distro_dir__=f"distributions/{name}",
+                __distro_dir__=f"~/.llama/distributions/{name}",
             ),
         ),
         Provider(

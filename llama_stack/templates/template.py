@@ -86,7 +86,7 @@ class RunConfigSettings(BaseModel):
 
                 config_class = instantiate_class_type(config_class)
                 if hasattr(config_class, "sample_run_config"):
-                    config = config_class.sample_run_config(__distro_dir__=f"distributions/{name}")
+                    config = config_class.sample_run_config(__distro_dir__=f"~/.llama/distributions/{name}")
                 else:
                     config = {}
 
@@ -107,7 +107,7 @@ class RunConfigSettings(BaseModel):
             apis=apis,
             providers=provider_configs,
             metadata_store=SqliteKVStoreConfig.sample_run_config(
-                __distro_dir__=f"distributions/{name}",
+                __distro_dir__=f"~/.llama/distributions/{name}",
                 db_name="registry.db",
             ),
             models=self.default_models or [],

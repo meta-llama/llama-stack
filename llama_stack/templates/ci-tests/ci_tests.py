@@ -48,7 +48,7 @@ def get_distribution_template() -> DistributionTemplate:
     vector_io_provider = Provider(
         provider_id="sqlite-vec",
         provider_type="inline::sqlite-vec",
-        config=SQLiteVectorIOConfig.sample_run_config(f"distributions/{name}"),
+        config=SQLiteVectorIOConfig.sample_run_config(f"~/.llama/distributions/{name}"),
     )
     embedding_provider = Provider(
         provider_id="sentence-transformers",

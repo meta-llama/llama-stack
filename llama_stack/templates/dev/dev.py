@@ -100,7 +100,7 @@ def get_distribution_template() -> DistributionTemplate:
         Provider(
             provider_id="sqlite-vec",
             provider_type="inline::sqlite-vec",
-            config=SQLiteVectorIOConfig.sample_run_config(f"distributions/{name}"),
+            config=SQLiteVectorIOConfig.sample_run_config(f"~/.llama/distributions/{name}"),
         ),
         Provider(
             provider_id="${env.ENABLE_CHROMADB+chromadb}",
