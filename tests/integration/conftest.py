@@ -11,6 +11,7 @@ from pathlib import Path
 
 import pytest
 import yaml
+from dotenv import load_dotenv
 from llama_stack_client import LlamaStackClient
 
 from llama_stack import LlamaStackAsLibraryClient
@@ -29,6 +30,15 @@ from .report import Report
 def pytest_configure(config):
     config.option.tbstyle = "short"
     config.option.disable_warnings = True
+
+    load_dotenv()
+
+    # Load any environment variables passed via --env
+    env_vars = config.getoption("--env") or []
+    for env_var in env_vars:
+        key, value = env_var.split("=", 1)
+        os.environ[key] = value
+
     # Note:
     # if report_path is not provided (aka no option --report in the pytest command),
     # it will be set to False
@@ -53,6 +63,7 @@ def pytest_addoption(parser):
         type=str,
         help="Path where the test report should be written, e.g. --report=/path/to/report.md",
     )
+    parser.addoption("--env", action="append", help="Set environment variables, e.g. --env KEY=value")
     parser.addoption(
         "--inference-model",
         default=TEXT_MODEL,
