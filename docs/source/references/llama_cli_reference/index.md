@@ -137,6 +137,11 @@ llama download --source meta --model-id Prompt-Guard-86M --meta-url META_URL
 llama download --source meta --model-id Llama-Guard-3-1B --meta-url META_URL
 ```
 
+You can verify the downloaded model using the following command:
+```bash
+llama model verify-download --model-id Llama-Guard-3-1B
+```
+
 ### Downloading from [Hugging Face](https://huggingface.co/meta-llama)
 
 Essentially, the same commands above work, just replace `--source meta` with `--source huggingface`.
