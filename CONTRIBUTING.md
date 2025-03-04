@@ -70,6 +70,19 @@ $ uv pip install -e .
 $ source .venv/bin/activate
 ```
 
+Note that you can create a dotenv file `.env` that includes necessary environment variables:
+```
+LLAMA_STACK_BASE_URL=http://localhost:8321
+LLAMA_STACK_CLIENT_LOG=debug
+LLAMA_STACK_PORT=8321
+LLAMA_STACK_CONFIG=
+```
+
+And then use this dotenv file when running client SDK tests via the following:
+```bash
+$ uv run --env-file .env -- pytest -v tests/api/inference/test_text_inference.py
+```
+
 ## Pre-commit Hooks
 
 We use [pre-commit](https://pre-commit.com/) to run linting and formatting checks on your code. You can install the pre-commit hooks by running:
@@ -110,15 +123,15 @@ Some tips about common tasks you work on while contributing to Llama Stack:
 
 ### Using `llama stack build`
 
-Building a stack image (conda / docker) will use the production version of the `llama-stack`, `llama-models` and `llama-stack-client` packages. If you are developing with a llama-stack repository checked out and need your code to be reflected in the stack image, set `LLAMA_STACK_DIR` and `LLAMA_MODELS_DIR` to the appropriate checked out directories when running any of the `llama` CLI commands.
+Building a stack image (conda / docker) will use the production version of the `llama-stack` and `llama-stack-client` packages. If you are developing with a llama-stack repository checked out and need your code to be reflected in the stack image, set `LLAMA_STACK_DIR` and `LLAMA_STACK_CLIENT_DIR` to the appropriate checked out directories when running any of the `llama` CLI commands.
 
 Example:
 ```bash
 $ cd work/
 $ git clone https://github.com/meta-llama/llama-stack.git
-$ git clone https://github.com/meta-llama/llama-models.git
+$ git clone https://github.com/meta-llama/llama-stack-client-python.git
 $ cd llama-stack
-$ LLAMA_STACK_DIR=$(pwd) LLAMA_MODELS_DIR=../llama-models llama stack build --template <...>
+$ LLAMA_STACK_DIR=$(pwd) LLAMA_STACK_CLIENT_DIR=../llama-stack-client-python llama stack build --template <...>
 ```
 
 

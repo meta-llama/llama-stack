@@ -45,7 +45,7 @@ public class LocalInference: Inference {
           var tokens: [String] = []
 
           let prompt = try encodeDialogPrompt(messages: prepareMessages(request: request))
-          var stopReason: Components.Schemas.StopReason? = nil
+          var stopReason: Components.Schemas.CompletionMessage.stop_reasonPayload? = nil
           var buffer = ""
           var ipython = false
           var echoDropped = false
@@ -69,13 +69,13 @@ public class LocalInference: Inference {
               continuation.yield(
                 Components.Schemas.ChatCompletionResponseStreamChunk(
                   event: Components.Schemas.ChatCompletionResponseEvent(
+                    event_type: .progress,
                     delta: .tool_call(Components.Schemas.ToolCallDelta(
-                      parse_status: Components.Schemas.ToolCallParseStatus.started,
+                      _type: Components.Schemas.ToolCallDelta._typePayload.tool_call,
                       tool_call: .case1(""),
-                      _type: Components.Schemas.ToolCallDelta._typePayload.tool_call
+                      parse_status: Components.Schemas.ToolCallDelta.parse_statusPayload.started
                       )
-                    ),
-                    event_type: .progress
+                    )
                   )
                 )
               )
@@ -89,9 +89,9 @@ public class LocalInference: Inference {
 
             var text = ""
             if token == "<|eot_id|>" {
-              stopReason = Components.Schemas.StopReason.end_of_turn
+              stopReason = Components.Schemas.CompletionMessage.stop_reasonPayload.end_of_turn
             } else if token == "<|eom_id|>" {
-              stopReason = Components.Schemas.StopReason.end_of_message
+              stopReason = Components.Schemas.CompletionMessage.stop_reasonPayload.end_of_message
             } else {
               text = token
             }
@@ -99,14 +99,15 @@ public class LocalInference: Inference {
             var delta: Components.Schemas.ContentDelta
             if ipython {
               delta = .tool_call(Components.Schemas.ToolCallDelta(
-                parse_status: .in_progress,
+                _type: .tool_call,
                 tool_call: .case1(text),
-                _type: .tool_call
+                parse_status: .in_progress
               ))
             } else {
               delta = .text(Components.Schemas.TextDelta(
-                text: text,
-                _type: Components.Schemas.TextDelta._typePayload.text)
+                _type: Components.Schemas.TextDelta._typePayload.text,
+                text: text
+                )
               )
             }
 
@@ -114,8 +115,8 @@ public class LocalInference: Inference {
               continuation.yield(
                 Components.Schemas.ChatCompletionResponseStreamChunk(
                   event: Components.Schemas.ChatCompletionResponseEvent(
-                    delta: delta,
-                    event_type: .progress
+                    event_type: .progress,
+                    delta: delta
                   )
                 )
               )
@@ -123,41 +124,41 @@ public class LocalInference: Inference {
           }
 
           if stopReason == nil {
-            stopReason = Components.Schemas.StopReason.out_of_tokens
+            stopReason = Components.Schemas.CompletionMessage.stop_reasonPayload.out_of_tokens
           }
 
           let message = decodeAssistantMessage(tokens: tokens.joined(), stopReason: stopReason!)
           // TODO: non-streaming support
 
-          let didParseToolCalls = message.tool_calls.count > 0
+          let didParseToolCalls = message.tool_calls?.count ?? 0 > 0
           if ipython && !didParseToolCalls {
             continuation.yield(
               Components.Schemas.ChatCompletionResponseStreamChunk(
                 event: Components.Schemas.ChatCompletionResponseEvent(
+                  event_type: .progress,
                   delta: .tool_call(Components.Schemas.ToolCallDelta(
-                    parse_status: Components.Schemas.ToolCallParseStatus.failed,
+                    _type: Components.Schemas.ToolCallDelta._typePayload.tool_call,
                     tool_call: .case1(""),
-                    _type: Components.Schemas.ToolCallDelta._typePayload.tool_call
+                    parse_status: Components.Schemas.ToolCallDelta.parse_statusPayload.failed
                     )
-                  ),
-                  event_type: .progress
+                  )
                 )
                 // TODO: stopReason
               )
             )
           }
 
-          for toolCall in message.tool_calls {
+          for toolCall in message.tool_calls! {
             continuation.yield(
               Components.Schemas.ChatCompletionResponseStreamChunk(
                 event: Components.Schemas.ChatCompletionResponseEvent(
+                  event_type: .progress,
                   delta: .tool_call(Components.Schemas.ToolCallDelta(
-                    parse_status: Components.Schemas.ToolCallParseStatus.succeeded,
+                    _type: Components.Schemas.ToolCallDelta._typePayload.tool_call,
                     tool_call: Components.Schemas.ToolCallDelta.tool_callPayload.ToolCall(toolCall),
-                    _type: Components.Schemas.ToolCallDelta._typePayload.tool_call
+                    parse_status: Components.Schemas.ToolCallDelta.parse_statusPayload.succeeded
                     )
-                  ),
-                  event_type: .progress
+                  )
                 )
                 // TODO: stopReason
               )
@@ -167,11 +168,12 @@ public class LocalInference: Inference {
           continuation.yield(
             Components.Schemas.ChatCompletionResponseStreamChunk(
               event: Components.Schemas.ChatCompletionResponseEvent(
+                event_type: .complete,
                 delta: .text(Components.Schemas.TextDelta(
-                  text: "",
-                  _type: Components.Schemas.TextDelta._typePayload.text)
-                ),
-                event_type: .complete
+                  _type: Components.Schemas.TextDelta._typePayload.text,
+                  text: ""
+                  )
+                )
               )
               // TODO: stopReason
             )

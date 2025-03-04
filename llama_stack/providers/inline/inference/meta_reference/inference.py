@@ -55,7 +55,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 )
 
 from .config import MetaReferenceInferenceConfig
-from .generation import Llama
+from .llama3.generation import Llama3
 from .model_parallel import LlamaModelParallelGenerator
 
 log = logging.getLogger(__name__)
@@ -83,7 +83,7 @@ class MetaReferenceInferenceImpl(
             self.generator = LlamaModelParallelGenerator(self.config, model_id, llama_model)
             self.generator.start()
         else:
-            self.generator = Llama.build(self.config, model_id, llama_model)
+            self.generator = Llama3.build(self.config, model_id, llama_model)
 
         self.model_id = model_id
         self.llama_model = llama_model
@@ -111,7 +111,7 @@ class MetaReferenceInferenceImpl(
         )
         if llama_model is None:
             raise ValueError(
-                "Please make sure your llama_model in model metadata or model identifier is in llama-models SKU list"
+                "Please make sure your llama_model in model metadata or model identifier is in Llama SKU list"
             )
 
         self.model_registry_helper = ModelRegistryHelper(
@@ -208,7 +208,6 @@ class MetaReferenceInferenceImpl(
             logprobs = []
             stop_reason = None
 
-            tokenizer = self.generator.formatter.tokenizer
             for token_result in self.generator.completion(request):
                 tokens.append(token_result.token)
                 if token_result.text == "<|eot_id|>":

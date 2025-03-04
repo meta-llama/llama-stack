@@ -132,9 +132,9 @@ def rag_chat_page():
         },
         toolgroups=[
             dict(
-                name="builtin::rag",
+                name="builtin::rag/knowledge_search",
                 args={
-                    "vector_db_ids": [vector_db_id for vector_db_id in selected_vector_dbs],
+                    "vector_db_ids": list(selected_vector_dbs),
                 },
             )
         ],

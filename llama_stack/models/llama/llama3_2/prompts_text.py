@@ -13,7 +13,7 @@
 import json
 import textwrap
 
-from llama_models.datatypes import (
+from llama_stack.models.llama.datatypes import (
     RawMessage,
     StopReason,
     ToolCall,

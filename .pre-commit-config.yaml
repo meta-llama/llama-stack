@@ -8,6 +8,8 @@ repos:
     rev: v5.0.0  # Latest stable version
     hooks:
     -   id: check-merge-conflict
+    -   id: trailing-whitespace
+        exclude: '\.py$'  # Exclude Python files as Ruff already handles them
     -   id: check-added-large-files
         args: ['--maxkb=1000']
     -   id: end-of-file-fixer
@@ -42,8 +44,9 @@ repos:
         - black==24.3.0
 
 -   repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.5.26
+    rev: 0.6.3
     hooks:
+    -   id: uv-lock
     -   id: uv-export
         args: [
             "--frozen",
@@ -51,8 +54,6 @@ repos:
             "--no-emit-project",
             "--output-file=requirements.txt"
         ]
-        files: ^pyproject\.toml$
-    -   id: uv-sync
 
 -   repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.15.0
@@ -84,15 +85,12 @@ repos:
       - id: distro-codegen
         name: Distribution Template Codegen
         additional_dependencies:
-          - rich
-          - pydantic
           - uv==0.6.0
-        entry: uv run python -m llama_stack.scripts.distro_codegen
+        entry: uv run --extra codegen python -m llama_stack.scripts.distro_codegen
         language: python
         pass_filenames: false
         require_serial: true
-        files: ^llama_stack/templates/.*$
-        files: ^llama_stack/providers/.*/inference/.*/models\.py$
+        files: ^llama_stack/templates/.*$|^llama_stack/providers/.*/inference/.*/models\.py$
 
 ci:
     autofix_commit_msg: 🎨 [pre-commit.ci] Auto format from pre-commit.com hooks

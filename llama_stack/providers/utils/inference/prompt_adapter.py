@@ -13,11 +13,9 @@ import re
 from typing import List, Optional, Tuple, Union
 
 import httpx
-from llama_models.datatypes import StopReason
-from llama_models.llama3.api.chat_format import ChatFormat
-from llama_models.llama3.api.tokenizer import Tokenizer
 from PIL import Image as PIL_Image
 
+from llama_stack import logcat
 from llama_stack.apis.common.content_types import (
     ImageContentItem,
     InterleavedContent,
@@ -44,9 +42,11 @@ from llama_stack.models.llama.datatypes import (
     RawMessage,
     RawTextItem,
     Role,
+    StopReason,
     ToolPromptFormat,
     is_multimodal,
 )
+from llama_stack.models.llama.llama3.chat_format import ChatFormat
 from llama_stack.models.llama.llama3.prompt_templates import (
     BuiltinToolGenerator,
     FunctionTagCustomToolGenerator,
@@ -54,6 +54,7 @@ from llama_stack.models.llama.llama3.prompt_templates import (
     PythonListCustomToolGenerator,
     SystemDefaultGenerator,
 )
+from llama_stack.models.llama.llama3.tokenizer import Tokenizer
 from llama_stack.models.llama.sku_list import resolve_model
 from llama_stack.providers.utils.inference import supported_inference_models
 
@@ -253,7 +254,8 @@ async def chat_completion_request_to_prompt(request: ChatCompletionRequest, llam
 
     formatter = ChatFormat(tokenizer=Tokenizer.get_instance())
     model_input = formatter.encode_dialog_prompt(
-        request.messages, tool_prompt_format=request.tool_config.tool_prompt_format
+        request.messages,
+        tool_prompt_format=request.tool_config.tool_prompt_format or get_default_tool_prompt_format(llama_model),
     )
     return formatter.tokenizer.decode(model_input.tokens)
 
@@ -267,7 +269,8 @@ async def chat_completion_request_to_model_input_info(
 
     formatter = ChatFormat(tokenizer=Tokenizer.get_instance())
     model_input = formatter.encode_dialog_prompt(
-        request.messages, tool_prompt_format=request.tool_config.tool_prompt_format
+        request.messages,
+        tool_prompt_format=request.tool_config.tool_prompt_format or get_default_tool_prompt_format(llama_model),
     )
     return (
         formatter.tokenizer.decode(model_input.tokens),
@@ -461,6 +464,7 @@ def _get_tool_choice_prompt(tool_choice: ToolChoice | str, tools: List[ToolDefin
 def get_default_tool_prompt_format(model: str) -> ToolPromptFormat:
     llama_model = resolve_model(model)
     if llama_model is None:
+        logcat.warning("inference", f"Could not resolve model {model}, defaulting to json tool prompt format")
         return ToolPromptFormat.json
 
     if llama_model.model_family == ModelFamily.llama3_1 or (

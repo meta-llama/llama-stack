@@ -33,6 +33,7 @@ def get_distribution_template() -> DistributionTemplate:
             "remote::tavily-search",
             "inline::code-interpreter",
             "inline::rag-runtime",
+            "remote::model-context-protocol",
         ],
     }
     name = "ollama"
@@ -44,7 +45,7 @@ def get_distribution_template() -> DistributionTemplate:
     vector_io_provider_sqlite = Provider(
         provider_id="sqlite-vec",
         provider_type="inline::sqlite-vec",
-        config=SQLiteVectorIOConfig.sample_run_config(f"distributions/{name}"),
+        config=SQLiteVectorIOConfig.sample_run_config(f"~/.llama/distributions/{name}"),
     )
 
     inference_model = ModelInput(
@@ -86,14 +87,13 @@ def get_distribution_template() -> DistributionTemplate:
         container_image=None,
         template_path=Path(__file__).parent / "doc_template.md",
         providers=providers,
-        default_models=[inference_model, safety_model],
         run_configs={
             "run.yaml": RunConfigSettings(
                 provider_overrides={
                     "inference": [inference_provider],
                     "vector_io": [vector_io_provider_sqlite],
                 },
-                default_models=[inference_model],
+                default_models=[inference_model, embedding_model],
                 default_tool_groups=default_tool_groups,
             ),
             "run-with-safety.yaml": RunConfigSettings(

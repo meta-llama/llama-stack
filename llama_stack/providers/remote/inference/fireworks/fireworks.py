@@ -8,6 +8,7 @@ from typing import AsyncGenerator, List, Optional, Union
 
 from fireworks.client import Fireworks
 
+from llama_stack import logcat
 from llama_stack.apis.common.content_types import (
     InterleavedContent,
     InterleavedContentItem,
@@ -226,12 +227,14 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProv
             if input_dict["prompt"].startswith("<|begin_of_text|>"):
                 input_dict["prompt"] = input_dict["prompt"][len("<|begin_of_text|>") :]
 
-        return {
+        params = {
             "model": request.model,
             **input_dict,
             "stream": request.stream,
             **self._build_options(request.sampling_params, request.response_format, request.logprobs),
         }
+        logcat.debug("inference", f"params to fireworks: {params}")
+        return params
 
     async def embeddings(
         self,

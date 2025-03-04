@@ -36,7 +36,7 @@ Evaluates the outputs of the system.
 Collects telemetry data from the system.
 
 ## Tool Runtime
-Is associated with the ToolGroup resouces. 
+Is associated with the ToolGroup resouces.
 
 ## Vector IO
 

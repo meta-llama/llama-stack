@@ -30,7 +30,7 @@ Build a Llama stack container
 
 options:
   -h, --help            show this help message and exit
-  --config CONFIG       Path to a config file to use for the build. You can find example configs in llama_stack/distribution/**/build.yaml.
+  --config CONFIG       Path to a config file to use for the build. You can find example configs in llama_stack/distributions/**/build.yaml.
                         If this argument is not provided, you will be prompted to enter information interactively
   --template TEMPLATE   Name of the example template config to use for build. You may use `llama stack build --list-templates` to check out the available templates
   --list-templates      Show the available templates for building a Llama Stack distribution
@@ -106,7 +106,7 @@ It would be best to start with a template and understand the structure of the co
 llama stack build
 
 > Enter a name for your Llama Stack (e.g. my-local-stack): my-stack
-> Enter the image type you want your Llama Stack to be built as (container or conda): conda
+> Enter the image type you want your Llama Stack to be built as (container or conda or venv): conda
 
 Llama Stack is composed of several APIs working together. Let's select
 the provider types (implementations) you want to use for these APIs.
@@ -187,14 +187,14 @@ usage: llama stack run [-h] [--port PORT] [--image-name IMAGE_NAME] [--disable-i
                        [--tls-certfile TLS_CERTFILE] [--image-type {conda,container,venv}]
                        config
 
-start the server for a Llama Stack Distribution. You should have already built (or downloaded) and configured the distribution.
+Start the server for a Llama Stack Distribution. You should have already built (or downloaded) and configured the distribution.
 
 positional arguments:
   config                Path to config file to use for the run
 
 options:
   -h, --help            show this help message and exit
-  --port PORT           Port to run the server on. Defaults to 8321
+  --port PORT           Port to run the server on. It can also be passed via the env var LLAMA_STACK_PORT. Defaults to 8321
   --image-name IMAGE_NAME
                         Name of the image to run. Defaults to the current conda environment
   --disable-ipv6        Disable IPv6 support

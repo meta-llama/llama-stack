@@ -130,17 +130,21 @@ ollama run <model_name>
 To make sure that the model is being served correctly, run `ollama ps` to get a list of models being served by ollama.
 ```
 $ ollama ps
-
-NAME                         ID              SIZE     PROCESSOR    UNTIL
-llama3.1:8b-instruct-fp16    4aacac419454    17 GB    100% GPU     4 minutes from now
+NAME                         ID              SIZE      PROCESSOR    UNTIL
+llama3.2:3b-instruct-fp16    195a8c01d91e    8.6 GB    100% GPU     9 minutes from now
 ```
 
 To verify that the model served by ollama is correctly connected to Llama Stack server
 ```bash
 $ llama-stack-client models list
-+----------------------+----------------------+---------------+-----------------------------------------------+
-| identifier           | llama_model          | provider_id   | metadata                                      |
-+======================+======================+===============+===============================================+
-| Llama3.1-8B-Instruct | Llama3.1-8B-Instruct | ollama0       | {'ollama_model': 'llama3.1:8b-instruct-fp16'} |
-+----------------------+----------------------+---------------+-----------------------------------------------+
+
+Available Models
+
+┏━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━━┓
+┃ model_type   ┃ identifier                           ┃ provider_resource_id         ┃ metadata  ┃ provider_id ┃
+┡━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━━┩
+│ llm          │ meta-llama/Llama-3.2-3B-Instruct     │ llama3.2:3b-instruct-fp16    │           │ ollama      │
+└──────────────┴──────────────────────────────────────┴──────────────────────────────┴───────────┴─────────────┘
+
+Total models: 1
 ```

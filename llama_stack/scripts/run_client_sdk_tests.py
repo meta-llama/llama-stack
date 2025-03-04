@@ -11,14 +11,14 @@ from pathlib import Path
 import pytest
 
 """
-Script for running client-sdk on AsyncLlamaStackAsLibraryClient with templates
+Script for running api on AsyncLlamaStackAsLibraryClient with templates
 
 Assuming directory structure:
 - llama-stack
     - llama_stack
         - scripts
     - tests
-        - client-sdk
+        - api
 
 Example command:
 
@@ -29,7 +29,7 @@ python llama_stack/scripts/run_client_sdk_tests.py --templates together firework
 """
 
 REPO_ROOT = Path(__file__).parent.parent.parent
-CLIENT_SDK_TESTS_RELATIVE_PATH = "tests/client-sdk/"
+CLIENT_SDK_TESTS_RELATIVE_PATH = "tests/api/"
 
 
 def main(parser: argparse.ArgumentParser):

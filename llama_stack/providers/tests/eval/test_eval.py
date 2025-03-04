@@ -39,12 +39,11 @@ class Testeval:
 
     @pytest.mark.asyncio
     async def test_eval_evaluate_rows(self, eval_stack, inference_model, judge_model):
-        eval_impl, benchmarks_impl, datasetio_impl, datasets_impl, models_impl = (
+        eval_impl, benchmarks_impl, datasetio_impl, datasets_impl = (
             eval_stack[Api.eval],
             eval_stack[Api.benchmarks],
             eval_stack[Api.datasetio],
             eval_stack[Api.datasets],
-            eval_stack[Api.models],
         )
 
         await register_dataset(datasets_impl, for_generation=True, dataset_id="test_dataset_for_eval")
@@ -69,7 +68,7 @@ class Testeval:
             benchmark_id=benchmark_id,
             input_rows=rows.rows,
             scoring_functions=scoring_functions,
-            task_config=AppBenchmarkConfig(
+            benchmark_config=AppBenchmarkConfig(
                 eval_candidate=ModelCandidate(
                     model=inference_model,
                     sampling_params=SamplingParams(),
@@ -92,11 +91,10 @@ class Testeval:
 
     @pytest.mark.asyncio
     async def test_eval_run_eval(self, eval_stack, inference_model, judge_model):
-        eval_impl, benchmarks_impl, datasets_impl, models_impl = (
+        eval_impl, benchmarks_impl, datasets_impl = (
             eval_stack[Api.eval],
             eval_stack[Api.benchmarks],
             eval_stack[Api.datasets],
-            eval_stack[Api.models],
         )
 
         await register_dataset(datasets_impl, for_generation=True, dataset_id="test_dataset_for_eval")
@@ -113,7 +111,7 @@ class Testeval:
         )
         response = await eval_impl.run_eval(
             benchmark_id=benchmark_id,
-            task_config=AppBenchmarkConfig(
+            benchmark_config=AppBenchmarkConfig(
                 eval_candidate=ModelCandidate(
                     model=inference_model,
                     sampling_params=SamplingParams(),
@@ -131,11 +129,10 @@ class Testeval:
 
     @pytest.mark.asyncio
     async def test_eval_run_benchmark_eval(self, eval_stack, inference_model):
-        eval_impl, benchmarks_impl, datasets_impl, models_impl = (
+        eval_impl, benchmarks_impl, datasets_impl = (
             eval_stack[Api.eval],
             eval_stack[Api.benchmarks],
             eval_stack[Api.datasets],
-            eval_stack[Api.models],
         )
 
         response = await datasets_impl.list_datasets()
@@ -172,7 +169,7 @@ class Testeval:
         benchmark_id = "meta-reference-mmlu"
         response = await eval_impl.run_eval(
             benchmark_id=benchmark_id,
-            task_config=BenchmarkBenchmarkConfig(
+            benchmark_config=BenchmarkBenchmarkConfig(
                 eval_candidate=ModelCandidate(
                     model=inference_model,
                     sampling_params=SamplingParams(),

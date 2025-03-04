@@ -1,3 +1,0 @@
-[submodule "llama_stack/providers/impls/ios/inference/executorch"]
-	path = llama_stack/providers/inline/ios/inference/executorch
-	url = https://github.com/pytorch/executorch

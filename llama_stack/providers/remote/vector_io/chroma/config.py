@@ -13,5 +13,5 @@ class ChromaVectorIOConfig(BaseModel):
     url: str
 
     @classmethod
-    def sample_config(cls) -> Dict[str, Any]:
-        return {"url": "{env.CHROMADB_URL}"}
+    def sample_run_config(cls, url: str = "${env.CHROMADB_URL}", **kwargs: Any) -> Dict[str, Any]:
+        return {"url": url}

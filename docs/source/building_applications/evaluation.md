@@ -19,7 +19,7 @@ response = client.benchmarks.register(
 # Run evaluation
 job = client.eval.run_eval(
     benchmark_id="my_eval",
-    task_config={
+    benchmark_config={
         "type": "app",
         "eval_candidate": {"type": "agent", "config": agent_config},
     },

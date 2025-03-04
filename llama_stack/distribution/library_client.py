@@ -104,7 +104,7 @@ def convert_to_pydantic(annotation: Any, value: Any) -> Any:
             logger.warning(
                 f"Warning: direct client failed to convert parameter {value} into {annotation}: {e}",
             )
-        return value
+        raise ValueError(f"Failed to convert parameter {value} into {annotation}: {e}") from e
 
 
 class LlamaStackAsLibraryClient(LlamaStackClient):
@@ -324,6 +324,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
             await end_trace()
 
         json_content = json.dumps(convert_pydantic_to_json_value(result))
+
         mock_response = httpx.Response(
             status_code=httpx.codes.OK,
             content=json_content.encode("utf-8"),
@@ -335,7 +336,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
                 url=options.url,
                 params=options.params,
                 headers=options.headers or {},
-                json=options.json_data,
+                json=convert_pydantic_to_json_value(body),
             ),
         )
         response = APIResponse(
@@ -384,7 +385,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
                 url=options.url,
                 params=options.params,
                 headers=options.headers or {},
-                json=options.json_data,
+                json=convert_pydantic_to_json_value(body),
             ),
         )
 

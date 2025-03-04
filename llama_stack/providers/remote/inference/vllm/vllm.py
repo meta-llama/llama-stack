@@ -7,7 +7,6 @@ import json
 import logging
 from typing import AsyncGenerator, List, Optional, Union
 
-from llama_models.datatypes import StopReason, ToolCall
 from openai import OpenAI
 
 from llama_stack.apis.common.content_types import (
@@ -42,7 +41,7 @@ from llama_stack.apis.inference import (
     ToolPromptFormat,
 )
 from llama_stack.apis.models import Model, ModelType
-from llama_stack.models.llama.datatypes import BuiltinTool
+from llama_stack.models.llama.datatypes import BuiltinTool, StopReason, ToolCall
 from llama_stack.models.llama.sku_list import all_registered_models
 from llama_stack.providers.datatypes import ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.model_registry import (
@@ -169,7 +168,7 @@ async def _process_vllm_chat_completion_stream_response(
                 args = {} if not args_str else json.loads(args_str)
             except Exception as e:
                 log.warning(f"Failed to parse tool call buffer arguments: {args_str} \nError: {e}")
-            if args is not None:
+            if args:
                 yield ChatCompletionResponseStreamChunk(
                     event=ChatCompletionResponseEvent(
                         event_type=event_type,
@@ -183,7 +182,7 @@ async def _process_vllm_chat_completion_stream_response(
                         ),
                     )
                 )
-            else:
+            elif args_str:
                 yield ChatCompletionResponseStreamChunk(
                     event=ChatCompletionResponseEvent(
                         event_type=ChatCompletionResponseEventType.progress,
@@ -270,6 +269,12 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         tool_config: Optional[ToolConfig] = None,
     ) -> AsyncGenerator:
         model = await self.model_store.get_model(model_id)
+        # This is to be consistent with OpenAI API and support vLLM <= v0.6.3
+        # References:
+        #   * https://platform.openai.com/docs/api-reference/chat/create#chat-create-tool_choice
+        #   * https://github.com/vllm-project/vllm/pull/10000
+        if not tools and tool_config is not None:
+            tool_config.tool_choice = ToolChoice.none
         request = ChatCompletionRequest(
             model=model.provider_resource_id,
             messages=messages,

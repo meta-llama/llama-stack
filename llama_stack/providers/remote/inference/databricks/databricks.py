@@ -24,6 +24,7 @@ from llama_stack.apis.inference import (
     SamplingParams,
     TextTruncation,
     ToolChoice,
+    ToolConfig,
     ToolDefinition,
     ToolPromptFormat,
 )

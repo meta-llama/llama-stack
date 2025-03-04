@@ -79,6 +79,9 @@ providers:
   - provider_id: rag-runtime
     provider_type: inline::rag-runtime
     config: {}
+  - provider_id: model-context-protocol
+    provider_type: remote::model-context-protocol
+    config: {}
 metadata_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/registry.db
@@ -87,6 +90,12 @@ models:
   model_id: ${env.INFERENCE_MODEL}
   provider_id: ollama
   model_type: llm
+- metadata:
+    embedding_dimension: 384
+  model_id: all-MiniLM-L6-v2
+  provider_id: ollama
+  provider_model_id: all-minilm:latest
+  model_type: embedding
 shields: []
 vector_dbs: []
 datasets: []

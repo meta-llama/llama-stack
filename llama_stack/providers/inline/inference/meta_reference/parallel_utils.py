@@ -36,7 +36,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
     CompletionRequestWithRawContent,
 )
 
-from .generation import TokenResult
+from .common import TokenResult
 
 log = logging.getLogger(__name__)
 
@@ -207,7 +207,7 @@ def maybe_parse_message(maybe_json: Optional[str]) -> Optional[ProcessingMessage
         return parse_message(maybe_json)
     except json.JSONDecodeError:
         return None
-    except ValueError as e:
+    except ValueError:
         return None
 
 
@@ -231,7 +231,7 @@ def worker_process_entrypoint(
     while True:
         try:
             task = req_gen.send(result)
-            if isinstance(task, str) and task == _END_SENTINEL:
+            if isinstance(task, str) and task == EndSentinel():
                 break
 
             assert isinstance(task, TaskRequest)
@@ -352,7 +352,7 @@ class ModelParallelProcessGroup:
                 if isinstance(obj, TaskResponse):
                     yield obj.result
 
-        except GeneratorExit as e:
+        except GeneratorExit:
             self.request_socket.send(encode_msg(CancelSentinel()))
             while True:
                 obj_json = self.request_socket.send()

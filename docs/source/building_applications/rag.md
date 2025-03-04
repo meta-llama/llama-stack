@@ -1,8 +1,8 @@
-## Using "Memory" or Retrieval Augmented Generation (RAG)
+## Using Retrieval Augmented Generation (RAG)
 
-Memory enables your applications to reference and recall information from previous interactions or external documents.
+RAG enables your applications to reference and recall information from previous interactions or external documents.
 
-Llama Stack organizes the memory APIs into three layers:
+Llama Stack organizes the APIs that enable RAG into three layers:
 - the lowermost APIs deal with raw storage and retrieval. These include Vector IO, KeyValue IO (coming soon) and Relational IO (also coming soon.)
 - next is the "Rag Tool", a first-class tool as part of the Tools API that allows you to ingest documents (from URLs, files, etc) with various chunking strategies and query them smartly.
 - finally, it all comes together with the top-level "Agents" API that allows you to create agents that can use the tools to answer questions, perform tasks, and more.
@@ -86,12 +86,12 @@ from llama_stack_client.lib.agents.agent import Agent
 
 # Configure agent with memory
 agent_config = AgentConfig(
-    model="meta-llama/Llama-3.2-3B-Instruct",
+    model="meta-llama/Llama-3.3-70B-Instruct",
     instructions="You are a helpful assistant",
     enable_session_persistence=False,
     toolgroups=[
         {
-            "name": "builtin::rag",
+            "name": "builtin::rag/knowledge_search",
             "args": {
                 "vector_db_ids": [vector_db_id],
             },
@@ -102,6 +102,19 @@ agent_config = AgentConfig(
 agent = Agent(client, agent_config)
 session_id = agent.create_session("rag_session")
 
+
+# Ask questions about documents in the vector db, and the agent will query the db to answer the question.
+response = agent.create_turn(
+    messages=[{"role": "user", "content": "How to optimize memory in PyTorch?"}],
+    session_id=session_id,
+)
+```
+
+> **NOTE:** the `instructions` field in the `AgentConfig` can be used to guide the agent's behavior. It is important to experiment with different instructions to see what works best for your use case.
+
+
+You can also pass documents along with the user's message and ask questions about them.
+```python
 # Initial document ingestion
 response = agent.create_turn(
     messages=[

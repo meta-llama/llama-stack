@@ -11,5 +11,5 @@ from pydantic import BaseModel
 
 class SentenceTransformersInferenceConfig(BaseModel):
     @classmethod
-    def sample_run_config(cls) -> Dict[str, Any]:
+    def sample_run_config(cls, **kwargs) -> Dict[str, Any]:
         return {}

@@ -3,7 +3,7 @@ orphan: true
 ---
 # Faiss
 
-[Faiss](https://github.com/facebookresearch/faiss) is an inline vector database provider for Llama Stack. It 
+[Faiss](https://github.com/facebookresearch/faiss) is an inline vector database provider for Llama Stack. It
 allows you to store and query vectors directly in memory.
 That means you'll get fast and efficient vector retrieval.
 
@@ -29,5 +29,5 @@ You can install Faiss using pip:
 pip install faiss-cpu
 ```
 ## Documentation
-See [Faiss' documentation](https://faiss.ai/) or the [Faiss Wiki](https://github.com/facebookresearch/faiss/wiki) for 
+See [Faiss' documentation](https://faiss.ai/) or the [Faiss Wiki](https://github.com/facebookresearch/faiss/wiki) for
 more details about Faiss in general.

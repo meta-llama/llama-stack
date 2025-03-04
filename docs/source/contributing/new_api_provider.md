@@ -21,7 +21,7 @@ Here are some example PRs to help you get started:
 - Create integration tests that use real provider instances and configurations
 - For remote services, test actual API interactions
 - Avoid mocking at the provider level since adapter layers tend to be thin
-- Reference examples in {repopath}`tests/client-sdk`
+- Reference examples in {repopath}`tests/api`
 
 ### 2. Unit Testing (Optional)
 - Add unit tests for provider-specific functionality
