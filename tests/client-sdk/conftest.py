@@ -81,12 +81,20 @@ def pytest_addoption(parser):
 
 @pytest.fixture(scope="session")
 def provider_data():
-    # check env for tavily secret, brave secret and inject all into provider data
+    keymap = {
+        "TAVILY_SEARCH_API_KEY": "tavily_search_api_key",
+        "BRAVE_SEARCH_API_KEY": "brave_search_api_key",
+        "FIREWORKS_API_KEY": "fireworks_api_key",
+        "GEMINI_API_KEY": "gemini_api_key",
+        "OPENAI_API_KEY": "openai_api_key",
+        "TOGETHER_API_KEY": "together_api_key",
+        "ANTHROPIC_API_KEY": "anthropic_api_key",
+        "GROQ_API_KEY": "groq_api_key",
+    }
     provider_data = {}
-    if os.environ.get("TAVILY_SEARCH_API_KEY"):
-        provider_data["tavily_search_api_key"] = os.environ["TAVILY_SEARCH_API_KEY"]
-    if os.environ.get("BRAVE_SEARCH_API_KEY"):
-        provider_data["brave_search_api_key"] = os.environ["BRAVE_SEARCH_API_KEY"]
+    for key, value in keymap.items():
+        if os.environ.get(key):
+            provider_data[value] = os.environ[key]
     return provider_data if len(provider_data) > 0 else None
 
 
