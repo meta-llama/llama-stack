@@ -116,6 +116,10 @@ tool_groups:
   provider_id: rag-runtime
 - toolgroup_id: builtin::code_interpreter
   provider_id: code-interpreter
-preprocessors: []
+preprocessors:
+- preprocessor_id: builtin::basic
+  provider_id: basic
+- preprocessor_id: builtin::chunking
+  provider_id: simple_chunking
 server:
   port: 8321

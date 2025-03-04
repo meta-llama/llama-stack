@@ -12,6 +12,7 @@ import yaml
 from pydantic import BaseModel, Field
 
 from llama_stack.apis.models.models import ModelType
+from llama_stack.apis.preprocessing.preprocessors import PreprocessorInput
 from llama_stack.distribution.datatypes import (
     Api,
     BuildConfig,
@@ -56,6 +57,7 @@ class RunConfigSettings(BaseModel):
     default_models: Optional[List[ModelInput]] = None
     default_shields: Optional[List[ShieldInput]] = None
     default_tool_groups: Optional[List[ToolGroupInput]] = None
+    default_preprocessors: Optional[List[PreprocessorInput]] = None
 
     def run_config(
         self,
@@ -113,6 +115,7 @@ class RunConfigSettings(BaseModel):
             models=self.default_models or [],
             shields=self.default_shields or [],
             tool_groups=self.default_tool_groups or [],
+            preprocessors=self.default_preprocessors or [],
         )
 
 
