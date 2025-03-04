@@ -32,7 +32,7 @@ from llama_stack.apis.inference import (
 )
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.providers.utils.inference.model_registry import (
-    build_model_alias,
+    build_model_entry,
     ModelRegistryHelper,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
@@ -56,11 +56,11 @@ from .config import CentMLImplConfig
 # Example model aliases that map from CentML’s
 # published model identifiers to llama-stack's `CoreModelId`.
 MODEL_ALIASES = [
-    build_model_alias(
+    build_model_entry(
         "meta-llama/Llama-3.3-70B-Instruct",
         CoreModelId.llama3_3_70b_instruct.value,
     ),
-    build_model_alias(
+    build_model_entry(
         "meta-llama/Llama-3.1-405B-Instruct-FP8",
         CoreModelId.llama3_1_405b_instruct.value,
     ),
@@ -318,11 +318,14 @@ class CentMLInferenceAdapter(
 
     async def embeddings(
         self,
+        task_type: str,
         model_id: str,
+        text_truncation: Optional[str],
+        output_dimension: Optional[int],
         contents: List[InterleavedContent],
     ) -> EmbeddingsResponse:
         model = await self.model_store.get_model(model_id)
-        # CentML does not support media
+        # CentML does not support media for embeddings.
         assert all(not content_has_media(c) for c in contents), (
             "CentML does not support media for embeddings"
         )
