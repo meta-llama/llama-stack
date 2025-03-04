@@ -6,7 +6,6 @@
 
 import copy
 import json
-import logging
 import os
 import re
 import secrets
@@ -18,6 +17,7 @@ from urllib.parse import urlparse
 
 import httpx
 
+from llama_stack import logcat
 from llama_stack.apis.agents import (
     AgentConfig,
     AgentToolGroup,
@@ -78,8 +78,6 @@ from llama_stack.providers.utils.telemetry import tracing
 
 from .persistence import AgentPersistence
 from .safety import SafetyException, ShieldRunnerMixin
-
-log = logging.getLogger(__name__)
 
 
 def make_random_string(length: int = 8):
@@ -219,8 +217,9 @@ class ChatAgent(ShieldRunnerMixin):
                 toolgroups_for_turn=request.toolgroups,
             ):
                 if isinstance(chunk, CompletionMessage):
-                    log.info(
-                        f"{chunk.role.capitalize()}: {chunk.content}",
+                    logcat.info(
+                        "agents",
+                        f"returning result from the agent turn: {chunk}",
                     )
                     output_message = chunk
                     continue
@@ -665,7 +664,7 @@ class ChatAgent(ShieldRunnerMixin):
             )
 
             if n_iter >= self.agent_config.max_infer_iters:
-                log.info("Done with MAX iterations, exiting.")
+                logcat.info("agents", f"done with MAX iterations ({n_iter}), exiting.")
                 # NOTE: mark end_of_turn to indicate to client that we are done with the turn
                 # Do not continue the tool call loop after this point
                 message.stop_reason = StopReason.end_of_turn
@@ -673,7 +672,7 @@ class ChatAgent(ShieldRunnerMixin):
                 break
 
             if stop_reason == StopReason.out_of_tokens:
-                log.info("Out of token budget, exiting.")
+                logcat.info("agents", "out of token budget, exiting.")
                 yield message
                 break
 
@@ -687,10 +686,10 @@ class ChatAgent(ShieldRunnerMixin):
                             message.content = [message.content] + output_attachments
                     yield message
                 else:
-                    log.info(f"Partial message: {str(message)}")
+                    logcat.debug("agents", f"completion message with EOM (iter: {n_iter}): {str(message)}")
                     input_messages = input_messages + [message]
             else:
-                log.info(f"{str(message)}")
+                logcat.debug("agents", f"completion message (iter: {n_iter}) from the model: {str(message)}")
                 # 1. Start the tool execution step and progress
                 step_id = str(uuid.uuid4())
                 yield AgentTurnResponseStreamChunk(
@@ -1042,7 +1041,7 @@ async def attachment_message(tempdir: str, urls: List[URL]) -> ToolResponseMessa
             path = urlparse(uri).path
             basename = os.path.basename(path)
             filepath = f"{tempdir}/{make_random_string() + basename}"
-            log.info(f"Downloading {url} -> {filepath}")
+            logcat.info("agents", f"Downloading {url} -> {filepath}")
 
             async with httpx.AsyncClient() as client:
                 r = await client.get(uri)
@@ -1082,6 +1081,7 @@ async def execute_tool_call_maybe(
         else:
             name = name.value
 
+    logcat.info("agents", f"executing tool call: {name} with args: {tool_call.arguments}")
     result = await tool_runtime_api.invoke_tool(
         tool_name=name,
         kwargs={
@@ -1091,6 +1091,7 @@ async def execute_tool_call_maybe(
             **toolgroup_args.get(group_name, {}),
         },
     )
+    logcat.debug("agents", f"tool call {name} completed with result: {result}")
     return result
 
 

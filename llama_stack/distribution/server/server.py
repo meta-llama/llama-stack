@@ -436,7 +436,7 @@ def main():
                     )
                 )
 
-        logcat.debug("server", f"Serving API {api_str}")
+    logcat.debug("server", f"serving APIs: {apis_to_serve}")
 
     app.exception_handler(RequestValidationError)(global_exception_handler)
     app.exception_handler(Exception)(global_exception_handler)

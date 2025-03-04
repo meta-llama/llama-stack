@@ -247,7 +247,6 @@ def sort_providers_by_deps(
     logcat.debug("core", f"Resolved {len(sorted_providers)} providers")
     for api_str, provider in sorted_providers:
         logcat.debug("core", f" {api_str} => {provider.provider_id}")
-        logcat.debug("core", "")
     return sorted_providers
 
 
