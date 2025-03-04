@@ -69,11 +69,12 @@
                 "tags": [
                     "DatasetIO"
                 ],
-                "description": "",
+                "description": "Get a paginated list of rows from a dataset.",
                 "parameters": [
                     {
                         "name": "dataset_id",
                         "in": "query",
+                        "description": "The ID of the dataset to get the rows from.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -82,6 +83,7 @@
                     {
                         "name": "rows_in_page",
                         "in": "query",
+                        "description": "The number of rows to get per page.",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -90,6 +92,7 @@
                     {
                         "name": "page_token",
                         "in": "query",
+                        "description": "The token to get the next page of rows.",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -98,6 +101,7 @@
                     {
                         "name": "filter_condition",
                         "in": "query",
+                        "description": "(Optional) A condition to filter the rows by.",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -896,7 +900,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "EvaluateResponse object containing generations and scores",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -921,11 +925,12 @@
                 "tags": [
                     "Eval"
                 ],
-                "description": "",
+                "description": "Evaluate a list of rows on a benchmark.",
                 "parameters": [
                     {
                         "name": "benchmark_id",
                         "in": "path",
+                        "description": "The ID of the benchmark to run the evaluation on.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -2121,7 +2126,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "The status of the evaluationjob.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2153,11 +2158,12 @@
                 "tags": [
                     "Eval"
                 ],
-                "description": "",
+                "description": "Get the status of a job.",
                 "parameters": [
                     {
                         "name": "benchmark_id",
                         "in": "path",
+                        "description": "The ID of the benchmark to run the evaluation on.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -2166,6 +2172,7 @@
                     {
                         "name": "job_id",
                         "in": "path",
+                        "description": "The ID of the job to get the status of.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -2194,11 +2201,12 @@
                 "tags": [
                     "Eval"
                 ],
-                "description": "",
+                "description": "Cancel a job.",
                 "parameters": [
                     {
                         "name": "benchmark_id",
                         "in": "path",
+                        "description": "The ID of the benchmark to run the evaluation on.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -2207,6 +2215,7 @@
                     {
                         "name": "job_id",
                         "in": "path",
+                        "description": "The ID of the job to cancel.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -2219,7 +2228,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "The result of the job.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2244,11 +2253,12 @@
                 "tags": [
                     "Eval"
                 ],
-                "description": "",
+                "description": "Get the result of a job.",
                 "parameters": [
                     {
                         "name": "benchmark_id",
                         "in": "path",
+                        "description": "The ID of the benchmark to run the evaluation on.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -2257,6 +2267,7 @@
                     {
                         "name": "job_id",
                         "in": "path",
+                        "description": "The ID of the job to get the result of.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -3287,7 +3298,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "The job that was created to run the evaluation.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -3312,11 +3323,12 @@
                 "tags": [
                     "Eval"
                 ],
-                "description": "",
+                "description": "Run an evaluation on a benchmark.",
                 "parameters": [
                     {
                         "name": "benchmark_id",
                         "in": "path",
+                        "description": "The ID of the benchmark to run the evaluation on.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -3418,7 +3430,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "ScoreResponse object containing rows and aggregated results",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -3443,7 +3455,7 @@
                 "tags": [
                     "Scoring"
                 ],
-                "description": "",
+                "description": "Score a list of rows.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -6187,7 +6199,8 @@
                         "default": "agent"
                     },
                     "config": {
-                        "$ref": "#/components/schemas/AgentConfig"
+                        "$ref": "#/components/schemas/AgentConfig",
+                        "description": "The configuration for the agent candidate."
                     }
                 },
                 "additionalProperties": false,
@@ -6195,7 +6208,8 @@
                     "type",
                     "config"
                 ],
-                "title": "AgentCandidate"
+                "title": "AgentCandidate",
+                "description": "An agent candidate for evaluation."
             },
             "AggregationFunctionType": {
                 "type": "string",
@@ -6232,16 +6246,19 @@
                 "type": "object",
                 "properties": {
                     "eval_candidate": {
-                        "$ref": "#/components/schemas/EvalCandidate"
+                        "$ref": "#/components/schemas/EvalCandidate",
+                        "description": "The candidate to evaluate."
                     },
                     "scoring_params": {
                         "type": "object",
                         "additionalProperties": {
                             "$ref": "#/components/schemas/ScoringFnParams"
-                        }
+                        },
+                        "description": "Map between scoring function id and parameters for each scoring function you want to run"
                     },
                     "num_examples": {
-                        "type": "integer"
+                        "type": "integer",
+                        "description": "(Optional) The number of examples to evaluate. If not provided, all examples in the dataset will be evaluated"
                     }
                 },
                 "additionalProperties": false,
@@ -6249,7 +6266,8 @@
                     "eval_candidate",
                     "scoring_params"
                 ],
-                "title": "BenchmarkConfig"
+                "title": "BenchmarkConfig",
+                "description": "A benchmark configuration for evaluation."
             },
             "EvalCandidate": {
                 "oneOf": [
@@ -6311,13 +6329,16 @@
                         "default": "model"
                     },
                     "model": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The model ID to evaluate."
                     },
                     "sampling_params": {
-                        "$ref": "#/components/schemas/SamplingParams"
+                        "$ref": "#/components/schemas/SamplingParams",
+                        "description": "The sampling parameters for the model."
                     },
                     "system_message": {
-                        "$ref": "#/components/schemas/SystemMessage"
+                        "$ref": "#/components/schemas/SystemMessage",
+                        "description": "(Optional) The system message providing instructions or context to the model."
                     }
                 },
                 "additionalProperties": false,
@@ -6326,7 +6347,8 @@
                     "model",
                     "sampling_params"
                 ],
-                "title": "ModelCandidate"
+                "title": "ModelCandidate",
+                "description": "A model candidate for evaluation."
             },
             "RegexParserScoringFnParams": {
                 "type": "object",
@@ -6405,16 +6427,19 @@
                                     }
                                 ]
                             }
-                        }
+                        },
+                        "description": "The rows to evaluate."
                     },
                     "scoring_functions": {
                         "type": "array",
                         "items": {
                             "type": "string"
-                        }
+                        },
+                        "description": "The scoring functions to use for the evaluation."
                     },
                     "benchmark_config": {
-                        "$ref": "#/components/schemas/BenchmarkConfig"
+                        "$ref": "#/components/schemas/BenchmarkConfig",
+                        "description": "The configuration for the benchmark."
                     }
                 },
                 "additionalProperties": false,
@@ -6454,13 +6479,15 @@
                                     }
                                 ]
                             }
-                        }
+                        },
+                        "description": "The generations from the evaluation."
                     },
                     "scores": {
                         "type": "object",
                         "additionalProperties": {
                             "$ref": "#/components/schemas/ScoringResult"
-                        }
+                        },
+                        "description": "The scores from the evaluation."
                     }
                 },
                 "additionalProperties": false,
@@ -6468,7 +6495,8 @@
                     "generations",
                     "scores"
                 ],
-                "title": "EvaluateResponse"
+                "title": "EvaluateResponse",
+                "description": "The response from an evaluation."
             },
             "ScoringResult": {
                 "type": "object",
@@ -6499,7 +6527,8 @@
                                     }
                                 ]
                             }
-                        }
+                        },
+                        "description": "The scoring result for each row. Each row is a map of column name to value."
                     },
                     "aggregated_results": {
                         "type": "object",
@@ -6524,7 +6553,8 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "Map of metric name to aggregated value"
                     }
                 },
                 "additionalProperties": false,
@@ -6532,7 +6562,8 @@
                     "score_rows",
                     "aggregated_results"
                 ],
-                "title": "ScoringResult"
+                "title": "ScoringResult",
+                "description": "A scoring result for a single row."
             },
             "Session": {
                 "type": "object",
@@ -7021,13 +7052,16 @@
                                     }
                                 ]
                             }
-                        }
+                        },
+                        "description": "The rows in the current page."
                     },
                     "total_count": {
-                        "type": "integer"
+                        "type": "integer",
+                        "description": "The total number of rows in the dataset."
                     },
                     "next_page_token": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The token to get the next page of rows."
                     }
                 },
                 "additionalProperties": false,
@@ -7035,7 +7069,8 @@
                     "rows",
                     "total_count"
                 ],
-                "title": "PaginatedRowsResult"
+                "title": "PaginatedRowsResult",
+                "description": "A paginated list of rows from a dataset."
             },
             "ScoringFn": {
                 "type": "object",
@@ -9307,7 +9342,8 @@
                 "type": "object",
                 "properties": {
                     "benchmark_config": {
-                        "$ref": "#/components/schemas/BenchmarkConfig"
+                        "$ref": "#/components/schemas/BenchmarkConfig",
+                        "description": "The configuration for the benchmark."
                     }
                 },
                 "additionalProperties": false,
@@ -9444,7 +9480,8 @@
                                     }
                                 ]
                             }
-                        }
+                        },
+                        "description": "The rows to score."
                     },
                     "scoring_functions": {
                         "type": "object",
@@ -9457,7 +9494,8 @@
                                     "type": "null"
                                 }
                             ]
-                        }
+                        },
+                        "description": "The scoring functions to use for the scoring."
                     }
                 },
                 "additionalProperties": false,
@@ -9474,14 +9512,16 @@
                         "type": "object",
                         "additionalProperties": {
                             "$ref": "#/components/schemas/ScoringResult"
-                        }
+                        },
+                        "description": "A map of scoring function name to ScoringResult."
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "results"
                 ],
-                "title": "ScoreResponse"
+                "title": "ScoreResponse",
+                "description": "The response from scoring."
             },
             "ScoreBatchRequest": {
                 "type": "object",
@@ -9896,7 +9936,8 @@
             "name": "Datasets"
         },
         {
-            "name": "Eval"
+            "name": "Eval",
+            "x-displayName": "Llama Stack Evaluation API for running evaluations on model and agent candidates."
         },
         {
             "name": "Files (Coming Soon)"
