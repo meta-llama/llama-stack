@@ -43,7 +43,7 @@ class OptimizerConfig(BaseModel):
 @json_schema_type
 class TrainingConfig(BaseModel):
     data_config: DataConfig
-    optimizer_config: OptimizerConfig
+    optimizer_config: Optional[OptimizerConfig] = OptimizerConfig()
     n_epochs: Optional[int] = 1
     max_steps_per_epoch: Optional[int] = None
     gradient_accumulation_steps: Optional[int] = 1
@@ -159,8 +159,6 @@ class PostTraining(Protocol):
         self,
         job_uuid: str,
         training_config: TrainingConfig,
-        hyperparam_search_config: Dict[str, Any],
-        logger_config: Dict[str, Any],
         model: str = Field(
             default="Llama3.2-3B-Instruct",
             description="Model descriptor from `llama model list`",
