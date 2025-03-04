@@ -9245,7 +9245,7 @@
               "arguments": {
                 "query": "Torchtune documentation"
               },
-              "call_id": "29967c15-fa70-4bb1-abb8-da6d7b5736c5",
+              "call_id": "f4f09cc4-7ea8-47f3-a07d-562a7241b41e",
               "tool_name": "knowledge_search"
             },
             "type": "tool_call"
