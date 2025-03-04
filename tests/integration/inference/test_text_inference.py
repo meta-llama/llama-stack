@@ -9,7 +9,8 @@ import pytest
 from pydantic import BaseModel
 
 from llama_stack.models.llama.sku_list import resolve_model
-from llama_stack.providers.tests.test_cases.test_case import TestCase
+
+from ..test_cases.test_case import TestCase
 
 PROVIDER_LOGPROBS_TOP_K = {"remote::together", "remote::fireworks", "remote::vllm"}
 
