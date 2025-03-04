@@ -362,7 +362,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "An AgentCreateResponse with the agent ID.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -387,7 +387,7 @@
                 "tags": [
                     "Agents"
                 ],
-                "description": "",
+                "description": "Create an agent with the given configuration.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -405,7 +405,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "An AgentSessionCreateResponse.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -430,11 +430,12 @@
                 "tags": [
                     "Agents"
                 ],
-                "description": "",
+                "description": "Create a new session for an agent.",
                 "parameters": [
                     {
                         "name": "agent_id",
                         "in": "path",
+                        "description": "The ID of the agent to create the session for.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -457,7 +458,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "A single turn in an interaction with an Agentic System. **OR** streamed agent turn completion response.",
+                        "description": "If stream=False, returns a Turn object. If stream=True, returns an SSE event stream of AgentTurnResponseStreamChunk",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -487,11 +488,12 @@
                 "tags": [
                     "Agents"
                 ],
-                "description": "",
+                "description": "Create a new turn for an agent.",
                 "parameters": [
                     {
                         "name": "agent_id",
                         "in": "path",
+                        "description": "The ID of the agent to create the turn for.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -500,6 +502,7 @@
                     {
                         "name": "session_id",
                         "in": "path",
+                        "description": "The ID of the session to create the turn for.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -623,11 +626,12 @@
                 "tags": [
                     "Agents"
                 ],
-                "description": "",
+                "description": "Delete an agent by its ID.",
                 "parameters": [
                     {
                         "name": "agent_id",
                         "in": "path",
+                        "description": "The ID of the agent to delete.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -665,11 +669,12 @@
                 "tags": [
                     "Agents"
                 ],
-                "description": "",
+                "description": "Retrieve an agent session by its ID.",
                 "parameters": [
                     {
                         "name": "session_id",
                         "in": "path",
+                        "description": "The ID of the session to get.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -678,6 +683,7 @@
                     {
                         "name": "agent_id",
                         "in": "path",
+                        "description": "The ID of the agent to get the session for.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -686,6 +692,7 @@
                     {
                         "name": "turn_ids",
                         "in": "query",
+                        "description": "(Optional) List of turn IDs to filter the session by.",
                         "required": false,
                         "schema": {
                             "type": "array",
@@ -717,11 +724,12 @@
                 "tags": [
                     "Agents"
                 ],
-                "description": "",
+                "description": "Delete an agent session by its ID.",
                 "parameters": [
                     {
                         "name": "session_id",
                         "in": "path",
+                        "description": "The ID of the session to delete.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -730,6 +738,7 @@
                     {
                         "name": "agent_id",
                         "in": "path",
+                        "description": "The ID of the agent to delete the session for.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -939,7 +948,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "An AgentStepResponse.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -964,11 +973,12 @@
                 "tags": [
                     "Agents"
                 ],
-                "description": "",
+                "description": "Retrieve an agent step by its ID.",
                 "parameters": [
                     {
                         "name": "agent_id",
                         "in": "path",
+                        "description": "The ID of the agent to get the step for.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -977,6 +987,7 @@
                     {
                         "name": "session_id",
                         "in": "path",
+                        "description": "The ID of the session to get the step for.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -985,6 +996,7 @@
                     {
                         "name": "turn_id",
                         "in": "path",
+                        "description": "The ID of the turn to get the step for.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -993,6 +1005,7 @@
                     {
                         "name": "step_id",
                         "in": "path",
+                        "description": "The ID of the step to get.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1005,7 +1018,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A Turn.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1030,11 +1043,12 @@
                 "tags": [
                     "Agents"
                 ],
-                "description": "",
+                "description": "Retrieve an agent turn by its ID.",
                 "parameters": [
                     {
                         "name": "agent_id",
                         "in": "path",
+                        "description": "The ID of the agent to get the turn for.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1043,6 +1057,7 @@
                     {
                         "name": "session_id",
                         "in": "path",
+                        "description": "The ID of the session to get the turn for.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1051,6 +1066,7 @@
                     {
                         "name": "turn_id",
                         "in": "path",
+                        "description": "The ID of the turn to get.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -5192,7 +5208,8 @@
                 "type": "object",
                 "properties": {
                     "agent_config": {
-                        "$ref": "#/components/schemas/AgentConfig"
+                        "$ref": "#/components/schemas/AgentConfig",
+                        "description": "The configuration for the agent."
                     }
                 },
                 "additionalProperties": false,
@@ -5218,7 +5235,8 @@
                 "type": "object",
                 "properties": {
                     "session_name": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The name of the session to create."
                     }
                 },
                 "additionalProperties": false,
@@ -5254,10 +5272,12 @@
                                     "$ref": "#/components/schemas/ToolResponseMessage"
                                 }
                             ]
-                        }
+                        },
+                        "description": "List of messages to start the turn with."
                     },
                     "stream": {
-                        "type": "boolean"
+                        "type": "boolean",
+                        "description": "(Optional) If True, generate an SSE event stream of the response. Defaults to False."
                     },
                     "documents": {
                         "type": "array",
@@ -5281,10 +5301,12 @@
                                         {
                                             "$ref": "#/components/schemas/URL"
                                         }
-                                    ]
+                                    ],
+                                    "description": "The content of the document."
                                 },
                                 "mime_type": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "description": "The MIME type of the document."
                                 }
                             },
                             "additionalProperties": false,
@@ -5292,17 +5314,21 @@
                                 "content",
                                 "mime_type"
                             ],
-                            "title": "Document"
-                        }
+                            "title": "Document",
+                            "description": "A document to be used by an agent."
+                        },
+                        "description": "(Optional) List of documents to create the turn with."
                     },
                     "toolgroups": {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/AgentTool"
-                        }
+                        },
+                        "description": "(Optional) List of toolgroups to create the turn with, will be used in addition to the agent's config toolgroups for the request."
                     },
                     "tool_config": {
-                        "$ref": "#/components/schemas/ToolConfig"
+                        "$ref": "#/components/schemas/ToolConfig",
+                        "description": "(Optional) The tool configuration to create the turn with, will be used to override the agent's tool_config."
                     }
                 },
                 "additionalProperties": false,
@@ -5315,18 +5341,22 @@
                 "type": "object",
                 "properties": {
                     "turn_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The ID of the turn."
                     },
                     "step_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The ID of the step."
                     },
                     "started_at": {
                         "type": "string",
-                        "format": "date-time"
+                        "format": "date-time",
+                        "description": "The time the step started."
                     },
                     "completed_at": {
                         "type": "string",
-                        "format": "date-time"
+                        "format": "date-time",
+                        "description": "The time the step completed."
                     },
                     "step_type": {
                         "type": "string",
@@ -5334,7 +5364,8 @@
                         "default": "inference"
                     },
                     "model_response": {
-                        "$ref": "#/components/schemas/CompletionMessage"
+                        "$ref": "#/components/schemas/CompletionMessage",
+                        "description": "The response from the LLM."
                     }
                 },
                 "additionalProperties": false,
@@ -5344,24 +5375,29 @@
                     "step_type",
                     "model_response"
                 ],
-                "title": "InferenceStep"
+                "title": "InferenceStep",
+                "description": "An inference step in an agent turn."
             },
             "MemoryRetrievalStep": {
                 "type": "object",
                 "properties": {
                     "turn_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The ID of the turn."
                     },
                     "step_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The ID of the step."
                     },
                     "started_at": {
                         "type": "string",
-                        "format": "date-time"
+                        "format": "date-time",
+                        "description": "The time the step started."
                     },
                     "completed_at": {
                         "type": "string",
-                        "format": "date-time"
+                        "format": "date-time",
+                        "description": "The time the step completed."
                     },
                     "step_type": {
                         "type": "string",
@@ -5369,10 +5405,12 @@
                         "default": "memory_retrieval"
                     },
                     "vector_db_ids": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The IDs of the vector databases to retrieve context from."
                     },
                     "inserted_context": {
-                        "$ref": "#/components/schemas/InterleavedContent"
+                        "$ref": "#/components/schemas/InterleavedContent",
+                        "description": "The context retrieved from the vector databases."
                     }
                 },
                 "additionalProperties": false,
@@ -5383,7 +5421,8 @@
                     "vector_db_ids",
                     "inserted_context"
                 ],
-                "title": "MemoryRetrievalStep"
+                "title": "MemoryRetrievalStep",
+                "description": "A memory retrieval step in an agent turn."
             },
             "SafetyViolation": {
                 "type": "object",
@@ -5431,18 +5470,22 @@
                 "type": "object",
                 "properties": {
                     "turn_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The ID of the turn."
                     },
                     "step_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The ID of the step."
                     },
                     "started_at": {
                         "type": "string",
-                        "format": "date-time"
+                        "format": "date-time",
+                        "description": "The time the step started."
                     },
                     "completed_at": {
                         "type": "string",
-                        "format": "date-time"
+                        "format": "date-time",
+                        "description": "The time the step completed."
                     },
                     "step_type": {
                         "type": "string",
@@ -5450,7 +5493,8 @@
                         "default": "shield_call"
                     },
                     "violation": {
-                        "$ref": "#/components/schemas/SafetyViolation"
+                        "$ref": "#/components/schemas/SafetyViolation",
+                        "description": "The violation from the shield call."
                     }
                 },
                 "additionalProperties": false,
@@ -5459,24 +5503,29 @@
                     "step_id",
                     "step_type"
                 ],
-                "title": "ShieldCallStep"
+                "title": "ShieldCallStep",
+                "description": "A shield call step in an agent turn."
             },
             "ToolExecutionStep": {
                 "type": "object",
                 "properties": {
                     "turn_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The ID of the turn."
                     },
                     "step_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The ID of the step."
                     },
                     "started_at": {
                         "type": "string",
-                        "format": "date-time"
+                        "format": "date-time",
+                        "description": "The time the step started."
                     },
                     "completed_at": {
                         "type": "string",
-                        "format": "date-time"
+                        "format": "date-time",
+                        "description": "The time the step completed."
                     },
                     "step_type": {
                         "type": "string",
@@ -5487,13 +5536,15 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/ToolCall"
-                        }
+                        },
+                        "description": "The tool calls to execute."
                     },
                     "tool_responses": {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/ToolResponse"
-                        }
+                        },
+                        "description": "The tool responses from the tool calls."
                     }
                 },
                 "additionalProperties": false,
@@ -5504,7 +5555,8 @@
                     "tool_calls",
                     "tool_responses"
                 ],
-                "title": "ToolExecutionStep"
+                "title": "ToolExecutionStep",
+                "description": "A tool execution step in an agent turn."
             },
             "ToolResponse": {
                 "type": "object",
@@ -5641,10 +5693,12 @@
                                         {
                                             "$ref": "#/components/schemas/URL"
                                         }
-                                    ]
+                                    ],
+                                    "description": "The content of the attachment."
                                 },
                                 "mime_type": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "description": "The MIME type of the attachment."
                                 }
                             },
                             "additionalProperties": false,
@@ -5652,7 +5706,8 @@
                                 "content",
                                 "mime_type"
                             ],
-                            "title": "Attachment"
+                            "title": "Attachment",
+                            "description": "An attachment to an agent turn."
                         }
                     },
                     "started_at": {
@@ -5747,7 +5802,8 @@
                             "shield_call",
                             "memory_retrieval"
                         ],
-                        "title": "StepType"
+                        "title": "StepType",
+                        "description": "Type of the step in an agent turn."
                     },
                     "step_id": {
                         "type": "string"
@@ -5803,7 +5859,8 @@
                             "shield_call",
                             "memory_retrieval"
                         ],
-                        "title": "StepType"
+                        "title": "StepType",
+                        "description": "Type of the step in an agent turn."
                     },
                     "step_id": {
                         "type": "string"
@@ -5837,7 +5894,8 @@
                             "shield_call",
                             "memory_retrieval"
                         ],
-                        "title": "StepType"
+                        "title": "StepType",
+                        "description": "Type of the step in an agent turn."
                     },
                     "step_id": {
                         "type": "string"

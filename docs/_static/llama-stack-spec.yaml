@@ -234,7 +234,8 @@ paths:
     post:
       responses:
         '200':
-          description: OK
+          description: >-
+            An AgentCreateResponse with the agent ID.
           content:
             application/json:
               schema:
@@ -251,7 +252,8 @@ paths:
           $ref: '#/components/responses/DefaultError'
       tags:
         - Agents
-      description: ''
+      description: >-
+        Create an agent with the given configuration.
       parameters: []
       requestBody:
         content:
@@ -263,7 +265,7 @@ paths:
     post:
       responses:
         '200':
-          description: OK
+          description: An AgentSessionCreateResponse.
           content:
             application/json:
               schema:
@@ -280,10 +282,12 @@ paths:
           $ref: '#/components/responses/DefaultError'
       tags:
         - Agents
-      description: ''
+      description: Create a new session for an agent.
       parameters:
         - name: agent_id
           in: path
+          description: >-
+            The ID of the agent to create the session for.
           required: true
           schema:
             type: string
@@ -298,8 +302,8 @@ paths:
       responses:
         '200':
           description: >-
-            A single turn in an interaction with an Agentic System. **OR** streamed
-            agent turn completion response.
+            If stream=False, returns a Turn object. If stream=True, returns an SSE
+            event stream of AgentTurnResponseStreamChunk
           content:
             application/json:
               schema:
@@ -319,15 +323,19 @@ paths:
           $ref: '#/components/responses/DefaultError'
       tags:
         - Agents
-      description: ''
+      description: Create a new turn for an agent.
       parameters:
         - name: agent_id
           in: path
+          description: >-
+            The ID of the agent to create the turn for.
           required: true
           schema:
             type: string
         - name: session_id
           in: path
+          description: >-
+            The ID of the session to create the turn for.
           required: true
           schema:
             type: string
@@ -411,10 +419,11 @@ paths:
           $ref: '#/components/responses/DefaultError'
       tags:
         - Agents
-      description: ''
+      description: Delete an agent by its ID.
       parameters:
         - name: agent_id
           in: path
+          description: The ID of the agent to delete.
           required: true
           schema:
             type: string
@@ -439,20 +448,25 @@ paths:
           $ref: '#/components/responses/DefaultError'
       tags:
         - Agents
-      description: ''
+      description: Retrieve an agent session by its ID.
       parameters:
         - name: session_id
           in: path
+          description: The ID of the session to get.
           required: true
           schema:
             type: string
         - name: agent_id
           in: path
+          description: >-
+            The ID of the agent to get the session for.
           required: true
           schema:
             type: string
         - name: turn_ids
           in: query
+          description: >-
+            (Optional) List of turn IDs to filter the session by.
           required: false
           schema:
             type: array
@@ -474,15 +488,18 @@ paths:
           $ref: '#/components/responses/DefaultError'
       tags:
         - Agents
-      description: ''
+      description: Delete an agent session by its ID.
       parameters:
         - name: session_id
           in: path
+          description: The ID of the session to delete.
           required: true
           schema:
             type: string
         - name: agent_id
           in: path
+          description: >-
+            The ID of the agent to delete the session for.
           required: true
           schema:
             type: string
@@ -630,7 +647,7 @@ paths:
     get:
       responses:
         '200':
-          description: OK
+          description: An AgentStepResponse.
           content:
             application/json:
               schema:
@@ -647,25 +664,30 @@ paths:
           $ref: '#/components/responses/DefaultError'
       tags:
         - Agents
-      description: ''
+      description: Retrieve an agent step by its ID.
       parameters:
         - name: agent_id
           in: path
+          description: The ID of the agent to get the step for.
           required: true
           schema:
             type: string
         - name: session_id
           in: path
+          description: >-
+            The ID of the session to get the step for.
           required: true
           schema:
             type: string
         - name: turn_id
           in: path
+          description: The ID of the turn to get the step for.
           required: true
           schema:
             type: string
         - name: step_id
           in: path
+          description: The ID of the step to get.
           required: true
           schema:
             type: string
@@ -673,7 +695,7 @@ paths:
     get:
       responses:
         '200':
-          description: OK
+          description: A Turn.
           content:
             application/json:
               schema:
@@ -690,20 +712,24 @@ paths:
           $ref: '#/components/responses/DefaultError'
       tags:
         - Agents
-      description: ''
+      description: Retrieve an agent turn by its ID.
       parameters:
         - name: agent_id
           in: path
+          description: The ID of the agent to get the turn for.
           required: true
           schema:
             type: string
         - name: session_id
           in: path
+          description: >-
+            The ID of the session to get the turn for.
           required: true
           schema:
             type: string
         - name: turn_id
           in: path
+          description: The ID of the turn to get.
           required: true
           schema:
             type: string
@@ -3567,6 +3593,7 @@ components:
       properties:
         agent_config:
           $ref: '#/components/schemas/AgentConfig'
+          description: The configuration for the agent.
       additionalProperties: false
       required:
         - agent_config
@@ -3585,6 +3612,7 @@ components:
       properties:
         session_name:
           type: string
+          description: The name of the session to create.
       additionalProperties: false
       required:
         - session_name
@@ -3607,8 +3635,12 @@ components:
             oneOf:
               - $ref: '#/components/schemas/UserMessage'
               - $ref: '#/components/schemas/ToolResponseMessage'
+          description: List of messages to start the turn with.
         stream:
           type: boolean
+          description: >-
+            (Optional) If True, generate an SSE event stream of the response. Defaults
+            to False.
         documents:
           type: array
           items:
@@ -3622,19 +3654,30 @@ components:
                     items:
                       $ref: '#/components/schemas/InterleavedContentItem'
                   - $ref: '#/components/schemas/URL'
+                description: The content of the document.
               mime_type:
                 type: string
+                description: The MIME type of the document.
             additionalProperties: false
             required:
               - content
               - mime_type
             title: Document
+            description: A document to be used by an agent.
+          description: >-
+            (Optional) List of documents to create the turn with.
         toolgroups:
           type: array
           items:
             $ref: '#/components/schemas/AgentTool'
+          description: >-
+            (Optional) List of toolgroups to create the turn with, will be used in
+            addition to the agent's config toolgroups for the request.
         tool_config:
           $ref: '#/components/schemas/ToolConfig'
+          description: >-
+            (Optional) The tool configuration to create the turn with, will be used
+            to override the agent's tool_config.
       additionalProperties: false
       required:
         - messages
@@ -3644,20 +3687,25 @@ components:
       properties:
         turn_id:
           type: string
+          description: The ID of the turn.
         step_id:
           type: string
+          description: The ID of the step.
         started_at:
           type: string
           format: date-time
+          description: The time the step started.
         completed_at:
           type: string
           format: date-time
+          description: The time the step completed.
         step_type:
           type: string
           const: inference
           default: inference
         model_response:
           $ref: '#/components/schemas/CompletionMessage'
+          description: The response from the LLM.
       additionalProperties: false
       required:
         - turn_id
@@ -3665,27 +3713,36 @@ components:
         - step_type
         - model_response
       title: InferenceStep
+      description: An inference step in an agent turn.
     MemoryRetrievalStep:
       type: object
       properties:
         turn_id:
           type: string
+          description: The ID of the turn.
         step_id:
           type: string
+          description: The ID of the step.
         started_at:
           type: string
           format: date-time
+          description: The time the step started.
         completed_at:
           type: string
           format: date-time
+          description: The time the step completed.
         step_type:
           type: string
           const: memory_retrieval
           default: memory_retrieval
         vector_db_ids:
           type: string
+          description: >-
+            The IDs of the vector databases to retrieve context from.
         inserted_context:
           $ref: '#/components/schemas/InterleavedContent'
+          description: >-
+            The context retrieved from the vector databases.
       additionalProperties: false
       required:
         - turn_id
@@ -3694,6 +3751,8 @@ components:
         - vector_db_ids
         - inserted_context
       title: MemoryRetrievalStep
+      description: >-
+        A memory retrieval step in an agent turn.
     SafetyViolation:
       type: object
       properties:
@@ -3721,39 +3780,49 @@ components:
       properties:
         turn_id:
           type: string
+          description: The ID of the turn.
         step_id:
           type: string
+          description: The ID of the step.
         started_at:
           type: string
           format: date-time
+          description: The time the step started.
         completed_at:
           type: string
           format: date-time
+          description: The time the step completed.
         step_type:
           type: string
           const: shield_call
           default: shield_call
         violation:
           $ref: '#/components/schemas/SafetyViolation'
+          description: The violation from the shield call.
       additionalProperties: false
       required:
         - turn_id
         - step_id
         - step_type
       title: ShieldCallStep
+      description: A shield call step in an agent turn.
     ToolExecutionStep:
       type: object
       properties:
         turn_id:
           type: string
+          description: The ID of the turn.
         step_id:
           type: string
+          description: The ID of the step.
         started_at:
           type: string
           format: date-time
+          description: The time the step started.
         completed_at:
           type: string
           format: date-time
+          description: The time the step completed.
         step_type:
           type: string
           const: tool_execution
@@ -3762,10 +3831,12 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ToolCall'
+          description: The tool calls to execute.
         tool_responses:
           type: array
           items:
             $ref: '#/components/schemas/ToolResponse'
+          description: The tool responses from the tool calls.
       additionalProperties: false
       required:
         - turn_id
@@ -3774,6 +3845,7 @@ components:
         - tool_calls
         - tool_responses
       title: ToolExecutionStep
+      description: A tool execution step in an agent turn.
     ToolResponse:
       type: object
       properties:
@@ -3850,13 +3922,16 @@ components:
                     items:
                       $ref: '#/components/schemas/InterleavedContentItem'
                   - $ref: '#/components/schemas/URL'
+                description: The content of the attachment.
               mime_type:
                 type: string
+                description: The MIME type of the attachment.
             additionalProperties: false
             required:
               - content
               - mime_type
             title: Attachment
+            description: An attachment to an agent turn.
         started_at:
           type: string
           format: date-time
@@ -3922,6 +3997,7 @@ components:
             - shield_call
             - memory_retrieval
           title: StepType
+          description: Type of the step in an agent turn.
         step_id:
           type: string
         step_details:
@@ -3959,6 +4035,7 @@ components:
             - shield_call
             - memory_retrieval
           title: StepType
+          description: Type of the step in an agent turn.
         step_id:
           type: string
         delta:
@@ -3985,6 +4062,7 @@ components:
             - shield_call
             - memory_retrieval
           title: StepType
+          description: Type of the step in an agent turn.
         step_id:
           type: string
         metadata:
