@@ -401,7 +401,19 @@ def test_rag_agent(llama_stack_client_with_mocked_inference, agent_config, rag_t
             assert expected_kw in response.output_message.content.lower()
 
 
-def test_rag_agent_with_attachments(llama_stack_client_with_mocked_inference, agent_config):
+@pytest.mark.parametrize(
+    "toolgroup",
+    [
+        dict(
+            name="builtin::rag/knowledge_search",
+            args={
+                "vector_db_ids": [],
+            },
+        ),
+        "builtin::rag/knowledge_search",
+    ],
+)
+def test_rag_agent_with_attachments(llama_stack_client_with_mocked_inference, agent_config, toolgroup):
     urls = ["chat.rst", "llama3.rst", "memory_optimizations.rst", "lora_finetune.rst"]
     documents = [
         Document(
@@ -414,14 +426,7 @@ def test_rag_agent_with_attachments(llama_stack_client_with_mocked_inference, ag
     ]
     agent_config = {
         **agent_config,
-        "toolgroups": [
-            dict(
-                name="builtin::rag/knowledge_search",
-                args={
-                    "vector_db_ids": [],
-                },
-            )
-        ],
+        "toolgroups": [toolgroup],
     }
     rag_agent = Agent(llama_stack_client_with_mocked_inference, agent_config)
     session_id = rag_agent.create_session(f"test-session-{uuid4()}")
