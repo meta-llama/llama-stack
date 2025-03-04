@@ -20,7 +20,7 @@ from llama_stack.distribution.datatypes import Provider, StackRunConfig
 from llama_stack.distribution.distribution import get_provider_registry
 from llama_stack.distribution.stack import replace_env_vars
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
-from llama_stack.providers.tests.env import get_env_or_fail
+from llama_stack.env import get_env_or_fail
 from llama_stack.providers.utils.kvstore.config import SqliteKVStoreConfig
 
 from .fixtures.recordable_mock import RecordableMock
@@ -85,6 +85,11 @@ def pytest_addoption(parser):
         help="Specify the embedding model to use for testing",
     )
     parser.addoption(
+        "--judge-model",
+        default=None,
+        help="Specify the judge model to use for testing",
+    )
+    parser.addoption(
         "--embedding-dimension",
         type=int,
         default=384,
@@ -109,6 +114,7 @@ def provider_data():
         "TOGETHER_API_KEY": "together_api_key",
         "ANTHROPIC_API_KEY": "anthropic_api_key",
         "GROQ_API_KEY": "groq_api_key",
+        "WOLFRAM_ALPHA_API_KEY": "wolfram_alpha_api_key",
     }
     provider_data = {}
     for key, value in keymap.items():
@@ -260,7 +266,9 @@ def inference_provider_type(llama_stack_client):
 
 
 @pytest.fixture(scope="session")
-def client_with_models(llama_stack_client, text_model_id, vision_model_id, embedding_model_id, embedding_dimension):
+def client_with_models(
+    llama_stack_client, text_model_id, vision_model_id, embedding_model_id, embedding_dimension, judge_model_id
+):
     client = llama_stack_client
 
     providers = [p for p in client.providers.list() if p.api == "inference"]
@@ -274,6 +282,8 @@ def client_with_models(llama_stack_client, text_model_id, vision_model_id, embed
         client.models.register(model_id=text_model_id, provider_id=inference_providers[0])
     if vision_model_id and vision_model_id not in model_ids:
         client.models.register(model_id=vision_model_id, provider_id=inference_providers[0])
+    if judge_model_id and judge_model_id not in model_ids:
+        client.models.register(model_id=judge_model_id, provider_id=inference_providers[0])
 
     if embedding_model_id and embedding_dimension and embedding_model_id not in model_ids:
         # try to find a provider that supports embeddings, if sentence-transformers is not available
@@ -327,6 +337,14 @@ def pytest_generate_tests(metafunc):
         values.append(val)
         if val is not None:
             id_parts.append(f"emb={get_short_id(val)}")
+
+    if "judge_model_id" in metafunc.fixturenames:
+        params.append("judge_model_id")
+        val = metafunc.config.getoption("--judge-model")
+        print(f"judge_model_id: {val}")
+        values.append(val)
+        if val is not None:
+            id_parts.append(f"judge={get_short_id(val)}")
 
     if "embedding_dimension" in metafunc.fixturenames:
         params.append("embedding_dimension")

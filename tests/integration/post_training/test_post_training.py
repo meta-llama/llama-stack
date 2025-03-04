@@ -26,6 +26,7 @@ from llama_stack.apis.post_training import (
 #   -v -s --tb=short --disable-warnings
 
 
+@pytest.mark.skip(reason="FIXME FIXME @yanxi0830 this needs to be migrated to use the API")
 class TestPostTraining:
     @pytest.mark.asyncio
     async def test_supervised_fine_tune(self, post_training_stack):
