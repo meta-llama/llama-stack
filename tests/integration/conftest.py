@@ -128,6 +128,7 @@ def distro_from_adhoc_config_spec(adhoc_config_spec: str) -> str:
     api_providers = adhoc_config_spec.replace(";", ",").split(",")
     provider_registry = get_provider_registry()
 
+    distro_dir = tempfile.mkdtemp()
     provider_configs_by_api = {}
     for api_provider in api_providers:
         api_str, provider = api_provider.split("=")
@@ -147,7 +148,7 @@ def distro_from_adhoc_config_spec(adhoc_config_spec: str) -> str:
 
         # call method "sample_run_config" on the provider spec config class
         provider_config_type = instantiate_class_type(provider_spec.config_class)
-        provider_config = replace_env_vars(provider_config_type.sample_run_config())
+        provider_config = replace_env_vars(provider_config_type.sample_run_config(__distro_dir__=distro_dir))
 
         provider_configs_by_api[api_str] = [
             Provider(

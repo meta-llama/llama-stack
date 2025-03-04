@@ -11,7 +11,6 @@ import numpy as np
 import pytest
 import sqlite_vec
 
-from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import Chunk, QueryChunksResponse
 from llama_stack.providers.inline.vector_io.sqlite_vec.sqlite_vec import (
     SQLiteVecIndex,
@@ -19,9 +18,13 @@ from llama_stack.providers.inline.vector_io.sqlite_vec.sqlite_vec import (
     generate_chunk_id,
 )
 
+# This test is a unit test for the SQLiteVecVectorIOAdapter class. This should only contain
+# tests which are specific to this class. More general (API-level) tests should be placed in
+# tests/integration/vector_io/
+#
 # How to run this test:
 #
-# pytest llama_stack/providers/tests/vector_io/test_sqlite_vec.py \
+# pytest tests/unit/providers/vector_io/test_sqlite_vec.py \
 # -v -s --tb=short --disable-warnings --asyncio-mode=auto
 
 SQLITE_VEC_PROVIDER = "sqlite_vec"
@@ -114,35 +117,6 @@ async def sqlite_vec_adapter(sqlite_connection):
     await adapter.initialize()
     yield adapter
     await adapter.shutdown()
-
-
-@pytest.mark.asyncio
-async def test_register_vector_db(sqlite_vec_adapter):
-    vector_db = VectorDB(
-        identifier="test_db",
-        embedding_model=EMBEDDING_MODEL,
-        embedding_dimension=EMBEDDING_DIMENSION,
-        metadata={},
-        provider_id=SQLITE_VEC_PROVIDER,
-    )
-    await sqlite_vec_adapter.register_vector_db(vector_db)
-    vector_dbs = await sqlite_vec_adapter.list_vector_dbs()
-    assert any(db.identifier == "test_db" for db in vector_dbs)
-
-
-@pytest.mark.asyncio
-async def test_unregister_vector_db(sqlite_vec_adapter):
-    vector_db = VectorDB(
-        identifier="test_db",
-        embedding_model=EMBEDDING_MODEL,
-        embedding_dimension=EMBEDDING_DIMENSION,
-        metadata={},
-        provider_id=SQLITE_VEC_PROVIDER,
-    )
-    await sqlite_vec_adapter.register_vector_db(vector_db)
-    await sqlite_vec_adapter.unregister_vector_db("test_db")
-    vector_dbs = await sqlite_vec_adapter.list_vector_dbs()
-    assert not any(db.identifier == "test_db" for db in vector_dbs)
 
 
 def test_generate_chunk_id():
