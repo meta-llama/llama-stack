@@ -35,6 +35,7 @@ def get_distribution_template() -> DistributionTemplate:
             "inline::rag-runtime",
             "remote::model-context-protocol",
         ],
+        "preprocessing": ["inline::basic", "inline::simple_chunking"],
     }
     name = "ollama"
     inference_provider = Provider(

@@ -558,8 +558,11 @@ class PreprocessorsRoutingTable(CommonRoutingTableImpl, Preprocessors):
         self,
         preprocessor_id: str,
         provider_id: Optional[str] = None,
+        provider_preprocessor_id: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None,
     ) -> Preprocessor:
+        if provider_preprocessor_id is None:
+            provider_preprocessor_id = preprocessor_id
         if provider_id is None:
             if len(self.impls_by_provider_id) == 1:
                 provider_id = list(self.impls_by_provider_id.keys())[0]
@@ -569,11 +572,10 @@ class PreprocessorsRoutingTable(CommonRoutingTableImpl, Preprocessors):
                 )
         preprocessor = Preprocessor(
             identifier=preprocessor_id,
-            provider_resource_id=preprocessor_id,
+            provider_resource_id=provider_preprocessor_id,
             provider_id=provider_id,
             metadata=metadata,
         )
-        preprocessor.provider_id = provider_id
         await self.register_object(preprocessor)
         return preprocessor
 
