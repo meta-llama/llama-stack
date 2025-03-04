@@ -58,8 +58,12 @@ from .config import CentMLImplConfig
 # published model identifiers to llama-stack's `CoreModelId`.
 MODEL_ALIASES = [
     build_model_entry(
-        "meta-llama/Llama-3.2-3B-Instruct",
-        CoreModelId.llama3_2_3b_instruct.value,
+        "meta-llama/Llama-3.3-70B-Instruct",
+        CoreModelId.llama3_3_70b_instruct.value,
+    ),
+    build_model_entry(
+        "meta-llama/Llama-3.1-405B-Instruct-FP8",
+        CoreModelId.llama3_1_405b_instruct.value,
     ),
 ]
 
