@@ -809,18 +809,12 @@ class ChatAgent(ShieldRunnerMixin):
         self, toolgroups_for_turn: Optional[List[AgentToolGroup]] = None
     ) -> Tuple[List[ToolDefinition], Dict[str, str]]:
         # Determine which tools to include
-        agent_config_toolgroups = {
-            toolgroup.name if isinstance(toolgroup, AgentToolGroupWithArgs) else toolgroup
-            for toolgroup in self.agent_config.toolgroups
-        }
-        toolgroups_for_turn_set = (
-            agent_config_toolgroups
-            if toolgroups_for_turn is None
-            else {
-                (toolgroup.name if isinstance(toolgroup, AgentToolGroupWithArgs) else toolgroup)
-                for toolgroup in toolgroups_for_turn
-            }
-        )
+        tool_groups_to_include = toolgroups_for_turn or self.agent_config.toolgroups or []
+        agent_config_toolgroups = []
+        for toolgroup in tool_groups_to_include:
+            name = toolgroup.name if isinstance(toolgroup, AgentToolGroupWithArgs) else toolgroup
+            if name not in agent_config_toolgroups:
+                agent_config_toolgroups.append(name)
 
         tool_name_to_def = {}
         tool_to_group = {}
@@ -843,9 +837,6 @@ class ChatAgent(ShieldRunnerMixin):
             )
             tool_to_group[tool_def.name] = "__client_tools__"
         for toolgroup_name_with_maybe_tool_name in agent_config_toolgroups:
-            if toolgroup_name_with_maybe_tool_name not in toolgroups_for_turn_set:
-                continue
-
             toolgroup_name, tool_name = self._parse_toolgroup_name(toolgroup_name_with_maybe_tool_name)
             tools = await self.tool_groups_api.list_tools(toolgroup_id=toolgroup_name)
             if not tools.data:
