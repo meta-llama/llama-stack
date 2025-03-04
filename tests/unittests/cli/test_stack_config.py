@@ -107,14 +107,14 @@ def test_parse_and_maybe_upgrade_config_old_format(old_config):
     assert result.version == LLAMA_STACK_RUN_CONFIG_VERSION
     assert all(api in result.providers for api in ["inference", "safety", "memory", "telemetry"])
     safety_provider = result.providers["safety"][0]
-    assert safety_provider.provider_type == "meta-reference"
+    assert safety_provider.provider_type == "inline::meta-reference"
     assert "llama_guard_shield" in safety_provider.config
 
     inference_providers = result.providers["inference"]
     assert len(inference_providers) == 2
     assert {x.provider_id for x in inference_providers} == {
         "remote::ollama-00",
-        "meta-reference-01",
+        "inline::meta-reference-01",
     }
 
     ollama = inference_providers[0]
@@ -123,5 +123,5 @@ def test_parse_and_maybe_upgrade_config_old_format(old_config):
 
 
 def test_parse_and_maybe_upgrade_config_invalid(invalid_config):
-    with pytest.raises(ValueError):
+    with pytest.raises(KeyError):
         parse_and_maybe_upgrade_config(invalid_config)
