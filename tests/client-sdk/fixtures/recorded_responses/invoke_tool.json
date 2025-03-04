@@ -17,10 +17,37 @@
       "metadata": null
     }
   },
+  "()_[('kwargs', {'session_id': '<UUID>', 'code': 'def is_prime(n):\\n    if n <= 1:\\n        return False\\n    if n <= 3:\\n        return True\\n    if n % 2 == 0 or n % 3 == 0:\\n        return False\\n    i = 5\\n    while i * i <= n:\\n        if n % i == 0 or n % (i + 2) == 0:\\n            return False\\n        i += 6\\n    return True\\n\\ndef nth_prime(n):\\n    count = 0\\n    num = 2\\n    while True:\\n        if is_prime(num):\\n            count += 1\\n            if count == n:\\n                return num\\n        num += 1\\n\\nprint(nth_prime(100))'}), ('tool_name', 'code_interpreter')]": {
+    "type": "value",
+    "value": {
+      "content": "error\n[stdout]\n[Errno 2] No such file or directory: 'bwrap'\n[/stdout]\n[stderr]\n[Errno 2] No such file or directory: 'bwrap'\n[/stderr]",
+      "error_code": null,
+      "error_message": null,
+      "metadata": null
+    }
+  },
   "()_[('kwargs', {'session_id': '<UUID>', 'code': 'import pandas as pd\\n# Load data\\ndf = pd.read_csv(\"<TEMP_FILE>\")\\n# Rows\\nprint(\"Number of rows and columns in the data:\", df.shape)\\n# Columns\\nprint(\"Columns of the data are:\", len(df.columns))\\n# Column names\\nprint(\"Columns of the data are:\", df.columns)\\n# Column dtypes\\nprint(\"Datatype of the columns are:\", df.dtypes)'}), ('tool_name', 'code_interpreter')]": {
     "type": "value",
     "value": {
       "content": "completed\n[stderr]\nTraceback (most recent call last):\n  line 5, in <module>\n    from bwrap.core import main\nModuleNotFoundError: No module named 'bwrap.core'\n[/stderr]",
+      "error_code": null,
+      "error_message": null,
+      "metadata": null
+    }
+  },
+  "()_[('kwargs', {'session_id': '<UUID>', 'code': 'import pandas as pd\\n# Load data\\ndf = pd.read_csv(\"<TEMP_FILE>\")\\n# Rows\\nprint(\"Number of rows and columns in the data:\", df.shape)\\n# Columns\\nprint(\"Columns of the data are:\", len(df.columns))\\n# Column names\\nprint(\"Columns of the data are:\", df.columns)\\n# Column dtypes\\nprint(\"Datatype of the columns are:\", df.dtypes)\\n# Sample of data\\nprint(\"Data sample from file:\")\\nprint(df.head())'}), ('tool_name', 'code_interpreter')]": {
+    "type": "value",
+    "value": {
+      "content": "error\n[stdout]\n[Errno 2] No such file or directory: 'bwrap'\n[/stdout]\n[stderr]\n[Errno 2] No such file or directory: 'bwrap'\n[/stderr]",
+      "error_code": null,
+      "error_message": null,
+      "metadata": null
+    }
+  },
+  "()_[('kwargs', {'session_id': '<UUID>', 'code': 'import pandas as pd\\n\\n# Load the CSV file\\ndf = pd.read_csv(\"<TEMP_FILE>\")\\n\\n# Print the first few rows of the dataframe\\nprint(df.head())\\n\\n# Print information about the dataframe\\nprint(df.info())\\n\\n# Print summary statistics of the dataframe\\nprint(df.describe())'}), ('tool_name', 'code_interpreter')]": {
+    "type": "value",
+    "value": {
+      "content": "error\n[stdout]\n[Errno 2] No such file or directory: 'bwrap'\n[/stdout]\n[stderr]\n[Errno 2] No such file or directory: 'bwrap'\n[/stderr]",
       "error_code": null,
       "error_message": null,
       "metadata": null
@@ -39,6 +66,15 @@
     "type": "value",
     "value": {
       "content": "completed\n[stderr]\nTraceback (most recent call last):\n  line 5, in <module>\n    from bwrap.core import main\nModuleNotFoundError: No module named 'bwrap.core'\n[/stderr]",
+      "error_code": null,
+      "error_message": null,
+      "metadata": null
+    }
+  },
+  "()_[('kwargs', {'session_id': '<UUID>', 'code': 'import pandas as pd\\nimport matplotlib.pyplot as plt\\n\\n# Load the CSV file\\ndf = pd.read_csv(\"<TEMP_FILE>\")\\n\\n# Convert the \\'Year\\' column to datetime\\ndf[\\'Year\\'] = pd.to_datetime(df[\\'Year\\'], format=\\'%Y\\')\\n\\n# Group by \\'Year\\' and calculate the average inflation\\ndf_avg_inflation = df.groupby(\\'Year\\')[\\'Inflation\\'].mean().reset_index()\\n\\n# Plot the average yearly inflation as a time series\\nplt.figure(figsize=(10,6))\\nplt.plot(df_avg_inflation[\\'Year\\'], df_avg_inflation[\\'Inflation\\'], marker=\\'o\\')\\nplt.title(\\'Average Yearly Inflation\\')\\nplt.xlabel(\\'Year\\')\\nplt.ylabel(\\'Inflation\\')\\nplt.grid(True)\\nplt.show()'}), ('tool_name', 'code_interpreter')]": {
+    "type": "value",
+    "value": {
+      "content": "error\n[stdout]\n[Errno 2] No such file or directory: 'bwrap'\n[/stdout]\n[stderr]\n[Errno 2] No such file or directory: 'bwrap'\n[/stderr]",
       "error_code": null,
       "error_message": null,
       "metadata": null
@@ -208,6 +244,42 @@
       }
     }
   },
+  "()_[('kwargs', {'session_id': '<UUID>', 'query': 'Perplexity the company founding date', 'vector_db_ids': ['test-vector-db-<UUID>']}), ('tool_name', 'knowledge_search')]": {
+    "type": "value",
+    "value": {
+      "content": [
+        {
+          "text": "knowledge_search tool found 3 chunks:\nBEGIN of knowledge_search tool results.\n",
+          "type": "text"
+        },
+        {
+          "text": "Result 1:\nDocument_id:perpl\nContent: Perplexity the company was founded in 2022 by Aravind Srinivas, Andy Konwinski, Denis Yarats and Johnny Ho, engineers with backgrounds in back-end systems, artificial intelligence (AI) and machine learning:\n\n    Srinivas, the CEO, worked at OpenAI as an AI researcher.\n    Konwinski was among the founding team at Databricks.\n    Yarats, the CTO, was an AI research scientist at Meta.\n    Ho, the CSO, worked as an engineer at Quora, then as a quantitative trader on Wall Street.[5]\n",
+          "type": "text"
+        },
+        {
+          "text": "Result 2:\nDocument_id:perpl\nContent:  Ho, the CSO, worked as an engineer at Quora, then as a quantitative trader on Wall Street.[5]\n",
+          "type": "text"
+        },
+        {
+          "text": "Result 3:\nDocument_id:nba_w\nContent: The NBA was created on August 3, 1949, with the merger of the Basketball Association of America (BAA) and the National Basketball League (NBL).\n",
+          "type": "text"
+        },
+        {
+          "text": "END of knowledge_search tool results.\n",
+          "type": "text"
+        }
+      ],
+      "error_code": null,
+      "error_message": null,
+      "metadata": {
+        "document_ids": [
+          "perplexity_wiki",
+          "perplexity_wiki",
+          "nba_wiki"
+        ]
+      }
+    }
+  },
   "()_[('kwargs', {'session_id': '<UUID>', 'query': 'Torchtune documentation', 'vector_db_ids': ['vector_db_<UUID>']}), ('tool_name', 'knowledge_search')]": {
     "type": "value",
     "value": {
@@ -257,7 +329,7 @@
   "()_[('kwargs', {'session_id': '<UUID>', 'query': 'current CEO of Meta'}), ('tool_name', 'web_search')]": {
     "type": "value",
     "value": {
-      "content": "{\"query\": \"current CEO of Meta\", \"top_k\": [{\"title\": \"Executives - Meta\", \"url\": \"https://about.meta.com/media-gallery/executives/\", \"content\": \"Mark Zuckerberg, Founder, Chairman and Chief Executive Officer Joel Kaplan, Chief Global Affairs Officer Susan Li, Chief Financial Officer Javier Olivan, Chief Operating Officer Chris Cox, Chief Product Officer Andrew \\u2018Boz\\u2019 Bosworth, Chief Technology Officer Jennifer Newstead, Chief Legal Officer Dave Wehner, Chief Strategy Officer Will Cathcart, Head of WhatsApp Naomi Gleit, Head of Product John Hegeman, Chief Revenue Officer Adam Mosseri, Head of Instagram Erin Egan, Chief Privacy Officer, Policy Michel Protti, Chief Privacy Officer, Product Alex Schultz, Chief Marketing Officer and VP of Analytics Tom Alison, Head of Facebook Nicola Mendelsohn, Head of Global Business Group Ahmad Al-Dahle, VP and Head of GenAI at Meta Joelle Pineau, Vice President of AI Research and Head of FAIR at Meta\", \"score\": 0.8190992, \"raw_content\": null}, {\"title\": \"Mark Zuckerberg, Founder, Chairman and Chief Executive Officer - Meta\", \"url\": \"https://about.meta.com/media-gallery/executives/mark-zuckerberg/\", \"content\": \"Mark Zuckerberg, Founder, Chairman and Chief Executive Officer | Meta Meta Quest Ray-Ban Meta Meta Horizon Meta AI Meta Verified Meta Pay Meta Horizon Workrooms Meta and you Learn about our community Shop Meta Meta Quest Meta Portal Meta Horizon Mark Zuckerberg is the founder, chairman and CEO of Meta, which he originally founded as Facebook in 2004. In October 2021, Facebook rebranded to Meta to reflect all of its products and services across its family of apps and a focus on developing social experiences for the metaverse \\u2014 moving beyond 2D screens toward immersive experiences like augmented and virtual reality to help build the next evolution in social technology. Shop Ray-Ban Meta glassesRay-Ban StoriesPrivacy informationSupported countries \\u00a9 2025 Meta\", \"score\": 0.79099923, \"raw_content\": null}, {\"title\": \"Zuckerberg's political pivot targets Apple, puts Meta staffers on edge\", \"url\": \"https://www.cnbc.com/2025/02/14/zuckerbergs-rightward-policy-shift-hits-meta-staffers-targets-apple.html\", \"content\": \"Meta CEO Mark Zuckerberg's actions to curry favor with the president have rattled employees, but people familiar with his efforts say there's a clear strategy.\", \"score\": 0.77179235, \"raw_content\": null}, {\"title\": \"Meet the Executive CSuite Team of Meta (Facebook) [2025]\", \"url\": \"https://digitaldefynd.com/IQ/meet-the-executive-csuite-team-of-meta-facebook/\", \"content\": \"Harvard University Executive Programs Free Harvard University Courses As a chief financial officer of Meta, Susan Li oversees the firm\\u2019s finance and facilities team to keep track of the company\\u2019s overall financial health. The chief operating officer of Meta, Javier Olivan, oversees the firm\\u2019s business team, infrastructure, and other products. Andrew Bosworth, called Boz, serves as chief technology officer at Meta and is responsible for leading the firm\\u2019s AR/VR organization, Reality Labs. Andrew has also served as engineering director to oversee events, mobile monetization, and feed ads and as VP of ads and business platforms to lead engineering, design, analytics, and product teams. Meta\\u2019s c-suite team comprises experienced and diverse executives, having extensive experience in technology, finance, legal, and all major industries.\", \"score\": 0.7602419, \"raw_content\": null}, {\"title\": \"Meta to spend up to $65 billion this year to power AI goals, Zuckerberg ...\", \"url\": \"https://www.reuters.com/technology/meta-invest-up-65-bln-capital-expenditure-this-year-2025-01-24/\", \"content\": \"Meta Platforms plans to spend as much as $65 billion this year to expand its AI infrastructure, CEO Mark Zuckerberg said on Friday, aiming to bolster the company's position against rivals OpenAI\", \"score\": 0.73914057, \"raw_content\": null}]}",
+      "content": "{\"query\": \"current CEO of Meta\", \"top_k\": [{\"title\": \"Executives - Meta\", \"url\": \"https://about.meta.com/media-gallery/executives/\", \"content\": \"Mark Zuckerberg, Founder, Chairman and Chief Executive Officer Joel Kaplan, Chief Global Affairs Officer Susan Li, Chief Financial Officer Javier Olivan, Chief Operating Officer Chris Cox, Chief Product Officer Andrew \\u2018Boz\\u2019 Bosworth, Chief Technology Officer Jennifer Newstead, Chief Legal Officer Dave Wehner, Chief Strategy Officer Will Cathcart, Head of WhatsApp Naomi Gleit, Head of Product John Hegeman, Chief Revenue Officer Adam Mosseri, Head of Instagram Erin Egan, Chief Privacy Officer, Policy Michel Protti, Chief Privacy Officer, Product Alex Schultz, Chief Marketing Officer and VP of Analytics Tom Alison, Head of Facebook Nicola Mendelsohn, Head of Global Business Group Ahmad Al-Dahle, VP and Head of GenAI at Meta Joelle Pineau, Vice President of AI Research and Head of FAIR at Meta\", \"score\": 0.8190992, \"raw_content\": null}, {\"title\": \"Mark Zuckerberg, Founder, Chairman and Chief Executive Officer - Meta\", \"url\": \"https://about.meta.com/media-gallery/executives/mark-zuckerberg/\", \"content\": \"Mark Zuckerberg, Founder, Chairman and Chief Executive Officer | Meta Meta Quest Ray-Ban Meta Meta Horizon Meta AI Meta Verified Meta Pay Meta Horizon Workrooms Meta and you Learn about our community Shop Meta Meta Quest Meta Portal Meta Horizon Mark Zuckerberg is the founder, chairman and CEO of Meta, which he originally founded as Facebook in 2004. In October 2021, Facebook rebranded to Meta to reflect all of its products and services across its family of apps and a focus on developing social experiences for the metaverse \\u2014 moving beyond 2D screens toward immersive experiences like augmented and virtual reality to help build the next evolution in social technology. Shop Ray-Ban Meta glassesRay-Ban StoriesPrivacy informationSupported countries \\u00a9 2025 Meta\", \"score\": 0.79099923, \"raw_content\": null}, {\"title\": \"Meet the Executive CSuite Team of Meta (Facebook) [2025]\", \"url\": \"https://digitaldefynd.com/IQ/meet-the-executive-csuite-team-of-meta-facebook/\", \"content\": \"Harvard University Executive Programs Free Harvard University Courses As a chief financial officer of Meta, Susan Li oversees the firm\\u2019s finance and facilities team to keep track of the company\\u2019s overall financial health. The chief operating officer of Meta, Javier Olivan, oversees the firm\\u2019s business team, infrastructure, and other products. Andrew Bosworth, called Boz, serves as chief technology officer at Meta and is responsible for leading the firm\\u2019s AR/VR organization, Reality Labs. Andrew has also served as engineering director to oversee events, mobile monetization, and feed ads and as VP of ads and business platforms to lead engineering, design, analytics, and product teams. Meta\\u2019s c-suite team comprises experienced and diverse executives, having extensive experience in technology, finance, legal, and all major industries.\", \"score\": 0.7602419, \"raw_content\": null}, {\"title\": \"The 11 People Running Meta's $1 Trillion Social Media and ... - Observer\", \"url\": \"https://observer.com/2024/01/meta-facebook-top-executives/\", \"content\": \"He returned after just a year, saying Facebook is \\u201cthe best place for me to roll up my sleeves and dig in to help.\\u201d\\u00a0As Meta\\u2019s chief product officer, Cox is currently focusing on Meta\\u2019s A.I. initiatives, most recently undertaking Meta\\u2019s Fundamental AI Research (FAIR) team, led by Yann LeCun and Joelle Pineau. Cathcart started at Meta in 2010 as vice president of product management, notably leading the ads initiative of Facebook\\u2019s News Feed product. Filed Under: Business, Social Media, Media, Technology, Big Tech, Will Cathcart, Dave Wehner, Tom Alison, Erin Egan, Andrew Mccollum, Javier Olivan, Andrew Bosworth, Susan Li, Dustin Moskovitz, Chris Cox, Adam Mosseri, Yann LeCun, Eduardo Saverin, Chris Hughes, Leadership, Mark Zuckerberg, Facebook, Instagram, Meta\", \"score\": 0.7591723, \"raw_content\": null}, {\"title\": \"Mark Zuckerberg - Forbes\", \"url\": \"https://www.forbes.com/profile/mark-zuckerberg/\", \"content\": \"Meta CEO Mark Zuckerberg \\u201cloved\\u201d an image on Facebook known as \\\"Challah Horse\\\" that happens to be AI-generated, highlighting the amount of AI spam on the platform. ### Meta Donates $1 Million To Trump\\u2019s Inaugural Fund Weeks After Mark Zuckerberg Met President Elect Meta has donated $1 million to President-elect Donald Trump\\u2019s inaugural fund, the company confirmed to various news outlets on Wednesday, a move that comes just weeks after its CEO Mark Zuckerberg met with Trump at his Mar-a-Lago residence in an apparent bid to mend years of strained ties. ### Meta Donates $1 Million To Trump\\u2019s Inaugural Fund Weeks After Mark Zuckerberg Met President-Elect Read the full profile on Forbes: https://www.forbes.com/sites/kerryadolan/2023/09/26/mark-gets-meta-zuckerberg-talks-ai-and-that-musk-mma-fight-thats-never-going-to-happen/?sh=671046e73037\", \"score\": 0.6410185, \"raw_content\": null}]}",
       "error_code": null,
       "error_message": null,
       "metadata": null
