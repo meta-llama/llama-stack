@@ -13,7 +13,6 @@ from typing import Optional
 from urllib.parse import urlparse
 
 import pytest
-from metadata import API_MAPS
 from pytest import CollectReport
 from termcolor import cprint
 
@@ -28,6 +27,8 @@ from llama_stack.models.llama.sku_list import (
 )
 from llama_stack.providers.datatypes import Api
 from llama_stack.providers.tests.env import get_env_or_fail
+
+from .metadata import API_MAPS
 
 
 def featured_models():
