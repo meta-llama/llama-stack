@@ -117,6 +117,14 @@ class Provider(BaseModel):
     config: Dict[str, Any]
 
 
+class LoggingConfig(BaseModel):
+    category_levels: Dict[str, str] = Field(
+        default_factory=Dict,
+        description="""
+ Dictionary of different logging configurations for different portions (ex: core, server) of llama stack""",
+    )
+
+
 class ServerConfig(BaseModel):
     port: int = Field(
         default=8321,
@@ -175,6 +183,8 @@ a default SQLite store will be used.""",
     scoring_fns: List[ScoringFnInput] = Field(default_factory=list)
     benchmarks: List[BenchmarkInput] = Field(default_factory=list)
     tool_groups: List[ToolGroupInput] = Field(default_factory=list)
+
+    logging: Optional[LoggingConfig] = Field(default=None, description="Configuration for Llama Stack Logging")
 
     server: ServerConfig = Field(
         default_factory=ServerConfig,
