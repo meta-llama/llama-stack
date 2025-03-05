@@ -6,7 +6,6 @@
 
 
 from collections import defaultdict
-from typing import Optional
 
 import pytest
 from pytest import CollectReport
@@ -63,7 +62,17 @@ SUPPORTED_MODELS = {
 
 
 class Report:
-    def __init__(self, report_path: Optional[str] = None):
+    def __init__(self, config):
+        self.distro_name = None
+        self.config = config
+
+        stack_config = self.config.getoption("--stack-config")
+        if stack_config:
+            is_url = stack_config.startswith("http") or "//" in stack_config
+            is_yaml = stack_config.endswith(".yaml")
+            if not is_url and not is_yaml:
+                self.distro_name = stack_config
+
         self.report_data = defaultdict(dict)
         # test function -> test nodeid
         self.test_data = dict()
@@ -83,8 +92,8 @@ class Report:
             self.test_data[report.nodeid] = outcome
 
     def pytest_sessionfinish(self, session):
-        # disabled
-        return
+        if not self.client:
+            return
 
         report = []
         report.append(f"# Report for {self.distro_name} distribution")
@@ -181,9 +190,8 @@ class Report:
             vision_model = model_id.split("/")[1]
             self.vision_model_id = self.vision_model_id or vision_model
 
-        if self.client is None and "llama_stack_client" in item.funcargs:
-            self.client = item.funcargs["llama_stack_client"]
-            self.distro_name = self.distro_name or self.client.async_client.config.image_name
+        if not self.client:
+            self.client = item.funcargs.get("llama_stack_client")
 
     def _print_result_icon(self, result):
         if result == "Passed":

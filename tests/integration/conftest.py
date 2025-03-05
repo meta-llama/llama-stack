@@ -19,21 +19,13 @@ def pytest_configure(config):
 
     load_dotenv()
 
-    # Load any environment variables passed via --env
     env_vars = config.getoption("--env") or []
     for env_var in env_vars:
         key, value = env_var.split("=", 1)
         os.environ[key] = value
 
-    # Note:
-    # if report_path is not provided (aka no option --report in the pytest command),
-    # it will be set to False
-    # if --report will give None ( in this case we infer report_path)
-    # if --report /a/b is provided, it will be set to the path provided
-    # We want to handle all these cases and hence explicitly check for False
-    report_path = config.getoption("--report")
-    if report_path is not False:
-        config.pluginmanager.register(Report(report_path))
+    if config.getoption("--report"):
+        config.pluginmanager.register(Report(config))
 
 
 def pytest_addoption(parser):
