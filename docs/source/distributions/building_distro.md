@@ -4,6 +4,35 @@
 This guide will walk you through the steps to get started with building a Llama Stack distribution from scratch with your choice of API providers.
 
 
+### Setting your log level
+
+In order to specify the proper logging level users can apply the following environment variable `LLAMA_STACK_LOGGING` with the following format:
+
+`LLAMA_STACK_LOGGING=server=debug;core=info`
+
+Where each category in the following list:
+
+- all
+- core
+- server
+- router
+- inference
+- agents
+- safety
+- eval
+- tools
+- client
+
+Can be set to any of the following log levels:
+
+- debug
+- info
+- warning
+- error
+- critical
+
+The default global log level is `info`. `all` sets the log level for all components.
+
 ### Llama Stack Build
 
 In order to build your own distribution, we recommend you clone the `llama-stack` repository.
