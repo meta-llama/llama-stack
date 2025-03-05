@@ -50,7 +50,7 @@
           "parameters": {
             "location": {
               "param_type": "string",
-              "description": "The city and state, e.g. San Francisco, CA"
+              "description": "The city and state (both required), e.g. San Francisco, CA."
             }
           }
         }
