@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 import logging
 from enum import Enum
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 from llama_models.llama3.api import Tokenizer
 
@@ -49,7 +49,7 @@ class InclineSimpleChunkingImpl(Preprocessing, PreprocessorsProtocolPrivate):
         self,
         preprocessor_id: str,
         preprocessor_inputs: List[PreprocessingInput],
-        options: PreprocessorOptions,
+        options: Optional[PreprocessorOptions] = None,
     ) -> PreprocessingResponse:
         chunks = []
 
@@ -64,9 +64,11 @@ class InclineSimpleChunkingImpl(Preprocessing, PreprocessorsProtocolPrivate):
         return PreprocessingResponse(status=True, results=chunks)
 
     def _resolve_chunk_size_params(self, options: PreprocessorOptions) -> Tuple[int, int]:
-        window_len = options.get(str(SimpleChunkingOptions.chunk_size_in_tokens), self.config.chunk_size_in_tokens)
+        window_len = (options or {}).get(
+            str(SimpleChunkingOptions.chunk_size_in_tokens), self.config.chunk_size_in_tokens
+        )
 
-        chunk_overlap_ratio = options.get(
+        chunk_overlap_ratio = (options or {}).get(
             str(SimpleChunkingOptions.chunk_overlap_ratio), self.config.chunk_overlap_ratio
         )
         overlap_len = window_len // chunk_overlap_ratio

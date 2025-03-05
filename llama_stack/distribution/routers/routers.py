@@ -502,9 +502,10 @@ class PreprocessingRouter(Preprocessing):
         self,
         preprocessor_id: str,
         preprocessor_inputs: List[PreprocessingInput],
-        options: PreprocessorOptions,
+        options: Optional[PreprocessorOptions] = None,
     ) -> PreprocessingResponse:
         return await self.routing_table.get_provider_impl(preprocessor_id).preprocess(
+            preprocessor_id=preprocessor_id,
             preprocessor_inputs=preprocessor_inputs,
             options=options,
         )

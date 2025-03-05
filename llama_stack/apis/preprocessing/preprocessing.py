@@ -23,10 +23,22 @@ class PreprocessingDataType(Enum):
     chunks = "chunks"
 
 
+class PreprocessingDataFormat(Enum):
+    pdf = "pdf"
+    docx = "docx"
+    xlsx = "xlsx"
+    pptx = "pptx"
+    md = "md"
+    json = "json"
+    html = "html"
+    csv = "csv"
+
+
 @json_schema_type
 class PreprocessingInput(BaseModel):
     preprocessor_input_id: str
     preprocessor_input_type: Optional[PreprocessingDataType] = None
+    preprocessor_input_format: Optional[PreprocessingDataFormat] = None
     path_or_content: str | InterleavedContent | URL
 
 
@@ -52,5 +64,5 @@ class Preprocessing(Protocol):
         self,
         preprocessor_id: str,
         preprocessor_inputs: List[PreprocessingInput],
-        options: PreprocessorOptions,
+        options: Optional[PreprocessorOptions] = None,
     ) -> PreprocessingResponse: ...

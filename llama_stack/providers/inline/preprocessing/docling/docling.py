@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 import logging
-from typing import List
+from typing import List, Optional
 
 from docling.document_converter import DocumentConverter
 from docling_core.transforms.chunker.hybrid_chunker import HybridChunker
@@ -51,7 +51,7 @@ class InclineDoclingPreprocessorImpl(Preprocessing, PreprocessorsProtocolPrivate
         self,
         preprocessor_id: str,
         preprocessor_inputs: List[PreprocessingInput],
-        options: PreprocessorOptions,
+        options: Optional[PreprocessorOptions] = None,
     ) -> PreprocessingResponse:
         results = []
 
