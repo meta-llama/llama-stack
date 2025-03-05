@@ -41,16 +41,36 @@ from llama_stack.schema_utils import json_schema_type, register_schema, webmetho
 
 
 class Attachment(BaseModel):
+    """An attachment to an agent turn.
+
+    :param content: The content of the attachment.
+    :param mime_type: The MIME type of the attachment.
+    """
+
     content: InterleavedContent | URL
     mime_type: str
 
 
 class Document(BaseModel):
+    """A document to be used by an agent.
+
+    :param content: The content of the document.
+    :param mime_type: The MIME type of the document.
+    """
+
     content: InterleavedContent | URL
     mime_type: str
 
 
 class StepCommon(BaseModel):
+    """A common step in an agent turn.
+
+    :param turn_id: The ID of the turn.
+    :param step_id: The ID of the step.
+    :param started_at: The time the step started.
+    :param completed_at: The time the step completed.
+    """
+
     turn_id: str
     step_id: str
     started_at: Optional[datetime] = None
@@ -58,6 +78,14 @@ class StepCommon(BaseModel):
 
 
 class StepType(Enum):
+    """Type of the step in an agent turn.
+
+    :cvar inference: The step is an inference step that calls an LLM.
+    :cvar tool_execution: The step is a tool execution step that executes a tool call.
+    :cvar shield_call: The step is a shield call step that checks for safety violations.
+    :cvar memory_retrieval: The step is a memory retrieval step that retrieves context for vector dbs.
+    """
+
     inference = "inference"
     tool_execution = "tool_execution"
     shield_call = "shield_call"
@@ -66,6 +94,11 @@ class StepType(Enum):
 
 @json_schema_type
 class InferenceStep(StepCommon):
+    """An inference step in an agent turn.
+
+    :param model_response: The response from the LLM.
+    """
+
     model_config = ConfigDict(protected_namespaces=())
 
     step_type: Literal[StepType.inference.value] = StepType.inference.value
@@ -74,6 +107,12 @@ class InferenceStep(StepCommon):
 
 @json_schema_type
 class ToolExecutionStep(StepCommon):
+    """A tool execution step in an agent turn.
+
+    :param tool_calls: The tool calls to execute.
+    :param tool_responses: The tool responses from the tool calls.
+    """
+
     step_type: Literal[StepType.tool_execution.value] = StepType.tool_execution.value
     tool_calls: List[ToolCall]
     tool_responses: List[ToolResponse]
@@ -81,13 +120,25 @@ class ToolExecutionStep(StepCommon):
 
 @json_schema_type
 class ShieldCallStep(StepCommon):
+    """A shield call step in an agent turn.
+
+    :param violation: The violation from the shield call.
+    """
+
     step_type: Literal[StepType.shield_call.value] = StepType.shield_call.value
     violation: Optional[SafetyViolation]
 
 
 @json_schema_type
 class MemoryRetrievalStep(StepCommon):
+    """A memory retrieval step in an agent turn.
+
+    :param vector_db_ids: The IDs of the vector databases to retrieve context from.
+    :param inserted_context: The context retrieved from the vector databases.
+    """
+
     step_type: Literal[StepType.memory_retrieval.value] = StepType.memory_retrieval.value
+    # TODO: should this be List[str]?
     vector_db_ids: str
     inserted_context: InterleavedContent
 
@@ -335,7 +386,13 @@ class Agents(Protocol):
     async def create_agent(
         self,
         agent_config: AgentConfig,
-    ) -> AgentCreateResponse: ...
+    ) -> AgentCreateResponse:
+        """Create an agent with the given configuration.
+
+        :param agent_config: The configuration for the agent.
+        :returns: An AgentCreateResponse with the agent ID.
+        """
+        ...
 
     @webmethod(route="/agents/{agent_id}/session/{session_id}/turn", method="POST")
     async def create_agent_turn(
@@ -352,7 +409,19 @@ class Agents(Protocol):
         documents: Optional[List[Document]] = None,
         toolgroups: Optional[List[AgentToolGroup]] = None,
         tool_config: Optional[ToolConfig] = None,
-    ) -> Union[Turn, AsyncIterator[AgentTurnResponseStreamChunk]]: ...
+    ) -> Union[Turn, AsyncIterator[AgentTurnResponseStreamChunk]]:
+        """Create a new turn for an agent.
+
+        :param agent_id: The ID of the agent to create the turn for.
+        :param session_id: The ID of the session to create the turn for.
+        :param messages: List of messages to start the turn with.
+        :param stream: (Optional) If True, generate an SSE event stream of the response. Defaults to False.
+        :param documents: (Optional) List of documents to create the turn with.
+        :param toolgroups: (Optional) List of toolgroups to create the turn with, will be used in addition to the agent's config toolgroups for the request.
+        :param tool_config: (Optional) The tool configuration to create the turn with, will be used to override the agent's tool_config.
+        :returns: If stream=False, returns a Turn object.
+                  If stream=True, returns an SSE event stream of AgentTurnResponseStreamChunk
+        """
 
     @webmethod(
         route="/agents/{agent_id}/session/{session_id}/turn/{turn_id}/resume",
@@ -388,7 +457,15 @@ class Agents(Protocol):
         agent_id: str,
         session_id: str,
         turn_id: str,
-    ) -> Turn: ...
+    ) -> Turn:
+        """Retrieve an agent turn by its ID.
+
+        :param agent_id: The ID of the agent to get the turn for.
+        :param session_id: The ID of the session to get the turn for.
+        :param turn_id: The ID of the turn to get.
+        :returns: A Turn.
+        """
+        ...
 
     @webmethod(
         route="/agents/{agent_id}/session/{session_id}/turn/{turn_id}/step/{step_id}",
@@ -400,14 +477,30 @@ class Agents(Protocol):
         session_id: str,
         turn_id: str,
         step_id: str,
-    ) -> AgentStepResponse: ...
+    ) -> AgentStepResponse:
+        """Retrieve an agent step by its ID.
+
+        :param agent_id: The ID of the agent to get the step for.
+        :param session_id: The ID of the session to get the step for.
+        :param turn_id: The ID of the turn to get the step for.
+        :param step_id: The ID of the step to get.
+        :returns: An AgentStepResponse.
+        """
+        ...
 
     @webmethod(route="/agents/{agent_id}/session", method="POST")
     async def create_agent_session(
         self,
         agent_id: str,
         session_name: str,
-    ) -> AgentSessionCreateResponse: ...
+    ) -> AgentSessionCreateResponse:
+        """Create a new session for an agent.
+
+        :param agent_id: The ID of the agent to create the session for.
+        :param session_name: The name of the session to create.
+        :returns: An AgentSessionCreateResponse.
+        """
+        ...
 
     @webmethod(route="/agents/{agent_id}/session/{session_id}", method="GET")
     async def get_agents_session(
@@ -415,17 +508,35 @@ class Agents(Protocol):
         session_id: str,
         agent_id: str,
         turn_ids: Optional[List[str]] = None,
-    ) -> Session: ...
+    ) -> Session:
+        """Retrieve an agent session by its ID.
+
+        :param session_id: The ID of the session to get.
+        :param agent_id: The ID of the agent to get the session for.
+        :param turn_ids: (Optional) List of turn IDs to filter the session by.
+        """
+        ...
 
     @webmethod(route="/agents/{agent_id}/session/{session_id}", method="DELETE")
     async def delete_agents_session(
         self,
         session_id: str,
         agent_id: str,
-    ) -> None: ...
+    ) -> None:
+        """Delete an agent session by its ID.
+
+        :param session_id: The ID of the session to delete.
+        :param agent_id: The ID of the agent to delete the session for.
+        """
+        ...
 
     @webmethod(route="/agents/{agent_id}", method="DELETE")
     async def delete_agent(
         self,
         agent_id: str,
-    ) -> None: ...
+    ) -> None:
+        """Delete an agent by its ID.
+
+        :param agent_id: The ID of the agent to delete.
+        """
+        ...
