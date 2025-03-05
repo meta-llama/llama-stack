@@ -7,9 +7,6 @@
 import time
 from typing import Any, AsyncGenerator, AsyncIterator, Dict, List, Optional, Union
 
-from llama_models.llama3.api.chat_format import ChatFormat
-from llama_models.llama3.api.tokenizer import Tokenizer
-
 from llama_stack import logcat
 from llama_stack.apis.common.content_types import (
     URL,
@@ -62,6 +59,8 @@ from llama_stack.apis.tools import (
     ToolRuntime,
 )
 from llama_stack.apis.vector_io import Chunk, QueryChunksResponse, VectorIO
+from llama_stack.models.llama.llama3.chat_format import ChatFormat
+from llama_stack.models.llama.llama3.tokenizer import Tokenizer
 from llama_stack.providers.datatypes import RoutingTable
 from llama_stack.providers.utils.telemetry.tracing import get_current_span
 
