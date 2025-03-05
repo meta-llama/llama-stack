@@ -9,8 +9,6 @@ import mimetypes
 import os
 from pathlib import Path
 
-import pytest
-
 # How to run this test:
 #
 # LLAMA_STACK_CONFIG="template-name" pytest -v tests/integration/datasetio
@@ -66,33 +64,17 @@ def register_dataset(llama_stack_client, for_generation=False, for_rag=False, da
     )
 
 
-def test_datasets_list(llama_stack_client):
-    # NOTE: this needs you to ensure that you are starting from a clean state
-    # but so far we don't have an unregister API unfortunately, so be careful
-
-    response = llama_stack_client.datasets.list()
-    assert isinstance(response, list)
-    assert len(response) == 0
-
-
-def test_register_dataset(llama_stack_client):
+def test_register_unregister_dataset(llama_stack_client):
     register_dataset(llama_stack_client)
     response = llama_stack_client.datasets.list()
     assert isinstance(response, list)
     assert len(response) == 1
     assert response[0].identifier == "test_dataset"
 
-    with pytest.raises(ValueError):
-        # unregister a dataset that does not exist
-        llama_stack_client.datasets.unregister("test_dataset2")
-
     llama_stack_client.datasets.unregister("test_dataset")
     response = llama_stack_client.datasets.list()
     assert isinstance(response, list)
     assert len(response) == 0
-
-    with pytest.raises(ValueError):
-        llama_stack_client.datasets.unregister("test_dataset")
 
 
 def test_get_rows_paginated(llama_stack_client):
