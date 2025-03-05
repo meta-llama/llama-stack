@@ -11,6 +11,7 @@ from llama_stack.cli.stack.utils import print_subcommand_description
 from llama_stack.cli.subcommand import Subcommand
 
 from .build import StackBuild
+from .list import StackList
 from .list_apis import StackListApis
 from .list_providers import StackListProviders
 from .run import StackRun
@@ -38,6 +39,7 @@ class StackParser(Subcommand):
 
         # Add sub-commands
         StackBuild.create(subparsers)
+        StackList.create(subparsers)
         StackListApis.create(subparsers)
         StackListProviders.create(subparsers)
         StackRun.create(subparsers)
