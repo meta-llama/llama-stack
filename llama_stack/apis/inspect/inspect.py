@@ -8,6 +8,7 @@ from typing import List, Protocol, runtime_checkable
 
 from pydantic import BaseModel
 
+from llama_stack.distribution.datatypes import Provider
 from llama_stack.schema_utils import json_schema_type, webmethod
 
 
@@ -36,6 +37,10 @@ class VersionInfo(BaseModel):
     version: str
 
 
+class InspectProvidersResponse(BaseModel):
+    data: Provider | None
+
+
 class ListProvidersResponse(BaseModel):
     data: List[ProviderInfo]
 
@@ -48,6 +53,9 @@ class ListRoutesResponse(BaseModel):
 class Inspect(Protocol):
     @webmethod(route="/inspect/providers", method="GET")
     async def list_providers(self) -> ListProvidersResponse: ...
+
+    @webmethod(route="/inspect/providers/{provider_id}", method="GET")
+    async def inspect_provider(self) -> InspectProvidersResponse: ...
 
     @webmethod(route="/inspect/routes", method="GET")
     async def list_routes(self) -> ListRoutesResponse: ...
