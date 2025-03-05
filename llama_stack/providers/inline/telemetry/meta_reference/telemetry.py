@@ -73,6 +73,7 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
     def __init__(self, config: TelemetryConfig, deps: Dict[str, Any]) -> None:
         self.config = config
         self.datasetio_api = deps.get(Api.datasetio)
+        self.meter = None
 
         resource = Resource.create(
             {
@@ -171,6 +172,8 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
         return _GLOBAL_STORAGE["gauges"][name]
 
     def _log_metric(self, event: MetricEvent) -> None:
+        if self.meter is None:
+            return
         if isinstance(event.value, int):
             counter = self._get_or_create_counter(event.metric, event.unit)
             counter.add(event.value, attributes=event.attributes)
