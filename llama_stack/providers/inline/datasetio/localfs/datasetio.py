@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 import base64
+import logging
 import os
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
@@ -16,10 +17,13 @@ from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.datasetio import DatasetIO, PaginatedRowsResult
 from llama_stack.apis.datasets import Dataset
 from llama_stack.providers.datatypes import DatasetsProtocolPrivate
+from llama_stack.providers.utils.common.provider_utils import get_provider_type
 from llama_stack.providers.utils.datasetio.url_utils import get_dataframe_from_url
 from llama_stack.providers.utils.kvstore import kvstore_impl
 
 from .config import LocalFSDatasetIOConfig
+
+log = logging.getLogger(__name__)
 
 DATASETS_PREFIX = "localfs_datasets:"
 
@@ -141,6 +145,13 @@ class LocalFSDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
         if page_token and not page_token.isnumeric():
             raise ValueError("Invalid page_token")
 
+        if filter_condition is not None and filter_condition.strip():
+            dataset_type = get_provider_type(self.__module__)
+            provider_id = dataset_info.dataset_def.provider_id
+            log.warning(
+                f"Data filtering is not supported yet for {dataset_type}::{provider_id}, ignoring filter_condition: {filter_condition}"
+            )
+
         if page_token is None or len(page_token) == 0:
             next_page_token = 0
         else:
@@ -172,7 +183,7 @@ class LocalFSDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
         new_rows_df = dataset_impl._validate_dataset_schema(new_rows_df)
         dataset_impl.df = pandas.concat([dataset_impl.df, new_rows_df], ignore_index=True)
 
-        url = str(dataset_info.dataset_def.url)
+        url = str(dataset_info.dataset_def.url.uri)
         parsed_url = urlparse(url)
 
         if parsed_url.scheme == "file" or not parsed_url.scheme:
