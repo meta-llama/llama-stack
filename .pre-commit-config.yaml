@@ -18,7 +18,7 @@ repos:
 #        args: ['--branch=main']
 
 -   repo: https://github.com/Lucas-C/pre-commit-hooks
-    rev: v1.5.4
+    rev: v1.5.5
     hooks:
     -   id: insert-license
         files: \.py$|\.sh$
@@ -27,7 +27,7 @@ repos:
           - docs/license_header.txt
 
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.9.4
+    rev: v0.9.9
     hooks:
     -   id: ruff
         args: [ --fix ]
@@ -35,14 +35,14 @@ repos:
     -   id: ruff-format
 
 -   repo: https://github.com/adamchainz/blacken-docs
-    rev: 1.19.0
+    rev: 1.19.1
     hooks:
     -   id: blacken-docs
         additional_dependencies:
         - black==24.3.0
 
 -   repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.6.3
+    rev: 0.6.4
     hooks:
     -   id: uv-lock
     -   id: uv-export

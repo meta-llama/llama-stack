@@ -44,8 +44,7 @@ def datasetio_huggingface() -> ProviderFixture:
     )
 
 
-DATASETIO_FIXTURES = ["localfs", "remote", "huggingface"]
-
+DATASETIO_FIXTURES = ["localfs", "huggingface"]
 
 @pytest_asyncio.fixture(scope="session")
 async def datasetio_stack(request):

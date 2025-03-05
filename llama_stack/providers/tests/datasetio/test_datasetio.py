@@ -13,12 +13,11 @@ import pytest
 
 from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.common.type_system import ChatCompletionInputType, StringType
-from llama_stack.apis.datasets import Datasets
+from llama_stack.apis.datasets import Datasets, ListDatasetsResponse
 
 # How to run this test:
 #
 # pytest llama_stack/providers/tests/datasetio/test_datasetio.py
-#   -m "meta_reference"
 #   -v -s --tb=short --disable-warnings
 
 
@@ -83,17 +82,19 @@ class TestDatasetIO:
         # but so far we don't have an unregister API unfortunately, so be careful
         _, datasets_impl = datasetio_stack
         response = await datasets_impl.list_datasets()
-        assert isinstance(response, list)
-        assert len(response) == 0
+        assert isinstance(response, ListDatasetsResponse)
+        assert isinstance(response.data, list)
+        assert len(response.data) == 0
 
     @pytest.mark.asyncio
     async def test_register_dataset(self, datasetio_stack):
         _, datasets_impl = datasetio_stack
         await register_dataset(datasets_impl)
         response = await datasets_impl.list_datasets()
-        assert isinstance(response, list)
-        assert len(response) == 1
-        assert response[0].identifier == "test_dataset"
+        assert isinstance(response, ListDatasetsResponse)
+        assert isinstance(response.data, list)
+        assert len(response.data) == 1
+        assert response.data[0].identifier == "test_dataset"
 
         with pytest.raises(ValueError):
             # unregister a dataset that does not exist
@@ -101,8 +102,9 @@ class TestDatasetIO:
 
         await datasets_impl.unregister_dataset("test_dataset")
         response = await datasets_impl.list_datasets()
-        assert isinstance(response, list)
-        assert len(response) == 0
+        assert isinstance(response, ListDatasetsResponse)
+        assert isinstance(response.data, list)
+        assert len(response.data) == 0
 
         with pytest.raises(ValueError):
             await datasets_impl.unregister_dataset("test_dataset")
