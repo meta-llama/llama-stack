@@ -133,7 +133,7 @@ def client_with_models(
     if judge_model_id and judge_model_id not in model_ids:
         client.models.register(model_id=judge_model_id, provider_id=inference_providers[0])
 
-    if embedding_model_id and embedding_dimension and embedding_model_id not in model_ids:
+    if embedding_model_id and embedding_model_id not in model_ids:
         # try to find a provider that supports embeddings, if sentence-transformers is not available
         selected_provider = None
         for p in providers:
@@ -146,7 +146,7 @@ def client_with_models(
             model_id=embedding_model_id,
             provider_id=selected_provider.provider_id,
             model_type="embedding",
-            metadata={"embedding_dimension": embedding_dimension},
+            metadata={"embedding_dimension": embedding_dimension or 384},
         )
     return client
 
