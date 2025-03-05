@@ -14,10 +14,11 @@ from llama_stack.apis.preprocessing import (
     Preprocessing,
     PreprocessingDataFormat,
     PreprocessingDataType,
-    PreprocessingInput,
-    PreprocessingResponse,
     Preprocessor,
+    PreprocessorChain,
+    PreprocessorInput,
     PreprocessorOptions,
+    PreprocessorResponse,
 )
 from llama_stack.providers.datatypes import PreprocessorsProtocolPrivate
 from llama_stack.providers.inline.preprocessing.basic.config import InlineBasicPreprocessorConfig
@@ -29,14 +30,14 @@ log = logging.getLogger(__name__)
 
 class InclineBasicPreprocessorImpl(Preprocessing, PreprocessorsProtocolPrivate):
     # this preprocessor can either receive documents (text or binary) or document URIs
-    INPUT_TYPES = [
+    input_types = [
         PreprocessingDataType.binary_document,
         PreprocessingDataType.raw_text_document,
         PreprocessingDataType.document_uri,
     ]
 
     # this preprocessor optionally retrieves the documents and converts them into plain text
-    OUTPUT_TYPES = [PreprocessingDataType.raw_text_document]
+    output_types = [PreprocessingDataType.raw_text_document]
 
     URL_VALIDATION_PATTERN = re.compile("^(https?://|file://|data:)")
 
@@ -54,9 +55,9 @@ class InclineBasicPreprocessorImpl(Preprocessing, PreprocessorsProtocolPrivate):
     async def preprocess(
         self,
         preprocessor_id: str,
-        preprocessor_inputs: List[PreprocessingInput],
+        preprocessor_inputs: List[PreprocessorInput],
         options: Optional[PreprocessorOptions] = None,
-    ) -> PreprocessingResponse:
+    ) -> PreprocessorResponse:
         results = []
 
         for inp in preprocessor_inputs:
@@ -87,10 +88,18 @@ class InclineBasicPreprocessorImpl(Preprocessing, PreprocessorsProtocolPrivate):
 
             results.append(document)
 
-        return PreprocessingResponse(status=True, results=results)
+        return PreprocessorResponse(status=True, results=results)
+
+    async def chain_preprocess(
+        self,
+        preprocessors: PreprocessorChain,
+        preprocessor_inputs: List[PreprocessorInput],
+        is_rag_chain: Optional[bool] = False,
+    ) -> PreprocessorResponse:
+        return await self.preprocess(preprocessor_id="", preprocessor_inputs=preprocessor_inputs)
 
     @staticmethod
-    async def _resolve_input_type(preprocessor_input: PreprocessingInput) -> PreprocessingDataType:
+    async def _resolve_input_type(preprocessor_input: PreprocessorInput) -> PreprocessingDataType:
         if preprocessor_input.preprocessor_input_type is not None:
             return preprocessor_input.preprocessor_input_type
 
@@ -104,7 +113,7 @@ class InclineBasicPreprocessorImpl(Preprocessing, PreprocessorsProtocolPrivate):
         return PreprocessingDataType.raw_text_document
 
     @staticmethod
-    async def _fetch_document(preprocessor_input: PreprocessingInput) -> str | None:
+    async def _fetch_document(preprocessor_input: PreprocessorInput) -> str | None:
         if isinstance(preprocessor_input.path_or_content, str):
             url = preprocessor_input.path_or_content
             if not InclineBasicPreprocessorImpl.URL_VALIDATION_PATTERN.match(url):
@@ -125,7 +134,3 @@ class InclineBasicPreprocessorImpl(Preprocessing, PreprocessorsProtocolPrivate):
             r = await client.get(url)
 
         return r.content if preprocessor_input.preprocessor_input_format == PreprocessingDataFormat.pdf else r.text
-
-    @staticmethod
-    def is_pdf(preprocessor_input: PreprocessingInput):
-        return

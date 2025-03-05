@@ -34,7 +34,13 @@ from llama_stack.apis.inference import (
     ToolPromptFormat,
 )
 from llama_stack.apis.models import ModelType
-from llama_stack.apis.preprocessing import Preprocessing, PreprocessingInput, PreprocessingResponse, PreprocessorOptions
+from llama_stack.apis.preprocessing import (
+    Preprocessing,
+    PreprocessorChain,
+    PreprocessorInput,
+    PreprocessorOptions,
+    PreprocessorResponse,
+)
 from llama_stack.apis.safety import RunShieldResponse, Safety
 from llama_stack.apis.scoring import (
     ScoreBatchResponse,
@@ -52,6 +58,7 @@ from llama_stack.apis.tools import (
     ToolRuntime,
 )
 from llama_stack.apis.vector_io import Chunk, QueryChunksResponse, VectorIO
+from llama_stack.distribution.utils.chain import execute_preprocessor_chain
 from llama_stack.providers.datatypes import RoutingTable
 from llama_stack.providers.utils.inference.prompt_adapter import get_default_tool_prompt_format
 
@@ -501,11 +508,20 @@ class PreprocessingRouter(Preprocessing):
     async def preprocess(
         self,
         preprocessor_id: str,
-        preprocessor_inputs: List[PreprocessingInput],
+        preprocessor_inputs: List[PreprocessorInput],
         options: Optional[PreprocessorOptions] = None,
-    ) -> PreprocessingResponse:
+    ) -> PreprocessorResponse:
         return await self.routing_table.get_provider_impl(preprocessor_id).preprocess(
             preprocessor_id=preprocessor_id,
             preprocessor_inputs=preprocessor_inputs,
             options=options,
         )
+
+    async def chain_preprocess(
+        self,
+        preprocessors: PreprocessorChain,
+        preprocessor_inputs: List[PreprocessorInput],
+        is_rag_chain: Optional[bool] = False,
+    ) -> PreprocessorResponse:
+        preprocessor_impls = [self.routing_table.get_provider_impl(p.preprocessor_id) for p in preprocessors]
+        return await execute_preprocessor_chain(preprocessors, preprocessor_impls, preprocessor_inputs, is_rag_chain)

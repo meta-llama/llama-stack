@@ -13,10 +13,11 @@ from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.preprocessing import (
     Preprocessing,
     PreprocessingDataType,
-    PreprocessingInput,
-    PreprocessingResponse,
     Preprocessor,
+    PreprocessorChain,
+    PreprocessorInput,
     PreprocessorOptions,
+    PreprocessorResponse,
 )
 from llama_stack.apis.vector_io import Chunk
 from llama_stack.providers.datatypes import PreprocessorsProtocolPrivate
@@ -27,10 +28,10 @@ log = logging.getLogger(__name__)
 
 class InclineDoclingPreprocessorImpl(Preprocessing, PreprocessorsProtocolPrivate):
     # this preprocessor receives URLs / paths to documents as input
-    INPUT_TYPES = [PreprocessingDataType.document_uri]
+    input_types = [PreprocessingDataType.document_uri]
 
     # this preprocessor either only converts the documents into a text format, or also chunks them
-    OUTPUT_TYPES = [PreprocessingDataType.raw_text_document, PreprocessingDataType.chunks]
+    output_types = [PreprocessingDataType.raw_text_document, PreprocessingDataType.chunks]
 
     def __init__(self, config: InlineDoclingConfig) -> None:
         self.config = config
@@ -50,9 +51,9 @@ class InclineDoclingPreprocessorImpl(Preprocessing, PreprocessorsProtocolPrivate
     async def preprocess(
         self,
         preprocessor_id: str,
-        preprocessor_inputs: List[PreprocessingInput],
+        preprocessor_inputs: List[PreprocessorInput],
         options: Optional[PreprocessorOptions] = None,
-    ) -> PreprocessingResponse:
+    ) -> PreprocessorResponse:
         results = []
 
         for inp in preprocessor_inputs:
@@ -74,4 +75,12 @@ class InclineDoclingPreprocessorImpl(Preprocessing, PreprocessorsProtocolPrivate
                 result = converted_document.export_to_markdown()
                 results.append(result)
 
-        return PreprocessingResponse(status=True, results=results)
+        return PreprocessorResponse(status=True, results=results)
+
+    async def chain_preprocess(
+        self,
+        preprocessors: PreprocessorChain,
+        preprocessor_inputs: List[PreprocessorInput],
+        is_rag_chain: Optional[bool] = False,
+    ) -> PreprocessorResponse:
+        return await self.preprocess(preprocessor_id="", preprocessor_inputs=preprocessor_inputs)

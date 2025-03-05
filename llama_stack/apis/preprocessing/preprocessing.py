@@ -35,7 +35,7 @@ class PreprocessingDataFormat(Enum):
 
 
 @json_schema_type
-class PreprocessingInput(BaseModel):
+class PreprocessorInput(BaseModel):
     preprocessor_input_id: str
     preprocessor_input_type: Optional[PreprocessingDataType] = None
     preprocessor_input_format: Optional[PreprocessingDataFormat] = None
@@ -46,7 +46,16 @@ PreprocessorOptions = Dict[str, Any]
 
 
 @json_schema_type
-class PreprocessingResponse(BaseModel):
+class PreprocessorChainElement(BaseModel):
+    preprocessor_id: str
+    options: Optional[PreprocessorOptions] = None
+
+
+PreprocessorChain = List[PreprocessorChainElement]
+
+
+@json_schema_type
+class PreprocessorResponse(BaseModel):
     status: bool
     results: Optional[List[str | InterleavedContent | Chunk]] = None
 
@@ -59,10 +68,21 @@ class PreprocessorStore(Protocol):
 class Preprocessing(Protocol):
     preprocessor_store: PreprocessorStore
 
+    input_types: List[PreprocessingDataType]
+    output_types: List[PreprocessingDataType]
+
     @webmethod(route="/preprocess", method="POST")
     async def preprocess(
         self,
         preprocessor_id: str,
-        preprocessor_inputs: List[PreprocessingInput],
+        preprocessor_inputs: List[PreprocessorInput],
         options: Optional[PreprocessorOptions] = None,
-    ) -> PreprocessingResponse: ...
+    ) -> PreprocessorResponse: ...
+
+    @webmethod(route="/chain_preprocess", method="POST")
+    async def chain_preprocess(
+        self,
+        preprocessors: PreprocessorChain,
+        preprocessor_inputs: List[PreprocessorInput],
+        is_rag_chain: Optional[bool] = False,
+    ) -> PreprocessorResponse: ...

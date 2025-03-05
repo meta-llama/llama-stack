@@ -12,10 +12,11 @@ from llama_models.llama3.api import Tokenizer
 from llama_stack.apis.preprocessing import (
     Preprocessing,
     PreprocessingDataType,
-    PreprocessingInput,
-    PreprocessingResponse,
     Preprocessor,
+    PreprocessorChain,
+    PreprocessorInput,
     PreprocessorOptions,
+    PreprocessorResponse,
 )
 from llama_stack.apis.vector_io import Chunk
 from llama_stack.providers.datatypes import PreprocessorsProtocolPrivate
@@ -31,8 +32,8 @@ class SimpleChunkingOptions(Enum):
 
 class InclineSimpleChunkingImpl(Preprocessing, PreprocessorsProtocolPrivate):
     # this preprocessor receives plain text and returns chunks
-    INPUT_TYPES = [PreprocessingDataType.raw_text_document]
-    OUTPUT_TYPES = [PreprocessingDataType.chunks]
+    input_types = [PreprocessingDataType.raw_text_document]
+    output_types = [PreprocessingDataType.chunks]
 
     def __init__(self, config: InclineSimpleChunkingConfig) -> None:
         self.config = config
@@ -48,9 +49,9 @@ class InclineSimpleChunkingImpl(Preprocessing, PreprocessorsProtocolPrivate):
     async def preprocess(
         self,
         preprocessor_id: str,
-        preprocessor_inputs: List[PreprocessingInput],
+        preprocessor_inputs: List[PreprocessorInput],
         options: Optional[PreprocessorOptions] = None,
-    ) -> PreprocessingResponse:
+    ) -> PreprocessorResponse:
         chunks = []
 
         window_len, overlap_len = self._resolve_chunk_size_params(options)
@@ -61,7 +62,15 @@ class InclineSimpleChunkingImpl(Preprocessing, PreprocessorsProtocolPrivate):
             )
             chunks.extend(new_chunks)
 
-        return PreprocessingResponse(status=True, results=chunks)
+        return PreprocessorResponse(status=True, results=chunks)
+
+    async def chain_preprocess(
+        self,
+        preprocessors: PreprocessorChain,
+        preprocessor_inputs: List[PreprocessorInput],
+        is_rag_chain: Optional[bool] = False,
+    ) -> PreprocessorResponse:
+        return await self.preprocess(preprocessor_id="", preprocessor_inputs=preprocessor_inputs)
 
     def _resolve_chunk_size_params(self, options: PreprocessorOptions) -> Tuple[int, int]:
         window_len = (options or {}).get(
