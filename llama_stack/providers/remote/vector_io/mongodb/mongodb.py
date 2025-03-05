@@ -88,10 +88,10 @@ class MongoDBAtlasIndex(EmbeddingIndex):
             while True:
                 idx = self._get_index_config(collection, index_name)
                 if idx and idx["queryable"]:
-                    print("Search index created successfully.")
+                    log.info("Search index created successfully.")
                     break
                 else:
-                    print("Waiting for search index to be created ...")
+                    log.info("Waiting for search index to be created ...")
                     sleep(5)
         else:
             log.info("Search index already exists.")
