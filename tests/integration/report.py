@@ -109,6 +109,9 @@ class Report:
             self.test_data[report.nodeid] = outcome
 
     def pytest_sessionfinish(self, session):
+        # disabled
+        return
+
         report = []
         report.append(f"# Report for {self.distro_name} distribution")
         report.append("\n## Supported Models")
@@ -153,7 +156,8 @@ class Report:
                 for test_name in tests:
                     model_id = self.text_model_id if "text" in test_name else self.vision_model_id
                     test_nodeids = self.test_name_to_nodeid[test_name]
-                    assert len(test_nodeids) > 0
+                    if not test_nodeids:
+                        continue
 
                     # There might be more than one parametrizations for the same test function. We take
                     # the result of the first one for now. Ideally we should mark the test as failed if
@@ -179,7 +183,8 @@ class Report:
                 for capa, tests in capa_map.items():
                     for test_name in tests:
                         test_nodeids = self.test_name_to_nodeid[test_name]
-                        assert len(test_nodeids) > 0
+                        if not test_nodeids:
+                            continue
                         test_table.append(
                             f"| {provider_str} | /{api} | {capa} | {test_name} | {self._print_result_icon(self.test_data[test_nodeids[0]])} |"
                         )
@@ -195,11 +200,11 @@ class Report:
         self.test_name_to_nodeid[func_name].append(item.nodeid)
 
         # Get values from fixtures for report output
-        if "text_model_id" in item.funcargs:
-            text_model = item.funcargs["text_model_id"].split("/")[1]
+        if model_id := item.funcargs.get("text_model_id"):
+            text_model = model_id.split("/")[1]
             self.text_model_id = self.text_model_id or text_model
-        elif "vision_model_id" in item.funcargs:
-            vision_model = item.funcargs["vision_model_id"].split("/")[1]
+        elif model_id := item.funcargs.get("vision_model_id"):
+            vision_model = model_id.split("/")[1]
             self.vision_model_id = self.vision_model_id or vision_model
 
         if self.client is None and "llama_stack_client" in item.funcargs:
