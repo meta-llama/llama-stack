@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 import os
+import textwrap
 
 from dotenv import load_dotenv
 
@@ -36,7 +37,14 @@ def pytest_configure(config):
 def pytest_addoption(parser):
     parser.addoption(
         "--stack-config",
-        help="a 'pointer' to the stack. this can be either be: (a) a template name like `fireworks`, or (b) a path to a run.yaml file, or (c) an adhoc config spec, e.g. `inference=fireworks,safety=llama-guard,agents=meta-reference`",
+        help=textwrap.dedent(
+            """
+            a 'pointer' to the stack. this can be either be:
+            (a) a template name like `fireworks`, or
+            (b) a path to a run.yaml file, or
+            (c) an adhoc config spec, e.g. `inference=fireworks,safety=llama-guard,agents=meta-reference`
+            """
+        ),
     )
     parser.addoption("--env", action="append", help="Set environment variables, e.g. --env KEY=value")
     parser.addoption(

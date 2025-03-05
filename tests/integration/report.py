@@ -5,18 +5,13 @@
 # the root directory of this source tree.
 
 
-import importlib
-import os
 from collections import defaultdict
-from pathlib import Path
 from typing import Optional
-from urllib.parse import urlparse
 
 import pytest
 from pytest import CollectReport
 from termcolor import cprint
 
-from llama_stack.env import get_env_or_fail
 from llama_stack.models.llama.datatypes import CoreModelId
 from llama_stack.models.llama.sku_list import (
     all_registered_models,
@@ -69,27 +64,6 @@ SUPPORTED_MODELS = {
 
 class Report:
     def __init__(self, report_path: Optional[str] = None):
-        if os.environ.get("LLAMA_STACK_CONFIG"):
-            config_path_or_template_name = get_env_or_fail("LLAMA_STACK_CONFIG")
-            if config_path_or_template_name.endswith(".yaml"):
-                config_path = Path(config_path_or_template_name)
-            else:
-                config_path = Path(
-                    importlib.resources.files("llama_stack") / f"templates/{config_path_or_template_name}/run.yaml"
-                )
-            if not config_path.exists():
-                raise ValueError(f"Config file {config_path} does not exist")
-            self.output_path = Path(config_path.parent / "report.md")
-            self.distro_name = None
-        elif os.environ.get("LLAMA_STACK_BASE_URL"):
-            url = get_env_or_fail("LLAMA_STACK_BASE_URL")
-            self.distro_name = urlparse(url).netloc
-            if report_path is None:
-                raise ValueError("Report path must be provided when LLAMA_STACK_BASE_URL is set")
-            self.output_path = Path(report_path)
-        else:
-            raise ValueError("LLAMA_STACK_CONFIG or LLAMA_STACK_BASE_URL must be set")
-
         self.report_data = defaultdict(dict)
         # test function -> test nodeid
         self.test_data = dict()
