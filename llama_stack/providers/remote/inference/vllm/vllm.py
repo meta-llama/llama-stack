@@ -8,6 +8,9 @@ import logging
 from typing import AsyncGenerator, List, Optional, Union
 
 from openai import OpenAI
+from openai.types.chat.chat_completion_chunk import (
+    ChatCompletionChunk as OpenAIChatCompletionChunk,
+)
 
 from llama_stack.apis.common.content_types import (
     InterleavedContent,
@@ -49,7 +52,6 @@ from llama_stack.providers.utils.inference.model_registry import (
     build_hf_repo_model_entry,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
-    OpenAICompatCompletionResponse,
     UnparseableToolCall,
     convert_message_to_openai_dict,
     convert_tool_call,
@@ -155,11 +157,14 @@ def _convert_to_vllm_finish_reason(finish_reason: str) -> StopReason:
 
 
 async def _process_vllm_chat_completion_stream_response(
-    stream: AsyncGenerator[OpenAICompatCompletionResponse, None],
+    stream: AsyncGenerator[OpenAIChatCompletionChunk, None],
 ) -> AsyncGenerator:
     event_type = ChatCompletionResponseEventType.start
     tool_call_buf = UnparseableToolCall()
     async for chunk in stream:
+        if not chunk.choices:
+            log.warning("vLLM failed to generation any completions - check the vLLM server logs for an error.")
+            continue
         choice = chunk.choices[0]
         if choice.finish_reason:
             args_str = tool_call_buf.arguments
