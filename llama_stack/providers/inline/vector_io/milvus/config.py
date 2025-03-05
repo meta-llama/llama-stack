@@ -16,5 +16,5 @@ class MilvusVectorIOConfig(BaseModel):
     db_path: str
 
     @classmethod
-    def sample_config(cls) -> Dict[str, Any]:
+    def sample_run_config(cls) -> Dict[str, Any]:
         return {"db_path": "{env.MILVUS_ENDPOINT}"}
