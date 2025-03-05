@@ -20,6 +20,11 @@ We may add more storage types like Graph IO in the future.
 Here's how to set up a vector database for RAG:
 
 ```python
+# Create http client
+from llama_stack_client import LlamaStackClient
+
+client = LlamaStackClient(base_url=f"http://localhost:{os.environ['LLAMA_STACK_PORT']}")
+
 # Register a vector db
 vector_db_id = "my_documents"
 response = client.vector_dbs.register(
@@ -134,6 +139,14 @@ response = agent.create_turn(
     messages=[{"role": "user", "content": "What are the key topics in the documents?"}],
     session_id=session_id,
 )
+```
+
+You can print the response with below.
+```python
+from llama_stack_client.lib.agents.event_logger import EventLogger
+
+for log in EventLogger().log(response):
+    log.print()
 ```
 
 ### Unregistering Vector DBs
