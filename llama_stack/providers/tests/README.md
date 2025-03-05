@@ -20,10 +20,10 @@ dependencies. Below is the full configuration:
 
 
 ```bash
-$ cd llama-stack
-$ uv sync --extra dev --extra test
-$ uv pip install -e .
-$ source .venv/bin/activate
+cd llama-stack
+uv sync --extra dev --extra test
+uv pip install -e .
+source .venv/bin/activate
 ```
 
 ## Common options
