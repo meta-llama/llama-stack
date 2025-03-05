@@ -170,6 +170,7 @@ exclude = [
     "^llama_stack/apis/inspect/inspect\\.py$",
     "^llama_stack/apis/models/models\\.py$",
     "^llama_stack/apis/post_training/post_training\\.py$",
+    "^llama_stack/apis/providers/providers\\.py$",
     "^llama_stack/apis/resource\\.py$",
     "^llama_stack/apis/safety/safety\\.py$",
     "^llama_stack/apis/scoring/scoring\\.py$",

@@ -16,6 +16,7 @@ from llama_stack.apis.inference import Inference
 from llama_stack.apis.inspect import Inspect
 from llama_stack.apis.models import Models
 from llama_stack.apis.post_training import PostTraining
+from llama_stack.apis.providers import Providers as ProvidersAPI
 from llama_stack.apis.safety import Safety
 from llama_stack.apis.scoring import Scoring
 from llama_stack.apis.scoring_functions import ScoringFunctions
@@ -59,6 +60,7 @@ class InvalidProviderError(Exception):
 
 def api_protocol_map() -> Dict[Api, Any]:
     return {
+        Api.providers: ProvidersAPI,
         Api.agents: Agents,
         Api.inference: Inference,
         Api.inspect: Inspect,
@@ -240,6 +242,25 @@ def sort_providers_by_deps(
                     provider_type="__builtin__",
                     config_class="llama_stack.distribution.inspect.DistributionInspectConfig",
                     module="llama_stack.distribution.inspect",
+                    api_dependencies=apis,
+                    deps__=[x.value for x in apis],
+                ),
+            ),
+        )
+    )
+
+    sorted_providers.append(
+        (
+            "providers",
+            ProviderWithSpec(
+                provider_id="__builtin__",
+                provider_type="__builtin__",
+                config={"run_config": run_config.model_dump()},
+                spec=InlineProviderSpec(
+                    api=Api.providers,
+                    provider_type="__builtin__",
+                    config_class="llama_stack.distribution.providers.ProviderImplConfig",
+                    module="llama_stack.distribution.providers",
                     api_dependencies=apis,
                     deps__=[x.value for x in apis],
                 ),
