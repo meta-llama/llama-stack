@@ -13,9 +13,7 @@ import pytest
 
 # How to run this test:
 #
-# pytest llama_stack/providers/tests/datasetio/test_datasetio.py
-#   -m "meta_reference"
-#   -v -s --tb=short --disable-warnings
+# LLAMA_STACK_CONFIG="template-name" pytest -v tests/integration/datasetio
 
 
 def data_url_from_file(file_path: str) -> str:
