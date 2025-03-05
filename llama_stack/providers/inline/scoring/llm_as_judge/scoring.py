@@ -67,7 +67,6 @@ class LlmAsJudgeScoringImpl(
 
     async def register_scoring_function(self, function_def: ScoringFn) -> None:
         self.llm_as_judge_fn.register_scoring_fn_def(function_def)
-        # raise NotImplementedError("Register scoring function not implemented yet")
 
     async def score_batch(
         self,
