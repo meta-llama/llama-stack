@@ -56,11 +56,14 @@ def register_dataset(llama_stack_client, for_generation=False, for_rag=False, da
             "generated_answer": {"type": "string"},
         }
 
+    dataset_providers = [x for x in llama_stack_client.providers.list() if x.api == "datasetio"]
+    dataset_provider_id = dataset_providers[0].provider_id
+
     llama_stack_client.datasets.register(
         dataset_id=dataset_id,
         dataset_schema=dataset_schema,
         url=dict(uri=test_url),
-        provider_id="localfs",
+        provider_id=dataset_provider_id,
     )
 
 
