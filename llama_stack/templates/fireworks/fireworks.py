@@ -35,6 +35,7 @@ def get_distribution_template() -> DistributionTemplate:
         "tool_runtime": [
             "remote::brave-search",
             "remote::tavily-search",
+            "remote::wolfram-alpha",
             "inline::code-interpreter",
             "inline::rag-runtime",
             "remote::model-context-protocol",
@@ -76,6 +77,10 @@ def get_distribution_template() -> DistributionTemplate:
         ToolGroupInput(
             toolgroup_id="builtin::websearch",
             provider_id="tavily-search",
+        ),
+        ToolGroupInput(
+            toolgroup_id="builtin::wolfram_alpha",
+            provider_id="wolfram-alpha",
         ),
         ToolGroupInput(
             toolgroup_id="builtin::rag",
