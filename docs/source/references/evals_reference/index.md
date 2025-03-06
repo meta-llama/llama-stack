@@ -75,13 +75,14 @@ system_message = {
     "content": SYSTEM_PROMPT_TEMPLATE.format(subject=subset),
 }
 
+# register the evaluation benchmark task with the dataset and scoring function
 client.benchmarks.register(
     benchmark_id="meta-reference::mmmu",
     dataset_id=f"mmmu-{subset}-{split}",
     scoring_functions=["basic::regex_parser_multiple_choice_answer"],
 )
 
-response = client.eval.evaluate_rows_alpha(
+response = client.eval.evaluate_rows(
     benchmark_id="meta-reference::mmmu",
     input_rows=eval_rows,
     scoring_functions=["basic::regex_parser_multiple_choice_answer"],
@@ -134,13 +135,6 @@ eval_rows = client.datasetio.get_rows_paginated(
 ```
 
 ```python
-# register 405B as LLM Judge model
-client.models.register(
-    model_id="meta-llama/Llama-3.1-405B-Instruct",
-    provider_model_id="meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
-    provider_id="together",
-)
-
 client.benchmarks.register(
     benchmark_id="meta-reference::simpleqa",
     dataset_id=simpleqa_dataset_id,
