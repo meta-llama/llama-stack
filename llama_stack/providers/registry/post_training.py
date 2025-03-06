@@ -22,4 +22,15 @@ def available_providers() -> List[ProviderSpec]:
                 Api.datasets,
             ],
         ),
+        InlineProviderSpec(
+            api=Api.post_training,
+            provider_type="remote::nvidia",
+            pip_packages=["torch", "numpy"],
+            module="llama_stack.providers.remote.post_training.nvidia",
+            config_class="llama_stack.providers.remote.post_training.nvidia.NvidiaPostTrainingConfig",
+            api_dependencies=[
+                Api.datasetio,
+                Api.datasets,
+            ],
+        ),
     ]
