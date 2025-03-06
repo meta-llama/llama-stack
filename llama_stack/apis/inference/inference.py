@@ -278,7 +278,7 @@ ResponseFormat = register_schema(
 class CompletionRequest(BaseModel):
     model: str
     content: InterleavedContent
-    sampling_params: Optional[SamplingParams] = SamplingParams()
+    sampling_params: Optional[SamplingParams] = Field(default_factory=SamplingParams)
     response_format: Optional[ResponseFormat] = None
     stream: Optional[bool] = False
     logprobs: Optional[LogProbConfig] = None
@@ -357,7 +357,7 @@ class ToolConfig(BaseModel):
 class ChatCompletionRequest(BaseModel):
     model: str
     messages: List[Message]
-    sampling_params: Optional[SamplingParams] = SamplingParams()
+    sampling_params: Optional[SamplingParams] = Field(default_factory=SamplingParams)
 
     tools: Optional[List[ToolDefinition]] = Field(default_factory=list)
     tool_config: Optional[ToolConfig] = Field(default_factory=ToolConfig)
@@ -444,7 +444,7 @@ class Inference(Protocol):
         self,
         model_id: str,
         content: InterleavedContent,
-        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        sampling_params: Optional[SamplingParams] = None,
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
@@ -467,7 +467,7 @@ class Inference(Protocol):
         self,
         model_id: str,
         messages: List[Message],
-        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        sampling_params: Optional[SamplingParams] = None,
         tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
         tool_prompt_format: Optional[ToolPromptFormat] = None,

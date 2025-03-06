@@ -199,7 +199,7 @@ AgentToolGroup = register_schema(
 
 
 class AgentConfigCommon(BaseModel):
-    sampling_params: Optional[SamplingParams] = SamplingParams()
+    sampling_params: Optional[SamplingParams] = Field(default_factory=SamplingParams)
 
     input_shields: Optional[List[str]] = Field(default_factory=list)
     output_shields: Optional[List[str]] = Field(default_factory=list)

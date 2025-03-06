@@ -217,7 +217,7 @@ class InferenceRouter(Inference):
         self,
         model_id: str,
         messages: List[Message],
-        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        sampling_params: Optional[SamplingParams] = None,
         response_format: Optional[ResponseFormat] = None,
         tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = None,
@@ -230,6 +230,8 @@ class InferenceRouter(Inference):
             "core",
             f"InferenceRouter.chat_completion: {model_id=}, {stream=}, {messages=}, {tools=}, {tool_config=}, {response_format=}",
         )
+        if sampling_params is None:
+            sampling_params = SamplingParams()
         model = await self.routing_table.get_model(model_id)
         if model is None:
             raise ValueError(f"Model '{model_id}' not found")
@@ -320,11 +322,13 @@ class InferenceRouter(Inference):
         self,
         model_id: str,
         content: InterleavedContent,
-        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        sampling_params: Optional[SamplingParams] = None,
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
+        if sampling_params is None:
+            sampling_params = SamplingParams()
         logcat.debug(
             "core",
             f"InferenceRouter.completion: {model_id=}, {stream=}, {content=}, {sampling_params=}, {response_format=}",

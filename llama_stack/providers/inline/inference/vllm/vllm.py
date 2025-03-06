@@ -143,7 +143,7 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         self,
         model_id: str,
         content: InterleavedContent,
-        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        sampling_params: Optional[SamplingParams] = None,
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
@@ -154,7 +154,7 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         self,
         model_id: str,
         messages: List[Message],
-        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        sampling_params: Optional[SamplingParams] = None,
         tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
         tool_prompt_format: Optional[ToolPromptFormat] = None,
@@ -163,6 +163,8 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         logprobs: Optional[LogProbConfig] = None,
         tool_config: Optional[ToolConfig] = None,
     ) -> ChatCompletionResponse | ChatCompletionResponseStreamChunk:
+        if sampling_params is None:
+            sampling_params = SamplingParams()
         assert self.engine is not None
 
         request = ChatCompletionRequest(

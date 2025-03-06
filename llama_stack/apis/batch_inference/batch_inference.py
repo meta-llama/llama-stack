@@ -40,7 +40,7 @@ class BatchInference(Protocol):
         self,
         model: str,
         content_batch: List[InterleavedContent],
-        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        sampling_params: Optional[SamplingParams] = None,
         response_format: Optional[ResponseFormat] = None,
         logprobs: Optional[LogProbConfig] = None,
     ) -> BatchCompletionResponse: ...
@@ -50,7 +50,7 @@ class BatchInference(Protocol):
         self,
         model: str,
         messages_batch: List[List[Message]],
-        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        sampling_params: Optional[SamplingParams] = None,
         # zero-shot tool definitions as input to the model
         tools: Optional[List[ToolDefinition]] = list,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
