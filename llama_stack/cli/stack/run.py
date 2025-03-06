@@ -95,7 +95,7 @@ class StackRun(Subcommand):
 
         if not config_file.exists() and not has_yaml_suffix:
             # check if it's a build config saved to ~/.llama dir
-            config_file = Path(DISTRIBS_BASE_DIR / f"llamastack-{args.config}" / f"{args.config}-run.yaml")
+            config_file = Path(DISTRIBS_BASE_DIR / f"llamastack-{args.config}" / f"llamastack-{args.config}-run.yaml")
 
         if not config_file.exists():
             self.parser.error(
