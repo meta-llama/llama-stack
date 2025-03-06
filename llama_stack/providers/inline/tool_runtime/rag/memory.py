@@ -22,6 +22,7 @@ from llama_stack.apis.preprocessing import (
     Preprocessing,
     PreprocessingDataFormat,
     PreprocessingDataType,
+    PreprocessorChain,
     PreprocessorChainElement,
     PreprocessorInput,
 )
@@ -49,6 +50,11 @@ def make_random_string(length: int = 8):
 
 
 class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
+    DEFAULT_PREPROCESSING_CHAIN = [
+        PreprocessorChainElement(preprocessor_id="builtin::basic"),
+        PreprocessorChainElement(preprocessor_id="builtin::chunking"),
+    ]
+
     def __init__(
         self,
         config: RagToolRuntimeConfig,
@@ -72,6 +78,7 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
         documents: List[RAGDocument],
         vector_db_id: str,
         chunk_size_in_tokens: int = 512,
+        preprocessor_chain: Optional[PreprocessorChain] = None,
     ) -> None:
         preprocessor_inputs = [self._rag_document_to_preprocessor_input(d) for d in documents]
         preprocessor_chain = [
@@ -79,7 +86,8 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
             PreprocessorChainElement(preprocessor_id="builtin::chunking"),
         ]
         preprocessor_response = await self.preprocessing_api.chain_preprocess(
-            preprocessors=preprocessor_chain, preprocessor_inputs=preprocessor_inputs
+            preprocessors=preprocessor_chain or self.DEFAULT_PREPROCESSING_CHAIN,
+            preprocessor_inputs=preprocessor_inputs,
         )
 
         if not preprocessor_response.success:
