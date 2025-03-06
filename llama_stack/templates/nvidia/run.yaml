@@ -70,7 +70,11 @@ providers:
   post_training:
   - provider_id: nvidia-customizer
     provider_type: remote::nvidia
-    config: {}
+    config:
+      customizer_url: ${env.NVIDIA_CUSTOMIZER_URL:}
+      user_id: ${env.NVIDIA_USER_ID:}
+      project_id: ${env.NVIDIA_PROJECT_ID:}
+      dataset_namespace: ${env.NVIDIA_DATASET_NAMESPACE:}
   tool_runtime:
   - provider_id: brave-search
     provider_type: remote::brave-search
