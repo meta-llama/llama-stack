@@ -59,7 +59,7 @@ def pytest_addoption(parser):
     )
     parser.addoption(
         "--judge-model",
-        help="comma-separated list of judge models. Fixture name: judge_model_id",
+        help="Specify the judge model to use for testing",
     )
     parser.addoption(
         "--embedding-dimension",
