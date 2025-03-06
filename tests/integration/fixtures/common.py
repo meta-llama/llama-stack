@@ -59,7 +59,7 @@ def llama_stack_client_with_mocked_inference(llama_stack_client, request):
         return llama_stack_client
 
     record_responses = request.config.getoption("--record-responses")
-    cache_dir = Path(__file__).parent / "fixtures" / "recorded_responses"
+    cache_dir = Path(__file__).parent / "recorded_responses"
 
     # Create a shallow copy of the client to avoid modifying the original
     client = copy.copy(llama_stack_client)
