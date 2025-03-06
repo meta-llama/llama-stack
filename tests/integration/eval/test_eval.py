@@ -83,7 +83,7 @@ def test_evaluate_benchmark(llama_stack_client, text_model_id, scoring_fn_id):
     job_status = llama_stack_client.eval.jobs.status(job_id=response.job_id, benchmark_id=benchmark_id)
     assert job_status and job_status == "completed"
 
-    eval_response = llama_stack_client.eval.jobs.result(job_id=response.job_id, benchmark_id=benchmark_id)
+    eval_response = llama_stack_client.eval.jobs.retrieve(job_id=response.job_id, benchmark_id=benchmark_id)
     assert eval_response is not None
     assert len(eval_response.generations) == 5
     assert scoring_fn_id in eval_response.scores
