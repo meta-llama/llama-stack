@@ -1,5 +1,13 @@
 # Core Concepts
 
+
+```{toctree}
+:maxdepth: 1
+:hidden:
+
+evaluation_concepts
+```
+
 Given Llama Stack's service-oriented philosophy, a few concepts and workflows arise which may not feel completely natural in the LLM landscape, especially if you are coming with a background in other frameworks.
 
 
@@ -64,10 +72,3 @@ While there is a lot of flexibility to mix-and-match providers, often users will
 
 
 **On-device Distro**: Finally, you may want to run Llama Stack directly on an edge device (mobile phone or a tablet.) We provide Distros for iOS and Android (coming soon.)
-
-```{toctree}
-:maxdepth: 1
-:hidden:
-
-evaluation_concepts
-```
