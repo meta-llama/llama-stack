@@ -24,19 +24,9 @@ The Evaluation APIs are associated with a set of Resources as shown in the follo
   - Associated with `Benchmark` resource.
 
 
-Use the following decision tree to decide how to use LlamaStack Evaluation flow.
-![Eval Flow](./resources/eval-flow.png)
-
-
-```{admonition} Note on Benchmark v.s. Application Evaluation
-:class: tip
-- **Benchmark Evaluation** is a well-defined eval-task consisting of `dataset` and `scoring_function`. The generation (inference or agent) will be done as part of evaluation.
-- **Application Evaluation** assumes users already have app inputs & generated outputs. Evaluation will purely focus on scoring the generated outputs via scoring functions (e.g. LLM-as-judge).
-```
-
 ## Evaluation Examples Walkthrough
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/10CHyykee9j2OigaIcRv47BKG9mrNm0tJ?usp=sharing)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/meta-llama/llama-stack/blob/main/docs/notebooks/Llama_Stack_Benchmark_Evals.ipynb)
 
 It is best to open this notebook in Colab to follow along with the examples.
 
@@ -63,20 +53,29 @@ eval_rows = ds.to_pandas().to_dict(orient="records")
   - Run evaluate on the dataset
 
 ```python
+from rich.pretty import pprint
+from tqdm import tqdm
+
 SYSTEM_PROMPT_TEMPLATE = """
-You are an expert in Agriculture whose job is to answer questions from the user using images.
+You are an expert in {subject} whose job is to answer questions from the user using images.
+
 First, reason about the correct answer.
+
 Then write the answer in the following format where X is exactly one of A,B,C,D:
+
 Answer: X
+
 Make sure X is one of A,B,C,D.
+
 If you are uncertain of the correct answer, guess the most likely one.
 """
 
 system_message = {
     "role": "system",
-    "content": SYSTEM_PROMPT_TEMPLATE,
+    "content": SYSTEM_PROMPT_TEMPLATE.format(subject=subset),
 }
 
+# register the evaluation benchmark task with the dataset and scoring function
 client.benchmarks.register(
     benchmark_id="meta-reference::mmmu",
     dataset_id=f"mmmu-{subset}-{split}",
@@ -88,13 +87,14 @@ response = client.eval.evaluate_rows(
     input_rows=eval_rows,
     scoring_functions=["basic::regex_parser_multiple_choice_answer"],
     benchmark_config={
-        "type": "benchmark",
         "eval_candidate": {
             "type": "model",
             "model": "meta-llama/Llama-3.2-90B-Vision-Instruct",
             "sampling_params": {
                 "strategy": {
-                    "type": "greedy",
+                    "type": "top_p",
+                    "temperature": 1.0,
+                    "top_p": 0.95,
                 },
                 "max_tokens": 4096,
                 "repeat_penalty": 1.0,
@@ -103,6 +103,7 @@ response = client.eval.evaluate_rows(
         },
     },
 )
+pprint(response)
 ```
 
 #### 1.2. Running SimpleQA
@@ -115,10 +116,9 @@ simpleqa_dataset_id = "huggingface::simpleqa"
 _ = client.datasets.register(
     dataset_id=simpleqa_dataset_id,
     provider_id="huggingface",
-    url={"uri": "https://huggingface.co/datasets/llamastack/evals"},
+    url={"uri": "https://huggingface.co/datasets/llamastack/simpleqa"},
     metadata={
-        "path": "llamastack/evals",
-        "name": "evals__simpleqa",
+        "path": "llamastack/simpleqa",
         "split": "train",
     },
     dataset_schema={
@@ -146,7 +146,6 @@ response = client.eval.evaluate_rows(
     input_rows=eval_rows.rows,
     scoring_functions=["llm-as-judge::405b-simpleqa"],
     benchmark_config={
-        "type": "benchmark",
         "eval_candidate": {
             "type": "model",
             "model": "meta-llama/Llama-3.2-90B-Vision-Instruct",
@@ -160,6 +159,7 @@ response = client.eval.evaluate_rows(
         },
     },
 )
+pprint(response)
 ```
 
 
@@ -170,19 +170,17 @@ response = client.eval.evaluate_rows(
 
 ```python
 agent_config = {
-    "model": "meta-llama/Llama-3.1-405B-Instruct",
-    "instructions": "You are a helpful assistant",
+    "model": "meta-llama/Llama-3.3-70B-Instruct",
+    "instructions": "You are a helpful assistant that have access to tool to search the web. ",
     "sampling_params": {
         "strategy": {
-            "type": "greedy",
-        },
-    },
-    "tools": [
-        {
-            "type": "brave_search",
-            "engine": "tavily",
-            "api_key": userdata.get("TAVILY_SEARCH_API_KEY"),
+            "type": "top_p",
+            "temperature": 0.5,
+            "top_p": 0.9,
         }
+    },
+    "toolgroups": [
+        "builtin::websearch",
     ],
     "tool_choice": "auto",
     "tool_prompt_format": "json",
@@ -196,24 +194,21 @@ response = client.eval.evaluate_rows(
     input_rows=eval_rows.rows,
     scoring_functions=["llm-as-judge::405b-simpleqa"],
     benchmark_config={
-        "type": "benchmark",
         "eval_candidate": {
             "type": "agent",
             "config": agent_config,
         },
     },
 )
+pprint(response)
 ```
 
 ### 3. Agentic Application Dataset Scoring
-- Llama Stack offers a library of scoring functions and the `/scoring` API, allowing you to run evaluations on your pre-annotated AI application datasets.
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/meta-llama/llama-stack/blob/main/docs/getting_started.ipynb)
 
-- In this example, we will work with an example RAG dataset and couple of scoring functions for evaluation.
-  - `llm-as-judge::base`: LLM-As-Judge with custom judge prompt & model.
-  - `braintrust::factuality`: Factuality scorer from [braintrust](https://github.com/braintrustdata/autoevals).
-  - `basic::subset_of`: Basic checking if generated answer is a subset of expected answer.
+Llama Stack offers a library of scoring functions and the `/scoring` API, allowing you to run evaluations on your pre-annotated AI application datasets.
 
-- Please checkout our [Llama Stack Playground](https://llama-stack.readthedocs.io/en/latest/playground/index.html) for an interactive interface to upload datasets and run scorings.
+In this example, we will work with an example RAG dataset you have built previously, label with an annotation, and use LLM-As-Judge with custom judge prompt for scoring. Please checkout our [Llama Stack Playground](https://llama-stack.readthedocs.io/en/latest/playground/index.html) for an interactive interface to upload datasets and run scorings.
 
 ```python
 judge_model_id = "meta-llama/Llama-3.1-405B-Instruct-FP8"
@@ -317,28 +312,9 @@ The `BenchmarkConfig` are user specified config to define:
 2. Optionally scoring function params to allow customization of scoring function behaviour. This is useful to parameterize generic scoring functions such as LLMAsJudge with custom `judge_model` / `judge_prompt`.
 
 
-**Example Benchmark BenchmarkConfig**
+**Example BenchmarkConfig**
 ```json
 {
-    "type": "benchmark",
-    "eval_candidate": {
-        "type": "model",
-        "model": "Llama3.2-3B-Instruct",
-        "sampling_params": {
-            "strategy": {
-                "type": "greedy",
-            },
-            "max_tokens": 0,
-            "repetition_penalty": 1.0
-        }
-    }
-}
-```
-
-**Example Application BenchmarkConfig**
-```json
-{
-    "type": "app",
     "eval_candidate": {
         "type": "model",
         "model": "Llama3.1-405B-Instruct",
