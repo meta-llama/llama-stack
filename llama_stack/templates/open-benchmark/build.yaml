@@ -1,11 +1,15 @@
 version: '2'
 distribution_spec:
-  description: OpenAI model inference
+  description: Distribution for running open benchmarks
   providers:
     inference:
     - remote::openai
+    - remote::anthropic
+    - remote::gemini
+    - remote::groq
+    - remote::together
     vector_io:
-    - inline::faiss
+    - inline::sqlite-vec
     - remote::chromadb
     - remote::pgvector
     safety:
