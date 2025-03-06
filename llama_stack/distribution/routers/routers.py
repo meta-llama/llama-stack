@@ -521,7 +521,6 @@ class PreprocessingRouter(Preprocessing):
         self,
         preprocessors: PreprocessorChain,
         preprocessor_inputs: List[PreprocessorInput],
-        is_rag_chain: Optional[bool] = False,
     ) -> PreprocessorResponse:
         preprocessor_impls = [self.routing_table.get_provider_impl(p.preprocessor_id) for p in preprocessors]
-        return await execute_preprocessor_chain(preprocessors, preprocessor_impls, preprocessor_inputs, is_rag_chain)
+        return await execute_preprocessor_chain(preprocessors, preprocessor_impls, preprocessor_inputs)

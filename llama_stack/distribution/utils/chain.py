@@ -9,7 +9,6 @@ from typing import List
 
 from llama_stack.apis.preprocessing import (
     Preprocessing,
-    PreprocessingDataType,
     PreprocessorChain,
     PreprocessorInput,
     PreprocessorResponse,
@@ -18,15 +17,9 @@ from llama_stack.apis.preprocessing import (
 log = logging.getLogger(__name__)
 
 
-def validate_chain(chain_impls: List[Preprocessing], is_rag_chain: bool) -> bool:
+def validate_chain(chain_impls: List[Preprocessing]) -> bool:
     if len(chain_impls) == 0:
         log.error("Empty preprocessing chain was provided")
-        return False
-
-    if is_rag_chain and PreprocessingDataType.chunks not in chain_impls[-1].output_types:
-        log.error(
-            f"RAG preprocessing chain must end with a chunk-producing preprocessor, but the last preprocessor in the provided chain only supports {chain_impls[-1].output_types}"
-        )
         return False
 
     for current_preprocessor, next_preprocessor in pairwise(chain_impls):
@@ -46,13 +39,13 @@ async def execute_preprocessor_chain(
     preprocessor_chain: PreprocessorChain,
     preprocessor_chain_impls: List[Preprocessing],
     preprocessor_inputs: List[PreprocessorInput],
-    is_rag_chain: bool,
 ) -> PreprocessorResponse:
-    if not validate_chain(preprocessor_chain_impls, is_rag_chain):
-        return PreprocessorResponse(status=False, results=[])
+    if not validate_chain(preprocessor_chain_impls):
+        return PreprocessorResponse(success=False, results=[])
 
     current_inputs = preprocessor_inputs
     current_outputs = []
+    current_result_type = None
 
     # TODO: replace with a parallel implementation
     for i, current_params in enumerate(preprocessor_chain):
@@ -62,10 +55,13 @@ async def execute_preprocessor_chain(
             preprocessor_inputs=current_inputs,
             options=current_params.options,
         )
-        if not response.status:
+        if not response.success:
             log.error(f"Preprocessor {current_params.preprocessor_id} returned an error")
-            return PreprocessorResponse(status=False, results=[])
+            return PreprocessorResponse(
+                success=False, preprocessor_output_type=response.preprocessor_output_type, results=[]
+            )
         current_outputs = response.results
         current_inputs = current_outputs
+        current_result_type = response.preprocessor_output_type
 
-    return PreprocessorResponse(status=True, results=current_outputs)
+    return PreprocessorResponse(success=True, preprocessor_output_type=current_result_type, results=current_outputs)

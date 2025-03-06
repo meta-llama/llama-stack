@@ -75,12 +75,14 @@ class InclineDoclingPreprocessorImpl(Preprocessing, PreprocessorsProtocolPrivate
                 result = converted_document.export_to_markdown()
                 results.append(result)
 
-        return PreprocessorResponse(status=True, results=results)
+        preprocessor_output_type = (
+            PreprocessingDataType.chunks if self.config.chunk else PreprocessingDataType.raw_text_document
+        )
+        return PreprocessorResponse(success=True, preprocessor_output_type=preprocessor_output_type, results=results)
 
     async def chain_preprocess(
         self,
         preprocessors: PreprocessorChain,
         preprocessor_inputs: List[PreprocessorInput],
-        is_rag_chain: Optional[bool] = False,
     ) -> PreprocessorResponse:
         return await self.preprocess(preprocessor_id="", preprocessor_inputs=preprocessor_inputs)

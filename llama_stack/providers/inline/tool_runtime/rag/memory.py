@@ -21,6 +21,7 @@ from llama_stack.apis.inference import Inference
 from llama_stack.apis.preprocessing import (
     Preprocessing,
     PreprocessingDataFormat,
+    PreprocessingDataType,
     PreprocessorChainElement,
     PreprocessorInput,
 )
@@ -81,9 +82,19 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
             preprocessors=preprocessor_chain, preprocessor_inputs=preprocessor_inputs
         )
 
-        chunks = preprocessor_response.results
+        if not preprocessor_response.success:
+            log.error("Preprocessor chain returned an error")
+            return
 
+        if preprocessor_response.preprocessor_output_type != PreprocessingDataType.chunks:
+            log.error(
+                f"Preprocessor chain returned {preprocessor_response.preprocessor_output_type} instead of {PreprocessingDataType.chunks}"
+            )
+            return
+
+        chunks = preprocessor_response.results
         if not chunks:
+            log.error("No chunks returned by the preprocessor chain")
             return
 
         await self.vector_io_api.insert_chunks(

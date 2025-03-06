@@ -56,7 +56,8 @@ PreprocessorChain = List[PreprocessorChainElement]
 
 @json_schema_type
 class PreprocessorResponse(BaseModel):
-    status: bool
+    success: bool
+    preprocessor_output_type: PreprocessingDataType
     results: Optional[List[str | InterleavedContent | Chunk]] = None
 
 
@@ -84,5 +85,4 @@ class Preprocessing(Protocol):
         self,
         preprocessors: PreprocessorChain,
         preprocessor_inputs: List[PreprocessorInput],
-        is_rag_chain: Optional[bool] = False,
     ) -> PreprocessorResponse: ...

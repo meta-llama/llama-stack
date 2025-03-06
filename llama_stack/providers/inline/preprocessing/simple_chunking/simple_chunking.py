@@ -62,13 +62,12 @@ class InclineSimpleChunkingImpl(Preprocessing, PreprocessorsProtocolPrivate):
             )
             chunks.extend(new_chunks)
 
-        return PreprocessorResponse(status=True, results=chunks)
+        return PreprocessorResponse(success=True, preprocessor_output_type=PreprocessingDataType.chunks, results=chunks)
 
     async def chain_preprocess(
         self,
         preprocessors: PreprocessorChain,
         preprocessor_inputs: List[PreprocessorInput],
-        is_rag_chain: Optional[bool] = False,
     ) -> PreprocessorResponse:
         return await self.preprocess(preprocessor_id="", preprocessor_inputs=preprocessor_inputs)
 

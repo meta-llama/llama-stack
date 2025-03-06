@@ -88,13 +88,14 @@ class InclineBasicPreprocessorImpl(Preprocessing, PreprocessorsProtocolPrivate):
 
             results.append(document)
 
-        return PreprocessorResponse(status=True, results=results)
+        return PreprocessorResponse(
+            success=True, preprocessor_output_type=PreprocessingDataType.raw_text_document, results=results
+        )
 
     async def chain_preprocess(
         self,
         preprocessors: PreprocessorChain,
         preprocessor_inputs: List[PreprocessorInput],
-        is_rag_chain: Optional[bool] = False,
     ) -> PreprocessorResponse:
         return await self.preprocess(preprocessor_id="", preprocessor_inputs=preprocessor_inputs)
 
