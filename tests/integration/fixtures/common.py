@@ -187,7 +187,6 @@ def llama_stack_client(request, provider_data, text_model_id):
         return LlamaStackClient(
             base_url=config,
             provider_data=provider_data,
-            skip_logger_removal=True,
         )
 
     if "=" in config:
