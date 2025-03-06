@@ -259,32 +259,6 @@ class CentMLInferenceAdapter(
     def _build_options(
         self,
         sampling_params: Optional[SamplingParams],
-        fmt: Optional[ResponseFormat],
-    ) -> dict:
-        """
-        Build temperature, max_tokens, top_p, etc., plus any response format data.
-        """
-        options = get_sampling_options(sampling_params)
-        options.setdefault("max_tokens", 512)
-
-        if fmt:
-            if fmt.type == ResponseFormatType.json_schema.value:
-                options["response_format"] = {
-                    "type": "json_object",
-                    "schema": fmt.json_schema,
-                }
-            elif fmt.type == ResponseFormatType.grammar.value:
-                raise NotImplementedError(
-                    "Grammar response format not supported yet"
-                )
-            else:
-                raise ValueError(f"Unknown response format {fmt.type}")
-
-        return options
-
-    def _build_options(
-        self,
-        sampling_params: Optional[SamplingParams],
         logprobs: Optional[LogProbConfig],
         fmt: ResponseFormat,
     ) -> dict:
@@ -302,7 +276,7 @@ class CentMLInferenceAdapter(
                 raise ValueError(f"Unknown response format {fmt.type}")
 
         if logprobs and logprobs.top_k:
-            options["logprobs"] = 1
+            options["logprobs"] = logprobs.top_k
 
         return options
 
