@@ -20,6 +20,8 @@ distribution_spec:
     - inline::basic
     - inline::llm-as-judge
     - inline::braintrust
+    post_training:
+    - remote::nvidia
     tool_runtime:
     - inline::rag-runtime
 image_type: conda

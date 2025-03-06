@@ -8,6 +8,7 @@ apis:
 - safety
 - scoring
 - telemetry
+- post_training
 - tool_runtime
 - vector_io
 providers:
@@ -73,6 +74,10 @@ providers:
     provider_type: inline::braintrust
     config:
       openai_api_key: ${env.OPENAI_API_KEY:}
+  post_training:
+  - provider_id: nvidia-customizer
+    provider_type: remote::nvidia
+    config: {}
   tool_runtime:
   - provider_id: rag-runtime
     provider_type: inline::rag-runtime

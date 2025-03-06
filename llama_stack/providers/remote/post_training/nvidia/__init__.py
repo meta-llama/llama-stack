@@ -13,7 +13,7 @@ from .config import NvidiaPostTrainingConfig
 # post_training api and the torchtune provider is still experimental and under heavy development
 
 
-async def get_provider_impl(
+async def get_adapter_impl(
     config: NvidiaPostTrainingConfig,
     deps: Dict[Api, ProviderSpec],
 ):
