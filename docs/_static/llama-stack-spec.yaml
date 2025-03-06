@@ -3434,11 +3434,7 @@ components:
         metrics:
           type: array
           items:
-<<<<<<< HEAD
             $ref: '#/components/schemas/MetricInResponse'
-=======
-            $ref: '#/components/schemas/MetricEvent'
->>>>>>> 6ab59fb65 (return metric labels as list)
         content:
           type: string
           description: The generated completion text
@@ -3712,11 +3708,7 @@ components:
         metrics:
           type: array
           items:
-<<<<<<< HEAD
             $ref: '#/components/schemas/MetricInResponse'
-=======
-            $ref: '#/components/schemas/MetricEvent'
->>>>>>> 6ab59fb65 (return metric labels as list)
         delta:
           type: string
           description: >-
@@ -5322,7 +5314,7 @@ components:
           type: integer
         end_time:
           type: integer
-        step:
+        granularity:
           type: string
         query_type:
           type: string
@@ -5363,8 +5355,7 @@ components:
       type: object
       properties:
         timestamp:
-          type: string
-          format: date-time
+          type: integer
         value:
           type: number
       additionalProperties: false
@@ -5372,15 +5363,27 @@ components:
         - timestamp
         - value
       title: MetricDataPoint
+    MetricLabel:
+      type: object
+      properties:
+        name:
+          type: string
+        value:
+          type: string
+      additionalProperties: false
+      required:
+        - name
+        - value
+      title: MetricLabel
     MetricSeries:
       type: object
       properties:
         metric:
           type: string
         labels:
-          type: object
-          additionalProperties:
-            type: string
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricLabel'
         values:
           type: array
           items:
@@ -5556,205 +5559,6 @@ components:
           chat_completion_input: '#/components/schemas/ChatCompletionInputType'
           completion_input: '#/components/schemas/CompletionInputType'
           agent_turn_input: '#/components/schemas/AgentTurnInputType'
-<<<<<<< HEAD
-=======
-    StringType:
-      type: object
-      properties:
-        type:
-          type: string
-          const: string
-          default: string
-      additionalProperties: false
-      required:
-        - type
-      title: StringType
-    UnionType:
-      type: object
-      properties:
-        type:
-          type: string
-          const: union
-          default: union
-      additionalProperties: false
-      required:
-        - type
-      title: UnionType
-    MetricLabelMatcher:
-      type: object
-      properties:
-        name:
-          type: string
-        value:
-          type: string
-        operator:
-          $ref: '#/components/schemas/MetricLabelOperator'
-          default: '='
-      additionalProperties: false
-      required:
-        - name
-        - value
-        - operator
-      title: MetricLabelMatcher
-    MetricLabelOperator:
-      type: string
-      enum:
-        - '='
-        - '!='
-        - =~
-        - '!~'
-      title: MetricLabelOperator
-    MetricQueryType:
-      type: string
-      enum:
-        - range
-        - instant
-      title: MetricQueryType
-    GetMetricsRequest:
-      type: object
-      properties:
-        start_time:
-          type: integer
-        end_time:
-          type: integer
-        step:
-          type: string
-        query_type:
-          $ref: '#/components/schemas/MetricQueryType'
-        label_matchers:
-          type: array
-          items:
-            $ref: '#/components/schemas/MetricLabelMatcher'
-      additionalProperties: false
-      required:
-        - start_time
-        - query_type
-      title: GetMetricsRequest
-    GetMetricsResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/MetricSeries'
-      additionalProperties: false
-      required:
-        - data
-      title: GetMetricsResponse
-    MetricDataPoint:
-      type: object
-      properties:
-        timestamp:
-          type: string
-          format: date-time
-        value:
-          type: number
-      additionalProperties: false
-      required:
-        - timestamp
-        - value
-      title: MetricDataPoint
-    MetricLabel:
-      type: object
-      properties:
-        name:
-          type: string
-        value:
-          type: string
-      additionalProperties: false
-      required:
-        - name
-        - value
-      title: MetricLabel
-    MetricSeries:
-      type: object
-      properties:
-        metric:
-          type: string
-        labels:
-          type: array
-          items:
-            $ref: '#/components/schemas/MetricLabel'
-        values:
-          type: array
-          items:
-            $ref: '#/components/schemas/MetricDataPoint'
-      additionalProperties: false
-      required:
-        - metric
-        - labels
-        - values
-      title: MetricSeries
-    Model:
-      type: object
-      properties:
-        identifier:
-          type: string
-        provider_resource_id:
-          type: string
-        provider_id:
-          type: string
-        type:
-          type: string
-          const: model
-          default: model
-        metadata:
-          type: object
-          additionalProperties:
-            oneOf:
-              - type: 'null'
-              - type: boolean
-              - type: number
-              - type: string
-              - type: array
-              - type: object
-        model_type:
-          $ref: '#/components/schemas/ModelType'
-          default: llm
-      additionalProperties: false
-      required:
-        - identifier
-        - provider_resource_id
-        - provider_id
-        - type
-        - metadata
-        - model_type
-      title: Model
-    ModelType:
-      type: string
-      enum:
-        - llm
-        - embedding
-      title: ModelType
-    PaginatedRowsResult:
-      type: object
-      properties:
-        rows:
-          type: array
-          items:
-            type: object
-            additionalProperties:
-              oneOf:
-                - type: 'null'
-                - type: boolean
-                - type: number
-                - type: string
-                - type: array
-                - type: object
-          description: The rows in the current page.
-        total_count:
-          type: integer
-          description: The total number of rows in the dataset.
-        next_page_token:
-          type: string
-          description: The token to get the next page of rows.
-      additionalProperties: false
-      required:
-        - rows
-        - total_count
-      title: PaginatedRowsResult
-      description: A paginated list of rows from a dataset.
->>>>>>> 6ab59fb65 (return metric labels as list)
     ScoringFn:
       type: object
       properties:
