@@ -76,6 +76,8 @@ def test_scoring_functions_register(
     assert len(list_response) > 0
     assert any(x.identifier == sample_scoring_fn_id for x in list_response)
 
+    # TODO: add unregister to make clean state
+
 
 def test_scoring_score(llama_stack_client):
     register_dataset(llama_stack_client, for_rag=True)
