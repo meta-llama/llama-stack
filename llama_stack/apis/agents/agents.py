@@ -180,7 +180,8 @@ class Session(BaseModel):
 
     session_id: str
     session_name: str
-    turns: List[Turn]
+    turns: Optional[List[Turn]] = Field(default_factory=list)
+    vector_db_id: Optional[str] = None
     started_at: datetime
 
 
@@ -232,6 +233,23 @@ class AgentConfig(AgentConfigCommon):
     instructions: str
     enable_session_persistence: Optional[bool] = False
     response_format: Optional[ResponseFormat] = None
+
+
+@json_schema_type
+class Agent(BaseModel):
+    agent_id: str
+    agent_config: AgentConfig
+    created_at: datetime
+
+
+@json_schema_type
+class ListAgentsResponse(BaseModel):
+    data: List[Agent]
+
+
+@json_schema_type
+class ListAgentSessionsResponse(BaseModel):
+    data: List[Session]
 
 
 class AgentConfigOverridablePerTurn(AgentConfigCommon):
@@ -539,5 +557,34 @@ class Agents(Protocol):
         """Delete an agent by its ID.
 
         :param agent_id: The ID of the agent to delete.
+        """
+        ...
+
+    @webmethod(route="/agents", method="GET")
+    async def list_agents(self) -> ListAgentsResponse:
+        """List all agents.
+
+        :returns: A ListAgentsResponse.
+        """
+        ...
+
+    @webmethod(route="/agents/{agent_id}", method="GET")
+    async def get_agent(self, agent_id: str) -> AgentConfig:
+        """Describe an agent by its ID.
+
+        :param agent_id: ID of the agent.
+        :returns: An AgentConfig of the agent.
+        """
+        ...
+
+    @webmethod(route="/agents/{agent_id}/sessions", method="GET")
+    async def list_agent_sessions(
+        self,
+        agent_id: str,
+    ) -> ListAgentSessionsResponse:
+        """List all session(s) of a given agent.
+
+        :param agent_id: The ID of the agent to list sessions for.
+        :returns: A ListAgentSessionsResponse.
         """
         ...
