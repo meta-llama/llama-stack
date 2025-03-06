@@ -83,12 +83,13 @@ class CustomRichHandler(RichHandler):
         super().__init__(*args, **kwargs)
 
 
-def setup_logging(category_levels: Dict[str, int]) -> None:
+def setup_logging(category_levels: Dict[str, int], log_file: str | None) -> None:
     """
-    Configure logging based on the provided category log levels.
+    Configure logging based on the provided category log levels and an optional log file.
 
     Parameters:
         category_levels (Dict[str, int]): A dictionary mapping categories to their log levels.
+        log_file (str): Path to a log file to additionally pipe the logs into
     """
     log_format = "[dim]%(asctime)s %(name)s:%(lineno)d[/] [yellow dim]%(category)s[/]: %(message)s"
 
@@ -103,6 +104,28 @@ def setup_logging(category_levels: Dict[str, int]) -> None:
     # Determine the root logger's level (default to WARNING if not specified)
     root_level = category_levels.get("root", logging.WARNING)
 
+    handlers = {
+        "console": {
+            "()": CustomRichHandler,  # Use custom console handler
+            "formatter": "rich",
+            "rich_tracebacks": True,
+            "show_time": False,
+            "show_path": False,
+            "markup": True,
+            "filters": ["category_filter"],
+        }
+    }
+
+    # Add a file handler if log_file is set
+    if log_file:
+        handlers["file"] = {
+            "class": "logging.FileHandler",
+            "formatter": "rich",
+            "filename": log_file,
+            "mode": "a",
+            "encoding": "utf-8",
+        }
+
     logging_config = {
         "version": 1,
         "disable_existing_loggers": False,
@@ -112,17 +135,7 @@ def setup_logging(category_levels: Dict[str, int]) -> None:
                 "format": log_format,
             }
         },
-        "handlers": {
-            "console": {
-                "()": CustomRichHandler,  # Use our custom handler class
-                "formatter": "rich",
-                "rich_tracebacks": True,
-                "show_time": False,
-                "show_path": False,
-                "markup": True,
-                "filters": ["category_filter"],
-            }
-        },
+        "handlers": handlers,
         "filters": {
             "category_filter": {
                 "()": CategoryFilter,
@@ -130,14 +143,14 @@ def setup_logging(category_levels: Dict[str, int]) -> None:
         },
         "loggers": {
             category: {
-                "handlers": ["console"],
+                "handlers": list(handlers.keys()),  # Apply all handlers
                 "level": category_levels.get(category, DEFAULT_LOG_LEVEL),
                 "propagate": False,  # Disable propagation to root logger
             }
             for category in CATEGORIES
         },
         "root": {
-            "handlers": ["console"],
+            "handlers": list(handlers.keys()),
             "level": root_level,  # Set root logger's level dynamically
         },
     }
@@ -166,4 +179,6 @@ if env_config:
     print(f"Environment variable LLAMA_STACK_LOGGING found: {env_config}")
     _category_levels.update(parse_environment_config(env_config))
 
-setup_logging(_category_levels)
+log_file = os.environ.get("LLAMA_STACK_LOG_FILE")
+
+setup_logging(_category_levels, log_file)
