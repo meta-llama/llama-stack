@@ -17,6 +17,7 @@ PROVIDER_LOGPROBS_TOP_K = {"remote::together", "remote::fireworks", "remote::vll
 
 def skip_if_model_doesnt_support_completion(client_with_models, model_id):
     models = {m.identifier: m for m in client_with_models.models.list()}
+    models.update({m.provider_resource_id: m for m in client_with_models.models.list()})
     provider_id = models[model_id].provider_id
     providers = {p.provider_id: p for p in client_with_models.providers.list()}
     provider = providers[provider_id]
