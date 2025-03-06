@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 import os
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, Field
 
@@ -58,3 +58,15 @@ class NvidiaPostTrainingConfig(BaseModel):
         default_factory=lambda: os.getenv("NVIDIA_OUTPUT_MODEL_DIR", "test-example-model@v1"),
         description="Directory to save the output model",
     )
+
+    @classmethod
+    def sample_run_config(cls, **kwargs) -> Dict[str, Any]:
+        return {
+            "api_key": "${env.NVIDIA_API_KEY:}",
+            "user_id": "${env.NVIDIA_USER_ID:llama-stack-user}",
+            "dataset_namespace": "${env.NVIDIA_DATASET_NAMESPACE:default}",
+            "access_policies": "${env.NVIDIA_ACCESS_POLICIES:}",
+            "project_id": "${env.NVIDIA_PROJECT_ID:test-project}",
+            "customizer_url": "${env.NVIDIA_CUSTOMIZER_URL:}",
+            "output_model_dir": "${env.NVIDIA_OUTPUT_MODEL_DIR:test-example-model@v1}",
+        }
