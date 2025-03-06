@@ -12,11 +12,11 @@ import httpx
 from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.preprocessing import (
     Preprocessing,
+    PreprocessingDataElement,
     PreprocessingDataFormat,
     PreprocessingDataType,
     Preprocessor,
     PreprocessorChain,
-    PreprocessorInput,
     PreprocessorOptions,
     PreprocessorResponse,
 )
@@ -55,7 +55,7 @@ class InclineBasicPreprocessorImpl(Preprocessing, PreprocessorsProtocolPrivate):
     async def preprocess(
         self,
         preprocessor_id: str,
-        preprocessor_inputs: List[PreprocessorInput],
+        preprocessor_inputs: List[PreprocessingDataElement],
         options: Optional[PreprocessorOptions] = None,
     ) -> PreprocessorResponse:
         results = []
@@ -68,63 +68,69 @@ class InclineBasicPreprocessorImpl(Preprocessing, PreprocessorsProtocolPrivate):
                 if document is None:
                     continue
             elif input_type == PreprocessingDataType.binary_document:
-                document = inp.path_or_content
-                if inp.preprocessor_input_format is None:
-                    log.error(f"Binary document format is not provided for {inp.preprocessor_input_id}, skipping it")
+                document = inp.data_element_path_or_content
+                if inp.data_element_format is None:
+                    log.error(f"Binary document format is not provided for {inp.data_element_id}, skipping it")
                     continue
-                if inp.preprocessor_input_format != PreprocessingDataFormat.pdf:
+                if inp.data_element_format != PreprocessingDataFormat.pdf:
                     log.error(
-                        f"Unsupported binary document type {inp.preprocessor_input_format} for {inp.preprocessor_input_id}, skipping it"
+                        f"Unsupported binary document type {inp.data_element_format} for {inp.data_element_id}, skipping it"
                     )
                     continue
             elif input_type == PreprocessingDataType.raw_text_document:
-                document = interleaved_content_as_str(inp.path_or_content)
+                document = interleaved_content_as_str(inp.data_element_path_or_content)
             else:
-                log.error(f"Unexpected preprocessor input type: {inp.preprocessor_input_type}")
+                log.error(f"Unexpected preprocessor input type: {input_type}")
                 continue
 
-            if inp.preprocessor_input_format == PreprocessingDataFormat.pdf:
+            if inp.data_element_format == PreprocessingDataFormat.pdf:
                 document = parse_pdf(document)
 
-            results.append(document)
+            new_result = PreprocessingDataElement(
+                data_element_id=inp.data_element_id,
+                data_element_type=PreprocessingDataType.raw_text_document,
+                data_element_format=PreprocessingDataFormat.txt,
+                data_element_path_or_content=document,
+            )
+            results.append(new_result)
 
         return PreprocessorResponse(
-            success=True, preprocessor_output_type=PreprocessingDataType.raw_text_document, results=results
+            success=True, output_data_type=PreprocessingDataType.raw_text_document, results=results
         )
 
     async def chain_preprocess(
         self,
         preprocessors: PreprocessorChain,
-        preprocessor_inputs: List[PreprocessorInput],
+        preprocessor_inputs: List[PreprocessingDataElement],
     ) -> PreprocessorResponse:
         return await self.preprocess(preprocessor_id="", preprocessor_inputs=preprocessor_inputs)
 
     @staticmethod
-    async def _resolve_input_type(preprocessor_input: PreprocessorInput) -> PreprocessingDataType:
-        if preprocessor_input.preprocessor_input_type is not None:
-            return preprocessor_input.preprocessor_input_type
+    def _resolve_input_type(preprocessor_input: PreprocessingDataElement) -> PreprocessingDataType:
+        if preprocessor_input.data_element_type is not None:
+            return preprocessor_input.data_element_type
 
-        if isinstance(preprocessor_input.path_or_content, URL):
+        if isinstance(preprocessor_input.data_element_path_or_content, URL):
             return PreprocessingDataType.document_uri
-        if InclineBasicPreprocessorImpl.URL_VALIDATION_PATTERN.match(preprocessor_input.path_or_content):
+        if InclineBasicPreprocessorImpl.URL_VALIDATION_PATTERN.match(preprocessor_input.data_element_path_or_content):
             return PreprocessingDataType.document_uri
-        if preprocessor_input.preprocessor_input_format == PreprocessingDataFormat.pdf:
+        if preprocessor_input.data_element_format == PreprocessingDataFormat.pdf:
             return PreprocessingDataType.binary_document
 
         return PreprocessingDataType.raw_text_document
 
     @staticmethod
-    async def _fetch_document(preprocessor_input: PreprocessorInput) -> str | None:
-        if isinstance(preprocessor_input.path_or_content, str):
-            url = preprocessor_input.path_or_content
+    async def _fetch_document(preprocessor_input: PreprocessingDataElement) -> str | None:
+        if isinstance(preprocessor_input.data_element_path_or_content, str):
+            url = preprocessor_input.data_element_path_or_content
             if not InclineBasicPreprocessorImpl.URL_VALIDATION_PATTERN.match(url):
                 log.error(f"Unexpected URL: {url}")
                 return None
-        elif isinstance(preprocessor_input.path_or_content, URL):
-            url = preprocessor_input.path_or_content.uri
+        elif isinstance(preprocessor_input.data_element_path_or_content, URL):
+            url = preprocessor_input.data_element_path_or_content.uri
         else:
             log.error(
-                f"Unexpected type {type(preprocessor_input.path_or_content)} for input {preprocessor_input.path_or_content}, skipping this input."
+                f"Unexpected type {type(preprocessor_input.data_element_path_or_content)} for input {preprocessor_input.data_element_path_or_content}, skipping this input."
             )
             return None
 
@@ -134,4 +140,4 @@ class InclineBasicPreprocessorImpl(Preprocessing, PreprocessorsProtocolPrivate):
         async with httpx.AsyncClient() as client:
             r = await client.get(url)
 
-        return r.content if preprocessor_input.preprocessor_input_format == PreprocessingDataFormat.pdf else r.text
+        return r.content if preprocessor_input.data_element_format == PreprocessingDataFormat.pdf else r.text

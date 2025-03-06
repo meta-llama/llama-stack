@@ -32,14 +32,15 @@ class PreprocessingDataFormat(Enum):
     json = "json"
     html = "html"
     csv = "csv"
+    txt = "txt"
 
 
 @json_schema_type
-class PreprocessorInput(BaseModel):
-    preprocessor_input_id: str
-    preprocessor_input_type: Optional[PreprocessingDataType] = None
-    preprocessor_input_format: Optional[PreprocessingDataFormat] = None
-    path_or_content: str | InterleavedContent | URL
+class PreprocessingDataElement(BaseModel):
+    data_element_id: str
+    data_element_type: Optional[PreprocessingDataType] = None
+    data_element_format: Optional[PreprocessingDataFormat] = None
+    data_element_path_or_content: str | InterleavedContent | URL | Chunk | None
 
 
 PreprocessorOptions = Dict[str, Any]
@@ -57,8 +58,8 @@ PreprocessorChain = List[PreprocessorChainElement]
 @json_schema_type
 class PreprocessorResponse(BaseModel):
     success: bool
-    preprocessor_output_type: PreprocessingDataType
-    results: Optional[List[str | InterleavedContent | Chunk]] = None
+    output_data_type: PreprocessingDataType
+    results: Optional[List[PreprocessingDataElement]] = None
 
 
 class PreprocessorStore(Protocol):
@@ -76,7 +77,7 @@ class Preprocessing(Protocol):
     async def preprocess(
         self,
         preprocessor_id: str,
-        preprocessor_inputs: List[PreprocessorInput],
+        preprocessor_inputs: List[PreprocessingDataElement],
         options: Optional[PreprocessorOptions] = None,
     ) -> PreprocessorResponse: ...
 
@@ -84,5 +85,5 @@ class Preprocessing(Protocol):
     async def chain_preprocess(
         self,
         preprocessors: PreprocessorChain,
-        preprocessor_inputs: List[PreprocessorInput],
+        preprocessor_inputs: List[PreprocessingDataElement],
     ) -> PreprocessorResponse: ...

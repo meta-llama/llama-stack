@@ -11,10 +11,11 @@ from llama_models.llama3.api import Tokenizer
 
 from llama_stack.apis.preprocessing import (
     Preprocessing,
+    PreprocessingDataElement,
+    PreprocessingDataFormat,
     PreprocessingDataType,
     Preprocessor,
     PreprocessorChain,
-    PreprocessorInput,
     PreprocessorOptions,
     PreprocessorResponse,
 )
@@ -49,7 +50,7 @@ class InclineSimpleChunkingImpl(Preprocessing, PreprocessorsProtocolPrivate):
     async def preprocess(
         self,
         preprocessor_id: str,
-        preprocessor_inputs: List[PreprocessorInput],
+        preprocessor_inputs: List[PreprocessingDataElement],
         options: Optional[PreprocessorOptions] = None,
     ) -> PreprocessorResponse:
         chunks = []
@@ -58,16 +59,23 @@ class InclineSimpleChunkingImpl(Preprocessing, PreprocessorsProtocolPrivate):
 
         for inp in preprocessor_inputs:
             new_chunks = self.make_overlapped_chunks(
-                inp.preprocessor_input_id, inp.path_or_content, window_len, overlap_len
+                inp.data_element_id, inp.data_element_path_or_content, window_len, overlap_len
             )
-            chunks.extend(new_chunks)
+            for i, chunk in enumerate(new_chunks):
+                new_chunk_data_element = PreprocessingDataElement(
+                    data_element_id=f"{inp.data_element_id}_chunk_{i}",
+                    data_element_type=PreprocessingDataType.chunks,
+                    data_element_format=PreprocessingDataFormat.txt,
+                    data_element_path_or_content=chunk,
+                )
+                chunks.append(new_chunk_data_element)
 
-        return PreprocessorResponse(success=True, preprocessor_output_type=PreprocessingDataType.chunks, results=chunks)
+        return PreprocessorResponse(success=True, output_data_type=PreprocessingDataType.chunks, results=chunks)
 
     async def chain_preprocess(
         self,
         preprocessors: PreprocessorChain,
-        preprocessor_inputs: List[PreprocessorInput],
+        preprocessor_inputs: List[PreprocessingDataElement],
     ) -> PreprocessorResponse:
         return await self.preprocess(preprocessor_id="", preprocessor_inputs=preprocessor_inputs)
 

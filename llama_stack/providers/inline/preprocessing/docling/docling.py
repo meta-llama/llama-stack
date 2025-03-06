@@ -12,10 +12,11 @@ from docling_core.transforms.chunker.hybrid_chunker import HybridChunker
 from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.preprocessing import (
     Preprocessing,
+    PreprocessingDataElement,
+    PreprocessingDataFormat,
     PreprocessingDataType,
     Preprocessor,
     PreprocessorChain,
-    PreprocessorInput,
     PreprocessorOptions,
     PreprocessorResponse,
 )
@@ -51,38 +52,51 @@ class InclineDoclingPreprocessorImpl(Preprocessing, PreprocessorsProtocolPrivate
     async def preprocess(
         self,
         preprocessor_id: str,
-        preprocessor_inputs: List[PreprocessorInput],
+        preprocessor_inputs: List[PreprocessingDataElement],
         options: Optional[PreprocessorOptions] = None,
     ) -> PreprocessorResponse:
         results = []
 
         for inp in preprocessor_inputs:
-            if isinstance(inp.path_or_content, str):
-                url = inp.path_or_content
-            elif isinstance(inp.path_or_content, URL):
-                url = inp.path_or_content.uri
+            if isinstance(inp.data_element_path_or_content, str):
+                url = inp.data_element_path_or_content
+            elif isinstance(inp.data_element_path_or_content, URL):
+                url = inp.data_element_path_or_content.uri
             else:
                 log.error(
-                    f"Unexpected type {type(inp.path_or_content)} for input {inp.path_or_content}, skipping this input."
+                    f"Unexpected type {type(inp.data_element_path_or_content)} for input {inp.data_element_path_or_content}, skipping this input."
                 )
                 continue
 
             converted_document = self.converter.convert(url).document
             if self.config.chunk:
                 result = self.chunker.chunk(converted_document)
-                results.extend([Chunk(content=chunk.text, metadata=chunk.meta) for chunk in result])
+                for i, chunk in enumerate(result):
+                    raw_chunk = Chunk(content=chunk.text, metadata=chunk.meta)
+                    chunk_data_element = PreprocessingDataElement(
+                        data_element_id=f"{inp.data_element_id}_chunk_{i}",
+                        data_element_type=PreprocessingDataType.chunks,
+                        data_element_format=PreprocessingDataFormat.txt,
+                        data_element_path_or_content=raw_chunk,
+                    )
+                    results.append(chunk_data_element)
             else:
-                result = converted_document.export_to_markdown()
+                result = PreprocessingDataElement(
+                    data_element_id=inp.data_element_id,
+                    data_element_type=PreprocessingDataType.raw_text_document,
+                    data_element_format=PreprocessingDataFormat.txt,
+                    data_element_path_or_content=converted_document.export_to_markdown(),
+                )
                 results.append(result)
 
-        preprocessor_output_type = (
+        output_data_type = (
             PreprocessingDataType.chunks if self.config.chunk else PreprocessingDataType.raw_text_document
         )
-        return PreprocessorResponse(success=True, preprocessor_output_type=preprocessor_output_type, results=results)
+        return PreprocessorResponse(success=True, output_data_type=output_data_type, results=results)
 
     async def chain_preprocess(
         self,
         preprocessors: PreprocessorChain,
-        preprocessor_inputs: List[PreprocessorInput],
+        preprocessor_inputs: List[PreprocessingDataElement],
     ) -> PreprocessorResponse:
         return await self.preprocess(preprocessor_id="", preprocessor_inputs=preprocessor_inputs)

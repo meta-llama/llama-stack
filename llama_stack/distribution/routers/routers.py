@@ -36,8 +36,8 @@ from llama_stack.apis.inference import (
 from llama_stack.apis.models import ModelType
 from llama_stack.apis.preprocessing import (
     Preprocessing,
+    PreprocessingDataElement,
     PreprocessorChain,
-    PreprocessorInput,
     PreprocessorOptions,
     PreprocessorResponse,
 )
@@ -509,7 +509,7 @@ class PreprocessingRouter(Preprocessing):
     async def preprocess(
         self,
         preprocessor_id: str,
-        preprocessor_inputs: List[PreprocessorInput],
+        preprocessor_inputs: List[PreprocessingDataElement],
         options: Optional[PreprocessorOptions] = None,
     ) -> PreprocessorResponse:
         return await self.routing_table.get_provider_impl(preprocessor_id).preprocess(
@@ -521,7 +521,7 @@ class PreprocessingRouter(Preprocessing):
     async def chain_preprocess(
         self,
         preprocessors: PreprocessorChain,
-        preprocessor_inputs: List[PreprocessorInput],
+        preprocessor_inputs: List[PreprocessingDataElement],
     ) -> PreprocessorResponse:
         preprocessor_impls = [self.routing_table.get_provider_impl(p.preprocessor_id) for p in preprocessors]
         return await execute_preprocessor_chain(preprocessors, preprocessor_impls, preprocessor_inputs)

@@ -9,8 +9,8 @@ from typing import List
 
 from llama_stack.apis.preprocessing import (
     Preprocessing,
+    PreprocessingDataElement,
     PreprocessorChain,
-    PreprocessorInput,
     PreprocessorResponse,
 )
 
@@ -38,7 +38,7 @@ def validate_chain(chain_impls: List[Preprocessing]) -> bool:
 async def execute_preprocessor_chain(
     preprocessor_chain: PreprocessorChain,
     preprocessor_chain_impls: List[Preprocessing],
-    preprocessor_inputs: List[PreprocessorInput],
+    preprocessor_inputs: List[PreprocessingDataElement],
 ) -> PreprocessorResponse:
     if not validate_chain(preprocessor_chain_impls):
         return PreprocessorResponse(success=False, results=[])
@@ -57,11 +57,9 @@ async def execute_preprocessor_chain(
         )
         if not response.success:
             log.error(f"Preprocessor {current_params.preprocessor_id} returned an error")
-            return PreprocessorResponse(
-                success=False, preprocessor_output_type=response.preprocessor_output_type, results=[]
-            )
+            return PreprocessorResponse(success=False, output_data_type=response.output_data_type, results=[])
         current_outputs = response.results
         current_inputs = current_outputs
-        current_result_type = response.preprocessor_output_type
+        current_result_type = response.output_data_type
 
-    return PreprocessorResponse(success=True, preprocessor_output_type=current_result_type, results=current_outputs)
+    return PreprocessorResponse(success=True, output_data_type=current_result_type, results=current_outputs)
