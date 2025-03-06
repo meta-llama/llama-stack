@@ -39,7 +39,7 @@ def configure_single_provider(registry: Dict[str, ProviderSpec], provider: Provi
     return Provider(
         provider_id=provider.provider_id,
         provider_type=provider.provider_type,
-        config=cfg.dict(),
+        config=cfg.model_dump(),
     )
 
 
