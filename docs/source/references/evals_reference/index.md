@@ -86,7 +86,6 @@ response = client.eval.evaluate_rows_alpha(
     input_rows=eval_rows,
     scoring_functions=["basic::regex_parser_multiple_choice_answer"],
     benchmark_config={
-        "type": "benchmark",
         "eval_candidate": {
             "type": "model",
             "model": "meta-llama/Llama-3.2-90B-Vision-Instruct",
@@ -153,7 +152,6 @@ response = client.eval.evaluate_rows(
     input_rows=eval_rows.rows,
     scoring_functions=["llm-as-judge::405b-simpleqa"],
     benchmark_config={
-        "type": "benchmark",
         "eval_candidate": {
             "type": "model",
             "model": "meta-llama/Llama-3.2-90B-Vision-Instruct",
@@ -202,7 +200,6 @@ response = client.eval.evaluate_rows(
     input_rows=eval_rows.rows,
     scoring_functions=["llm-as-judge::405b-simpleqa"],
     benchmark_config={
-        "type": "benchmark",
         "eval_candidate": {
             "type": "agent",
             "config": agent_config,
@@ -324,7 +321,6 @@ The `BenchmarkConfig` are user specified config to define:
 **Example BenchmarkConfig**
 ```json
 {
-    "type": "app",
     "eval_candidate": {
         "type": "model",
         "model": "Llama3.1-405B-Instruct",
