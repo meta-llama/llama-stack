@@ -41,7 +41,8 @@ class InclineDoclingPreprocessorImpl(Preprocessing, PreprocessorsProtocolPrivate
 
     async def initialize(self) -> None:
         if self.config.chunk:
-            self.chunker = HybridChunker(tokenizer=self.config.tokenizer)
+            # TODO: docling should use Llama Stack's inference API instead of handling tokenization by itself
+            self.chunker = HybridChunker()
 
     async def shutdown(self) -> None: ...
 
@@ -69,10 +70,16 @@ class InclineDoclingPreprocessorImpl(Preprocessing, PreprocessorsProtocolPrivate
                 continue
 
             converted_document = self.converter.convert(url).document
+
             if self.config.chunk:
                 result = self.chunker.chunk(converted_document)
                 for i, chunk in enumerate(result):
-                    raw_chunk = Chunk(content=chunk.text, metadata=chunk.meta)
+                    metadata = chunk.meta.dict()
+                    # TODO: some vector DB adapters rely on a hard-coded header 'document_id'. This should be fixed.
+                    metadata["document_id"] = inp.data_element_id
+                    # TODO: the RAG tool implementation relies in a hard-coded header 'token_count'
+                    metadata["token_count"] = self.chunker._count_chunk_tokens(chunk)
+                    raw_chunk = Chunk(content=chunk.text, metadata=metadata)
                     chunk_data_element = PreprocessingDataElement(
                         data_element_id=f"{inp.data_element_id}_chunk_{i}",
                         data_element_type=PreprocessingDataType.chunks,
@@ -80,6 +87,7 @@ class InclineDoclingPreprocessorImpl(Preprocessing, PreprocessorsProtocolPrivate
                         data_element_path_or_content=raw_chunk,
                     )
                     results.append(chunk_data_element)
+
             else:
                 result = PreprocessingDataElement(
                     data_element_id=inp.data_element_id,
