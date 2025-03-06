@@ -86,15 +86,14 @@ results = client.tool_runtime.rag_tool.query(
 One of the most powerful patterns is combining agents with RAG capabilities. Here's a complete example:
 
 ```python
-from llama_stack_client.types.agent_create_params import AgentConfig
 from llama_stack_client.lib.agents.agent import Agent
 
-# Configure agent with memory
-agent_config = AgentConfig(
+# Create agent with memory
+agent = Agent(
+    client,
     model="meta-llama/Llama-3.3-70B-Instruct",
     instructions="You are a helpful assistant",
-    enable_session_persistence=False,
-    toolgroups=[
+    tools=[
         {
             "name": "builtin::rag/knowledge_search",
             "args": {
@@ -103,8 +102,6 @@ agent_config = AgentConfig(
         }
     ],
 )
-
-agent = Agent(client, agent_config)
 session_id = agent.create_session("rag_session")
 
 
