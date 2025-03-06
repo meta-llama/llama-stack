@@ -16,7 +16,7 @@ providers:
   - provider_id: centml
     provider_type: remote::centml
     config:
-      url: https://api.centml.com/openai/v1
+      url: https://api.centml.org/openai/v1
       api_key: "${env.CENTML_API_KEY}"
   - provider_id: sentence-transformers
     provider_type: inline::sentence-transformers
@@ -104,6 +104,12 @@ metadata_store:
   db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/centml}/registry.db
 
 models:
+- metadata: {}
+  model_id: meta-llama/Llama-3.1-3B-Instruct
+  provider_id: centml
+  provider_model_id: meta-llama/Llama-3.2-3B-Instruct
+  model_type: llm
+
 - metadata: {}
   model_id: meta-llama/Llama-3.3-70B-Instruct
   provider_id: centml
