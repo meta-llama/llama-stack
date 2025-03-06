@@ -40,3 +40,13 @@ cd llama_stack/distribution/ui
 pip install -r requirements.txt
 streamlit run app.py
 ```
+
+## Environment Variables
+
+| Environment Variable       | Description                        | Default Value             |
+|----------------------------|------------------------------------|---------------------------|
+| LLAMA_STACK_ENDPOINT       | The endpoint for the Llama Stack   | http://localhost:8321     |
+| FIREWORKS_API_KEY          | API key for Fireworks provider     | (empty string)            |
+| TOGETHER_API_KEY           | API key for Together provider      | (empty string)            |
+| SAMBANOVA_API_KEY          | API key for SambaNova provider     | (empty string)            |
+| OPENAI_API_KEY             | API key for OpenAI provider        | (empty string)            |
