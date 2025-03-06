@@ -212,7 +212,8 @@ async def sse_generator(event_gen):
         logcat.info("server", "Generator cancelled")
         await event_gen.aclose()
     except Exception as e:
-        logcat.exception("server", "Error in sse_generator")
+        logcat.exception("server", f"Error in sse_generator: {e}")
+        logcat.exception("server", f"Traceback: {''.join(traceback.format_exception(type(e), e, e.__traceback__))}")
         yield create_sse_event(
             {
                 "error": {
