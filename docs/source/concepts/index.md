@@ -1,5 +1,13 @@
 # Core Concepts
 
+
+```{toctree}
+:maxdepth: 1
+:hidden:
+
+evaluation_concepts
+```
+
 Given Llama Stack's service-oriented philosophy, a few concepts and workflows arise which may not feel completely natural in the LLM landscape, especially if you are coming with a background in other frameworks.
 
 

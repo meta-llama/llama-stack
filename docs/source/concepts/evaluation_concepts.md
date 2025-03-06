@@ -24,17 +24,8 @@ The Evaluation APIs are associated with a set of Resources as shown in the follo
   - Associated with `Benchmark` resource.
 
 
-Use the following decision tree to decide how to use LlamaStack Evaluation flow.
-![Eval Flow](../references/evals_reference/resources/eval-flow.png)
-
-
-```{admonition} Note on Benchmark v.s. Application Evaluation
-:class: tip
-- **Benchmark Evaluation** is a well-defined eval-task consisting of `dataset` and `scoring_function`. The generation (inference or agent) will be done as part of evaluation.
-- **Application Evaluation** assumes users already have app inputs & generated outputs. Evaluation will purely focus on scoring the generated outputs via scoring functions (e.g. LLM-as-judge).
-```
-
 ## What's Next?
 
-- Check out our Colab notebook on working examples with evaluations [here](https://colab.research.google.com/drive/10CHyykee9j2OigaIcRv47BKG9mrNm0tJ?usp=sharing).
+- Check out our Colab notebook on working examples with running benchmark evaluations [here](https://colab.research.google.com/github/meta-llama/llama-stack/blob/main/docs/notebooks/Llama_Stack_Benchmark_Evals.ipynb#scrollTo=mxLCsP4MvFqP).
+- Check out our [Building Applications - Evaluation](../building_applications/evals.md) guide for more details on how to use the Evaluation APIs to evaluate your applications.
 - Check out our [Evaluation Reference](../references/evals_reference/index.md) for more details on the APIs.

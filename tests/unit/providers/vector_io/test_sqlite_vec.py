@@ -9,6 +9,7 @@ import sqlite3
 
 import numpy as np
 import pytest
+import pytest_asyncio
 import sqlite_vec
 
 from llama_stack.apis.vector_io import Chunk, QueryChunksResponse
@@ -48,7 +49,7 @@ def sqlite_connection(loop):
         conn.close()
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest_asyncio.fixture(scope="session", autouse=True)
 async def sqlite_vec_index(sqlite_connection):
     return await SQLiteVecIndex.create(dimension=EMBEDDING_DIMENSION, connection=sqlite_connection, bank_id="test_bank")
 

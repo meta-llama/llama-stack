@@ -17,7 +17,7 @@ llama stack run together
 2. (Optional) Register datasets and eval tasks as resources. If you want to run pre-configured evaluation flows (e.g. Evaluations (Generation + Scoring) Page).
 
 ```bash
-$ llama-stack-client datasets register \
+llama-stack-client datasets register \
 --dataset-id "mmlu" \
 --provider-id "huggingface" \
 --url "https://huggingface.co/datasets/llamastack/evals" \
@@ -26,7 +26,7 @@ $ llama-stack-client datasets register \
 ```
 
 ```bash
-$ llama-stack-client benchmarks register \
+llama-stack-client benchmarks register \
 --eval-task-id meta-reference-mmlu \
 --provider-id meta-reference \
 --dataset-id mmlu \

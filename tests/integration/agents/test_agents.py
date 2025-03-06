@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+from typing import Any, Dict
 from uuid import uuid4
 
 import pytest
@@ -40,11 +41,30 @@ def get_boiling_point(liquid_name: str, celcius: bool = True) -> int:
         return -1
 
 
+@client_tool
+def get_boiling_point_with_metadata(liquid_name: str, celcius: bool = True) -> Dict[str, Any]:
+    """
+    Returns the boiling point of a liquid in Celcius or Fahrenheit
+
+    :param liquid_name: The name of the liquid
+    :param celcius: Whether to return the boiling point in Celcius
+    :return: The boiling point of the liquid in Celcius or Fahrenheit
+    """
+    if liquid_name.lower() == "polyjuice":
+        if celcius:
+            temp = -100
+        else:
+            temp = -212
+    else:
+        temp = -1
+    return {"content": temp, "metadata": {"source": "https://www.google.com"}}
+
+
 @pytest.fixture(scope="session")
 def agent_config(llama_stack_client_with_mocked_inference, text_model_id):
     available_shields = [shield.identifier for shield in llama_stack_client_with_mocked_inference.shields.list()]
     available_shields = available_shields[:1]
-    agent_config = AgentConfig(
+    agent_config = dict(
         model=text_model_id,
         instructions="You are a helpful assistant",
         sampling_params={
@@ -54,7 +74,7 @@ def agent_config(llama_stack_client_with_mocked_inference, text_model_id):
                 "top_p": 0.9,
             },
         },
-        toolgroups=[],
+        tools=[],
         input_shields=available_shields,
         output_shields=available_shields,
         enable_session_persistence=False,
@@ -63,7 +83,7 @@ def agent_config(llama_stack_client_with_mocked_inference, text_model_id):
 
 
 def test_agent_simple(llama_stack_client_with_mocked_inference, agent_config):
-    agent = Agent(llama_stack_client_with_mocked_inference, agent_config)
+    agent = Agent(llama_stack_client_with_mocked_inference, **agent_config)
     session_id = agent.create_session(f"test-session-{uuid4()}")
 
     simple_hello = agent.create_turn(
@@ -117,7 +137,7 @@ def test_tool_config(llama_stack_client_with_mocked_inference, agent_config):
     agent_config = AgentConfig(
         **common_params,
     )
-    Server__AgentConfig(**agent_config)
+    Server__AgentConfig(**common_params)
 
     agent_config = AgentConfig(
         **common_params,
@@ -159,11 +179,11 @@ def test_tool_config(llama_stack_client_with_mocked_inference, agent_config):
 def test_builtin_tool_web_search(llama_stack_client_with_mocked_inference, agent_config):
     agent_config = {
         **agent_config,
-        "toolgroups": [
+        "tools": [
             "builtin::websearch",
         ],
     }
-    agent = Agent(llama_stack_client_with_mocked_inference, agent_config)
+    agent = Agent(llama_stack_client_with_mocked_inference, **agent_config)
     session_id = agent.create_session(f"test-session-{uuid4()}")
 
     response = agent.create_turn(
@@ -189,11 +209,11 @@ def test_builtin_tool_web_search(llama_stack_client_with_mocked_inference, agent
 def test_builtin_tool_code_execution(llama_stack_client_with_mocked_inference, agent_config):
     agent_config = {
         **agent_config,
-        "toolgroups": [
+        "tools": [
             "builtin::code_interpreter",
         ],
     }
-    agent = Agent(llama_stack_client_with_mocked_inference, agent_config)
+    agent = Agent(llama_stack_client_with_mocked_inference, **agent_config)
     session_id = agent.create_session(f"test-session-{uuid4()}")
 
     response = agent.create_turn(
@@ -218,12 +238,12 @@ def test_builtin_tool_code_execution(llama_stack_client_with_mocked_inference, a
 def test_code_interpreter_for_attachments(llama_stack_client_with_mocked_inference, agent_config):
     agent_config = {
         **agent_config,
-        "toolgroups": [
+        "tools": [
             "builtin::code_interpreter",
         ],
     }
 
-    codex_agent = Agent(llama_stack_client_with_mocked_inference, agent_config)
+    codex_agent = Agent(llama_stack_client_with_mocked_inference, **agent_config)
     session_id = codex_agent.create_session(f"test-session-{uuid4()}")
     inflation_doc = AgentDocument(
         content="https://raw.githubusercontent.com/meta-llama/llama-stack-apps/main/examples/resources/inflation.csv",
@@ -255,11 +275,11 @@ def test_custom_tool(llama_stack_client_with_mocked_inference, agent_config):
     client_tool = get_boiling_point
     agent_config = {
         **agent_config,
-        "toolgroups": ["builtin::websearch"],
+        "tools": ["builtin::websearch", client_tool],
         "client_tools": [client_tool.get_tool_definition()],
     }
 
-    agent = Agent(llama_stack_client_with_mocked_inference, agent_config, client_tools=(client_tool,))
+    agent = Agent(llama_stack_client_with_mocked_inference, **agent_config)
     session_id = agent.create_session(f"test-session-{uuid4()}")
 
     response = agent.create_turn(
@@ -283,11 +303,11 @@ def test_custom_tool_infinite_loop(llama_stack_client_with_mocked_inference, age
     agent_config = {
         **agent_config,
         "instructions": "You are a helpful assistant Always respond with tool calls no matter what. ",
-        "client_tools": [client_tool.get_tool_definition()],
+        "tools": [client_tool],
         "max_infer_iters": 5,
     }
 
-    agent = Agent(llama_stack_client_with_mocked_inference, agent_config, client_tools=(client_tool,))
+    agent = Agent(llama_stack_client_with_mocked_inference, **agent_config)
     session_id = agent.create_session(f"test-session-{uuid4()}")
 
     response = agent.create_turn(
@@ -312,10 +332,10 @@ def test_tool_choice(llama_stack_client_with_mocked_inference, agent_config):
         test_agent_config = {
             **agent_config,
             "tool_config": {"tool_choice": tool_choice},
-            "client_tools": [client_tool.get_tool_definition()],
+            "tools": [client_tool],
         }
 
-        agent = Agent(llama_stack_client_with_mocked_inference, test_agent_config, client_tools=(client_tool,))
+        agent = Agent(llama_stack_client_with_mocked_inference, **test_agent_config)
         session_id = agent.create_session(f"test-session-{uuid4()}")
 
         response = agent.create_turn(
@@ -367,7 +387,7 @@ def test_rag_agent(llama_stack_client_with_mocked_inference, agent_config, rag_t
     )
     agent_config = {
         **agent_config,
-        "toolgroups": [
+        "tools": [
             dict(
                 name=rag_tool_name,
                 args={
@@ -376,7 +396,7 @@ def test_rag_agent(llama_stack_client_with_mocked_inference, agent_config, rag_t
             )
         ],
     }
-    rag_agent = Agent(llama_stack_client_with_mocked_inference, agent_config)
+    rag_agent = Agent(llama_stack_client_with_mocked_inference, **agent_config)
     session_id = rag_agent.create_session(f"test-session-{uuid4()}")
     user_prompts = [
         (
@@ -402,7 +422,7 @@ def test_rag_agent(llama_stack_client_with_mocked_inference, agent_config, rag_t
 
 
 @pytest.mark.parametrize(
-    "toolgroup",
+    "tool",
     [
         dict(
             name="builtin::rag/knowledge_search",
@@ -413,7 +433,7 @@ def test_rag_agent(llama_stack_client_with_mocked_inference, agent_config, rag_t
         "builtin::rag/knowledge_search",
     ],
 )
-def test_rag_agent_with_attachments(llama_stack_client_with_mocked_inference, agent_config, toolgroup):
+def test_rag_agent_with_attachments(llama_stack_client_with_mocked_inference, agent_config, tool):
     urls = ["chat.rst", "llama3.rst", "memory_optimizations.rst", "lora_finetune.rst"]
     documents = [
         Document(
@@ -426,9 +446,9 @@ def test_rag_agent_with_attachments(llama_stack_client_with_mocked_inference, ag
     ]
     agent_config = {
         **agent_config,
-        "toolgroups": [toolgroup],
+        "tools": [tool],
     }
-    rag_agent = Agent(llama_stack_client_with_mocked_inference, agent_config)
+    rag_agent = Agent(llama_stack_client_with_mocked_inference, **agent_config)
     session_id = rag_agent.create_session(f"test-session-{uuid4()}")
     user_prompts = [
         (
@@ -501,7 +521,7 @@ def test_rag_and_code_agent(llama_stack_client_with_mocked_inference, agent_conf
     )
     agent_config = {
         **agent_config,
-        "toolgroups": [
+        "tools": [
             dict(
                 name="builtin::rag/knowledge_search",
                 args={"vector_db_ids": [vector_db_id]},
@@ -509,7 +529,7 @@ def test_rag_and_code_agent(llama_stack_client_with_mocked_inference, agent_conf
             "builtin::code_interpreter",
         ],
     }
-    agent = Agent(llama_stack_client_with_mocked_inference, agent_config)
+    agent = Agent(llama_stack_client_with_mocked_inference, **agent_config)
     inflation_doc = Document(
         document_id="test_csv",
         content="https://raw.githubusercontent.com/meta-llama/llama-stack-apps/main/examples/resources/inflation.csv",
@@ -551,16 +571,17 @@ def test_rag_and_code_agent(llama_stack_client_with_mocked_inference, agent_conf
             assert expected_kw in response.output_message.content.lower()
 
 
-def test_create_turn_response(llama_stack_client_with_mocked_inference, agent_config):
-    client_tool = get_boiling_point
+@pytest.mark.parametrize("client_tools", [(get_boiling_point, False), (get_boiling_point_with_metadata, True)])
+def test_create_turn_response(llama_stack_client_with_mocked_inference, agent_config, client_tools):
+    client_tool, expectes_metadata = client_tools
     agent_config = {
         **agent_config,
         "input_shields": [],
         "output_shields": [],
-        "client_tools": [client_tool.get_tool_definition()],
+        "tools": [client_tool],
     }
 
-    agent = Agent(llama_stack_client_with_mocked_inference, agent_config, client_tools=(client_tool,))
+    agent = Agent(llama_stack_client_with_mocked_inference, **agent_config)
     session_id = agent.create_session(f"test-session-{uuid4()}")
 
     response = agent.create_turn(
@@ -577,7 +598,9 @@ def test_create_turn_response(llama_stack_client_with_mocked_inference, agent_co
     assert len(steps) == 3
     assert steps[0].step_type == "inference"
     assert steps[1].step_type == "tool_execution"
-    assert steps[1].tool_calls[0].tool_name == "get_boiling_point"
+    assert steps[1].tool_calls[0].tool_name.startswith("get_boiling_point")
+    if expectes_metadata:
+        assert steps[1].tool_responses[0].metadata["source"] == "https://www.google.com"
     assert steps[2].step_type == "inference"
 
     last_step_completed_at = None

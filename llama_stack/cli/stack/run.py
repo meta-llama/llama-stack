@@ -79,12 +79,8 @@ class StackRun(Subcommand):
     def _run_stack_run_cmd(self, args: argparse.Namespace) -> None:
         import yaml
 
-        from llama_stack.distribution.build import ImageType
         from llama_stack.distribution.configure import parse_and_maybe_upgrade_config
-        from llama_stack.distribution.utils.config_dirs import (
-            BUILDS_BASE_DIR,
-            DISTRIBS_BASE_DIR,
-        )
+        from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
         from llama_stack.distribution.utils.exec import formulate_run_args, run_with_pty
 
         config_file = Path(args.config)
@@ -96,14 +92,6 @@ class StackRun(Subcommand):
             config_file = Path(REPO_ROOT) / "llama_stack" / "templates" / args.config / "run.yaml"
             if config_file.exists():
                 template_name = args.config
-
-        if not config_file.exists() and not has_yaml_suffix:
-            # check if it's a build config saved to conda dir
-            config_file = Path(BUILDS_BASE_DIR / ImageType.conda.value / f"{args.config}-run.yaml")
-
-        if not config_file.exists() and not has_yaml_suffix:
-            # check if it's a build config saved to container dir
-            config_file = Path(BUILDS_BASE_DIR / ImageType.container.value / f"{args.config}-run.yaml")
 
         if not config_file.exists() and not has_yaml_suffix:
             # check if it's a build config saved to ~/.llama dir

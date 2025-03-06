@@ -54,6 +54,7 @@ dev = [
 test = [
     "openai",
     "aiosqlite",
+    "sqlite-vec",
     "ollama",
     "torch>=2.6.0",
     "fairscale>=0.4.13",
@@ -62,6 +63,9 @@ test = [
     "groq",
     "opentelemetry-sdk",
     "opentelemetry-exporter-otlp-proto-http",
+    "tiktoken",
+    "chardet",
+    "pypdf",
 ]
 docs = [
     "sphinx-autobuild",
