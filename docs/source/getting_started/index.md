@@ -184,7 +184,6 @@ from termcolor import cprint
 
 from llama_stack_client.lib.agents.agent import Agent
 from llama_stack_client.lib.agents.event_logger import EventLogger
-from llama_stack_client.types.agent_create_params import AgentConfig
 from llama_stack_client.types import Document
 
 
@@ -241,13 +240,14 @@ client.tool_runtime.rag_tool.insert(
     chunk_size_in_tokens=512,
 )
 
-agent_config = AgentConfig(
+rag_agent = Agent(
+    client,
     model=os.environ["INFERENCE_MODEL"],
     # Define instructions for the agent ( aka system prompt)
     instructions="You are a helpful assistant",
     enable_session_persistence=False,
     # Define tools available to the agent
-    toolgroups=[
+    tools=[
         {
             "name": "builtin::rag/knowledge_search",
             "args": {
@@ -256,8 +256,6 @@ agent_config = AgentConfig(
         }
     ],
 )
-
-rag_agent = Agent(client, agent_config)
 session_id = rag_agent.create_session("test-session")
 
 user_prompts = [

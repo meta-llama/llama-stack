@@ -25,17 +25,13 @@ In this example, we will show you how to:
 ```python
 from llama_stack_client.lib.agents.agent import Agent
 from llama_stack_client.lib.agents.event_logger import EventLogger
-from llama_stack_client.types.agent_create_params import AgentConfig
 
-agent_config = AgentConfig(
+agent = Agent(
+    client,
     model="meta-llama/Llama-3.3-70B-Instruct",
     instructions="You are a helpful assistant. Use search tool to answer the questions. ",
-    toolgroups=["builtin::websearch"],
-    input_shields=[],
-    output_shields=[],
-    enable_session_persistence=False,
+    tools=["builtin::websearch"],
 )
-agent = Agent(client, agent_config)
 user_prompts = [
     "Which teams played in the NBA western conference finals of 2024. Search the web for the answer.",
     "In which episode and season of South Park does Bill Cosby (BSM-471) first appear? Give me the number and title. Search the web for the answer.",

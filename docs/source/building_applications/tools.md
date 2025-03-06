@@ -149,15 +149,7 @@ def my_tool(input: int) -> int:
 Once defined, simply pass the tool to the agent config. `Agent` will take care of the rest (calling the model with the tool definition, executing the tool, and returning the result to the model for the next iteration).
 ```python
 # Example agent config with client provided tools
-client_tools = [
-    my_tool,
-]
-
-agent_config = AgentConfig(
-    ...,
-    client_tools=[client_tool.get_tool_definition() for client_tool in client_tools],
-)
-agent = Agent(client, agent_config, client_tools)
+agent = Agent(client, ..., tools=[my_tool])
 ```
 
 Refer to [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/blob/main/examples/agents/e2e_loop_with_client_tools.py) for an example of how to use client provided tools.
@@ -194,10 +186,10 @@ group_tools = client.tools.list_tools(toolgroup_id="search_tools")
 
 ```python
 from llama_stack_client.lib.agents.agent import Agent
-from llama_stack_client.types.agent_create_params import AgentConfig
 
-# Configure the AI agent with necessary parameters
-agent_config = AgentConfig(
+# Instantiate the AI agent with the given configuration
+agent = Agent(
+    client,
     name="code-interpreter",
     description="A code interpreter agent for executing Python code snippets",
     instructions="""
@@ -205,13 +197,9 @@ agent_config = AgentConfig(
     Always show the generated code, never generate your own code, and never anticipate results.
     """,
     model="meta-llama/Llama-3.2-3B-Instruct",
-    toolgroups=["builtin::code_interpreter"],
+    tools=["builtin::code_interpreter"],
     max_infer_iters=5,
-    enable_session_persistence=False,
 )
-
-# Instantiate the AI agent with the given configuration
-agent = Agent(client, agent_config)
 
 # Start a session
 session_id = agent.create_session("tool_session")
