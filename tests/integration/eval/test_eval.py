@@ -3,17 +3,58 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
+import uuid
 
+import pytest
+
+from ..datasetio.test_datasetio import register_dataset
 
 # How to run this test:
 #
 # LLAMA_STACK_CONFIG="template-name" pytest -v tests/integration/eval
 
 
-def test_benchmarks_list(llama_stack_client):
-    response = llama_stack_client.benchmarks.list()
-    assert isinstance(response, list)
-    assert len(response) == 0
+@pytest.mark.parametrize("scoring_fn_id", ["basic::equality"])
+def test_evaluate_rows(llama_stack_client, text_model_id, scoring_fn_id):
+    register_dataset(llama_stack_client, for_generation=True, dataset_id="test_dataset_for_eval")
+    response = llama_stack_client.datasets.list()
+    assert any(x.identifier == "test_dataset_for_eval" for x in response)
+
+    rows = llama_stack_client.datasetio.get_rows_paginated(
+        dataset_id="test_dataset_for_eval",
+        rows_in_page=3,
+    )
+    assert len(rows.rows) == 3
+
+    scoring_functions = [
+        scoring_fn_id,
+    ]
+    benchmark_id = str(uuid.uuid4())
+    llama_stack_client.benchmarks.register(
+        benchmark_id=benchmark_id,
+        dataset_id="test_dataset_for_eval",
+        scoring_functions=scoring_functions,
+    )
+    list_benchmarks = llama_stack_client.benchmarks.list()
+    assert any(x.identifier == benchmark_id for x in list_benchmarks)
+
+    response = llama_stack_client.eval.evaluate_rows(
+        benchmark_id=benchmark_id,
+        input_rows=rows.rows,
+        scoring_functions=scoring_functions,
+        benchmark_config={
+            "eval_candidate": {
+                "type": "model",
+                "model": text_model_id,
+                "sampling_params": {
+                    "temperature": 0.0,
+                },
+            },
+        },
+    )
+
+    assert len(response.generations) == 3
+    assert scoring_fn_id in response.scores
 
 
 # @pytest.mark.skip(reason="FIXME FIXME @yanxi0830 this needs to be migrated to use the API")
