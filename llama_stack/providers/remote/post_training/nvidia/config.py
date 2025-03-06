@@ -19,11 +19,42 @@ class NvidiaPostTrainingConfig(BaseModel):
     )
 
     user_id: Optional[str] = Field(
-        default_factory=lambda: os.getenv("NVIDIA_USER_ID"),
+        default_factory=lambda: os.getenv("NVIDIA_USER_ID", "llama-stack-user"),
         description="The NVIDIA user ID, only needed of using the hosted service",
     )
 
+    dataset_namespace: Optional[str] = Field(
+        default_factory=lambda: os.getenv("NVIDIA_DATASET_NAMESPACE", "default"),
+        description="The NVIDIA dataset namespace, only needed of using the hosted service",
+    )
+
+    access_policies: Optional[dict] = Field(
+        default_factory=lambda: os.getenv("NVIDIA_ACCESS_POLICIES", {}),
+        description="The NVIDIA access policies, only needed of using the hosted service",
+    )
+
+    project_id: Optional[str] = Field(
+        default_factory=lambda: os.getenv("NVIDIA_PROJECT_ID", "test-project"),
+        description="The NVIDIA project ID, only needed of using the hosted service",
+    )
+
+    # ToDO: validate this, add default value
     customizer_url: str = Field(
         default_factory=lambda: os.getenv("NVIDIA_CUSTOMIZER_URL"),
         description="Base URL for the NeMo Customizer API",
+    )
+
+    timeout: int = Field(
+        default=300,
+        description="Timeout for the NVIDIA Post Training API",
+    )
+
+    max_retries: int = Field(
+        default=3,
+        description="Maximum number of retries for the NVIDIA Post Training API",
+    )
+
+    output_model_dir: str = Field(
+        default_factory=lambda: os.getenv("NVIDIA_OUTPUT_MODEL_DIR", "test-example-model@v1"),
+        description="Directory to save the output model",
     )
