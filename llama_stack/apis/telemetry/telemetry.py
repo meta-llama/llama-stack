@@ -222,6 +222,12 @@ class MetricLabelMatcher(BaseModel):
 
 
 @json_schema_type
+class MetricLabel(BaseModel):
+    name: str
+    value: str
+
+
+@json_schema_type
 class MetricDataPoint(BaseModel):
     timestamp: datetime
     value: float
@@ -230,7 +236,7 @@ class MetricDataPoint(BaseModel):
 @json_schema_type
 class MetricSeries(BaseModel):
     metric: str
-    labels: dict[str, str]
+    labels: list[MetricLabel]
     values: list[MetricDataPoint]
 
 
