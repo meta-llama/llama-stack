@@ -11,6 +11,7 @@ from typing import Dict
 
 from rich.console import Console
 from rich.logging import RichHandler
+from rich.errors import MarkupError
 
 # Default log level
 DEFAULT_LOG_LEVEL = logging.INFO
@@ -81,6 +82,18 @@ class CustomRichHandler(RichHandler):
     def __init__(self, *args, **kwargs):
         kwargs["console"] = Console(width=120)
         super().__init__(*args, **kwargs)
+
+    def emit(self, record):
+        """Override emit to handle markup errors gracefully."""
+        try:
+            super().emit(record)
+        except MarkupError:
+            original_markup = self.markup
+            self.markup = False
+            try:
+                super().emit(record)
+            finally:
+                self.markup = original_markup
 
 
 def setup_logging(category_levels: Dict[str, int]) -> None:
