@@ -276,7 +276,6 @@ def test_custom_tool(llama_stack_client_with_mocked_inference, agent_config):
     agent_config = {
         **agent_config,
         "tools": ["builtin::websearch", client_tool],
-        "client_tools": [client_tool.get_tool_definition()],
     }
 
     agent = Agent(llama_stack_client_with_mocked_inference, **agent_config)
@@ -571,7 +570,10 @@ def test_rag_and_code_agent(llama_stack_client_with_mocked_inference, agent_conf
             assert expected_kw in response.output_message.content.lower()
 
 
-@pytest.mark.parametrize("client_tools", [(get_boiling_point, False), (get_boiling_point_with_metadata, True)])
+@pytest.mark.parametrize(
+    "client_tools",
+    [(get_boiling_point, False), (get_boiling_point_with_metadata, True)],
+)
 def test_create_turn_response(llama_stack_client_with_mocked_inference, agent_config, client_tools):
     client_tool, expectes_metadata = client_tools
     agent_config = {
