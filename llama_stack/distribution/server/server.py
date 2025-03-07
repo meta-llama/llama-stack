@@ -29,7 +29,7 @@ from typing_extensions import Annotated
 
 from llama_stack.distribution.datatypes import StackRunConfig
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
-from llama_stack.distribution.request_headers import set_request_provider_data
+from llama_stack.distribution.request_headers import request_provider_data_context
 from llama_stack.distribution.resolver import InvalidProviderError
 from llama_stack.distribution.stack import (
     construct_stack,
@@ -223,18 +223,18 @@ async def sse_generator(event_gen):
 
 def create_dynamic_typed_route(func: Any, method: str, route: str):
     async def endpoint(request: Request, **kwargs):
-        set_request_provider_data(request.headers)
-
-        is_streaming = is_streaming_request(func.__name__, request, **kwargs)
-        try:
-            if is_streaming:
-                return StreamingResponse(sse_generator(func(**kwargs)), media_type="text/event-stream")
-            else:
-                value = func(**kwargs)
-                return await maybe_await(value)
-        except Exception as e:
-            traceback.print_exception(e)
-            raise translate_exception(e) from e
+        # Use context manager for request provider data
+        with request_provider_data_context(request.headers):
+            is_streaming = is_streaming_request(func.__name__, request, **kwargs)
+            try:
+                if is_streaming:
+                    return StreamingResponse(sse_generator(func(**kwargs)), media_type="text/event-stream")
+                else:
+                    value = func(**kwargs)
+                    return await maybe_await(value)
+            except Exception as e:
+                traceback.print_exception(e)
+                raise translate_exception(e) from e
 
     sig = inspect.signature(func)
 
