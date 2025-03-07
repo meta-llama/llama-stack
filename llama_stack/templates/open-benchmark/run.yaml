@@ -1,5 +1,5 @@
 version: '2'
-image_name: dev
+image_name: open-benchmark
 apis:
 - agents
 - datasetio
