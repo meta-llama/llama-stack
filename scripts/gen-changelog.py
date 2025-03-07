@@ -37,6 +37,7 @@ def clean_release_body(body):
             "## All changes",
             "### What's Changed",
             "## What's Changed",
+            "## New Contributors",
         ]:
             skip_mode = True
         elif skip_mode and line.startswith("##"):

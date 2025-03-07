@@ -36,11 +36,6 @@ Published on: 2025-02-28T18:14:01Z
 * Move most logging to use logger instead of prints
 * Completed text /chat-completion and /completion tests
 
-## New Contributors
-* @Shreyanand made their first contribution in https://github.com/meta-llama/llama-stack/pull/1283
-* @luis5tb made their first contribution in https://github.com/meta-llama/llama-stack/pull/1269
-
-**Full Changelog**: https://github.com/meta-llama/llama-stack/compare/v0.1.4...v0.1.5
 
 ---
 
@@ -71,15 +66,6 @@ Here are the key changes coming as part of this release:
 * Various small fixes for build scripts and system reliability
 
 
-## New Contributors
-* @fulvius31 made their first contribution in https://github.com/meta-llama/llama-stack/pull/1114
-* @shrinitg made their first contribution in https://github.com/meta-llama/llama-stack/pull/543
-* @raspawar made their first contribution in https://github.com/meta-llama/llama-stack/pull/1174
-* @kevincogan made their first contribution in https://github.com/meta-llama/llama-stack/pull/1129
-* @LESSuseLESS made their first contribution in https://github.com/meta-llama/llama-stack/pull/1180
-* @jland-redhat made their first contribution in https://github.com/meta-llama/llama-stack/pull/1208
-
-**Full Changelog**: https://github.com/meta-llama/llama-stack/compare/v0.1.3...v0.1.4
 
 ---
 
@@ -118,16 +104,6 @@ Infrastructure and code quality improvements
 - Added conventional commits standard
 - Fixed documentation parsing issues
 
-## New Contributors
-* @MichaelClifford made their first contribution in https://github.com/meta-llama/llama-stack/pull/1009
-* @ellistarn made their first contribution in https://github.com/meta-llama/llama-stack/pull/1035
-* @kelbrown20 made their first contribution in https://github.com/meta-llama/llama-stack/pull/992
-* @franciscojavierarceo made their first contribution in https://github.com/meta-llama/llama-stack/pull/1040
-* @bbrowning made their first contribution in https://github.com/meta-llama/llama-stack/pull/1075
-* @reidliu41 made their first contribution in https://github.com/meta-llama/llama-stack/pull/1072
-* @vishnoianil made their first contribution in https://github.com/meta-llama/llama-stack/pull/1081
-
-**Full Changelog**: https://github.com/meta-llama/llama-stack/compare/v0.1.2...v0.1.3
 
 ---
 
@@ -142,18 +118,6 @@ Published on: 2025-02-07T22:06:49Z
 - Added system prompt overrides support
 - Several bug fixes and improvements to documentation (check out Kubernetes deployment guide by @terrytangyuan )
 
-## New Contributors
-* @nathan-weinberg made their first contribution in https://github.com/meta-llama/llama-stack/pull/939
-* @cdoern made their first contribution in https://github.com/meta-llama/llama-stack/pull/954
-* @jwm4 made their first contribution in https://github.com/meta-llama/llama-stack/pull/957
-* @booxter made their first contribution in https://github.com/meta-llama/llama-stack/pull/961
-* @kami619 made their first contribution in https://github.com/meta-llama/llama-stack/pull/960
-* @cooktheryan made their first contribution in https://github.com/meta-llama/llama-stack/pull/974
-* @aakankshaduggal made their first contribution in https://github.com/meta-llama/llama-stack/pull/976
-* @leseb made their first contribution in https://github.com/meta-llama/llama-stack/pull/988
-* @mlecanu made their first contribution in https://github.com/meta-llama/llama-stack/pull/997
-
-**Full Changelog**: https://github.com/meta-llama/llama-stack/compare/v0.1.1...v0.1.2
 
 ---
 
@@ -162,13 +126,6 @@ Published on: 2025-02-02T02:29:24Z
 
 A bunch of small / big improvements everywhere including support for Windows, switching to `uv` and many provider improvements.
 
-## New Contributors
-* @BakungaBronson made their first contribution in https://github.com/meta-llama/llama-stack/pull/877
-* @Ckhanoyan made their first contribution in https://github.com/meta-llama/llama-stack/pull/888
-* @hanzlfs made their first contribution in https://github.com/meta-llama/llama-stack/pull/660
-* @dvrogozh made their first contribution in https://github.com/meta-llama/llama-stack/pull/903
-
-**Full Changelog**: https://github.com/meta-llama/llama-stack/compare/v0.1.0...v0.1.1
 
 ---
 
@@ -226,33 +183,13 @@ There are example standalone apps in llama-stack-apps.
   - Android
 
 
-## New Contributors
-* @cdgamarose-nv made their first contribution in https://github.com/meta-llama/llama-stack/pull/661
-* @eltociear made their first contribution in https://github.com/meta-llama/llama-stack/pull/675
-* @derekslager made their first contribution in https://github.com/meta-llama/llama-stack/pull/692
-* @VladOS95-cyber made their first contribution in https://github.com/meta-llama/llama-stack/pull/557
-* @frreiss made their first contribution in https://github.com/meta-llama/llama-stack/pull/662
-* @pmccarthy made their first contribution in https://github.com/meta-llama/llama-stack/pull/807
-* @pandyamarut made their first contribution in https://github.com/meta-llama/llama-stack/pull/362
-* @snova-edwardm made their first contribution in https://github.com/meta-llama/llama-stack/pull/555
-* @ehhuang made their first contribution in https://github.com/meta-llama/llama-stack/pull/867
-
-**Full Changelog**: https://github.com/meta-llama/llama-stack/compare/v0.0.63...v0.1.0
 
 ---
 
 # v0.1.0rc12
 Published on: 2025-01-22T22:24:01Z
 
-## New Contributors
-* @cdgamarose-nv made their first contribution in https://github.com/meta-llama/llama-stack/pull/661
-* @eltociear made their first contribution in https://github.com/meta-llama/llama-stack/pull/675
-* @derekslager made their first contribution in https://github.com/meta-llama/llama-stack/pull/692
-* @VladOS95-cyber made their first contribution in https://github.com/meta-llama/llama-stack/pull/557
-* @frreiss made their first contribution in https://github.com/meta-llama/llama-stack/pull/662
-* @pmccarthy made their first contribution in https://github.com/meta-llama/llama-stack/pull/807
 
-**Full Changelog**: https://github.com/meta-llama/llama-stack/compare/v0.0.63...v0.1.0rc11
 
 ---
 
@@ -268,27 +205,14 @@ A small but important bug-fix release to update the URL datatype for the client-
 # v0.0.62
 Published on: 2024-12-18T02:39:43Z
 
-## New Contributors
-* @SLR722 made their first contribution in https://github.com/meta-llama/llama-stack/pull/540
-* @iamarunbrahma made their first contribution in https://github.com/meta-llama/llama-stack/pull/636
 
-**Full Changelog**: https://github.com/meta-llama/llama-stack/compare/v0.0.61...v0.0.62
 
 ---
 
 # v0.0.61
 Published on: 2024-12-10T20:50:33Z
 
-## New Contributors
-* @sablair made their first contribution in https://github.com/meta-llama/llama-stack/pull/549
-* @JeffreyLind3 made their first contribution in https://github.com/meta-llama/llama-stack/pull/547
-* @aidando73 made their first contribution in https://github.com/meta-llama/llama-stack/pull/554
-* @henrytwo made their first contribution in https://github.com/meta-llama/llama-stack/pull/265
-* @sixianyi0721 made their first contribution in https://github.com/meta-llama/llama-stack/pull/507
-* @ConnorHack made their first contribution in https://github.com/meta-llama/llama-stack/pull/523
-* @yurishkuro made their first contribution in https://github.com/meta-llama/llama-stack/pull/580
 
-**Full Changelog**: https://github.com/meta-llama/llama-stack/compare/v0.0.55...v0.0.61
 
 ---
 
@@ -302,10 +226,7 @@ Published on: 2024-11-23T17:14:07Z
 # v0.0.54
 Published on: 2024-11-22T00:36:09Z
 
-## New Contributors
-* @liyunlu0618 made their first contribution in https://github.com/meta-llama/llama-stack/pull/500
 
-**Full Changelog**: https://github.com/meta-llama/llama-stack/compare/v0.0.53...v0.0.54
 
 ---
 
@@ -346,58 +267,5 @@ Published on: 2024-11-20T22:18:00Z
 ### Removed
 - `llama stack configure` command
 
-## New Contributors
-* @Wauplin made their first contribution in https://github.com/meta-llama/llama-stack/pull/9
-* @jianyuh made their first contribution in https://github.com/meta-llama/llama-stack/pull/12
-* @dltn made their first contribution in https://github.com/meta-llama/llama-stack/pull/14
-* @hardikjshah made their first contribution in https://github.com/meta-llama/llama-stack/pull/20
-* @raghotham made their first contribution in https://github.com/meta-llama/llama-stack/pull/8
-* @jeffxtang made their first contribution in https://github.com/meta-llama/llama-stack/pull/34
-* @sisminnmaw made their first contribution in https://github.com/meta-llama/llama-stack/pull/35
-* @varunfb made their first contribution in https://github.com/meta-llama/llama-stack/pull/36
-* @benjibc made their first contribution in https://github.com/meta-llama/llama-stack/pull/39
-* @Nutlope made their first contribution in https://github.com/meta-llama/llama-stack/pull/43
-* @hanouticelina made their first contribution in https://github.com/meta-llama/llama-stack/pull/53
-* @rsgrewal-aws made their first contribution in https://github.com/meta-llama/llama-stack/pull/96
-* @poegej made their first contribution in https://github.com/meta-llama/llama-stack/pull/94
-* @abhishekmishragithub made their first contribution in https://github.com/meta-llama/llama-stack/pull/103
-* @machina-source made their first contribution in https://github.com/meta-llama/llama-stack/pull/104
-* @dijonkitchen made their first contribution in https://github.com/meta-llama/llama-stack/pull/107
-* @marklysze made their first contribution in https://github.com/meta-llama/llama-stack/pull/113
-* @KarthiDreamr made their first contribution in https://github.com/meta-llama/llama-stack/pull/112
-* @delvingdeep made their first contribution in https://github.com/meta-llama/llama-stack/pull/117
-* @moldhouse made their first contribution in https://github.com/meta-llama/llama-stack/pull/118
-* @bhimrazy made their first contribution in https://github.com/meta-llama/llama-stack/pull/134
-* @russellb made their first contribution in https://github.com/meta-llama/llama-stack/pull/128
-* @yogishbaliga made their first contribution in https://github.com/meta-llama/llama-stack/pull/105
-* @wizardbc made their first contribution in https://github.com/meta-llama/llama-stack/pull/153
-* @moritalous made their first contribution in https://github.com/meta-llama/llama-stack/pull/151
-* @codefromthecrypt made their first contribution in https://github.com/meta-llama/llama-stack/pull/165
-* @AshleyT3 made their first contribution in https://github.com/meta-llama/llama-stack/pull/182
-* @Minutis made their first contribution in https://github.com/meta-llama/llama-stack/pull/192
-* @prithu-dasgupta made their first contribution in https://github.com/meta-llama/llama-stack/pull/83
-* @zainhas made their first contribution in https://github.com/meta-llama/llama-stack/pull/95
-* @terrytangyuan made their first contribution in https://github.com/meta-llama/llama-stack/pull/216
-* @kebbbnnn made their first contribution in https://github.com/meta-llama/llama-stack/pull/224
-* @frntn made their first contribution in https://github.com/meta-llama/llama-stack/pull/247
-* @MeDott29 made their first contribution in https://github.com/meta-llama/llama-stack/pull/260
-* @tamdogood made their first contribution in https://github.com/meta-llama/llama-stack/pull/261
-* @nehal-a2z made their first contribution in https://github.com/meta-llama/llama-stack/pull/275
-* @dineshyv made their first contribution in https://github.com/meta-llama/llama-stack/pull/280
-* @subramen made their first contribution in https://github.com/meta-llama/llama-stack/pull/286
-* @Anush008 made their first contribution in https://github.com/meta-llama/llama-stack/pull/221
-* @cheesecake100201 made their first contribution in https://github.com/meta-llama/llama-stack/pull/267
-* @heyjustinai made their first contribution in https://github.com/meta-llama/llama-stack/pull/307
-* @sacmehta made their first contribution in https://github.com/meta-llama/llama-stack/pull/326
-* @stevegrubb made their first contribution in https://github.com/meta-llama/llama-stack/pull/349
-* @hickeyma made their first contribution in https://github.com/meta-llama/llama-stack/pull/456
-* @vladimirivic made their first contribution in https://github.com/meta-llama/llama-stack/pull/465
-* @wukaixingxp made their first contribution in https://github.com/meta-llama/llama-stack/pull/471
-* @Riandy made their first contribution in https://github.com/meta-llama/llama-stack/pull/476
-* @mattf made their first contribution in https://github.com/meta-llama/llama-stack/pull/470
-* @chuenlok made their first contribution in https://github.com/meta-llama/llama-stack/pull/467
-* @iseeyuan made their first contribution in https://github.com/meta-llama/llama-stack/pull/485
-
-**Full Changelog**: https://github.com/meta-llama/llama-stack/commits/v0.0.53
 
 ---
