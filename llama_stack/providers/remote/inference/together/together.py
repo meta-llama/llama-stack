@@ -177,10 +177,8 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
         )
 
         if stream:
-            print("STREAMING", request)
             return self._stream_chat_completion(request)
         else:
-            print("NON STREAMING", request)
             return await self._nonstream_chat_completion(request)
 
     async def _nonstream_chat_completion(self, request: ChatCompletionRequest) -> ChatCompletionResponse:
