@@ -9,11 +9,24 @@ import os
 from logging.config import dictConfig
 from typing import Dict
 
+from rich.console import Console
+from rich.logging import RichHandler
+
 # Default log level
 DEFAULT_LOG_LEVEL = logging.INFO
 
 # Predefined categories
-CATEGORIES = ["core", "server", "router", "inference", "agents", "safety", "eval", "tools", "client"]
+CATEGORIES = [
+    "core",
+    "server",
+    "router",
+    "inference",
+    "agents",
+    "safety",
+    "eval",
+    "tools",
+    "client",
+]
 
 # Initialize category levels with default level
 _category_levels: Dict[str, int] = {category: DEFAULT_LOG_LEVEL for category in CATEGORIES}
@@ -64,6 +77,12 @@ def parse_environment_config(env_config: str) -> Dict[str, int]:
     return category_levels
 
 
+class CustomRichHandler(RichHandler):
+    def __init__(self, *args, **kwargs):
+        kwargs["console"] = Console(width=120)
+        super().__init__(*args, **kwargs)
+
+
 def setup_logging(category_levels: Dict[str, int]) -> None:
     """
     Configure logging based on the provided category log levels.
@@ -71,7 +90,7 @@ def setup_logging(category_levels: Dict[str, int]) -> None:
     Parameters:
         category_levels (Dict[str, int]): A dictionary mapping categories to their log levels.
     """
-    log_format = "%(asctime)s %(name)s:%(lineno)d [%(category)s]: %(message)s"
+    log_format = "[dim]%(asctime)s %(name)s:%(lineno)d[/] [yellow dim]%(category)s[/]: %(message)s"
 
     class CategoryFilter(logging.Filter):
         """Ensure category is always present in log records."""
@@ -89,18 +108,19 @@ def setup_logging(category_levels: Dict[str, int]) -> None:
         "disable_existing_loggers": False,
         "formatters": {
             "rich": {
-                "()": logging.Formatter,  # Standard formatter (RichHandler handles colors)
+                "()": logging.Formatter,
                 "format": log_format,
             }
         },
         "handlers": {
             "console": {
-                "class": "rich.logging.RichHandler",
+                "()": CustomRichHandler,  # Use our custom handler class
                 "formatter": "rich",
                 "rich_tracebacks": True,
-                "show_time": False,  # We handle timestamps ourselves in the log_format
+                "show_time": False,
                 "show_path": False,
-                "filters": ["category_filter"],  # Ensures category is included
+                "markup": True,
+                "filters": ["category_filter"],
             }
         },
         "filters": {
@@ -136,15 +156,11 @@ def get_logger(name: str, category: str = "uncategorized") -> logging.LoggerAdap
     Returns:
         logging.LoggerAdapter: Configured logger with category support.
     """
-    # Use the name as the logger's name
     logger = logging.getLogger(name)
-    # Apply the category's log level to the logger
     logger.setLevel(_category_levels.get(category, DEFAULT_LOG_LEVEL))
-    # Attach the category as extra context
     return logging.LoggerAdapter(logger, {"category": category})
 
 
-# Parse environment variable and configure logging
 env_config = os.environ.get("LLAMA_STACK_LOGGING", "")
 if env_config:
     print(f"Environment variable LLAMA_STACK_LOGGING found: {env_config}")

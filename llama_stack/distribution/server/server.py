@@ -434,7 +434,6 @@ def main():
 
     logger.debug(f"serving APIs: {apis_to_serve}")
 
-    print("")
     app.exception_handler(RequestValidationError)(global_exception_handler)
     app.exception_handler(Exception)(global_exception_handler)
     signal.signal(signal.SIGINT, functools.partial(handle_signal, app))
