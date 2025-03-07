@@ -18,5 +18,5 @@ class MilvusVectorIOConfig(BaseModel):
     consistency_level: str = "Strong"
 
     @classmethod
-    def sample_run_config(cls) -> Dict[str, Any]:
-        return {"uri": "{env.MILVUS_ENDPOINT}", "token": "{env.MILVUS_TOKEN}"}
+    def sample_run_config(cls, __distro_dir__: str, **kwargs: Any) -> Dict[str, Any]:
+        return {"uri": "${env.MILVUS_ENDPOINT}", "token": "${env.MILVUS_TOKEN}"}
