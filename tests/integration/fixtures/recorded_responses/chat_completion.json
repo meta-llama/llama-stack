@@ -23383,6 +23383,227 @@
     ],
     "type": "generator"
   },
+  "[[\"meta-llama/Llama-3.3-70B-Instruct\", [{\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"SystemMessage\", \"data\": {\"content\": \"You are a helpful assistant Always respond with tool calls no matter what. \", \"role\": \"system\"}}, {\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"UserMessage\", \"data\": {\"content\": \"Get the boiling point of polyjuice with a tool call.\", \"context\": null, \"role\": \"user\"}}, {\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"CompletionMessage\", \"data\": {\"content\": \"\", \"role\": \"assistant\", \"stop_reason\": {\"__enum__\": \"StopReason\", \"__module__\": \"llama_stack.models.llama.datatypes\", \"value\": \"end_of_turn\"}, \"tool_calls\": [{\"arguments\": {\"celcius\": true, \"liquid_name\": \"polyjuice\"}, \"call_id\": \"<UUID>\", \"tool_name\": \"get_boiling_point\"}]}}, {\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"ToolResponseMessage\", \"data\": {\"call_id\": \"<UUID>\", \"content\": \"-100\", \"role\": \"tool\", \"tool_name\": \"get_boiling_point\"}}]], {\"response_format\": null, \"sampling_params\": {\"__module__\": \"llama_stack.models.llama.datatypes\", \"__pydantic__\": \"SamplingParams\", \"data\": {\"max_tokens\": 0, \"repetition_penalty\": 1.0, \"strategy\": {\"temperature\": 0.0001, \"top_p\": 0.9, \"type\": \"top_p\"}}}, \"stream\": true, \"tool_config\": {\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"ToolConfig\", \"data\": {\"system_message_behavior\": {\"__enum__\": \"SystemMessageBehavior\", \"__module__\": \"llama_stack.apis.inference.inference\", \"value\": \"append\"}, \"tool_choice\": {\"__enum__\": \"ToolChoice\", \"__module__\": \"llama_stack.apis.inference.inference\", \"value\": \"auto\"}, \"tool_prompt_format\": null}}, \"tool_prompt_format\": null, \"tools\": [{\"__module__\": \"llama_stack.models.llama.datatypes\", \"__pydantic__\": \"ToolDefinition\", \"data\": {\"description\": \"Returns the boiling point of a liquid in Celcius or Fahrenheit\", \"parameters\": {\"celcius\": {\"default\": true, \"description\": \"Whether to return the boiling point in Celcius\", \"param_type\": \"bool\", \"required\": false}, \"liquid_name\": {\"default\": null, \"description\": \"The name of the liquid\", \"param_type\": \"string\", \"required\": true}}, \"tool_name\": \"get_boiling_point\"}}]}]": {
+    "chunks": [
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": "",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "start"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": "The",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": " provided function definitions",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": " are not suitable",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": " for this task. Please re",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": "work them to",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": " align with the task requirements.",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": "",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "complete"
+            },
+            "logprobs": null,
+            "stop_reason": {
+              "__enum__": "StopReason",
+              "__module__": "llama_stack.models.llama.datatypes",
+              "value": "end_of_turn"
+            }
+          },
+          "metrics": [
+            {
+              "attributes": {
+                "model_id": "meta-llama/Llama-3.3-70B-Instruct",
+                "provider_id": "fireworks"
+              },
+              "metric": "prompt_tokens",
+              "span_id": "D2n_IS_8",
+              "timestamp": {
+                "__class__": "datetime",
+                "__datetime__": "2025-03-07T02:03:32.021393+00:00",
+                "__module__": "datetime"
+              },
+              "trace_id": "amAiZv5PQKSsA74j",
+              "type": "metric",
+              "unit": "tokens",
+              "value": 90
+            },
+            {
+              "attributes": {
+                "model_id": "meta-llama/Llama-3.3-70B-Instruct",
+                "provider_id": "fireworks"
+              },
+              "metric": "completion_tokens",
+              "span_id": "D2n_IS_8",
+              "timestamp": {
+                "__class__": "datetime",
+                "__datetime__": "2025-03-07T02:03:32.021420+00:00",
+                "__module__": "datetime"
+              },
+              "trace_id": "amAiZv5PQKSsA74j",
+              "type": "metric",
+              "unit": "tokens",
+              "value": 32
+            },
+            {
+              "attributes": {
+                "model_id": "meta-llama/Llama-3.3-70B-Instruct",
+                "provider_id": "fireworks"
+              },
+              "metric": "total_tokens",
+              "span_id": "D2n_IS_8",
+              "timestamp": {
+                "__class__": "datetime",
+                "__datetime__": "2025-03-07T02:03:32.021427+00:00",
+                "__module__": "datetime"
+              },
+              "trace_id": "amAiZv5PQKSsA74j",
+              "type": "metric",
+              "unit": "tokens",
+              "value": 122
+            }
+          ]
+        }
+      }
+    ],
+    "type": "generator"
+  },
   "[[\"meta-llama/Llama-3.3-70B-Instruct\", [{\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"SystemMessage\", \"data\": {\"content\": \"You are a helpful assistant Always respond with tool calls no matter what. \", \"role\": \"system\"}}, {\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"UserMessage\", \"data\": {\"content\": \"Get the boiling point of polyjuice with a tool call.\", \"context\": null, \"role\": \"user\"}}, {\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"CompletionMessage\", \"data\": {\"content\": \"\", \"role\": \"assistant\", \"stop_reason\": {\"__enum__\": \"StopReason\", \"__module__\": \"llama_stack.models.llama.datatypes\", \"value\": \"end_of_turn\"}, \"tool_calls\": [{\"arguments\": {\"celcius\": true, \"liquid_name\": \"polyjuice\"}, \"call_id\": \"<UUID>\", \"tool_name\": \"get_boiling_point\"}]}}, {\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"ToolResponseMessage\", \"data\": {\"call_id\": \"<UUID>\", \"content\": \"Unknown tool `get_boiling_point` was called.\", \"role\": \"tool\", \"tool_name\": \"get_boiling_point\"}}, {\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"CompletionMessage\", \"data\": {\"content\": \"\", \"role\": \"assistant\", \"stop_reason\": {\"__enum__\": \"StopReason\", \"__module__\": \"llama_stack.models.llama.datatypes\", \"value\": \"end_of_turn\"}, \"tool_calls\": [{\"arguments\": {\"celcius\": true, \"liquid_name\": \"polyjuice\"}, \"call_id\": \"<UUID>\", \"tool_name\": \"get_boiling_point\"}]}}, {\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"ToolResponseMessage\", \"data\": {\"call_id\": \"<UUID>\", \"content\": \"Unknown tool `get_boiling_point` was called.\", \"role\": \"tool\", \"tool_name\": \"get_boiling_point\"}}, {\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"CompletionMessage\", \"data\": {\"content\": \"\", \"role\": \"assistant\", \"stop_reason\": {\"__enum__\": \"StopReason\", \"__module__\": \"llama_stack.models.llama.datatypes\", \"value\": \"end_of_turn\"}, \"tool_calls\": [{\"arguments\": {\"celcius\": true, \"liquid_name\": \"polyjuice\"}, \"call_id\": \"<UUID>\", \"tool_name\": \"get_boiling_point\"}]}}, {\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"ToolResponseMessage\", \"data\": {\"call_id\": \"<UUID>\", \"content\": \"Unknown tool `get_boiling_point` was called.\", \"role\": \"tool\", \"tool_name\": \"get_boiling_point\"}}, {\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"CompletionMessage\", \"data\": {\"content\": \"\", \"role\": \"assistant\", \"stop_reason\": {\"__enum__\": \"StopReason\", \"__module__\": \"llama_stack.models.llama.datatypes\", \"value\": \"end_of_turn\"}, \"tool_calls\": [{\"arguments\": {\"celcius\": true, \"liquid_name\": \"polyjuice\"}, \"call_id\": \"<UUID>\", \"tool_name\": \"get_boiling_point\"}]}}, {\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"ToolResponseMessage\", \"data\": {\"call_id\": \"<UUID>\", \"content\": \"Unknown tool `get_boiling_point` was called.\", \"role\": \"tool\", \"tool_name\": \"get_boiling_point\"}}]], {\"response_format\": null, \"sampling_params\": {\"__module__\": \"llama_stack.models.llama.datatypes\", \"__pydantic__\": \"SamplingParams\", \"data\": {\"max_tokens\": 0, \"repetition_penalty\": 1.0, \"strategy\": {\"temperature\": 0.0001, \"top_p\": 0.9, \"type\": \"top_p\"}}}, \"stream\": true, \"tool_config\": {\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"ToolConfig\", \"data\": {\"system_message_behavior\": {\"__enum__\": \"SystemMessageBehavior\", \"__module__\": \"llama_stack.apis.inference.inference\", \"value\": \"append\"}, \"tool_choice\": {\"__enum__\": \"ToolChoice\", \"__module__\": \"llama_stack.apis.inference.inference\", \"value\": \"auto\"}, \"tool_prompt_format\": null}}, \"tool_prompt_format\": null, \"tools\": [{\"__module__\": \"llama_stack.models.llama.datatypes\", \"__pydantic__\": \"ToolDefinition\", \"data\": {\"description\": \"Returns the boiling point of a liquid in Celcius or Fahrenheit\", \"parameters\": {\"celcius\": {\"default\": true, \"description\": \"Whether to return the boiling point in Celcius\", \"param_type\": \"bool\", \"required\": false}, \"liquid_name\": {\"default\": null, \"description\": \"The name of the liquid\", \"param_type\": \"string\", \"required\": true}}, \"tool_name\": \"get_boiling_point\"}}]}]": {
     "chunks": [
       {
@@ -24269,7 +24490,7 @@
                   "celcius": true,
                   "liquid_name": "polyjuice"
                 },
-                "call_id": "db4587b9-0c61-452c-b364-1107132cc34e",
+                "call_id": "3955f756-9aa0-433f-be8f-af8941c220de",
                 "tool_name": "get_boiling_point"
               },
               "type": "tool_call"
@@ -24317,13 +24538,13 @@
                 "provider_id": "fireworks"
               },
               "metric": "prompt_tokens",
-              "span_id": "1vsJaAi2",
+              "span_id": "QZ6PSGpT",
               "timestamp": {
                 "__class__": "datetime",
-                "__datetime__": "2025-03-07T01:47:46.473090+00:00",
+                "__datetime__": "2025-03-07T02:03:29.629456+00:00",
                 "__module__": "datetime"
               },
-              "trace_id": "Xi5SUsObSCq2jnns",
+              "trace_id": "M72bosg8TBe3uhx3",
               "type": "metric",
               "unit": "tokens",
               "value": 43
@@ -24334,13 +24555,13 @@
                 "provider_id": "fireworks"
               },
               "metric": "completion_tokens",
-              "span_id": "1vsJaAi2",
+              "span_id": "QZ6PSGpT",
               "timestamp": {
                 "__class__": "datetime",
-                "__datetime__": "2025-03-07T01:47:46.473123+00:00",
+                "__datetime__": "2025-03-07T02:03:29.629488+00:00",
                 "__module__": "datetime"
               },
-              "trace_id": "Xi5SUsObSCq2jnns",
+              "trace_id": "M72bosg8TBe3uhx3",
               "type": "metric",
               "unit": "tokens",
               "value": 28
@@ -24351,16 +24572,377 @@
                 "provider_id": "fireworks"
               },
               "metric": "total_tokens",
-              "span_id": "1vsJaAi2",
+              "span_id": "QZ6PSGpT",
               "timestamp": {
                 "__class__": "datetime",
-                "__datetime__": "2025-03-07T01:47:46.473129+00:00",
+                "__datetime__": "2025-03-07T02:03:29.629494+00:00",
                 "__module__": "datetime"
               },
-              "trace_id": "Xi5SUsObSCq2jnns",
+              "trace_id": "M72bosg8TBe3uhx3",
               "type": "metric",
               "unit": "tokens",
               "value": 71
+            }
+          ]
+        }
+      }
+    ],
+    "type": "generator"
+  },
+  "[[\"meta-llama/Llama-3.3-70B-Instruct\", [{\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"SystemMessage\", \"data\": {\"content\": \"You are a helpful assistant\", \"role\": \"system\"}}, {\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"UserMessage\", \"data\": {\"content\": \"Call get_boiling_point and answer What is the boiling point of polyjuice?\", \"context\": null, \"role\": \"user\"}}, {\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"CompletionMessage\", \"data\": {\"content\": \"\", \"role\": \"assistant\", \"stop_reason\": {\"__enum__\": \"StopReason\", \"__module__\": \"llama_stack.models.llama.datatypes\", \"value\": \"end_of_turn\"}, \"tool_calls\": [{\"arguments\": {\"celcius\": true, \"liquid_name\": \"polyjuice\"}, \"call_id\": \"<UUID>\", \"tool_name\": \"get_boiling_point\"}]}}, {\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"ToolResponseMessage\", \"data\": {\"call_id\": \"<UUID>\", \"content\": \"-100\", \"role\": \"tool\", \"tool_name\": \"get_boiling_point\"}}]], {\"response_format\": null, \"sampling_params\": {\"__module__\": \"llama_stack.models.llama.datatypes\", \"__pydantic__\": \"SamplingParams\", \"data\": {\"max_tokens\": 0, \"repetition_penalty\": 1.0, \"strategy\": {\"temperature\": 0.0001, \"top_p\": 0.9, \"type\": \"top_p\"}}}, \"stream\": true, \"tool_config\": {\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"ToolConfig\", \"data\": {\"system_message_behavior\": {\"__enum__\": \"SystemMessageBehavior\", \"__module__\": \"llama_stack.apis.inference.inference\", \"value\": \"append\"}, \"tool_choice\": {\"__enum__\": \"ToolChoice\", \"__module__\": \"llama_stack.apis.inference.inference\", \"value\": \"auto\"}, \"tool_prompt_format\": null}}, \"tool_prompt_format\": null, \"tools\": [{\"__module__\": \"llama_stack.models.llama.datatypes\", \"__pydantic__\": \"ToolDefinition\", \"data\": {\"description\": \"Returns the boiling point of a liquid in Celcius or Fahrenheit\", \"parameters\": {\"celcius\": {\"default\": true, \"description\": \"Whether to return the boiling point in Celcius\", \"param_type\": \"bool\", \"required\": false}, \"liquid_name\": {\"default\": null, \"description\": \"The name of the liquid\", \"param_type\": \"string\", \"required\": true}}, \"tool_name\": \"get_boiling_point\"}}]}]": {
+    "chunks": [
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": "",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "start"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": "The",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": " function call returned an",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": " error since",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": " \"",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": "polyjuice\" is",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": " not a real liquid. Polyju",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": "ice is a fictional substance from the",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": " Harry Potter series. The boiling point",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": " of a substance is a physical",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": " property that can be measured and",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": " quantified",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": ", but it only applies",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": " to real substances that exist in the physical world.",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": "",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "complete"
+            },
+            "logprobs": null,
+            "stop_reason": {
+              "__enum__": "StopReason",
+              "__module__": "llama_stack.models.llama.datatypes",
+              "value": "end_of_turn"
+            }
+          },
+          "metrics": [
+            {
+              "attributes": {
+                "model_id": "meta-llama/Llama-3.3-70B-Instruct",
+                "provider_id": "fireworks"
+              },
+              "metric": "prompt_tokens",
+              "span_id": "y9SHtJTQ",
+              "timestamp": {
+                "__class__": "datetime",
+                "__datetime__": "2025-03-07T02:05:01.411612+00:00",
+                "__module__": "datetime"
+              },
+              "trace_id": "_I2Cu85IRtOSBSX9",
+              "type": "metric",
+              "unit": "tokens",
+              "value": 84
+            },
+            {
+              "attributes": {
+                "model_id": "meta-llama/Llama-3.3-70B-Instruct",
+                "provider_id": "fireworks"
+              },
+              "metric": "completion_tokens",
+              "span_id": "y9SHtJTQ",
+              "timestamp": {
+                "__class__": "datetime",
+                "__datetime__": "2025-03-07T02:05:01.411644+00:00",
+                "__module__": "datetime"
+              },
+              "trace_id": "_I2Cu85IRtOSBSX9",
+              "type": "metric",
+              "unit": "tokens",
+              "value": 73
+            },
+            {
+              "attributes": {
+                "model_id": "meta-llama/Llama-3.3-70B-Instruct",
+                "provider_id": "fireworks"
+              },
+              "metric": "total_tokens",
+              "span_id": "y9SHtJTQ",
+              "timestamp": {
+                "__class__": "datetime",
+                "__datetime__": "2025-03-07T02:05:01.411650+00:00",
+                "__module__": "datetime"
+              },
+              "trace_id": "_I2Cu85IRtOSBSX9",
+              "type": "metric",
+              "unit": "tokens",
+              "value": 157
             }
           ]
         }
@@ -24522,6 +25104,287 @@
               "type": "metric",
               "unit": "tokens",
               "value": 113
+            }
+          ]
+        }
+      }
+    ],
+    "type": "generator"
+  },
+  "[[\"meta-llama/Llama-3.3-70B-Instruct\", [{\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"SystemMessage\", \"data\": {\"content\": \"You are a helpful assistant\", \"role\": \"system\"}}, {\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"UserMessage\", \"data\": {\"content\": \"Call get_boiling_point and answer What is the boiling point of polyjuice?\", \"context\": null, \"role\": \"user\"}}, {\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"CompletionMessage\", \"data\": {\"content\": \"\", \"role\": \"assistant\", \"stop_reason\": {\"__enum__\": \"StopReason\", \"__module__\": \"llama_stack.models.llama.datatypes\", \"value\": \"end_of_turn\"}, \"tool_calls\": [{\"arguments\": {\"celcius\": true, \"liquid_name\": \"polyjuice\"}, \"call_id\": \"<UUID>\", \"tool_name\": \"get_boiling_point_with_metadata\"}]}}, {\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"ToolResponseMessage\", \"data\": {\"call_id\": \"<UUID>\", \"content\": \"-100\", \"role\": \"tool\", \"tool_name\": \"get_boiling_point_with_metadata\"}}]], {\"response_format\": null, \"sampling_params\": {\"__module__\": \"llama_stack.models.llama.datatypes\", \"__pydantic__\": \"SamplingParams\", \"data\": {\"max_tokens\": 0, \"repetition_penalty\": 1.0, \"strategy\": {\"temperature\": 0.0001, \"top_p\": 0.9, \"type\": \"top_p\"}}}, \"stream\": true, \"tool_config\": {\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"ToolConfig\", \"data\": {\"system_message_behavior\": {\"__enum__\": \"SystemMessageBehavior\", \"__module__\": \"llama_stack.apis.inference.inference\", \"value\": \"append\"}, \"tool_choice\": {\"__enum__\": \"ToolChoice\", \"__module__\": \"llama_stack.apis.inference.inference\", \"value\": \"auto\"}, \"tool_prompt_format\": null}}, \"tool_prompt_format\": null, \"tools\": [{\"__module__\": \"llama_stack.models.llama.datatypes\", \"__pydantic__\": \"ToolDefinition\", \"data\": {\"description\": \"Returns the boiling point of a liquid in Celcius or Fahrenheit\", \"parameters\": {\"celcius\": {\"default\": true, \"description\": \"Whether to return the boiling point in Celcius\", \"param_type\": \"bool\", \"required\": false}, \"liquid_name\": {\"default\": null, \"description\": \"The name of the liquid\", \"param_type\": \"string\", \"required\": true}}, \"tool_name\": \"get_boiling_point_with_metadata\"}}]}]": {
+    "chunks": [
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": "",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "start"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": "The",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": " function get_bo",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": "iling_point_with_metadata does not exist,",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": " I will",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": " assume you",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": " meant get_bo",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": "iling_point_with_metadata",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": ". The boiling point of polyjuice",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": " is -100.",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": "",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "complete"
+            },
+            "logprobs": null,
+            "stop_reason": {
+              "__enum__": "StopReason",
+              "__module__": "llama_stack.models.llama.datatypes",
+              "value": "end_of_turn"
+            }
+          },
+          "metrics": [
+            {
+              "attributes": {
+                "model_id": "meta-llama/Llama-3.3-70B-Instruct",
+                "provider_id": "fireworks"
+              },
+              "metric": "prompt_tokens",
+              "span_id": "8dM6i5mO",
+              "timestamp": {
+                "__class__": "datetime",
+                "__datetime__": "2025-03-07T02:05:03.329281+00:00",
+                "__module__": "datetime"
+              },
+              "trace_id": "zMJDP5dXRrChi7uE",
+              "type": "metric",
+              "unit": "tokens",
+              "value": 86
+            },
+            {
+              "attributes": {
+                "model_id": "meta-llama/Llama-3.3-70B-Instruct",
+                "provider_id": "fireworks"
+              },
+              "metric": "completion_tokens",
+              "span_id": "8dM6i5mO",
+              "timestamp": {
+                "__class__": "datetime",
+                "__datetime__": "2025-03-07T02:05:03.329312+00:00",
+                "__module__": "datetime"
+              },
+              "trace_id": "zMJDP5dXRrChi7uE",
+              "type": "metric",
+              "unit": "tokens",
+              "value": 45
+            },
+            {
+              "attributes": {
+                "model_id": "meta-llama/Llama-3.3-70B-Instruct",
+                "provider_id": "fireworks"
+              },
+              "metric": "total_tokens",
+              "span_id": "8dM6i5mO",
+              "timestamp": {
+                "__class__": "datetime",
+                "__datetime__": "2025-03-07T02:05:03.329318+00:00",
+                "__module__": "datetime"
+              },
+              "trace_id": "zMJDP5dXRrChi7uE",
+              "type": "metric",
+              "unit": "tokens",
+              "value": 131
             }
           ]
         }
@@ -24808,7 +25671,7 @@
                   "celcius": true,
                   "liquid_name": "polyjuice"
                 },
-                "call_id": "d40ddbd1-809b-409b-b48b-d84443c18bce",
+                "call_id": "328cb19d-47bb-47cc-8258-a5ca2e26803e",
                 "tool_name": "get_boiling_point"
               },
               "type": "tool_call"
@@ -24856,13 +25719,13 @@
                 "provider_id": "fireworks"
               },
               "metric": "prompt_tokens",
-              "span_id": "zttKskv7",
+              "span_id": "dS0bhfN_",
               "timestamp": {
                 "__class__": "datetime",
-                "__datetime__": "2025-03-07T01:45:54.581565+00:00",
+                "__datetime__": "2025-03-07T02:04:53.324788+00:00",
                 "__module__": "datetime"
               },
-              "trace_id": "wziq5O8KR3yZ8HQ6",
+              "trace_id": "UJz5Cas1SDyQYeBk",
               "type": "metric",
               "unit": "tokens",
               "value": 37
@@ -24873,13 +25736,13 @@
                 "provider_id": "fireworks"
               },
               "metric": "completion_tokens",
-              "span_id": "zttKskv7",
+              "span_id": "dS0bhfN_",
               "timestamp": {
                 "__class__": "datetime",
-                "__datetime__": "2025-03-07T01:45:54.581589+00:00",
+                "__datetime__": "2025-03-07T02:04:53.324835+00:00",
                 "__module__": "datetime"
               },
-              "trace_id": "wziq5O8KR3yZ8HQ6",
+              "trace_id": "UJz5Cas1SDyQYeBk",
               "type": "metric",
               "unit": "tokens",
               "value": 28
@@ -24890,13 +25753,13 @@
                 "provider_id": "fireworks"
               },
               "metric": "total_tokens",
-              "span_id": "zttKskv7",
+              "span_id": "dS0bhfN_",
               "timestamp": {
                 "__class__": "datetime",
-                "__datetime__": "2025-03-07T01:45:54.581593+00:00",
+                "__datetime__": "2025-03-07T02:04:53.324844+00:00",
                 "__module__": "datetime"
               },
-              "trace_id": "wziq5O8KR3yZ8HQ6",
+              "trace_id": "UJz5Cas1SDyQYeBk",
               "type": "metric",
               "unit": "tokens",
               "value": 65
@@ -24955,7 +25818,27 @@
         "data": {
           "event": {
             "delta": {
-              "text": "get_boiling_point_with_metadata(liquid_name='polyjuice', cel",
+              "text": "get_boiling_point_with_metadata",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": "(liquid_name='polyjuice', cel",
               "type": "text"
             },
             "event_type": {
@@ -25005,7 +25888,7 @@
                   "celcius": true,
                   "liquid_name": "polyjuice"
                 },
-                "call_id": "da4ba419-3eba-4c22-895d-4d3623b3783d",
+                "call_id": "5bb48d00-7d5c-49e2-bddf-e5fdc5f35485",
                 "tool_name": "get_boiling_point_with_metadata"
               },
               "type": "tool_call"
@@ -25053,13 +25936,13 @@
                 "provider_id": "fireworks"
               },
               "metric": "prompt_tokens",
-              "span_id": "aYWCbnMW",
+              "span_id": "mfrFN7m2",
               "timestamp": {
                 "__class__": "datetime",
-                "__datetime__": "2025-03-07T01:45:55.971863+00:00",
+                "__datetime__": "2025-03-07T02:05:02.136501+00:00",
                 "__module__": "datetime"
               },
-              "trace_id": "_if5PWWaR8KmkVQS",
+              "trace_id": "T4eddr4-SMWPQwKA",
               "type": "metric",
               "unit": "tokens",
               "value": 37
@@ -25070,13 +25953,13 @@
                 "provider_id": "fireworks"
               },
               "metric": "completion_tokens",
-              "span_id": "aYWCbnMW",
+              "span_id": "mfrFN7m2",
               "timestamp": {
                 "__class__": "datetime",
-                "__datetime__": "2025-03-07T01:45:55.971895+00:00",
+                "__datetime__": "2025-03-07T02:05:02.136529+00:00",
                 "__module__": "datetime"
               },
-              "trace_id": "_if5PWWaR8KmkVQS",
+              "trace_id": "T4eddr4-SMWPQwKA",
               "type": "metric",
               "unit": "tokens",
               "value": 30
@@ -25087,13 +25970,13 @@
                 "provider_id": "fireworks"
               },
               "metric": "total_tokens",
-              "span_id": "aYWCbnMW",
+              "span_id": "mfrFN7m2",
               "timestamp": {
                 "__class__": "datetime",
-                "__datetime__": "2025-03-07T01:45:55.971902+00:00",
+                "__datetime__": "2025-03-07T02:05:02.136535+00:00",
                 "__module__": "datetime"
               },
-              "trace_id": "_if5PWWaR8KmkVQS",
+              "trace_id": "T4eddr4-SMWPQwKA",
               "type": "metric",
               "unit": "tokens",
               "value": 67
@@ -31410,6 +32293,167 @@
     ],
     "type": "generator"
   },
+  "[[\"meta-llama/Llama-3.3-70B-Instruct\", [{\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"SystemMessage\", \"data\": {\"content\": \"You are a helpful assistant\", \"role\": \"system\"}}, {\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"UserMessage\", \"data\": {\"content\": \"What is the boiling point of polyjuice?\", \"context\": null, \"role\": \"user\"}}, {\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"CompletionMessage\", \"data\": {\"content\": \"\", \"role\": \"assistant\", \"stop_reason\": {\"__enum__\": \"StopReason\", \"__module__\": \"llama_stack.models.llama.datatypes\", \"value\": \"end_of_turn\"}, \"tool_calls\": [{\"arguments\": {\"celcius\": true, \"liquid_name\": \"polyjuice\"}, \"call_id\": \"<UUID>\", \"tool_name\": \"get_boiling_point\"}]}}, {\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"ToolResponseMessage\", \"data\": {\"call_id\": \"<UUID>\", \"content\": \"-100\", \"role\": \"tool\", \"tool_name\": \"get_boiling_point\"}}]], {\"response_format\": null, \"sampling_params\": {\"__module__\": \"llama_stack.models.llama.datatypes\", \"__pydantic__\": \"SamplingParams\", \"data\": {\"max_tokens\": 0, \"repetition_penalty\": 1.0, \"strategy\": {\"temperature\": 0.0001, \"top_p\": 0.9, \"type\": \"top_p\"}}}, \"stream\": true, \"tool_config\": {\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"ToolConfig\", \"data\": {\"system_message_behavior\": {\"__enum__\": \"SystemMessageBehavior\", \"__module__\": \"llama_stack.apis.inference.inference\", \"value\": \"append\"}, \"tool_choice\": \"get_boiling_point\", \"tool_prompt_format\": null}}, \"tool_prompt_format\": null, \"tools\": [{\"__module__\": \"llama_stack.models.llama.datatypes\", \"__pydantic__\": \"ToolDefinition\", \"data\": {\"description\": \"Returns the boiling point of a liquid in Celcius or Fahrenheit\", \"parameters\": {\"celcius\": {\"default\": true, \"description\": \"Whether to return the boiling point in Celcius\", \"param_type\": \"bool\", \"required\": false}, \"liquid_name\": {\"default\": null, \"description\": \"The name of the liquid\", \"param_type\": \"string\", \"required\": true}}, \"tool_name\": \"get_boiling_point\"}}]}]": {
+    "chunks": [
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": "",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "start"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": "The",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": " boiling point of polyjuice is -100 degrees Celsius",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": ".",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": "",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "complete"
+            },
+            "logprobs": null,
+            "stop_reason": {
+              "__enum__": "StopReason",
+              "__module__": "llama_stack.models.llama.datatypes",
+              "value": "end_of_turn"
+            }
+          },
+          "metrics": [
+            {
+              "attributes": {
+                "model_id": "meta-llama/Llama-3.3-70B-Instruct",
+                "provider_id": "fireworks"
+              },
+              "metric": "prompt_tokens",
+              "span_id": "drZjZkfj",
+              "timestamp": {
+                "__class__": "datetime",
+                "__datetime__": "2025-03-07T02:04:33.852666+00:00",
+                "__module__": "datetime"
+              },
+              "trace_id": "Sn0I7GFHTxKxewK2",
+              "type": "metric",
+              "unit": "tokens",
+              "value": 77
+            },
+            {
+              "attributes": {
+                "model_id": "meta-llama/Llama-3.3-70B-Instruct",
+                "provider_id": "fireworks"
+              },
+              "metric": "completion_tokens",
+              "span_id": "drZjZkfj",
+              "timestamp": {
+                "__class__": "datetime",
+                "__datetime__": "2025-03-07T02:04:33.852692+00:00",
+                "__module__": "datetime"
+              },
+              "trace_id": "Sn0I7GFHTxKxewK2",
+              "type": "metric",
+              "unit": "tokens",
+              "value": 23
+            },
+            {
+              "attributes": {
+                "model_id": "meta-llama/Llama-3.3-70B-Instruct",
+                "provider_id": "fireworks"
+              },
+              "metric": "total_tokens",
+              "span_id": "drZjZkfj",
+              "timestamp": {
+                "__class__": "datetime",
+                "__datetime__": "2025-03-07T02:04:33.852699+00:00",
+                "__module__": "datetime"
+              },
+              "trace_id": "Sn0I7GFHTxKxewK2",
+              "type": "metric",
+              "unit": "tokens",
+              "value": 100
+            }
+          ]
+        }
+      }
+    ],
+    "type": "generator"
+  },
   "[[\"meta-llama/Llama-3.3-70B-Instruct\", [{\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"SystemMessage\", \"data\": {\"content\": \"You are a helpful assistant\", \"role\": \"system\"}}, {\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"UserMessage\", \"data\": {\"content\": \"What is the boiling point of polyjuice?\", \"context\": null, \"role\": \"user\"}}, {\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"CompletionMessage\", \"data\": {\"content\": \"\", \"role\": \"assistant\", \"stop_reason\": {\"__enum__\": \"StopReason\", \"__module__\": \"llama_stack.models.llama.datatypes\", \"value\": \"end_of_turn\"}, \"tool_calls\": [{\"arguments\": {\"celcius\": true, \"liquid_name\": \"polyjuice\"}, \"call_id\": \"<UUID>\", \"tool_name\": \"get_boiling_point\"}]}}, {\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"ToolResponseMessage\", \"data\": {\"call_id\": \"<UUID>\", \"content\": \"-100\", \"role\": \"tool\", \"tool_name\": \"get_boiling_point\"}}]], {\"response_format\": null, \"sampling_params\": {\"__module__\": \"llama_stack.models.llama.datatypes\", \"__pydantic__\": \"SamplingParams\", \"data\": {\"max_tokens\": 0, \"repetition_penalty\": 1.0, \"strategy\": {\"temperature\": 0.0001, \"top_p\": 0.9, \"type\": \"top_p\"}}}, \"stream\": true, \"tool_config\": {\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"ToolConfig\", \"data\": {\"system_message_behavior\": {\"__enum__\": \"SystemMessageBehavior\", \"__module__\": \"llama_stack.apis.inference.inference\", \"value\": \"append\"}, \"tool_choice\": {\"__enum__\": \"ToolChoice\", \"__module__\": \"llama_stack.apis.inference.inference\", \"value\": \"auto\"}, \"tool_prompt_format\": null}}, \"tool_prompt_format\": null, \"tools\": [{\"__module__\": \"llama_stack.models.llama.datatypes\", \"__pydantic__\": \"ToolDefinition\", \"data\": {\"description\": \"Returns the boiling point of a liquid in Celcius or Fahrenheit\", \"parameters\": {\"celcius\": {\"default\": true, \"description\": \"Whether to return the boiling point in Celcius\", \"param_type\": \"bool\", \"required\": false}, \"liquid_name\": {\"default\": null, \"description\": \"The name of the liquid\", \"param_type\": \"string\", \"required\": true}}, \"tool_name\": \"get_boiling_point\"}}, {\"__module__\": \"llama_stack.models.llama.datatypes\", \"__pydantic__\": \"ToolDefinition\", \"data\": {\"description\": \"Search the web for information\", \"parameters\": {\"query\": {\"default\": null, \"description\": \"The query to search for\", \"param_type\": \"string\", \"required\": true}}, \"tool_name\": {\"__enum__\": \"BuiltinTool\", \"__module__\": \"llama_stack.models.llama.datatypes\", \"value\": \"brave_search\"}}}]}]": {
     "chunks": [
       {
@@ -31544,6 +32588,307 @@
               "type": "metric",
               "unit": "tokens",
               "value": 100
+            }
+          ]
+        }
+      }
+    ],
+    "type": "generator"
+  },
+  "[[\"meta-llama/Llama-3.3-70B-Instruct\", [{\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"SystemMessage\", \"data\": {\"content\": \"You are a helpful assistant\", \"role\": \"system\"}}, {\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"UserMessage\", \"data\": {\"content\": \"What is the boiling point of polyjuice?\", \"context\": null, \"role\": \"user\"}}, {\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"CompletionMessage\", \"data\": {\"content\": \"\", \"role\": \"assistant\", \"stop_reason\": {\"__enum__\": \"StopReason\", \"__module__\": \"llama_stack.models.llama.datatypes\", \"value\": \"end_of_turn\"}, \"tool_calls\": [{\"arguments\": {\"celcius\": true, \"liquid_name\": \"polyjuice\"}, \"call_id\": \"<UUID>\", \"tool_name\": \"get_boiling_point\"}]}}, {\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"ToolResponseMessage\", \"data\": {\"call_id\": \"<UUID>\", \"content\": \"-100\", \"role\": \"tool\", \"tool_name\": \"get_boiling_point\"}}]], {\"response_format\": null, \"sampling_params\": {\"__module__\": \"llama_stack.models.llama.datatypes\", \"__pydantic__\": \"SamplingParams\", \"data\": {\"max_tokens\": 0, \"repetition_penalty\": 1.0, \"strategy\": {\"temperature\": 0.0001, \"top_p\": 0.9, \"type\": \"top_p\"}}}, \"stream\": true, \"tool_config\": {\"__module__\": \"llama_stack.apis.inference.inference\", \"__pydantic__\": \"ToolConfig\", \"data\": {\"system_message_behavior\": {\"__enum__\": \"SystemMessageBehavior\", \"__module__\": \"llama_stack.apis.inference.inference\", \"value\": \"append\"}, \"tool_choice\": {\"__enum__\": \"ToolChoice\", \"__module__\": \"llama_stack.apis.inference.inference\", \"value\": \"required\"}, \"tool_prompt_format\": null}}, \"tool_prompt_format\": null, \"tools\": [{\"__module__\": \"llama_stack.models.llama.datatypes\", \"__pydantic__\": \"ToolDefinition\", \"data\": {\"description\": \"Returns the boiling point of a liquid in Celcius or Fahrenheit\", \"parameters\": {\"celcius\": {\"default\": true, \"description\": \"Whether to return the boiling point in Celcius\", \"param_type\": \"bool\", \"required\": false}, \"liquid_name\": {\"default\": null, \"description\": \"The name of the liquid\", \"param_type\": \"string\", \"required\": true}}, \"tool_name\": \"get_boiling_point\"}}]}]": {
+    "chunks": [
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": "",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "start"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": "The",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": " function get_boiling_point is not",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": " able",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": " to find the",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": " boiling point of \"polyjuice\" as",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": " it",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": " is not a real liquid",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": ". Polyju",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": "ice is a fictional substance from the",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": " Harry Potter series.",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": "",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "complete"
+            },
+            "logprobs": null,
+            "stop_reason": {
+              "__enum__": "StopReason",
+              "__module__": "llama_stack.models.llama.datatypes",
+              "value": "end_of_turn"
+            }
+          },
+          "metrics": [
+            {
+              "attributes": {
+                "model_id": "meta-llama/Llama-3.3-70B-Instruct",
+                "provider_id": "fireworks"
+              },
+              "metric": "prompt_tokens",
+              "span_id": "p7Vx9VAq",
+              "timestamp": {
+                "__class__": "datetime",
+                "__datetime__": "2025-03-07T02:04:28.232189+00:00",
+                "__module__": "datetime"
+              },
+              "trace_id": "WKEqFugATCeCl8mc",
+              "type": "metric",
+              "unit": "tokens",
+              "value": 77
+            },
+            {
+              "attributes": {
+                "model_id": "meta-llama/Llama-3.3-70B-Instruct",
+                "provider_id": "fireworks"
+              },
+              "metric": "completion_tokens",
+              "span_id": "p7Vx9VAq",
+              "timestamp": {
+                "__class__": "datetime",
+                "__datetime__": "2025-03-07T02:04:28.232325+00:00",
+                "__module__": "datetime"
+              },
+              "trace_id": "WKEqFugATCeCl8mc",
+              "type": "metric",
+              "unit": "tokens",
+              "value": 51
+            },
+            {
+              "attributes": {
+                "model_id": "meta-llama/Llama-3.3-70B-Instruct",
+                "provider_id": "fireworks"
+              },
+              "metric": "total_tokens",
+              "span_id": "p7Vx9VAq",
+              "timestamp": {
+                "__class__": "datetime",
+                "__datetime__": "2025-03-07T02:04:28.232334+00:00",
+                "__module__": "datetime"
+              },
+              "trace_id": "WKEqFugATCeCl8mc",
+              "type": "metric",
+              "unit": "tokens",
+              "value": 128
             }
           ]
         }
@@ -32662,7 +34007,7 @@
         "data": {
           "event": {
             "delta": {
-              "text": "get_boiling_point(liquid_name='polyjuice', cel",
+              "text": "get_boiling_point(liquid_name='polyjuice",
               "type": "text"
             },
             "event_type": {
@@ -32682,7 +34027,7 @@
         "data": {
           "event": {
             "delta": {
-              "text": "cius=True)]",
+              "text": "', celcius=True)]",
               "type": "text"
             },
             "event_type": {
@@ -32712,7 +34057,7 @@
                   "celcius": true,
                   "liquid_name": "polyjuice"
                 },
-                "call_id": "1bc7b141-232a-46fb-974d-12a751cc7286",
+                "call_id": "d43b2636-903d-430d-8389-91eefe5a1d75",
                 "tool_name": "get_boiling_point"
               },
               "type": "tool_call"
@@ -32760,13 +34105,13 @@
                 "provider_id": "fireworks"
               },
               "metric": "prompt_tokens",
-              "span_id": "5OVWQM9Q",
+              "span_id": "9EBiVeAT",
               "timestamp": {
                 "__class__": "datetime",
-                "__datetime__": "2025-03-07T01:44:38.776575+00:00",
+                "__datetime__": "2025-03-07T02:04:32.221646+00:00",
                 "__module__": "datetime"
               },
-              "trace_id": "lyyYZ1xfQ2KNhFne",
+              "trace_id": "7kB12OwpSUOcwmJV",
               "type": "metric",
               "unit": "tokens",
               "value": 30
@@ -32777,13 +34122,13 @@
                 "provider_id": "fireworks"
               },
               "metric": "completion_tokens",
-              "span_id": "5OVWQM9Q",
+              "span_id": "9EBiVeAT",
               "timestamp": {
                 "__class__": "datetime",
-                "__datetime__": "2025-03-07T01:44:38.776587+00:00",
+                "__datetime__": "2025-03-07T02:04:32.221673+00:00",
                 "__module__": "datetime"
               },
-              "trace_id": "lyyYZ1xfQ2KNhFne",
+              "trace_id": "7kB12OwpSUOcwmJV",
               "type": "metric",
               "unit": "tokens",
               "value": 28
@@ -32794,13 +34139,13 @@
                 "provider_id": "fireworks"
               },
               "metric": "total_tokens",
-              "span_id": "5OVWQM9Q",
+              "span_id": "9EBiVeAT",
               "timestamp": {
                 "__class__": "datetime",
-                "__datetime__": "2025-03-07T01:44:38.776589+00:00",
+                "__datetime__": "2025-03-07T02:04:32.221680+00:00",
                 "__module__": "datetime"
               },
-              "trace_id": "lyyYZ1xfQ2KNhFne",
+              "trace_id": "7kB12OwpSUOcwmJV",
               "type": "metric",
               "unit": "tokens",
               "value": 58
@@ -33076,7 +34421,7 @@
         "data": {
           "event": {
             "delta": {
-              "text": " the Harry Potter series by J.K. Rowling. As",
+              "text": " the Harry Potter series by J.K. Rowling. As it",
               "type": "text"
             },
             "event_type": {
@@ -33096,7 +34441,7 @@
         "data": {
           "event": {
             "delta": {
-              "text": " it's not a",
+              "text": "'s not a real substance, it doesn't have a boiling point",
               "type": "text"
             },
             "event_type": {
@@ -33116,7 +34461,7 @@
         "data": {
           "event": {
             "delta": {
-              "text": " real substance, it doesn't have a boiling point. Polyju",
+              "text": ". Polyjuice Potion is a magical concoction",
               "type": "text"
             },
             "event_type": {
@@ -33136,7 +34481,7 @@
         "data": {
           "event": {
             "delta": {
-              "text": "ice Potion is a magical concoction that allows the drinker",
+              "text": " that allows the drinker to assume the form and",
               "type": "text"
             },
             "event_type": {
@@ -33156,7 +34501,7 @@
         "data": {
           "event": {
             "delta": {
-              "text": " to assume the form and appearance",
+              "text": " appearance",
               "type": "text"
             },
             "event_type": {
@@ -33176,7 +34521,7 @@
         "data": {
           "event": {
             "delta": {
-              "text": " of another person, but it's not a physical substance that can be measured or analyzed in",
+              "text": " of another person, but it's not a physical substance that can",
               "type": "text"
             },
             "event_type": {
@@ -33196,7 +34541,7 @@
         "data": {
           "event": {
             "delta": {
-              "text": " the same way as real-world materials.\n\nIf you",
+              "text": " be measured or analyzed in the same way as real-world",
               "type": "text"
             },
             "event_type": {
@@ -33216,7 +34561,7 @@
         "data": {
           "event": {
             "delta": {
-              "text": " have any other questions or if there's anything else I can help you with",
+              "text": " chemicals.\n\nIf you",
               "type": "text"
             },
             "event_type": {
@@ -33236,7 +34581,47 @@
         "data": {
           "event": {
             "delta": {
-              "text": ", feel free to ask!",
+              "text": " have any other questions or",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": " if there's anything else I can help you with, feel free to ask",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": "!",
               "type": "text"
             },
             "event_type": {
@@ -33278,13 +34663,13 @@
                 "provider_id": "fireworks"
               },
               "metric": "prompt_tokens",
-              "span_id": "oWsGYV5X",
+              "span_id": "M0oC9v8Y",
               "timestamp": {
                 "__class__": "datetime",
-                "__datetime__": "2025-03-07T01:44:37.441343+00:00",
+                "__datetime__": "2025-03-07T02:04:30.531648+00:00",
                 "__module__": "datetime"
               },
-              "trace_id": "rvmP5R2QT_CN6-EF",
+              "trace_id": "0CMlh2kQShSVm3zE",
               "type": "metric",
               "unit": "tokens",
               "value": 30
@@ -33295,13 +34680,13 @@
                 "provider_id": "fireworks"
               },
               "metric": "completion_tokens",
-              "span_id": "oWsGYV5X",
+              "span_id": "M0oC9v8Y",
               "timestamp": {
                 "__class__": "datetime",
-                "__datetime__": "2025-03-07T01:44:37.441379+00:00",
+                "__datetime__": "2025-03-07T02:04:30.531666+00:00",
                 "__module__": "datetime"
               },
-              "trace_id": "rvmP5R2QT_CN6-EF",
+              "trace_id": "0CMlh2kQShSVm3zE",
               "type": "metric",
               "unit": "tokens",
               "value": 113
@@ -33312,13 +34697,13 @@
                 "provider_id": "fireworks"
               },
               "metric": "total_tokens",
-              "span_id": "oWsGYV5X",
+              "span_id": "M0oC9v8Y",
               "timestamp": {
                 "__class__": "datetime",
-                "__datetime__": "2025-03-07T01:44:37.441384+00:00",
+                "__datetime__": "2025-03-07T02:04:30.531671+00:00",
                 "__module__": "datetime"
               },
-              "trace_id": "rvmP5R2QT_CN6-EF",
+              "trace_id": "0CMlh2kQShSVm3zE",
               "type": "metric",
               "unit": "tokens",
               "value": 143
@@ -33377,7 +34762,27 @@
         "data": {
           "event": {
             "delta": {
-              "text": "get_boiling_point(liquid_name='polyjuice', celcius=True)]",
+              "text": "get_boiling_point(liquid_name='polyjuice', cel",
+              "type": "text"
+            },
+            "event_type": {
+              "__enum__": "ChatCompletionResponseEventType",
+              "__module__": "llama_stack.apis.inference.inference",
+              "value": "progress"
+            },
+            "logprobs": null,
+            "stop_reason": null
+          },
+          "metrics": null
+        }
+      },
+      {
+        "__module__": "llama_stack.apis.inference.inference",
+        "__pydantic__": "ChatCompletionResponseStreamChunk",
+        "data": {
+          "event": {
+            "delta": {
+              "text": "cius=True)]",
               "type": "text"
             },
             "event_type": {
@@ -33407,7 +34812,7 @@
                   "celcius": true,
                   "liquid_name": "polyjuice"
                 },
-                "call_id": "62ab6565-a95f-45bd-a4e3-5d00d4adff19",
+                "call_id": "acbb04a1-08f4-4277-9b66-aadda2fa2be7",
                 "tool_name": "get_boiling_point"
               },
               "type": "tool_call"
@@ -33455,13 +34860,13 @@
                 "provider_id": "fireworks"
               },
               "metric": "prompt_tokens",
-              "span_id": "1NPyjBIx",
+              "span_id": "jMXDDKvp",
               "timestamp": {
                 "__class__": "datetime",
-                "__datetime__": "2025-03-07T01:44:32.518987+00:00",
+                "__datetime__": "2025-03-07T02:04:26.175063+00:00",
                 "__module__": "datetime"
               },
-              "trace_id": "LVAsNUTqTt6-bZqF",
+              "trace_id": "44TwzIrGS2aqfbVn",
               "type": "metric",
               "unit": "tokens",
               "value": 30
@@ -33472,13 +34877,13 @@
                 "provider_id": "fireworks"
               },
               "metric": "completion_tokens",
-              "span_id": "1NPyjBIx",
+              "span_id": "jMXDDKvp",
               "timestamp": {
                 "__class__": "datetime",
-                "__datetime__": "2025-03-07T01:44:32.518998+00:00",
+                "__datetime__": "2025-03-07T02:04:26.175128+00:00",
                 "__module__": "datetime"
               },
-              "trace_id": "LVAsNUTqTt6-bZqF",
+              "trace_id": "44TwzIrGS2aqfbVn",
               "type": "metric",
               "unit": "tokens",
               "value": 28
@@ -33489,13 +34894,13 @@
                 "provider_id": "fireworks"
               },
               "metric": "total_tokens",
-              "span_id": "1NPyjBIx",
+              "span_id": "jMXDDKvp",
               "timestamp": {
                 "__class__": "datetime",
-                "__datetime__": "2025-03-07T01:44:32.519001+00:00",
+                "__datetime__": "2025-03-07T02:04:26.175137+00:00",
                 "__module__": "datetime"
               },
-              "trace_id": "LVAsNUTqTt6-bZqF",
+              "trace_id": "44TwzIrGS2aqfbVn",
               "type": "metric",
               "unit": "tokens",
               "value": 58
