@@ -13,7 +13,7 @@ from llama_stack.cli.subcommand import Subcommand
 from llama_stack.cli.table import print_table
 from llama_stack.models.llama.datatypes import CoreModelId, ModelFamily, is_multimodal, model_family
 
-ROOT_DIR = Path(__file__).parent.parent
+ROOT_DIR = Path(__file__).parent.parent.parent
 
 
 class ModelPromptFormat(Subcommand):
@@ -43,6 +43,12 @@ class ModelPromptFormat(Subcommand):
             type=str,
             default="llama3_1",
             help="Model Family (llama3_1, llama3_X, etc.)",
+        )
+        self.parser.add_argument(
+            "-l",
+            "--list",
+            action="store_true",
+            help="List all available models",
         )
 
     def _run_model_template_cmd(self, args: argparse.Namespace) -> None:
