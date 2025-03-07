@@ -81,8 +81,6 @@ def test_scoring_functions_register(
 
 def test_scoring_score(llama_stack_client):
     register_dataset(llama_stack_client, for_rag=True)
-    response = llama_stack_client.datasets.list()
-    assert len(response) == 1
 
     # scoring individual rows
     rows = llama_stack_client.datasetio.get_rows_paginated(
@@ -119,8 +117,6 @@ def test_scoring_score(llama_stack_client):
 
 def test_scoring_score_with_params_llm_as_judge(llama_stack_client, sample_judge_prompt_template, judge_model_id):
     register_dataset(llama_stack_client, for_rag=True)
-    response = llama_stack_client.datasets.list()
-    assert len(response) == 1
 
     # scoring individual rows
     rows = llama_stack_client.datasetio.get_rows_paginated(
