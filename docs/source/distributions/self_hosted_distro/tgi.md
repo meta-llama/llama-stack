@@ -20,6 +20,7 @@ The `llamastack/distribution-tgi` distribution consists of the following provide
 | datasetio | `remote::huggingface`, `inline::localfs` |
 | eval | `inline::meta-reference` |
 | inference | `remote::tgi`, `inline::sentence-transformers` |
+| preprocessing | `inline::basic`, `inline::simple_chunking` |
 | safety | `inline::llama-guard` |
 | scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |
 | telemetry | `inline::meta-reference` |

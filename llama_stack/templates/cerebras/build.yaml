@@ -29,4 +29,7 @@ distribution_spec:
     - remote::tavily-search
     - inline::code-interpreter
     - inline::rag-runtime
+    preprocessing:
+    - inline::basic
+    - inline::simple_chunking
 image_type: conda
