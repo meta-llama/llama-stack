@@ -115,6 +115,7 @@ class Provider(BaseModel):
     provider_id: str
     provider_type: str
     config: Dict[str, Any]
+    health: Optional[str] = None
 
 
 class ServerConfig(BaseModel):
