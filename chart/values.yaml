@@ -1,0 +1,13 @@
+distribution: # Required: [ollama, ...], see https://llama-stack.readthedocs.io/en/latest/distributions/selection.html
+model: "meta-llama/Llama-3.2-1B-Instruct"
+llamaStack:
+  resources:
+    requests:
+      cpu: 200m
+      memory: 100Mi
+ollama:
+  resources:
+    requests:
+      cpu: 1
+      memory: 8Gi
+  
