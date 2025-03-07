@@ -16,6 +16,7 @@ from typing import Any, AsyncGenerator, Dict, List, Optional, Tuple, Union
 from urllib.parse import urlparse
 
 import httpx
+from rich.markup import escape
 
 from llama_stack.apis.agents import (
     AgentConfig,
@@ -1029,7 +1030,7 @@ async def execute_tool_call_maybe(
             **toolgroup_args.get(group_name, {}),
         },
     )
-    logger.info(f"tool call {name} completed with result: {result}")
+    logger.info(f"tool call {name} completed with result: {escape(str(result))}")
     return result
 
 
