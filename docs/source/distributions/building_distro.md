@@ -22,25 +22,25 @@ The main points to consider are:
 
 ```
 llama stack build -h
-
-usage: llama stack build [-h] [--config CONFIG] [--template TEMPLATE] [--list-templates]
-                         [--image-type {conda,container,venv}] [--image-name IMAGE_NAME] [--print-deps-only]
+usage: llama stack build [-h] [--config CONFIG] [--template TEMPLATE] [--list-templates] [--image-type {conda,container,venv}] [--image-name IMAGE_NAME] [--print-deps-only] [--run]
 
 Build a Llama stack container
 
 options:
   -h, --help            show this help message and exit
-  --config CONFIG       Path to a config file to use for the build. You can find example configs in llama_stack/distributions/**/build.yaml.
-                        If this argument is not provided, you will be prompted to enter information interactively
-  --template TEMPLATE   Name of the example template config to use for build. You may use `llama stack build --list-templates` to check out the available templates
-  --list-templates      Show the available templates for building a Llama Stack distribution
+  --config CONFIG       Path to a config file to use for the build. You can find example configs in llama_stack/distributions/**/build.yaml. If this argument is not provided, you will
+                        be prompted to enter information interactively (default: None)
+  --template TEMPLATE   Name of the example template config to use for build. You may use `llama stack build --list-templates` to check out the available templates (default: None)
+  --list-templates      Show the available templates for building a Llama Stack distribution (default: False)
   --image-type {conda,container,venv}
-                        Image Type to use for the build. This can be either conda or container or venv. If not specified, will use the image type from the template config.
+                        Image Type to use for the build. This can be either conda or container or venv. If not specified, will use the image type from the template config. (default:
+                        conda)
   --image-name IMAGE_NAME
-                        [for image-type=conda] Name of the conda environment to use for the build. If
-                        not specified, currently active Conda environment will be used. If no Conda
-                        environment is active, you must specify a name.
-  --print-deps-only     Print the dependencies for the stack only, without building the stack
+                        [for image-type=conda|venv] Name of the conda or virtual environment to use for the build. If not specified, currently active Conda environment will be used if
+                        found. (default: None)
+  --print-deps-only     Print the dependencies for the stack only, without building the stack (default: False)
+  --run                 Run the stack after building using the same image type, name, and other applicable arguments (default: False)
+
 ```
 
 After this step is complete, a file named `<name>-build.yaml` and template file `<name>-run.yaml` will be generated and saved at the output file path specified at the end of the command.
@@ -183,8 +183,8 @@ Now, let's start the Llama Stack Distribution Server. You will need the YAML con
 
 ```
 llama stack run -h
-usage: llama stack run [-h] [--port PORT] [--image-name IMAGE_NAME] [--disable-ipv6] [--env KEY=VALUE] [--tls-keyfile TLS_KEYFILE]
-                       [--tls-certfile TLS_CERTFILE] [--image-type {conda,container,venv}]
+usage: llama stack run [-h] [--port PORT] [--image-name IMAGE_NAME] [--disable-ipv6] [--env KEY=VALUE] [--tls-keyfile TLS_KEYFILE] [--tls-certfile TLS_CERTFILE]
+                       [--image-type {conda,container,venv}]
                        config
 
 Start the server for a Llama Stack Distribution. You should have already built (or downloaded) and configured the distribution.
@@ -194,17 +194,17 @@ positional arguments:
 
 options:
   -h, --help            show this help message and exit
-  --port PORT           Port to run the server on. It can also be passed via the env var LLAMA_STACK_PORT. Defaults to 8321
+  --port PORT           Port to run the server on. It can also be passed via the env var LLAMA_STACK_PORT. (default: 8321)
   --image-name IMAGE_NAME
-                        Name of the image to run. Defaults to the current conda environment
-  --disable-ipv6        Disable IPv6 support
-  --env KEY=VALUE       Environment variables to pass to the server in KEY=VALUE format. Can be specified multiple times.
+                        Name of the image to run. Defaults to the current conda environment (default: None)
+  --disable-ipv6        Disable IPv6 support (default: False)
+  --env KEY=VALUE       Environment variables to pass to the server in KEY=VALUE format. Can be specified multiple times. (default: [])
   --tls-keyfile TLS_KEYFILE
-                        Path to TLS key file for HTTPS
+                        Path to TLS key file for HTTPS (default: None)
   --tls-certfile TLS_CERTFILE
-                        Path to TLS certificate file for HTTPS
+                        Path to TLS certificate file for HTTPS (default: None)
   --image-type {conda,container,venv}
-                        Image Type used during the build. This can be either conda or container or venv.
+                        Image Type used during the build. This can be either conda or container or venv. (default: conda)
 
 ```
 
