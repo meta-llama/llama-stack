@@ -19,8 +19,8 @@ def get_all_releases(token):
     if response.status_code == 200:
         return response.json()
     else:
-        print(f"Error fetching releases: {response.status_code}, {response.text}")
-        return []
+        raise Exception(f"Error fetching releases: {response.status_code}, {response.text}")
+
 
 def merge_release_notes(output_file, token=None):
     releases = get_all_releases(token)
