@@ -25,6 +25,8 @@ import logging
 import os
 from typing import Dict
 
+from .distribution.datatypes import LoggerConfig
+
 # ANSI color codes for terminal output
 COLORS = {
     "RESET": "\033[0m",
@@ -106,7 +108,7 @@ class ColoredFormatter(logging.Formatter):
         return formatted_msg
 
 
-def init(default_level: int = logging.INFO) -> None:
+def init(default_level: int = logging.INFO, config: LoggerConfig | None = None) -> None:
     global _default_level, _category_levels, _logger
 
     _default_level = default_level
@@ -123,6 +125,15 @@ def init(default_level: int = logging.INFO) -> None:
     for category in CATEGORIES:
         _category_levels[category] = default_level
 
+    level_value = {
+        "debug": logging.DEBUG,
+        "info": logging.INFO,
+        "warning": logging.WARNING,
+        "warn": logging.WARNING,
+        "error": logging.ERROR,
+        "critical": logging.CRITICAL,
+    }
+
     env_config = os.environ.get("LLAMA_STACK_LOGGING", "")
     if env_config:
         for pair in env_config.split(";"):
@@ -134,14 +145,7 @@ def init(default_level: int = logging.INFO) -> None:
                 category = category.strip().lower()
                 level = level.strip().lower()
 
-                level_value = {
-                    "debug": logging.DEBUG,
-                    "info": logging.INFO,
-                    "warning": logging.WARNING,
-                    "warn": logging.WARNING,
-                    "error": logging.ERROR,
-                    "critical": logging.CRITICAL,
-                }.get(level)
+                level_value.get(level)
 
                 if level_value is None:
                     _logger.warning(f"Unknown log level '{level}' for category '{category}'")
@@ -158,6 +162,16 @@ def init(default_level: int = logging.INFO) -> None:
 
             except ValueError:
                 _logger.warning(f"Invalid logging configuration: {pair}")
+    elif config is not None:
+        for category_config in config.category_levels:
+            if isinstance(category_config.level, str):
+                level = level_value.get(category_config.level)
+                if level_value is None:
+                    _logger.warning(f"Unknown log level '{level}' for category '{category}'")
+                    continue
+            else:
+                level = category_config.level
+            _category_levels[category_config.category] = level
 
 
 def _should_log(level: int, category: str) -> bool:

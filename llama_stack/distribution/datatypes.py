@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import logging
 from typing import Annotated, Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field
@@ -117,6 +118,22 @@ class Provider(BaseModel):
     config: Dict[str, Any]
 
 
+class LogCategoryConfig(BaseModel):
+    category: str = Field(
+        default="server",
+        description="logging category to apply this configuration to (core | server | router | inference | agents | safety | eval | tools | client)",
+    )
+    level: str | int = Field(default=logging.INFO, description="Log level (debug | info | warning | error | critical)")
+
+
+class LoggerConfig(BaseModel):
+    category_levels: List[LogCategoryConfig] = Field(
+        default_factory=list,
+        description="""
+The list different logging configurations for different portions of llama stack""",
+    )
+
+
 class ServerConfig(BaseModel):
     port: int = Field(
         default=8321,
@@ -175,6 +192,8 @@ a default SQLite store will be used.""",
     scoring_fns: List[ScoringFnInput] = Field(default_factory=list)
     benchmarks: List[BenchmarkInput] = Field(default_factory=list)
     tool_groups: List[ToolGroupInput] = Field(default_factory=list)
+
+    logger_config: Optional[LoggerConfig] = Field(default=None, description="Configuration of the Llama Stack Logger")
 
     server: ServerConfig = Field(
         default_factory=ServerConfig,
