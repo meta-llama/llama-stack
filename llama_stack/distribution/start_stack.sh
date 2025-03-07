@@ -100,12 +100,15 @@ esac
 
 if [[ "$env_type" == "venv" || "$env_type" == "conda" ]]; then
     set -x
+
     $PYTHON_BINARY -m llama_stack.distribution.server.server \
     --yaml-config "$yaml_config" \
     --port "$port" \
     $env_vars \
     $other_args
 elif [[ "$env_type" == "container" ]]; then
+    set -x
+
     # Check if container command is available
     if ! is_command_available $CONTAINER_BINARY; then
       printf "${RED}Error: ${CONTAINER_BINARY} command not found. Is ${CONTAINER_BINARY} installed and in your PATH?${NC}" >&2
@@ -140,8 +143,6 @@ elif [[ "$env_type" == "container" ]]; then
         URL="https://pypi.org/pypi/llama-stack/json"
         version_tag=$(curl -s $URL | jq -r '.info.version')
     fi
-
-    set -x
 
     $CONTAINER_BINARY run $CONTAINER_OPTS -it \
     -p $port:$port \
