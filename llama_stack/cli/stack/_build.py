@@ -141,7 +141,7 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
                 completer=WordCompleter(available_providers),
                 complete_while_typing=True,
                 validator=Validator.from_callable(
-                    lambda x: x in available_providers,
+                    lambda x: x in available_providers,  # noqa: B023 - see https://github.com/astral-sh/ruff/issues/7847
                     error_message="Invalid provider, use <TAB> to see options",
                 ),
             )
@@ -248,7 +248,7 @@ def _generate_run_config(
 
             config_type = instantiate_class_type(provider_registry[Api(api)][provider_type].config_class)
             if hasattr(config_type, "sample_run_config"):
-                config = config_type.sample_run_config(__distro_dir__=f"distributions/{image_name}")
+                config = config_type.sample_run_config(__distro_dir__=f"~/.llama/distributions/{image_name}")
             else:
                 config = {}
 

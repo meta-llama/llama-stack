@@ -66,12 +66,17 @@ class RegisteredBaseScoringFn(BaseScoringFn):
         return self.__class__.__name__
 
     def get_supported_scoring_fn_defs(self) -> List[ScoringFn]:
-        return [x for x in self.supported_fn_defs_registry.values()]
+        return list(self.supported_fn_defs_registry.values())
 
     def register_scoring_fn_def(self, scoring_fn: ScoringFn) -> None:
         if scoring_fn.identifier in self.supported_fn_defs_registry:
             raise ValueError(f"Scoring function def with identifier {scoring_fn.identifier} already exists.")
         self.supported_fn_defs_registry[scoring_fn.identifier] = scoring_fn
+
+    def unregister_scoring_fn_def(self, scoring_fn_id: str) -> None:
+        if scoring_fn_id not in self.supported_fn_defs_registry:
+            raise ValueError(f"Scoring function def with identifier {scoring_fn_id} does not exist.")
+        del self.supported_fn_defs_registry[scoring_fn_id]
 
     @abstractmethod
     async def score_row(

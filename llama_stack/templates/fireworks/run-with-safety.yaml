@@ -87,6 +87,9 @@ providers:
     config:
       api_key: ${env.TAVILY_SEARCH_API_KEY:}
       max_results: 3
+  - provider_id: wolfram-alpha
+    provider_type: remote::wolfram-alpha
+    config: {}
   - provider_id: code-interpreter
     provider_type: inline::code-interpreter
     config: {}
@@ -233,6 +236,8 @@ benchmarks: []
 tool_groups:
 - toolgroup_id: builtin::websearch
   provider_id: tavily-search
+- toolgroup_id: builtin::wolfram_alpha
+  provider_id: wolfram-alpha
 - toolgroup_id: builtin::rag
   provider_id: rag-runtime
 - toolgroup_id: builtin::code_interpreter

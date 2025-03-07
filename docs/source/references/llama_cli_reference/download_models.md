@@ -129,3 +129,35 @@ llama download --source huggingface --model-id Prompt-Guard-86M --ignore-pattern
 **Important:** Set your environment variable `HF_TOKEN` or pass in `--hf-token` to the command to validate your access. You can find your token at [https://huggingface.co/settings/tokens](https://huggingface.co/settings/tokens).
 
 > **Tip:** Default for `llama download` is to run with `--ignore-patterns *.safetensors` since we use the `.pth` files in the `original` folder. For Llama Guard and Prompt Guard, however, we need safetensors. Hence, please run with `--ignore-patterns original` so that safetensors are downloaded and `.pth` files are ignored.
+
+## List the downloaded models
+
+To list the downloaded models with the following command:
+```
+llama model list --downloaded
+```
+
+You should see a table like this:
+```
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┓
+┃ Model                                   ┃ Size     ┃ Modified Time       ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━┩
+│ Llama3.2-1B-Instruct:int4-qlora-eo8     │ 1.53 GB  │ 2025-02-26 11:22:28 │
+├─────────────────────────────────────────┼──────────┼─────────────────────┤
+│ Llama3.2-1B                             │ 2.31 GB  │ 2025-02-18 21:48:52 │
+├─────────────────────────────────────────┼──────────┼─────────────────────┤
+│ Prompt-Guard-86M                        │ 0.02 GB  │ 2025-02-26 11:29:28 │
+├─────────────────────────────────────────┼──────────┼─────────────────────┤
+│ Llama3.2-3B-Instruct:int4-spinquant-eo8 │ 3.69 GB  │ 2025-02-26 11:37:41 │
+├─────────────────────────────────────────┼──────────┼─────────────────────┤
+│ Llama3.2-3B                             │ 5.99 GB  │ 2025-02-18 21:51:26 │
+├─────────────────────────────────────────┼──────────┼─────────────────────┤
+│ Llama3.1-8B                             │ 14.97 GB │ 2025-02-16 10:36:37 │
+├─────────────────────────────────────────┼──────────┼─────────────────────┤
+│ Llama3.2-1B-Instruct:int4-spinquant-eo8 │ 1.51 GB  │ 2025-02-26 11:35:02 │
+├─────────────────────────────────────────┼──────────┼─────────────────────┤
+│ Llama-Guard-3-1B                        │ 2.80 GB  │ 2025-02-26 11:20:46 │
+├─────────────────────────────────────────┼──────────┼─────────────────────┤
+│ Llama-Guard-3-1B:int4                   │ 0.43 GB  │ 2025-02-26 11:33:33 │
+└─────────────────────────────────────────┴──────────┴─────────────────────┘
+```

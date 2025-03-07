@@ -13,13 +13,19 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 from docutils import nodes
-import tomli  # Import tomli for TOML parsing
 from pathlib import Path
+import requests
+import json
 
 # Read version from pyproject.toml
 with Path(__file__).parent.parent.parent.joinpath("pyproject.toml").open("rb") as f:
-    pyproject = tomli.load(f)
-    llama_stack_version = pyproject["project"]["version"]
+    pypi_url = "https://pypi.org/pypi/llama-stack/json"
+    version_tag = json.loads(requests.get(pypi_url).text)["info"]["version"]
+    print(f"{version_tag=}")
+
+    # generate the full link including text and url here
+    llama_stack_version_url = f"https://github.com/meta-llama/llama-stack/releases/tag/v{version_tag}"
+    llama_stack_version_link = f"<a href='{llama_stack_version_url}'>release notes</a>"
 
 project = "llama-stack"
 copyright = "2025, Meta"
@@ -73,7 +79,8 @@ myst_enable_extensions = [
 
 myst_substitutions = {
     "docker_hub": "https://hub.docker.com/repository/docker/llamastack",
-    "llama_stack_version": llama_stack_version,
+    "llama_stack_version": version_tag,
+    "llama_stack_version_link": llama_stack_version_link,
 }
 
 suppress_warnings = ['myst.header']

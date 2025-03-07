@@ -1,5 +1,13 @@
 # Core Concepts
 
+
+```{toctree}
+:maxdepth: 1
+:hidden:
+
+evaluation_concepts
+```
+
 Given Llama Stack's service-oriented philosophy, a few concepts and workflows arise which may not feel completely natural in the LLM landscape, especially if you are coming with a background in other frameworks.
 
 
@@ -26,7 +34,7 @@ We are working on adding a few more APIs to complete the application lifecycle. 
 
 The goal of Llama Stack is to build an ecosystem where users can easily swap out different implementations for the same API. Examples for these include:
 - LLM inference providers (e.g., Fireworks, Together, AWS Bedrock, Groq, Cerebras, SambaNova, vLLM, etc.),
-- Vector databases (e.g., ChromaDB, Weaviate, Qdrant, FAISS, PGVector, etc.),
+- Vector databases (e.g., ChromaDB, Weaviate, Qdrant, Milvus, FAISS, PGVector, etc.),
 - Safety providers (e.g., Meta's Llama Guard, AWS Bedrock Guardrails, etc.)
 
 Providers come in two flavors:

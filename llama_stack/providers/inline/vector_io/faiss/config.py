@@ -20,7 +20,7 @@ class FaissVectorIOConfig(BaseModel):
     kvstore: KVStoreConfig
 
     @classmethod
-    def sample_run_config(cls, __distro_dir__: str) -> Dict[str, Any]:
+    def sample_run_config(cls, __distro_dir__: str, **kwargs: Any) -> Dict[str, Any]:
         return {
             "kvstore": SqliteKVStoreConfig.sample_run_config(
                 __distro_dir__=__distro_dir__,

@@ -8,6 +8,7 @@ from typing import AsyncGenerator, List, Optional, Union
 
 from fireworks.client import Fireworks
 
+from llama_stack import logcat
 from llama_stack.apis.common.content_types import (
     InterleavedContent,
     InterleavedContentItem,
@@ -85,11 +86,13 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProv
         self,
         model_id: str,
         content: InterleavedContent,
-        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        sampling_params: Optional[SamplingParams] = None,
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
+        if sampling_params is None:
+            sampling_params = SamplingParams()
         model = await self.model_store.get_model(model_id)
         request = CompletionRequest(
             model=model.provider_resource_id,
@@ -156,7 +159,7 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProv
         self,
         model_id: str,
         messages: List[Message],
-        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        sampling_params: Optional[SamplingParams] = None,
         tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
         tool_prompt_format: Optional[ToolPromptFormat] = None,
@@ -165,6 +168,8 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProv
         logprobs: Optional[LogProbConfig] = None,
         tool_config: Optional[ToolConfig] = None,
     ) -> AsyncGenerator:
+        if sampling_params is None:
+            sampling_params = SamplingParams()
         model = await self.model_store.get_model(model_id)
         request = ChatCompletionRequest(
             model=model.provider_resource_id,
@@ -226,12 +231,14 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProv
             if input_dict["prompt"].startswith("<|begin_of_text|>"):
                 input_dict["prompt"] = input_dict["prompt"][len("<|begin_of_text|>") :]
 
-        return {
+        params = {
             "model": request.model,
             **input_dict,
             "stream": request.stream,
             **self._build_options(request.sampling_params, request.response_format, request.logprobs),
         }
+        logcat.debug("inference", f"params to fireworks: {params}")
+        return params
 
     async def embeddings(
         self,

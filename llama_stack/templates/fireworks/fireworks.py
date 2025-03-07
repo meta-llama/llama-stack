@@ -36,6 +36,7 @@ def get_distribution_template() -> DistributionTemplate:
         "tool_runtime": [
             "remote::brave-search",
             "remote::tavily-search",
+            "remote::wolfram-alpha",
             "inline::code-interpreter",
             "inline::rag-runtime",
             "remote::model-context-protocol",
@@ -58,7 +59,7 @@ def get_distribution_template() -> DistributionTemplate:
     vector_io_provider = Provider(
         provider_id="faiss",
         provider_type="inline::faiss",
-        config=FaissVectorIOConfig.sample_run_config(f"distributions/{name}"),
+        config=FaissVectorIOConfig.sample_run_config(f"~/.llama/distributions/{name}"),
     )
 
     available_models = {
@@ -78,6 +79,10 @@ def get_distribution_template() -> DistributionTemplate:
         ToolGroupInput(
             toolgroup_id="builtin::websearch",
             provider_id="tavily-search",
+        ),
+        ToolGroupInput(
+            toolgroup_id="builtin::wolfram_alpha",
+            provider_id="wolfram-alpha",
         ),
         ToolGroupInput(
             toolgroup_id="builtin::rag",

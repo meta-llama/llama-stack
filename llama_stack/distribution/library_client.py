@@ -104,7 +104,7 @@ def convert_to_pydantic(annotation: Any, value: Any) -> Any:
             logger.warning(
                 f"Warning: direct client failed to convert parameter {value} into {annotation}: {e}",
             )
-        return value
+        raise ValueError(f"Failed to convert parameter {value} into {annotation}: {e}") from e
 
 
 class LlamaStackAsLibraryClient(LlamaStackClient):

@@ -91,6 +91,9 @@ providers:
   - provider_id: model-context-protocol
     provider_type: remote::model-context-protocol
     config: {}
+  - provider_id: wolfram-alpha
+    provider_type: remote::wolfram-alpha
+    config: {}
   preprocessing:
   - provider_id: basic
     provider_type: inline::basic
@@ -123,6 +126,8 @@ tool_groups:
   provider_id: rag-runtime
 - toolgroup_id: builtin::code_interpreter
   provider_id: code-interpreter
+- toolgroup_id: builtin::wolfram_alpha
+  provider_id: wolfram-alpha
 preprocessors:
 - preprocessor_id: builtin::basic
   provider_id: basic

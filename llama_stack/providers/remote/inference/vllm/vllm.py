@@ -7,8 +7,10 @@ import json
 import logging
 from typing import AsyncGenerator, List, Optional, Union
 
-from llama_models.datatypes import StopReason, ToolCall
 from openai import OpenAI
+from openai.types.chat.chat_completion_chunk import (
+    ChatCompletionChunk as OpenAIChatCompletionChunk,
+)
 
 from llama_stack.apis.common.content_types import (
     InterleavedContent,
@@ -42,7 +44,7 @@ from llama_stack.apis.inference import (
     ToolPromptFormat,
 )
 from llama_stack.apis.models import Model, ModelType
-from llama_stack.models.llama.datatypes import BuiltinTool
+from llama_stack.models.llama.datatypes import BuiltinTool, StopReason, ToolCall
 from llama_stack.models.llama.sku_list import all_registered_models
 from llama_stack.providers.datatypes import ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.model_registry import (
@@ -50,7 +52,6 @@ from llama_stack.providers.utils.inference.model_registry import (
     build_hf_repo_model_entry,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
-    OpenAICompatCompletionResponse,
     UnparseableToolCall,
     convert_message_to_openai_dict,
     convert_tool_call,
@@ -156,11 +157,14 @@ def _convert_to_vllm_finish_reason(finish_reason: str) -> StopReason:
 
 
 async def _process_vllm_chat_completion_stream_response(
-    stream: AsyncGenerator[OpenAICompatCompletionResponse, None],
+    stream: AsyncGenerator[OpenAIChatCompletionChunk, None],
 ) -> AsyncGenerator:
     event_type = ChatCompletionResponseEventType.start
     tool_call_buf = UnparseableToolCall()
     async for chunk in stream:
+        if not chunk.choices:
+            log.warning("vLLM failed to generation any completions - check the vLLM server logs for an error.")
+            continue
         choice = chunk.choices[0]
         if choice.finish_reason:
             args_str = tool_call_buf.arguments
@@ -237,11 +241,13 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         self,
         model_id: str,
         content: InterleavedContent,
-        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        sampling_params: Optional[SamplingParams] = None,
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> Union[CompletionResponse, CompletionResponseStreamChunk]:
+        if sampling_params is None:
+            sampling_params = SamplingParams()
         model = await self.model_store.get_model(model_id)
         request = CompletionRequest(
             model=model.provider_resource_id,
@@ -260,7 +266,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         self,
         model_id: str,
         messages: List[Message],
-        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        sampling_params: Optional[SamplingParams] = None,
         response_format: Optional[ResponseFormat] = None,
         tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
@@ -269,7 +275,15 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         logprobs: Optional[LogProbConfig] = None,
         tool_config: Optional[ToolConfig] = None,
     ) -> AsyncGenerator:
+        if sampling_params is None:
+            sampling_params = SamplingParams()
         model = await self.model_store.get_model(model_id)
+        # This is to be consistent with OpenAI API and support vLLM <= v0.6.3
+        # References:
+        #   * https://platform.openai.com/docs/api-reference/chat/create#chat-create-tool_choice
+        #   * https://github.com/vllm-project/vllm/pull/10000
+        if not tools and tool_config is not None:
+            tool_config.tool_choice = ToolChoice.none
         request = ChatCompletionRequest(
             model=model.provider_resource_id,
             messages=messages,

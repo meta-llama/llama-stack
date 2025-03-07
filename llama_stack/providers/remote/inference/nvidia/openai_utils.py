@@ -106,7 +106,7 @@ async def convert_chat_completion_request(
             payload.update(temperature=strategy.temperature)
         elif isinstance(strategy, TopKSamplingStrategy):
             if strategy.top_k != -1 and strategy.top_k < 1:
-                warnings.warn("top_k must be -1 or >= 1")
+                warnings.warn("top_k must be -1 or >= 1", stacklevel=2)
             nvext.update(top_k=strategy.top_k)
         elif isinstance(strategy, GreedySamplingStrategy):
             nvext.update(top_k=-1)
@@ -168,7 +168,7 @@ def convert_completion_request(
             payload.update(top_p=request.sampling_params.top_p)
         elif request.sampling_params.strategy == "top_k":
             if request.sampling_params.top_k != -1 and request.sampling_params.top_k < 1:
-                warnings.warn("top_k must be -1 or >= 1")
+                warnings.warn("top_k must be -1 or >= 1", stacklevel=2)
             nvext.update(top_k=request.sampling_params.top_k)
         elif request.sampling_params.strategy == "greedy":
             nvext.update(top_k=-1)

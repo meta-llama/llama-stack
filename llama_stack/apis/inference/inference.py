@@ -278,14 +278,14 @@ ResponseFormat = register_schema(
 class CompletionRequest(BaseModel):
     model: str
     content: InterleavedContent
-    sampling_params: Optional[SamplingParams] = SamplingParams()
+    sampling_params: Optional[SamplingParams] = Field(default_factory=SamplingParams)
     response_format: Optional[ResponseFormat] = None
     stream: Optional[bool] = False
     logprobs: Optional[LogProbConfig] = None
 
 
 @json_schema_type
-class CompletionResponse(BaseModel):
+class CompletionResponse(MetricResponseMixin):
     """Response from a completion request.
 
     :param content: The generated completion text
@@ -299,7 +299,7 @@ class CompletionResponse(BaseModel):
 
 
 @json_schema_type
-class CompletionResponseStreamChunk(BaseModel):
+class CompletionResponseStreamChunk(MetricResponseMixin):
     """A chunk of a streamed completion response.
 
     :param delta: New content generated since last chunk. This can be one or more tokens.
@@ -357,7 +357,7 @@ class ToolConfig(BaseModel):
 class ChatCompletionRequest(BaseModel):
     model: str
     messages: List[Message]
-    sampling_params: Optional[SamplingParams] = SamplingParams()
+    sampling_params: Optional[SamplingParams] = Field(default_factory=SamplingParams)
 
     tools: Optional[List[ToolDefinition]] = Field(default_factory=list)
     tool_config: Optional[ToolConfig] = Field(default_factory=ToolConfig)
@@ -368,7 +368,7 @@ class ChatCompletionRequest(BaseModel):
 
 
 @json_schema_type
-class ChatCompletionResponseStreamChunk(MetricResponseMixin, BaseModel):
+class ChatCompletionResponseStreamChunk(MetricResponseMixin):
     """A chunk of a streamed chat completion response.
 
     :param event: The event containing the new content
@@ -378,7 +378,7 @@ class ChatCompletionResponseStreamChunk(MetricResponseMixin, BaseModel):
 
 
 @json_schema_type
-class ChatCompletionResponse(MetricResponseMixin, BaseModel):
+class ChatCompletionResponse(MetricResponseMixin):
     """Response from a chat completion request.
 
     :param completion_message: The complete response message
@@ -444,7 +444,7 @@ class Inference(Protocol):
         self,
         model_id: str,
         content: InterleavedContent,
-        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        sampling_params: Optional[SamplingParams] = None,
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
@@ -467,7 +467,7 @@ class Inference(Protocol):
         self,
         model_id: str,
         messages: List[Message],
-        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        sampling_params: Optional[SamplingParams] = None,
         tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
         tool_prompt_format: Optional[ToolPromptFormat] = None,

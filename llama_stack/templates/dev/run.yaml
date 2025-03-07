@@ -43,6 +43,18 @@ providers:
     provider_type: inline::sqlite-vec
     config:
       db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/dev}/sqlite_vec.db
+  - provider_id: ${env.ENABLE_CHROMADB+chromadb}
+    provider_type: remote::chromadb
+    config:
+      url: ${env.CHROMADB_URL:}
+  - provider_id: ${env.ENABLE_PGVECTOR+pgvector}
+    provider_type: remote::pgvector
+    config:
+      host: ${env.PGVECTOR_HOST:localhost}
+      port: ${env.PGVECTOR_PORT:5432}
+      db: ${env.PGVECTOR_DB:}
+      user: ${env.PGVECTOR_USER:}
+      password: ${env.PGVECTOR_PASSWORD:}
   safety:
   - provider_id: llama-guard
     provider_type: inline::llama-guard

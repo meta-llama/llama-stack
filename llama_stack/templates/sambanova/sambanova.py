@@ -12,8 +12,11 @@ from llama_stack.distribution.datatypes import (
     ShieldInput,
     ToolGroupInput,
 )
+from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOConfig
 from llama_stack.providers.remote.inference.sambanova import SambaNovaImplConfig
 from llama_stack.providers.remote.inference.sambanova.models import MODEL_ENTRIES
+from llama_stack.providers.remote.vector_io.chroma.config import ChromaVectorIOConfig
+from llama_stack.providers.remote.vector_io.pgvector.config import PGVectorVectorIOConfig
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings, get_model_registry
 
 
@@ -39,6 +42,30 @@ def get_distribution_template() -> DistributionTemplate:
         provider_type=f"remote::{name}",
         config=SambaNovaImplConfig.sample_run_config(),
     )
+
+    vector_io_providers = [
+        Provider(
+            provider_id="faiss",
+            provider_type="inline::faiss",
+            config=FaissVectorIOConfig.sample_run_config(
+                __distro_dir__=f"~/.llama/distributions/{name}",
+            ),
+        ),
+        Provider(
+            provider_id="${env.ENABLE_CHROMADB+chromadb}",
+            provider_type="remote::chromadb",
+            config=ChromaVectorIOConfig.sample_run_config(url="${env.CHROMADB_URL:}"),
+        ),
+        Provider(
+            provider_id="${env.ENABLE_PGVECTOR+pgvector}",
+            provider_type="remote::pgvector",
+            config=PGVectorVectorIOConfig.sample_run_config(
+                db="${env.PGVECTOR_DB:}",
+                user="${env.PGVECTOR_USER:}",
+                password="${env.PGVECTOR_PASSWORD:}",
+            ),
+        ),
+    ]
 
     available_models = {
         name: MODEL_ENTRIES,
@@ -81,6 +108,7 @@ def get_distribution_template() -> DistributionTemplate:
             "run.yaml": RunConfigSettings(
                 provider_overrides={
                     "inference": [inference_provider],
+                    "vector_io": vector_io_providers,
                 },
                 default_models=default_models,
                 default_shields=[ShieldInput(shield_id="meta-llama/Llama-Guard-3-8B")],

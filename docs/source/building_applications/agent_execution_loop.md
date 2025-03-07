@@ -13,7 +13,7 @@ Each agent turn follows these key steps:
 
 3. **Inference Loop**: The agent enters its main execution loop:
    - The LLM receives a user prompt (with previous tool outputs)
-   - The LLM generates a response, potentially with tool calls
+   - The LLM generates a response, potentially with [tool calls](tools)
    - If tool calls are present:
      - Tool inputs are safety-checked
      - Tools are executed (e.g., web search, code execution)
@@ -67,20 +67,28 @@ sequenceDiagram
 Each step in this process can be monitored and controlled through configurations. Here's an example that demonstrates monitoring the agent's execution:
 
 ```python
+from llama_stack_client import LlamaStackClient
+from llama_stack_client.lib.agents.agent import Agent
 from llama_stack_client.lib.agents.event_logger import EventLogger
+from rich.pretty import pprint
 
-agent_config = AgentConfig(
+# Replace host and port
+client = LlamaStackClient(base_url=f"http://{HOST}:{PORT}")
+
+agent = Agent(
+    client,
+    # Check with `llama-stack-client models list`
     model="Llama3.2-3B-Instruct",
     instructions="You are a helpful assistant",
     # Enable both RAG and tool usage
-    toolgroups=[
+    tools=[
         {
             "name": "builtin::rag/knowledge_search",
             "args": {"vector_db_ids": ["my_docs"]},
         },
         "builtin::code_interpreter",
     ],
-    # Configure safety
+    # Configure safety (optional)
     input_shields=["llama_guard"],
     output_shields=["llama_guard"],
     # Control the inference loop
@@ -90,14 +98,12 @@ agent_config = AgentConfig(
         "max_tokens": 2048,
     },
 )
-
-agent = Agent(client, agent_config)
 session_id = agent.create_session("monitored_session")
 
 # Stream the agent's execution steps
 response = agent.create_turn(
     messages=[{"role": "user", "content": "Analyze this code and run it"}],
-    attachments=[
+    documents=[
         {
             "content": "https://raw.githubusercontent.com/example/code.py",
             "mime_type": "text/plain",
@@ -108,14 +114,21 @@ response = agent.create_turn(
 
 # Monitor each step of execution
 for log in EventLogger().log(response):
-    if log.event.step_type == "memory_retrieval":
-        print("Retrieved context:", log.event.retrieved_context)
-    elif log.event.step_type == "inference":
-        print("LLM output:", log.event.model_response)
-    elif log.event.step_type == "tool_execution":
-        print("Tool call:", log.event.tool_call)
-        print("Tool response:", log.event.tool_response)
-    elif log.event.step_type == "shield_call":
-        if log.event.violation:
-            print("Safety violation:", log.event.violation)
+    log.print()
+
+# Using non-streaming API, the response contains input, steps, and output.
+response = agent.create_turn(
+    messages=[{"role": "user", "content": "Analyze this code and run it"}],
+    documents=[
+        {
+            "content": "https://raw.githubusercontent.com/example/code.py",
+            "mime_type": "text/plain",
+        }
+    ],
+    session_id=session_id,
+)
+
+pprint(f"Input: {response.input_messages}")
+pprint(f"Output: {response.output_message.content}")
+pprint(f"Steps: {response.steps}")
 ```

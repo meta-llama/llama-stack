@@ -38,7 +38,7 @@ The API is **exactly identical** for both clients.
 :::{dropdown} Starting up the Llama Stack server
 The Llama Stack server can be configured flexibly so you can mix-and-match various providers for its individual API components -- beyond Inference, these include Vector IO, Agents, Telemetry, Evals, Post Training, etc.
 
-To get started quickly, we provide various container images for the server component that work with different inference providers out of the box. For this guide, we will use `llamastack/distribution-ollama` as the container image.
+To get started quickly, we provide various container images for the server component that work with different inference providers out of the box. For this guide, we will use `llamastack/distribution-ollama` as the container image. If you'd like to build your own image or customize the configurations, please check out [this guide](../references/index.md).
 
 Lets setup some environment variables that we will use in the rest of the guide.
 ```bash
@@ -184,7 +184,6 @@ from termcolor import cprint
 
 from llama_stack_client.lib.agents.agent import Agent
 from llama_stack_client.lib.agents.event_logger import EventLogger
-from llama_stack_client.types.agent_create_params import AgentConfig
 from llama_stack_client.types import Document
 
 
@@ -241,13 +240,14 @@ client.tool_runtime.rag_tool.insert(
     chunk_size_in_tokens=512,
 )
 
-agent_config = AgentConfig(
+rag_agent = Agent(
+    client,
     model=os.environ["INFERENCE_MODEL"],
     # Define instructions for the agent ( aka system prompt)
     instructions="You are a helpful assistant",
     enable_session_persistence=False,
     # Define tools available to the agent
-    toolgroups=[
+    tools=[
         {
             "name": "builtin::rag/knowledge_search",
             "args": {
@@ -256,12 +256,10 @@ agent_config = AgentConfig(
         }
     ],
 )
-
-rag_agent = Agent(client, agent_config)
 session_id = rag_agent.create_session("test-session")
 
 user_prompts = [
-    "What are the top 5 topics that were explained? Only list succinct bullet points.",
+    "How to optimize memory usage in torchtune? use the knowledge_search tool to get information.",
 ]
 
 # Run the agent loop by calling the `create_turn` method

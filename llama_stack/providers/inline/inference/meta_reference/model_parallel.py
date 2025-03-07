@@ -9,18 +9,18 @@ from copy import deepcopy
 from functools import partial
 from typing import Any, Generator
 
-from llama_models.llama3.api.chat_format import ChatFormat
-from llama_models.llama3.api.tokenizer import Tokenizer
-
 from llama_stack.models.llama.datatypes import Model
+from llama_stack.models.llama.llama3.chat_format import ChatFormat
+from llama_stack.models.llama.llama3.tokenizer import Tokenizer
 from llama_stack.models.llama.sku_list import resolve_model
 from llama_stack.providers.utils.inference.prompt_adapter import (
     ChatCompletionRequestWithRawContent,
     CompletionRequestWithRawContent,
 )
 
+from .common import model_checkpoint_dir
 from .config import MetaReferenceInferenceConfig
-from .generation import Llama, model_checkpoint_dir
+from .llama3.generation import Llama3
 from .parallel_utils import ModelParallelProcessGroup
 
 
@@ -43,7 +43,7 @@ def init_model_cb(
     model_id: str,
     llama_model: Model,
 ):
-    llama = Llama.build(config, model_id, llama_model)
+    llama = Llama3.build(config, model_id, llama_model)
     return ModelRunner(llama)
 
 

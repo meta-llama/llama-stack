@@ -27,6 +27,7 @@ from llama_stack.apis.agents import (
 from llama_stack.apis.inference import (
     Inference,
     ToolConfig,
+    ToolResponse,
     ToolResponseMessage,
     UserMessage,
 )
@@ -140,7 +141,6 @@ class MetaReferenceAgentsImpl(Agents):
         documents: Optional[List[Document]] = None,
         stream: Optional[bool] = False,
         tool_config: Optional[ToolConfig] = None,
-        allow_turn_resume: Optional[bool] = False,
     ) -> AsyncGenerator:
         request = AgentTurnCreateRequest(
             agent_id=agent_id,
@@ -150,7 +150,6 @@ class MetaReferenceAgentsImpl(Agents):
             toolgroups=toolgroups,
             documents=documents,
             tool_config=tool_config,
-            allow_turn_resume=allow_turn_resume,
         )
         if stream:
             return self._create_agent_turn_streaming(request)
@@ -170,7 +169,7 @@ class MetaReferenceAgentsImpl(Agents):
         agent_id: str,
         session_id: str,
         turn_id: str,
-        tool_responses: List[ToolResponseMessage],
+        tool_responses: Union[List[ToolResponse], List[ToolResponseMessage]],
         stream: Optional[bool] = False,
     ) -> AsyncGenerator:
         request = AgentTurnResumeRequest(

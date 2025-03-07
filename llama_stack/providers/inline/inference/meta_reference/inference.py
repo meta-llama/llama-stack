@@ -55,7 +55,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 )
 
 from .config import MetaReferenceInferenceConfig
-from .generation import Llama
+from .llama3.generation import Llama3
 from .model_parallel import LlamaModelParallelGenerator
 
 log = logging.getLogger(__name__)
@@ -83,7 +83,7 @@ class MetaReferenceInferenceImpl(
             self.generator = LlamaModelParallelGenerator(self.config, model_id, llama_model)
             self.generator.start()
         else:
-            self.generator = Llama.build(self.config, model_id, llama_model)
+            self.generator = Llama3.build(self.config, model_id, llama_model)
 
         self.model_id = model_id
         self.llama_model = llama_model
@@ -111,7 +111,7 @@ class MetaReferenceInferenceImpl(
         )
         if llama_model is None:
             raise ValueError(
-                "Please make sure your llama_model in model metadata or model identifier is in llama-models SKU list"
+                "Please make sure your llama_model in model metadata or model identifier is in Llama SKU list"
             )
 
         self.model_registry_helper = ModelRegistryHelper(
@@ -136,11 +136,13 @@ class MetaReferenceInferenceImpl(
         self,
         model_id: str,
         content: InterleavedContent,
-        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        sampling_params: Optional[SamplingParams] = None,
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> Union[CompletionResponse, CompletionResponseStreamChunk]:
+        if sampling_params is None:
+            sampling_params = SamplingParams()
         if logprobs:
             assert logprobs.top_k == 1, f"Unexpected top_k={logprobs.top_k}"
 
@@ -208,7 +210,6 @@ class MetaReferenceInferenceImpl(
             logprobs = []
             stop_reason = None
 
-            tokenizer = self.generator.formatter.tokenizer
             for token_result in self.generator.completion(request):
                 tokens.append(token_result.token)
                 if token_result.text == "<|eot_id|>":
@@ -245,7 +246,7 @@ class MetaReferenceInferenceImpl(
         self,
         model_id: str,
         messages: List[Message],
-        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        sampling_params: Optional[SamplingParams] = None,
         response_format: Optional[ResponseFormat] = None,
         tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
@@ -254,6 +255,8 @@ class MetaReferenceInferenceImpl(
         logprobs: Optional[LogProbConfig] = None,
         tool_config: Optional[ToolConfig] = None,
     ) -> AsyncGenerator:
+        if sampling_params is None:
+            sampling_params = SamplingParams()
         if logprobs:
             assert logprobs.top_k == 1, f"Unexpected top_k={logprobs.top_k}"
 

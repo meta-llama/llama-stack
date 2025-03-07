@@ -64,7 +64,7 @@ class ModelDescribe(Subcommand):
         ]
 
         if model.recommended_sampling_params is not None:
-            sampling_params = model.recommended_sampling_params.dict()
+            sampling_params = model.recommended_sampling_params.model_dump()
             for k in ("max_tokens", "repetition_penalty"):
                 del sampling_params[k]
             rows.append(

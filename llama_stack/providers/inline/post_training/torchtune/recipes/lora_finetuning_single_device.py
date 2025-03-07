@@ -264,7 +264,7 @@ class LoraFinetuningSingleDevice:
             )
 
         self.adapter_params = get_adapter_params(model)
-        self._is_dora = any(["magnitude" in k for k in self.adapter_params.keys()])
+        self._is_dora = any("magnitude" in k for k in self.adapter_params.keys())
 
         set_trainable_params(model, self.adapter_params)
 

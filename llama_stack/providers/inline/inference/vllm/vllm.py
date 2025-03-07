@@ -9,7 +9,6 @@ import os
 import uuid
 from typing import AsyncGenerator, List, Optional
 
-from llama_models.llama3.api.tokenizer import Tokenizer
 from vllm.engine.arg_utils import AsyncEngineArgs
 from vllm.engine.async_llm_engine import AsyncLLMEngine
 from vllm.sampling_params import SamplingParams as VLLMSamplingParams
@@ -36,6 +35,7 @@ from llama_stack.apis.inference import (
     ToolPromptFormat,
 )
 from llama_stack.apis.models import Model
+from llama_stack.models.llama.llama3.tokenizer import Tokenizer
 from llama_stack.models.llama.sku_list import resolve_model
 from llama_stack.providers.datatypes import ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.openai_compat import (
@@ -143,7 +143,7 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         self,
         model_id: str,
         content: InterleavedContent,
-        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        sampling_params: Optional[SamplingParams] = None,
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
@@ -154,7 +154,7 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         self,
         model_id: str,
         messages: List[Message],
-        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        sampling_params: Optional[SamplingParams] = None,
         tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
         tool_prompt_format: Optional[ToolPromptFormat] = None,
@@ -163,6 +163,8 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         logprobs: Optional[LogProbConfig] = None,
         tool_config: Optional[ToolConfig] = None,
     ) -> ChatCompletionResponse | ChatCompletionResponseStreamChunk:
+        if sampling_params is None:
+            sampling_params = SamplingParams()
         assert self.engine is not None
 
         request = ChatCompletionRequest(
