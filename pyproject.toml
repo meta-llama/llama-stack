@@ -136,8 +136,6 @@ ignore = [
 
     # These are the additional ones we started ignoring after moving to ruff. We should look into each one of them later.
     "C901", # Complexity of the function is too high
-    # these ignores are from flake8-bugbear; please fix!
-    "B008",
 ]
 
 [tool.mypy]
