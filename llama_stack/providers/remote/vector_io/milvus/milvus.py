@@ -4,12 +4,12 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import hashlib
 import logging
 import os
+import uuid
 from typing import Any, Dict, List, Optional, Union
 
-import hashlib
-import uuid
 from numpy.typing import NDArray
 from pymilvus import MilvusClient
 
@@ -43,10 +43,15 @@ class MilvusIndex(EmbeddingIndex):
             f"Chunk length {len(chunks)} does not match embedding length {len(embeddings)}"
         )
         if not self.client.has_collection(self.collection_name):
-            self.client.create_collection(self.collection_name, dimension=len(embeddings[0]), auto_id=True, consistency_level=self.consistency_level)
+            self.client.create_collection(
+                self.collection_name,
+                dimension=len(embeddings[0]),
+                auto_id=True,
+                consistency_level=self.consistency_level,
+            )
 
         data = []
-        for i, (chunk, embedding) in enumerate(zip(chunks, embeddings, strict=False)):
+        for chunk, embedding in zip(chunks, embeddings, strict=False):
             chunk_id = generate_chunk_id(chunk.metadata["document_id"], chunk.content)
 
             data.append(
@@ -79,7 +84,9 @@ class MilvusIndex(EmbeddingIndex):
 
 
 class MilvusVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
-    def __init__(self, config: Union[RemoteMilvusVectorIOConfig, InlineMilvusVectorIOConfig], inference_api: Api.inference) -> None:
+    def __init__(
+        self, config: Union[RemoteMilvusVectorIOConfig, InlineMilvusVectorIOConfig], inference_api: Api.inference
+    ) -> None:
         self.config = config
         self.cache = {}
         self.client = None
@@ -158,9 +165,11 @@ class MilvusVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
 
         return await index.query_chunks(query, params)
 
+
 def generate_chunk_id(document_id: str, chunk_text: str) -> str:
     """Generate a unique chunk ID using a hash of document ID and chunk text."""
     hash_input = f"{document_id}:{chunk_text}".encode("utf-8")
     return str(uuid.UUID(hashlib.md5(hash_input).hexdigest()))
+
 
 # TODO: refactor this generate_chunk_id along with the `sqlite-vec` implementation into a separate utils file

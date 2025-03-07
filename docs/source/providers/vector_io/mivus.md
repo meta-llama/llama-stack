@@ -3,7 +3,7 @@ orphan: true
 ---
 # Milvus
 
-[Milvus](https://milvus.io/) is an inline and remote vector database provider for Llama Stack. It 
+[Milvus](https://milvus.io/) is an inline and remote vector database provider for Llama Stack. It
 allows you to store and query vectors directly within a Milvus database.
 That means you're not limited to storing vectors in memory or in a separate service.
 
