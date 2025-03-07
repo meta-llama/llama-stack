@@ -32,9 +32,7 @@ from llama_stack.apis.inference import (
 )
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.log import get_logger
-from llama_stack.providers.utils.inference.model_registry import (
-    ModelRegistryHelper,
-)
+from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
 from llama_stack.providers.utils.inference.openai_compat import (
     convert_message_to_openai_dict,
     get_sampling_options,
@@ -179,8 +177,10 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
         )
 
         if stream:
+            print("STREAMING", request)
             return self._stream_chat_completion(request)
         else:
+            print("NON STREAMING", request)
             return await self._nonstream_chat_completion(request)
 
     async def _nonstream_chat_completion(self, request: ChatCompletionRequest) -> ChatCompletionResponse:
@@ -227,6 +227,7 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
             **self._build_options(request.sampling_params, request.logprobs, request.response_format),
         }
         logger.debug(f"params to together: {params}")
+        return params
 
     async def embeddings(
         self,
