@@ -1,15 +1,20 @@
 # Changelog
 
-## v0.1.5.1
+# v0.1.5.1
+Published on: 2025-02-28T22:37:44Z
 
-### What's Changed
+## What's Changed
 * Fixes for security risk in https://github.com/meta-llama/llama-stack/pull/1327 and https://github.com/meta-llama/llama-stack/pull/1328
 
 **Full Changelog**: https://github.com/meta-llama/llama-stack/compare/v0.1.5...v0.1.5.1
 
-## v0.1.5
+---
 
-### Build Agents
+# v0.1.5
+Published on: 2025-02-28T18:14:01Z
+
+## 0.1.5 Release Notes
+###  Build Agents
 * Inference: Support more non-llama models (openai, anthropic, gemini)
 * Inference: Can use the provider's model name in addition to the HF alias
 * Inference: Fixed issues with calling tools that weren't specified in the prompt
@@ -31,7 +36,7 @@
 * Move most logging to use logger instead of prints
 * Completed text /chat-completion and /completion tests
 
-### All changes
+## All changes
 * test: add a ci-tests distro template for running e2e tests by @ashwinb in https://github.com/meta-llama/llama-stack/pull/1237
 * refactor: combine start scripts for each env by @cdoern in https://github.com/meta-llama/llama-stack/pull/1139
 * fix: pre-commit updates by @cdoern in https://github.com/meta-llama/llama-stack/pull/1243
@@ -96,13 +101,19 @@
 * fix: Agent telemetry inputs/outputs should be structured by @hardikjshah in https://github.com/meta-llama/llama-stack/pull/1302
 * fix: check conda env name using basepath in exec.py by @dineshyv in https://github.com/meta-llama/llama-stack/pull/1301
 
-### New Contributors
+## New Contributors
 * @Shreyanand made their first contribution in https://github.com/meta-llama/llama-stack/pull/1283
 * @luis5tb made their first contribution in https://github.com/meta-llama/llama-stack/pull/1269
 
 **Full Changelog**: https://github.com/meta-llama/llama-stack/compare/v0.1.4...v0.1.5
 
-## v0.1.4
+---
+
+# v0.1.4
+Published on: 2025-02-25T00:02:43Z
+
+## v0.1.4 Release Notes
+Here are the key changes coming as part of this release:
 
 ### Build and Test Agents
 * Inference: Added support for non-llama models
@@ -114,20 +125,18 @@
 * Embedding: Updated /inference/embeddings to support asymmetric models, truncation and variable sized outputs
 * Embedding: Updated embedding models for Ollama, Together, and Fireworks with available defaults
 * VectorIO: Improved performance of sqlite-vec using chunked writes
-
 ### Agent Evals and Model Customization
 * Deprecated api /eval-tasks. Use /eval/benchmark  instead
 * Added CPU training support for TorchTune
-
 ### Deploy and Monitoring of Agents
 * Consistent view of client and server tool calls in telemetry
-
 ### Better Engineering
 * Made tests more data-driven for consistent evaluation
 * Fixed documentation links and improved API reference generation
 * Various small fixes for build scripts and system reliability
 
-### What's Changed
+
+## What's Changed
 * build: resync uv and deps on 0.1.3 by @leseb in https://github.com/meta-llama/llama-stack/pull/1108
 * style: fix the capitalization issue by @reidliu41 in https://github.com/meta-llama/llama-stack/pull/1117
 * feat: log start, complete time to Agent steps by @ehhuang in https://github.com/meta-llama/llama-stack/pull/1116
@@ -203,7 +212,7 @@
 * fix: set default tool_prompt_format in inference api by @ehhuang in https://github.com/meta-llama/llama-stack/pull/1214
 * test: fix test_tool_choice by @ehhuang in https://github.com/meta-llama/llama-stack/pull/1234
 
-### New Contributors
+## New Contributors
 * @fulvius31 made their first contribution in https://github.com/meta-llama/llama-stack/pull/1114
 * @shrinitg made their first contribution in https://github.com/meta-llama/llama-stack/pull/543
 * @raspawar made their first contribution in https://github.com/meta-llama/llama-stack/pull/1174
@@ -213,7 +222,14 @@
 
 **Full Changelog**: https://github.com/meta-llama/llama-stack/compare/v0.1.3...v0.1.4
 
-## v0.1.3
+---
+
+# v0.1.3
+Published on: 2025-02-14T20:24:32Z
+
+## v0.1.3 Release
+
+Here are some key changes that are coming as part of this release.
 
 ### Build and Test Agents
 Streamlined the initial development experience
@@ -243,7 +259,7 @@ Infrastructure and code quality improvements
 - Added conventional commits standard
 - Fixed documentation parsing issues
 
-### What's Changed
+## What's Changed
 * Getting started notebook update by @jeffxtang in https://github.com/meta-llama/llama-stack/pull/936
 * docs: update index.md for 0.1.2 by @raghotham in https://github.com/meta-llama/llama-stack/pull/1013
 * test: Make text-based chat completion tests run 10x faster by @terrytangyuan in https://github.com/meta-llama/llama-stack/pull/1016
@@ -300,7 +316,7 @@ Infrastructure and code quality improvements
 * fix: improve stack build on venv by @leseb in https://github.com/meta-llama/llama-stack/pull/980
 * fix: remove the empty line by @reidliu41 in https://github.com/meta-llama/llama-stack/pull/1097
 
-### New Contributors
+## New Contributors
 * @MichaelClifford made their first contribution in https://github.com/meta-llama/llama-stack/pull/1009
 * @ellistarn made their first contribution in https://github.com/meta-llama/llama-stack/pull/1035
 * @kelbrown20 made their first contribution in https://github.com/meta-llama/llama-stack/pull/992
@@ -311,9 +327,12 @@ Infrastructure and code quality improvements
 
 **Full Changelog**: https://github.com/meta-llama/llama-stack/compare/v0.1.2...v0.1.3
 
-## v0.1.2
+---
 
-### TL;DR
+# v0.1.2
+Published on: 2025-02-07T22:06:49Z
+
+# TL;DR
 - Several stabilizations to development flows after the switch to `uv`
 - Migrated CI workflows to new OSS repo - [llama-stack-ops](https://github.com/meta-llama/llama-stack-ops)
 - Added automated rebuilds for ReadTheDocs
@@ -321,7 +340,7 @@ Infrastructure and code quality improvements
 - Added system prompt overrides support
 - Several bug fixes and improvements to documentation (check out Kubernetes deployment guide by @terrytangyuan )
 
-### What's Changed
+## What's Changed
 * Fix UBI9 image build when installing Python packages via uv by @terrytangyuan in https://github.com/meta-llama/llama-stack/pull/926
 * Fix precommit check after moving to ruff by @terrytangyuan in https://github.com/meta-llama/llama-stack/pull/927
 * LocalInferenceImpl update for LS 0.1 by @jeffxtang in https://github.com/meta-llama/llama-stack/pull/911
@@ -373,7 +392,7 @@ Infrastructure and code quality improvements
 * fix: Ensure a better error stack trace when llama-stack is not built by @cdoern in https://github.com/meta-llama/llama-stack/pull/950
 * refactor(ollama): model availability check by @leseb in https://github.com/meta-llama/llama-stack/pull/986
 
-### New Contributors
+## New Contributors
 * @nathan-weinberg made their first contribution in https://github.com/meta-llama/llama-stack/pull/939
 * @cdoern made their first contribution in https://github.com/meta-llama/llama-stack/pull/954
 * @jwm4 made their first contribution in https://github.com/meta-llama/llama-stack/pull/957
@@ -386,11 +405,14 @@ Infrastructure and code quality improvements
 
 **Full Changelog**: https://github.com/meta-llama/llama-stack/compare/v0.1.1...v0.1.2
 
-## v0.1.1
+---
+
+# v0.1.1
+Published on: 2025-02-02T02:29:24Z
 
 A bunch of small / big improvements everywhere including support for Windows, switching to `uv` and many provider improvements.
 
-### What's Changed
+## What's Changed
 * Update doc templates for running safety on self-hosted templates by @hardikjshah in https://github.com/meta-llama/llama-stack/pull/874
 * Update GH action so it correctly queries for test.pypi, etc. by @ashwinb in https://github.com/meta-llama/llama-stack/pull/875
 * Fix report generation for url endpoints by @hardikjshah in https://github.com/meta-llama/llama-stack/pull/876
@@ -430,7 +452,7 @@ A bunch of small / big improvements everywhere including support for Windows, sw
 * Use `uv pip install` instead of `pip install` by @ashwinb in https://github.com/meta-llama/llama-stack/pull/921
 * add image support to NVIDIA inference provider by @mattf in https://github.com/meta-llama/llama-stack/pull/907
 
-### New Contributors
+## New Contributors
 * @BakungaBronson made their first contribution in https://github.com/meta-llama/llama-stack/pull/877
 * @Ckhanoyan made their first contribution in https://github.com/meta-llama/llama-stack/pull/888
 * @hanzlfs made their first contribution in https://github.com/meta-llama/llama-stack/pull/660
@@ -438,24 +460,27 @@ A bunch of small / big improvements everywhere including support for Windows, sw
 
 **Full Changelog**: https://github.com/meta-llama/llama-stack/compare/v0.1.0...v0.1.1
 
-## v0.1.0
+---
+
+# v0.1.0
+Published on: 2025-01-24T17:47:47Z
 
 We are excited to announce a stable API release of Llama Stack, which enables developers to build RAG applications and Agents using tools and safety shields, monitor and those agents with telemetry, and evaluate the agent with scoring functions.
 
-### Context
+## Context
 GenAI application developers need more than just an LLM - they need to integrate tools, connect with their data sources, establish guardrails, and ground the LLM responses effectively. Currently, developers must piece together various tools and APIs, complicating the development lifecycle and increasing costs. The result is that developers are spending more time on these integrations rather than focusing on the application logic itself. The bespoke coupling of components also makes it challenging to adopt state-of-the-art solutions in the rapidly evolving GenAI space. This is particularly difficult for open models like Llama, as best practices are not widely established in the open.
 
 Llama Stack was created to provide developers with a comprehensive and coherent interface that simplifies AI application development and codifies best practices across the Llama ecosystem. Since our launch in September 2024, we have seen a huge uptick in interest in Llama Stack APIs by both AI developers and from partners building AI services with Llama models. Partners like Nvidia, Fireworks, and Ollama have collaborated with us to develop implementations across various APIs, including inference, memory, and safety.
 
 With Llama Stack, you can easily build a RAG agent which can also search the web, do complex math, and custom tool calling. You can use telemetry to inspect those traces, and convert telemetry into evals datasets. And with Llama Stack’s plugin architecture and prepackage distributions, you choose to run your agent anywhere - in the cloud with our partners, deploy your own environment using virtualenv, conda, or Docker, operate locally with Ollama, or even run on mobile devices with our SDKs. Llama Stack offers unprecedented flexibility while also simplifying the developer experience.
 
-### Release
+## Release
 After iterating on the APIs for the last 3 months, today we’re launching a stable release (V1) of the Llama Stack APIs and the corresponding llama-stack server and client packages(v0.1.0). We now have automated tests for providers. These tests make sure that all provider implementations are verified. Developers can now easily and reliably select distributions or providers based on their specific requirements.
 
 There are example standalone apps in llama-stack-apps.
 
 
-### Key Features of this release
+## Key Features of this release
 
 - **Unified API Layer**
   - Inference: Run LLM models
@@ -489,6 +514,7 @@ There are example standalone apps in llama-stack-apps.
   - Python
   - iOS
   - Android
+
 
 ### What's Changed
 * [4/n][torchtune integration] support lazy load model during inference by @SLR722 in https://github.com/meta-llama/llama-stack/pull/620
@@ -650,7 +676,7 @@ There are example standalone apps in llama-stack-apps.
 * remove logger handler only in notebook by @dineshyv in https://github.com/meta-llama/llama-stack/pull/868
 * Update 'first RAG agent' in gettingstarted doc by @ehhuang in https://github.com/meta-llama/llama-stack/pull/867
 
-### New Contributors
+## New Contributors
 * @cdgamarose-nv made their first contribution in https://github.com/meta-llama/llama-stack/pull/661
 * @eltociear made their first contribution in https://github.com/meta-llama/llama-stack/pull/675
 * @derekslager made their first contribution in https://github.com/meta-llama/llama-stack/pull/692
@@ -663,9 +689,12 @@ There are example standalone apps in llama-stack-apps.
 
 **Full Changelog**: https://github.com/meta-llama/llama-stack/compare/v0.0.63...v0.1.0
 
-## v0.1.0rc12
+---
 
-### What's Changed
+# v0.1.0rc12
+Published on: 2025-01-22T22:24:01Z
+
+## What's Changed
 * [4/n][torchtune integration] support lazy load model during inference by @SLR722 in https://github.com/meta-llama/llama-stack/pull/620
 * remove unused telemetry related code for console by @dineshyv in https://github.com/meta-llama/llama-stack/pull/659
 * Fix Meta reference GPU implementation by @ashwinb in https://github.com/meta-llama/llama-stack/pull/663
@@ -800,7 +829,7 @@ There are example standalone apps in llama-stack-apps.
 * Fix fireworks client sdk chat completion with images by @hardikjshah in https://github.com/meta-llama/llama-stack/pull/840
 * [inference api] modify content types so they follow a more standard structure by @ashwinb in https://github.com/meta-llama/llama-stack/pull/841
 
-### New Contributors
+## New Contributors
 * @cdgamarose-nv made their first contribution in https://github.com/meta-llama/llama-stack/pull/661
 * @eltociear made their first contribution in https://github.com/meta-llama/llama-stack/pull/675
 * @derekslager made their first contribution in https://github.com/meta-llama/llama-stack/pull/692
@@ -810,15 +839,21 @@ There are example standalone apps in llama-stack-apps.
 
 **Full Changelog**: https://github.com/meta-llama/llama-stack/compare/v0.0.63...v0.1.0rc11
 
-## v0.0.63
+---
+
+# v0.0.63
+Published on: 2024-12-18T07:17:43Z
 
 A small but important bug-fix release to update the URL datatype for the client-SDKs. The issue affected multimodal agentic turns especially.
 
 **Full Changelog**: https://github.com/meta-llama/llama-stack/compare/v0.0.62...v0.0.63
 
-## v0.0.62
+---
 
-### What's Changed
+# v0.0.62
+Published on: 2024-12-18T02:39:43Z
+
+## What's Changed
 
 A few important updates some of which are backwards incompatible. You must update your `run.yaml`s when upgrading. As always look to `templates/<distro>/run.yaml` for reference.
 
@@ -838,15 +873,18 @@ A variety of fixes and enhancements. Some selected ones:
 * [tests] add client-sdk pytests & delete client.py by @yanxi0830 in https://github.com/meta-llama/llama-stack/pull/638
 * [bugfix] no shield_call when there's no shields configured by @yanxi0830 in https://github.com/meta-llama/llama-stack/pull/642
 
-### New Contributors
+## New Contributors
 * @SLR722 made their first contribution in https://github.com/meta-llama/llama-stack/pull/540
 * @iamarunbrahma made their first contribution in https://github.com/meta-llama/llama-stack/pull/636
 
 **Full Changelog**: https://github.com/meta-llama/llama-stack/compare/v0.0.61...v0.0.62
 
-## v0.0.61
+---
 
-### What's Changed
+# v0.0.61
+Published on: 2024-12-10T20:50:33Z
+
+## What's Changed
 * add NVIDIA NIM inference adapter by @mattf in https://github.com/meta-llama/llama-stack/pull/355
 * Tgi fixture by @dineshyv in https://github.com/meta-llama/llama-stack/pull/519
 * fixes tests & move braintrust api_keys to request headers by @yanxi0830 in https://github.com/meta-llama/llama-stack/pull/535
@@ -888,7 +926,7 @@ A variety of fixes and enhancements. Some selected ones:
 * Fixes for library client by @ashwinb in https://github.com/meta-llama/llama-stack/pull/587
 * Fix issue 586 by @yanxi0830 in https://github.com/meta-llama/llama-stack/pull/594
 
-### New Contributors
+## New Contributors
 * @sablair made their first contribution in https://github.com/meta-llama/llama-stack/pull/549
 * @JeffreyLind3 made their first contribution in https://github.com/meta-llama/llama-stack/pull/547
 * @aidando73 made their first contribution in https://github.com/meta-llama/llama-stack/pull/554
@@ -899,9 +937,12 @@ A variety of fixes and enhancements. Some selected ones:
 
 **Full Changelog**: https://github.com/meta-llama/llama-stack/compare/v0.0.55...v0.0.61
 
-## v0.0.55
+---
 
-### What's Changed
+# v0.0.55
+Published on: 2024-11-23T17:14:07Z
+
+## What's Changed
 * Fix TGI inference adapter
 * Fix `llama stack build` in 0.0.54 by @dltn in https://github.com/meta-llama/llama-stack/pull/505
 * Several documentation related improvements
@@ -910,9 +951,12 @@ A variety of fixes and enhancements. Some selected ones:
 
 **Full Changelog**: https://github.com/meta-llama/llama-stack/compare/v0.0.54...v0.0.55
 
-## v0.0.54
+---
 
-### What's Changed
+# v0.0.54
+Published on: 2024-11-22T00:36:09Z
+
+## What's Changed
 * Bugfixes release on top of 0.0.53
 * Don't depend on templates.py when print llama stack build messages by @ashwinb in https://github.com/meta-llama/llama-stack/pull/496
 * Restructure docs by @dineshyv in https://github.com/meta-llama/llama-stack/pull/494
@@ -920,12 +964,15 @@ A variety of fixes and enhancements. Some selected ones:
 * Fix fp8 quantization script. by @liyunlu0618 in https://github.com/meta-llama/llama-stack/pull/500
 * use logging instead of prints by @dineshyv in https://github.com/meta-llama/llama-stack/pull/499
 
-### New Contributors
+## New Contributors
 * @liyunlu0618 made their first contribution in https://github.com/meta-llama/llama-stack/pull/500
 
 **Full Changelog**: https://github.com/meta-llama/llama-stack/compare/v0.0.53...v0.0.54
 
-## v0.0.53
+---
+
+# v0.0.53
+Published on: 2024-11-20T22:18:00Z
 
 🚀  Initial Release Notes for Llama Stack!
 
@@ -961,7 +1008,7 @@ A variety of fixes and enhancements. Some selected ones:
 ### Removed
 - `llama stack configure` command
 
-### What's Changed
+## What's Changed
 * Update download command by @Wauplin in https://github.com/meta-llama/llama-stack/pull/9
 * Update fbgemm version by @jianyuh in https://github.com/meta-llama/llama-stack/pull/12
 * Add CLI reference docs by @dltn in https://github.com/meta-llama/llama-stack/pull/14
@@ -1187,7 +1234,7 @@ A variety of fixes and enhancements. Some selected ones:
 * register with provider even if present in stack by @dineshyv in https://github.com/meta-llama/llama-stack/pull/491
 * Make run yaml optional so dockers can start with just --env by @ashwinb in https://github.com/meta-llama/llama-stack/pull/492
 
-### New Contributors
+## New Contributors
 * @Wauplin made their first contribution in https://github.com/meta-llama/llama-stack/pull/9
 * @jianyuh made their first contribution in https://github.com/meta-llama/llama-stack/pull/12
 * @dltn made their first contribution in https://github.com/meta-llama/llama-stack/pull/14
@@ -1240,3 +1287,5 @@ A variety of fixes and enhancements. Some selected ones:
 * @iseeyuan made their first contribution in https://github.com/meta-llama/llama-stack/pull/485
 
 **Full Changelog**: https://github.com/meta-llama/llama-stack/commits/v0.0.53
+
+---
