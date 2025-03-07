@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 import json
-import logging
 import re
 import uuid
 from typing import AsyncGenerator, AsyncIterator, Dict, List, Optional, Union
@@ -49,6 +48,7 @@ from llama_stack.apis.inference import (
     ToolConfig,
 )
 from llama_stack.apis.models import Model
+from llama_stack.log import get_logger
 from llama_stack.models.llama import sku_list
 from llama_stack.models.llama.datatypes import (
     StopReason,
@@ -90,14 +90,7 @@ CONFIG_TYPE_TO_TOOL_PARSER = {
 DEFAULT_TOOL_PARSER = "pythonic"
 
 
-logger = logging.getLogger(__name__)
-
-# Adjust logging parameters from Python code. This appears to be the standard way to control
-# logging in Llama Stack.
-logger.setLevel(logging.INFO)
-stderr_handler = logging.StreamHandler()
-stderr_handler.setFormatter(logging.Formatter("%(asctime)s: %(filename)s [%(levelname)s] %(message)s"))
-logger.addHandler(stderr_handler)
+logger = get_logger(__name__, category="inference")
 
 
 def _random_uuid_str() -> str:
