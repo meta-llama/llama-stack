@@ -871,6 +871,7 @@ dependencies = [
     { name = "huggingface-hub" },
     { name = "jsonschema" },
     { name = "llama-stack-client" },
+    { name = "pillow" },
     { name = "prompt-toolkit" },
     { name = "pydantic" },
     { name = "python-dotenv" },
@@ -878,6 +879,7 @@ dependencies = [
     { name = "rich" },
     { name = "setuptools" },
     { name = "termcolor" },
+    { name = "tiktoken" },
 ]
 
 [package.optional-dependencies]
@@ -924,7 +926,6 @@ test = [
     { name = "opentelemetry-sdk" },
     { name = "pypdf" },
     { name = "sqlite-vec" },
-    { name = "tiktoken" },
     { name = "torch", version = "2.6.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "sys_platform == 'darwin'" },
     { name = "torch", version = "2.6.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "sys_platform != 'darwin'" },
     { name = "torchvision", version = "0.21.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(platform_machine == 'aarch64' and sys_platform == 'linux') or sys_platform == 'darwin'" },
@@ -953,6 +954,7 @@ requires-dist = [
     { name = "openai", marker = "extra == 'test'" },
     { name = "opentelemetry-exporter-otlp-proto-http", marker = "extra == 'test'" },
     { name = "opentelemetry-sdk", marker = "extra == 'test'" },
+    { name = "pillow" },
     { name = "pre-commit", marker = "extra == 'dev'" },
     { name = "prompt-toolkit" },
     { name = "pydantic", specifier = ">=2" },
@@ -978,7 +980,7 @@ requires-dist = [
     { name = "sphinxcontrib-video", marker = "extra == 'docs'" },
     { name = "sqlite-vec", marker = "extra == 'test'" },
     { name = "termcolor" },
-    { name = "tiktoken", marker = "extra == 'test'" },
+    { name = "tiktoken" },
     { name = "tomli", marker = "extra == 'docs'" },
     { name = "torch", marker = "extra == 'test'", specifier = ">=2.6.0", index = "https://download.pytorch.org/whl/cpu" },
     { name = "torchvision", marker = "extra == 'test'", specifier = ">=0.21.0", index = "https://download.pytorch.org/whl/cpu" },
