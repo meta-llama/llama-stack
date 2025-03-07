@@ -702,12 +702,15 @@ class PreprocessingRouter(Preprocessing):
         self,
         routing_table: RoutingTable,
     ) -> None:
+        logcat.debug("core", "Initializing PreprocessingRouter")
         self.routing_table = routing_table
 
     async def initialize(self) -> None:
+        logcat.debug("core", "PreprocessingRouter.initialize")
         pass
 
     async def shutdown(self) -> None:
+        logcat.debug("core", "PreprocessingRouter.shutdown")
         pass
 
     async def preprocess(
@@ -716,6 +719,10 @@ class PreprocessingRouter(Preprocessing):
         preprocessor_inputs: List[PreprocessingDataElement],
         options: Optional[PreprocessorOptions] = None,
     ) -> PreprocessorResponse:
+        logcat.debug(
+            "core",
+            f"PreprocessingRouter.preprocess: {preprocessor_id}, {len(preprocessor_inputs)} inputs, options={options}",
+        )
         return await self.routing_table.get_provider_impl(preprocessor_id).preprocess(
             preprocessor_id=preprocessor_id,
             preprocessor_inputs=preprocessor_inputs,
@@ -727,5 +734,9 @@ class PreprocessingRouter(Preprocessing):
         preprocessors: PreprocessorChain,
         preprocessor_inputs: List[PreprocessingDataElement],
     ) -> PreprocessorResponse:
+        logcat.debug(
+            "core",
+            f"PreprocessingRouter.chain_preprocess: preprocessors {[p.preprocessor_id for p in preprocessors]}, {len(preprocessor_inputs)} inputs",
+        )
         preprocessor_impls = [self.routing_table.get_provider_impl(p.preprocessor_id) for p in preprocessors]
         return await execute_preprocessor_chain(preprocessors, preprocessor_impls, preprocessor_inputs)
