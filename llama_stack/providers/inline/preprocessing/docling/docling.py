@@ -36,13 +36,10 @@ class InclineDoclingPreprocessorImpl(Preprocessing, PreprocessorsProtocolPrivate
 
     def __init__(self, config: InlineDoclingConfig) -> None:
         self.config = config
-        self.converter = DocumentConverter()
+        self.converter = None
         self.chunker = None
 
-    async def initialize(self) -> None:
-        if self.config.chunk:
-            # TODO: docling should use Llama Stack's inference API instead of handling tokenization by itself
-            self.chunker = HybridChunker()
+    async def initialize(self) -> None: ...
 
     async def shutdown(self) -> None: ...
 
@@ -56,6 +53,13 @@ class InclineDoclingPreprocessorImpl(Preprocessing, PreprocessorsProtocolPrivate
         preprocessor_inputs: List[PreprocessingDataElement],
         options: Optional[PreprocessorOptions] = None,
     ) -> PreprocessorResponse:
+        if self.converter is None:
+            # this is the first time this method is called
+            self.converter = DocumentConverter()
+            if self.config.chunk and self.chunker is None:
+                # TODO: docling should use Llama Stack's inference API instead of handling tokenization by itself
+                self.chunker = HybridChunker()
+
         results = []
 
         for inp in preprocessor_inputs:
