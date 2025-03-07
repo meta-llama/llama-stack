@@ -9,9 +9,7 @@ from .config import ClarifaiImplConfig
 
 
 async def get_adapter_impl(config: ClarifaiImplConfig, _deps):
-    assert isinstance(
-        config, ClarifaiImplConfig
-    ), f"Unexpected config type: {type(config)}"
+    assert isinstance(config, ClarifaiImplConfig), f"Unexpected config type: {type(config)}"
     impl = ClarifaiInferenceAdapter(config)
     await impl.initialize()
     return impl

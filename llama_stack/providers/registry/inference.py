@@ -184,8 +184,8 @@ def available_providers() -> List[ProviderSpec]:
                 pip_packages=[
                     "clarifai",
                 ],
-                module="llama_stack.providers.adapters.inference.clarifai",
-                config_class="llama_stack.providers.adapters.inference.clarifai.ClarifaiImplConfig",
+                module="llama_stack.providers.remote.inference.clarifai",
+                config_class="llama_stack.providers.remote.inference.clarifai.ClarifaiImplConfig",
             ),
         ),
         remote_provider_spec(
