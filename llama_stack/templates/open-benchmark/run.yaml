@@ -1,0 +1,212 @@
+version: '2'
+image_name: dev
+apis:
+- agents
+- datasetio
+- eval
+- inference
+- safety
+- scoring
+- telemetry
+- tool_runtime
+- vector_io
+providers:
+  inference:
+  - provider_id: openai
+    provider_type: remote::openai
+    config:
+      api_key: ${env.OPENAI_API_KEY:}
+  - provider_id: anthropic
+    provider_type: remote::anthropic
+    config:
+      api_key: ${env.ANTHROPIC_API_KEY:}
+  - provider_id: gemini
+    provider_type: remote::gemini
+    config:
+      api_key: ${env.GEMINI_API_KEY:}
+  - provider_id: groq
+    provider_type: remote::groq
+    config:
+      url: https://api.groq.com
+      api_key: ${env.GROQ_API_KEY:}
+  - provider_id: together
+    provider_type: remote::together
+    config:
+      url: https://api.together.xyz/v1
+      api_key: ${env.TOGETHER_API_KEY}
+  vector_io:
+  - provider_id: sqlite-vec
+    provider_type: inline::sqlite-vec
+    config:
+      db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/dev}/sqlite_vec.db
+  - provider_id: ${env.ENABLE_CHROMADB+chromadb}
+    provider_type: remote::chromadb
+    config:
+      url: ${env.CHROMADB_URL:}
+  - provider_id: ${env.ENABLE_PGVECTOR+pgvector}
+    provider_type: remote::pgvector
+    config:
+      host: ${env.PGVECTOR_HOST:localhost}
+      port: ${env.PGVECTOR_PORT:5432}
+      db: ${env.PGVECTOR_DB:}
+      user: ${env.PGVECTOR_USER:}
+      password: ${env.PGVECTOR_PASSWORD:}
+  safety:
+  - provider_id: llama-guard
+    provider_type: inline::llama-guard
+    config: {}
+  agents:
+  - provider_id: meta-reference
+    provider_type: inline::meta-reference
+    config:
+      persistence_store:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/dev}/agents_store.db
+  telemetry:
+  - provider_id: meta-reference
+    provider_type: inline::meta-reference
+    config:
+      service_name: ${env.OTEL_SERVICE_NAME:llama-stack}
+      sinks: ${env.TELEMETRY_SINKS:console,sqlite}
+      sqlite_db_path: ${env.SQLITE_DB_PATH:~/.llama/distributions/dev/trace_store.db}
+  eval:
+  - provider_id: meta-reference
+    provider_type: inline::meta-reference
+    config: {}
+  datasetio:
+  - provider_id: huggingface
+    provider_type: remote::huggingface
+    config: {}
+  - provider_id: localfs
+    provider_type: inline::localfs
+    config: {}
+  scoring:
+  - provider_id: basic
+    provider_type: inline::basic
+    config: {}
+  - provider_id: llm-as-judge
+    provider_type: inline::llm-as-judge
+    config: {}
+  - provider_id: braintrust
+    provider_type: inline::braintrust
+    config:
+      openai_api_key: ${env.OPENAI_API_KEY:}
+  tool_runtime:
+  - provider_id: brave-search
+    provider_type: remote::brave-search
+    config:
+      api_key: ${env.BRAVE_SEARCH_API_KEY:}
+      max_results: 3
+  - provider_id: tavily-search
+    provider_type: remote::tavily-search
+    config:
+      api_key: ${env.TAVILY_SEARCH_API_KEY:}
+      max_results: 3
+  - provider_id: code-interpreter
+    provider_type: inline::code-interpreter
+    config: {}
+  - provider_id: rag-runtime
+    provider_type: inline::rag-runtime
+    config: {}
+  - provider_id: model-context-protocol
+    provider_type: remote::model-context-protocol
+    config: {}
+metadata_store:
+  type: sqlite
+  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/dev}/registry.db
+models:
+- metadata: {}
+  model_id: openai/gpt-4o
+  provider_id: openai
+  provider_model_id: openai/gpt-4o
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-3.1-405B-Instruct
+  provider_id: together
+  provider_model_id: meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo
+  model_type: llm
+- metadata: {}
+  model_id: anthropic/claude-3-5-sonnet-latest
+  provider_id: anthropic
+  provider_model_id: anthropic/claude-3-5-sonnet-latest
+  model_type: llm
+- metadata: {}
+  model_id: gemini/gemini-1.5-flash
+  provider_id: gemini
+  provider_model_id: gemini/gemini-1.5-flash
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-3.3-70B-Instruct
+  provider_id: groq
+  provider_model_id: groq/llama-3.3-70b-versatile
+  model_type: llm
+shields:
+- shield_id: meta-llama/Llama-Guard-3-8B
+vector_dbs: []
+datasets:
+  - dataset_id: simpleqa
+    provider_id: huggingface
+    url:
+      uri: https://huggingface.co/datasets/llamastack/simpleqa
+    metadata:
+      path: llamastack/simpleqa
+      name:
+      split: train
+    dataset_schema:
+      input_query:
+        type: string
+      expected_answer:
+        type: string
+      chat_completion_input:
+        type: string
+  - dataset_id: mmlu_cot
+    provider_id: huggingface
+    url:
+      uri: https://huggingface.co/datasets/llamastack/mmlu_cot
+    metadata:
+      path: llamastack/mmlu_cot
+      name: all
+      split: test
+    dataset_schema:
+      input_query:
+        type: string
+      expected_answer:
+        type: string
+      chat_completion_input:
+        type: string
+  - dataset_id: gpqa_cot
+    provider_id: huggingface
+    url:
+      uri: https://huggingface.co/datasets/llamastack/gpqa_0shot_cot
+    metadata:
+      path: llamastack/gpqa_0shot_cot
+      name: gpqa_main
+      split: train
+    dataset_schema:
+      input_query:
+        type: string
+      expected_answer:
+        type: string
+      chat_completion_input:
+        type: string
+scoring_fns: []
+benchmarks:
+  - benchmark_id: meta-reference-simpleqa
+    dataset_id: simpleqa
+    scoring_functions: ["llm-as-judge::405b-simpleqa"]
+  - benchmark_id: meta-reference-mmlu-cot
+    dataset_id: mmlu_cot
+    scoring_functions: ["basic::regex_parser_multiple_choice_answer"]
+  - benchmark_id: meta-reference-gpqa-cot
+    dataset_id: gpqa_cot
+    scoring_functions: ["basic::regex_parser_multiple_choice_answer"]
+tool_groups:
+- toolgroup_id: builtin::websearch
+  provider_id: tavily-search
+- toolgroup_id: builtin::rag
+  provider_id: rag-runtime
+- toolgroup_id: builtin::code_interpreter
+  provider_id: code-interpreter
+server:
+  port: 8321
