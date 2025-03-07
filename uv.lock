@@ -945,7 +945,7 @@ requires-dist = [
     { name = "huggingface-hub" },
     { name = "jinja2", marker = "extra == 'codegen'", specifier = ">=3.1.6" },
     { name = "jsonschema" },
-    { name = "llama-stack-client", specifier = ">=0.1.4" },
+    { name = "llama-stack-client", specifier = ">=0.1.5" },
     { name = "lm-format-enforcer", marker = "extra == 'test'", specifier = ">=0.10.9" },
     { name = "myst-parser", marker = "extra == 'docs'" },
     { name = "nbval", marker = "extra == 'dev'" },
@@ -990,7 +990,7 @@ provides-extras = ["dev", "test", "docs", "codegen"]
 
 [[package]]
 name = "llama-stack-client"
-version = "0.1.4"
+version = "0.1.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -1007,9 +1007,9 @@ dependencies = [
     { name = "tqdm" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/71/6b/0c9900bcefe683b1186c272f372ac643ebd307db9efa95fa2c4418e207b3/llama_stack_client-0.1.4.tar.gz", hash = "sha256:539ff9b8c40272d4f3b023605aff9b70e66958b6bd952a04f9e9a5b2bfde00dd", size = 260958 }
+sdist = { url = "https://files.pythonhosted.org/packages/72/26/24b8dcd97dadee66cf0b9a3cb0ee18c65a92b8732de76c1aec97d85306e2/llama_stack_client-0.1.5.tar.gz", hash = "sha256:f342969920c87d9518298fade6debecb15b7c19899eed241d61253be2bf35053", size = 261420 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/1f/00/56d7699354677e584610d5457baf09b0fde7ca71946532ba0f867d5e47c2/llama_stack_client-0.1.4-py3-none-any.whl", hash = "sha256:5034e7b3aac099a3ad88868b3ba1d2ba19285151ec40776ceda18e500b866a8e", size = 369327 },
+    { url = "https://files.pythonhosted.org/packages/ed/07/329a5220325a3a352967717e8878db1edc9c88616e36e0a1e819571067c0/llama_stack_client-0.1.5-py3-none-any.whl", hash = "sha256:2aeff88b6f836d71fd2c75d087ccc19d881fca769e05636b0ddf7b41a7c4aef8", size = 369754 },
 ]
 
 [[package]]
