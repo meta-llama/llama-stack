@@ -4,10 +4,10 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from enum import Enum
+import enum
 
 
-class ImageType(Enum):
-    container = "container"
-    conda = "conda"
-    venv = "venv"
+class LlamaStackImageType(enum.StrEnum):
+    container = enum.auto()
+    conda = enum.auto()
+    venv = enum.auto()
