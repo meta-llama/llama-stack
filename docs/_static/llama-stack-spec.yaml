@@ -238,6 +238,28 @@ paths:
               $ref: '#/components/schemas/CompletionRequest'
         required: true
   /v1/agents:
+    get:
+      responses:
+        '200':
+          description: A ListAgentsResponse.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListAgentsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Agents
+      description: List all agents.
+      parameters: []
     post:
       responses:
         '200':
@@ -410,6 +432,34 @@ paths:
               $ref: '#/components/schemas/CreateUploadSessionRequest'
         required: true
   /v1/agents/{agent_id}:
+    get:
+      responses:
+        '200':
+          description: An AgentConfig of the agent.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentConfig'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Agents
+      description: Describe an agent by its ID.
+      parameters:
+        - name: agent_id
+          in: path
+          description: ID of the agent.
+          required: true
+          schema:
+            type: string
     delete:
       responses:
         '200':
@@ -1525,6 +1575,36 @@ paths:
         - name: job_id
           in: path
           description: The ID of the job to get the result of.
+          required: true
+          schema:
+            type: string
+  /v1/agents/{agent_id}/sessions:
+    get:
+      responses:
+        '200':
+          description: A ListAgentSessionsResponse.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListAgentSessionsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Agents
+      description: List all session(s) of a given agent.
+      parameters:
+        - name: agent_id
+          in: path
+          description: >-
+            The ID of the agent to list sessions for.
           required: true
           schema:
             type: string
@@ -3133,6 +3213,10 @@ components:
     CompletionResponse:
       type: object
       properties:
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
         content:
           type: string
           description: The generated completion text
@@ -3451,6 +3535,10 @@ components:
     CompletionResponseStreamChunk:
       type: object
       properties:
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
         delta:
           type: string
           description: >-
@@ -4560,6 +4648,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Turn'
+        vector_db_id:
+          type: string
         started_at:
           type: string
           format: date-time
@@ -4567,7 +4657,6 @@ components:
       required:
         - session_id
         - session_name
-        - turns
         - started_at
       title: Session
       description: >-
@@ -5385,6 +5474,44 @@ components:
       required:
         - content
       title: ToolInvocationResult
+    ListAgentSessionsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Session'
+      additionalProperties: false
+      required:
+        - data
+      title: ListAgentSessionsResponse
+    Agent:
+      type: object
+      properties:
+        agent_id:
+          type: string
+        agent_config:
+          $ref: '#/components/schemas/AgentConfig'
+        created_at:
+          type: string
+          format: date-time
+      additionalProperties: false
+      required:
+        - agent_id
+        - agent_config
+        - created_at
+      title: Agent
+    ListAgentsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Agent'
+      additionalProperties: false
+      required:
+        - data
+      title: ListAgentsResponse
     BucketResponse:
       type: object
       properties:
