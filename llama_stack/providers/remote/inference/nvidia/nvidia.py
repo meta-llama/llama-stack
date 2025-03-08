@@ -52,7 +52,7 @@ from .openai_utils import (
     convert_openai_completion_choice,
     convert_openai_completion_stream,
 )
-from .utils import _is_nvidia_hosted, check_health
+from .utils import _is_nvidia_hosted
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +99,9 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
         if content_has_media(content):
             raise NotImplementedError("Media is not supported")
 
-        await check_health(self._config)  # this raises errors
+        # ToDo: check health of NeMo endpoints and enable this
+        # removing this health check as NeMo customizer endpoint health check is returning 404
+        # await check_health(self._config)  # this raises errors
 
         request = convert_completion_request(
             request=CompletionRequest(
@@ -179,7 +181,7 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
         if tool_prompt_format:
             warnings.warn("tool_prompt_format is not supported by NVIDIA NIM, ignoring")
 
-        await check_health(self._config)  # this raises errors
+        # await check_health(self._config)  # this raises errors
 
         request = await convert_chat_completion_request(
             request=ChatCompletionRequest(

@@ -82,6 +82,9 @@ class NvidiaPostTrainingImpl:
         for _ in range(self.config.max_retries):
             async with aiohttp.ClientSession(headers=request_headers, timeout=self.timeout) as session:
                 async with session.request(method, url, params=params, json=json, **kwargs) as response:
+                    if response.status >= 400:
+                        error_data = await response.json()
+                        raise Exception(f"API request failed: {error_data}")
                     return await response.json()
 
     @webmethod(route="/post-training/jobs", method="GET")
@@ -175,9 +178,9 @@ class NvidiaPostTrainingImpl:
         Fine-tunes a model on a dataset.
         Currently only supports Lora finetuning for standlone docker container.
         Assumptions:
-            - model is a valid Nvidia model
+            - nemo microservice is running and endpoint is set in config.customizer_url
             - dataset is registered separately in nemo datastore
-            - model checkpoint is downloaded from ngc and exists in the local directory
+            - model checkpoint is downloaded as per nemo customizer requirements
 
         Parameters:
             training_config: TrainingConfig - Configuration for training
