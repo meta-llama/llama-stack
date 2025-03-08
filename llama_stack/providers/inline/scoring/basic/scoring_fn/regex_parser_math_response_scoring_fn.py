@@ -13,7 +13,7 @@ from llama_stack.providers.utils.scoring.base_scoring_fn import RegisteredBaseSc
 from .fn_defs.regex_parser_multiple_choice_answer import (
     regex_parser_multiple_choice_answer,
 )
-from ...utils.math_utils import normalize_final_answer, first_answer, try_evaluate_frac, try_evaluate_latex
+from ..utils.math_utils import normalize_final_answer, first_answer, try_evaluate_frac, try_evaluate_latex
 
 
 class RegexParserScoringFn(RegisteredBaseScoringFn):
@@ -45,25 +45,25 @@ class RegexParserScoringFn(RegisteredBaseScoringFn):
         expected_answer = input_row["expected_answer"]
         generated_answer = input_row["generated_answer"]
 
+        parsing_regexes = fn_def.params.parsing_regexes
 
-        pattern = r".*final answer is:?\s*\$\\boxed{(?P<X>.*)}\$"
+        assert len(parsing_regexes) == 1, "Only one parsing regex is supported for regex_parser_math_response scoring function."
+
+        parsing_regexes = fn_def.params.parsing_regexes[0]
+        # parsing_regexes = r".*final answer is:?\s*\$\\boxed{(?P<X>.*)}\$"
+        
         normalized_generated_answer = normalize_final_answer(
                 first_answer(generated_answer),
-                pattern,
+                parsing_regexes,
                 match_first=True,
             )
 
         normalized_generated_answer = try_evaluate_frac(try_evaluate_latex(normalized_generated_answer))
 
-        # parse answer according to regex
-        parsed_answer = None
-        for regex in fn_def.params.parsing_regexes:
-            match = re.search(regex, generated_answer)
-            if match:
-                parsed_answer = match.group(1)
-                break
+        normalized_expected_answer = normalize_final_answer(expected_answer, r".*")
+        normalized_expected_answer = try_evaluate_frac(try_evaluate_latex(normalized_expected_answer))
 
-        score = 1.0 if parsed_answer and parsed_answer == expected_answer else 0.0
+        score = 1.0 if normalized_generated_answer == normalized_expected_answer else 0.0
         return {
             "score": score,
         }
