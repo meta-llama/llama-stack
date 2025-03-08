@@ -862,7 +862,7 @@ wheels = [
 
 [[package]]
 name = "llama-stack"
-version = "0.1.5"
+version = "0.1.6"
 source = { editable = "." }
 dependencies = [
     { name = "blobfile" },
@@ -946,7 +946,7 @@ requires-dist = [
     { name = "huggingface-hub" },
     { name = "jinja2", marker = "extra == 'codegen'", specifier = ">=3.1.6" },
     { name = "jsonschema" },
-    { name = "llama-stack-client", specifier = ">=0.1.5" },
+    { name = "llama-stack-client", specifier = ">=0.1.6" },
     { name = "lm-format-enforcer", marker = "extra == 'test'", specifier = ">=0.10.9" },
     { name = "myst-parser", marker = "extra == 'docs'" },
     { name = "nbval", marker = "extra == 'dev'" },
@@ -992,7 +992,7 @@ provides-extras = ["dev", "test", "docs", "codegen"]
 
 [[package]]
 name = "llama-stack-client"
-version = "0.1.5"
+version = "0.1.6"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -1009,9 +1009,9 @@ dependencies = [
     { name = "tqdm" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/72/26/24b8dcd97dadee66cf0b9a3cb0ee18c65a92b8732de76c1aec97d85306e2/llama_stack_client-0.1.5.tar.gz", hash = "sha256:f342969920c87d9518298fade6debecb15b7c19899eed241d61253be2bf35053", size = 261420 }
+sdist = { url = "https://files.pythonhosted.org/packages/b5/48/70ffdc7ab655234794e9559de9b1776b39610c09aaee8d3bc74bfbd570b4/llama_stack_client-0.1.6.tar.gz", hash = "sha256:92c6c55c3281839e690df7bfc289c36a5dde0f491574bbdb6b8b665dc3d5a16c", size = 264874 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ed/07/329a5220325a3a352967717e8878db1edc9c88616e36e0a1e819571067c0/llama_stack_client-0.1.5-py3-none-any.whl", hash = "sha256:2aeff88b6f836d71fd2c75d087ccc19d881fca769e05636b0ddf7b41a7c4aef8", size = 369754 },
+    { url = "https://files.pythonhosted.org/packages/38/51/1102914f819cf4412a5c9fd3f7dcc28175608e5f01ee164885972c3ec30b/llama_stack_client-0.1.6-py3-none-any.whl", hash = "sha256:708e20630d4e97a1cb03a19b933f4da6748cc857fe170998c392cf0f30f0f4c7", size = 373941 },
 ]
 
 [[package]]

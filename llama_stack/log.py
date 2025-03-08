@@ -10,8 +10,8 @@ from logging.config import dictConfig
 from typing import Dict
 
 from rich.console import Console
-from rich.logging import RichHandler
 from rich.errors import MarkupError
+from rich.logging import RichHandler
 
 # Default log level
 DEFAULT_LOG_LEVEL = logging.INFO
