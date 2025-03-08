@@ -29,7 +29,10 @@ from typing_extensions import Annotated
 
 from llama_stack.distribution.datatypes import StackRunConfig
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
-from llama_stack.distribution.request_headers import request_provider_data_context
+from llama_stack.distribution.request_headers import (
+    preserve_headers_context_async_generator,
+    request_provider_data_context,
+)
 from llama_stack.distribution.resolver import InvalidProviderError
 from llama_stack.distribution.stack import (
     construct_stack,
@@ -203,7 +206,9 @@ async def maybe_await(value):
 async def sse_generator(event_gen):
     try:
         event_gen = await event_gen
-        async for item in event_gen:
+        # Wrap the generator to preserve context across iterations
+        wrapped_gen = preserve_headers_context_async_generator(event_gen)
+        async for item in wrapped_gen:
             yield create_sse_event(item)
             await asyncio.sleep(0.01)
     except asyncio.CancelledError:

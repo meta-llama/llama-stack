@@ -7,7 +7,7 @@
 import contextvars
 import json
 import logging
-from typing import Any, ContextManager, Dict, Optional
+from typing import Any, AsyncGenerator, ContextManager, Dict, Optional, TypeVar
 
 from .utils.dynamic import instantiate_class_type
 
@@ -33,6 +33,31 @@ class RequestProviderDataContext(ContextManager):
         # Restore the previous value
         if self.token is not None:
             _provider_data_var.reset(self.token)
+
+
+T = TypeVar("T")
+
+
+async def preserve_headers_context_async_generator(gen: AsyncGenerator[T, None]) -> AsyncGenerator[T, None]:
+    """
+    Wraps an async generator to preserve request headers context variables across iterations.
+
+    This ensures that context variables set during generator creation are
+    available during each iteration of the generator, even if the original
+    context manager has exited.
+    """
+    # Capture the current context value
+    context_value = _provider_data_var.get()
+
+    # Create a wrapper that restores context for each iteration
+    async for item in gen:
+        # Save the current token to restore later
+        token = _provider_data_var.set(context_value)
+        try:
+            yield item
+        finally:
+            # Restore the previous value
+            _provider_data_var.reset(token)
 
 
 class NeedsRequestProviderData:

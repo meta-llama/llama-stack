@@ -32,7 +32,10 @@ from termcolor import cprint
 from llama_stack.distribution.build import print_pip_install_help
 from llama_stack.distribution.configure import parse_and_maybe_upgrade_config
 from llama_stack.distribution.datatypes import Api
-from llama_stack.distribution.request_headers import request_provider_data_context
+from llama_stack.distribution.request_headers import (
+    preserve_headers_context_async_generator,
+    request_provider_data_context,
+)
 from llama_stack.distribution.resolver import ProviderRegistry
 from llama_stack.distribution.server.endpoints import get_all_api_endpoints
 from llama_stack.distribution.stack import (
@@ -378,9 +381,12 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
             finally:
                 await end_trace()
 
+        # Wrap the generator to preserve context across iterations
+        wrapped_gen = preserve_headers_context_async_generator(gen())
+
         mock_response = httpx.Response(
             status_code=httpx.codes.OK,
-            content=gen(),
+            content=wrapped_gen,
             headers={
                 "Content-Type": "application/json",
             },
