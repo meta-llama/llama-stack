@@ -1,5 +1,38 @@
 # Changelog
 
+# v0.1.6
+Published on: 2025-03-08T04:35:08Z
+
+## 0.1.6 Release Notes
+
+### Build and Test Agents
+* Inference: Fixed support for inline vllm provider
+* (**New**) Agent: Build & Monitor Agent Workflows with Llama Stack + Anthropic's Best Practice [Notebook](https://github.com/meta-llama/llama-stack/blob/main/docs/notebooks/Llama_Stack_Agent_Workflows.ipynb)
+* (**New**) Agent: Revamped agent [documentation](https://llama-stack.readthedocs.io/en/latest/building_applications/agent.html) with more details and examples
+* Agent: Unify tools and Python SDK Agents API
+* Agent: AsyncAgent Python SDK wrapper supporting async client tool calls
+* Agent: Support python functions without @client_tool decorator as client tools
+* Agent: deprecation for allow_resume_turn flag, and remove need to specify tool_prompt_format
+* VectorIO: MilvusDB support added
+
+### Agent Evals and Model Customization
+* (**New**) Agent: Llama Stack RAG Lifecycle [Notebook](https://github.com/meta-llama/llama-stack/blob/main/docs/notebooks/Llama_Stack_RAG_Lifecycle.ipynb)
+* Eval: Documentation for eval, scoring, adding new benchmarks
+* Eval: Distribution template to run benchmarks on llama & non-llama models
+* Eval: Ability to register new custom LLM-as-judge scoring functions
+* (**New**) Looking for contributors for open benchmarks. See [documentation](https://llama-stack.readthedocs.io/en/latest/references/evals_reference/index.html#open-benchmark-contributing-guide) for details.
+
+### Deploy and Monitoring of Agents
+* Better support for different log levels across all components for better monitoring
+
+### Better Engineering
+* Enhance OpenAPI spec to include Error types across all APIs
+* Moved all tests to /tests and created unit tests to run on each PR
+* Removed all dependencies on llama-models repo
+
+
+---
+
 # v0.1.5.1
 Published on: 2025-02-28T22:37:44Z
 
