@@ -40,7 +40,7 @@ class NvidiaPostTrainingConfig(BaseModel):
 
     # ToDO: validate this, add default value
     customizer_url: str = Field(
-        default_factory=lambda: os.getenv("NVIDIA_CUSTOMIZER_URL"),
+        default_factory=lambda: os.getenv("NVIDIA_CUSTOMIZER_URL", "http://nemo.test"),
         description="Base URL for the NeMo Customizer API",
     )
 
