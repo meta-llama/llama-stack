@@ -249,6 +249,9 @@ def run_config_from_adhoc_config_spec(
     provider_configs_by_api = {}
     for api_provider in api_providers:
         api_str, provider = api_provider.split("=")
+
+        if api_str not in Api:
+            raise ValueError(f"invalid API ({api_str})")
         api = Api(api_str)
 
         providers_by_type = provider_registry[api]
