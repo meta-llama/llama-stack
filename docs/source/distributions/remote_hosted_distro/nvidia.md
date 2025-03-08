@@ -9,6 +9,7 @@ The `llamastack/distribution-nvidia` distribution consists of the following prov
 | datasetio | `remote::huggingface`, `inline::localfs` |
 | eval | `inline::meta-reference` |
 | inference | `remote::nvidia` |
+| post_training | `remote::nvidia` |
 | safety | `inline::llama-guard` |
 | scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |
 | telemetry | `inline::meta-reference` |
@@ -22,6 +23,13 @@ The following environment variables can be configured:
 
 - `LLAMASTACK_PORT`: Port for the Llama Stack distribution server (default: `5001`)
 - `NVIDIA_API_KEY`: NVIDIA API Key (default: ``)
+- `NVIDIA_CUSTOMIZER_URL`: NVIDIA Customizer URL (default: `http://nemo.test`)
+- `NVIDIA_USER_ID`: NVIDIA user ID (default: `llama-stack-user`)
+- `NVIDIA_DATASET_NAMESPACE`: NVIDIA dataset namespace (default: `default`)
+- `NVIDIA_ACCESS_POLICIES`: NVIDIA access policies (default: `{}`)
+- `NVIDIA_PROJECT_ID`: NVIDIA project ID (default: `test-project`)
+- `NVIDIA_OUTPUT_MODEL_DIR`: Directory to save the output model (default: `test-example-model@v1`)
+
 
 ### Models
 
