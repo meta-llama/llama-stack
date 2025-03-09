@@ -232,6 +232,16 @@ def get_stack_run_config_from_template(template: str) -> StackRunConfig:
     return StackRunConfig(**replace_env_vars(run_config))
 
 
+def check_api(api_str: str) -> Api:
+    try:
+        return Api(api_str)
+    except ValueError as e:
+        supported_valid_apis = [api.value for api in Api]
+        raise ValueError(
+            f"'{api_str}' is not a valid Api from --stack-config (or LLAMA_STACK_CONFIG).\nSupported valid APIs: {supported_valid_apis}."
+        ) from e
+
+
 def run_config_from_adhoc_config_spec(
     adhoc_config_spec: str, provider_registry: Optional[ProviderRegistry] = None
 ) -> StackRunConfig:
@@ -249,7 +259,7 @@ def run_config_from_adhoc_config_spec(
     provider_configs_by_api = {}
     for api_provider in api_providers:
         api_str, provider = api_provider.split("=")
-        api = Api(api_str)
+        api = check_api(api_str)
 
         providers_by_type = provider_registry[api]
         provider_spec = providers_by_type.get(provider)
