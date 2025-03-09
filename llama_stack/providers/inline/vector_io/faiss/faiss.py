@@ -8,6 +8,7 @@ import base64
 import io
 import json
 import logging
+import asyncio
 from typing import Any, Dict, List, Optional
 
 import faiss
@@ -99,7 +100,9 @@ class FaissIndex(EmbeddingIndex):
         await self._save_index()
 
     async def query(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
-        distances, indices = self.index.search(embedding.reshape(1, -1).astype(np.float32), k)
+        distances, indices = await asyncio.to_thread(
+            self.index.search, embedding.reshape(1, -1).astype(np.float32), k
+        )
 
         chunks = []
         scores = []
