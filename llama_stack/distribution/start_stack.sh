@@ -6,18 +6,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-
-CONTAINER_BINARY=${CONTAINER_BINARY:-docker}
-CONTAINER_OPTS=${CONTAINER_OPTS:-}
-LLAMA_CHECKPOINT_DIR=${LLAMA_CHECKPOINT_DIR:-}
-LLAMA_STACK_DIR=${LLAMA_STACK_DIR:-}
-TEST_PYPI_VERSION=${TEST_PYPI_VERSION:-}
-PYPI_VERSION=${PYPI_VERSION:-}
-
 set -euo pipefail
-
-RED='\033[0;31m'
-NC='\033[0m' # No Color
 
 error_handler() {
   echo "Error occurred in script at line: ${1}" >&2
@@ -30,6 +19,8 @@ if [ $# -lt 3 ]; then
   echo "Usage: $0 <env_type> <env_path_or_name> <yaml_config> <port> <script_args...>"
   exit 1
 fi
+
+LLAMA_CHECKPOINT_DIR=${LLAMA_CHECKPOINT_DIR:-}
 
 env_type="$1"
 shift

@@ -9,21 +9,7 @@
 # TODO: combine this with build_conda_env.sh since it is almost identical
 # the only difference is that we don't do any conda-specific setup
 
-LLAMA_STACK_DIR=${LLAMA_STACK_DIR:-}
-LLAMA_STACK_CLIENT_DIR=${LLAMA_STACK_CLIENT_DIR:-}
-TEST_PYPI_VERSION=${TEST_PYPI_VERSION:-}
-# This timeout (in seconds) is necessary when installing PyTorch via uv since it's likely to time out
-# Reference: https://github.com/astral-sh/uv/pull/1694
-UV_HTTP_TIMEOUT=${UV_HTTP_TIMEOUT:-500}
-UV_SYSTEM_PYTHON=${UV_SYSTEM_PYTHON:-}
-VIRTUAL_ENV=${VIRTUAL_ENV:-}
-
-if [ -n "$LLAMA_STACK_DIR" ]; then
-  echo "Using llama-stack-dir=$LLAMA_STACK_DIR"
-fi
-if [ -n "$LLAMA_STACK_CLIENT_DIR" ]; then
-  echo "Using llama-stack-client-dir=$LLAMA_STACK_CLIENT_DIR"
-fi
+set -euo pipefail
 
 if [ "$#" -lt 2 ]; then
   echo "Usage: $0 <env_name> <pip_dependencies> [<special_pip_deps>]" >&2
@@ -31,22 +17,25 @@ if [ "$#" -lt 2 ]; then
   exit 1
 fi
 
-special_pip_deps="$3"
-
-set -euo pipefail
+UV_SYSTEM_PYTHON=${UV_SYSTEM_PYTHON:-}
+VIRTUAL_ENV=${VIRTUAL_ENV:-}
 
 env_name="$1"
 pip_dependencies="$2"
-
-# Define color codes
-RED='\033[0;31m'
-NC='\033[0m' # No Color
+special_pip_deps="$3"
 
 # this is set if we actually create a new conda in which case we need to clean up
 ENVNAME=""
 
 SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 source "$SCRIPT_DIR/common.sh"
+
+if [ -n "$LLAMA_STACK_DIR" ]; then
+  echo "Using llama-stack-dir=$LLAMA_STACK_DIR"
+fi
+if [ -n "$LLAMA_STACK_CLIENT_DIR" ]; then
+  echo "Using llama-stack-client-dir=$LLAMA_STACK_CLIENT_DIR"
+fi
 
 # pre-run checks to make sure we can proceed with the installation
 pre_run_checks() {
