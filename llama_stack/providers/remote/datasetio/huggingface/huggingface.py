@@ -3,6 +3,7 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
+import logging
 from typing import Any, Dict, List, Optional
 
 import datasets as hf_datasets
@@ -10,10 +11,13 @@ import datasets as hf_datasets
 from llama_stack.apis.datasetio import DatasetIO, PaginatedRowsResult
 from llama_stack.apis.datasets import Dataset
 from llama_stack.providers.datatypes import DatasetsProtocolPrivate
+from llama_stack.providers.utils.common.provider_utils import get_provider_type
 from llama_stack.providers.utils.datasetio.url_utils import get_dataframe_from_url
 from llama_stack.providers.utils.kvstore import kvstore_impl
 
 from .config import HuggingfaceDatasetIOConfig
+
+log = logging.getLogger(__name__)
 
 DATASETS_PREFIX = "datasets:"
 
@@ -85,6 +89,13 @@ class HuggingfaceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
 
         if page_token and not page_token.isnumeric():
             raise ValueError("Invalid page_token")
+
+        if filter_condition is not None and filter_condition.strip():
+            dataset_type = get_provider_type(self.__module__)
+            provider_id = dataset_def.provider_id
+            log.warning(
+                f"Data filtering is not supported yet for {dataset_type}::{provider_id}, ignoring filter_condition: {filter_condition}"
+            )
 
         if page_token is None or len(page_token) == 0:
             next_page_token = 0
