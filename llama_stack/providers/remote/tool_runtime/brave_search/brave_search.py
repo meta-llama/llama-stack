@@ -6,7 +6,7 @@
 
 from typing import Any, Dict, List, Optional
 
-import requests
+import httpx
 
 from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.tools import (
@@ -30,7 +30,7 @@ class BraveSearchToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, NeedsRequest
     async def initialize(self):
         pass
 
-    async def register_tool(self, tool: Tool):
+    async def register_tool(self, tool: Tool) -> None:
         pass
 
     async def unregister_tool(self, tool_id: str) -> None:
@@ -74,8 +74,13 @@ class BraveSearchToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, NeedsRequest
             "Accept": "application/json",
         }
         payload = {"q": kwargs["query"]}
-        response = requests.get(url=url, params=payload, headers=headers)
-        response.raise_for_status()
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                url=url,
+                params=payload,
+                headers=headers,
+            )
+            response.raise_for_status()
         results = self._clean_brave_response(response.json())
         content_items = "\n".join([str(result) for result in results])
         return ToolInvocationResult(

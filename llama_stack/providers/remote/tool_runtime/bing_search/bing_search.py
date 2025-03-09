@@ -7,7 +7,7 @@
 import json
 from typing import Any, Dict, List, Optional
 
-import requests
+import httpx
 
 from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.tools import (
@@ -31,7 +31,7 @@ class BingSearchToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, NeedsRequestP
     async def initialize(self):
         pass
 
-    async def register_tool(self, tool: Tool):
+    async def register_tool(self, tool: Tool) -> None:
         pass
 
     async def unregister_tool(self, tool_id: str) -> None:
@@ -77,12 +77,13 @@ class BingSearchToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, NeedsRequestP
             "q": kwargs["query"],
         }
 
-        response = requests.get(
-            url=self.url,
-            params=params,
-            headers=headers,
-        )
-        response.raise_for_status()
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                url=self.url,
+                params=params,
+                headers=headers,
+            )
+            response.raise_for_status()
 
         return ToolInvocationResult(content=json.dumps(self._clean_response(response.json())))
 
