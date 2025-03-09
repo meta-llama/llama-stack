@@ -74,10 +74,7 @@ class WolframAlphaToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, NeedsReques
             "output": "json",
         }
         async with httpx.AsyncClient() as client:
-            response = await client.get(
-                params=params,
-                url=self.url
-            )
+            response = await client.get(params=params, url=self.url)
             response.raise_for_status()
         return ToolInvocationResult(content=json.dumps(self._clean_wolfram_alpha_response(response.json())))
 
