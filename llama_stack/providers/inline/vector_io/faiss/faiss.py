@@ -98,7 +98,9 @@ class FaissIndex(EmbeddingIndex):
         # Save updated index
         await self._save_index()
 
-    async def query(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
+    async def query(
+        self, embedding: NDArray, k: int, score_threshold: float, query_str: None, search_mode: None
+    ) -> QueryChunksResponse:
         distances, indices = self.index.search(embedding.reshape(1, -1).astype(np.float32), k)
 
         chunks = []
