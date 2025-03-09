@@ -163,6 +163,9 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
                 except StopAsyncIteration:
                     pass
                 finally:
+                    pending = asyncio.all_tasks(loop)
+                    if pending:
+                        loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
                     loop.close()
 
             return sync_generator()
@@ -383,7 +386,6 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
 
         # Wrap the generator to preserve context across iterations
         wrapped_gen = preserve_headers_context_async_generator(gen())
-
         mock_response = httpx.Response(
             status_code=httpx.codes.OK,
             content=wrapped_gen,
