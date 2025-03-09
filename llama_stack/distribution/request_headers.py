@@ -52,15 +52,12 @@ def preserve_headers_context_async_generator(gen: AsyncGenerator[T, None]) -> As
     async def wrapper():
         while True:
             # Set context before each anext() call
-            token = _provider_data_var.set(context_value)
+            _ = _provider_data_var.set(context_value)
             try:
                 item = await gen.__anext__()
                 yield item
             except StopAsyncIteration:
                 break
-            finally:
-                # Restore the previous value
-                _provider_data_var.reset(token)
 
     return wrapper()
 
