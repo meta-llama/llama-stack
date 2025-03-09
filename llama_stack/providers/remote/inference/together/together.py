@@ -93,8 +93,9 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
 
     def _get_client(self) -> Together:
         together_api_key = None
-        if self.config.api_key is not None:
-            together_api_key = self.config.api_key.get_secret_value()
+        config_api_key = self.config.api_key.get_secret_value() if self.config.api_key else None
+        if config_api_key:
+            together_api_key = config_api_key
         else:
             provider_data = self.get_request_provider_data()
             if provider_data is None or not provider_data.together_api_key:
