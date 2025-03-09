@@ -236,7 +236,7 @@ def create_dynamic_typed_route(func: Any, method: str, route: str):
                     value = func(**kwargs)
                     return await maybe_await(value)
             except Exception as e:
-                traceback.print_exception(e)
+                logger.exception("Error executing endpoint %s", method, route)
                 raise translate_exception(e) from e
 
     sig = inspect.signature(func)
