@@ -199,6 +199,8 @@ The `llama model` command helps you explore the model’s interface.
 2. `list`: Lists all the models available for download with hardware requirements to deploy the models.
 3. `prompt-format`: Show llama model message formats.
 4. `describe`: Describes all the properties of the model.
+5. `verify-download`: Verify the downloaded checkpoints' checksums for models downloaded from Meta.
+6. `remove`: Remove the downloaded llama model.
 
 ### Sample Usage
 
