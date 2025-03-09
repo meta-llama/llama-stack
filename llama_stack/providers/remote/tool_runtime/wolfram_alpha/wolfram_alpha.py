@@ -7,7 +7,7 @@
 import json
 from typing import Any, Dict, List, Optional
 
-import requests
+import httpx
 
 from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.tools import (
@@ -31,7 +31,7 @@ class WolframAlphaToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, NeedsReques
     async def initialize(self):
         pass
 
-    async def register_tool(self, tool: Tool):
+    async def register_tool(self, tool: Tool) -> None:
         pass
 
     async def unregister_tool(self, tool_id: str) -> None:
@@ -73,11 +73,9 @@ class WolframAlphaToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, NeedsReques
             "format": "plaintext",
             "output": "json",
         }
-        response = requests.get(
-            self.url,
-            params=params,
-        )
-
+        async with httpx.AsyncClient() as client:
+            response = await client.get(params=params, url=self.url)
+            response.raise_for_status()
         return ToolInvocationResult(content=json.dumps(self._clean_wolfram_alpha_response(response.json())))
 
     def _clean_wolfram_alpha_response(self, wa_response):
