@@ -6,19 +6,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-LLAMA_STACK_DIR=${LLAMA_STACK_DIR:-}
-LLAMA_STACK_CLIENT_DIR=${LLAMA_STACK_CLIENT_DIR:-}
-TEST_PYPI_VERSION=${TEST_PYPI_VERSION:-}
-# This timeout (in seconds) is necessary when installing PyTorch via uv since it's likely to time out
-# Reference: https://github.com/astral-sh/uv/pull/1694
-UV_HTTP_TIMEOUT=${UV_HTTP_TIMEOUT:-500}
-
-if [ -n "$LLAMA_STACK_DIR" ]; then
-  echo "Using llama-stack-dir=$LLAMA_STACK_DIR"
-fi
-if [ -n "$LLAMA_STACK_CLIENT_DIR" ]; then
-  echo "Using llama-stack-client-dir=$LLAMA_STACK_CLIENT_DIR"
-fi
+set -euo pipefail
 
 if [ "$#" -lt 3 ]; then
   echo "Usage: $0 <distribution_type> <conda_env_name> <build_file_path> <pip_dependencies> [<special_pip_deps>]" >&2
@@ -26,24 +14,23 @@ if [ "$#" -lt 3 ]; then
   exit 1
 fi
 
-special_pip_deps="$4"
-
-set -euo pipefail
-
 env_name="$1"
 build_file_path="$2"
 pip_dependencies="$3"
-
-# Define color codes
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-NC='\033[0m' # No Color
+special_pip_deps="$4"
 
 # this is set if we actually create a new conda in which case we need to clean up
 ENVNAME=""
 
 SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 source "$SCRIPT_DIR/common.sh"
+
+if [ -n "$LLAMA_STACK_DIR" ]; then
+  echo "Using llama-stack-dir=$LLAMA_STACK_DIR"
+fi
+if [ -n "$LLAMA_STACK_CLIENT_DIR" ]; then
+  echo "Using llama-stack-client-dir=$LLAMA_STACK_CLIENT_DIR"
+fi
 
 ensure_conda_env_python310() {
   local env_name="$1"
