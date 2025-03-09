@@ -205,18 +205,14 @@ async def maybe_await(value):
 
 async def sse_generator(event_gen):
     try:
-        event_gen = await event_gen
-        # Wrap the generator to preserve context across iterations
-        wrapped_gen = preserve_headers_context_async_generator(event_gen)
-        async for item in wrapped_gen:
+        async for item in await event_gen:
             yield create_sse_event(item)
             await asyncio.sleep(0.01)
     except asyncio.CancelledError:
         logger.info("Generator cancelled")
         await event_gen.aclose()
     except Exception as e:
-        logger.exception(f"Error in sse_generator: {e}")
-        logger.exception(f"Traceback: {''.join(traceback.format_exception(type(e), e, e.__traceback__))}")
+        logger.exception("Error in sse_generator")
         yield create_sse_event(
             {
                 "error": {
@@ -231,9 +227,11 @@ def create_dynamic_typed_route(func: Any, method: str, route: str):
         # Use context manager for request provider data
         with request_provider_data_context(request.headers):
             is_streaming = is_streaming_request(func.__name__, request, **kwargs)
+
             try:
                 if is_streaming:
-                    return StreamingResponse(sse_generator(func(**kwargs)), media_type="text/event-stream")
+                    gen = preserve_headers_context_async_generator(sse_generator(func(**kwargs)))
+                    return StreamingResponse(gen, media_type="text/event-stream")
                 else:
                     value = func(**kwargs)
                     return await maybe_await(value)

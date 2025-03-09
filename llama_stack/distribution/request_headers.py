@@ -38,7 +38,7 @@ class RequestProviderDataContext(ContextManager):
 T = TypeVar("T")
 
 
-async def preserve_headers_context_async_generator(gen: AsyncGenerator[T, None]) -> AsyncGenerator[T, None]:
+def preserve_headers_context_async_generator(gen: AsyncGenerator[T, None]) -> AsyncGenerator[T, None]:
     """
     Wraps an async generator to preserve request headers context variables across iterations.
 
@@ -46,18 +46,23 @@ async def preserve_headers_context_async_generator(gen: AsyncGenerator[T, None])
     available during each iteration of the generator, even if the original
     context manager has exited.
     """
-    # Capture the current context value
+    # Capture the current context value right now
     context_value = _provider_data_var.get()
 
-    # Create a wrapper that restores context for each iteration
-    async for item in gen:
-        # Save the current token to restore later
-        token = _provider_data_var.set(context_value)
-        try:
-            yield item
-        finally:
-            # Restore the previous value
-            _provider_data_var.reset(token)
+    async def wrapper():
+        while True:
+            # Set context before each anext() call
+            token = _provider_data_var.set(context_value)
+            try:
+                item = await gen.__anext__()
+                yield item
+            except StopAsyncIteration:
+                break
+            finally:
+                # Restore the previous value
+                _provider_data_var.reset(token)
+
+    return wrapper()
 
 
 class NeedsRequestProviderData:
