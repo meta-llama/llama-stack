@@ -41,7 +41,7 @@ client.toolgroups.register(
 
 The tool requires an API key which can be provided either in the configuration or through the request header `X-LlamaStack-Provider-Data`. The format of the header is `{"<provider_name>_api_key": <your api key>}`.
 
-
+> **NOTE:** When using Tavily Search and Bing Search, the inference output will still display "Brave Search." This is because Llama models have been trained with Brave Search as a built-in tool. Tavily and bing is just being used in lieu of Brave search.
 
 #### Code Interpreter
 
@@ -205,4 +205,62 @@ response = agent.create_turn(
     messages=[{"role": "user", "content": "Run this code: print(3 ** 4 - 5 * 2)"}],
     session_id=session_id,
 )
+```
+## Simple Example2: Using an Agent with the websearch Tool
+```python
+from llama_stack_client.lib.agents.agent import Agent
+from llama_stack_client.types.agent_create_params import AgentConfig
+from llama_stack_client.lib.agents.event_logger import EventLogger
+from llama_stack_client import LlamaStackClient
+
+client = LlamaStackClient(
+    base_url=f"http://localhost:8321",
+    provider_data = {"tavily_search_api_key": "your_TAVILY_SEARCH_API_KEY"})  
+
+agent_config = AgentConfig(
+    model="meta-llama/Llama-3.2-3B-Instruct",
+    instructions=(
+        "You are a highly knowledgeable and helpful web search assistant. "
+        "Your primary goal is to provide accurate and reliable information to the user. "
+        "Whenever you encounter a query, make sure to use the websearch tools to look up the most current and precise information available. "
+    ),
+    toolgroups=["builtin::websearch"], 
+)
+agent = Agent(client, agent_config)
+
+session_id = agent.create_session("websearch-session")
+
+response = agent.create_turn(
+    messages=[{"role": "user", "content": "How US performed in the olympics?"}],
+    session_id=session_id,
+)
+for log in EventLogger().log(response):
+    log.print()
+```
+
+## Simple Example3: Using an Agent with the WolframAlpha Tool
+```python
+from llama_stack_client.lib.agents.agent import Agent
+from llama_stack_client.types.agent_create_params import AgentConfig
+from llama_stack_client.lib.agents.event_logger import EventLogger
+from llama_stack_client import LlamaStackClient
+
+client = LlamaStackClient(base_url=f"http://localhost:8321")  
+
+agent_config = AgentConfig(
+    model="meta-llama/Llama-3.2-3B-Instruct",
+    instructions="You are a helpful wolfram_alpha assistant, use wolfram_alpha tool as external source validation.",
+    toolgroups=["builtin::wolfram_alpha"],
+    wolfram_api_key="your_WOLFRAM_ALPHA_API_KEY",  
+)
+agent = Agent(client, agent_config)
+
+session_id = agent.create_session("wolframa-alpha-session")
+
+response = agent.create_turn(
+    messages=[{"role": "user", "content": "Tell me 10 densest elemental metals"}],
+    session_id=session_id,
+)
+for log in EventLogger().log(response):
+    log.print()
 ```
