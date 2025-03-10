@@ -19,7 +19,7 @@ from llama_stack.schema_utils import json_schema_type, register_schema, webmetho
 @json_schema_type
 class TrainingStrategy(BaseModel):
     # params that control Optimizer
-    lr: Optional[Union[float, Literal["auto"]]] = "auto" 
+    learning_rate: Optional[Union[float, Literal["auto"]]] = "auto" 
     weight_decay: Optional[float] = 0.1
     num_warmup_steps: Optional[Union[int, Literal["auto"]]] = "auto" 
     
