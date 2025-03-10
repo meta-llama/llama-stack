@@ -102,6 +102,15 @@ uv run pre-commit run --all-files
 > [!CAUTION]
 > Before pushing your changes, make sure that the pre-commit hooks have passed successfully.
 
+## Running unit tests
+
+You can run the unit tests by running:
+
+```bash
+source .venv/bin/activate
+./scripts/unit-tests.sh
+```
+
 ## Adding a new dependency to the project
 
 To add a new dependency to the project, you can use the `uv` command. For example, to add `foo` to the project, you can run:

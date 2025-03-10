@@ -23,7 +23,7 @@ jobs:
 
       - name: Run unit tests
         run: |
-          uv run -p 3.10.16 --with . --with ".[dev]" --with ".[test]" pytest -s -v tests/unit/ --junitxml=pytest-report.xml
+          ./scripts/unit-tests.sh
 
       - name: Upload test results
         if: always()
