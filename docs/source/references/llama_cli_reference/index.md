@@ -137,6 +137,11 @@ llama download --source meta --model-id Prompt-Guard-86M --meta-url META_URL
 llama download --source meta --model-id Llama-Guard-3-1B --meta-url META_URL
 ```
 
+You can verify the downloaded model using the following command:
+```bash
+llama model verify-download --model-id Llama-Guard-3-1B
+```
+
 ### Downloading from [Hugging Face](https://huggingface.co/meta-llama)
 
 Essentially, the same commands above work, just replace `--source meta` with `--source huggingface`.
@@ -194,6 +199,8 @@ The `llama model` command helps you explore the model’s interface.
 2. `list`: Lists all the models available for download with hardware requirements to deploy the models.
 3. `prompt-format`: Show llama model message formats.
 4. `describe`: Describes all the properties of the model.
+5. `verify-download`: Verify the downloaded checkpoints' checksums for models downloaded from Meta.
+6. `remove`: Remove the downloaded llama model.
 
 ### Sample Usage
 
