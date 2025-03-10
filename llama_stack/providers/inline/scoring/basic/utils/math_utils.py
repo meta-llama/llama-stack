@@ -6,13 +6,14 @@
 
 import contextlib
 import re
-from types import FrameType
-from typing import Sequence, Iterator, Optional
-import sympy
 import signal
+from types import FrameType
+from typing import Iterator, Optional, Sequence
+
 
 class TimeoutException(Exception):
     pass
+
 
 @contextlib.contextmanager
 def time_limit(seconds: float) -> Iterator[None]:
@@ -25,6 +26,7 @@ def time_limit(seconds: float) -> Iterator[None]:
         yield
     finally:
         signal.setitimer(signal.ITIMER_REAL, 0)
+
 
 # from minerva
 SUBSTITUTIONS = [
@@ -103,6 +105,7 @@ def try_evaluate_frac(expression: str, fmt: str = "0.2e") -> str:
             continue
     return new_expression
 
+
 def try_evaluate_latex(expression: str, fmt: str = ".2e") -> str:
     try:
         with time_limit(seconds=5):
@@ -114,11 +117,11 @@ def try_evaluate_latex(expression: str, fmt: str = ".2e") -> str:
         return expression
 
 
-
 def first_answer(text: str, markers: Sequence[str] = ("Q:", "A:")) -> str:
     for marker in markers:
         text = text.split(marker)[0]
     return text
+
 
 def extract_result_from_boxed(answer: str) -> str:
     box_start = "\\boxed"
@@ -155,9 +158,7 @@ def extract_result_from_boxed(answer: str) -> str:
 
 
 # from minerva paper + _normalise_result from xavierm
-def normalize_final_answer(
-    final_answer: str, regex_pattern: str, match_first: bool = True
-) -> str:
+def normalize_final_answer(final_answer: str, regex_pattern: str, match_first: bool = True) -> str:
     """Extract and normalize a final answer to a quantitative reasoning question."""
     match = re.findall(regex_pattern, final_answer)
     extraction: str
@@ -203,6 +204,7 @@ def normalize_final_answer(
         final_answer = final_answer[1]
     return _normalise_result(final_answer)
 
+
 def _normalise_result(string: str) -> str:
     # linebreaks
     string = string.replace("\n", "")
@@ -220,6 +222,7 @@ def _normalise_result(string: str) -> str:
 
     # remove \left and \right
     string = string.replace("\\left", "")
+    string = string.replace("\\le", "")
     string = string.replace("\\right", "")
 
     # Remove circ (degrees)
@@ -266,6 +269,7 @@ def _normalise_result(string: str) -> str:
 
     return string
 
+
 def _remove_right_units(string: str) -> str:
     # "\\text{ " only ever occurs (at least in the val set) when describing units
     try:
@@ -277,6 +281,7 @@ def _remove_right_units(string: str) -> str:
             return string
     except AssertionError:
         return string
+
 
 def _fix_sqrt(string: str) -> str:
     if "\\sqrt" not in string:
@@ -327,6 +332,7 @@ def _fix_fracs(string: str) -> str:
                         new_str += "{" + a + "}" + b
     string = new_str
     return string
+
 
 def _fix_a_slash_b(string: str) -> str:
     if len(string.split("/")) != 2:

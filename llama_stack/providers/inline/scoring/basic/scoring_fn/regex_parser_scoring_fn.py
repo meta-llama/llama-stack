@@ -32,7 +32,6 @@ class RegexParserScoringFn(RegisteredBaseScoringFn):
         scoring_fn_identifier: Optional[str] = None,
         scoring_params: Optional[ScoringFnParams] = None,
     ) -> ScoringResultRow:
-        print("I reach RegexParserScoringFn")
         assert scoring_fn_identifier is not None, "Scoring function identifier not found."
         fn_def = self.supported_fn_defs_registry[scoring_fn_identifier]
         if scoring_params is not None:
