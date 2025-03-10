@@ -427,6 +427,7 @@
     "chardet",
     "chromadb-client",
     "datasets",
+    "faiss-cpu",
     "fastapi",
     "fire",
     "httpx",
@@ -448,7 +449,6 @@
     "scikit-learn",
     "scipy",
     "sentencepiece",
-    "sqlite-vec",
     "tqdm",
     "transformers",
     "uvicorn"
