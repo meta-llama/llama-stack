@@ -310,7 +310,7 @@ jobs:
       - name: "PR - Upload Test Summary"
         id: pr_test_summary_upload
         if: github.event_name == 'pull_request_target'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-summary
           path: test-summary.md
@@ -320,7 +320,7 @@ jobs:
       - name: "PR - Update comment"
         id: pr_update_comment
         if: github.event_name == 'pull_request_target'
-        uses: thollander/actions-comment-pull-request@v2
+        uses: thollander/actions-comment-pull-request@v3
         with:
           filePath: test-summary.md
 

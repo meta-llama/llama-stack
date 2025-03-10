@@ -5,15 +5,15 @@
 # the root directory of this source tree.
 
 import argparse
-import logging
 import os
 from pathlib import Path
 
 from llama_stack.cli.subcommand import Subcommand
+from llama_stack.log import get_logger
 
 REPO_ROOT = Path(__file__).parent.parent.parent.parent
 
-logger = logging.getLogger(__name__)
+logger = get_logger(name=__name__, category="server")
 
 
 class StackRun(Subcommand):
@@ -23,7 +23,7 @@ class StackRun(Subcommand):
             "run",
             prog="llama stack run",
             description="""Start the server for a Llama Stack Distribution. You should have already built (or downloaded) and configured the distribution.""",
-            formatter_class=argparse.RawTextHelpFormatter,
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         )
         self._add_arguments()
         self.parser.set_defaults(func=self._run_stack_run_cmd)
@@ -37,12 +37,13 @@ class StackRun(Subcommand):
         self.parser.add_argument(
             "--port",
             type=int,
-            help="Port to run the server on. It can also be passed via the env var LLAMA_STACK_PORT. Defaults to 8321",
+            help="Port to run the server on. It can also be passed via the env var LLAMA_STACK_PORT.",
             default=int(os.getenv("LLAMA_STACK_PORT", 8321)),
         )
         self.parser.add_argument(
             "--image-name",
             type=str,
+            default=os.environ.get("CONDA_DEFAULT_ENV"),
             help="Name of the image to run. Defaults to the current conda environment",
         )
         self.parser.add_argument(

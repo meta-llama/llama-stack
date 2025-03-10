@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "llama_stack"
-version = "0.1.5"
+version = "0.1.6"
 authors = [{ name = "Meta Llama", email = "llama-oss@meta.com" }]
 description = "Llama Stack"
 readme = "README.md"
@@ -26,7 +26,7 @@ dependencies = [
     "httpx",
     "huggingface-hub",
     "jsonschema",
-    "llama-stack-client>=0.1.4",
+    "llama-stack-client>=0.1.6",
     "prompt-toolkit",
     "python-dotenv",
     "pydantic>=2",
@@ -34,6 +34,8 @@ dependencies = [
     "rich",
     "setuptools",
     "termcolor",
+    "tiktoken",
+    "pillow",
 ]
 
 [project.optional-dependencies]
@@ -63,7 +65,6 @@ test = [
     "groq",
     "opentelemetry-sdk",
     "opentelemetry-exporter-otlp-proto-http",
-    "tiktoken",
     "chardet",
     "pypdf",
 ]
@@ -79,7 +80,7 @@ docs = [
     "sphinxcontrib.mermaid",
     "tomli",
 ]
-codegen = ["rich", "pydantic", "jinja2"]
+codegen = ["rich", "pydantic", "jinja2>=3.1.6"]
 
 [project.urls]
 Homepage = "https://github.com/meta-llama/llama-stack"
@@ -136,8 +137,6 @@ ignore = [
 
     # These are the additional ones we started ignoring after moving to ruff. We should look into each one of them later.
     "C901", # Complexity of the function is too high
-    # these ignores are from flake8-bugbear; please fix!
-    "B008",
 ]
 
 [tool.mypy]
@@ -153,7 +152,6 @@ exclude = [
     "llama_stack/distribution",
     "llama_stack/apis",
     "llama_stack/cli",
-    "llama_stack/logcat.py",
     "llama_stack/models",
     "llama_stack/strong_typing",
     "llama_stack/templates",
@@ -165,5 +163,5 @@ module = ["yaml", "fire"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = "llama_stack.distribution.resolver"
-follow_imports = "normal"                    # This will force type checking on this module
+module = ["llama_stack.distribution.resolver", "llama_stack.log"]
+follow_imports = "normal"                                         # This will force type checking on this module

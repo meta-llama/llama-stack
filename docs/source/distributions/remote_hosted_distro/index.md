@@ -17,26 +17,4 @@ $ llama-stack-client configure --endpoint https://llamastack-preview.fireworks.a
 $ llama-stack-client models list
 ```
 
-You will see outputs:
-```
-$ llama-stack-client models list
-+------------------------------+------------------------------+---------------+------------+
-| identifier                   | llama_model                  | provider_id   | metadata   |
-+==============================+==============================+===============+============+
-| Llama3.1-8B-Instruct         | Llama3.1-8B-Instruct         | fireworks0    | {}         |
-+------------------------------+------------------------------+---------------+------------+
-| Llama3.1-70B-Instruct        | Llama3.1-70B-Instruct        | fireworks0    | {}         |
-+------------------------------+------------------------------+---------------+------------+
-| Llama3.1-405B-Instruct       | Llama3.1-405B-Instruct       | fireworks0    | {}         |
-+------------------------------+------------------------------+---------------+------------+
-| Llama3.2-1B-Instruct         | Llama3.2-1B-Instruct         | fireworks0    | {}         |
-+------------------------------+------------------------------+---------------+------------+
-| Llama3.2-3B-Instruct         | Llama3.2-3B-Instruct         | fireworks0    | {}         |
-+------------------------------+------------------------------+---------------+------------+
-| Llama3.2-11B-Vision-Instruct | Llama3.2-11B-Vision-Instruct | fireworks0    | {}         |
-+------------------------------+------------------------------+---------------+------------+
-| Llama3.2-90B-Vision-Instruct | Llama3.2-90B-Vision-Instruct | fireworks0    | {}         |
-+------------------------------+------------------------------+---------------+------------+
-```
-
 Checkout the [llama-stack-client-python](https://github.com/meta-llama/llama-stack-client-python/blob/main/docs/cli_reference.md) repo for more details on how to use the `llama-stack-client` CLI. Checkout [llama-stack-app](https://github.com/meta-llama/llama-stack-apps/tree/main) for examples applications built on top of Llama Stack.

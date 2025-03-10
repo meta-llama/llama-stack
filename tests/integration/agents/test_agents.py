@@ -9,7 +9,6 @@ from uuid import uuid4
 
 import pytest
 from llama_stack_client.lib.agents.agent import Agent
-from llama_stack_client.lib.agents.client_tool import client_tool
 from llama_stack_client.lib.agents.event_logger import EventLogger
 from llama_stack_client.types.agents.turn_create_params import Document as AgentDocument
 from llama_stack_client.types.memory_insert_params import Document
@@ -23,7 +22,6 @@ from llama_stack.apis.agents.agents import (
 )
 
 
-@client_tool
 def get_boiling_point(liquid_name: str, celcius: bool = True) -> int:
     """
     Returns the boiling point of a liquid in Celcius or Fahrenheit
@@ -41,7 +39,6 @@ def get_boiling_point(liquid_name: str, celcius: bool = True) -> int:
         return -1
 
 
-@client_tool
 def get_boiling_point_with_metadata(liquid_name: str, celcius: bool = True) -> Dict[str, Any]:
     """
     Returns the boiling point of a liquid in Celcius or Fahrenheit
@@ -276,7 +273,6 @@ def test_custom_tool(llama_stack_client_with_mocked_inference, agent_config):
     agent_config = {
         **agent_config,
         "tools": ["builtin::websearch", client_tool],
-        "client_tools": [client_tool.get_tool_definition()],
     }
 
     agent = Agent(llama_stack_client_with_mocked_inference, **agent_config)
@@ -571,7 +567,10 @@ def test_rag_and_code_agent(llama_stack_client_with_mocked_inference, agent_conf
             assert expected_kw in response.output_message.content.lower()
 
 
-@pytest.mark.parametrize("client_tools", [(get_boiling_point, False), (get_boiling_point_with_metadata, True)])
+@pytest.mark.parametrize(
+    "client_tools",
+    [(get_boiling_point, False), (get_boiling_point_with_metadata, True)],
+)
 def test_create_turn_response(llama_stack_client_with_mocked_inference, agent_config, client_tools):
     client_tool, expectes_metadata = client_tools
     agent_config = {
