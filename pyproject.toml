@@ -42,6 +42,7 @@ dependencies = [
 dev = [
     "pytest",
     "pytest-asyncio",
+    "pytest-cov",
     "pytest-html",
     "nbval",            # For notebook testing
     "black",
