@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import asyncio
 import unittest
 
 from llama_stack.apis.inference import (
@@ -31,6 +32,9 @@ MODEL3_2 = "Llama3.2-3B-Instruct"
 
 
 class PrepareMessagesTests(unittest.IsolatedAsyncioTestCase):
+    async def asyncSetUp(self):
+        asyncio.get_running_loop().set_debug(False)
+
     async def test_system_default(self):
         content = "Hello !"
         request = ChatCompletionRequest(
