@@ -12,6 +12,7 @@ from typing import Dict
 from rich.console import Console
 from rich.errors import MarkupError
 from rich.logging import RichHandler
+from termcolor import cprint
 
 # Default log level
 DEFAULT_LOG_LEVEL = logging.INFO
@@ -176,7 +177,7 @@ def get_logger(name: str, category: str = "uncategorized") -> logging.LoggerAdap
 
 env_config = os.environ.get("LLAMA_STACK_LOGGING", "")
 if env_config:
-    print(f"Environment variable LLAMA_STACK_LOGGING found: {env_config}")
+    cprint(f"Environment variable LLAMA_STACK_LOGGING found: {env_config}", "yellow")
     _category_levels.update(parse_environment_config(env_config))
 
 setup_logging(_category_levels)
