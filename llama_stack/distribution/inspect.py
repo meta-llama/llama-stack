@@ -17,6 +17,7 @@ from llama_stack.apis.inspect import (
 )
 from llama_stack.distribution.datatypes import StackRunConfig
 from llama_stack.distribution.server.endpoints import get_all_api_endpoints
+from llama_stack.providers.datatypes import HealthStatus
 
 
 class DistributionInspectConfig(BaseModel):
@@ -58,7 +59,7 @@ class DistributionInspectImpl(Inspect):
         return ListRoutesResponse(data=ret)
 
     async def health(self) -> HealthInfo:
-        return HealthInfo(status="OK")
+        return HealthInfo(status=HealthStatus.OK)
 
     async def version(self) -> VersionInfo:
         return VersionInfo(version=version("llama-stack"))

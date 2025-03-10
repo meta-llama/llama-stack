@@ -38,10 +38,10 @@ from llama_stack.distribution.server.endpoints import (
 )
 from llama_stack.distribution.stack import (
     construct_stack,
-    redact_sensitive_fields,
     replace_env_vars,
     validate_env_pair,
 )
+from llama_stack.distribution.utils.config import redact_sensitive_fields
 from llama_stack.distribution.utils.context import preserve_contexts_async_generator
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import Api
