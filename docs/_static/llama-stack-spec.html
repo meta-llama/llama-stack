@@ -7670,7 +7670,13 @@
                 "type": "object",
                 "properties": {
                     "status": {
-                        "type": "string"
+                        "type": "string",
+                        "enum": [
+                            "OK",
+                            "Error",
+                            "Not Implemented"
+                        ],
+                        "title": "HealthStatus"
                     }
                 },
                 "additionalProperties": false,
@@ -8015,13 +8021,39 @@
                     },
                     "provider_type": {
                         "type": "string"
+                    },
+                    "health": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "api",
                     "provider_id",
-                    "provider_type"
+                    "provider_type",
+                    "health"
                 ],
                 "title": "ProviderInfo"
             },
