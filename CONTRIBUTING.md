@@ -108,6 +108,22 @@ uv run pre-commit run --all-files
 > [!CAUTION]
 > Before pushing your changes, make sure that the pre-commit hooks have passed successfully.
 
+## Running unit tests
+
+You can run the unit tests by running:
+
+```bash
+source .venv/bin/activate
+./scripts/unit-tests.sh
+```
+
+If you'd like to run for a non-default version of Python (currently 3.10), pass `PYTHON_VERSION` variable as follows:
+
+```
+source .venv/bin/activate
+PYTHON_VERSION=3.13 ./scripts/unit-tests.sh
+```
+
 ## Adding a new dependency to the project
 
 To add a new dependency to the project, you can use the `uv` command. For example, to add `foo` to the project, you can run:
