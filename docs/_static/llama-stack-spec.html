@@ -230,6 +230,42 @@
                 }
             }
         },
+        "/v1/synthetic-data-generation/job/cancel": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "SyntheticDataGeneration (Coming Soon)"
+                ],
+                "description": "",
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CancelSyntheticDataGenerationJobRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/v1/post-training/job/cancel": {
             "post": {
                 "responses": {
@@ -1491,6 +1527,137 @@
                     },
                     "required": true
                 }
+            }
+        },
+        "/v1/synthetic-data-generation/job/artifacts": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/SyntheticDataGenerationJobArtifactsResponse"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "SyntheticDataGeneration (Coming Soon)"
+                ],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "job_uuid",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/v1/synthetic-data-generation/job/status": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/SyntheticDataGenerationJobStatusResponse"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "SyntheticDataGeneration (Coming Soon)"
+                ],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "job_uuid",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/v1/synthetic-data-generation/jobs": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ListSyntheticDataGenerationJobsResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "SyntheticDataGeneration (Coming Soon)"
+                ],
+                "description": "",
+                "parameters": []
             }
         },
         "/v1/tools/{tool_name}": {
@@ -3563,7 +3730,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/SyntheticDataGenerationResponse"
+                                    "$ref": "#/components/schemas/SyntheticDataGenerationJob"
                                 }
                             }
                         }
@@ -4628,6 +4795,19 @@
                 ],
                 "title": "CompletionResponse",
                 "description": "Response from a completion request."
+            },
+            "CancelSyntheticDataGenerationJobRequest": {
+                "type": "object",
+                "properties": {
+                    "job_uuid": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "job_uuid"
+                ],
+                "title": "CancelSyntheticDataGenerationJobRequest"
             },
             "CancelTrainingJobRequest": {
                 "type": "object",
@@ -7347,6 +7527,196 @@
                 ],
                 "title": "QuerySpanTreeResponse"
             },
+            "SyntheticDataGenerationJobArtifactsResponse": {
+                "type": "object",
+                "properties": {
+                    "job_uuid": {
+                        "type": "string"
+                    },
+                    "synthetic_data": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "oneOf": [
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "type": "boolean"
+                                    },
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array"
+                                    },
+                                    {
+                                        "type": "object"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "statistics": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "job_uuid",
+                    "synthetic_data"
+                ],
+                "title": "SyntheticDataGenerationJobArtifactsResponse"
+            },
+            "JobStatus": {
+                "type": "string",
+                "enum": [
+                    "completed",
+                    "in_progress",
+                    "failed",
+                    "scheduled"
+                ],
+                "title": "JobStatus"
+            },
+            "SyntheticDataGenerationJobStatusResponse": {
+                "type": "object",
+                "properties": {
+                    "job_uuid": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/JobStatus"
+                    },
+                    "scheduled_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "started_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "completed_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "synthetic_data": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "oneOf": [
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "type": "boolean"
+                                    },
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array"
+                                    },
+                                    {
+                                        "type": "object"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "statistics": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "job_uuid",
+                    "status",
+                    "synthetic_data"
+                ],
+                "title": "SyntheticDataGenerationJobStatusResponse",
+                "description": "Status of a synthetic data generation job."
+            },
+            "SyntheticDataGenerationJob": {
+                "type": "object",
+                "properties": {
+                    "job_uuid": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "job_uuid"
+                ],
+                "title": "SyntheticDataGenerationJob"
+            },
+            "ListSyntheticDataGenerationJobsResponse": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SyntheticDataGenerationJob"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "data"
+                ],
+                "title": "ListSyntheticDataGenerationJobsResponse"
+            },
             "Tool": {
                 "type": "object",
                 "properties": {
@@ -7532,16 +7902,6 @@
                 ],
                 "title": "PostTrainingJobArtifactsResponse",
                 "description": "Artifacts of a finetuning job."
-            },
-            "JobStatus": {
-                "type": "string",
-                "enum": [
-                    "completed",
-                    "in_progress",
-                    "failed",
-                    "scheduled"
-                ],
-                "title": "JobStatus"
             },
             "PostTrainingJobStatusResponse": {
                 "type": "object",
@@ -9780,70 +10140,6 @@
                     "filtering_function"
                 ],
                 "title": "SyntheticDataGenerateRequest"
-            },
-            "SyntheticDataGenerationResponse": {
-                "type": "object",
-                "properties": {
-                    "synthetic_data": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "oneOf": [
-                                    {
-                                        "type": "null"
-                                    },
-                                    {
-                                        "type": "boolean"
-                                    },
-                                    {
-                                        "type": "number"
-                                    },
-                                    {
-                                        "type": "string"
-                                    },
-                                    {
-                                        "type": "array"
-                                    },
-                                    {
-                                        "type": "object"
-                                    }
-                                ]
-                            }
-                        }
-                    },
-                    "statistics": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "synthetic_data"
-                ],
-                "title": "SyntheticDataGenerationResponse",
-                "description": "Response from the synthetic data generation. Batch of (prompt, response, score) tuples that pass the threshold."
             },
             "VersionInfo": {
                 "type": "object",
