@@ -47,7 +47,7 @@ def available_providers() -> List[ProviderSpec]:
         InlineProviderSpec(
             api=Api.vector_io,
             provider_type="inline::sqlite_vec",
-            pip_packages=["sqlite-vec --no-binary=sqlite-vec"],
+            pip_packages=["sqlite-vec"],
             module="llama_stack.providers.inline.vector_io.sqlite_vec",
             config_class="llama_stack.providers.inline.vector_io.sqlite_vec.SQLiteVectorIOConfig",
             deprecation_warning="Please use the `inline::sqlite-vec` provider (notice the hyphen instead of underscore) instead.",
