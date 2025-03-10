@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Protocol, runtime_checkable
 
 from pydantic import BaseModel
 
+from llama_stack.providers.datatypes import HealthResponse
 from llama_stack.schema_utils import json_schema_type, webmethod
 
 
@@ -17,6 +18,7 @@ class ProviderInfo(BaseModel):
     provider_id: str
     provider_type: str
     config: Dict[str, Any]
+    health: HealthResponse
 
 
 class ListProvidersResponse(BaseModel):

@@ -19,6 +19,7 @@ from llama_stack.apis.inspect import (
 )
 from llama_stack.distribution.datatypes import StackRunConfig
 from llama_stack.distribution.server.endpoints import get_all_api_endpoints
+from llama_stack.providers.datatypes import HealthResponse, HealthStatus
 
 
 class DistributionInspectConfig(BaseModel):
@@ -40,20 +41,23 @@ class DistributionInspectImpl(Inspect):
         pass
 
     async def list_providers(self) -> ListProvidersResponse:
-        run_config = self.config.run_config
-
+        run_config: StackRunConfig = self.config.run_config
         ret = []
         for api, providers in run_config.providers.items():
-            ret.extend(
-                [
+            for p in providers:
+                ret.append(
                     ProviderInfo(
                         api=api,
                         provider_id=p.provider_id,
                         provider_type=p.provider_type,
+                        # This endpoint will soon be deprecated so we don't need to health here
+                        # See: https://github.com/meta-llama/llama-stack/issues/1623
+                        health=HealthResponse(
+                            status=HealthStatus.NOT_IMPLEMENTED,
+                            message="See the '/providers' endpoint for health status",
+                        ),
                     )
-                    for p in providers
-                ]
-            )
+                )
 
         return ListProvidersResponse(data=ret)
 
@@ -78,7 +82,7 @@ class DistributionInspectImpl(Inspect):
         return ListRoutesResponse(data=ret)
 
     async def health(self) -> HealthInfo:
-        return HealthInfo(status="OK")
+        return HealthInfo(status=HealthStatus.OK)
 
     async def version(self) -> VersionInfo:
         return VersionInfo(version=version("llama-stack"))
