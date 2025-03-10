@@ -6,18 +6,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-LLAMA_STACK_DIR=${LLAMA_STACK_DIR:-}
-LLAMA_STACK_CLIENT_DIR=${LLAMA_STACK_CLIENT_DIR:-}
-
-TEST_PYPI_VERSION=${TEST_PYPI_VERSION:-}
-PYPI_VERSION=${PYPI_VERSION:-}
-BUILD_PLATFORM=${BUILD_PLATFORM:-}
-# This timeout (in seconds) is necessary when installing PyTorch via uv since it's likely to time out
-# Reference: https://github.com/astral-sh/uv/pull/1694
-UV_HTTP_TIMEOUT=${UV_HTTP_TIMEOUT:-500}
-
-# mounting is not supported by docker buildx, so we use COPY instead
-USE_COPY_NOT_MOUNT=${USE_COPY_NOT_MOUNT:-}
+set -euo pipefail
 
 if [ "$#" -lt 4 ]; then
   # This only works for templates
@@ -25,7 +14,10 @@ if [ "$#" -lt 4 ]; then
   exit 1
 fi
 
-set -euo pipefail
+BUILD_PLATFORM=${BUILD_PLATFORM:-}
+
+# mounting is not supported by docker buildx, so we use COPY instead
+USE_COPY_NOT_MOUNT=${USE_COPY_NOT_MOUNT:-}
 
 template_or_config="$1"
 shift
@@ -36,14 +28,6 @@ shift
 pip_dependencies="$1"
 shift
 special_pip_deps="${1:-}"
-
-
-# Define color codes
-RED='\033[0;31m'
-NC='\033[0m' # No Color
-
-CONTAINER_BINARY=${CONTAINER_BINARY:-docker}
-CONTAINER_OPTS=${CONTAINER_OPTS:-}
 
 TEMP_DIR=$(mktemp -d)
 
