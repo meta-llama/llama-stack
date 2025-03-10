@@ -418,6 +418,7 @@ def main():
         "app": app,
         "host": listen_host,
         "port": port,
+        "lifespan": "on",
     }
     if ssl_config:
         uvicorn_config.update(ssl_config)
