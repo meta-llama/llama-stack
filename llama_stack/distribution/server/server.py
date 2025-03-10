@@ -17,7 +17,7 @@ import warnings
 from contextlib import asynccontextmanager
 from importlib.metadata import version as parse_version
 from pathlib import Path
-from typing import Any, List, Union
+from typing import Any, List, Optional, Union
 
 import yaml
 from fastapi import Body, FastAPI, HTTPException, Request
@@ -314,7 +314,7 @@ class ClientVersionMiddleware:
         return await self.app(scope, receive, send)
 
 
-def main(args: argparse.Namespace = None):
+def main(args: Optional[argparse.Namespace] = None):
     """Start the LlamaStack server."""
     parser = argparse.ArgumentParser(description="Start the LlamaStack server.")
     parser.add_argument(
