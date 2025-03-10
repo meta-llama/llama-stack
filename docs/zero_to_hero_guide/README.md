@@ -40,7 +40,7 @@ If you're looking for more specific topics, we have a [Zero to Hero Guide](#next
    ollama run llama3.2:3b-instruct-fp16 --keepalive -1m
    ```
    **Note**:
-     - The supported models for llama stack for now is listed in [here](https://github.com/meta-llama/llama-stack/blob/main/llama_stack/providers/remote/inference/ollama/ollama.py#L43)
+     - The supported models for llama stack for now is listed in [here](https://github.com/meta-llama/llama-stack/blob/main/llama_stack/providers/remote/inference/ollama/models.py)
      - `keepalive -1m` is used so that ollama continues to keep the model in memory indefinitely. Otherwise, ollama frees up memory and you would have to run `ollama run` again.
 
 ---
