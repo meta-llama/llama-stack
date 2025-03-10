@@ -6,13 +6,13 @@
 
 from typing import Any, Dict
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 DEFAULT_OLLAMA_URL = "http://localhost:11434"
 
 
 class OllamaImplConfig(BaseModel):
-    url: str = DEFAULT_OLLAMA_URL
+    url: str = Field(DEFAULT_OLLAMA_URL, json_schema_extra={"user_field": True})
 
     @classmethod
     def sample_run_config(cls, url: str = "${env.OLLAMA_URL:http://localhost:11434}", **kwargs) -> Dict[str, Any]:

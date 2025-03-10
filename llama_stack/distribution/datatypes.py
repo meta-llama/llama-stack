@@ -21,6 +21,7 @@ from llama_stack.apis.shields import Shield, ShieldInput
 from llama_stack.apis.tools import Tool, ToolGroup, ToolGroupInput, ToolRuntime
 from llama_stack.apis.vector_dbs import VectorDB, VectorDBInput
 from llama_stack.apis.vector_io import VectorIO
+from llama_stack.distribution.utils.dynamic import instantiate_class_type
 from llama_stack.providers.datatypes import Api, ProviderSpec
 from llama_stack.providers.utils.kvstore.config import KVStoreConfig
 
@@ -132,6 +133,45 @@ class ServerConfig(BaseModel):
         default=None,
         description="Path to TLS key file for HTTPS",
     )
+
+
+class UserConfig(BaseModel):
+    providers: Dict[str, List[Provider]] = Field(
+        description="""
+One or more providers to use for each API. The same provider_type (e.g., meta-reference)
+can be instantiated multiple times (with different configs) if necessary.
+""",
+    )
+
+    @classmethod
+    def from_stack_run(cls, registry: Dict[Any, Dict[str, Any]], stack_run: "StackRunConfig") -> "UserConfig":
+        """
+        from_stack_run takes a StackRunConfig and returns a UserConfig. a UserConfig contains provider configurations with only fields with the matching user json tag.
+        """
+        user_config: Dict[str, List[Provider]] = {}
+        for type, providers in stack_run.providers.items():
+            api = Api(type)
+            user_config[type] = []
+            for provider in providers:
+                provider_config = {}
+                provider_spec = registry[api][provider.provider_type]
+                config_type = instantiate_class_type(provider_spec.config_class)
+                try:
+                    if provider.config:
+                        existing = config_type(**provider.config)
+                        for field_name, field in existing.model_fields.items():
+                            if field.json_schema_extra:
+                                provider_config[field_name] = getattr(existing, field_name)
+                        user_config[type].append(
+                            Provider(
+                                provider_id=provider.provider_id,
+                                provider_type=provider.provider_type,
+                                config=provider_config,
+                            )
+                        )
+                except Exception as exc:
+                    print(f"Could not instantiate UserConfig due to improper provider config {exc}")
+        return cls(providers=user_config)
 
 
 class StackRunConfig(BaseModel):
