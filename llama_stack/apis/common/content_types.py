@@ -51,6 +51,18 @@ class ImageContentItem(BaseModel):
 
 
 @json_schema_type
+class ChainOfThoughtContentItem(BaseModel):
+    """A Chain of Thought content item
+
+    :param type: Discriminator type of the content item. Always "ChainOfThought"
+    :param text: Chain of Thought content
+    """
+
+    type: Literal["chainOfThought"] = "chainOfThought"
+    text: str
+
+
+@json_schema_type
 class TextContentItem(BaseModel):
     """A text content item
 
@@ -65,7 +77,7 @@ class TextContentItem(BaseModel):
 # other modalities can be added here
 InterleavedContentItem = register_schema(
     Annotated[
-        Union[ImageContentItem, TextContentItem],
+        Union[ImageContentItem, TextContentItem, ChainOfThoughtContentItem],
         Field(discriminator="type"),
     ],
     name="InterleavedContentItem",

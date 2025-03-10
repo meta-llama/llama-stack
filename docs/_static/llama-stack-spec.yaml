@@ -2518,6 +2518,24 @@ components:
         - dataset_id
         - rows
       title: AppendRowsRequest
+    ChainOfThoughtContentItem:
+      type: object
+      properties:
+        type:
+          type: string
+          const: chainOfThought
+          default: chainOfThought
+          description: >-
+            Discriminator type of the content item. Always "ChainOfThought"
+        text:
+          type: string
+          description: Chain of Thought content
+      additionalProperties: false
+      required:
+        - type
+        - text
+      title: ChainOfThoughtContentItem
+      description: A Chain of Thought content item
     CompletionMessage:
       type: object
       properties:
@@ -2637,11 +2655,13 @@ components:
       oneOf:
         - $ref: '#/components/schemas/ImageContentItem'
         - $ref: '#/components/schemas/TextContentItem'
+        - $ref: '#/components/schemas/ChainOfThoughtContentItem'
       discriminator:
         propertyName: type
         mapping:
           image: '#/components/schemas/ImageContentItem'
           text: '#/components/schemas/TextContentItem'
+          chainOfThought: '#/components/schemas/ChainOfThoughtContentItem'
     JsonSchemaResponseFormat:
       type: object
       properties:
