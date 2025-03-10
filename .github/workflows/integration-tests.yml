@@ -99,6 +99,17 @@ jobs:
           cat server.log
           exit 1
 
+      - name: Verify Ollama status is OK
+        if: matrix.client-type == 'http'
+        run: |
+          echo "Verifying Ollama status..."
+          ollama_status=$(curl -s -L http://127.0.0.1:8321/v1/providers/ollama|jq --raw-output .health.status)
+          echo "Ollama status: $ollama_status"
+          if [ "$ollama_status" != "OK" ]; then
+            echo "Ollama health check failed"
+            exit 1
+          fi
+
       - name: Run Integration Tests
         env:
           INFERENCE_MODEL: "meta-llama/Llama-3.2-3B-Instruct"

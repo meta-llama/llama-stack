@@ -5463,6 +5463,11 @@ components:
       properties:
         status:
           type: string
+          enum:
+            - OK
+            - Error
+            - Not Implemented
+          title: HealthStatus
       additionalProperties: false
       required:
         - status
@@ -5574,12 +5579,23 @@ components:
               - type: string
               - type: array
               - type: object
+        health:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
       additionalProperties: false
       required:
         - api
         - provider_id
         - provider_type
         - config
+        - health
       title: ProviderInfo
     InvokeToolRequest:
       type: object
