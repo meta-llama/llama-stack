@@ -11,7 +11,7 @@ from llama_stack.providers.utils.inference.model_registry import (
     build_hf_repo_model_entry,
 )
 
-_MODEL_ENTRIES = [
+MODEL_ENTRIES = [
     build_hf_repo_model_entry(
         "meta/llama3-8b-instruct",
         CoreModelId.llama3_8b_instruct.value,
@@ -48,12 +48,49 @@ _MODEL_ENTRIES = [
         "meta/llama-3.2-90b-vision-instruct",
         CoreModelId.llama3_2_90b_vision_instruct.value,
     ),
+    # NeMo Retriever Text Embedding models -
+    #
+    # https://docs.nvidia.com/nim/nemo-retriever/text-embedding/latest/support-matrix.html
+    #
+    # +-----------------------------------+--------+-----------+-----------+------------+
+    # | Model ID                          | Max    | Publisher | Embedding | Dynamic    |
+    # |                                   | Tokens |           | Dimension | Embeddings |
+    # +-----------------------------------+--------+-----------+-----------+------------+
+    # | nvidia/llama-3.2-nv-embedqa-1b-v2 | 8192   | NVIDIA    | 2048      | Yes        |
+    # | nvidia/nv-embedqa-e5-v5           |  512   | NVIDIA    | 1024      |  No        |
+    # | nvidia/nv-embedqa-mistral-7b-v2   |  512   | NVIDIA    | 4096      |  No        |
+    # | snowflake/arctic-embed-l          |  512   | Snowflake | 1024      |  No        |
+    # +-----------------------------------+--------+-----------+-----------+------------+
     ProviderModelEntry(
-        provider_model_id="baai/bge-m3",
+        provider_model_id="nvidia/llama-3.2-nv-embedqa-1b-v2",
+        model_type=ModelType.embedding,
+        metadata={
+            "embedding_dimension": 2048,
+            "context_length": 8192,
+        },
+    ),
+    ProviderModelEntry(
+        provider_model_id="nvidia/nv-embedqa-e5-v5",
         model_type=ModelType.embedding,
         metadata={
             "embedding_dimension": 1024,
-            "context_length": 8192,
+            "context_length": 512,
+        },
+    ),
+    ProviderModelEntry(
+        provider_model_id="nvidia/nv-embedqa-mistral-7b-v2",
+        model_type=ModelType.embedding,
+        metadata={
+            "embedding_dimension": 4096,
+            "context_length": 512,
+        },
+    ),
+    ProviderModelEntry(
+        provider_model_id="snowflake/arctic-embed-l",
+        model_type=ModelType.embedding,
+        metadata={
+            "embedding_dimension": 1024,
+            "context_length": 512,
         },
     ),
     # TODO(mf): how do we handle Nemotron models?

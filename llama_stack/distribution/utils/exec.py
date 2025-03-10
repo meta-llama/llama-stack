@@ -46,7 +46,7 @@ def formulate_run_args(image_type, image_name, config, template_name) -> list:
             conda_env_info = json.loads(subprocess.check_output(["conda", "info", "--envs", "--json"]).decode())
             envs = conda_env_info["envs"]
             for envpath in envs:
-                if envpath.endswith(env_name):
+                if os.path.basename(envpath) == env_name:
                     return envpath
             return None
 

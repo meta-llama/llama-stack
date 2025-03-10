@@ -27,8 +27,8 @@ The following environment variables can be configured:
 
 The following models are available by default:
 
-- `meta-llama/Llama-3.1-8B-Instruct (llama3.1-8b)`
-- `meta-llama/Llama-3.3-70B-Instruct (llama-3.3-70b)`
+- `llama3.1-8b (aliases: meta-llama/Llama-3.1-8B-Instruct)`
+- `llama-3.3-70b (aliases: meta-llama/Llama-3.3-70B-Instruct)`
 
 
 ### Prerequisite: API Keys

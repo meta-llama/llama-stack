@@ -264,7 +264,7 @@ class LoraFinetuningSingleDevice:
             )
 
         self.adapter_params = get_adapter_params(model)
-        self._is_dora = any(["magnitude" in k for k in self.adapter_params.keys()])
+        self._is_dora = any("magnitude" in k for k in self.adapter_params.keys())
 
         set_trainable_params(model, self.adapter_params)
 
@@ -549,10 +549,11 @@ class LoraFinetuningSingleDevice:
             checkpoints.append(checkpoint)
 
         # clean up the memory after training finishes
-        self._model.to("cpu")
+        if self._device.type != "cpu":
+            self._model.to("cpu")
+            torch.cuda.empty_cache()
         del self._model
         gc.collect()
-        torch.cuda.empty_cache()
 
         return (memory_stats, checkpoints)
 

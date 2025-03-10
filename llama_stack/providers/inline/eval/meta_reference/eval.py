@@ -3,6 +3,7 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
+import json
 from typing import Any, Dict, List, Optional
 
 from tqdm import tqdm
@@ -82,23 +83,22 @@ class MetaReferenceEvalImpl(
     async def run_eval(
         self,
         benchmark_id: str,
-        task_config: BenchmarkConfig,
+        benchmark_config: BenchmarkConfig,
     ) -> Job:
         task_def = self.benchmarks[benchmark_id]
         dataset_id = task_def.dataset_id
-        candidate = task_config.eval_candidate
         scoring_functions = task_def.scoring_functions
         dataset_def = await self.datasets_api.get_dataset(dataset_id=dataset_id)
         validate_dataset_schema(dataset_def.dataset_schema, get_valid_schemas(Api.eval.value))
         all_rows = await self.datasetio_api.get_rows_paginated(
             dataset_id=dataset_id,
-            rows_in_page=(-1 if task_config.num_examples is None else task_config.num_examples),
+            rows_in_page=(-1 if benchmark_config.num_examples is None else benchmark_config.num_examples),
         )
         res = await self.evaluate_rows(
             benchmark_id=benchmark_id,
             input_rows=all_rows.rows,
             scoring_functions=scoring_functions,
-            task_config=task_config,
+            benchmark_config=benchmark_config,
         )
 
         # TODO: currently needs to wait for generation before returning
@@ -108,16 +108,16 @@ class MetaReferenceEvalImpl(
         return Job(job_id=job_id)
 
     async def _run_agent_generation(
-        self, input_rows: List[Dict[str, Any]], task_config: BenchmarkConfig
+        self, input_rows: List[Dict[str, Any]], benchmark_config: BenchmarkConfig
     ) -> List[Dict[str, Any]]:
-        candidate = task_config.eval_candidate
+        candidate = benchmark_config.eval_candidate
         create_response = await self.agents_api.create_agent(candidate.config)
         agent_id = create_response.agent_id
 
         generations = []
         for i, x in tqdm(enumerate(input_rows)):
             assert ColumnName.chat_completion_input.value in x, "Invalid input row"
-            input_messages = eval(str(x[ColumnName.chat_completion_input.value]))
+            input_messages = json.loads(x[ColumnName.chat_completion_input.value])
             input_messages = [UserMessage(**x) for x in input_messages]
 
             # NOTE: only single-turn agent generation is supported. Create a new session for each input row
@@ -151,15 +151,15 @@ class MetaReferenceEvalImpl(
         return generations
 
     async def _run_model_generation(
-        self, input_rows: List[Dict[str, Any]], task_config: BenchmarkConfig
+        self, input_rows: List[Dict[str, Any]], benchmark_config: BenchmarkConfig
     ) -> List[Dict[str, Any]]:
-        candidate = task_config.eval_candidate
+        candidate = benchmark_config.eval_candidate
         assert candidate.sampling_params.max_tokens is not None, "SamplingParams.max_tokens must be provided"
 
         generations = []
         for x in tqdm(input_rows):
             if ColumnName.completion_input.value in x:
-                input_content = eval(str(x[ColumnName.completion_input.value]))
+                input_content = json.loads(x[ColumnName.completion_input.value])
                 response = await self.inference_api.completion(
                     model=candidate.model,
                     content=input_content,
@@ -167,9 +167,8 @@ class MetaReferenceEvalImpl(
                 )
                 generations.append({ColumnName.generated_answer.value: response.completion_message.content})
             elif ColumnName.chat_completion_input.value in x:
-                chat_completion_input_str = str(x[ColumnName.chat_completion_input.value])
-                input_messages = eval(chat_completion_input_str)
-                input_messages = [UserMessage(**x) for x in input_messages]
+                chat_completion_input_json = json.loads(x[ColumnName.chat_completion_input.value])
+                input_messages = [UserMessage(**x) for x in chat_completion_input_json]
                 messages = []
                 if candidate.system_message:
                     messages.append(candidate.system_message)
@@ -190,13 +189,13 @@ class MetaReferenceEvalImpl(
         benchmark_id: str,
         input_rows: List[Dict[str, Any]],
         scoring_functions: List[str],
-        task_config: BenchmarkConfig,
+        benchmark_config: BenchmarkConfig,
     ) -> EvaluateResponse:
-        candidate = task_config.eval_candidate
+        candidate = benchmark_config.eval_candidate
         if candidate.type == "agent":
-            generations = await self._run_agent_generation(input_rows, task_config)
+            generations = await self._run_agent_generation(input_rows, benchmark_config)
         elif candidate.type == "model":
-            generations = await self._run_model_generation(input_rows, task_config)
+            generations = await self._run_model_generation(input_rows, benchmark_config)
         else:
             raise ValueError(f"Invalid candidate type: {candidate.type}")
 
@@ -205,9 +204,9 @@ class MetaReferenceEvalImpl(
             input_r | generated_r for input_r, generated_r in zip(input_rows, generations, strict=False)
         ]
 
-        if task_config.scoring_params is not None:
+        if benchmark_config.scoring_params is not None:
             scoring_functions_dict = {
-                scoring_fn_id: task_config.scoring_params.get(scoring_fn_id, None)
+                scoring_fn_id: benchmark_config.scoring_params.get(scoring_fn_id, None)
                 for scoring_fn_id in scoring_functions
             }
         else:

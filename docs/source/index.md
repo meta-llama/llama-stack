@@ -1,8 +1,7 @@
-
 ```{admonition} News
 :class: tip
 
-Llama Stack 0.1.4 is now available! See the [release notes](https://github.com/meta-llama/llama-stack/releases/tag/v0.1.4) for more details.
+Llama Stack {{ llama_stack_version }} is now available! See the {{ llama_stack_version_link }} for more details.
 ```
 
 # Llama Stack
@@ -69,6 +68,7 @@ A number of "adapters" are available for some popular Inference and Vector Store
 |  FAISS | Single Node |
 |  SQLite-Vec| Single Node |
 |  Chroma | Hosted and Single Node |
+|  Milvus | Hosted and Single Node |
 |  Postgres (PGVector) | Hosted and Single Node |
 |  Weaviate | Hosted |
 

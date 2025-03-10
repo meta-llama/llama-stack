@@ -17,25 +17,31 @@ Here are some example PRs to help you get started:
 
 ## Testing the Provider
 
+Before running tests, you must have required dependencies installed. This depends on the providers or distributions you are testing. For example, if you are testing the `together` distribution, you should install dependencies via `llama stack build --template together`.
+
 ### 1. Integration Testing
-- Create integration tests that use real provider instances and configurations
-- For remote services, test actual API interactions
-- Avoid mocking at the provider level since adapter layers tend to be thin
-- Reference examples in {repopath}`tests/client-sdk`
 
-### 2. Unit Testing (Optional)
-- Add unit tests for provider-specific functionality
-- See examples in {repopath}`llama_stack/providers/tests/inference/test_text_inference.py`
+Integration tests are located in {repopath}`tests/integration`. These tests use the python client-SDK APIs (from the `llama_stack_client` package) to test functionality. Since these tests use client APIs, they can be run either by pointing to an instance of the Llama Stack server or "inline" by using `LlamaStackAsLibraryClient`.
 
-### 3. End-to-End Testing
+Consult {repopath}`tests/integration/README.md` for more details on how to run the tests.
+
+Note that each provider's `sample_run_config()` method (in the configuration class for that provider)
+ typically references some environment variables for specifying API keys and the like. You can set these in the environment or pass these via the `--env` flag to the test command.
+
+
+### 2. Unit Testing
+
+Unit tests are located in {repopath}`tests/unit`. Provider-specific unit tests are located in {repopath}`tests/unit/providers`. These tests are all run automatically as part of the CI process.
+
+
+### 3. Additional end-to-end testing
+
 1. Start a Llama Stack server with your new provider
-2. Test using client requests
-3. Verify compatibility with existing client scripts in the [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main) repository
-4. Document which scripts are compatible with your provider
+2. Verify compatibility with existing client scripts in the [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main) repository
+3. Document which scripts are compatible with your provider
 
 ## Submitting Your PR
 
 1. Ensure all tests pass
 2. Include a comprehensive test plan in your PR summary
 3. Document any known limitations or considerations
-4. Submit your pull request for review

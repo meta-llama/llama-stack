@@ -3,8 +3,8 @@ orphan: true
 ---
 # SQLite-Vec
 
-[SQLite-Vec](https://github.com/asg017/sqlite-vec) is an inline vector database provider for Llama Stack. It 
-allows you to store and query vectors directly within an SQLite database. 
+[SQLite-Vec](https://github.com/asg017/sqlite-vec) is an inline vector database provider for Llama Stack. It
+allows you to store and query vectors directly within an SQLite database.
 That means you're not limited to storing vectors in memory or in a separate service.
 
 ## Features

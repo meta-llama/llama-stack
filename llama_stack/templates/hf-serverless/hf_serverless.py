@@ -52,7 +52,7 @@ def get_distribution_template() -> DistributionTemplate:
     vector_io_provider = Provider(
         provider_id="faiss",
         provider_type="inline::faiss",
-        config=FaissVectorIOConfig.sample_run_config(f"distributions/{name}"),
+        config=FaissVectorIOConfig.sample_run_config(f"~/.llama/distributions/{name}"),
     )
 
     inference_model = ModelInput(
@@ -93,7 +93,6 @@ def get_distribution_template() -> DistributionTemplate:
         container_image=None,
         template_path=None,
         providers=providers,
-        default_models=[inference_model, safety_model],
         run_configs={
             "run.yaml": RunConfigSettings(
                 provider_overrides={

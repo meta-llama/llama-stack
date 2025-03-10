@@ -3,7 +3,6 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from pathlib import Path
 
 from llama_stack.apis.models.models import ModelType
 from llama_stack.distribution.datatypes import (
@@ -99,9 +98,7 @@ def get_distribution_template() -> DistributionTemplate:
         distro_type="self_hosted",
         description="Dell's distribution of Llama Stack. TGI inference via Dell's custom container",
         container_image=None,
-        template_path=Path(__file__).parent / "doc_template.md",
         providers=providers,
-        default_models=[inference_model, embedding_model],
         run_configs={
             "run.yaml": RunConfigSettings(
                 provider_overrides={

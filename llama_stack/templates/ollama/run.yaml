@@ -79,6 +79,12 @@ providers:
   - provider_id: rag-runtime
     provider_type: inline::rag-runtime
     config: {}
+  - provider_id: model-context-protocol
+    provider_type: remote::model-context-protocol
+    config: {}
+  - provider_id: wolfram-alpha
+    provider_type: remote::wolfram-alpha
+    config: {}
 metadata_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/registry.db
@@ -87,6 +93,12 @@ models:
   model_id: ${env.INFERENCE_MODEL}
   provider_id: ollama
   model_type: llm
+- metadata:
+    embedding_dimension: 384
+  model_id: all-MiniLM-L6-v2
+  provider_id: ollama
+  provider_model_id: all-minilm:latest
+  model_type: embedding
 shields: []
 vector_dbs: []
 datasets: []
@@ -99,5 +111,7 @@ tool_groups:
   provider_id: rag-runtime
 - toolgroup_id: builtin::code_interpreter
   provider_id: code-interpreter
+- toolgroup_id: builtin::wolfram_alpha
+  provider_id: wolfram-alpha
 server:
   port: 8321

@@ -7,15 +7,16 @@
 from pathlib import Path
 
 from llama_stack.distribution.datatypes import (
-    ModelInput,
     Provider,
     ShieldInput,
     ToolGroupInput,
 )
-from llama_stack.models.llama.sku_list import all_registered_models
+from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOConfig
 from llama_stack.providers.remote.inference.sambanova import SambaNovaImplConfig
 from llama_stack.providers.remote.inference.sambanova.models import MODEL_ENTRIES
-from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
+from llama_stack.providers.remote.vector_io.chroma.config import ChromaVectorIOConfig
+from llama_stack.providers.remote.vector_io.pgvector.config import PGVectorVectorIOConfig
+from llama_stack.templates.template import DistributionTemplate, RunConfigSettings, get_model_registry
 
 
 def get_distribution_template() -> DistributionTemplate:
@@ -40,16 +41,34 @@ def get_distribution_template() -> DistributionTemplate:
         config=SambaNovaImplConfig.sample_run_config(),
     )
 
-    core_model_to_hf_repo = {m.descriptor(): m.huggingface_repo for m in all_registered_models()}
-    default_models = [
-        ModelInput(
-            model_id=core_model_to_hf_repo[m.llama_model],
-            provider_model_id=m.provider_model_id,
-            provider_id=name,
-        )
-        for m in MODEL_ENTRIES
+    vector_io_providers = [
+        Provider(
+            provider_id="faiss",
+            provider_type="inline::faiss",
+            config=FaissVectorIOConfig.sample_run_config(
+                __distro_dir__=f"~/.llama/distributions/{name}",
+            ),
+        ),
+        Provider(
+            provider_id="${env.ENABLE_CHROMADB+chromadb}",
+            provider_type="remote::chromadb",
+            config=ChromaVectorIOConfig.sample_run_config(url="${env.CHROMADB_URL:}"),
+        ),
+        Provider(
+            provider_id="${env.ENABLE_PGVECTOR+pgvector}",
+            provider_type="remote::pgvector",
+            config=PGVectorVectorIOConfig.sample_run_config(
+                db="${env.PGVECTOR_DB:}",
+                user="${env.PGVECTOR_USER:}",
+                password="${env.PGVECTOR_PASSWORD:}",
+            ),
+        ),
     ]
 
+    available_models = {
+        name: MODEL_ENTRIES,
+    }
+    default_models = get_model_registry(available_models)
     default_tool_groups = [
         ToolGroupInput(
             toolgroup_id="builtin::websearch",
@@ -72,11 +91,12 @@ def get_distribution_template() -> DistributionTemplate:
         docker_image=None,
         template_path=Path(__file__).parent / "doc_template.md",
         providers=providers,
-        default_models=default_models,
+        available_models_by_provider=available_models,
         run_configs={
             "run.yaml": RunConfigSettings(
                 provider_overrides={
                     "inference": [inference_provider],
+                    "vector_io": vector_io_providers,
                 },
                 default_models=default_models,
                 default_shields=[ShieldInput(shield_id="meta-llama/Llama-Guard-3-8B")],

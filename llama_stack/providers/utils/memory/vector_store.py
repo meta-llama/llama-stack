@@ -12,12 +12,9 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 from urllib.parse import unquote
 
-import chardet
 import httpx
 import numpy as np
-from llama_models.llama3.api.tokenizer import Tokenizer
 from numpy.typing import NDArray
-from pypdf import PdfReader
 
 from llama_stack.apis.common.content_types import (
     URL,
@@ -27,6 +24,7 @@ from llama_stack.apis.common.content_types import (
 from llama_stack.apis.tools import RAGDocument
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import Chunk, QueryChunksResponse
+from llama_stack.models.llama.llama3.tokenizer import Tokenizer
 from llama_stack.providers.datatypes import Api
 from llama_stack.providers.utils.inference.prompt_adapter import (
     interleaved_content_as_str,
@@ -38,6 +36,8 @@ log = logging.getLogger(__name__)
 def parse_pdf(data: bytes) -> str:
     # For PDF and DOC/DOCX files, we can't reliably convert to string
     pdf_bytes = io.BytesIO(data)
+    from pypdf import PdfReader
+
     pdf_reader = PdfReader(pdf_bytes)
     return "\n".join([page.extract_text() for page in pdf_reader.pages])
 
@@ -75,6 +75,8 @@ def content_from_data(data_url: str) -> str:
 
     encoding = parts["encoding"]
     if not encoding:
+        import chardet
+
         detected = chardet.detect(data)
         encoding = detected["encoding"]
 

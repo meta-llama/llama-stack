@@ -9,7 +9,6 @@ import asyncio
 import functools
 import inspect
 import json
-import logging
 import os
 import signal
 import sys
@@ -26,12 +25,14 @@ from fastapi import Path as FastapiPath
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, ValidationError
-from termcolor import cprint
 from typing_extensions import Annotated
 
 from llama_stack.distribution.datatypes import StackRunConfig
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
-from llama_stack.distribution.request_headers import set_request_provider_data
+from llama_stack.distribution.request_headers import (
+    preserve_headers_context_async_generator,
+    request_provider_data_context,
+)
 from llama_stack.distribution.resolver import InvalidProviderError
 from llama_stack.distribution.stack import (
     construct_stack,
@@ -39,6 +40,7 @@ from llama_stack.distribution.stack import (
     replace_env_vars,
     validate_env_pair,
 )
+from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import Api
 from llama_stack.providers.inline.telemetry.meta_reference.config import TelemetryConfig
 from llama_stack.providers.inline.telemetry.meta_reference.telemetry import (
@@ -54,8 +56,7 @@ from .endpoints import get_all_api_endpoints
 
 REPO_ROOT = Path(__file__).parent.parent.parent.parent
 
-logging.basicConfig(level=logging.INFO, format="%(levelname)s %(asctime)s %(name)s:%(lineno)d: %(message)s")
-logger = logging.getLogger(__name__)
+logger = get_logger(name=__name__, category="server")
 
 
 def warn_with_traceback(message, category, filename, lineno, file=None, line=None):
@@ -204,15 +205,14 @@ async def maybe_await(value):
 
 async def sse_generator(event_gen):
     try:
-        event_gen = await event_gen
-        async for item in event_gen:
+        async for item in await event_gen:
             yield create_sse_event(item)
             await asyncio.sleep(0.01)
     except asyncio.CancelledError:
-        print("Generator cancelled")
+        logger.info("Generator cancelled")
         await event_gen.aclose()
     except Exception as e:
-        traceback.print_exception(e)
+        logger.exception("Error in sse_generator")
         yield create_sse_event(
             {
                 "error": {
@@ -224,18 +224,20 @@ async def sse_generator(event_gen):
 
 def create_dynamic_typed_route(func: Any, method: str, route: str):
     async def endpoint(request: Request, **kwargs):
-        set_request_provider_data(request.headers)
+        # Use context manager for request provider data
+        with request_provider_data_context(request.headers):
+            is_streaming = is_streaming_request(func.__name__, request, **kwargs)
 
-        is_streaming = is_streaming_request(func.__name__, request, **kwargs)
-        try:
-            if is_streaming:
-                return StreamingResponse(sse_generator(func(**kwargs)), media_type="text/event-stream")
-            else:
-                value = func(**kwargs)
-                return await maybe_await(value)
-        except Exception as e:
-            traceback.print_exception(e)
-            raise translate_exception(e) from e
+            try:
+                if is_streaming:
+                    gen = preserve_headers_context_async_generator(sse_generator(func(**kwargs)))
+                    return StreamingResponse(gen, media_type="text/event-stream")
+                else:
+                    value = func(**kwargs)
+                    return await maybe_await(value)
+            except Exception as e:
+                logger.exception("Error executing endpoint %s", method, route)
+                raise translate_exception(e) from e
 
     sig = inspect.signature(func)
 
@@ -433,11 +435,8 @@ def main():
                     )
                 )
 
-        logger.info(f"Serving API {api_str}")
-        for endpoint in endpoints:
-            cprint(f" {endpoint.method.upper()} {endpoint.route}", "white")
+    logger.debug(f"serving APIs: {apis_to_serve}")
 
-    print("")
     app.exception_handler(RequestValidationError)(global_exception_handler)
     app.exception_handler(Exception)(global_exception_handler)
     signal.signal(signal.SIGINT, functools.partial(handle_signal, app))

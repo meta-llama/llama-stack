@@ -33,7 +33,7 @@ class DistributionRegistry(Protocol):
 
 
 REGISTER_PREFIX = "distributions:registry"
-KEY_VERSION = "v7"
+KEY_VERSION = "v8"
 KEY_FORMAT = f"{REGISTER_PREFIX}:{KEY_VERSION}::" + "{type}:{identifier}"
 
 

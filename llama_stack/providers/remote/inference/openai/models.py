@@ -20,11 +20,11 @@ MODEL_ENTRIES = [ProviderModelEntry(provider_model_id=m) for m in LLM_MODEL_IDS]
     ProviderModelEntry(
         provider_model_id="openai/text-embedding-3-small",
         model_type=ModelType.embedding,
-        metadata={"embedding_dimension": 1536},
+        metadata={"embedding_dimension": 1536, "context_length": 8192},
     ),
     ProviderModelEntry(
         provider_model_id="openai/text-embedding-3-large",
         model_type=ModelType.embedding,
-        metadata={"embedding_dimension": 3072},
+        metadata={"embedding_dimension": 3072, "context_length": 8192},
     ),
 ]

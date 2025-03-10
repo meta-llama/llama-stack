@@ -12,6 +12,7 @@ from llama_stack.apis.scoring_functions import (
 )
 
 MULTILINGUAL_ANSWER_REGEXES = [
+    r"The best answer is ",
     r"Answer\s*:",
     r"Answer\s*:​​​​​​",  # Korean invisible character
     r"উত্তর\s*:",

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "llama_stack"
-version = "0.1.4"
+version = "0.1.6"
 authors = [{ name = "Meta Llama", email = "llama-oss@meta.com" }]
 description = "Llama Stack"
 readme = "README.md"
@@ -26,8 +26,7 @@ dependencies = [
     "httpx",
     "huggingface-hub",
     "jsonschema",
-    "llama-models>=0.1.4",
-    "llama-stack-client>=0.1.4",
+    "llama-stack-client>=0.1.6",
     "prompt-toolkit",
     "python-dotenv",
     "pydantic>=2",
@@ -35,6 +34,8 @@ dependencies = [
     "rich",
     "setuptools",
     "termcolor",
+    "tiktoken",
+    "pillow",
 ]
 
 [project.optional-dependencies]
@@ -55,6 +56,7 @@ dev = [
 test = [
     "openai",
     "aiosqlite",
+    "sqlite-vec",
     "ollama",
     "torch>=2.6.0",
     "fairscale>=0.4.13",
@@ -63,6 +65,8 @@ test = [
     "groq",
     "opentelemetry-sdk",
     "opentelemetry-exporter-otlp-proto-http",
+    "chardet",
+    "pypdf",
 ]
 docs = [
     "sphinx-autobuild",
@@ -74,7 +78,9 @@ docs = [
     "sphinxcontrib.redoc",
     "sphinxcontrib.video",
     "sphinxcontrib.mermaid",
+    "tomli",
 ]
+codegen = ["rich", "pydantic", "jinja2>=3.1.6"]
 
 [project.urls]
 Homepage = "https://github.com/meta-llama/llama-stack"
@@ -122,40 +128,15 @@ select = [
     "I",  # isort
 ]
 ignore = [
-    "E203",
-    "E305",
-    "E402",
-    "E501", # line too long
-    "E721",
-    "E741",
-    "F405",
-    "F841",
-    "C408", # ignored because we like the dict keyword argument syntax
-    "E302",
-    "W291",
-    "E303",
-    "N812", # ignored because import torch.nn.functional as F is PyTorch convention
-    "N817", # ignored because importing using acronyms is convention (DistributedDataParallel as DDP)
-    "E731", # allow usage of assigning lambda expressions
+    # The following ignores are desired by the project maintainers.
+    "E402", # Module level import not at top of file
+    "E501", # Line too long
+    "F405", # Maybe undefined or defined from star import
+    "C408", # Ignored because we like the dict keyword argument syntax
+    "N812", # Ignored because import torch.nn.functional as F is PyTorch convention
+
     # These are the additional ones we started ignoring after moving to ruff. We should look into each one of them later.
-    "C901",
-    "C405",
-    "C414",
-    "N803",
-    "N999",
-    "C403",
-    "C416",
-    "B028",
-    "C419",
-    "C401",
-    "B023",
-    # shebang has extra meaning in fbcode lints, so I think it's not worth trying
-    # to line this up with executable bit
-    "EXE001",
-    "N802",   # random naming hints don't need
-    # these ignores are from flake8-bugbear; please fix!
-    "B007",
-    "B008",
+    "C901", # Complexity of the function is too high
 ]
 
 [tool.mypy]
@@ -178,5 +159,9 @@ exclude = [
 
 [[tool.mypy.overrides]]
 # packages that lack typing annotations, do not have stubs, or are unavailable.
-module = ["llama_models.*", "yaml", "fire"]
+module = ["yaml", "fire"]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["llama_stack.distribution.resolver", "llama_stack.log"]
+follow_imports = "normal"                                         # This will force type checking on this module

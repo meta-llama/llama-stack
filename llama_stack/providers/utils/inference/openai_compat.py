@@ -6,7 +6,7 @@
 import json
 import logging
 import warnings
-from typing import AsyncGenerator, Dict, Generator, Iterable, List, Optional, Union
+from typing import AsyncGenerator, Dict, Iterable, List, Optional, Union
 
 from openai import AsyncStream
 from openai.types.chat import (
@@ -27,7 +27,9 @@ from openai.types.chat import (
 from openai.types.chat import (
     ChatCompletionMessageParam as OpenAIChatCompletionMessage,
 )
-from openai.types.chat import ChatCompletionMessageToolCall
+from openai.types.chat import (
+    ChatCompletionMessageToolCall,
+)
 from openai.types.chat import (
     ChatCompletionMessageToolCallParam as OpenAIChatCompletionMessageToolCall,
 )
@@ -199,7 +201,9 @@ def convert_openai_completion_logprobs_stream(text: str, logprobs: Optional[Unio
     return None
 
 
-def process_completion_response(response: OpenAICompatCompletionResponse) -> CompletionResponse:
+def process_completion_response(
+    response: OpenAICompatCompletionResponse,
+) -> CompletionResponse:
     choice = response.choices[0]
     # drop suffix <eot_id> if present and return stop reason as end of turn
     if choice.text.endswith("<|eot_id|>"):
@@ -492,7 +496,9 @@ class UnparseableToolCall(BaseModel):
     arguments: str = ""
 
 
-async def convert_message_to_openai_dict_new(message: Message | Dict) -> OpenAIChatCompletionMessage:
+async def convert_message_to_openai_dict_new(
+    message: Message | Dict,
+) -> OpenAIChatCompletionMessage:
     """
     Convert a Message to an OpenAI API-compatible dictionary.
     """
@@ -518,36 +524,44 @@ async def convert_message_to_openai_dict_new(message: Message | Dict) -> OpenAIC
     #  {"type": "image", "image": {"url": {"uri": ...}}} -> {"type": "image_url", "image_url": {"url": ...}}
     #  {"type": "image", "image": {"data": ...}} -> {"type": "image_url", "image_url": {"url": "data:image/?;base64,..."}}
     #  List[...] -> List[...]
-    async def _convert_user_message_content(
+    async def _convert_message_content(
         content: InterleavedContent,
     ) -> Union[str, Iterable[OpenAIChatCompletionContentPartParam]]:
-        # Llama Stack and OpenAI spec match for str and text input
-        if isinstance(content, str):
-            return content
-        elif isinstance(content, TextContentItem):
-            return OpenAIChatCompletionContentPartTextParam(
-                text=content.text,
-            )
-        elif isinstance(content, ImageContentItem):
-            return OpenAIChatCompletionContentPartImageParam(
-                image_url=OpenAIImageURL(url=await convert_image_content_to_url(content)),
-                type="image_url",
-            )
-        elif isinstance(content, List):
-            return [await _convert_user_message_content(item) for item in content]
+        async def impl():
+            # Llama Stack and OpenAI spec match for str and text input
+            if isinstance(content, str):
+                return content
+            elif isinstance(content, TextContentItem):
+                return OpenAIChatCompletionContentPartTextParam(
+                    type="text",
+                    text=content.text,
+                )
+            elif isinstance(content, ImageContentItem):
+                return OpenAIChatCompletionContentPartImageParam(
+                    type="image_url",
+                    image_url=OpenAIImageURL(url=await convert_image_content_to_url(content)),
+                )
+            elif isinstance(content, list):
+                return [await _convert_message_content(item) for item in content]
+            else:
+                raise ValueError(f"Unsupported content type: {type(content)}")
+
+        ret = await impl()
+        if isinstance(ret, str) or isinstance(ret, list):
+            return ret
         else:
-            raise ValueError(f"Unsupported content type: {type(content)}")
+            return [ret]
 
     out: OpenAIChatCompletionMessage = None
     if isinstance(message, UserMessage):
         out = OpenAIChatCompletionUserMessage(
             role="user",
-            content=await _convert_user_message_content(message.content),
+            content=await _convert_message_content(message.content),
         )
     elif isinstance(message, CompletionMessage):
         out = OpenAIChatCompletionAssistantMessage(
             role="assistant",
-            content=message.content,
+            content=await _convert_message_content(message.content),
             tool_calls=[
                 OpenAIChatCompletionMessageToolCall(
                     id=tool.call_id,
@@ -564,12 +578,12 @@ async def convert_message_to_openai_dict_new(message: Message | Dict) -> OpenAIC
         out = OpenAIChatCompletionToolMessage(
             role="tool",
             tool_call_id=message.call_id,
-            content=message.content,
+            content=await _convert_message_content(message.content),
         )
     elif isinstance(message, SystemMessage):
         out = OpenAIChatCompletionSystemMessage(
             role="system",
-            content=message.content,
+            content=await _convert_message_content(message.content),
         )
     else:
         raise ValueError(f"Unsupported message type: {type(message)}")
@@ -591,7 +605,7 @@ def convert_tool_call(
             tool_name=tool_call.function.name,
             arguments=json.loads(tool_call.function.arguments),
         )
-    except Exception as e:
+    except Exception:
         return UnparseableToolCall(
             call_id=tool_call.id or "",
             tool_name=tool_call.function.name or "",
@@ -827,14 +841,13 @@ async def convert_openai_chat_completion_stream(
     Convert a stream of OpenAI chat completion chunks into a stream
     of ChatCompletionResponseStreamChunk.
     """
-
-    # generate a stream of ChatCompletionResponseEventType: start -> progress -> progress -> ...
-    def _event_type_generator() -> Generator[ChatCompletionResponseEventType, None, None]:
-        yield ChatCompletionResponseEventType.start
-        while True:
-            yield ChatCompletionResponseEventType.progress
-
-    event_type = _event_type_generator()
+    yield ChatCompletionResponseStreamChunk(
+        event=ChatCompletionResponseEvent(
+            event_type=ChatCompletionResponseEventType.start,
+            delta=TextDelta(text=""),
+        )
+    )
+    event_type = ChatCompletionResponseEventType.progress
 
     stop_reason = None
     toolcall_buffer = {}
@@ -854,7 +867,7 @@ async def convert_openai_chat_completion_stream(
             if choice.delta.content:
                 yield ChatCompletionResponseStreamChunk(
                     event=ChatCompletionResponseEvent(
-                        event_type=next(event_type),
+                        event_type=event_type,
                         delta=TextDelta(text=choice.delta.content),
                         logprobs=_convert_openai_logprobs(logprobs),
                     )
@@ -863,7 +876,9 @@ async def convert_openai_chat_completion_stream(
             # it is possible to have parallel tool calls in stream, but
             # ChatCompletionResponseEvent only supports one per stream
             if len(choice.delta.tool_calls) > 1:
-                warnings.warn("multiple tool calls found in a single delta, using the first, ignoring the rest")
+                warnings.warn(
+                    "multiple tool calls found in a single delta, using the first, ignoring the rest", stacklevel=2
+                )
 
             if not enable_incremental_tool_calls:
                 yield ChatCompletionResponseStreamChunk(
@@ -895,7 +910,7 @@ async def convert_openai_chat_completion_stream(
                 toolcall_buffer["content"] += delta
                 yield ChatCompletionResponseStreamChunk(
                     event=ChatCompletionResponseEvent(
-                        event_type=next(event_type),
+                        event_type=event_type,
                         delta=ToolCallDelta(
                             tool_call=delta,
                             parse_status=ToolCallParseStatus.in_progress,
@@ -906,7 +921,7 @@ async def convert_openai_chat_completion_stream(
         else:
             yield ChatCompletionResponseStreamChunk(
                 event=ChatCompletionResponseEvent(
-                    event_type=next(event_type),
+                    event_type=event_type,
                     delta=TextDelta(text=choice.delta.content or ""),
                     logprobs=_convert_openai_logprobs(logprobs),
                 )
@@ -917,7 +932,7 @@ async def convert_openai_chat_completion_stream(
         toolcall_buffer["content"] += delta
         yield ChatCompletionResponseStreamChunk(
             event=ChatCompletionResponseEvent(
-                event_type=next(event_type),
+                event_type=event_type,
                 delta=ToolCallDelta(
                     tool_call=delta,
                     parse_status=ToolCallParseStatus.in_progress,
@@ -934,7 +949,7 @@ async def convert_openai_chat_completion_stream(
             )
             yield ChatCompletionResponseStreamChunk(
                 event=ChatCompletionResponseEvent(
-                    event_type=ChatCompletionResponseEventType.complete,
+                    event_type=ChatCompletionResponseEventType.progress,
                     delta=ToolCallDelta(
                         tool_call=tool_call,
                         parse_status=ToolCallParseStatus.succeeded,

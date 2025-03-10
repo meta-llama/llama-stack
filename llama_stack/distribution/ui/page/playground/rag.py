@@ -7,7 +7,6 @@
 import streamlit as st
 from llama_stack_client.lib.agents.agent import Agent
 from llama_stack_client.lib.agents.event_logger import EventLogger
-from llama_stack_client.types.agent_create_params import AgentConfig
 from llama_stack_client.types.memory_insert_params import Document
 from modules.api import llama_stack_api
 from modules.utils import data_url_from_file
@@ -124,26 +123,22 @@ def rag_chat_page():
     else:
         strategy = {"type": "greedy"}
 
-    agent_config = AgentConfig(
+    agent = Agent(
+        llama_stack_api.client,
         model=selected_model,
         instructions=system_prompt,
         sampling_params={
             "strategy": strategy,
         },
-        toolgroups=[
+        tools=[
             dict(
-                name="builtin::rag",
+                name="builtin::rag/knowledge_search",
                 args={
-                    "vector_db_ids": [vector_db_id for vector_db_id in selected_vector_dbs],
+                    "vector_db_ids": list(selected_vector_dbs),
                 },
             )
         ],
-        tool_choice="auto",
-        tool_prompt_format="json",
-        enable_session_persistence=False,
     )
-
-    agent = Agent(llama_stack_api.client, agent_config)
     session_id = agent.create_session("rag-session")
 
     # Chat input

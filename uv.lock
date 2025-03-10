@@ -219,6 +219,15 @@ wheels = [
 ]
 
 [[package]]
+name = "chardet"
+version = "5.2.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/f3/0d/f7b6ab21ec75897ed80c17d79b15951a719226b9fababf1e40ea74d69079/chardet-5.2.0.tar.gz", hash = "sha256:1b3b6ff479a8c414bc3fa2c0852995695c4a026dcd6d0633b2dd092ca39c1cf7", size = 2069618 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/38/6f/f5fbc992a329ee4e0f288c1fe0e2ad9485ed064cac731ed2fe47dcc38cbf/chardet-5.2.0-py3-none-any.whl", hash = "sha256:e1cf59446890a00105fe7b7912492ea04b6e6f06d4b742b2c788469e34c82970", size = 199385 },
+]
+
+[[package]]
 name = "charset-normalizer"
 version = "3.4.1"
 source = { registry = "https://pypi.org/simple" }
@@ -725,14 +734,14 @@ wheels = [
 
 [[package]]
 name = "jinja2"
-version = "3.1.5"
+version = "3.1.6"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "markupsafe" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/af/92/b3130cbbf5591acf9ade8708c365f3238046ac7cb8ccba6e81abccb0ccff/jinja2-3.1.5.tar.gz", hash = "sha256:8fefff8dc3034e27bb80d67c671eb8a9bc424c0ef4c0826edbff304cceff43bb", size = 244674 }
+sdist = { url = "https://files.pythonhosted.org/packages/df/bf/f7da0350254c0ed7c72f3e33cef02e048281fec7ecec5f032d4aac52226b/jinja2-3.1.6.tar.gz", hash = "sha256:0137fb05990d35f1275a587e9aee6d56da821fc83491a0fb838183be43f66d6d", size = 245115 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/bd/0f/2ba5fbcd631e3e88689309dbe978c5769e883e4b84ebfe7da30b43275c5a/jinja2-3.1.5-py3-none-any.whl", hash = "sha256:aba0f4dc9ed8013c424088f68a5c226f7d6097ed89b246d7749c2ec4175c6adb", size = 134596 },
+    { url = "https://files.pythonhosted.org/packages/62/a1/3d680cbfd5f4b8f15abc1d571870c5fc3e594bb582bc3b64ea099db13e56/jinja2-3.1.6-py3-none-any.whl", hash = "sha256:85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67", size = 134899 },
 ]
 
 [[package]]
@@ -852,24 +861,8 @@ wheels = [
 ]
 
 [[package]]
-name = "llama-models"
-version = "0.1.4"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "jinja2" },
-    { name = "pillow" },
-    { name = "pydantic" },
-    { name = "pyyaml" },
-    { name = "tiktoken" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/09/45/b998beea5e4e69c80f0624cbcc5a1c00aefbd4bf145bcbee11231f92c5f0/llama_models-0.1.4.tar.gz", hash = "sha256:757052ed6a5a651d3731301e157ddd50f5e0d47dab3249cb73f0200af440b667", size = 1568978 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/2b/92/7d9076b32c9bafef3225c79c947a0b70a32b5ee951ecbd81636f5b6b3877/llama_models-0.1.4-py3-none-any.whl", hash = "sha256:11946d1dce5e2f45e2bf80b4aeb4ced3d7a4917905f109ebcb9dffa81d3cbe9c", size = 1587928 },
-]
-
-[[package]]
 name = "llama-stack"
-version = "0.1.4"
+version = "0.1.6"
 source = { editable = "." }
 dependencies = [
     { name = "blobfile" },
@@ -877,8 +870,8 @@ dependencies = [
     { name = "httpx" },
     { name = "huggingface-hub" },
     { name = "jsonschema" },
-    { name = "llama-models" },
     { name = "llama-stack-client" },
+    { name = "pillow" },
     { name = "prompt-toolkit" },
     { name = "pydantic" },
     { name = "python-dotenv" },
@@ -886,9 +879,15 @@ dependencies = [
     { name = "rich" },
     { name = "setuptools" },
     { name = "termcolor" },
+    { name = "tiktoken" },
 ]
 
 [package.optional-dependencies]
+codegen = [
+    { name = "jinja2" },
+    { name = "pydantic" },
+    { name = "rich" },
+]
 dev = [
     { name = "black" },
     { name = "fastapi" },
@@ -913,9 +912,11 @@ docs = [
     { name = "sphinxcontrib-mermaid" },
     { name = "sphinxcontrib-redoc" },
     { name = "sphinxcontrib-video" },
+    { name = "tomli" },
 ]
 test = [
     { name = "aiosqlite" },
+    { name = "chardet" },
     { name = "fairscale" },
     { name = "groq" },
     { name = "lm-format-enforcer" },
@@ -923,6 +924,8 @@ test = [
     { name = "openai" },
     { name = "opentelemetry-exporter-otlp-proto-http" },
     { name = "opentelemetry-sdk" },
+    { name = "pypdf" },
+    { name = "sqlite-vec" },
     { name = "torch", version = "2.6.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "sys_platform == 'darwin'" },
     { name = "torch", version = "2.6.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "sys_platform != 'darwin'" },
     { name = "torchvision", version = "0.21.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(platform_machine == 'aarch64' and sys_platform == 'linux') or sys_platform == 'darwin'" },
@@ -934,15 +937,16 @@ requires-dist = [
     { name = "aiosqlite", marker = "extra == 'test'" },
     { name = "black", marker = "extra == 'dev'" },
     { name = "blobfile" },
+    { name = "chardet", marker = "extra == 'test'" },
     { name = "fairscale", marker = "extra == 'test'", specifier = ">=0.4.13" },
     { name = "fastapi", marker = "extra == 'dev'" },
     { name = "fire" },
     { name = "groq", marker = "extra == 'test'" },
     { name = "httpx" },
     { name = "huggingface-hub" },
+    { name = "jinja2", marker = "extra == 'codegen'", specifier = ">=3.1.6" },
     { name = "jsonschema" },
-    { name = "llama-models", specifier = ">=0.1.4" },
-    { name = "llama-stack-client", specifier = ">=0.1.4" },
+    { name = "llama-stack-client", specifier = ">=0.1.6" },
     { name = "lm-format-enforcer", marker = "extra == 'test'", specifier = ">=0.10.9" },
     { name = "myst-parser", marker = "extra == 'docs'" },
     { name = "nbval", marker = "extra == 'dev'" },
@@ -950,15 +954,19 @@ requires-dist = [
     { name = "openai", marker = "extra == 'test'" },
     { name = "opentelemetry-exporter-otlp-proto-http", marker = "extra == 'test'" },
     { name = "opentelemetry-sdk", marker = "extra == 'test'" },
+    { name = "pillow" },
     { name = "pre-commit", marker = "extra == 'dev'" },
     { name = "prompt-toolkit" },
     { name = "pydantic", specifier = ">=2" },
+    { name = "pydantic", marker = "extra == 'codegen'" },
+    { name = "pypdf", marker = "extra == 'test'" },
     { name = "pytest", marker = "extra == 'dev'" },
     { name = "pytest-asyncio", marker = "extra == 'dev'" },
     { name = "pytest-html", marker = "extra == 'dev'" },
     { name = "python-dotenv" },
     { name = "requests" },
     { name = "rich" },
+    { name = "rich", marker = "extra == 'codegen'" },
     { name = "ruamel-yaml", marker = "extra == 'dev'" },
     { name = "ruff", marker = "extra == 'dev'" },
     { name = "setuptools" },
@@ -970,18 +978,21 @@ requires-dist = [
     { name = "sphinxcontrib-mermaid", marker = "extra == 'docs'" },
     { name = "sphinxcontrib-redoc", marker = "extra == 'docs'" },
     { name = "sphinxcontrib-video", marker = "extra == 'docs'" },
+    { name = "sqlite-vec", marker = "extra == 'test'" },
     { name = "termcolor" },
+    { name = "tiktoken" },
+    { name = "tomli", marker = "extra == 'docs'" },
     { name = "torch", marker = "extra == 'test'", specifier = ">=2.6.0", index = "https://download.pytorch.org/whl/cpu" },
     { name = "torchvision", marker = "extra == 'test'", specifier = ">=0.21.0", index = "https://download.pytorch.org/whl/cpu" },
     { name = "types-requests", marker = "extra == 'dev'" },
     { name = "types-setuptools", marker = "extra == 'dev'" },
     { name = "uvicorn", marker = "extra == 'dev'" },
 ]
-provides-extras = ["dev", "test", "docs"]
+provides-extras = ["dev", "test", "docs", "codegen"]
 
 [[package]]
 name = "llama-stack-client"
-version = "0.1.4"
+version = "0.1.6"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -998,9 +1009,9 @@ dependencies = [
     { name = "tqdm" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/71/6b/0c9900bcefe683b1186c272f372ac643ebd307db9efa95fa2c4418e207b3/llama_stack_client-0.1.4.tar.gz", hash = "sha256:539ff9b8c40272d4f3b023605aff9b70e66958b6bd952a04f9e9a5b2bfde00dd", size = 260958 }
+sdist = { url = "https://files.pythonhosted.org/packages/b5/48/70ffdc7ab655234794e9559de9b1776b39610c09aaee8d3bc74bfbd570b4/llama_stack_client-0.1.6.tar.gz", hash = "sha256:92c6c55c3281839e690df7bfc289c36a5dde0f491574bbdb6b8b665dc3d5a16c", size = 264874 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/1f/00/56d7699354677e584610d5457baf09b0fde7ca71946532ba0f867d5e47c2/llama_stack_client-0.1.4-py3-none-any.whl", hash = "sha256:5034e7b3aac099a3ad88868b3ba1d2ba19285151ec40776ceda18e500b866a8e", size = 369327 },
+    { url = "https://files.pythonhosted.org/packages/38/51/1102914f819cf4412a5c9fd3f7dcc28175608e5f01ee164885972c3ec30b/llama_stack_client-0.1.6-py3-none-any.whl", hash = "sha256:708e20630d4e97a1cb03a19b933f4da6748cc857fe170998c392cf0f30f0f4c7", size = 373941 },
 ]
 
 [[package]]
@@ -1861,6 +1872,18 @@ wheels = [
 ]
 
 [[package]]
+name = "pypdf"
+version = "5.3.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "typing-extensions", marker = "python_full_version < '3.11'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/da/5b/67df68ec4b934aae9ca89edfb43a869c5edb3bd504dd275be9e83001d3e9/pypdf-5.3.1.tar.gz", hash = "sha256:0b9b715252b3c60bacc052e6a780e8b742cee9b9a2135f6007bb018e22a5adad", size = 5011845 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f4/0c/75da081f5948e07f373a92087e4808739a3248d308f01c78c9bd4a51defa/pypdf-5.3.1-py3-none-any.whl", hash = "sha256:20ea5b8686faad1b695fda054462b667d5e5f51e25fbbc092f12c5e0bb20d738", size = 302042 },
+]
+
+[[package]]
 name = "pytest"
 version = "8.3.4"
 source = { registry = "https://pypi.org/simple" }
@@ -2594,6 +2617,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/16/48/063e167b6e692bc84bbad74df30bcb27e460a7c620af7824729db8dba606/sphinxcontrib_video-0.4.1.tar.gz", hash = "sha256:75a033e71b7de124cc5902430b7ba818a1c6c377be6401d07e9f2329a95d5ca4", size = 11362 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/5d/8b/a0271fe65357860ccc52168181891e9fc9d354bfdc9be273e6a77b84f905/sphinxcontrib_video-0.4.1-py3-none-any.whl", hash = "sha256:d63ec68983dac36960557973281a616b5d9e68838369763313fc80533b1ad774", size = 10066 },
+]
+
+[[package]]
+name = "sqlite-vec"
+version = "0.1.6"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/88/ed/aabc328f29ee6814033d008ec43e44f2c595447d9cccd5f2aabe60df2933/sqlite_vec-0.1.6-py3-none-macosx_10_6_x86_64.whl", hash = "sha256:77491bcaa6d496f2acb5cc0d0ff0b8964434f141523c121e313f9a7d8088dee3", size = 164075 },
+    { url = "https://files.pythonhosted.org/packages/a7/57/05604e509a129b22e303758bfa062c19afb020557d5e19b008c64016704e/sqlite_vec-0.1.6-py3-none-macosx_11_0_arm64.whl", hash = "sha256:fdca35f7ee3243668a055255d4dee4dea7eed5a06da8cad409f89facf4595361", size = 165242 },
+    { url = "https://files.pythonhosted.org/packages/f2/48/dbb2cc4e5bad88c89c7bb296e2d0a8df58aab9edc75853728c361eefc24f/sqlite_vec-0.1.6-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:7b0519d9cd96164cd2e08e8eed225197f9cd2f0be82cb04567692a0a4be02da3", size = 103704 },
+    { url = "https://files.pythonhosted.org/packages/80/76/97f33b1a2446f6ae55e59b33869bed4eafaf59b7f4c662c8d9491b6a714a/sqlite_vec-0.1.6-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.manylinux1_x86_64.whl", hash = "sha256:823b0493add80d7fe82ab0fe25df7c0703f4752941aee1c7b2b02cec9656cb24", size = 151556 },
+    { url = "https://files.pythonhosted.org/packages/6a/98/e8bc58b178266eae2fcf4c9c7a8303a8d41164d781b32d71097924a6bebe/sqlite_vec-0.1.6-py3-none-win_amd64.whl", hash = "sha256:c65bcfd90fa2f41f9000052bcb8bb75d38240b2dae49225389eca6c3136d3f0c", size = 281540 },
 ]
 
 [[package]]

@@ -82,6 +82,12 @@ providers:
   - provider_id: rag-runtime
     provider_type: inline::rag-runtime
     config: {}
+  - provider_id: model-context-protocol
+    provider_type: remote::model-context-protocol
+    config: {}
+  - provider_id: wolfram-alpha
+    provider_type: remote::wolfram-alpha
+    config: {}
 metadata_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/registry.db
@@ -116,5 +122,7 @@ tool_groups:
   provider_id: rag-runtime
 - toolgroup_id: builtin::code_interpreter
   provider_id: code-interpreter
+- toolgroup_id: builtin::wolfram_alpha
+  provider_id: wolfram-alpha
 server:
   port: 8321

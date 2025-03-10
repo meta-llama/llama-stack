@@ -5,7 +5,7 @@ An example of this would be a "db_access" tool group that contains tools for int
 
 Tools are treated as any other resource in llama stack like models. You can register them, have providers for them etc.
 
-When instatiating an agent, you can provide it a list of tool groups that it has access to. Agent gets the corresponding tool definitions for the specified tool groups and passes them along to the model.
+When instantiating an agent, you can provide it a list of tool groups that it has access to. Agent gets the corresponding tool definitions for the specified tool groups and passes them along to the model.
 
 Refer to the [Building AI Applications](https://github.com/meta-llama/llama-stack/blob/main/docs/getting_started.ipynb) notebook for more examples on how to use tools.
 
@@ -60,7 +60,7 @@ Features:
 - Disabled dangerous system operations
 - Configurable execution timeouts
 
-> ⚠️ Important: The code interpreter tool can operate in a controlled enviroment locally or on Podman containers. To ensure proper functionality in containerised environments:
+> ⚠️ Important: The code interpreter tool can operate in a controlled environment locally or on Podman containers. To ensure proper functionality in containerized environments:
 > - The container requires privileged access (e.g., --privileged).
 > - Users without sufficient permissions may encounter permission errors. (`bwrap: Can't mount devpts on /newroot/dev/pts: Permission denied`)
 > - 🔒 Security Warning: Privileged mode grants elevated access and bypasses security restrictions. Use only in local, isolated, or controlled environments.
@@ -83,15 +83,15 @@ result = client.tool_runtime.invoke_tool(
 )
 ```
 
-#### Memory
+#### RAG
 
-The Memory tool enables retrieval of context from various types of memory banks (vector, key-value, keyword, and graph).
+The RAG tool enables retrieval of context from various types of memory banks (vector, key-value, keyword, and graph).
 
 ```python
 # Register Memory tool group
 client.toolgroups.register(
-    toolgroup_id="builtin::memory",
-    provider_id="memory",
+    toolgroup_id="builtin::rag",
+    provider_id="faiss",
     args={"max_chunks": 5, "max_tokens_in_context": 4096},
 )
 ```
@@ -102,7 +102,7 @@ Features:
 - Context retrieval with token limits
 
 
-> **Note:** By default, llama stack run.yaml defines toolgroups for web search, code interpreter and memory, that are provided by tavily-search, code-interpreter and memory providers.
+> **Note:** By default, llama stack run.yaml defines toolgroups for web search, code interpreter and rag, that are provided by tavily-search, code-interpreter and rag providers.
 
 ## Model Context Protocol (MCP) Tools
 
@@ -125,50 +125,31 @@ MCP tools require:
 - Tools are discovered dynamically from the endpoint
 
 
-## Tools provided by the client
+## Adding Custom Tools
 
-These tools are registered along with the agent config and are specific to the agent for which they are registered. The main difference between these tools and the tools provided by the built-in providers is that the execution of these tools is handled by the client and the agent transfers the tool call to the client and waits for the result from the client.
+When you want to use tools other than the built-in tools, you just need to implement a python function with a docstring. The content of the docstring will be used to describe the tool and the parameters and passed
+along to the generative model.
 
 ```python
+# Example tool definition
+def my_tool(input: int) -> int:
+    """
+    Runs my awesome tool.
+
+    :param input: some int parameter
+    """
+    return input * 2
+```
+> **NOTE:** We employ python docstrings to describe the tool and the parameters. It is important to document the tool and the parameters so that the model can use the tool correctly. It is recommended to experiment with different docstrings to see how they affect the model's behavior.
+
+Once defined, simply pass the tool to the agent config. `Agent` will take care of the rest (calling the model with the tool definition, executing the tool, and returning the result to the model for the next iteration).
+```python
 # Example agent config with client provided tools
-config = AgentConfig(
-    toolgroups=[
-        "builtin::websearch",
-    ],
-    client_tools=[ToolDef(name="client_tool", description="Client provided tool")],
-)
+agent = Agent(client, ..., tools=[my_tool])
 ```
 
 Refer to [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/blob/main/examples/agents/e2e_loop_with_client_tools.py) for an example of how to use client provided tools.
 
-## Tool Structure
-
-Each tool has the following components:
-
-- `name`: Unique identifier for the tool
-- `description`: Human-readable description of the tool's functionality
-- `parameters`: List of parameters the tool accepts
-  - `name`: Parameter name
-  - `parameter_type`: Data type (string, number, etc.)
-  - `description`: Parameter description
-  - `required`: Whether the parameter is required (default: true)
-  - `default`: Default value if any
-
-Example tool definition:
-```python
-{
-    "name": "web_search",
-    "description": "Search the web for information",
-    "parameters": [
-        {
-            "name": "query",
-            "parameter_type": "string",
-            "description": "The query to search for",
-            "required": True,
-        }
-    ],
-}
-```
 
 ## Tool Invocation
 
@@ -201,10 +182,10 @@ group_tools = client.tools.list_tools(toolgroup_id="search_tools")
 
 ```python
 from llama_stack_client.lib.agents.agent import Agent
-from llama_stack_client.types.agent_create_params import AgentConfig
 
-# Configure the AI agent with necessary parameters
-agent_config = AgentConfig(
+# Instantiate the AI agent with the given configuration
+agent = Agent(
+    client,
     name="code-interpreter",
     description="A code interpreter agent for executing Python code snippets",
     instructions="""
@@ -212,13 +193,9 @@ agent_config = AgentConfig(
     Always show the generated code, never generate your own code, and never anticipate results.
     """,
     model="meta-llama/Llama-3.2-3B-Instruct",
-    toolgroups=["builtin::code_interpreter"],
+    tools=["builtin::code_interpreter"],
     max_infer_iters=5,
-    enable_session_persistence=False,
 )
-
-# Instantiate the AI agent with the given configuration
-agent = Agent(client, agent_config)
 
 # Start a session
 session_id = agent.create_session("tool_session")

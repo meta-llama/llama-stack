@@ -16,7 +16,9 @@ import textwrap
 from pathlib import Path
 from typing import List
 
-from llama_models.datatypes import (
+from pydantic import BaseModel, Field
+
+from llama_stack.models.llama.datatypes import (
     RawContent,
     RawMediaItem,
     RawMessage,
@@ -25,7 +27,6 @@ from llama_models.datatypes import (
     ToolCall,
     ToolPromptFormat,
 )
-from pydantic import BaseModel, Field
 
 from .llama3.interface import LLama31Interface
 from .llama3.template_data import (

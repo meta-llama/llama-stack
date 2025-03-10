@@ -1,0 +1,8 @@
+# GitHub Dependabot configuration
+version: 2
+updates:
+  # Enable version updates for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/" # Will use the default workflow location of `.github/workflows`
+    schedule:
+      interval: "daily"

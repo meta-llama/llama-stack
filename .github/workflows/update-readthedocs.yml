@@ -12,12 +12,14 @@ on:
       - main
     paths:
       - 'docs/**'
+      - 'pyproject.toml'
       - '.github/workflows/update-readthedocs.yml'
   pull_request:
     branches:
       - main
     paths:
       - 'docs/**'
+      - 'pyproject.toml'
       - '.github/workflows/update-readthedocs.yml'
 
 jobs:

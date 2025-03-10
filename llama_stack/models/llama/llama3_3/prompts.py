@@ -14,7 +14,7 @@
 import textwrap
 from typing import List
 
-from llama_models.datatypes import (
+from llama_stack.models.llama.datatypes import (
     BuiltinTool,
     RawMessage,
     StopReason,

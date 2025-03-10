@@ -13,7 +13,6 @@ from llama_stack.distribution.datatypes import (
     ShieldInput,
     ToolGroupInput,
 )
-from llama_stack.models.llama.sku_list import all_registered_models
 from llama_stack.providers.inline.inference.sentence_transformers import (
     SentenceTransformersInferenceConfig,
 )
@@ -24,9 +23,13 @@ from llama_stack.providers.remote.inference.fireworks.config import FireworksImp
 from llama_stack.providers.remote.inference.fireworks.models import MODEL_ENTRIES as FIREWORKS_MODEL_ENTRIES
 from llama_stack.providers.remote.inference.gemini.config import GeminiConfig
 from llama_stack.providers.remote.inference.gemini.models import MODEL_ENTRIES as GEMINI_MODEL_ENTRIES
+from llama_stack.providers.remote.inference.groq.config import GroqConfig
+from llama_stack.providers.remote.inference.groq.models import MODEL_ENTRIES as GROQ_MODEL_ENTRIES
 from llama_stack.providers.remote.inference.openai.config import OpenAIConfig
 from llama_stack.providers.remote.inference.openai.models import MODEL_ENTRIES as OPENAI_MODEL_ENTRIES
-from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
+from llama_stack.providers.remote.vector_io.chroma.config import ChromaVectorIOConfig
+from llama_stack.providers.remote.vector_io.pgvector.config import PGVectorVectorIOConfig
+from llama_stack.templates.template import DistributionTemplate, RunConfigSettings, get_model_registry
 
 
 def get_inference_providers() -> Tuple[List[Provider], List[ModelInput]]:
@@ -52,10 +55,14 @@ def get_inference_providers() -> Tuple[List[Provider], List[ModelInput]]:
             GEMINI_MODEL_ENTRIES,
             GeminiConfig.sample_run_config(api_key="${env.GEMINI_API_KEY:}"),
         ),
+        (
+            "groq",
+            GROQ_MODEL_ENTRIES,
+            GroqConfig.sample_run_config(api_key="${env.GROQ_API_KEY:}"),
+        ),
     ]
     inference_providers = []
-    default_models = []
-    core_model_to_hf_repo = {m.descriptor(): m.huggingface_repo for m in all_registered_models()}
+    available_models = {}
     for provider_id, model_entries, config in providers:
         inference_providers.append(
             Provider(
@@ -64,28 +71,14 @@ def get_inference_providers() -> Tuple[List[Provider], List[ModelInput]]:
                 config=config,
             )
         )
-        default_models.extend(
-            ModelInput(
-                model_id=core_model_to_hf_repo[m.llama_model] if m.llama_model else m.provider_model_id,
-                provider_model_id=m.provider_model_id,
-                provider_id=provider_id,
-                model_type=m.model_type,
-                metadata=m.metadata,
-            )
-            for m in model_entries
-        )
-    return inference_providers, default_models
+        available_models[provider_id] = model_entries
+    return inference_providers, available_models
 
 
 def get_distribution_template() -> DistributionTemplate:
+    inference_providers, available_models = get_inference_providers()
     providers = {
-        "inference": [
-            "remote::openai",
-            "remote::fireworks",
-            "remote::anthropic",
-            "remote::gemini",
-            "inline::sentence-transformers",
-        ],
+        "inference": ([p.provider_type for p in inference_providers] + ["inline::sentence-transformers"]),
         "vector_io": ["inline::sqlite-vec", "remote::chromadb", "remote::pgvector"],
         "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],
@@ -103,11 +96,27 @@ def get_distribution_template() -> DistributionTemplate:
     }
     name = "dev"
 
-    vector_io_provider = Provider(
-        provider_id="sqlite-vec",
-        provider_type="inline::sqlite-vec",
-        config=SQLiteVectorIOConfig.sample_run_config(f"distributions/{name}"),
-    )
+    vector_io_providers = [
+        Provider(
+            provider_id="sqlite-vec",
+            provider_type="inline::sqlite-vec",
+            config=SQLiteVectorIOConfig.sample_run_config(f"~/.llama/distributions/{name}"),
+        ),
+        Provider(
+            provider_id="${env.ENABLE_CHROMADB+chromadb}",
+            provider_type="remote::chromadb",
+            config=ChromaVectorIOConfig.sample_run_config(url="${env.CHROMADB_URL:}"),
+        ),
+        Provider(
+            provider_id="${env.ENABLE_PGVECTOR+pgvector}",
+            provider_type="remote::pgvector",
+            config=PGVectorVectorIOConfig.sample_run_config(
+                db="${env.PGVECTOR_DB:}",
+                user="${env.PGVECTOR_USER:}",
+                password="${env.PGVECTOR_PASSWORD:}",
+            ),
+        ),
+    ]
     embedding_provider = Provider(
         provider_id="sentence-transformers",
         provider_type="inline::sentence-transformers",
@@ -136,8 +145,8 @@ def get_distribution_template() -> DistributionTemplate:
             "embedding_dimension": 384,
         },
     )
-    inference_providers, default_models = get_inference_providers()
 
+    default_models = get_model_registry(available_models)
     return DistributionTemplate(
         name=name,
         distro_type="self_hosted",
@@ -145,12 +154,12 @@ def get_distribution_template() -> DistributionTemplate:
         container_image=None,
         template_path=None,
         providers=providers,
-        default_models=[],
+        available_models_by_provider=available_models,
         run_configs={
             "run.yaml": RunConfigSettings(
                 provider_overrides={
                     "inference": inference_providers + [embedding_provider],
-                    "vector_io": [vector_io_provider],
+                    "vector_io": vector_io_providers,
                 },
                 default_models=default_models + [embedding_model],
                 default_tool_groups=default_tool_groups,

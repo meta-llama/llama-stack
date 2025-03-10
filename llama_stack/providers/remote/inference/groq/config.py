@@ -11,6 +11,13 @@ from pydantic import BaseModel, Field
 from llama_stack.schema_utils import json_schema_type
 
 
+class GroqProviderDataValidator(BaseModel):
+    groq_api_key: Optional[str] = Field(
+        default=None,
+        description="API key for Groq models",
+    )
+
+
 @json_schema_type
 class GroqConfig(BaseModel):
     api_key: Optional[str] = Field(
@@ -25,8 +32,8 @@ class GroqConfig(BaseModel):
     )
 
     @classmethod
-    def sample_run_config(cls, **kwargs) -> Dict[str, Any]:
+    def sample_run_config(cls, api_key: str = "${env.GROQ_API_KEY}", **kwargs) -> Dict[str, Any]:
         return {
             "url": "https://api.groq.com",
-            "api_key": "${env.GROQ_API_KEY}",
+            "api_key": api_key,
         }
