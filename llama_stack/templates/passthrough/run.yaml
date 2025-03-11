@@ -103,8 +103,8 @@ models:
   provider_id: passthrough
   provider_model_id: llama3.2-11b-vision-instruct
   model_type: llm
-shields:
-- shield_id: meta-llama/Llama-Guard-3-8B
+# shields:
+# - shield_id: meta-llama/Llama-Guard-3-8B
 vector_dbs: []
 datasets: []
 scoring_fns: []

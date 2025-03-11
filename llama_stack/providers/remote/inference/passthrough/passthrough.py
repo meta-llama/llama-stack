@@ -137,8 +137,33 @@ class PassthroughInferenceAdapter(Inference):
 
         params = {key: value for key, value in params.items() if value is not None}
 
+        json_params = {}
+        from llama_stack.distribution.library_client import (
+            convert_pydantic_to_json_value,
+        )
+
+        # cast everything to json dict
+        for key, value in params.items():
+            json_input = convert_pydantic_to_json_value(value)
+            if isinstance(json_input, dict):
+                json_input = {k: v for k, v in json_input.items() if v is not None}
+            elif isinstance(json_input, list):
+                json_input = [x for x in json_input if x is not None]
+                new_input = []
+                for x in json_input:
+                    if isinstance(x, dict):
+                        x = {k: v for k, v in x.items() if v is not None}
+                    new_input.append(x)
+                json_input = new_input
+
+            if key != "tools":
+                json_params[key] = json_input
+
+        from rich.pretty import pprint
+
+        pprint(json_params)
         # only pass through the not None params
-        return client.inference.chat_completion(**params)
+        return client.inference.chat_completion(**json_params)
 
     async def embeddings(
         self,
