@@ -221,8 +221,7 @@ agent = Agent(
     client, 
     model="meta-llama/Llama-3.2-3B-Instruct",
     instructions=(
-        "You are a highly knowledgeable and helpful web search assistant. "
-        "Whenever you encounter a query, make sure to use the websearch tools to look up the most current and precise information available. "
+        "You are a web search assistant, must use websearch tool to look up the most current and precise information available. "
     ),
     tools=["builtin::websearch"], 
     )
@@ -230,7 +229,7 @@ agent = Agent(
 session_id = agent.create_session("websearch-session")
 
 response = agent.create_turn(
-    messages=[{"role": "user", "content": "How US performed in the olympics?"}],
+    messages=[{"role": "user", "content": "How US performed in the latest olympics?"}],
     session_id=session_id,
 )
 for log in EventLogger().log(response):
@@ -252,14 +251,14 @@ client = LlamaStackClient(
 agent = Agent(
     client, 
     model="meta-llama/Llama-3.2-3B-Instruct",
-    instructions="You are a helpful wolfram_alpha assistant, use wolfram_alpha tool as external source validation.",
+    instructions="You are a helpful wolfram_alpha assistant, must use wolfram_alpha tool as external source validation.",
     tools=["builtin::wolfram_alpha"],
     )
 
 session_id = agent.create_session("wolframa-alpha-session")
 
 response = agent.create_turn(
-    messages=[{"role": "user", "content": "Tell me 10 densest elemental metals"}],
+    messages=[{"role": "user", "content": "solve x^2 + 2x + 1 = 0"}],
     session_id=session_id,
 )
 for log in EventLogger().log(response):
