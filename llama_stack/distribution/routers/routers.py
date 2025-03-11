@@ -162,7 +162,21 @@ class InferenceRouter(Inference):
     def _construct_metrics(
         self, prompt_tokens: int, completion_tokens: int, total_tokens: int, model: Model
     ) -> List[MetricEvent]:
+        """Constructs a list of MetricEvent objects containing token usage metrics.
+
+        Args:
+            prompt_tokens: Number of tokens in the prompt
+            completion_tokens: Number of tokens in the completion
+            total_tokens: Total number of tokens used
+            model: Model object containing model_id and provider_id
+
+        Returns:
+            List of MetricEvent objects with token usage metrics
+        """
         span = get_current_span()
+        if span is None:
+            logger.warning("No span found for token usage metrics")
+            return []
         metrics = [
             ("prompt_tokens", prompt_tokens),
             ("completion_tokens", completion_tokens),
