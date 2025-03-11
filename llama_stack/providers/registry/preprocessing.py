@@ -17,14 +17,6 @@ def available_providers() -> List[ProviderSpec]:
     return [
         InlineProviderSpec(
             api=Api.preprocessing,
-            provider_type="inline::docling",
-            pip_packages=["docling"],
-            module="llama_stack.providers.inline.preprocessing.docling",
-            config_class="llama_stack.providers.inline.preprocessing.docling.InlineDoclingConfig",
-            api_dependencies=[],
-        ),
-        InlineProviderSpec(
-            api=Api.preprocessing,
             provider_type="inline::basic",
             pip_packages=["httpx", "pypdf"],
             module="llama_stack.providers.inline.preprocessing.basic",
