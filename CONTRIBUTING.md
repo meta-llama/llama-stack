@@ -159,8 +159,7 @@ uv run sphinx-autobuild source build/html --write-all
 If you modify or add new API endpoints, update the API documentation accordingly. You can do this by running the following command:
 
 ```bash
-uv sync --extra dev
-uv run ./docs/openapi_generator/run_openapi_generator.sh
+uv run --with ".[dev]" ./docs/openapi_generator/run_openapi_generator.sh
 ```
 
 The generated API documentation will be available in `docs/_static/`. Make sure to review the changes before committing.
