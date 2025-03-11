@@ -17,7 +17,7 @@ import warnings
 from contextlib import asynccontextmanager
 from importlib.metadata import version as parse_version
 from pathlib import Path
-from typing import Any, List, Optional, Union
+from typing import Any, List, Union
 
 import yaml
 from fastapi import Body, FastAPI, HTTPException, Request
@@ -314,17 +314,11 @@ class ClientVersionMiddleware:
         return await self.app(scope, receive, send)
 
 
-def main(args: Optional[argparse.Namespace] = None):
+def main():
     """Start the LlamaStack server."""
     parser = argparse.ArgumentParser(description="Start the LlamaStack server.")
     parser.add_argument(
         "--yaml-config",
-        dest="config",
-        help="(Deprecated) Path to YAML configuration file - use --config instead",
-    )
-    parser.add_argument(
-        "--config",
-        dest="config",
         help="Path to YAML configuration file",
     )
     parser.add_argument(
@@ -354,19 +348,7 @@ def main(args: Optional[argparse.Namespace] = None):
         required="--tls-keyfile" in sys.argv,
     )
 
-    # Determine whether the server args are being passed by the "run" command, if this is the case
-    # the args will be passed as a Namespace object to the main function, otherwise they will be
-    # parsed from the command line
-    if args is None:
-        args = parser.parse_args()
-
-    # Check for deprecated argument usage
-    if "--yaml-config" in sys.argv:
-        warnings.warn(
-            "The '--yaml-config' argument is deprecated and will be removed in a future version. Use '--config' instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
+    args = parser.parse_args()
 
     if args.env:
         for env_pair in args.env:
@@ -378,9 +360,9 @@ def main(args: Optional[argparse.Namespace] = None):
                 logger.error(f"Error: {str(e)}")
                 sys.exit(1)
 
-    if args.config:
+    if args.yaml_config:
         # if the user provided a config file, use it, even if template was specified
-        config_file = Path(args.config)
+        config_file = Path(args.yaml_config)
         if not config_file.exists():
             raise ValueError(f"Config file {config_file} does not exist")
         logger.info(f"Using config file: {config_file}")
