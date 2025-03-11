@@ -54,6 +54,8 @@ class ScoringFunctionStore(Protocol):
 @runtime_checkable
 class Scoring(Protocol):
     # test sapling
+
+    # second commit
     scoring_function_store: ScoringFunctionStore
 
     @webmethod(route="/scoring/score-batch", method="POST")
