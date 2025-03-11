@@ -87,7 +87,7 @@ class MetaReferenceAgentsImpl(Agents):
             agent_id=agent_id,
         )
 
-    async def get_chat_agent(self, agent_id: str) -> ChatAgent:
+    async def _get_agent_impl(self, agent_id: str) -> ChatAgent:
         agent_config = await self.persistence_store.get(
             key=f"agent:{agent_id}",
         )
@@ -123,7 +123,7 @@ class MetaReferenceAgentsImpl(Agents):
         agent_id: str,
         session_name: str,
     ) -> AgentSessionCreateResponse:
-        agent = await self.get_chat_agent(agent_id)
+        agent = await self._get_agent_impl(agent_id)
 
         session_id = await agent.create_session(session_name)
         return AgentSessionCreateResponse(
@@ -163,7 +163,7 @@ class MetaReferenceAgentsImpl(Agents):
         self,
         request: AgentTurnCreateRequest,
     ) -> AsyncGenerator:
-        agent = await self.get_chat_agent(request.agent_id)
+        agent = await self._get_agent_impl(request.agent_id)
         async for event in agent.create_and_execute_turn(request):
             yield event
 
@@ -191,12 +191,12 @@ class MetaReferenceAgentsImpl(Agents):
         self,
         request: AgentTurnResumeRequest,
     ) -> AsyncGenerator:
-        agent = await self.get_chat_agent(request.agent_id)
+        agent = await self._get_agent_impl(request.agent_id)
         async for event in agent.resume_turn(request):
             yield event
 
     async def get_agents_turn(self, agent_id: str, session_id: str, turn_id: str) -> Turn:
-        agent = await self.get_chat_agent(agent_id)
+        agent = await self._get_agent_impl(agent_id)
         turn = await agent.storage.get_session_turn(session_id, turn_id)
         return turn
 
@@ -213,7 +213,7 @@ class MetaReferenceAgentsImpl(Agents):
         session_id: str,
         turn_ids: Optional[List[str]] = None,
     ) -> Session:
-        agent = await self.get_chat_agent(agent_id)
+        agent = await self._get_agent_impl(agent_id)
         session_info = await agent.storage.get_session_info(session_id)
         if session_info is None:
             raise ValueError(f"Session {session_id} not found")
