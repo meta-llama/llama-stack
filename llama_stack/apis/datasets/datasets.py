@@ -9,8 +9,6 @@ from typing import Any, Dict, List, Literal, Optional, Protocol
 
 from pydantic import BaseModel, Field
 
-from llama_stack.apis.common.content_types import URL
-from llama_stack.apis.common.type_system import ParamType
 from llama_stack.apis.resource import Resource, ResourceType
 from llama_stack.schema_utils import json_schema_type, webmethod
 
