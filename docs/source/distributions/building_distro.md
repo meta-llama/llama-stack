@@ -232,8 +232,8 @@ options:
                         Path to TLS key file for HTTPS (default: None)
   --tls-certfile TLS_CERTFILE
                         Path to TLS certificate file for HTTPS (default: None)
-  --image-type {conda,container,venv}
-                        Image Type used during the build. This can be either conda or container or venv. (default: conda)
+  --image-type {conda,container,system,venv}
+                        Image Type used during the build. System means using the current environment packages. (default: conda)
 
 ```
 

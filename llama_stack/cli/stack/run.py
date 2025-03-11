@@ -71,8 +71,9 @@ class StackRun(Subcommand):
         self.parser.add_argument(
             "--image-type",
             type=str,
-            help="Image Type used during the build. This can be either conda or container or venv.",
-            choices=["conda", "container", "venv"],
+            help="Image Type used during the build. System means using the current environment packages.",
+            choices=["conda", "container", "system", "venv"],
+            default="conda",
         )
 
     def _run_stack_run_cmd(self, args: argparse.Namespace) -> None:
@@ -118,9 +119,7 @@ class StackRun(Subcommand):
         except AttributeError as e:
             self.parser.error(f"failed to parse config file '{config_file}':\n {e}")
 
-        # If neither image type nor image name is provided, assume the server should be run directly
-        # using the current environment packages.
-        if not args.image_type and not args.image_name:
+        if args.image_type == "system":
             logger.info("No image type or image name provided. Assuming environment packages.")
             from llama_stack.distribution.server.server import main as server_main
 
