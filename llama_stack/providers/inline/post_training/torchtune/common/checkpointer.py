@@ -37,7 +37,7 @@ class TorchtuneCheckpointer:
         checkpoint_files: List[str],
         output_dir: str,
         model_type: str,
-    ) -> None:
+    ):
         # Fail fast if ``checkpoint_files`` is invalid
         # TODO: support loading more than one file
         if len(checkpoint_files) != 1:
@@ -58,7 +58,7 @@ class TorchtuneCheckpointer:
         """
         Load Meta checkpoint from file. Currently only loading from a single file is supported.
         """
-        state_dict: Dict[str:Any] = {}
+        state_dict: Dict[str, Any] = {}
         model_state_dict = safe_torch_load(self._checkpoint_path)
         if self._model_type == ModelType.LLAMA3_VISION:
             from torchtune.models.llama3_2_vision._convert_weights import (
@@ -85,10 +85,10 @@ class TorchtuneCheckpointer:
         state_dict: Dict[str, Any],
         epoch: int,
         adapter_only: bool = False,
-        checkpoint_format: str = "meta",
+        checkpoint_format: str | None = None,
     ) -> str:
         model_file_path = Path(self._output_dir) / f"{self._model_id}-{self._training_algorithm}-{epoch}"
-        if checkpoint_format == "meta":
+        if checkpoint_format == "meta" or checkpoint_format is None:
             self._save_meta_format_checkpoint(model_file_path, state_dict, adapter_only)
         elif checkpoint_format == "huggingface":
             # Note: for saving hugging face format checkpoints, we only suppport saving adapter weights now
