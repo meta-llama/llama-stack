@@ -52,7 +52,7 @@ class InclineBasicPreprocessorImpl(Preprocessing, PreprocessorsProtocolPrivate):
 
     async def unregister_preprocessor(self, preprocessor_id: str) -> None: ...
 
-    async def preprocess(
+    async def do_preprocess(
         self,
         preprocessor_id: str,
         preprocessor_inputs: List[PreprocessingDataElement],
@@ -98,12 +98,12 @@ class InclineBasicPreprocessorImpl(Preprocessing, PreprocessorsProtocolPrivate):
             success=True, output_data_type=PreprocessingDataType.raw_text_document, results=results
         )
 
-    async def chain_preprocess(
+    async def preprocess(
         self,
         preprocessors: PreprocessorChain,
         preprocessor_inputs: List[PreprocessingDataElement],
     ) -> PreprocessorResponse:
-        return await self.preprocess(preprocessor_id="", preprocessor_inputs=preprocessor_inputs)
+        return await self.do_preprocess(preprocessor_id="", preprocessor_inputs=preprocessor_inputs)
 
     @staticmethod
     def _resolve_input_type(preprocessor_input: PreprocessingDataElement) -> PreprocessingDataType:

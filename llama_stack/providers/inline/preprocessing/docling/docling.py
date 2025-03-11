@@ -47,7 +47,7 @@ class InclineDoclingPreprocessorImpl(Preprocessing, PreprocessorsProtocolPrivate
 
     async def unregister_preprocessor(self, preprocessor_id: str) -> None: ...
 
-    async def preprocess(
+    async def do_preprocess(
         self,
         preprocessor_id: str,
         preprocessor_inputs: List[PreprocessingDataElement],
@@ -106,9 +106,9 @@ class InclineDoclingPreprocessorImpl(Preprocessing, PreprocessorsProtocolPrivate
         )
         return PreprocessorResponse(success=True, output_data_type=output_data_type, results=results)
 
-    async def chain_preprocess(
+    async def preprocess(
         self,
         preprocessors: PreprocessorChain,
         preprocessor_inputs: List[PreprocessingDataElement],
     ) -> PreprocessorResponse:
-        return await self.preprocess(preprocessor_id="", preprocessor_inputs=preprocessor_inputs)
+        return await self.do_preprocess(preprocessor_id="", preprocessor_inputs=preprocessor_inputs)

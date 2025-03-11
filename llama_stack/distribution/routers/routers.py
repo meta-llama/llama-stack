@@ -45,7 +45,6 @@ from llama_stack.apis.preprocessing import (
     Preprocessing,
     PreprocessingDataElement,
     PreprocessorChain,
-    PreprocessorOptions,
     PreprocessorResponse,
 )
 from llama_stack.apis.safety import RunShieldResponse, Safety
@@ -714,22 +713,6 @@ class PreprocessingRouter(Preprocessing):
         pass
 
     async def preprocess(
-        self,
-        preprocessor_id: str,
-        preprocessor_inputs: List[PreprocessingDataElement],
-        options: Optional[PreprocessorOptions] = None,
-    ) -> PreprocessorResponse:
-        logcat.debug(
-            "core",
-            f"PreprocessingRouter.preprocess: {preprocessor_id}, {len(preprocessor_inputs)} inputs, options={options}",
-        )
-        return await self.routing_table.get_provider_impl(preprocessor_id).preprocess(
-            preprocessor_id=preprocessor_id,
-            preprocessor_inputs=preprocessor_inputs,
-            options=options,
-        )
-
-    async def chain_preprocess(
         self,
         preprocessors: PreprocessorChain,
         preprocessor_inputs: List[PreprocessingDataElement],

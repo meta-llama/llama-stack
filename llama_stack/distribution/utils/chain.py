@@ -8,16 +8,16 @@ from itertools import pairwise
 from typing import List
 
 from llama_stack.apis.preprocessing import (
-    Preprocessing,
     PreprocessingDataElement,
     PreprocessorChain,
     PreprocessorResponse,
 )
+from llama_stack.providers.datatypes import PreprocessorsProtocolPrivate
 
 log = logging.getLogger(__name__)
 
 
-def validate_chain(chain_impls: List[Preprocessing]) -> bool:
+def validate_chain(chain_impls: List[PreprocessorsProtocolPrivate]) -> bool:
     if len(chain_impls) == 0:
         log.error("Empty preprocessing chain was provided")
         return False
@@ -37,7 +37,7 @@ def validate_chain(chain_impls: List[Preprocessing]) -> bool:
 
 async def execute_preprocessor_chain(
     preprocessor_chain: PreprocessorChain,
-    preprocessor_chain_impls: List[Preprocessing],
+    preprocessor_chain_impls: List[PreprocessorsProtocolPrivate],
     preprocessor_inputs: List[PreprocessingDataElement],
 ) -> PreprocessorResponse:
     if not validate_chain(preprocessor_chain_impls):
@@ -50,7 +50,7 @@ async def execute_preprocessor_chain(
     # TODO: replace with a parallel implementation
     for i, current_params in enumerate(preprocessor_chain):
         current_impl = preprocessor_chain_impls[i]
-        response = await current_impl.preprocess(
+        response = await current_impl.do_preprocess(
             preprocessor_id=current_params.preprocessor_id,
             preprocessor_inputs=current_inputs,
             options=current_params.options,

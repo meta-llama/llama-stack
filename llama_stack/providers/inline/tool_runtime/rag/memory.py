@@ -81,7 +81,7 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
         preprocessor_chain: Optional[PreprocessorChain] = None,
     ) -> None:
         preprocessor_inputs = [self._rag_document_to_preprocessor_input(d) for d in documents]
-        preprocessor_response = await self.preprocessing_api.chain_preprocess(
+        preprocessor_response = await self.preprocessing_api.preprocess(
             preprocessors=preprocessor_chain or self.DEFAULT_PREPROCESSING_CHAIN,
             preprocessor_inputs=preprocessor_inputs,
         )

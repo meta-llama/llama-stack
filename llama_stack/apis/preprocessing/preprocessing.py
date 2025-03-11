@@ -70,19 +70,8 @@ class PreprocessorStore(Protocol):
 class Preprocessing(Protocol):
     preprocessor_store: PreprocessorStore
 
-    input_types: List[PreprocessingDataType]
-    output_types: List[PreprocessingDataType]
-
     @webmethod(route="/preprocess", method="POST")
     async def preprocess(
-        self,
-        preprocessor_id: str,
-        preprocessor_inputs: List[PreprocessingDataElement],
-        options: Optional[PreprocessorOptions] = None,
-    ) -> PreprocessorResponse: ...
-
-    @webmethod(route="/chain_preprocess", method="POST")
-    async def chain_preprocess(
         self,
         preprocessors: PreprocessorChain,
         preprocessor_inputs: List[PreprocessingDataElement],
