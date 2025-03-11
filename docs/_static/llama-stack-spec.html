@@ -2493,7 +2493,14 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Dataset"
+                                }
+                            }
+                        }
                     },
                     "400": {
                         "$ref": "#/components/responses/BadRequest400"
@@ -2511,7 +2518,7 @@
                 "tags": [
                     "Datasets"
                 ],
-                "description": "",
+                "description": "Register a new dataset through a file or",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -6831,81 +6838,6 @@
                 ],
                 "title": "Benchmark"
             },
-            "AgentTurnInputType": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "agent_turn_input",
-                        "default": "agent_turn_input"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type"
-                ],
-                "title": "AgentTurnInputType"
-            },
-            "ArrayType": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "array",
-                        "default": "array"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type"
-                ],
-                "title": "ArrayType"
-            },
-            "BooleanType": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "boolean",
-                        "default": "boolean"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type"
-                ],
-                "title": "BooleanType"
-            },
-            "ChatCompletionInputType": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "chat_completion_input",
-                        "default": "chat_completion_input"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type"
-                ],
-                "title": "ChatCompletionInputType"
-            },
-            "CompletionInputType": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "completion_input",
-                        "default": "completion_input"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type"
-                ],
-                "title": "CompletionInputType"
-            },
             "Dataset": {
                 "type": "object",
                 "properties": {
@@ -6923,14 +6855,11 @@
                         "const": "dataset",
                         "default": "dataset"
                     },
-                    "dataset_schema": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "$ref": "#/components/schemas/ParamType"
-                        }
+                    "schema": {
+                        "$ref": "#/components/schemas/Schema"
                     },
-                    "url": {
-                        "$ref": "#/components/schemas/URL"
+                    "uri": {
+                        "type": "string"
                     },
                     "metadata": {
                         "type": "object",
@@ -6964,135 +6893,19 @@
                     "provider_resource_id",
                     "provider_id",
                     "type",
-                    "dataset_schema",
-                    "url",
+                    "schema",
+                    "uri",
                     "metadata"
                 ],
                 "title": "Dataset"
             },
-            "JsonType": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "json",
-                        "default": "json"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type"
+            "Schema": {
+                "type": "string",
+                "enum": [
+                    "jsonl_messages"
                 ],
-                "title": "JsonType"
-            },
-            "NumberType": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "number",
-                        "default": "number"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type"
-                ],
-                "title": "NumberType"
-            },
-            "ObjectType": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "object",
-                        "default": "object"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type"
-                ],
-                "title": "ObjectType"
-            },
-            "ParamType": {
-                "oneOf": [
-                    {
-                        "$ref": "#/components/schemas/StringType"
-                    },
-                    {
-                        "$ref": "#/components/schemas/NumberType"
-                    },
-                    {
-                        "$ref": "#/components/schemas/BooleanType"
-                    },
-                    {
-                        "$ref": "#/components/schemas/ArrayType"
-                    },
-                    {
-                        "$ref": "#/components/schemas/ObjectType"
-                    },
-                    {
-                        "$ref": "#/components/schemas/JsonType"
-                    },
-                    {
-                        "$ref": "#/components/schemas/UnionType"
-                    },
-                    {
-                        "$ref": "#/components/schemas/ChatCompletionInputType"
-                    },
-                    {
-                        "$ref": "#/components/schemas/CompletionInputType"
-                    },
-                    {
-                        "$ref": "#/components/schemas/AgentTurnInputType"
-                    }
-                ],
-                "discriminator": {
-                    "propertyName": "type",
-                    "mapping": {
-                        "string": "#/components/schemas/StringType",
-                        "number": "#/components/schemas/NumberType",
-                        "boolean": "#/components/schemas/BooleanType",
-                        "array": "#/components/schemas/ArrayType",
-                        "object": "#/components/schemas/ObjectType",
-                        "json": "#/components/schemas/JsonType",
-                        "union": "#/components/schemas/UnionType",
-                        "chat_completion_input": "#/components/schemas/ChatCompletionInputType",
-                        "completion_input": "#/components/schemas/CompletionInputType",
-                        "agent_turn_input": "#/components/schemas/AgentTurnInputType"
-                    }
-                }
-            },
-            "StringType": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "string",
-                        "default": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type"
-                ],
-                "title": "StringType"
-            },
-            "UnionType": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "union",
-                        "default": "union"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type"
-                ],
-                "title": "UnionType"
+                "title": "Schema",
+                "description": "Schema of the dataset. Each type has a different column format."
             },
             "Model": {
                 "type": "object",
@@ -7209,6 +7022,175 @@
                 "title": "PaginatedRowsResult",
                 "description": "A paginated list of rows from a dataset."
             },
+            "AgentTurnInputType": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "agent_turn_input",
+                        "default": "agent_turn_input"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ],
+                "title": "AgentTurnInputType"
+            },
+            "ArrayType": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "array",
+                        "default": "array"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ],
+                "title": "ArrayType"
+            },
+            "BooleanType": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "boolean",
+                        "default": "boolean"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ],
+                "title": "BooleanType"
+            },
+            "ChatCompletionInputType": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "chat_completion_input",
+                        "default": "chat_completion_input"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ],
+                "title": "ChatCompletionInputType"
+            },
+            "CompletionInputType": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "completion_input",
+                        "default": "completion_input"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ],
+                "title": "CompletionInputType"
+            },
+            "JsonType": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "json",
+                        "default": "json"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ],
+                "title": "JsonType"
+            },
+            "NumberType": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "number",
+                        "default": "number"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ],
+                "title": "NumberType"
+            },
+            "ObjectType": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "object",
+                        "default": "object"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ],
+                "title": "ObjectType"
+            },
+            "ParamType": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/StringType"
+                    },
+                    {
+                        "$ref": "#/components/schemas/NumberType"
+                    },
+                    {
+                        "$ref": "#/components/schemas/BooleanType"
+                    },
+                    {
+                        "$ref": "#/components/schemas/ArrayType"
+                    },
+                    {
+                        "$ref": "#/components/schemas/ObjectType"
+                    },
+                    {
+                        "$ref": "#/components/schemas/JsonType"
+                    },
+                    {
+                        "$ref": "#/components/schemas/UnionType"
+                    },
+                    {
+                        "$ref": "#/components/schemas/ChatCompletionInputType"
+                    },
+                    {
+                        "$ref": "#/components/schemas/CompletionInputType"
+                    },
+                    {
+                        "$ref": "#/components/schemas/AgentTurnInputType"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "string": "#/components/schemas/StringType",
+                        "number": "#/components/schemas/NumberType",
+                        "boolean": "#/components/schemas/BooleanType",
+                        "array": "#/components/schemas/ArrayType",
+                        "object": "#/components/schemas/ObjectType",
+                        "json": "#/components/schemas/JsonType",
+                        "union": "#/components/schemas/UnionType",
+                        "chat_completion_input": "#/components/schemas/ChatCompletionInputType",
+                        "completion_input": "#/components/schemas/CompletionInputType",
+                        "agent_turn_input": "#/components/schemas/AgentTurnInputType"
+                    }
+                }
+            },
             "ScoringFn": {
                 "type": "object",
                 "properties": {
@@ -7271,6 +7253,36 @@
                     "return_type"
                 ],
                 "title": "ScoringFn"
+            },
+            "StringType": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "string",
+                        "default": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ],
+                "title": "StringType"
+            },
+            "UnionType": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "union",
+                        "default": "union"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ],
+                "title": "UnionType"
             },
             "Shield": {
                 "type": "object",
@@ -9242,23 +9254,39 @@
             "RegisterDatasetRequest": {
                 "type": "object",
                 "properties": {
-                    "dataset_id": {
-                        "type": "string"
+                    "schema": {
+                        "$ref": "#/components/schemas/Schema",
+                        "description": "The schema format of the dataset. One of - jsonl_messages: The dataset is a JSONL file with messages in column format"
                     },
-                    "dataset_schema": {
+                    "uri": {
+                        "type": "string",
+                        "description": "The URI of the dataset. Examples: - file://mydata.jsonl - s3://mybucket/myfile.jsonl - https://mywebsite.com/myfile.jsonl - huggingface://tatsu-lab/alpaca"
+                    },
+                    "uri_params": {
                         "type": "object",
                         "additionalProperties": {
-                            "$ref": "#/components/schemas/ParamType"
-                        }
-                    },
-                    "url": {
-                        "$ref": "#/components/schemas/URL"
-                    },
-                    "provider_dataset_id": {
-                        "type": "string"
-                    },
-                    "provider_id": {
-                        "type": "string"
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        },
+                        "description": "The parameters for the URI. - E.g. If URL is a huggingface dataset, parameters could be uri_params={\"split\": \"train\"}"
                     },
                     "metadata": {
                         "type": "object",
@@ -9283,14 +9311,18 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "The metadata for the dataset. - E.g. {\"description\": \"My dataset\"}"
+                    },
+                    "dataset_id": {
+                        "type": "string",
+                        "description": "The ID of the dataset. If not provided, a random ID will be generated."
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "dataset_id",
-                    "dataset_schema",
-                    "url"
+                    "schema",
+                    "uri"
                 ],
                 "title": "RegisterDatasetRequest"
             },
