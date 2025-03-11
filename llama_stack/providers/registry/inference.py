@@ -34,19 +34,20 @@ def available_providers() -> List[ProviderSpec]:
             provider_type="inline::meta-reference",
             pip_packages=META_REFERENCE_DEPS,
             module="llama_stack.providers.inline.inference.meta_reference",
-            config_class=
-            "llama_stack.providers.inline.inference.meta_reference.MetaReferenceInferenceConfig",
+            config_class="llama_stack.providers.inline.inference.meta_reference.MetaReferenceInferenceConfig",
         ),
         InlineProviderSpec(
             api=Api.inference,
             provider_type="inline::meta-reference-quantized",
-            pip_packages=(META_REFERENCE_DEPS + [
-                "fbgemm-gpu",
-                "torchao==0.5.0",
-            ]),
+            pip_packages=(
+                META_REFERENCE_DEPS
+                + [
+                    "fbgemm-gpu",
+                    "torchao==0.5.0",
+                ]
+            ),
             module="llama_stack.providers.inline.inference.meta_reference",
-            config_class=
-            "llama_stack.providers.inline.inference.meta_reference.MetaReferenceQuantizedInferenceConfig",
+            config_class="llama_stack.providers.inline.inference.meta_reference.MetaReferenceQuantizedInferenceConfig",
         ),
         InlineProviderSpec(
             api=Api.inference,
@@ -55,8 +56,7 @@ def available_providers() -> List[ProviderSpec]:
                 "vllm",
             ],
             module="llama_stack.providers.inline.inference.vllm",
-            config_class=
-            "llama_stack.providers.inline.inference.vllm.VLLMConfig",
+            config_class="llama_stack.providers.inline.inference.vllm.VLLMConfig",
         ),
         InlineProviderSpec(
             api=Api.inference,
@@ -74,8 +74,7 @@ def available_providers() -> List[ProviderSpec]:
                 adapter_type="sample",
                 pip_packages=[],
                 module="llama_stack.providers.remote.inference.sample",
-                config_class=
-                "llama_stack.providers.remote.inference.sample.SampleConfig",
+                config_class="llama_stack.providers.remote.inference.sample.SampleConfig",
             ),
         ),
         remote_provider_spec(
@@ -86,8 +85,7 @@ def available_providers() -> List[ProviderSpec]:
                     "cerebras_cloud_sdk",
                 ],
                 module="llama_stack.providers.remote.inference.cerebras",
-                config_class=
-                "llama_stack.providers.remote.inference.cerebras.CerebrasImplConfig",
+                config_class="llama_stack.providers.remote.inference.cerebras.CerebrasImplConfig",
             ),
         ),
         remote_provider_spec(
@@ -95,8 +93,7 @@ def available_providers() -> List[ProviderSpec]:
             adapter=AdapterSpec(
                 adapter_type="ollama",
                 pip_packages=["ollama", "aiohttp"],
-                config_class=
-                "llama_stack.providers.remote.inference.ollama.OllamaImplConfig",
+                config_class="llama_stack.providers.remote.inference.ollama.OllamaImplConfig",
                 module="llama_stack.providers.remote.inference.ollama",
             ),
         ),
@@ -106,8 +103,7 @@ def available_providers() -> List[ProviderSpec]:
                 adapter_type="vllm",
                 pip_packages=["openai"],
                 module="llama_stack.providers.remote.inference.vllm",
-                config_class=
-                "llama_stack.providers.remote.inference.vllm.VLLMInferenceAdapterConfig",
+                config_class="llama_stack.providers.remote.inference.vllm.VLLMInferenceAdapterConfig",
             ),
         ),
         remote_provider_spec(
@@ -116,8 +112,7 @@ def available_providers() -> List[ProviderSpec]:
                 adapter_type="tgi",
                 pip_packages=["huggingface_hub", "aiohttp"],
                 module="llama_stack.providers.remote.inference.tgi",
-                config_class=
-                "llama_stack.providers.remote.inference.tgi.TGIImplConfig",
+                config_class="llama_stack.providers.remote.inference.tgi.TGIImplConfig",
             ),
         ),
         remote_provider_spec(
@@ -126,8 +121,7 @@ def available_providers() -> List[ProviderSpec]:
                 adapter_type="hf::serverless",
                 pip_packages=["huggingface_hub", "aiohttp"],
                 module="llama_stack.providers.remote.inference.tgi",
-                config_class=
-                "llama_stack.providers.remote.inference.tgi.InferenceAPIImplConfig",
+                config_class="llama_stack.providers.remote.inference.tgi.InferenceAPIImplConfig",
             ),
         ),
         remote_provider_spec(
@@ -136,8 +130,7 @@ def available_providers() -> List[ProviderSpec]:
                 adapter_type="hf::endpoint",
                 pip_packages=["huggingface_hub", "aiohttp"],
                 module="llama_stack.providers.remote.inference.tgi",
-                config_class=
-                "llama_stack.providers.remote.inference.tgi.InferenceEndpointImplConfig",
+                config_class="llama_stack.providers.remote.inference.tgi.InferenceEndpointImplConfig",
             ),
         ),
         remote_provider_spec(
@@ -148,10 +141,8 @@ def available_providers() -> List[ProviderSpec]:
                     "fireworks-ai",
                 ],
                 module="llama_stack.providers.remote.inference.fireworks",
-                config_class=
-                "llama_stack.providers.remote.inference.fireworks.FireworksImplConfig",
-                provider_data_validator=
-                "llama_stack.providers.remote.inference.fireworks.FireworksProviderDataValidator",
+                config_class="llama_stack.providers.remote.inference.fireworks.FireworksImplConfig",
+                provider_data_validator="llama_stack.providers.remote.inference.fireworks.FireworksProviderDataValidator",
             ),
         ),
         remote_provider_spec(
@@ -162,10 +153,8 @@ def available_providers() -> List[ProviderSpec]:
                     "together",
                 ],
                 module="llama_stack.providers.remote.inference.together",
-                config_class=
-                "llama_stack.providers.remote.inference.together.TogetherImplConfig",
-                provider_data_validator=
-                "llama_stack.providers.remote.inference.together.TogetherProviderDataValidator",
+                config_class="llama_stack.providers.remote.inference.together.TogetherImplConfig",
+                provider_data_validator="llama_stack.providers.remote.inference.together.TogetherProviderDataValidator",
             ),
         ),
         remote_provider_spec(
@@ -174,8 +163,7 @@ def available_providers() -> List[ProviderSpec]:
                 adapter_type="bedrock",
                 pip_packages=["boto3"],
                 module="llama_stack.providers.remote.inference.bedrock",
-                config_class=
-                "llama_stack.providers.remote.inference.bedrock.BedrockConfig",
+                config_class="llama_stack.providers.remote.inference.bedrock.BedrockConfig",
             ),
         ),
         remote_provider_spec(
@@ -186,8 +174,7 @@ def available_providers() -> List[ProviderSpec]:
                     "openai",
                 ],
                 module="llama_stack.providers.remote.inference.databricks",
-                config_class=
-                "llama_stack.providers.remote.inference.databricks.DatabricksImplConfig",
+                config_class="llama_stack.providers.remote.inference.databricks.DatabricksImplConfig",
             ),
         ),
         remote_provider_spec(
@@ -198,8 +185,7 @@ def available_providers() -> List[ProviderSpec]:
                     "openai",
                 ],
                 module="llama_stack.providers.remote.inference.nvidia",
-                config_class=
-                "llama_stack.providers.remote.inference.nvidia.NVIDIAConfig",
+                config_class="llama_stack.providers.remote.inference.nvidia.NVIDIAConfig",
             ),
         ),
         remote_provider_spec(
@@ -259,8 +245,17 @@ def available_providers() -> List[ProviderSpec]:
                     "openai",
                 ],
                 module="llama_stack.providers.remote.inference.sambanova",
-                config_class=
-                "llama_stack.providers.remote.inference.sambanova.SambaNovaImplConfig",
+                config_class="llama_stack.providers.remote.inference.sambanova.SambaNovaImplConfig",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
+                adapter_type="passthrough",
+                pip_packages=[],
+                module="llama_stack.providers.remote.inference.passthrough",
+                config_class="llama_stack.providers.remote.inference.passthrough.PassthroughImplConfig",
+                provider_data_validator="llama_stack.providers.remote.inference.passthrough.PassthroughProviderDataValidator",
             ),
         ),
         remote_provider_spec(
@@ -275,16 +270,6 @@ def available_providers() -> List[ProviderSpec]:
                 "llama_stack.providers.remote.inference.centml.CentMLImplConfig",
                 provider_data_validator=
                 "llama_stack.providers.remote.inference.centml.CentMLProviderDataValidator",
-            ),
-        ),
-        remote_provider_spec(
-            api=Api.inference,
-            adapter=AdapterSpec(
-                adapter_type="passthrough",
-                pip_packages=[],
-                module="llama_stack.providers.remote.inference.passthrough",
-                config_class="llama_stack.providers.remote.inference.passthrough.PassthroughImplConfig",
-                provider_data_validator="llama_stack.providers.remote.inference.passthrough.PassthroughProviderDataValidator",
             ),
         ),
     ]
