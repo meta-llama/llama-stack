@@ -135,16 +135,6 @@ models:
   provider_model_id: accounts/fireworks/models/llama-v3p1-405b-instruct
   model_type: llm
 - metadata: {}
-  model_id: accounts/fireworks/models/llama-v3p2-1b-instruct
-  provider_id: fireworks
-  provider_model_id: accounts/fireworks/models/llama-v3p2-1b-instruct
-  model_type: llm
-- metadata: {}
-  model_id: meta-llama/Llama-3.2-1B-Instruct
-  provider_id: fireworks
-  provider_model_id: accounts/fireworks/models/llama-v3p2-1b-instruct
-  model_type: llm
-- metadata: {}
   model_id: accounts/fireworks/models/llama-v3p2-3b-instruct
   provider_id: fireworks
   provider_model_id: accounts/fireworks/models/llama-v3p2-3b-instruct
