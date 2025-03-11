@@ -6,7 +6,6 @@
 
 from typing import Any, AsyncGenerator, Dict, List, Optional
 
-from llama_stack import logcat
 from llama_stack.apis.common.content_types import (
     URL,
     InterleavedContent,
@@ -52,7 +51,10 @@ from llama_stack.apis.tools import (
     ToolRuntime,
 )
 from llama_stack.apis.vector_io import Chunk, QueryChunksResponse, VectorIO
+from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import RoutingTable
+
+logger = get_logger(name=__name__, category="core")
 
 
 class VectorIORouter(VectorIO):
@@ -62,15 +64,15 @@ class VectorIORouter(VectorIO):
         self,
         routing_table: RoutingTable,
     ) -> None:
-        logcat.debug("core", "Initializing VectorIORouter")
+        logger.debug("Initializing VectorIORouter")
         self.routing_table = routing_table
 
     async def initialize(self) -> None:
-        logcat.debug("core", "VectorIORouter.initialize")
+        logger.debug("VectorIORouter.initialize")
         pass
 
     async def shutdown(self) -> None:
-        logcat.debug("core", "VectorIORouter.shutdown")
+        logger.debug("VectorIORouter.shutdown")
         pass
 
     async def register_vector_db(
@@ -81,10 +83,7 @@ class VectorIORouter(VectorIO):
         provider_id: Optional[str] = None,
         provider_vector_db_id: Optional[str] = None,
     ) -> None:
-        logcat.debug(
-            "core",
-            f"VectorIORouter.register_vector_db: {vector_db_id}, {embedding_model}",
-        )
+        logger.debug(f"VectorIORouter.register_vector_db: {vector_db_id}, {embedding_model}")
         await self.routing_table.register_vector_db(
             vector_db_id,
             embedding_model,
@@ -99,8 +98,7 @@ class VectorIORouter(VectorIO):
         chunks: List[Chunk],
         ttl_seconds: Optional[int] = None,
     ) -> None:
-        logcat.debug(
-            "core",
+        logger.debug(
             f"VectorIORouter.insert_chunks: {vector_db_id}, {len(chunks)} chunks, ttl_seconds={ttl_seconds}, chunk_ids={[chunk.metadata['document_id'] for chunk in chunks[:3]]}{' and more...' if len(chunks) > 3 else ''}",
         )
         return await self.routing_table.get_provider_impl(vector_db_id).insert_chunks(vector_db_id, chunks, ttl_seconds)
@@ -111,7 +109,7 @@ class VectorIORouter(VectorIO):
         query: InterleavedContent,
         params: Optional[Dict[str, Any]] = None,
     ) -> QueryChunksResponse:
-        logcat.debug("core", f"VectorIORouter.query_chunks: {vector_db_id}")
+        logger.debug(f"VectorIORouter.query_chunks: {vector_db_id}")
         return await self.routing_table.get_provider_impl(vector_db_id).query_chunks(vector_db_id, query, params)
 
 
@@ -122,15 +120,15 @@ class InferenceRouter(Inference):
         self,
         routing_table: RoutingTable,
     ) -> None:
-        logcat.debug("core", "Initializing InferenceRouter")
+        logger.debug("Initializing InferenceRouter")
         self.routing_table = routing_table
 
     async def initialize(self) -> None:
-        logcat.debug("core", "InferenceRouter.initialize")
+        logger.debug("InferenceRouter.initialize")
         pass
 
     async def shutdown(self) -> None:
-        logcat.debug("core", "InferenceRouter.shutdown")
+        logger.debug("InferenceRouter.shutdown")
         pass
 
     async def register_model(
@@ -141,8 +139,7 @@ class InferenceRouter(Inference):
         metadata: Optional[Dict[str, Any]] = None,
         model_type: Optional[ModelType] = None,
     ) -> None:
-        logcat.debug(
-            "core",
+        logger.debug(
             f"InferenceRouter.register_model: {model_id=} {provider_model_id=} {provider_id=} {metadata=} {model_type=}",
         )
         await self.routing_table.register_model(model_id, provider_model_id, provider_id, metadata, model_type)
@@ -151,7 +148,7 @@ class InferenceRouter(Inference):
         self,
         model_id: str,
         messages: List[Message],
-        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        sampling_params: Optional[SamplingParams] = None,
         response_format: Optional[ResponseFormat] = None,
         tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = None,
@@ -160,10 +157,11 @@ class InferenceRouter(Inference):
         logprobs: Optional[LogProbConfig] = None,
         tool_config: Optional[ToolConfig] = None,
     ) -> AsyncGenerator:
-        logcat.debug(
-            "core",
+        logger.debug(
             f"InferenceRouter.chat_completion: {model_id=}, {stream=}, {messages=}, {tools=}, {tool_config=}, {response_format=}",
         )
+        if sampling_params is None:
+            sampling_params = SamplingParams()
         model = await self.routing_table.get_model(model_id)
         if model is None:
             raise ValueError(f"Model '{model_id}' not found")
@@ -217,13 +215,14 @@ class InferenceRouter(Inference):
         self,
         model_id: str,
         content: InterleavedContent,
-        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        sampling_params: Optional[SamplingParams] = None,
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
-        logcat.debug(
-            "core",
+        if sampling_params is None:
+            sampling_params = SamplingParams()
+        logger.debug(
             f"InferenceRouter.completion: {model_id=}, {stream=}, {content=}, {sampling_params=}, {response_format=}",
         )
         model = await self.routing_table.get_model(model_id)
@@ -253,7 +252,7 @@ class InferenceRouter(Inference):
         output_dimension: Optional[int] = None,
         task_type: Optional[EmbeddingTaskType] = None,
     ) -> EmbeddingsResponse:
-        logcat.debug("core", f"InferenceRouter.embeddings: {model_id}")
+        logger.debug(f"InferenceRouter.embeddings: {model_id}")
         model = await self.routing_table.get_model(model_id)
         if model is None:
             raise ValueError(f"Model '{model_id}' not found")
@@ -273,15 +272,15 @@ class SafetyRouter(Safety):
         self,
         routing_table: RoutingTable,
     ) -> None:
-        logcat.debug("core", "Initializing SafetyRouter")
+        logger.debug("Initializing SafetyRouter")
         self.routing_table = routing_table
 
     async def initialize(self) -> None:
-        logcat.debug("core", "SafetyRouter.initialize")
+        logger.debug("SafetyRouter.initialize")
         pass
 
     async def shutdown(self) -> None:
-        logcat.debug("core", "SafetyRouter.shutdown")
+        logger.debug("SafetyRouter.shutdown")
         pass
 
     async def register_shield(
@@ -291,7 +290,7 @@ class SafetyRouter(Safety):
         provider_id: Optional[str] = None,
         params: Optional[Dict[str, Any]] = None,
     ) -> Shield:
-        logcat.debug("core", f"SafetyRouter.register_shield: {shield_id}")
+        logger.debug(f"SafetyRouter.register_shield: {shield_id}")
         return await self.routing_table.register_shield(shield_id, provider_shield_id, provider_id, params)
 
     async def run_shield(
@@ -300,7 +299,7 @@ class SafetyRouter(Safety):
         messages: List[Message],
         params: Dict[str, Any] = None,
     ) -> RunShieldResponse:
-        logcat.debug("core", f"SafetyRouter.run_shield: {shield_id}")
+        logger.debug(f"SafetyRouter.run_shield: {shield_id}")
         return await self.routing_table.get_provider_impl(shield_id).run_shield(
             shield_id=shield_id,
             messages=messages,
@@ -313,15 +312,15 @@ class DatasetIORouter(DatasetIO):
         self,
         routing_table: RoutingTable,
     ) -> None:
-        logcat.debug("core", "Initializing DatasetIORouter")
+        logger.debug("Initializing DatasetIORouter")
         self.routing_table = routing_table
 
     async def initialize(self) -> None:
-        logcat.debug("core", "DatasetIORouter.initialize")
+        logger.debug("DatasetIORouter.initialize")
         pass
 
     async def shutdown(self) -> None:
-        logcat.debug("core", "DatasetIORouter.shutdown")
+        logger.debug("DatasetIORouter.shutdown")
         pass
 
     async def get_rows_paginated(
@@ -331,8 +330,7 @@ class DatasetIORouter(DatasetIO):
         page_token: Optional[str] = None,
         filter_condition: Optional[str] = None,
     ) -> PaginatedRowsResult:
-        logcat.debug(
-            "core",
+        logger.debug(
             f"DatasetIORouter.get_rows_paginated: {dataset_id}, rows_in_page={rows_in_page}",
         )
         return await self.routing_table.get_provider_impl(dataset_id).get_rows_paginated(
@@ -343,7 +341,7 @@ class DatasetIORouter(DatasetIO):
         )
 
     async def append_rows(self, dataset_id: str, rows: List[Dict[str, Any]]) -> None:
-        logcat.debug("core", f"DatasetIORouter.append_rows: {dataset_id}, {len(rows)} rows")
+        logger.debug(f"DatasetIORouter.append_rows: {dataset_id}, {len(rows)} rows")
         return await self.routing_table.get_provider_impl(dataset_id).append_rows(
             dataset_id=dataset_id,
             rows=rows,
@@ -355,15 +353,15 @@ class ScoringRouter(Scoring):
         self,
         routing_table: RoutingTable,
     ) -> None:
-        logcat.debug("core", "Initializing ScoringRouter")
+        logger.debug("Initializing ScoringRouter")
         self.routing_table = routing_table
 
     async def initialize(self) -> None:
-        logcat.debug("core", "ScoringRouter.initialize")
+        logger.debug("ScoringRouter.initialize")
         pass
 
     async def shutdown(self) -> None:
-        logcat.debug("core", "ScoringRouter.shutdown")
+        logger.debug("ScoringRouter.shutdown")
         pass
 
     async def score_batch(
@@ -372,7 +370,7 @@ class ScoringRouter(Scoring):
         scoring_functions: Dict[str, Optional[ScoringFnParams]] = None,
         save_results_dataset: bool = False,
     ) -> ScoreBatchResponse:
-        logcat.debug("core", f"ScoringRouter.score_batch: {dataset_id}")
+        logger.debug(f"ScoringRouter.score_batch: {dataset_id}")
         res = {}
         for fn_identifier in scoring_functions.keys():
             score_response = await self.routing_table.get_provider_impl(fn_identifier).score_batch(
@@ -393,10 +391,7 @@ class ScoringRouter(Scoring):
         input_rows: List[Dict[str, Any]],
         scoring_functions: Dict[str, Optional[ScoringFnParams]] = None,
     ) -> ScoreResponse:
-        logcat.debug(
-            "core",
-            f"ScoringRouter.score: {len(input_rows)} rows, {len(scoring_functions)} functions",
-        )
+        logger.debug(f"ScoringRouter.score: {len(input_rows)} rows, {len(scoring_functions)} functions")
         res = {}
         # look up and map each scoring function to its provider impl
         for fn_identifier in scoring_functions.keys():
@@ -414,15 +409,15 @@ class EvalRouter(Eval):
         self,
         routing_table: RoutingTable,
     ) -> None:
-        logcat.debug("core", "Initializing EvalRouter")
+        logger.debug("Initializing EvalRouter")
         self.routing_table = routing_table
 
     async def initialize(self) -> None:
-        logcat.debug("core", "EvalRouter.initialize")
+        logger.debug("EvalRouter.initialize")
         pass
 
     async def shutdown(self) -> None:
-        logcat.debug("core", "EvalRouter.shutdown")
+        logger.debug("EvalRouter.shutdown")
         pass
 
     async def run_eval(
@@ -430,7 +425,7 @@ class EvalRouter(Eval):
         benchmark_id: str,
         benchmark_config: BenchmarkConfig,
     ) -> Job:
-        logcat.debug("core", f"EvalRouter.run_eval: {benchmark_id}")
+        logger.debug(f"EvalRouter.run_eval: {benchmark_id}")
         return await self.routing_table.get_provider_impl(benchmark_id).run_eval(
             benchmark_id=benchmark_id,
             benchmark_config=benchmark_config,
@@ -443,7 +438,7 @@ class EvalRouter(Eval):
         scoring_functions: List[str],
         benchmark_config: BenchmarkConfig,
     ) -> EvaluateResponse:
-        logcat.debug("core", f"EvalRouter.evaluate_rows: {benchmark_id}, {len(input_rows)} rows")
+        logger.debug(f"EvalRouter.evaluate_rows: {benchmark_id}, {len(input_rows)} rows")
         return await self.routing_table.get_provider_impl(benchmark_id).evaluate_rows(
             benchmark_id=benchmark_id,
             input_rows=input_rows,
@@ -456,7 +451,7 @@ class EvalRouter(Eval):
         benchmark_id: str,
         job_id: str,
     ) -> Optional[JobStatus]:
-        logcat.debug("core", f"EvalRouter.job_status: {benchmark_id}, {job_id}")
+        logger.debug(f"EvalRouter.job_status: {benchmark_id}, {job_id}")
         return await self.routing_table.get_provider_impl(benchmark_id).job_status(benchmark_id, job_id)
 
     async def job_cancel(
@@ -464,7 +459,7 @@ class EvalRouter(Eval):
         benchmark_id: str,
         job_id: str,
     ) -> None:
-        logcat.debug("core", f"EvalRouter.job_cancel: {benchmark_id}, {job_id}")
+        logger.debug(f"EvalRouter.job_cancel: {benchmark_id}, {job_id}")
         await self.routing_table.get_provider_impl(benchmark_id).job_cancel(
             benchmark_id,
             job_id,
@@ -475,7 +470,7 @@ class EvalRouter(Eval):
         benchmark_id: str,
         job_id: str,
     ) -> EvaluateResponse:
-        logcat.debug("core", f"EvalRouter.job_result: {benchmark_id}, {job_id}")
+        logger.debug(f"EvalRouter.job_result: {benchmark_id}, {job_id}")
         return await self.routing_table.get_provider_impl(benchmark_id).job_result(
             benchmark_id,
             job_id,
@@ -488,7 +483,7 @@ class ToolRuntimeRouter(ToolRuntime):
             self,
             routing_table: RoutingTable,
         ) -> None:
-            logcat.debug("core", "Initializing ToolRuntimeRouter.RagToolImpl")
+            logger.debug("Initializing ToolRuntimeRouter.RagToolImpl")
             self.routing_table = routing_table
 
         async def query(
@@ -497,7 +492,7 @@ class ToolRuntimeRouter(ToolRuntime):
             vector_db_ids: List[str],
             query_config: Optional[RAGQueryConfig] = None,
         ) -> RAGQueryResult:
-            logcat.debug("core", f"ToolRuntimeRouter.RagToolImpl.query: {vector_db_ids}")
+            logger.debug(f"ToolRuntimeRouter.RagToolImpl.query: {vector_db_ids}")
             return await self.routing_table.get_provider_impl("knowledge_search").query(
                 content, vector_db_ids, query_config
             )
@@ -508,9 +503,8 @@ class ToolRuntimeRouter(ToolRuntime):
             vector_db_id: str,
             chunk_size_in_tokens: int = 512,
         ) -> None:
-            logcat.debug(
-                "core",
-                f"ToolRuntimeRouter.RagToolImpl.insert: {vector_db_id}, {len(documents)} documents, chunk_size={chunk_size_in_tokens}",
+            logger.debug(
+                f"ToolRuntimeRouter.RagToolImpl.insert: {vector_db_id}, {len(documents)} documents, chunk_size={chunk_size_in_tokens}"
             )
             return await self.routing_table.get_provider_impl("insert_into_memory").insert(
                 documents, vector_db_id, chunk_size_in_tokens
@@ -520,7 +514,7 @@ class ToolRuntimeRouter(ToolRuntime):
         self,
         routing_table: RoutingTable,
     ) -> None:
-        logcat.debug("core", "Initializing ToolRuntimeRouter")
+        logger.debug("Initializing ToolRuntimeRouter")
         self.routing_table = routing_table
 
         # HACK ALERT this should be in sync with "get_all_api_endpoints()"
@@ -529,15 +523,15 @@ class ToolRuntimeRouter(ToolRuntime):
             setattr(self, f"rag_tool.{method}", getattr(self.rag_tool, method))
 
     async def initialize(self) -> None:
-        logcat.debug("core", "ToolRuntimeRouter.initialize")
+        logger.debug("ToolRuntimeRouter.initialize")
         pass
 
     async def shutdown(self) -> None:
-        logcat.debug("core", "ToolRuntimeRouter.shutdown")
+        logger.debug("ToolRuntimeRouter.shutdown")
         pass
 
     async def invoke_tool(self, tool_name: str, kwargs: Dict[str, Any]) -> Any:
-        logcat.debug("core", f"ToolRuntimeRouter.invoke_tool: {tool_name}")
+        logger.debug(f"ToolRuntimeRouter.invoke_tool: {tool_name}")
         return await self.routing_table.get_provider_impl(tool_name).invoke_tool(
             tool_name=tool_name,
             kwargs=kwargs,
@@ -546,5 +540,5 @@ class ToolRuntimeRouter(ToolRuntime):
     async def list_runtime_tools(
         self, tool_group_id: Optional[str] = None, mcp_endpoint: Optional[URL] = None
     ) -> List[ToolDef]:
-        logcat.debug("core", f"ToolRuntimeRouter.list_runtime_tools: {tool_group_id}")
+        logger.debug(f"ToolRuntimeRouter.list_runtime_tools: {tool_group_id}")
         return await self.routing_table.get_provider_impl(tool_group_id).list_tools(tool_group_id, mcp_endpoint)

@@ -17,7 +17,6 @@ from urllib.parse import urlparse
 
 import httpx
 
-from llama_stack import logcat
 from llama_stack.apis.agents import (
     AgentConfig,
     AgentToolGroup,
@@ -67,6 +66,7 @@ from llama_stack.apis.tools import (
     ToolRuntime,
 )
 from llama_stack.apis.vector_io import VectorIO
+from llama_stack.log import get_logger
 from llama_stack.models.llama.datatypes import (
     BuiltinTool,
     ToolCall,
@@ -87,6 +87,8 @@ TOOLS_ATTACHMENT_KEY_REGEX = re.compile(r"__tools_attachment__=(\{.*?\})")
 MEMORY_QUERY_TOOL = "knowledge_search"
 WEB_SEARCH_TOOL = "web_search"
 RAG_TOOL_GROUP = "builtin::rag"
+
+logger = get_logger(name=__name__, category="agents")
 
 
 class ChatAgent(ShieldRunnerMixin):
@@ -179,7 +181,7 @@ class ChatAgent(ShieldRunnerMixin):
         return messages
 
     async def create_and_execute_turn(self, request: AgentTurnCreateRequest) -> AsyncGenerator:
-        with tracing.span("create_and_execute_turn") as span:
+        async with tracing.span("create_and_execute_turn") as span:
             span.set_attribute("session_id", request.session_id)
             span.set_attribute("agent_id", self.agent_id)
             span.set_attribute("request", request.model_dump_json())
@@ -189,7 +191,7 @@ class ChatAgent(ShieldRunnerMixin):
                 yield chunk
 
     async def resume_turn(self, request: AgentTurnResumeRequest) -> AsyncGenerator:
-        with tracing.span("resume_turn") as span:
+        async with tracing.span("resume_turn") as span:
             span.set_attribute("agent_id", self.agent_id)
             span.set_attribute("session_id", request.session_id)
             span.set_attribute("turn_id", request.turn_id)
@@ -216,13 +218,25 @@ class ChatAgent(ShieldRunnerMixin):
         steps = []
         messages = await self.get_messages_from_turns(turns)
         if is_resume:
-            messages.extend(request.tool_responses)
+            if isinstance(request.tool_responses[0], ToolResponseMessage):
+                tool_response_messages = request.tool_responses
+                tool_responses = [
+                    ToolResponse(call_id=x.call_id, tool_name=x.tool_name, content=x.content)
+                    for x in request.tool_responses
+                ]
+            else:
+                tool_response_messages = [
+                    ToolResponseMessage(call_id=x.call_id, tool_name=x.tool_name, content=x.content)
+                    for x in request.tool_responses
+                ]
+                tool_responses = request.tool_responses
+            messages.extend(tool_response_messages)
             last_turn = turns[-1]
             last_turn_messages = self.turn_to_messages(last_turn)
             last_turn_messages = [
                 x for x in last_turn_messages if isinstance(x, UserMessage) or isinstance(x, ToolResponseMessage)
             ]
-            last_turn_messages.extend(request.tool_responses)
+            last_turn_messages.extend(tool_response_messages)
 
             # get steps from the turn
             steps = last_turn.steps
@@ -238,14 +252,7 @@ class ChatAgent(ShieldRunnerMixin):
                 step_id=(in_progress_tool_call_step.step_id if in_progress_tool_call_step else str(uuid.uuid4())),
                 turn_id=request.turn_id,
                 tool_calls=(in_progress_tool_call_step.tool_calls if in_progress_tool_call_step else []),
-                tool_responses=[
-                    ToolResponse(
-                        call_id=x.call_id,
-                        tool_name=x.tool_name,
-                        content=x.content,
-                    )
-                    for x in request.tool_responses
-                ],
+                tool_responses=tool_responses,
                 completed_at=now,
                 started_at=(in_progress_tool_call_step.started_at if in_progress_tool_call_step else now),
             )
@@ -383,7 +390,7 @@ class ChatAgent(ShieldRunnerMixin):
         shields: List[str],
         touchpoint: str,
     ) -> AsyncGenerator:
-        with tracing.span("run_shields") as span:
+        async with tracing.span("run_shields") as span:
             span.set_attribute("input", [m.model_dump_json() for m in messages])
             if len(shields) == 0:
                 span.set_attribute("output", "no shields")
@@ -501,7 +508,7 @@ class ChatAgent(ShieldRunnerMixin):
             content = ""
             stop_reason = None
 
-            with tracing.span("inference") as span:
+            async with tracing.span("inference") as span:
                 async for chunk in await self.inference_api.chat_completion(
                     self.agent_config.model,
                     input_messages,
@@ -604,7 +611,7 @@ class ChatAgent(ShieldRunnerMixin):
             )
 
             if n_iter >= self.agent_config.max_infer_iters:
-                logcat.info("agents", f"done with MAX iterations ({n_iter}), exiting.")
+                logger.info(f"done with MAX iterations ({n_iter}), exiting.")
                 # NOTE: mark end_of_turn to indicate to client that we are done with the turn
                 # Do not continue the tool call loop after this point
                 message.stop_reason = StopReason.end_of_turn
@@ -612,7 +619,7 @@ class ChatAgent(ShieldRunnerMixin):
                 break
 
             if stop_reason == StopReason.out_of_tokens:
-                logcat.info("agents", "out of token budget, exiting.")
+                logger.info("out of token budget, exiting.")
                 yield message
                 break
 
@@ -626,16 +633,10 @@ class ChatAgent(ShieldRunnerMixin):
                             message.content = [message.content] + output_attachments
                     yield message
                 else:
-                    logcat.debug(
-                        "agents",
-                        f"completion message with EOM (iter: {n_iter}): {str(message)}",
-                    )
+                    logger.debug(f"completion message with EOM (iter: {n_iter}): {str(message)}")
                     input_messages = input_messages + [message]
             else:
-                logcat.debug(
-                    "agents",
-                    f"completion message (iter: {n_iter}) from the model: {str(message)}",
-                )
+                logger.debug(f"completion message (iter: {n_iter}) from the model: {str(message)}")
                 # 1. Start the tool execution step and progress
                 step_id = str(uuid.uuid4())
                 yield AgentTurnResponseStreamChunk(
@@ -684,7 +685,7 @@ class ChatAgent(ShieldRunnerMixin):
                 tool_name = tool_call.tool_name
                 if isinstance(tool_name, BuiltinTool):
                     tool_name = tool_name.value
-                with tracing.span(
+                async with tracing.span(
                     "tool_execution",
                     {
                         "tool_name": tool_name,
@@ -978,7 +979,7 @@ async def attachment_message(tempdir: str, urls: List[URL]) -> ToolResponseMessa
             path = urlparse(uri).path
             basename = os.path.basename(path)
             filepath = f"{tempdir}/{make_random_string() + basename}"
-            logcat.info("agents", f"Downloading {url} -> {filepath}")
+            logger.info(f"Downloading {url} -> {filepath}")
 
             async with httpx.AsyncClient() as client:
                 r = await client.get(uri)
@@ -1018,7 +1019,7 @@ async def execute_tool_call_maybe(
         else:
             name = name.value
 
-    logcat.info("agents", f"executing tool call: {name} with args: {tool_call.arguments}")
+    logger.info(f"executing tool call: {name} with args: {tool_call.arguments}")
     result = await tool_runtime_api.invoke_tool(
         tool_name=name,
         kwargs={
@@ -1028,7 +1029,7 @@ async def execute_tool_call_maybe(
             **toolgroup_args.get(group_name, {}),
         },
     )
-    logcat.debug("agents", f"tool call {name} completed with result: {result}")
+    logger.info(f"tool call {name} completed with result: {result}")
     return result
 
 

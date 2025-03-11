@@ -10,6 +10,7 @@ from typing import List
 
 from llama_stack.apis.inference import Message
 from llama_stack.apis.safety import Safety, SafetyViolation, ViolationLevel
+from llama_stack.providers.utils.telemetry import tracing
 
 log = logging.getLogger(__name__)
 
@@ -32,15 +33,14 @@ class ShieldRunnerMixin:
         self.output_shields = output_shields
 
     async def run_multiple_shields(self, messages: List[Message], identifiers: List[str]) -> None:
-        responses = await asyncio.gather(
-            *[
-                self.safety_api.run_shield(
+        async def run_shield_with_span(identifier: str):
+            async with tracing.span(f"run_shield_{identifier}"):
+                return await self.safety_api.run_shield(
                     shield_id=identifier,
                     messages=messages,
                 )
-                for identifier in identifiers
-            ]
-        )
+
+        responses = await asyncio.gather(*[run_shield_with_span(identifier) for identifier in identifiers])
         for identifier, response in zip(identifiers, responses, strict=False):
             if not response.violation:
                 continue

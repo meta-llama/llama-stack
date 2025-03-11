@@ -6,12 +6,9 @@
 
 import argparse
 import asyncio
-import functools
 import inspect
 import json
-import logging
 import os
-import signal
 import sys
 import traceback
 import warnings
@@ -28,10 +25,12 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, ValidationError
 from typing_extensions import Annotated
 
-from llama_stack import logcat
 from llama_stack.distribution.datatypes import StackRunConfig
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
-from llama_stack.distribution.request_headers import set_request_provider_data
+from llama_stack.distribution.request_headers import (
+    preserve_headers_context_async_generator,
+    request_provider_data_context,
+)
 from llama_stack.distribution.resolver import InvalidProviderError
 from llama_stack.distribution.stack import (
     construct_stack,
@@ -39,6 +38,7 @@ from llama_stack.distribution.stack import (
     replace_env_vars,
     validate_env_pair,
 )
+from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import Api
 from llama_stack.providers.inline.telemetry.meta_reference.config import TelemetryConfig
 from llama_stack.providers.inline.telemetry.meta_reference.telemetry import (
@@ -54,8 +54,7 @@ from .endpoints import get_all_api_endpoints
 
 REPO_ROOT = Path(__file__).parent.parent.parent.parent
 
-logging.basicConfig(level=logging.INFO, format="%(levelname)s %(asctime)s %(name)s:%(lineno)d: %(message)s")
-logcat.init()
+logger = get_logger(name=__name__, category="server")
 
 
 def warn_with_traceback(message, category, filename, lineno, file=None, line=None):
@@ -117,78 +116,32 @@ def translate_exception(exc: Exception) -> Union[HTTPException, RequestValidatio
         )
 
 
-def handle_signal(app, signum, _) -> None:
+async def shutdown(app):
+    """Initiate a graceful shutdown of the application.
+
+    Handled by the lifespan context manager. The shutdown process involves
+    shutting down all implementations registered in the application.
     """
-    Handle incoming signals and initiate a graceful shutdown of the application.
-
-    This function is intended to be used as a signal handler for various signals
-    (e.g., SIGINT, SIGTERM). Upon receiving a signal, it will print a message
-    indicating the received signal and initiate a shutdown process.
-
-    Args:
-        app: The application instance containing implementations to be shut down.
-        signum (int): The signal number received.
-        frame: The current stack frame (not used in this function).
-
-    The shutdown process involves:
-        - Shutting down all implementations registered in the application.
-        - Gathering all running asyncio tasks.
-        - Cancelling all gathered tasks.
-        - Waiting for all tasks to finish.
-        - Stopping the event loop.
-
-    Note:
-        This function schedules the shutdown process as an asyncio task and does
-        not block the current execution.
-    """
-    signame = signal.Signals(signum).name
-    logcat.info("server", f"Received signal {signame} ({signum}). Exiting gracefully...")
-
-    async def shutdown():
+    for impl in app.__llama_stack_impls__.values():
+        impl_name = impl.__class__.__name__
+        logger.info("Shutting down %s", impl_name)
         try:
-            # Gracefully shut down implementations
-            for impl in app.__llama_stack_impls__.values():
-                impl_name = impl.__class__.__name__
-                logcat.info("server", f"Shutting down {impl_name}")
-                try:
-                    if hasattr(impl, "shutdown"):
-                        await asyncio.wait_for(impl.shutdown(), timeout=5)
-                    else:
-                        logcat.warning("server", f"No shutdown method for {impl_name}")
-                except asyncio.TimeoutError:
-                    logcat.exception("server", f"Shutdown timeout for {impl_name}")
-                except Exception as e:
-                    logcat.exception("server", f"Failed to shutdown {impl_name}: {e}")
-
-            # Gather all running tasks
-            loop = asyncio.get_running_loop()
-            tasks = [task for task in asyncio.all_tasks(loop) if task is not asyncio.current_task()]
-
-            # Cancel all tasks
-            for task in tasks:
-                task.cancel()
-
-            # Wait for all tasks to finish
-            try:
-                await asyncio.wait_for(asyncio.gather(*tasks, return_exceptions=True), timeout=10)
-            except asyncio.TimeoutError:
-                logcat.exception("server", "Timeout while waiting for tasks to finish")
-        except asyncio.CancelledError:
-            pass
-        finally:
-            loop.stop()
-
-    loop = asyncio.get_running_loop()
-    loop.create_task(shutdown())
+            if hasattr(impl, "shutdown"):
+                await asyncio.wait_for(impl.shutdown(), timeout=5)
+            else:
+                logger.warning("No shutdown method for %s", impl_name)
+        except asyncio.TimeoutError:
+            logger.exception("Shutdown timeout for %s ", impl_name, exc_info=True)
+        except (Exception, asyncio.CancelledError) as e:
+            logger.exception("Failed to shutdown %s: %s", impl_name, {e})
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logcat.info("server", "Starting up")
+    logger.info("Starting up")
     yield
-    logcat.info("server", "Shutting down")
-    for impl in app.__llama_stack_impls__.values():
-        await impl.shutdown()
+    logger.info("Shutting down")
+    await shutdown(app)
 
 
 def is_streaming_request(func_name: str, request: Request, **kwargs):
@@ -204,15 +157,14 @@ async def maybe_await(value):
 
 async def sse_generator(event_gen):
     try:
-        event_gen = await event_gen
-        async for item in event_gen:
+        async for item in await event_gen:
             yield create_sse_event(item)
             await asyncio.sleep(0.01)
     except asyncio.CancelledError:
-        logcat.info("server", "Generator cancelled")
+        logger.info("Generator cancelled")
         await event_gen.aclose()
     except Exception as e:
-        logcat.exception("server", "Error in sse_generator")
+        logger.exception("Error in sse_generator")
         yield create_sse_event(
             {
                 "error": {
@@ -224,18 +176,20 @@ async def sse_generator(event_gen):
 
 def create_dynamic_typed_route(func: Any, method: str, route: str):
     async def endpoint(request: Request, **kwargs):
-        set_request_provider_data(request.headers)
+        # Use context manager for request provider data
+        with request_provider_data_context(request.headers):
+            is_streaming = is_streaming_request(func.__name__, request, **kwargs)
 
-        is_streaming = is_streaming_request(func.__name__, request, **kwargs)
-        try:
-            if is_streaming:
-                return StreamingResponse(sse_generator(func(**kwargs)), media_type="text/event-stream")
-            else:
-                value = func(**kwargs)
-                return await maybe_await(value)
-        except Exception as e:
-            logcat.exception("server", f"Error in {func.__name__}")
-            raise translate_exception(e) from e
+            try:
+                if is_streaming:
+                    gen = preserve_headers_context_async_generator(sse_generator(func(**kwargs)))
+                    return StreamingResponse(gen, media_type="text/event-stream")
+                else:
+                    value = func(**kwargs)
+                    return await maybe_await(value)
+            except Exception as e:
+                logger.exception(f"Error executing endpoint {route=} {method=}")
+                raise translate_exception(e) from e
 
     sig = inspect.signature(func)
 
@@ -264,7 +218,7 @@ class TracingMiddleware:
         self.app = app
 
     async def __call__(self, scope, receive, send):
-        path = scope["path"]
+        path = scope.get("path", "")
         await start_trace(path, {"__location__": "server"})
         try:
             return await self.app(scope, receive, send)
@@ -313,8 +267,6 @@ class ClientVersionMiddleware:
 
 
 def main():
-    logcat.init()
-
     """Start the LlamaStack server."""
     parser = argparse.ArgumentParser(description="Start the LlamaStack server.")
     parser.add_argument(
@@ -354,10 +306,10 @@ def main():
         for env_pair in args.env:
             try:
                 key, value = validate_env_pair(env_pair)
-                logcat.info("server", f"Setting CLI environment variable {key} => {value}")
+                logger.info(f"Setting CLI environment variable {key} => {value}")
                 os.environ[key] = value
             except ValueError as e:
-                logcat.error("server", f"Error: {str(e)}")
+                logger.error(f"Error: {str(e)}")
                 sys.exit(1)
 
     if args.yaml_config:
@@ -365,12 +317,12 @@ def main():
         config_file = Path(args.yaml_config)
         if not config_file.exists():
             raise ValueError(f"Config file {config_file} does not exist")
-        logcat.info("server", f"Using config file: {config_file}")
+        logger.info(f"Using config file: {config_file}")
     elif args.template:
         config_file = Path(REPO_ROOT) / "llama_stack" / "templates" / args.template / "run.yaml"
         if not config_file.exists():
             raise ValueError(f"Template {args.template} does not exist")
-        logcat.info("server", f"Using template {args.template} config file: {config_file}")
+        logger.info(f"Using template {args.template} config file: {config_file}")
     else:
         raise ValueError("Either --yaml-config or --template must be provided")
 
@@ -378,10 +330,9 @@ def main():
         config = replace_env_vars(yaml.safe_load(fp))
         config = StackRunConfig(**config)
 
-    logcat.info("server", "Run configuration:")
+    logger.info("Run configuration:")
     safe_config = redact_sensitive_fields(config.model_dump())
-    for log_line in yaml.dump(safe_config, indent=2).split("\n"):
-        logcat.info("server", log_line)
+    logger.info(yaml.dump(safe_config, indent=2))
 
     app = FastAPI(lifespan=lifespan)
     app.add_middleware(TracingMiddleware)
@@ -391,7 +342,7 @@ def main():
     try:
         impls = asyncio.run(construct_stack(config))
     except InvalidProviderError as e:
-        logcat.error("server", f"Error: {str(e)}")
+        logger.error(f"Error: {str(e)}")
         sys.exit(1)
 
     if Api.telemetry in impls:
@@ -436,12 +387,10 @@ def main():
                     )
                 )
 
-    logcat.debug("server", f"serving APIs: {apis_to_serve}")
+    logger.debug(f"serving APIs: {apis_to_serve}")
 
     app.exception_handler(RequestValidationError)(global_exception_handler)
     app.exception_handler(Exception)(global_exception_handler)
-    signal.signal(signal.SIGINT, functools.partial(handle_signal, app))
-    signal.signal(signal.SIGTERM, functools.partial(handle_signal, app))
 
     app.__llama_stack_impls__ = impls
 
@@ -463,15 +412,16 @@ def main():
             "ssl_keyfile": keyfile,
             "ssl_certfile": certfile,
         }
-        logcat.info("server", f"HTTPS enabled with certificates:\n  Key: {keyfile}\n  Cert: {certfile}")
+        logger.info(f"HTTPS enabled with certificates:\n  Key: {keyfile}\n  Cert: {certfile}")
 
     listen_host = ["::", "0.0.0.0"] if not args.disable_ipv6 else "0.0.0.0"
-    logcat.info("server", f"Listening on {listen_host}:{port}")
+    logger.info(f"Listening on {listen_host}:{port}")
 
     uvicorn_config = {
         "app": app,
         "host": listen_host,
         "port": port,
+        "lifespan": "on",
     }
     if ssl_config:
         uvicorn_config.update(ssl_config)

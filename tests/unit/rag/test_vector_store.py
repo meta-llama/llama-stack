@@ -15,6 +15,8 @@ from llama_stack.apis.tools import RAGDocument
 from llama_stack.providers.utils.memory.vector_store import URL, content_from_doc
 
 DUMMY_PDF_PATH = Path(os.path.abspath(__file__)).parent / "fixtures" / "dummy.pdf"
+# Depending on the machine, this can get parsed a couple of ways
+DUMMY_PDF_TEXT_CHOICES = ["Dummy PDF file", "Dumm y PDF file"]
 
 
 def read_file(file_path: str) -> bytes:
@@ -45,7 +47,7 @@ class TestVectorStore:
             metadata={},
         )
         content = await content_from_doc(doc)
-        assert content == "Dumm y PDF file"
+        assert content in DUMMY_PDF_TEXT_CHOICES
 
     @pytest.mark.asyncio
     async def test_downloads_pdf_and_returns_content(self):
@@ -58,7 +60,7 @@ class TestVectorStore:
             metadata={},
         )
         content = await content_from_doc(doc)
-        assert content == "Dumm y PDF file"
+        assert content in DUMMY_PDF_TEXT_CHOICES
 
     @pytest.mark.asyncio
     async def test_downloads_pdf_and_returns_content_with_url_object(self):
@@ -73,4 +75,4 @@ class TestVectorStore:
             metadata={},
         )
         content = await content_from_doc(doc)
-        assert content == "Dumm y PDF file"
+        assert content in DUMMY_PDF_TEXT_CHOICES

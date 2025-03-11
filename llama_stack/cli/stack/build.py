@@ -16,7 +16,7 @@ class StackBuild(Subcommand):
             "build",
             prog="llama stack build",
             description="Build a Llama stack container",
-            formatter_class=argparse.RawTextHelpFormatter,
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         )
         self._add_arguments()
         self.parser.set_defaults(func=self._run_stack_build_command)

@@ -7,7 +7,10 @@ import json
 import logging
 from typing import AsyncGenerator, List, Optional, Union
 
-from openai import OpenAI
+from openai import AsyncOpenAI
+from openai.types.chat.chat_completion_chunk import (
+    ChatCompletionChunk as OpenAIChatCompletionChunk,
+)
 
 from llama_stack.apis.common.content_types import (
     InterleavedContent,
@@ -49,7 +52,6 @@ from llama_stack.providers.utils.inference.model_registry import (
     build_hf_repo_model_entry,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
-    OpenAICompatCompletionResponse,
     UnparseableToolCall,
     convert_message_to_openai_dict,
     convert_tool_call,
@@ -155,11 +157,14 @@ def _convert_to_vllm_finish_reason(finish_reason: str) -> StopReason:
 
 
 async def _process_vllm_chat_completion_stream_response(
-    stream: AsyncGenerator[OpenAICompatCompletionResponse, None],
+    stream: AsyncGenerator[OpenAIChatCompletionChunk, None],
 ) -> AsyncGenerator:
     event_type = ChatCompletionResponseEventType.start
     tool_call_buf = UnparseableToolCall()
     async for chunk in stream:
+        if not chunk.choices:
+            log.warning("vLLM failed to generation any completions - check the vLLM server logs for an error.")
+            continue
         choice = chunk.choices[0]
         if choice.finish_reason:
             args_str = tool_call_buf.arguments
@@ -224,7 +229,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
 
     async def initialize(self) -> None:
         log.info(f"Initializing VLLM client with base_url={self.config.url}")
-        self.client = OpenAI(base_url=self.config.url, api_key=self.config.api_token)
+        self.client = AsyncOpenAI(base_url=self.config.url, api_key=self.config.api_token)
 
     async def shutdown(self) -> None:
         pass
@@ -236,11 +241,13 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         self,
         model_id: str,
         content: InterleavedContent,
-        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        sampling_params: Optional[SamplingParams] = None,
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> Union[CompletionResponse, CompletionResponseStreamChunk]:
+        if sampling_params is None:
+            sampling_params = SamplingParams()
         model = await self.model_store.get_model(model_id)
         request = CompletionRequest(
             model=model.provider_resource_id,
@@ -259,7 +266,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         self,
         model_id: str,
         messages: List[Message],
-        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        sampling_params: Optional[SamplingParams] = None,
         response_format: Optional[ResponseFormat] = None,
         tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
@@ -268,6 +275,8 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         logprobs: Optional[LogProbConfig] = None,
         tool_config: Optional[ToolConfig] = None,
     ) -> AsyncGenerator:
+        if sampling_params is None:
+            sampling_params = SamplingParams()
         model = await self.model_store.get_model(model_id)
         # This is to be consistent with OpenAI API and support vLLM <= v0.6.3
         # References:
@@ -291,10 +300,10 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
             return await self._nonstream_chat_completion(request, self.client)
 
     async def _nonstream_chat_completion(
-        self, request: ChatCompletionRequest, client: OpenAI
+        self, request: ChatCompletionRequest, client: AsyncOpenAI
     ) -> ChatCompletionResponse:
         params = await self._get_params(request)
-        r = client.chat.completions.create(**params)
+        r = await client.chat.completions.create(**params)
         choice = r.choices[0]
         result = ChatCompletionResponse(
             completion_message=CompletionMessage(
@@ -306,17 +315,10 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         )
         return result
 
-    async def _stream_chat_completion(self, request: ChatCompletionRequest, client: OpenAI) -> AsyncGenerator:
+    async def _stream_chat_completion(self, request: ChatCompletionRequest, client: AsyncOpenAI) -> AsyncGenerator:
         params = await self._get_params(request)
 
-        # TODO: Can we use client.completions.acreate() or maybe there is another way to directly create an async
-        #  generator so this wrapper is not necessary?
-        async def _to_async_generator():
-            s = client.chat.completions.create(**params)
-            for chunk in s:
-                yield chunk
-
-        stream = _to_async_generator()
+        stream = await client.chat.completions.create(**params)
         if len(request.tools) > 0:
             res = _process_vllm_chat_completion_stream_response(stream)
         else:
@@ -326,26 +328,20 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
 
     async def _nonstream_completion(self, request: CompletionRequest) -> CompletionResponse:
         params = await self._get_params(request)
-        r = self.client.completions.create(**params)
+        r = await self.client.completions.create(**params)
         return process_completion_response(r)
 
     async def _stream_completion(self, request: CompletionRequest) -> AsyncGenerator:
         params = await self._get_params(request)
 
-        # Wrapper for async generator similar
-        async def _to_async_generator():
-            stream = self.client.completions.create(**params)
-            for chunk in stream:
-                yield chunk
-
-        stream = _to_async_generator()
+        stream = await self.client.completions.create(**params)
         async for chunk in process_completion_stream_response(stream):
             yield chunk
 
     async def register_model(self, model: Model) -> Model:
         model = await self.register_helper.register_model(model)
-        res = self.client.models.list()
-        available_models = [m.id for m in res]
+        res = await self.client.models.list()
+        available_models = [m.id async for m in res]
         if model.provider_resource_id not in available_models:
             raise ValueError(
                 f"Model {model.provider_resource_id} is not being served by vLLM. "
@@ -401,7 +397,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         assert model.metadata.get("embedding_dimension")
         kwargs["dimensions"] = model.metadata.get("embedding_dimension")
         assert all(not content_has_media(content) for content in contents), "VLLM does not support media for embeddings"
-        response = self.client.embeddings.create(
+        response = await self.client.embeddings.create(
             model=model.provider_resource_id,
             input=[interleaved_content_as_str(content) for content in contents],
             **kwargs,

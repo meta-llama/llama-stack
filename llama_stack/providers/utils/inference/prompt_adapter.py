@@ -8,14 +8,12 @@ import asyncio
 import base64
 import io
 import json
-import logging
 import re
 from typing import List, Optional, Tuple, Union
 
 import httpx
 from PIL import Image as PIL_Image
 
-from llama_stack import logcat
 from llama_stack.apis.common.content_types import (
     ImageContentItem,
     InterleavedContent,
@@ -34,6 +32,7 @@ from llama_stack.apis.inference import (
     ToolDefinition,
     UserMessage,
 )
+from llama_stack.log import get_logger
 from llama_stack.models.llama.datatypes import (
     ModelFamily,
     RawContent,
@@ -58,7 +57,7 @@ from llama_stack.models.llama.llama3.tokenizer import Tokenizer
 from llama_stack.models.llama.sku_list import resolve_model
 from llama_stack.providers.utils.inference import supported_inference_models
 
-log = logging.getLogger(__name__)
+log = get_logger(name=__name__, category="inference")
 
 
 class ChatCompletionRequestWithRawContent(ChatCompletionRequest):
@@ -464,7 +463,7 @@ def _get_tool_choice_prompt(tool_choice: ToolChoice | str, tools: List[ToolDefin
 def get_default_tool_prompt_format(model: str) -> ToolPromptFormat:
     llama_model = resolve_model(model)
     if llama_model is None:
-        logcat.warning("inference", f"Could not resolve model {model}, defaulting to json tool prompt format")
+        log.warning(f"Could not resolve model {model}, defaulting to json tool prompt format")
         return ToolPromptFormat.json
 
     if llama_model.model_family == ModelFamily.llama3_1 or (

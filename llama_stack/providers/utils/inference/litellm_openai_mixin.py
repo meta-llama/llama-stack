@@ -8,7 +8,6 @@ from typing import AsyncGenerator, AsyncIterator, List, Optional, Union
 
 import litellm
 
-from llama_stack import logcat
 from llama_stack.apis.common.content_types import (
     InterleavedContent,
     InterleavedContentItem,
@@ -33,6 +32,7 @@ from llama_stack.apis.inference import (
 )
 from llama_stack.apis.models.models import Model
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
+from llama_stack.log import get_logger
 from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
 )
@@ -46,6 +46,8 @@ from llama_stack.providers.utils.inference.openai_compat import (
 from llama_stack.providers.utils.inference.prompt_adapter import (
     interleaved_content_as_str,
 )
+
+logger = get_logger(name=__name__, category="inference")
 
 
 class LiteLLMOpenAIMixin(
@@ -74,7 +76,7 @@ class LiteLLMOpenAIMixin(
         self,
         model_id: str,
         content: InterleavedContent,
-        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        sampling_params: Optional[SamplingParams] = None,
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
@@ -85,7 +87,7 @@ class LiteLLMOpenAIMixin(
         self,
         model_id: str,
         messages: List[Message],
-        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        sampling_params: Optional[SamplingParams] = None,
         tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
         tool_prompt_format: Optional[ToolPromptFormat] = None,
@@ -94,6 +96,8 @@ class LiteLLMOpenAIMixin(
         logprobs: Optional[LogProbConfig] = None,
         tool_config: Optional[ToolConfig] = None,
     ) -> Union[ChatCompletionResponse, AsyncIterator[ChatCompletionResponseStreamChunk]]:
+        if sampling_params is None:
+            sampling_params = SamplingParams()
         model = await self.model_store.get_model(model_id)
         request = ChatCompletionRequest(
             model=model.provider_resource_id,
@@ -107,8 +111,7 @@ class LiteLLMOpenAIMixin(
         )
 
         params = await self._get_params(request)
-        logcat.debug("inference", f"params to litellm (openai compat): {params}")
-
+        logger.debug(f"params to litellm (openai compat): {params}")
         # unfortunately, we need to use synchronous litellm.completion here because litellm
         # caches various httpx.client objects in a non-eventloop aware manner
         response = litellm.completion(**params)
