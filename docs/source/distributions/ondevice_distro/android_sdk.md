@@ -58,7 +58,7 @@ Breaking down the demo app, this section will show the core pieces that are used
 ### Setup Remote Inferencing
 Start a Llama Stack server on localhost. Here is an example of how you can do this using the firework.ai distribution:
 ```
-conda create -n stack-fireworks python=3.10 
+conda create -n stack-fireworks python=3.10
 conda activate stack-fireworks
 pip install --no-cache llama-stack==0.1.4
 llama stack build --template fireworks --image-type conda
