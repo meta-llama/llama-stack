@@ -4,12 +4,12 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any
+from typing import Any, Dict
 
 from .config import VLLMConfig
 
 
-async def get_provider_impl(config: VLLMConfig, _deps) -> Any:
+async def get_provider_impl(config: VLLMConfig, _deps: Dict[str, Any]):
     from .vllm import VLLMInferenceImpl
 
     impl = VLLMInferenceImpl(config)
