@@ -46,6 +46,7 @@ from llama_stack.distribution.stack import (
 )
 from llama_stack.distribution.utils.exec import in_notebook
 from llama_stack.providers.utils.telemetry.tracing import (
+    CURRENT_TRACE_CONTEXT,
     end_trace,
     setup_logger,
     start_trace,
@@ -54,6 +55,8 @@ from llama_stack.providers.utils.telemetry.tracing import (
 logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
+
+trace_context = None
 
 
 def convert_pydantic_to_json_value(value: Any) -> Any:
@@ -156,8 +159,11 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
 
             def sync_generator():
                 try:
+                    global trace_context
                     async_stream = loop.run_until_complete(self.async_client.request(*args, **kwargs))
                     while True:
+                        if trace_context:
+                            CURRENT_TRACE_CONTEXT.set(trace_context)
                         chunk = loop.run_until_complete(async_stream.__anext__())
                         yield chunk
                 except StopAsyncIteration:
@@ -376,6 +382,8 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
 
         async def gen():
             await start_trace(options.url, {"__location__": "library_client"})
+            global trace_context
+            trace_context = CURRENT_TRACE_CONTEXT.get()
             try:
                 async for chunk in await func(**body):
                     data = json.dumps(convert_pydantic_to_json_value(chunk))
