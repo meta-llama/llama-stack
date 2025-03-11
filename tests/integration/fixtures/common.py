@@ -34,6 +34,7 @@ def provider_data():
         "GEMINI_API_KEY": "gemini_api_key",
         "OPENAI_API_KEY": "openai_api_key",
         "TOGETHER_API_KEY": "together_api_key",
+        "CENTML_API_KEY": "centml_api_key",
         "ANTHROPIC_API_KEY": "anthropic_api_key",
         "GROQ_API_KEY": "groq_api_key",
         "WOLFRAM_ALPHA_API_KEY": "wolfram_alpha_api_key",

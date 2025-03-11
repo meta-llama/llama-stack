@@ -8,7 +8,6 @@ from typing import AsyncGenerator, List, Optional, Union
 
 from openai import OpenAI
 
-from llama_stack import logcat
 from llama_models.datatypes import CoreModelId
 from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.tokenizer import Tokenizer
@@ -60,6 +59,10 @@ MODEL_ALIASES = [
     build_model_entry(
         "meta-llama/Llama-3.2-3B-Instruct",
         CoreModelId.llama3_2_3b_instruct.value,
+    ),
+    build_model_entry(
+        "meta-llama/Llama-3.3-70B-Instruct",
+        CoreModelId.llama3_3_70b_instruct.value,
     ),
 ]
 
@@ -254,7 +257,6 @@ class CentMLInferenceAdapter(ModelRegistryHelper, Inference,
             request.stream,
             **self._build_options(request.sampling_params, request.logprobs, request.response_format),
         }
-        logcat.debug("inference", f"params to centml: {params}")
         return params
 
     def _build_options(

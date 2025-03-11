@@ -12,7 +12,7 @@ from llama_stack.models.llama.sku_list import resolve_model
 
 from ..test_cases.test_case import TestCase
 
-PROVIDER_LOGPROBS_TOP_K = {"remote::together", "remote::fireworks", "remote::vllm"}
+PROVIDER_LOGPROBS_TOP_K = {"remote::together", "remote::fireworks", "remote::vllm", "remote::centml"}
 
 
 def skip_if_model_doesnt_support_completion(client_with_models, model_id):
