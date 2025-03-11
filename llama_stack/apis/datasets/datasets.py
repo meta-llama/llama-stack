@@ -13,7 +13,6 @@ from llama_stack.apis.resource import Resource, ResourceType
 from llama_stack.schema_utils import json_schema_type, webmethod
 
 
-@json_schema_type
 class Schema(Enum):
     """
     Schema of the dataset. Each type has a different column format.
