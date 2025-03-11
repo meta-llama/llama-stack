@@ -35,8 +35,7 @@ Current RAG implementations use embedding-based similarity search to retrieve do
 Existing RAG systems efficiently index and retrieve document chunks from vector stores, but they often lack a mechanism to refine initial results. This can lead to suboptimal context for LLMs and hinder overall performance. The case for re-ranking is especially strong for enterprise users relying on legacy keyword search systems, where significant investments have already been made in content synchronization and indexing. In these environments, re-ranking can substantially improve accuracy by refining outputs from established search infrastructure. While new vector stores using state-of-the-art dense models also benefit from re-ranking, the improvements tend to be less pronounced and may not justify the additional complexity and latency. Moreover, different operational needs mean that some users prefer a managed API solution, while others require inline control for low latency or data privacy.
 
 ## Proposed Reranking Solution
-![My Image](https://drive.google.com/uc?id=115BSpFE3UBmEk7ven5Jq4H7EZd6dMD6U)
-
+![Figure 1: Model Life Cycle](../../docs/resources/rerank_api_flowchart.png)
 ## 4.1. Extended API Endpoints
 
 ### 4.1.1. Query Endpoint
