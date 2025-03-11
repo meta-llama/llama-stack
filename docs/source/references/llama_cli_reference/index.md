@@ -1,6 +1,6 @@
 # llama (server-side) CLI Reference
 
-The `llama` CLI tool helps you setup and use the Llama Stack. It should be available on your path after installing the `llama-stack` package.
+The `llama` CLI tool helps you set up and use the Llama Stack. The CLI is available on your path after installing the `llama-stack` package.
 
 ## Installation
 
@@ -27,9 +27,9 @@ You have two ways to install Llama Stack:
 
 
 ## `llama` subcommands
-1. `download`: `llama` cli tools supports downloading the model from Meta or Hugging Face.
-2. `model`: Lists available models and their properties.
-3. `stack`: Allows you to build and run a Llama Stack server. You can read more about this [here](../../distributions/building_distro).
+1. `download`: Supports downloading models from Meta or Hugging Face.  [Downloading models](#downloading-models)
+2. `model`: Lists available models and their properties. [Understanding models](#understand-the-models)
+3. `stack`: Allows you to build a stack using the `llama stack` distribution and run a Llama Stack server. You can read more about how to build a Llama Stack distribution in the [Build your own Distribution](../../distributions/building_distro) documentation.
 
 ### Sample Usage
 
@@ -117,7 +117,7 @@ You should see a table like this:
 +----------------------------------+------------------------------------------+----------------+
 ```
 
-To download models, you can use the llama download command.
+To download models, you can use the `llama download` command.
 
 ### Downloading from [Meta](https://llama.meta.com/llama-downloads/)
 
@@ -191,7 +191,7 @@ You should see a table like this:
 The `llama model` command helps you explore the model’s interface.
 
 1. `download`: Download the model from different sources. (meta, huggingface)
-2. `list`: Lists all the models available for download with hardware requirements to deploy the models.
+2. `list`: Lists all the models available for download with hardware requirements for deploying the models.
 3. `prompt-format`: Show llama model message formats.
 4. `describe`: Describes all the properties of the model.
 
@@ -262,13 +262,12 @@ llama model prompt-format -m Llama3.2-3B-Instruct
 ![alt text](../../../resources/prompt-format.png)
 
 
-
 You will be shown a Markdown formatted description of the model interface and how prompts / messages are formatted for various scenarios.
 
 **NOTE**: Outputs in terminal are color printed to show special tokens.
 
 ### Remove model
-You can run `llama model remove` to remove unecessary model:
+You can run `llama model remove` to remove an unnecessary model:
 
 ```
 llama model remove -m Llama-Guard-3-8B-int8
