@@ -80,6 +80,15 @@ def available_providers() -> List[ProviderSpec]:
         remote_provider_spec(
             api=Api.inference,
             adapter=AdapterSpec(
+                adapter_type="ramalama",
+                pip_packages=["ramalama", "aiohttp"],
+                config_class="llama_stack.providers.remote.inference.ramalama.RamalamaImplConfig",
+                module="llama_stack.providers.remote.inference.ramalama",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
                 adapter_type="vllm",
                 pip_packages=["openai"],
                 module="llama_stack.providers.remote.inference.vllm",

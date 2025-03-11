@@ -306,6 +306,7 @@ async def instantiate_provider(
     additional_protocols = additional_protocols_map()
 
     provider_spec = provider.spec
+
     if not hasattr(provider_spec, "module"):
         raise AttributeError(f"ProviderSpec of type {type(provider_spec)} does not have a 'module' attribute")
 
