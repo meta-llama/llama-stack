@@ -217,16 +217,15 @@ client = LlamaStackClient(
     base_url=f"http://localhost:8321",
     provider_data = {"tavily_search_api_key": "your_TAVILY_SEARCH_API_KEY"})  
 
-agent_config = AgentConfig(
+agent = Agent(
+    client, 
     model="meta-llama/Llama-3.2-3B-Instruct",
     instructions=(
         "You are a highly knowledgeable and helpful web search assistant. "
-        "Your primary goal is to provide accurate and reliable information to the user. "
         "Whenever you encounter a query, make sure to use the websearch tools to look up the most current and precise information available. "
     ),
-    toolgroups=["builtin::websearch"], 
-)
-agent = Agent(client, agent_config)
+    tools=["builtin::websearch"], 
+    )
 
 session_id = agent.create_session("websearch-session")
 
@@ -245,15 +244,17 @@ from llama_stack_client.types.agent_create_params import AgentConfig
 from llama_stack_client.lib.agents.event_logger import EventLogger
 from llama_stack_client import LlamaStackClient
 
-client = LlamaStackClient(base_url=f"http://localhost:8321")  
+client = LlamaStackClient(
+        base_url=f"http://localhost:8321", 
+        provider_data = {"wolfram_alpha_api_key": "your_wolfram_api_key"}
+    )
 
-agent_config = AgentConfig(
+agent = Agent(
+    client, 
     model="meta-llama/Llama-3.2-3B-Instruct",
     instructions="You are a helpful wolfram_alpha assistant, use wolfram_alpha tool as external source validation.",
-    toolgroups=["builtin::wolfram_alpha"],
-    wolfram_api_key="your_WOLFRAM_ALPHA_API_KEY",  
-)
-agent = Agent(client, agent_config)
+    tools=["builtin::wolfram_alpha"],
+    )
 
 session_id = agent.create_session("wolframa-alpha-session")
 
