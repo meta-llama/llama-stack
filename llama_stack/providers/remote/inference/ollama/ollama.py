@@ -4,13 +4,12 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import logging
+
 from typing import AsyncGenerator, List, Optional, Union
 
 import httpx
 from ollama import AsyncClient
 
-from llama_stack import logcat
 from llama_stack.apis.common.content_types import (
     ImageContentItem,
     InterleavedContent,
@@ -35,6 +34,7 @@ from llama_stack.apis.inference import (
     ToolPromptFormat,
 )
 from llama_stack.apis.models import Model, ModelType
+from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
@@ -59,7 +59,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 
 from .models import model_entries
 
-log = logging.getLogger(__name__)
+logger = get_logger(name=__name__, category="inference")
 
 
 class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
@@ -72,7 +72,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         return AsyncClient(host=self.url)
 
     async def initialize(self) -> None:
-        log.info(f"checking connectivity to Ollama at `{self.url}`...")
+        logger.info(f"checking connectivity to Ollama at `{self.url}`...")
         try:
             await self.client.ps()
         except httpx.ConnectError as e:
@@ -214,7 +214,8 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
             "options": sampling_options,
             "stream": request.stream,
         }
-        logcat.debug("inference", f"params to ollama: {params}")
+        logger.debug(f"params to ollama: {params}")
+
         return params
 
     async def _nonstream_chat_completion(self, request: ChatCompletionRequest) -> ChatCompletionResponse:
@@ -290,7 +291,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
     async def register_model(self, model: Model) -> Model:
         model = await self.register_helper.register_model(model)
         if model.model_type == ModelType.embedding:
-            log.info(f"Pulling embedding model `{model.provider_resource_id}` if necessary...")
+            logger.info(f"Pulling embedding model `{model.provider_resource_id}` if necessary...")
             await self.client.pull(model.provider_resource_id)
             response = await self.client.list()
         else:

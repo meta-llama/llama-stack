@@ -285,7 +285,7 @@ class CompletionRequest(BaseModel):
 
 
 @json_schema_type
-class CompletionResponse(MetricResponseMixin):
+class CompletionResponse(BaseModel):
     """Response from a completion request.
 
     :param content: The generated completion text
@@ -299,7 +299,7 @@ class CompletionResponse(MetricResponseMixin):
 
 
 @json_schema_type
-class CompletionResponseStreamChunk(MetricResponseMixin):
+class CompletionResponseStreamChunk(BaseModel):
     """A chunk of a streamed completion response.
 
     :param delta: New content generated since last chunk. This can be one or more tokens.
@@ -368,7 +368,7 @@ class ChatCompletionRequest(BaseModel):
 
 
 @json_schema_type
-class ChatCompletionResponseStreamChunk(MetricResponseMixin):
+class ChatCompletionResponseStreamChunk(MetricResponseMixin, BaseModel):
     """A chunk of a streamed chat completion response.
 
     :param event: The event containing the new content
@@ -378,7 +378,7 @@ class ChatCompletionResponseStreamChunk(MetricResponseMixin):
 
 
 @json_schema_type
-class ChatCompletionResponse(MetricResponseMixin):
+class ChatCompletionResponse(MetricResponseMixin, BaseModel):
     """Response from a chat completion request.
 
     :param completion_message: The complete response message

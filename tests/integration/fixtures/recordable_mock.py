@@ -121,6 +121,9 @@ class RecordableMock:
         # Replace temporary file paths created by tempfile.mkdtemp()
         key = re.sub(r"/var/folders/[^,'\"\s]+", "<TEMP_FILE>", key)
 
+        # Replace /tmp/ paths which are also commonly used for temporary files
+        key = re.sub(r"/tmp/[^,'\"\s]+", "<TEMP_FILE>", key)
+
         return key
 
     def _save_cache(self):

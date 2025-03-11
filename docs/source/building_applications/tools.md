@@ -127,15 +127,11 @@ MCP tools require:
 
 ## Adding Custom Tools
 
-When you want to use tools other than the built-in tools, you can implement a python function and decorate it with `@client_tool`.
+When you want to use tools other than the built-in tools, you just need to implement a python function with a docstring. The content of the docstring will be used to describe the tool and the parameters and passed
+along to the generative model.
 
-To define a custom tool, you need to use the `@client_tool` decorator.
 ```python
-from llama_stack_client.lib.agents.client_tool import client_tool
-
-
 # Example tool definition
-@client_tool
 def my_tool(input: int) -> int:
     """
     Runs my awesome tool.

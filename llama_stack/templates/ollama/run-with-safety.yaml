@@ -18,10 +18,13 @@ providers:
     config:
       url: ${env.OLLAMA_URL:http://localhost:11434}
   vector_io:
-  - provider_id: sqlite-vec
-    provider_type: inline::sqlite-vec
+  - provider_id: faiss
+    provider_type: inline::faiss
     config:
-      db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/sqlite_vec.db
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/faiss_store.db
   safety:
   - provider_id: llama-guard
     provider_type: inline::llama-guard

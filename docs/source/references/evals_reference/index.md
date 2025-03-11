@@ -275,18 +275,25 @@ response = client.scoring.score(
 The following examples give the quick steps to start running evaluations using the llama-stack-client CLI.
 
 #### Benchmark Evaluation CLI
-Usage: There are 2 inputs necessary for running a benchmark eval
-- `eval-task-id`: the identifier associated with the eval task. Each `Benchmark` is parametrized by
-  - `dataset_id`: the identifier associated with the dataset.
-  - `List[scoring_function_id]`: list of scoring function identifiers.
-- `eval-task-config`: specifies the configuration of the model / agent to evaluate on.
+There are 3 necessary input for running a benchmark eval
+- `list of benchmark_ids`: The list of benchmark ids to run evaluation on
+- `model-id`: The model id to evaluate on
+- `utput_dir`: Path to store the evaluate results
+```
+llama-stack-client eval run-benchmark <benchmark_id_1> <benchmark_id_2> ... \
+--model_id <model id to evaluate on> \
+--output_dir <directory to store the evaluate results> \
+```
+
+You can run
+```
+llama-stack-client eval run-benchmark help
+```
+to see the description of all the flags to run benckmark eval
 
 
-```
-llama-stack-client eval run_benchmark <eval-task-id> \
---eval-task-config ~/benchmark_config.json \
---visualize
-```
+In the output log, you can find the path to the file that has your evaluation results. Open that file and you can see you aggrgate
+evaluation results over there.
 
 
 #### Application Evaluation CLI
@@ -337,4 +344,53 @@ The `BenchmarkConfig` are user specified config to define:
         }
     }
 }
+```
+
+
+## Open-benchmark Contributing Guide
+
+### Create the new dataset for your new benchmark
+An eval open-benchmark essentially contains 2 parts:
+- `raw data`: The raw dataset associated with the benchmark. You typically need to search the original paper that introduces the benchmark and find the canonical dataset (usually hosted on huggingface)
+- `prompt template`: How to ask the candidate model to generate the answer (prompt template plays a critical role to the evaluation results). Tyically, you can find the reference prompt template associated with the benchmark in benchmarks author's repo ([exmaple](https://github.com/idavidrein/gpqa/blob/main/prompts/chain_of_thought.txt)) or some other popular open source repos ([example](https://github.com/openai/simple-evals/blob/0a6e8f62e52bc5ae915f752466be3af596caf392/common.py#L14))
+
+To create new open-benmark in llama stack, you need to combine the prompt template and the raw data into the `chat_completion_input` column in the evaluation dataset.
+
+Llama stack enforeces the evaluate dataset schema to contain at least 3 columns:
+- `chat_completion_input`: The actual input to the model to run the generation for eval
+- `input_query`: The raw input from the raw dataset without the prompt template
+- `expected_answer`: The ground truth for scoring functions to calcalate the score from.
+
+
+You need to write a script [example convert script](https://gist.github.com/yanxi0830/118e9c560227d27132a7fd10e2c92840) to convert the benchmark raw dataset to llama stack format eval dataset and update the dataset to huggingface [example benchmark dataset](https://huggingface.co/datasets/llamastack/mmmu)
+
+
+### Find scoring function for your new benchmark
+The purpose of scoring function is to calculate the score for each example based on candidate model generation result and expected_answer. It also aggregates the scores from all the examples and generate the final evaluate results.
+
+
+Firstly, you can see if the existing [llama stack scoring functions](https://github.com/meta-llama/llama-stack/tree/main/llama_stack/providers/inline/scoring) can fulfill your need. If not, you need to write a new scoring function based on what benchmark author / other open source repo describe.
+
+### Add new benchmark into template
+Firstly, you need to add the evaluation dataset associated with your benchmark under `datasets` resource in the [open-benchmark](https://github.com/meta-llama/llama-stack/blob/main/llama_stack/templates/open-benchmark/run.yaml)
+
+Secondly, you need to add the new benchmark you just created under the `benchmarks` resource in the same template. To add the new benchmark, you need to have
+- `benchmark_id`: identifier of the benchmark
+- `dataset_id`: identifier of the dataset associated with your benchmark
+- `scoring_functions`: scoring function to calculate the score based on generation results and expected_answer
+
+
+### Test the new benchmark
+
+Spin up llama stack server with 'open-benchmark' templates
+```
+llama stack run llama_stack/templates/open-benchmark/run.yaml
+
+```
+
+Run eval benchmark CLI with your new benchmark id
+```
+llama-stack-client eval run-benchmark <new_benchmark_id> \
+--model_id <model id to evaluate on> \
+--output_dir <directory to store the evaluate results> \
 ```

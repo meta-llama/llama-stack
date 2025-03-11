@@ -42,7 +42,7 @@ def provider_data():
     for key, value in keymap.items():
         if os.environ.get(key):
             provider_data[value] = os.environ[key]
-    return provider_data if len(provider_data) > 0 else None
+    return provider_data
 
 
 @pytest.fixture(scope="session")

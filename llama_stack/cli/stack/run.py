@@ -5,15 +5,15 @@
 # the root directory of this source tree.
 
 import argparse
-import logging
 import os
 from pathlib import Path
 
 from llama_stack.cli.subcommand import Subcommand
+from llama_stack.log import get_logger
 
 REPO_ROOT = Path(__file__).parent.parent.parent.parent
 
-logger = logging.getLogger(__name__)
+logger = get_logger(name=__name__, category="server")
 
 
 class StackRun(Subcommand):
@@ -23,7 +23,7 @@ class StackRun(Subcommand):
             "run",
             prog="llama stack run",
             description="""Start the server for a Llama Stack Distribution. You should have already built (or downloaded) and configured the distribution.""",
-            formatter_class=argparse.RawTextHelpFormatter,
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         )
         self._add_arguments()
         self.parser.set_defaults(func=self._run_stack_run_cmd)
@@ -37,12 +37,13 @@ class StackRun(Subcommand):
         self.parser.add_argument(
             "--port",
             type=int,
-            help="Port to run the server on. It can also be passed via the env var LLAMA_STACK_PORT. Defaults to 8321",
+            help="Port to run the server on. It can also be passed via the env var LLAMA_STACK_PORT.",
             default=int(os.getenv("LLAMA_STACK_PORT", 8321)),
         )
         self.parser.add_argument(
             "--image-name",
             type=str,
+            default=os.environ.get("CONDA_DEFAULT_ENV"),
             help="Name of the image to run. Defaults to the current conda environment",
         )
         self.parser.add_argument(
@@ -55,7 +56,6 @@ class StackRun(Subcommand):
             "--env",
             action="append",
             help="Environment variables to pass to the server in KEY=VALUE format. Can be specified multiple times.",
-            default=[],
             metavar="KEY=VALUE",
         )
         self.parser.add_argument(
@@ -73,7 +73,6 @@ class StackRun(Subcommand):
             type=str,
             help="Image Type used during the build. This can be either conda or container or venv.",
             choices=["conda", "container", "venv"],
-            default="conda",
         )
 
     def _run_stack_run_cmd(self, args: argparse.Namespace) -> None:
@@ -119,20 +118,42 @@ class StackRun(Subcommand):
         except AttributeError as e:
             self.parser.error(f"failed to parse config file '{config_file}':\n {e}")
 
-        run_args = formulate_run_args(args.image_type, args.image_name, config, template_name)
+        # If neither image type nor image name is provided, assume the server should be run directly
+        # using the current environment packages.
+        if not args.image_type and not args.image_name:
+            logger.info("No image type or image name provided. Assuming environment packages.")
+            from llama_stack.distribution.server.server import main as server_main
 
-        run_args.extend([str(config_file), str(args.port)])
-        if args.disable_ipv6:
-            run_args.append("--disable-ipv6")
+            # Build the server args from the current args passed to the CLI
+            server_args = argparse.Namespace()
+            for arg in vars(args):
+                # If this is a function, avoid passing it
+                # "args" contains:
+                # func=<bound method StackRun._run_stack_run_cmd of <llama_stack.cli.stack.run.StackRun object at 0x10484b010>>
+                if callable(getattr(args, arg)):
+                    continue
+                setattr(server_args, arg, getattr(args, arg))
 
-        for env_var in args.env:
-            if "=" not in env_var:
-                self.parser.error(f"Environment variable '{env_var}' must be in KEY=VALUE format")
-            key, value = env_var.split("=", 1)  # split on first = only
-            if not key:
-                self.parser.error(f"Environment variable '{env_var}' has empty key")
-            run_args.extend(["--env", f"{key}={value}"])
+            # Run the server
+            server_main(server_args)
+        else:
+            run_args = formulate_run_args(args.image_type, args.image_name, config, template_name)
 
-        if args.tls_keyfile and args.tls_certfile:
-            run_args.extend(["--tls-keyfile", args.tls_keyfile, "--tls-certfile", args.tls_certfile])
-        run_with_pty(run_args)
+            run_args.extend([str(config_file), str(args.port)])
+            if args.disable_ipv6:
+                run_args.append("--disable-ipv6")
+
+            if args.env:
+                for env_var in args.env:
+                    if "=" not in env_var:
+                        self.parser.error(f"Environment variable '{env_var}' must be in KEY=VALUE format")
+                        return
+                    key, value = env_var.split("=", 1)  # split on first = only
+                    if not key:
+                        self.parser.error(f"Environment variable '{env_var}' has empty key")
+                        return
+                    run_args.extend(["--env", f"{key}={value}"])
+
+            if args.tls_keyfile and args.tls_certfile:
+                run_args.extend(["--tls-keyfile", args.tls_keyfile, "--tls-certfile", args.tls_certfile])
+            run_with_pty(run_args)
