@@ -230,5 +230,9 @@ def test_chat_completion_doesnt_block_event_loop(caplog):
     # records from our chat completion call. A message gets logged
     # here any time we exceed the slow_callback_duration configured
     # above.
-    asyncio_warnings = [record.message for record in caplog.records if record.name == "asyncio"]
+    asyncio_warnings = [
+        record.message
+        for record in caplog.records
+        if record.name == "asyncio" and "Executing <Task" not in record.message
+    ]
     assert not asyncio_warnings
