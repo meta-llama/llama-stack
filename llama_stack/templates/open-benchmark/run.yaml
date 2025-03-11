@@ -33,7 +33,7 @@ providers:
     provider_type: remote::together
     config:
       url: https://api.together.xyz/v1
-      api_key: ${env.TOGETHER_API_KEY}
+      api_key: ${env.TOGETHER_API_KEY:}
   vector_io:
   - provider_id: sqlite-vec
     provider_type: inline::sqlite-vec
@@ -190,6 +190,21 @@ datasets:
         type: string
       chat_completion_input:
         type: string
+  - dataset_id: math_500
+    provider_id: huggingface
+    url:
+      uri: https://huggingface.co/datasets/llamastack/math_500
+    metadata:
+      path: llamastack/math_500
+      name:
+      split: test
+    dataset_schema:
+      input_query:
+        type: string
+      expected_answer:
+        type: string
+      chat_completion_input:
+        type: string
 scoring_fns: []
 benchmarks:
   - benchmark_id: meta-reference-simpleqa
@@ -201,6 +216,9 @@ benchmarks:
   - benchmark_id: meta-reference-gpqa-cot
     dataset_id: gpqa_cot
     scoring_functions: ["basic::regex_parser_multiple_choice_answer"]
+  - benchmark_id: meta-reference-math-500
+    dataset_id: math_500
+    scoring_functions: ["basic::regex_parser_math_response"]
 tool_groups:
 - toolgroup_id: builtin::websearch
   provider_id: tavily-search
