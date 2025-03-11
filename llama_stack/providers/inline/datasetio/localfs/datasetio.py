@@ -172,7 +172,7 @@ class LocalFSDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
         new_rows_df = dataset_impl._validate_dataset_schema(new_rows_df)
         dataset_impl.df = pandas.concat([dataset_impl.df, new_rows_df], ignore_index=True)
 
-        url = str(dataset_info.dataset_def.url)
+        url = str(dataset_info.dataset_def.url.uri)
         parsed_url = urlparse(url)
 
         if parsed_url.scheme == "file" or not parsed_url.scheme:
