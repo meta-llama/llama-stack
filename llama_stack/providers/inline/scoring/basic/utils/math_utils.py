@@ -11,14 +11,14 @@ from types import FrameType
 from typing import Iterator, Optional, Sequence
 
 
-class TimeoutException(Exception):
+class TimeoutError(Exception):
     pass
 
 
 @contextlib.contextmanager
 def time_limit(seconds: float) -> Iterator[None]:
     def signal_handler(signum: int, frame: Optional[FrameType]) -> None:
-        raise TimeoutException("Timed out!")
+        raise TimeoutError("Timed out!")
 
     signal.setitimer(signal.ITIMER_REAL, seconds)
     signal.signal(signal.SIGALRM, signal_handler)
