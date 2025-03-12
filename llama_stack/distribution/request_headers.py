@@ -7,14 +7,14 @@
 import contextvars
 import json
 import logging
-from typing import Any, AsyncGenerator, ContextManager, Dict, Optional, TypeVar
+from typing import Any, ContextManager, Dict, Optional
 
 from .utils.dynamic import instantiate_class_type
 
 log = logging.getLogger(__name__)
 
 # Context variable for request provider data
-_provider_data_var = contextvars.ContextVar("provider_data", default=None)
+PROVIDER_DATA_VAR = contextvars.ContextVar("provider_data", default=None)
 
 
 class RequestProviderDataContext(ContextManager):
@@ -26,40 +26,13 @@ class RequestProviderDataContext(ContextManager):
 
     def __enter__(self):
         # Save the current value and set the new one
-        self.token = _provider_data_var.set(self.provider_data)
+        self.token = PROVIDER_DATA_VAR.set(self.provider_data)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         # Restore the previous value
         if self.token is not None:
-            _provider_data_var.reset(self.token)
-
-
-T = TypeVar("T")
-
-
-def preserve_headers_context_async_generator(gen: AsyncGenerator[T, None]) -> AsyncGenerator[T, None]:
-    """
-    Wraps an async generator to preserve request headers context variables across iterations.
-
-    This ensures that context variables set during generator creation are
-    available during each iteration of the generator, even if the original
-    context manager has exited.
-    """
-    # Capture the current context value right now
-    context_value = _provider_data_var.get()
-
-    async def wrapper():
-        while True:
-            # Set context before each anext() call
-            _ = _provider_data_var.set(context_value)
-            try:
-                item = await gen.__anext__()
-                yield item
-            except StopAsyncIteration:
-                break
-
-    return wrapper()
+            PROVIDER_DATA_VAR.reset(self.token)
 
 
 class NeedsRequestProviderData:
@@ -72,7 +45,7 @@ class NeedsRequestProviderData:
         if not validator_class:
             raise ValueError(f"Provider {provider_type} does not have a validator")
 
-        val = _provider_data_var.get()
+        val = PROVIDER_DATA_VAR.get()
         if not val:
             return None
 
