@@ -15,11 +15,12 @@ import pytest
 #
 # LLAMA_STACK_CONFIG="template-name" pytest -v tests/integration/datasetio
 
+
 @pytest.fixture
 def test_dataset(llama_stack_client):
     register_dataset(llama_stack_client)
     yield  # This is where the test function will run
-    
+
     # Teardown - this always runs, even if the test fails
     try:
         llama_stack_client.datasets.unregister("test_dataset")

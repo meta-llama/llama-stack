@@ -9,11 +9,12 @@ import pytest
 
 from ..datasetio.test_datasetio import register_dataset
 
+
 @pytest.fixture
 def test_dataset_rag(llama_stack_client):
     register_dataset(llama_stack_client, for_rag=True)
     yield  # This is where the test function will run
-    
+
     # Teardown - this always runs, even if the test fails
     try:
         llama_stack_client.datasets.unregister("test_dataset")
@@ -124,7 +125,9 @@ def test_scoring_score(llama_stack_client, test_dataset_rag):
         assert len(response.results[x].score_rows) == 5
 
 
-def test_scoring_score_with_params_llm_as_judge(llama_stack_client, sample_judge_prompt_template, judge_model_id, test_dataset_rag):
+def test_scoring_score_with_params_llm_as_judge(
+    llama_stack_client, sample_judge_prompt_template, judge_model_id, test_dataset_rag
+):
     # scoring individual rows
     rows = llama_stack_client.datasetio.get_rows_paginated(
         dataset_id="test_dataset",
