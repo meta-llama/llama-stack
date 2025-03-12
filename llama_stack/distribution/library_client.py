@@ -376,18 +376,17 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
 
         body = self._convert_body(path, options.method, body)
 
-        await start_trace(options.url, {"__location__": "library_client"})
-
         async def gen():
-            async for chunk in await func(**body):
-                data = json.dumps(convert_pydantic_to_json_value(chunk))
-                sse_event = f"data: {data}\n\n"
-                yield sse_event.encode("utf-8")
+            await start_trace(options.url, {"__location__": "library_client"})
+            try:
+                async for chunk in await func(**body):
+                    data = json.dumps(convert_pydantic_to_json_value(chunk))
+                    sse_event = f"data: {data}\n\n"
+                    yield sse_event.encode("utf-8")
+            finally:
+                await end_trace()
 
-        try:
-            wrapped_gen = preserve_contexts_async_generator(gen(), [CURRENT_TRACE_CONTEXT, PROVIDER_DATA_VAR])
-        finally:
-            await end_trace()
+        wrapped_gen = preserve_contexts_async_generator(gen(), [CURRENT_TRACE_CONTEXT, PROVIDER_DATA_VAR])
 
         mock_response = httpx.Response(
             status_code=httpx.codes.OK,
