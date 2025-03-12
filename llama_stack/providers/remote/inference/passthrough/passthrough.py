@@ -159,7 +159,10 @@ class PassthroughInferenceAdapter(Inference):
     async def _nonstream_chat_completion(self, json_params: Dict[str, Any]) -> ChatCompletionResponse:
         client = self._get_client()
         response = await client.inference.chat_completion(**json_params)
+
         response = response.to_dict()
+
+        # temporary hack to remove the metrics from the response
         response["metrics"] = []
 
         return convert_to_pydantic(ChatCompletionResponse, response)
@@ -170,6 +173,8 @@ class PassthroughInferenceAdapter(Inference):
 
         async for chunk in stream_response:
             chunk = chunk.to_dict()
+
+            # temporary hack to remove the metrics from the response
             chunk["metrics"] = []
             chunk = convert_to_pydantic(ChatCompletionResponseStreamChunk, chunk)
             yield chunk
