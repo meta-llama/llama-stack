@@ -113,6 +113,8 @@ def test_scoring_score(llama_stack_client):
     for x in scoring_functions:
         assert x in response.results
         assert len(response.results[x].score_rows) == 5
+    
+    llama_stack_client.datasets.unregister("test_dataset")
 
 
 def test_scoring_score_with_params_llm_as_judge(llama_stack_client, sample_judge_prompt_template, judge_model_id):
@@ -156,6 +158,8 @@ def test_scoring_score_with_params_llm_as_judge(llama_stack_client, sample_judge
     for x in scoring_functions:
         assert x in response.results
         assert len(response.results[x].score_rows) == 5
+    
+    llama_stack_client.datasets.unregister("test_dataset")
 
 
 @pytest.mark.parametrize(
@@ -223,3 +227,5 @@ def test_scoring_score_with_aggregation_functions(
         assert x in response.results
         assert len(response.results[x].score_rows) == len(rows.rows)
         assert len(response.results[x].aggregated_results) == len(aggr_fns)
+
+    llama_stack_client.datasets.unregister("test_dataset")

@@ -99,3 +99,4 @@ def test_get_rows_paginated(llama_stack_client):
     assert isinstance(response.rows, list)
     assert len(response.rows) == 2
     assert response.next_page_token == "5"
+    llama_stack_client.datasets.unregister("test_dataset")
