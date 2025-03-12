@@ -16,7 +16,7 @@ from llama_stack.schema_utils import json_schema_type, register_schema, webmetho
 class Schema(Enum):
     """
     Schema of the dataset. Each type has a different column format.
-    :cvar jsonl_messages: The dataset is a JSONL file with messages. Examples:
+    :cvar messages: The dataset contains messages used for post-training. Examples:
         {
             "messages": [
                 {"role": "user", "content": "Hello, world!"},
@@ -25,7 +25,7 @@ class Schema(Enum):
         }
     """
 
-    jsonl_messages = "jsonl_messages"
+    messages = "messages"
     # TODO: add more schemas here
 
 
@@ -36,36 +36,36 @@ class DatasetType(Enum):
 
 
 @json_schema_type
-class URIDataReference(BaseModel):
+class URIDataSource(BaseModel):
     type: Literal["uri"] = "uri"
     uri: str
 
 
 @json_schema_type
-class HuggingfaceDataReference(BaseModel):
+class HuggingfaceDataSource(BaseModel):
     type: Literal["huggingface"] = "huggingface"
     dataset_path: str
     params: Dict[str, Any]
 
 
 @json_schema_type
-class RowsDataReference(BaseModel):
+class RowsDataSource(BaseModel):
     type: Literal["rows"] = "rows"
     rows: List[Dict[str, Any]]
 
 
-DataReference = register_schema(
+DataSource = register_schema(
     Annotated[
-        Union[URIDataReference, HuggingfaceDataReference, RowsDataReference],
+        Union[URIDataSource, HuggingfaceDataSource, RowsDataSource],
         Field(discriminator="type"),
     ],
-    name="DataReference",
+    name="DataSource",
 )
 
 
 class CommonDatasetFields(BaseModel):
     schema: Schema
-    data_reference: DataReference
+    data_source: DataSource
     metadata: Dict[str, Any] = Field(
         default_factory=dict,
         description="Any additional metadata for this dataset",
@@ -100,16 +100,16 @@ class Datasets(Protocol):
     async def register_dataset(
         self,
         schema: Schema,
-        data_reference: DataReference,
+        data_source: DataSource,
         metadata: Optional[Dict[str, Any]] = None,
         dataset_id: Optional[str] = None,
     ) -> Dataset:
         """
-        Register a new dataset through a file or
+        Register a new dataset.
 
         :param schema: The schema format of the dataset. One of
             - jsonl_messages: The dataset is a JSONL file with messages in column format
-        :param data_reference: The data reference of the dataset. Examples:
+        :param data_source: The data source of the dataset. Examples:
            - {
                "type": "uri",
                "uri": "https://mywebsite.com/mydata.jsonl"

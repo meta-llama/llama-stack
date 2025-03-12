@@ -1698,7 +1698,7 @@ paths:
           $ref: '#/components/responses/DefaultError'
       tags:
         - Datasets
-      description: Register a new dataset through a file or
+      description: Register a new dataset.
       parameters: []
       requestBody:
         content:
@@ -4731,17 +4731,17 @@ components:
         - scoring_functions
         - metadata
       title: Benchmark
-    DataReference:
+    DataSource:
       oneOf:
-        - $ref: '#/components/schemas/URIDataReference'
-        - $ref: '#/components/schemas/HuggingfaceDataReference'
-        - $ref: '#/components/schemas/RowsDataReference'
+        - $ref: '#/components/schemas/URIDataSource'
+        - $ref: '#/components/schemas/HuggingfaceDataSource'
+        - $ref: '#/components/schemas/RowsDataSource'
       discriminator:
         propertyName: type
         mapping:
-          uri: '#/components/schemas/URIDataReference'
-          huggingface: '#/components/schemas/HuggingfaceDataReference'
-          rows: '#/components/schemas/RowsDataReference'
+          uri: '#/components/schemas/URIDataSource'
+          huggingface: '#/components/schemas/HuggingfaceDataSource'
+          rows: '#/components/schemas/RowsDataSource'
     Dataset:
       type: object
       properties:
@@ -4758,12 +4758,12 @@ components:
         schema:
           type: string
           enum:
-            - jsonl_messages
+            - messages
           title: Schema
           description: >-
             Schema of the dataset. Each type has a different column format.
-        data_reference:
-          $ref: '#/components/schemas/DataReference'
+        data_source:
+          $ref: '#/components/schemas/DataSource'
         metadata:
           type: object
           additionalProperties:
@@ -4781,10 +4781,10 @@ components:
         - provider_id
         - type
         - schema
-        - data_reference
+        - data_source
         - metadata
       title: Dataset
-    HuggingfaceDataReference:
+    HuggingfaceDataSource:
       type: object
       properties:
         type:
@@ -4808,8 +4808,8 @@ components:
         - type
         - dataset_path
         - params
-      title: HuggingfaceDataReference
-    RowsDataReference:
+      title: HuggingfaceDataSource
+    RowsDataSource:
       type: object
       properties:
         type:
@@ -4832,8 +4832,8 @@ components:
       required:
         - type
         - rows
-      title: RowsDataReference
-    URIDataReference:
+      title: RowsDataSource
+    URIDataSource:
       type: object
       properties:
         type:
@@ -4846,7 +4846,7 @@ components:
       required:
         - type
         - uri
-      title: URIDataReference
+      title: URIDataSource
     Model:
       type: object
       properties:
@@ -6346,18 +6346,19 @@ components:
         schema:
           type: string
           enum:
-            - jsonl_messages
+            - messages
           description: >-
             The schema format of the dataset. One of - jsonl_messages: The dataset
             is a JSONL file with messages in column format
-        data_reference:
-          $ref: '#/components/schemas/DataReference'
+        data_source:
+          $ref: '#/components/schemas/DataSource'
           description: >-
-            The data reference of the dataset. Examples: - { "type": "uri", "uri":
-            "https://mywebsite.com/mydata.jsonl" } - { "type": "uri", "uri": "lsfs://mydata.jsonl"
-            } - { "type": "huggingface", "dataset_path": "tatsu-lab/alpaca", "params":
-            { "split": "train" } } - { "type": "rows", "rows": [{"message": "Hello,
-            world!"}] }
+            The data source of the dataset. Examples: - { "type": "uri", "uri": "https://mywebsite.com/mydata.jsonl"
+            } - { "type": "uri", "uri": "lsfs://mydata.jsonl" } - { "type": "huggingface",
+            "dataset_path": "tatsu-lab/alpaca", "params": { "split": "train" } } -
+            { "type": "rows", "rows": [ { "messages": [ {"role": "user", "content":
+            "Hello, world!"}, {"role": "assistant", "content": "Hello, world!"}, ]
+            } ] }
         metadata:
           type: object
           additionalProperties:
@@ -6377,7 +6378,7 @@ components:
       additionalProperties: false
       required:
         - schema
-        - data_reference
+        - data_source
       title: RegisterDatasetRequest
     RegisterModelRequest:
       type: object

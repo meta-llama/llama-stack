@@ -2518,7 +2518,7 @@
                 "tags": [
                     "Datasets"
                 ],
-                "description": "Register a new dataset through a file or",
+                "description": "Register a new dataset.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -6838,24 +6838,24 @@
                 ],
                 "title": "Benchmark"
             },
-            "DataReference": {
+            "DataSource": {
                 "oneOf": [
                     {
-                        "$ref": "#/components/schemas/URIDataReference"
+                        "$ref": "#/components/schemas/URIDataSource"
                     },
                     {
-                        "$ref": "#/components/schemas/HuggingfaceDataReference"
+                        "$ref": "#/components/schemas/HuggingfaceDataSource"
                     },
                     {
-                        "$ref": "#/components/schemas/RowsDataReference"
+                        "$ref": "#/components/schemas/RowsDataSource"
                     }
                 ],
                 "discriminator": {
                     "propertyName": "type",
                     "mapping": {
-                        "uri": "#/components/schemas/URIDataReference",
-                        "huggingface": "#/components/schemas/HuggingfaceDataReference",
-                        "rows": "#/components/schemas/RowsDataReference"
+                        "uri": "#/components/schemas/URIDataSource",
+                        "huggingface": "#/components/schemas/HuggingfaceDataSource",
+                        "rows": "#/components/schemas/RowsDataSource"
                     }
                 }
             },
@@ -6879,13 +6879,13 @@
                     "schema": {
                         "type": "string",
                         "enum": [
-                            "jsonl_messages"
+                            "messages"
                         ],
                         "title": "Schema",
                         "description": "Schema of the dataset. Each type has a different column format."
                     },
-                    "data_reference": {
-                        "$ref": "#/components/schemas/DataReference"
+                    "data_source": {
+                        "$ref": "#/components/schemas/DataSource"
                     },
                     "metadata": {
                         "type": "object",
@@ -6920,12 +6920,12 @@
                     "provider_id",
                     "type",
                     "schema",
-                    "data_reference",
+                    "data_source",
                     "metadata"
                 ],
                 "title": "Dataset"
             },
-            "HuggingfaceDataReference": {
+            "HuggingfaceDataSource": {
                 "type": "object",
                 "properties": {
                     "type": {
@@ -6968,9 +6968,9 @@
                     "dataset_path",
                     "params"
                 ],
-                "title": "HuggingfaceDataReference"
+                "title": "HuggingfaceDataSource"
             },
-            "RowsDataReference": {
+            "RowsDataSource": {
                 "type": "object",
                 "properties": {
                     "type": {
@@ -7012,9 +7012,9 @@
                     "type",
                     "rows"
                 ],
-                "title": "RowsDataReference"
+                "title": "RowsDataSource"
             },
-            "URIDataReference": {
+            "URIDataSource": {
                 "type": "object",
                 "properties": {
                     "type": {
@@ -7031,7 +7031,7 @@
                     "type",
                     "uri"
                 ],
-                "title": "URIDataReference"
+                "title": "URIDataSource"
             },
             "Model": {
                 "type": "object",
@@ -9383,13 +9383,13 @@
                     "schema": {
                         "type": "string",
                         "enum": [
-                            "jsonl_messages"
+                            "messages"
                         ],
                         "description": "The schema format of the dataset. One of - jsonl_messages: The dataset is a JSONL file with messages in column format"
                     },
-                    "data_reference": {
-                        "$ref": "#/components/schemas/DataReference",
-                        "description": "The data reference of the dataset. Examples: - { \"type\": \"uri\", \"uri\": \"https://mywebsite.com/mydata.jsonl\" } - { \"type\": \"uri\", \"uri\": \"lsfs://mydata.jsonl\" } - { \"type\": \"huggingface\", \"dataset_path\": \"tatsu-lab/alpaca\", \"params\": { \"split\": \"train\" } } - { \"type\": \"rows\", \"rows\": [{\"message\": \"Hello, world!\"}] }"
+                    "data_source": {
+                        "$ref": "#/components/schemas/DataSource",
+                        "description": "The data source of the dataset. Examples: - { \"type\": \"uri\", \"uri\": \"https://mywebsite.com/mydata.jsonl\" } - { \"type\": \"uri\", \"uri\": \"lsfs://mydata.jsonl\" } - { \"type\": \"huggingface\", \"dataset_path\": \"tatsu-lab/alpaca\", \"params\": { \"split\": \"train\" } } - { \"type\": \"rows\", \"rows\": [ { \"messages\": [ {\"role\": \"user\", \"content\": \"Hello, world!\"}, {\"role\": \"assistant\", \"content\": \"Hello, world!\"}, ] } ] }"
                     },
                     "metadata": {
                         "type": "object",
@@ -9425,7 +9425,7 @@
                 "additionalProperties": false,
                 "required": [
                     "schema",
-                    "data_reference"
+                    "data_source"
                 ],
                 "title": "RegisterDatasetRequest"
             },
