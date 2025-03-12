@@ -73,7 +73,7 @@ class AggregationFunctionType(Enum):
 
 @json_schema_type
 class LLMAsJudgeScoringFnParams(BaseModel):
-    type: Literal["llm_as_judge"] = "llm_as_judge"
+    type: Literal["custom_llm_as_judge"] = "custom_llm_as_judge"
     judge_model: str
     prompt_template: Optional[str] = None
     judge_score_regexes: Optional[List[str]] = Field(
