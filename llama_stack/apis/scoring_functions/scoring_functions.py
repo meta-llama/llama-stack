@@ -36,7 +36,7 @@ class ScoringFnParamsType(Enum):
     :cvar basic: Parameters for basic non-parameterized scoring function.
     """
 
-    llm_as_judge = "llm_as_judge"
+    custom_llm_as_judge = "custom_llm_as_judge"
     regex_parser = "regex_parser"
     basic = "basic"
 
@@ -50,13 +50,20 @@ class ScoringFunctionType(Enum):
     :cvar regex_parser: Scoring function that parses the answer from the generated response using regexes, and checks against the expected answer.
     """
 
-    llm_as_judge = "llm_as_judge"
+    custom_llm_as_judge = "custom_llm_as_judge"
     regex_parser = "regex_parser"
-    # NOTE: add additional scoring function types that can be registered
-    # equality = "equality"
-    # subset_of = "subset_of"
-    # valid_json = "valid_json"
-    # text_quality = "text_quality"
+    regex_parser_math_response = "regex_parser_math_response"
+    equality = "equality"
+    subset_of = "subset_of"
+    factuality = "factuality"
+    faithfulness = "faithfulness"
+    answer_correctness = "answer_correctness"
+    answer_relevancy = "answer_relevancy"
+    answer_similarity = "answer_similarity"
+    context_entity_recall = "context_entity_recall"
+    context_precision = "context_precision"
+    context_recall = "context_recall"
+    context_relevancy = "context_relevancy"
 
 
 @json_schema_type
@@ -118,17 +125,15 @@ ScoringFnParams = register_schema(
 
 
 class CommonScoringFnFields(BaseModel):
+    scoring_fn_type: ScoringFunctionType
     description: Optional[str] = None
-    metadata: Dict[str, Any] = Field(
-        default_factory=dict,
-        description="Any additional metadata for this definition",
-    )
-    return_type: ParamType = Field(
-        description="The return type of the deterministic function",
-    )
     params: Optional[ScoringFnParams] = Field(
         description="The parameters for the scoring function for benchmark eval, these can be overridden for app eval",
         default=None,
+    )
+    metadata: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Any additional metadata for this definition",
     )
 
 
@@ -170,6 +175,7 @@ class ScoringFunctions(Protocol):
         params: Optional[ScoringFnParams] = None,
         scoring_fn_id: Optional[str] = None,
         description: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None,
     ):
         """
         Register a new scoring function with given parameters.
@@ -179,5 +185,6 @@ class ScoringFunctions(Protocol):
         :param params: The parameters for the scoring function.
         :param scoring_fn_id: (Optional) The ID of the scoring function to register. If not provided, a random ID will be generated.
         :param description: (Optional) The description of the scoring function.
+        :param metadata: (Optional) Any additional metadata to be associated with the scoring function.
         """
         ...
