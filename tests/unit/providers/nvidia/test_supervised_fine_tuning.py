@@ -22,6 +22,7 @@ from llama_stack.distribution.library_client import LlamaStackAsLibraryClient
 
 
 class TestNvidiaPostTraining(unittest.TestCase):
+    # ToDo: add tests for env variables, models supported.
     def setUp(self):
         os.environ["NVIDIA_BASE_URL"] = "http://nemo.test"  # needed for llm inference
         os.environ["NVIDIA_CUSTOMIZER_URL"] = "http://nemo.test"  # needed for nemo customizer

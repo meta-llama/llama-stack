@@ -22,7 +22,10 @@ from llama_stack.apis.post_training import (
 from llama_stack.providers.remote.post_training.nvidia.config import (
     NvidiaPostTrainingConfig,
 )
+from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
 from llama_stack.schema_utils import webmethod
+
+from .models import _MODEL_ENTRIES
 
 # Map API status to JobStatus enum
 STATUS_MAPPING = {
@@ -51,7 +54,7 @@ class ListNvidiaPostTrainingJobs(BaseModel):
     data: List[NvidiaPostTrainingJob]
 
 
-class NvidiaPostTrainingAdapter:
+class NvidiaPostTrainingAdapter(ModelRegistryHelper):
     def __init__(self, config: NvidiaPostTrainingConfig):
         self.config = config
         self.headers = {}
@@ -59,6 +62,8 @@ class NvidiaPostTrainingAdapter:
             self.headers["Authorization"] = f"Bearer {config.api_key}"
 
         self.timeout = aiohttp.ClientTimeout(total=config.timeout)
+        # TODO(mf): filter by available models
+        ModelRegistryHelper.__init__(self, model_entries=_MODEL_ENTRIES)
 
     async def _make_request(
         self,
@@ -200,11 +205,7 @@ class NvidiaPostTrainingAdapter:
             - NVIDIA_OUTPUT_MODEL_DIR: Directory to save the output model
         """
         # map model to nvidia model name
-        model_mapping = {
-            "Llama3.1-8B-Instruct": "meta/llama-3.1-8b-instruct",
-            "meta-llama/Llama-3.1-8B-Instruct": "meta/llama-3.1-8b-instruct",
-        }
-        nvidia_model = model_mapping.get(model, model)
+        nvidia_model = self.get_provider_model_id(model)
 
         # Check for unsupported parameters
         if checkpoint_dir or hyperparam_search_config or logger_config:
