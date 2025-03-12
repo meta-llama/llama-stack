@@ -68,110 +68,27 @@ class AggregationFunctionType(Enum):
     accuracy = "accuracy"
 
 
-# TODO(xiyan):
-# ============= OPTION 1: SEPARATE ScoringFnParamsType + ScoringFunctionType =============
-# class ScoringFnParamsType(Enum):
-#     """
-#     A type of scoring function parameters.
+class BasicScoringFnParamsCommon(BaseModel):
+    """
+    :param aggregation_functions: (Optional) Aggregation functions to apply to the scores of each row. If not provided, no aggregation will be performed.
+    """
 
-#     :cvar llm_as_judge: Provide judge model and prompt template.
-#     :cvar regex_parser: Provide regexes to parse the answer from the generated response.
-#     :cvar basic: Parameters for basic non-parameterized scoring function.
-#     """
-
-#     custom_llm_as_judge = "custom_llm_as_judge"
-#     regex_parser = "regex_parser"
-#     basic = "basic"
-
-
-# @json_schema_type
-# class LLMAsJudgeScoringFnParams(BaseModel):
-#     """
-#     Parameters for a scoring function that uses a judge model to score the answer.
-
-#     :param judge_model: The model to use for scoring.
-#     :param prompt_template: (Optional) The prompt template to use for scoring.
-#     :param judge_score_regexes: (Optional) Regexes to extract the score from the judge model's response.
-#     :param aggregation_functions: (Optional) Aggregation functions to apply to the scores of each row. No aggregation for results is calculated if not provided.
-#     """
-
-#     type: Literal["custom_llm_as_judge"] = "custom_llm_as_judge"
-#     judge_model: str
-#     prompt_template: Optional[str] = None
-#     judge_score_regexes: Optional[List[str]] = Field(
-#         description="Regexes to extract the answer from generated response",
-#         default_factory=list,
-#     )
-#     aggregation_functions: Optional[List[AggregationFunctionType]] = Field(
-#         description="Aggregation functions to apply to the scores of each row",
-#         default_factory=list,
-#     )
-
-
-# @json_schema_type
-# class RegexParserScoringFnParams(BaseModel):
-#     """
-#     Parameters for a scoring function that parses the answer from the generated response using regexes, and checks against the expected answer.
-
-#     :param parsing_regexes: Regexes to extract the answer from generated response
-#     :param aggregation_functions: (Optional) Aggregation functions to apply to the scores of each row. No aggregation for results is calculated if not provided.
-#     """
-
-#     type: Literal["regex_parser"] = "regex_parser"
-#     parsing_regexes: Optional[List[str]] = Field(
-#         description="Regexes to extract the answer from generated response",
-#         default_factory=list,
-#     )
-#     aggregation_functions: Optional[List[AggregationFunctionType]] = Field(
-#         description="Aggregation functions to apply to the scores of each row",
-#         default_factory=list,
-#     )
-
-
-# @json_schema_type
-# class BasicScoringFnParams(BaseModel):
-#     """
-#     Parameters for a non-parameterized scoring function.
-
-#     :param aggregation_functions: (Optional) Aggregation functions to apply to the scores of each row. No aggregation for results is calculated if not provided.
-#     """
-
-#     type: Literal["basic"] = "basic"
-#     aggregation_functions: Optional[List[AggregationFunctionType]] = Field(
-#         description="Aggregation functions to apply to the scores of each row",
-#         default_factory=list,
-#     )
-
-
-# ScoringFnParams = register_schema(
-#     Annotated[
-#         Union[
-#             LLMAsJudgeScoringFnParams,
-#             RegexParserScoringFnParams,
-#             BasicScoringFnParams,
-#         ],
-#         Field(discriminator="type"),
-#     ],
-#     name="ScoringFnParams",
-# )
-
-# ============= END OF OPTION 1 =============
-
-
-# TODO(xiyan):
-# ============= OPTION 2: MERGE ScoringFnParamsType + ScoringFunctionType into ScoringFunctionType =============
-class RegexParserScoringFnParamsCommon(BaseModel):
-    parsing_regexes: Optional[List[str]] = Field(
-        description="Regexes to extract the answer from generated response",
-        default_factory=list,
-    )
     aggregation_functions: Optional[List[AggregationFunctionType]] = Field(
         description="Aggregation functions to apply to the scores of each row",
         default_factory=list,
     )
 
 
-class BasicScoringFnParamsCommon(BaseModel):
+class RegexParserScoringFnParamsCommon(BaseModel):
+    """
+    :param parsing_regexes: (Optional) Regexes to extract the answer from generated response.
+    :param aggregation_functions: (Optional) Aggregation functions to apply to the scores of each row. If not provided, no aggregation will be performed.
+    """
+
+    parsing_regexes: List[str] = Field(
+        description="Regexes to extract the answer from generated response",
+        default_factory=list,
+    )
     aggregation_functions: Optional[List[AggregationFunctionType]] = Field(
         description="Aggregation functions to apply to the scores of each row",
         default_factory=list,
@@ -199,6 +116,51 @@ class SubsetOfcoringFnParams(BasicScoringFnParamsCommon):
 
 
 @json_schema_type
+class FactualityScoringFnParams(BasicScoringFnParamsCommon):
+    type: Literal["factuality"] = "factuality"
+
+
+@json_schema_type
+class FaithfulnessScoringFnParams(BasicScoringFnParamsCommon):
+    type: Literal["faithfulness"] = "faithfulness"
+
+
+@json_schema_type
+class AnswerCorrectnessScoringFnParams(BasicScoringFnParamsCommon):
+    type: Literal["answer_correctness"] = "answer_correctness"
+
+
+@json_schema_type
+class AnswerRelevancyScoringFnParams(BasicScoringFnParamsCommon):
+    type: Literal["answer_relevancy"] = "answer_relevancy"
+
+
+@json_schema_type
+class AnswerSimilarityScoringFnParams(BasicScoringFnParamsCommon):
+    type: Literal["answer_similarity"] = "answer_similarity"
+
+
+@json_schema_type
+class ContextEntityRecallScoringFnParams(BasicScoringFnParamsCommon):
+    type: Literal["context_entity_recall"] = "context_entity_recall"
+
+
+@json_schema_type
+class ContextPrecisionScoringFnParams(BasicScoringFnParamsCommon):
+    type: Literal["context_precision"] = "context_precision"
+
+
+@json_schema_type
+class ContextRecallScoringFnParams(BasicScoringFnParamsCommon):
+    type: Literal["context_recall"] = "context_recall"
+
+
+@json_schema_type
+class ContextRelevancyScoringFnParams(BasicScoringFnParamsCommon):
+    type: Literal["context_relevancy"] = "context_relevancy"
+
+
+@json_schema_type
 class LLMAsJudgeScoringFnParams(BaseModel):
     type: Literal["custom_llm_as_judge"] = "custom_llm_as_judge"
     judge_model: str
@@ -221,6 +183,15 @@ ScoringFnParams = register_schema(
             RegexParserMathScoringFnParams,
             EqualityScoringFnParams,
             SubsetOfcoringFnParams,
+            FactualityScoringFnParams,
+            FaithfulnessScoringFnParams,
+            AnswerCorrectnessScoringFnParams,
+            AnswerRelevancyScoringFnParams,
+            AnswerSimilarityScoringFnParams,
+            ContextEntityRecallScoringFnParams,
+            ContextPrecisionScoringFnParams,
+            ContextRecallScoringFnParams,
+            ContextRelevancyScoringFnParams,
         ],
         Field(discriminator="type"),
     ],
@@ -284,9 +255,8 @@ class ScoringFunctions(Protocol):
     @webmethod(route="/scoring-functions", method="POST")
     async def register_scoring_function(
         self,
-        # TODO(xiyan): scoring_fn_type will not be needed for OPTION 2
-        # scoring_fn_type: ScoringFunctionType,
-        params: Optional[ScoringFnParams] = None,
+        scoring_fn_type: ScoringFunctionType,
+        params: ScoringFnParams = None,
         scoring_fn_id: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None,
     ) -> ScoringFn:
@@ -294,7 +264,7 @@ class ScoringFunctions(Protocol):
         Register a new scoring function with given parameters.
         Only valid scoring function type that can be parameterized can be registered.
 
-        # :param scoring_fn_type: The type of scoring function to register.
+        :param scoring_fn_type: The type of scoring function to register.
         :param params: The parameters for the scoring function.
         :param scoring_fn_id: (Optional) The ID of the scoring function to register. If not provided, a random ID will be generated.
         :param metadata: (Optional) Any additional metadata to be associated with the scoring function.

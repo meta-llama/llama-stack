@@ -4420,26 +4420,60 @@ components:
         - accuracy
       title: AggregationFunctionType
       description: A type of aggregation function.
-    BasicScoringFnParams:
+    AnswerCorrectnessScoringFnParams:
       type: object
       properties:
-        type:
-          type: string
-          const: basic
-          default: basic
         aggregation_functions:
           type: array
           items:
             $ref: '#/components/schemas/AggregationFunctionType'
           description: >-
-            (Optional) Aggregation functions to apply to the scores of each row. No
-            aggregation for results is calculated if not provided.
+            (Optional) Aggregation functions to apply to the scores of each row. If
+            not provided, no aggregation will be performed.
+        type:
+          type: string
+          const: answer_correctness
+          default: answer_correctness
       additionalProperties: false
       required:
         - type
-      title: BasicScoringFnParams
-      description: >-
-        Parameters for a non-parameterized scoring function.
+      title: AnswerCorrectnessScoringFnParams
+    AnswerRelevancyScoringFnParams:
+      type: object
+      properties:
+        aggregation_functions:
+          type: array
+          items:
+            $ref: '#/components/schemas/AggregationFunctionType'
+          description: >-
+            (Optional) Aggregation functions to apply to the scores of each row. If
+            not provided, no aggregation will be performed.
+        type:
+          type: string
+          const: answer_relevancy
+          default: answer_relevancy
+      additionalProperties: false
+      required:
+        - type
+      title: AnswerRelevancyScoringFnParams
+    AnswerSimilarityScoringFnParams:
+      type: object
+      properties:
+        aggregation_functions:
+          type: array
+          items:
+            $ref: '#/components/schemas/AggregationFunctionType'
+          description: >-
+            (Optional) Aggregation functions to apply to the scores of each row. If
+            not provided, no aggregation will be performed.
+        type:
+          type: string
+          const: answer_similarity
+          default: answer_similarity
+      additionalProperties: false
+      required:
+        - type
+      title: AnswerSimilarityScoringFnParams
     BenchmarkConfig:
       type: object
       properties:
@@ -4465,6 +4499,96 @@ components:
       title: BenchmarkConfig
       description: >-
         A benchmark configuration for evaluation.
+    ContextEntityRecallScoringFnParams:
+      type: object
+      properties:
+        aggregation_functions:
+          type: array
+          items:
+            $ref: '#/components/schemas/AggregationFunctionType'
+          description: >-
+            (Optional) Aggregation functions to apply to the scores of each row. If
+            not provided, no aggregation will be performed.
+        type:
+          type: string
+          const: context_entity_recall
+          default: context_entity_recall
+      additionalProperties: false
+      required:
+        - type
+      title: ContextEntityRecallScoringFnParams
+    ContextPrecisionScoringFnParams:
+      type: object
+      properties:
+        aggregation_functions:
+          type: array
+          items:
+            $ref: '#/components/schemas/AggregationFunctionType'
+          description: >-
+            (Optional) Aggregation functions to apply to the scores of each row. If
+            not provided, no aggregation will be performed.
+        type:
+          type: string
+          const: context_precision
+          default: context_precision
+      additionalProperties: false
+      required:
+        - type
+      title: ContextPrecisionScoringFnParams
+    ContextRecallScoringFnParams:
+      type: object
+      properties:
+        aggregation_functions:
+          type: array
+          items:
+            $ref: '#/components/schemas/AggregationFunctionType'
+          description: >-
+            (Optional) Aggregation functions to apply to the scores of each row. If
+            not provided, no aggregation will be performed.
+        type:
+          type: string
+          const: context_recall
+          default: context_recall
+      additionalProperties: false
+      required:
+        - type
+      title: ContextRecallScoringFnParams
+    ContextRelevancyScoringFnParams:
+      type: object
+      properties:
+        aggregation_functions:
+          type: array
+          items:
+            $ref: '#/components/schemas/AggregationFunctionType'
+          description: >-
+            (Optional) Aggregation functions to apply to the scores of each row. If
+            not provided, no aggregation will be performed.
+        type:
+          type: string
+          const: context_relevancy
+          default: context_relevancy
+      additionalProperties: false
+      required:
+        - type
+      title: ContextRelevancyScoringFnParams
+    EqualityScoringFnParams:
+      type: object
+      properties:
+        aggregation_functions:
+          type: array
+          items:
+            $ref: '#/components/schemas/AggregationFunctionType'
+          description: >-
+            (Optional) Aggregation functions to apply to the scores of each row. If
+            not provided, no aggregation will be performed.
+        type:
+          type: string
+          const: equality
+          default: equality
+      additionalProperties: false
+      required:
+        - type
+      title: EqualityScoringFnParams
     EvalCandidate:
       oneOf:
         - $ref: '#/components/schemas/ModelCandidate'
@@ -4474,6 +4598,42 @@ components:
         mapping:
           model: '#/components/schemas/ModelCandidate'
           agent: '#/components/schemas/AgentCandidate'
+    FactualityScoringFnParams:
+      type: object
+      properties:
+        aggregation_functions:
+          type: array
+          items:
+            $ref: '#/components/schemas/AggregationFunctionType'
+          description: >-
+            (Optional) Aggregation functions to apply to the scores of each row. If
+            not provided, no aggregation will be performed.
+        type:
+          type: string
+          const: factuality
+          default: factuality
+      additionalProperties: false
+      required:
+        - type
+      title: FactualityScoringFnParams
+    FaithfulnessScoringFnParams:
+      type: object
+      properties:
+        aggregation_functions:
+          type: array
+          items:
+            $ref: '#/components/schemas/AggregationFunctionType'
+          description: >-
+            (Optional) Aggregation functions to apply to the scores of each row. If
+            not provided, no aggregation will be performed.
+        type:
+          type: string
+          const: faithfulness
+          default: faithfulness
+      additionalProperties: false
+      required:
+        - type
+      title: FaithfulnessScoringFnParams
     LLMAsJudgeScoringFnParams:
       type: object
       properties:
@@ -4483,31 +4643,21 @@ components:
           default: custom_llm_as_judge
         judge_model:
           type: string
-          description: The model to use for scoring.
         prompt_template:
           type: string
-          description: >-
-            (Optional) The prompt template to use for scoring.
         judge_score_regexes:
           type: array
           items:
             type: string
-          description: >-
-            (Optional) Regexes to extract the score from the judge model's response.
         aggregation_functions:
           type: array
           items:
             $ref: '#/components/schemas/AggregationFunctionType'
-          description: >-
-            (Optional) Aggregation functions to apply to the scores of each row. No
-            aggregation for results is calculated if not provided.
       additionalProperties: false
       required:
         - type
         - judge_model
       title: LLMAsJudgeScoringFnParams
-      description: >-
-        Parameters for a scoring function that uses a judge model to score the answer.
     ModelCandidate:
       type: object
       properties:
@@ -4533,44 +4683,107 @@ components:
         - sampling_params
       title: ModelCandidate
       description: A model candidate for evaluation.
-    RegexParserScoringFnParams:
+    RegexParserMathScoringFnParams:
       type: object
       properties:
-        type:
-          type: string
-          const: regex_parser
-          default: regex_parser
         parsing_regexes:
           type: array
           items:
             type: string
           description: >-
-            Regexes to extract the answer from generated response
+            (Optional) Regexes to extract the answer from generated response.
         aggregation_functions:
           type: array
           items:
             $ref: '#/components/schemas/AggregationFunctionType'
           description: >-
-            (Optional) Aggregation functions to apply to the scores of each row. No
-            aggregation for results is calculated if not provided.
+            (Optional) Aggregation functions to apply to the scores of each row. If
+            not provided, no aggregation will be performed.
+        type:
+          type: string
+          const: regex_parser_math_response
+          default: regex_parser_math_response
       additionalProperties: false
       required:
+        - parsing_regexes
+        - type
+      title: RegexParserMathScoringFnParams
+    RegexParserScoringFnParams:
+      type: object
+      properties:
+        parsing_regexes:
+          type: array
+          items:
+            type: string
+          description: >-
+            (Optional) Regexes to extract the answer from generated response.
+        aggregation_functions:
+          type: array
+          items:
+            $ref: '#/components/schemas/AggregationFunctionType'
+          description: >-
+            (Optional) Aggregation functions to apply to the scores of each row. If
+            not provided, no aggregation will be performed.
+        type:
+          type: string
+          const: regex_parser
+          default: regex_parser
+      additionalProperties: false
+      required:
+        - parsing_regexes
         - type
       title: RegexParserScoringFnParams
-      description: >-
-        Parameters for a scoring function that parses the answer from the generated
-        response using regexes, and checks against the expected answer.
     ScoringFnParams:
       oneOf:
         - $ref: '#/components/schemas/LLMAsJudgeScoringFnParams'
         - $ref: '#/components/schemas/RegexParserScoringFnParams'
-        - $ref: '#/components/schemas/BasicScoringFnParams'
+        - $ref: '#/components/schemas/RegexParserMathScoringFnParams'
+        - $ref: '#/components/schemas/EqualityScoringFnParams'
+        - $ref: '#/components/schemas/SubsetOfcoringFnParams'
+        - $ref: '#/components/schemas/FactualityScoringFnParams'
+        - $ref: '#/components/schemas/FaithfulnessScoringFnParams'
+        - $ref: '#/components/schemas/AnswerCorrectnessScoringFnParams'
+        - $ref: '#/components/schemas/AnswerRelevancyScoringFnParams'
+        - $ref: '#/components/schemas/AnswerSimilarityScoringFnParams'
+        - $ref: '#/components/schemas/ContextEntityRecallScoringFnParams'
+        - $ref: '#/components/schemas/ContextPrecisionScoringFnParams'
+        - $ref: '#/components/schemas/ContextRecallScoringFnParams'
+        - $ref: '#/components/schemas/ContextRelevancyScoringFnParams'
       discriminator:
         propertyName: type
         mapping:
           custom_llm_as_judge: '#/components/schemas/LLMAsJudgeScoringFnParams'
           regex_parser: '#/components/schemas/RegexParserScoringFnParams'
-          basic: '#/components/schemas/BasicScoringFnParams'
+          regex_parser_math_response: '#/components/schemas/RegexParserMathScoringFnParams'
+          equality: '#/components/schemas/EqualityScoringFnParams'
+          subset_of: '#/components/schemas/SubsetOfcoringFnParams'
+          factuality: '#/components/schemas/FactualityScoringFnParams'
+          faithfulness: '#/components/schemas/FaithfulnessScoringFnParams'
+          answer_correctness: '#/components/schemas/AnswerCorrectnessScoringFnParams'
+          answer_relevancy: '#/components/schemas/AnswerRelevancyScoringFnParams'
+          answer_similarity: '#/components/schemas/AnswerSimilarityScoringFnParams'
+          context_entity_recall: '#/components/schemas/ContextEntityRecallScoringFnParams'
+          context_precision: '#/components/schemas/ContextPrecisionScoringFnParams'
+          context_recall: '#/components/schemas/ContextRecallScoringFnParams'
+          context_relevancy: '#/components/schemas/ContextRelevancyScoringFnParams'
+    SubsetOfcoringFnParams:
+      type: object
+      properties:
+        aggregation_functions:
+          type: array
+          items:
+            $ref: '#/components/schemas/AggregationFunctionType'
+          description: >-
+            (Optional) Aggregation functions to apply to the scores of each row. If
+            not provided, no aggregation will be performed.
+        type:
+          type: string
+          const: subset_of
+          default: subset_of
+      additionalProperties: false
+      required:
+        - type
+      title: SubsetOfcoringFnParams
     EvaluateRowsRequest:
       type: object
       properties:
@@ -6364,6 +6577,7 @@ components:
       additionalProperties: false
       required:
         - scoring_fn_type
+        - params
       title: RegisterScoringFunctionRequest
     RegisterShieldRequest:
       type: object
