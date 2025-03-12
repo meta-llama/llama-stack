@@ -545,7 +545,7 @@ class ChatAgent(ShieldRunnerMixin):
                             )
 
                     elif delta.type == "text":
-                        delta.text = "hello"
+                        # delta.text = "hello"
                         content += delta.text
                         if stream and event.stop_reason is None:
                             yield AgentTurnResponseStreamChunk(
