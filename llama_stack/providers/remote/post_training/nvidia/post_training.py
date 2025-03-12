@@ -203,6 +203,34 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
             - NVIDIA_ACCESS_POLICIES: Access policies for the project
             - NVIDIA_DATASET_NAMESPACE: Namespace of the dataset
             - NVIDIA_OUTPUT_MODEL_DIR: Directory to save the output model
+
+        Supported models:
+            - meta/llama-3.1-8b-instruct
+
+        Supported algorithm configs:
+            - LoRA, SFT
+
+        Supported Parameters:
+            - TrainingConfig:
+                - n_epochs
+                - data_config
+                - optimizer_config
+                - dtype
+                - efficiency_config
+                - max_steps_per_epoch
+            - DataConfig:
+                - dataset_id
+                - batch_size
+            - OptimizerConfig:
+                - lr
+            - LoRA config:
+                - adapter_dim
+                - adapter_dropout
+            Note:
+                - checkpoint_dir, hyperparam_search_config, logger_config are not supported atm, will be ignored
+                - output_model_dir is set via environment variable NVIDIA_OUTPUT_MODEL_DIR
+
+            User is informed about unsupported parameters via warnings.
         """
         # map model to nvidia model name
         nvidia_model = self.get_provider_model_id(model)
