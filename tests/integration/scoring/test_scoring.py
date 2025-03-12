@@ -113,7 +113,7 @@ def test_scoring_score(llama_stack_client):
     for x in scoring_functions:
         assert x in response.results
         assert len(response.results[x].score_rows) == 5
-    
+
     llama_stack_client.datasets.unregister("test_dataset")
 
 
@@ -158,7 +158,7 @@ def test_scoring_score_with_params_llm_as_judge(llama_stack_client, sample_judge
     for x in scoring_functions:
         assert x in response.results
         assert len(response.results[x].score_rows) == 5
-    
+
     llama_stack_client.datasets.unregister("test_dataset")
 
 
