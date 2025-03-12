@@ -14,16 +14,16 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10.16'
+          python-version: '3.10'
 
       - uses: astral-sh/setup-uv@v5
         with:
-          python-version: '3.10.16'
+          python-version: '3.10'
           enable-cache: false
 
       - name: Run unit tests
         run: |
-          uv run -p 3.10.16 --with-editable . --with-editable ".[dev]" --with-editable ".[unit]" pytest --cov=llama_stack -s -v tests/unit/ --junitxml=pytest-report.xml
+          uv run -p 3.10 --with-editable . --with-editable ".[dev]" --with-editable ".[unit]" pytest --cov=llama_stack -s -v tests/unit/ --junitxml=pytest-report.xml
 
       - name: Upload test results
         if: always()

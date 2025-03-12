@@ -25,10 +25,6 @@ MODEL_ENTRIES = [
         CoreModelId.llama3_1_405b_instruct.value,
     ),
     build_hf_repo_model_entry(
-        "accounts/fireworks/models/llama-v3p2-1b-instruct",
-        CoreModelId.llama3_2_1b_instruct.value,
-    ),
-    build_hf_repo_model_entry(
         "accounts/fireworks/models/llama-v3p2-3b-instruct",
         CoreModelId.llama3_2_3b_instruct.value,
     ),

@@ -33,6 +33,8 @@ Can be set to any of the following log levels:
 
 The default global log level is `info`. `all` sets the log level for all components.
 
+A user can also set `LLAMA_STACK_LOG_FILE` which will pipe the logs to the specified path as well as to the terminal. An example would be: `export LLAMA_STACK_LOG_FILE=server.log`
+
 ### Llama Stack Build
 
 In order to build your own distribution, we recommend you clone the `llama-stack` repository.
