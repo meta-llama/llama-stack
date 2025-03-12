@@ -25,7 +25,6 @@ from llama_stack.schema_utils import json_schema_type, register_schema, webmetho
 
 # Perhaps more structure can be imposed on these functions. Maybe they could be associated
 # with standard metrics so they can be rolled up?
-@json_schema_type
 class ScoringFnParamsType(Enum):
     """
     A type of scoring function parameters.
@@ -40,7 +39,6 @@ class ScoringFnParamsType(Enum):
     basic = "basic"
 
 
-@json_schema_type
 class ScoringFunctionType(Enum):
     """
     A type of scoring function. Each type is a criteria for evaluating answers.
