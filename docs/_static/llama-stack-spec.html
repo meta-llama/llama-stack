@@ -4549,7 +4549,7 @@
                     "metrics": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/MetricEvent"
+                            "$ref": "#/components/schemas/MetricInResponse"
                         }
                     },
                     "completion_message": {
@@ -4571,46 +4571,9 @@
                 "title": "ChatCompletionResponse",
                 "description": "Response from a chat completion request."
             },
-            "MetricEvent": {
+            "MetricInResponse": {
                 "type": "object",
                 "properties": {
-                    "trace_id": {
-                        "type": "string"
-                    },
-                    "span_id": {
-                        "type": "string"
-                    },
-                    "timestamp": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "attributes": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "integer"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "null"
-                                }
-                            ]
-                        }
-                    },
-                    "type": {
-                        "type": "string",
-                        "const": "metric",
-                        "default": "metric"
-                    },
                     "metric": {
                         "type": "string"
                     },
@@ -4630,13 +4593,10 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "timestamp",
-                    "type",
                     "metric",
-                    "value",
-                    "unit"
+                    "value"
                 ],
-                "title": "MetricEvent"
+                "title": "MetricInResponse"
             },
             "TokenLogProbs": {
                 "type": "object",
@@ -4713,6 +4673,12 @@
             "CompletionResponse": {
                 "type": "object",
                 "properties": {
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricInResponse"
+                        }
+                    },
                     "content": {
                         "type": "string",
                         "description": "The generated completion text"
@@ -4922,7 +4888,7 @@
                     "metrics": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/MetricEvent"
+                            "$ref": "#/components/schemas/MetricInResponse"
                         }
                     },
                     "event": {
@@ -5080,6 +5046,12 @@
             "CompletionResponseStreamChunk": {
                 "type": "object",
                 "properties": {
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricInResponse"
+                        }
+                    },
                     "delta": {
                         "type": "string",
                         "description": "New content generated since last chunk. This can be one or more tokens."
@@ -8361,6 +8333,71 @@
                 ],
                 "title": "LogSeverity"
             },
+            "MetricEvent": {
+                "type": "object",
+                "properties": {
+                    "trace_id": {
+                        "type": "string"
+                    },
+                    "span_id": {
+                        "type": "string"
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "attributes": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "integer"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ]
+                        }
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "metric",
+                        "default": "metric"
+                    },
+                    "metric": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "oneOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "number"
+                            }
+                        ]
+                    },
+                    "unit": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "metric",
+                    "value"
+                ],
+                "title": "MetricEvent"
+            },
             "SpanEndPayload": {
                 "type": "object",
                 "properties": {
@@ -8448,7 +8485,6 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "timestamp",
                     "type",
                     "payload"
                 ],
@@ -8520,7 +8556,6 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "timestamp",
                     "type",
                     "message",
                     "severity"

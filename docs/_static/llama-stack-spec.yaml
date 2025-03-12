@@ -3101,7 +3101,7 @@ components:
         metrics:
           type: array
           items:
-            $ref: '#/components/schemas/MetricEvent'
+            $ref: '#/components/schemas/MetricInResponse'
         completion_message:
           $ref: '#/components/schemas/CompletionMessage'
           description: The complete response message
@@ -3116,29 +3116,9 @@ components:
         - completion_message
       title: ChatCompletionResponse
       description: Response from a chat completion request.
-    MetricEvent:
+    MetricInResponse:
       type: object
       properties:
-        trace_id:
-          type: string
-        span_id:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-        attributes:
-          type: object
-          additionalProperties:
-            oneOf:
-              - type: string
-              - type: integer
-              - type: number
-              - type: boolean
-              - type: 'null'
-        type:
-          type: string
-          const: metric
-          default: metric
         metric:
           type: string
         value:
@@ -3149,12 +3129,9 @@ components:
           type: string
       additionalProperties: false
       required:
-        - timestamp
-        - type
         - metric
         - value
-        - unit
-      title: MetricEvent
+      title: MetricInResponse
     TokenLogProbs:
       type: object
       properties:
@@ -3211,6 +3188,10 @@ components:
     CompletionResponse:
       type: object
       properties:
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricInResponse'
         content:
           type: string
           description: The generated completion text
@@ -3410,7 +3391,7 @@ components:
         metrics:
           type: array
           items:
-            $ref: '#/components/schemas/MetricEvent'
+            $ref: '#/components/schemas/MetricInResponse'
         event:
           $ref: '#/components/schemas/ChatCompletionResponseEvent'
           description: The event containing the new content
@@ -3529,6 +3510,10 @@ components:
     CompletionResponseStreamChunk:
       type: object
       properties:
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricInResponse'
         delta:
           type: string
           description: >-
@@ -5701,6 +5686,43 @@ components:
         - error
         - critical
       title: LogSeverity
+    MetricEvent:
+      type: object
+      properties:
+        trace_id:
+          type: string
+        span_id:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        attributes:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: string
+              - type: integer
+              - type: number
+              - type: boolean
+              - type: 'null'
+        type:
+          type: string
+          const: metric
+          default: metric
+        metric:
+          type: string
+        value:
+          oneOf:
+            - type: integer
+            - type: number
+        unit:
+          type: string
+      additionalProperties: false
+      required:
+        - type
+        - metric
+        - value
+      title: MetricEvent
     SpanEndPayload:
       type: object
       properties:
@@ -5758,7 +5780,6 @@ components:
           $ref: '#/components/schemas/StructuredLogPayload'
       additionalProperties: false
       required:
-        - timestamp
         - type
         - payload
       title: StructuredLogEvent
@@ -5800,7 +5821,6 @@ components:
           $ref: '#/components/schemas/LogSeverity'
       additionalProperties: false
       required:
-        - timestamp
         - type
         - message
         - severity
