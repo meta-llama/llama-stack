@@ -179,7 +179,7 @@ class ScoringFunctions(Protocol):
         :param scoring_fn_type: The type of scoring function to register.
         :param params: The parameters for the scoring function.
         :param scoring_fn_id: (Optional) The ID of the scoring function to register. If not provided, a random ID will be generated.
-        :param metadata: (Optional) Any additional metadata to be associated with the scoring function. 
+        :param metadata: (Optional) Any additional metadata to be associated with the scoring function.
             - E.g. {"description": "This scoring function is used for ..."}
         """
         ...
