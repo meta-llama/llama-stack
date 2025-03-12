@@ -422,6 +422,7 @@ def main():
         "host": listen_host,
         "port": port,
         "lifespan": "on",
+        "log_level": logger.getEffectiveLevel(),
     }
     if ssl_config:
         uvicorn_config.update(ssl_config)
