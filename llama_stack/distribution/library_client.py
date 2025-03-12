@@ -56,8 +56,6 @@ logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
 
-trace_context = None
-
 
 def convert_pydantic_to_json_value(value: Any) -> Any:
     if isinstance(value, Enum):
@@ -385,9 +383,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
                 sse_event = f"data: {data}\n\n"
                 yield sse_event.encode("utf-8")
 
-        # Wrap the generator to preserve context across iterations
         try:
-            # Combine both context preservations in a single pass
             wrapped_gen = self._preserve_contexts_async_generator(gen())
         finally:
             await end_trace()
