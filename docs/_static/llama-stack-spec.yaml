@@ -6767,7 +6767,7 @@ components:
     ScoreRowsRequest:
       type: object
       properties:
-        input_rows:
+        dataset_rows:
           type: array
           items:
             type: object
@@ -6788,7 +6788,7 @@ components:
             The scoring functions to use for the scoring.
       additionalProperties: false
       required:
-        - input_rows
+        - dataset_rows
         - scoring_functions
       title: ScoreRowsRequest
     ScoreResponse:
