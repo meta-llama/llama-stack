@@ -2426,7 +2426,14 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Benchmark"
+                                }
+                            }
+                        }
                     },
                     "400": {
                         "$ref": "#/components/responses/BadRequest400"
@@ -2444,7 +2451,7 @@
                 "tags": [
                     "Benchmarks"
                 ],
-                "description": "",
+                "description": "Register a new benchmark.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -7098,13 +7105,15 @@
                         "default": "benchmark"
                     },
                     "dataset_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The ID of the dataset to used to run the benchmark."
                     },
                     "scoring_functions": {
                         "type": "array",
                         "items": {
-                            "type": "string"
-                        }
+                            "$ref": "#/components/schemas/ScoringFnParams"
+                        },
+                        "description": "The scoring functions with parameters to use for this benchmark."
                     },
                     "metadata": {
                         "type": "object",
@@ -7129,7 +7138,8 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "Metadata for this benchmark for additional descriptions."
                     }
                 },
                 "additionalProperties": false,
@@ -9448,23 +9458,20 @@
             "RegisterBenchmarkRequest": {
                 "type": "object",
                 "properties": {
-                    "benchmark_id": {
-                        "type": "string"
-                    },
                     "dataset_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The ID of the dataset to used to run the benchmark."
                     },
                     "scoring_functions": {
                         "type": "array",
                         "items": {
-                            "type": "string"
-                        }
+                            "$ref": "#/components/schemas/ScoringFnParams"
+                        },
+                        "description": "The scoring functions with parameters to use for this benchmark."
                     },
-                    "provider_benchmark_id": {
-                        "type": "string"
-                    },
-                    "provider_id": {
-                        "type": "string"
+                    "benchmark_id": {
+                        "type": "string",
+                        "description": "(Optional) The ID of the benchmark to register. If not provided, a random ID will be generated."
                     },
                     "metadata": {
                         "type": "object",
@@ -9489,12 +9496,12 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "(Optional) Metadata for this benchmark for additional descriptions."
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "benchmark_id",
                     "dataset_id",
                     "scoring_functions"
                 ],

@@ -12,8 +12,8 @@ from typing import (
     Literal,
     Optional,
     Protocol,
-    runtime_checkable,
     Union,
+    runtime_checkable,
 )
 
 from pydantic import BaseModel, Field
@@ -218,9 +218,7 @@ class CommonScoringFnFields(BaseModel):
 
 @json_schema_type
 class ScoringFn(CommonScoringFnFields, Resource):
-    type: Literal[ResourceType.scoring_function.value] = (
-        ResourceType.scoring_function.value
-    )
+    type: Literal[ResourceType.scoring_function.value] = ResourceType.scoring_function.value
 
     @property
     def scoring_fn_id(self) -> str:
