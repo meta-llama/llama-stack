@@ -75,9 +75,9 @@ class LogSeverity(Enum):
 
 
 class EventCommon(BaseModel):
-    trace_id: Optional[str] = None
-    span_id: Optional[str] = None
-    timestamp: Optional[datetime] = None
+    trace_id: str
+    span_id: str
+    timestamp: datetime
     attributes: Optional[Dict[str, Primitive]] = Field(default_factory=dict)
 
 
@@ -93,7 +93,7 @@ class MetricEvent(EventCommon):
     type: Literal[EventType.METRIC.value] = EventType.METRIC.value
     metric: str  # this would be an enum
     value: Union[int, float]
-    unit: Optional[str] = None
+    unit: str
 
 
 @json_schema_type

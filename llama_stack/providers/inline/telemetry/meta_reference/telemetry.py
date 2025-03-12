@@ -153,20 +153,20 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
             else:
                 print(f"Warning: No active span found for span_id {span_id}. Dropping event: {event}")
 
-    def _get_or_create_counter(self, name: str, unit: Optional[str] = None) -> metrics.Counter:
+    def _get_or_create_counter(self, name: str, unit: str) -> metrics.Counter:
         if name not in _GLOBAL_STORAGE["counters"]:
             _GLOBAL_STORAGE["counters"][name] = self.meter.create_counter(
                 name=name,
-                unit=unit or "",
+                unit=unit,
                 description=f"Counter for {name}",
             )
         return _GLOBAL_STORAGE["counters"][name]
 
-    def _get_or_create_gauge(self, name: str, unit: Optional[str] = None) -> metrics.ObservableGauge:
+    def _get_or_create_gauge(self, name: str, unit: str) -> metrics.ObservableGauge:
         if name not in _GLOBAL_STORAGE["gauges"]:
             _GLOBAL_STORAGE["gauges"][name] = self.meter.create_gauge(
                 name=name,
-                unit=unit or "",
+                unit=unit,
                 description=f"Gauge for {name}",
             )
         return _GLOBAL_STORAGE["gauges"][name]
@@ -181,11 +181,11 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
             up_down_counter = self._get_or_create_up_down_counter(event.metric, event.unit)
             up_down_counter.add(event.value, attributes=event.attributes)
 
-    def _get_or_create_up_down_counter(self, name: str, unit: Optional[str] = None) -> metrics.UpDownCounter:
+    def _get_or_create_up_down_counter(self, name: str, unit: str) -> metrics.UpDownCounter:
         if name not in _GLOBAL_STORAGE["up_down_counters"]:
             _GLOBAL_STORAGE["up_down_counters"][name] = self.meter.create_up_down_counter(
                 name=name,
-                unit=unit or "",
+                unit=unit,
                 description=f"UpDownCounter for {name}",
             )
         return _GLOBAL_STORAGE["up_down_counters"][name]
