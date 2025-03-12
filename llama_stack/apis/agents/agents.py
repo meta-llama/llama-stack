@@ -234,6 +234,23 @@ class AgentConfig(AgentConfigCommon):
     response_format: Optional[ResponseFormat] = None
 
 
+@json_schema_type
+class Agent(BaseModel):
+    agent_id: str
+    agent_config: AgentConfig
+    created_at: datetime
+
+
+@json_schema_type
+class ListAgentsResponse(BaseModel):
+    data: List[Agent]
+
+
+@json_schema_type
+class ListAgentSessionsResponse(BaseModel):
+    data: List[Session]
+
+
 class AgentConfigOverridablePerTurn(AgentConfigCommon):
     instructions: Optional[str] = None
 
@@ -539,5 +556,34 @@ class Agents(Protocol):
         """Delete an agent by its ID.
 
         :param agent_id: The ID of the agent to delete.
+        """
+        ...
+
+    @webmethod(route="/agents", method="GET")
+    async def list_agents(self) -> ListAgentsResponse:
+        """List all agents.
+
+        :returns: A ListAgentsResponse.
+        """
+        ...
+
+    @webmethod(route="/agents/{agent_id}", method="GET")
+    async def get_agent(self, agent_id: str) -> Agent:
+        """Describe an agent by its ID.
+
+        :param agent_id: ID of the agent.
+        :returns: An Agent of the agent.
+        """
+        ...
+
+    @webmethod(route="/agents/{agent_id}/sessions", method="GET")
+    async def list_agent_sessions(
+        self,
+        agent_id: str,
+    ) -> ListAgentSessionsResponse:
+        """List all session(s) of a given agent.
+
+        :param agent_id: The ID of the agent to list sessions for.
+        :returns: A ListAgentSessionsResponse.
         """
         ...

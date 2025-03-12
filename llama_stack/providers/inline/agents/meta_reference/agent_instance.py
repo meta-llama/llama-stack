@@ -16,7 +16,6 @@ from typing import Any, AsyncGenerator, Dict, List, Optional, Tuple, Union
 from urllib.parse import urlparse
 
 import httpx
-from rich.markup import escape
 
 from llama_stack.apis.agents import (
     AgentConfig,
@@ -182,7 +181,7 @@ class ChatAgent(ShieldRunnerMixin):
         return messages
 
     async def create_and_execute_turn(self, request: AgentTurnCreateRequest) -> AsyncGenerator:
-        with tracing.span("create_and_execute_turn") as span:
+        async with tracing.span("create_and_execute_turn") as span:
             span.set_attribute("session_id", request.session_id)
             span.set_attribute("agent_id", self.agent_id)
             span.set_attribute("request", request.model_dump_json())
@@ -192,7 +191,7 @@ class ChatAgent(ShieldRunnerMixin):
                 yield chunk
 
     async def resume_turn(self, request: AgentTurnResumeRequest) -> AsyncGenerator:
-        with tracing.span("resume_turn") as span:
+        async with tracing.span("resume_turn") as span:
             span.set_attribute("agent_id", self.agent_id)
             span.set_attribute("session_id", request.session_id)
             span.set_attribute("turn_id", request.turn_id)
@@ -391,7 +390,7 @@ class ChatAgent(ShieldRunnerMixin):
         shields: List[str],
         touchpoint: str,
     ) -> AsyncGenerator:
-        with tracing.span("run_shields") as span:
+        async with tracing.span("run_shields") as span:
             span.set_attribute("input", [m.model_dump_json() for m in messages])
             if len(shields) == 0:
                 span.set_attribute("output", "no shields")
@@ -509,7 +508,7 @@ class ChatAgent(ShieldRunnerMixin):
             content = ""
             stop_reason = None
 
-            with tracing.span("inference") as span:
+            async with tracing.span("inference") as span:
                 async for chunk in await self.inference_api.chat_completion(
                     self.agent_config.model,
                     input_messages,
@@ -686,7 +685,7 @@ class ChatAgent(ShieldRunnerMixin):
                 tool_name = tool_call.tool_name
                 if isinstance(tool_name, BuiltinTool):
                     tool_name = tool_name.value
-                with tracing.span(
+                async with tracing.span(
                     "tool_execution",
                     {
                         "tool_name": tool_name,
@@ -1030,7 +1029,7 @@ async def execute_tool_call_maybe(
             **toolgroup_args.get(group_name, {}),
         },
     )
-    logger.info(f"tool call {name} completed with result: {escape(str(result))}")
+    logger.info(f"tool call {name} completed with result: {result}")
     return result
 
 

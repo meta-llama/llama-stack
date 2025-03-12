@@ -34,6 +34,8 @@ def available_providers() -> List[ProviderSpec]:
             config_class="llama_stack.providers.inline.vector_io.faiss.FaissVectorIOConfig",
             api_dependencies=[Api.inference],
         ),
+        # NOTE: sqlite-vec cannot be bundled into the container image because it does not have a
+        # source distribution and the wheels are not available for all platforms.
         InlineProviderSpec(
             api=Api.vector_io,
             provider_type="inline::sqlite-vec",

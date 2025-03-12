@@ -4,10 +4,12 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+from typing import Any, Dict
+
 from .config import PromptGuardConfig  # noqa: F401
 
 
-async def get_provider_impl(config: PromptGuardConfig, deps):
+async def get_provider_impl(config: PromptGuardConfig, deps: Dict[str, Any]):
     from .prompt_guard import PromptGuardSafetyImpl
 
     impl = PromptGuardSafetyImpl(config, deps)

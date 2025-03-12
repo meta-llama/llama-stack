@@ -3,11 +3,11 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from typing import Dict
+from typing import Any, Dict
 
 from pydantic import BaseModel
 
-from llama_stack.distribution.datatypes import Api, ProviderSpec
+from llama_stack.distribution.datatypes import Api
 
 from .config import BraintrustScoringConfig
 
@@ -18,7 +18,7 @@ class BraintrustProviderDataValidator(BaseModel):
 
 async def get_provider_impl(
     config: BraintrustScoringConfig,
-    deps: Dict[Api, ProviderSpec],
+    deps: Dict[Api, Any],
 ):
     from .braintrust import BraintrustScoringImpl
 

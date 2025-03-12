@@ -3,11 +3,3 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-
-import enum
-
-
-class LlamaStackImageType(enum.Enum):
-    CONTAINER = "container"
-    CONDA = "conda"
-    VENV = "venv"

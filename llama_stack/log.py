@@ -10,7 +10,9 @@ from logging.config import dictConfig
 from typing import Dict
 
 from rich.console import Console
+from rich.errors import MarkupError
 from rich.logging import RichHandler
+from termcolor import cprint
 
 # Default log level
 DEFAULT_LOG_LEVEL = logging.INFO
@@ -82,13 +84,26 @@ class CustomRichHandler(RichHandler):
         kwargs["console"] = Console(width=120)
         super().__init__(*args, **kwargs)
 
+    def emit(self, record):
+        """Override emit to handle markup errors gracefully."""
+        try:
+            super().emit(record)
+        except MarkupError:
+            original_markup = self.markup
+            self.markup = False
+            try:
+                super().emit(record)
+            finally:
+                self.markup = original_markup
 
-def setup_logging(category_levels: Dict[str, int]) -> None:
+
+def setup_logging(category_levels: Dict[str, int], log_file: str | None) -> None:
     """
-    Configure logging based on the provided category log levels.
+    Configure logging based on the provided category log levels and an optional log file.
 
     Parameters:
         category_levels (Dict[str, int]): A dictionary mapping categories to their log levels.
+        log_file (str): Path to a log file to additionally pipe the logs into
     """
     log_format = "[dim]%(asctime)s %(name)s:%(lineno)d[/] [yellow dim]%(category)s[/]: %(message)s"
 
@@ -103,6 +118,28 @@ def setup_logging(category_levels: Dict[str, int]) -> None:
     # Determine the root logger's level (default to WARNING if not specified)
     root_level = category_levels.get("root", logging.WARNING)
 
+    handlers = {
+        "console": {
+            "()": CustomRichHandler,  # Use custom console handler
+            "formatter": "rich",
+            "rich_tracebacks": True,
+            "show_time": False,
+            "show_path": False,
+            "markup": True,
+            "filters": ["category_filter"],
+        }
+    }
+
+    # Add a file handler if log_file is set
+    if log_file:
+        handlers["file"] = {
+            "class": "logging.FileHandler",
+            "formatter": "rich",
+            "filename": log_file,
+            "mode": "a",
+            "encoding": "utf-8",
+        }
+
     logging_config = {
         "version": 1,
         "disable_existing_loggers": False,
@@ -112,17 +149,7 @@ def setup_logging(category_levels: Dict[str, int]) -> None:
                 "format": log_format,
             }
         },
-        "handlers": {
-            "console": {
-                "()": CustomRichHandler,  # Use our custom handler class
-                "formatter": "rich",
-                "rich_tracebacks": True,
-                "show_time": False,
-                "show_path": False,
-                "markup": True,
-                "filters": ["category_filter"],
-            }
-        },
+        "handlers": handlers,
         "filters": {
             "category_filter": {
                 "()": CategoryFilter,
@@ -130,14 +157,14 @@ def setup_logging(category_levels: Dict[str, int]) -> None:
         },
         "loggers": {
             category: {
-                "handlers": ["console"],
+                "handlers": list(handlers.keys()),  # Apply all handlers
                 "level": category_levels.get(category, DEFAULT_LOG_LEVEL),
                 "propagate": False,  # Disable propagation to root logger
             }
             for category in CATEGORIES
         },
         "root": {
-            "handlers": ["console"],
+            "handlers": list(handlers.keys()),
             "level": root_level,  # Set root logger's level dynamically
         },
     }
@@ -163,7 +190,9 @@ def get_logger(name: str, category: str = "uncategorized") -> logging.LoggerAdap
 
 env_config = os.environ.get("LLAMA_STACK_LOGGING", "")
 if env_config:
-    print(f"Environment variable LLAMA_STACK_LOGGING found: {env_config}")
+    cprint(f"Environment variable LLAMA_STACK_LOGGING found: {env_config}", "yellow")
     _category_levels.update(parse_environment_config(env_config))
 
-setup_logging(_category_levels)
+log_file = os.environ.get("LLAMA_STACK_LOG_FILE")
+
+setup_logging(_category_levels, log_file)

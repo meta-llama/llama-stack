@@ -71,7 +71,6 @@ services:
           condition: service_healthy
       - vllm-${VLLM_SAFETY_MODEL:+safety}:
           condition: service_healthy
-    # image: llamastack/distribution-remote-vllm
     image: llamastack/distribution-remote-vllm:test-0.0.52rc3
     volumes:
       - ~/.llama:/root/.llama

@@ -55,7 +55,7 @@ Running all inference tests for a number of models:
 TEXT_MODELS=meta-llama/Llama-3.1-8B-Instruct,meta-llama/Llama-3.1-70B-Instruct
 VISION_MODELS=meta-llama/Llama-3.2-11B-Vision-Instruct
 EMBEDDING_MODELS=all-MiniLM-L6-v2
-TOGETHER_API_KEY=...
+export TOGETHER_API_KEY=<together_api_key>
 
 pytest -s -v tests/api/inference/ \
    --stack-config=together \
@@ -67,7 +67,7 @@ pytest -s -v tests/api/inference/ \
 Same thing but instead of using the distribution, use an adhoc stack with just one provider (`fireworks` for inference):
 
 ```bash
-FIREWORKS_API_KEY=...
+export FIREWORKS_API_KEY=<fireworks_api_key>
 
 pytest -s -v tests/api/inference/ \
    --stack-config=inference=fireworks \

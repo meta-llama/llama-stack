@@ -70,8 +70,9 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProv
         pass
 
     def _get_api_key(self) -> str:
-        if self.config.api_key is not None:
-            return self.config.api_key.get_secret_value()
+        config_api_key = self.config.api_key.get_secret_value() if self.config.api_key else None
+        if config_api_key:
+            return config_api_key
         else:
             provider_data = self.get_request_provider_data()
             if provider_data is None or not provider_data.fireworks_api_key:

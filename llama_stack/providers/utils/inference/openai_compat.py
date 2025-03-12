@@ -615,6 +615,14 @@ def convert_tool_call(
     return valid_tool_call
 
 
+PYTHON_TYPE_TO_LITELLM_TYPE = {
+    "int": "integer",
+    "float": "number",
+    "bool": "boolean",
+    "str": "string",
+}
+
+
 def convert_tooldef_to_openai_tool(tool: ToolDefinition) -> dict:
     """
     Convert a ToolDefinition to an OpenAI API-compatible dictionary.
@@ -675,7 +683,7 @@ def convert_tooldef_to_openai_tool(tool: ToolDefinition) -> dict:
         properties = parameters["properties"]
         required = []
         for param_name, param in tool.parameters.items():
-            properties[param_name] = {"type": param.param_type}
+            properties[param_name] = {"type": PYTHON_TYPE_TO_LITELLM_TYPE.get(param.param_type, param.param_type)}
             if param.description:
                 properties[param_name].update(description=param.description)
             if param.default:

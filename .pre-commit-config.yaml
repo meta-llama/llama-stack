@@ -15,10 +15,6 @@ repos:
     -   id: end-of-file-fixer
         exclude: '^(.*\.svg)$'
 
-# Temporarily disabling this
-#    -   id: no-commit-to-branch
-#        args: ['--branch=main']
-
 -   repo: https://github.com/Lucas-C/pre-commit-hooks
     rev: v1.5.4
     hooks:
@@ -67,12 +63,6 @@ repos:
           - types-requests
           - pydantic
         pass_filenames: false
-
-# - repo: https://github.com/jsh9/pydoclint
-#   rev: d88180a8632bb1602a4d81344085cf320f288c5a
-#   hooks:
-#     - id: pydoclint
-#       args: [--config=pyproject.toml]
 
 # - repo: https://github.com/tcort/markdown-link-check
 #   rev: v3.11.2

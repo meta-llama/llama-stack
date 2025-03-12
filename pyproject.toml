@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "llama_stack"
-version = "0.1.5"
+version = "0.1.6"
 authors = [{ name = "Meta Llama", email = "llama-oss@meta.com" }]
 description = "Llama Stack"
 readme = "README.md"
@@ -25,8 +25,9 @@ dependencies = [
     "fire",
     "httpx",
     "huggingface-hub",
+    "jinja2>=3.1.6",
     "jsonschema",
-    "llama-stack-client>=0.1.5",
+    "llama-stack-client>=0.1.6",
     "prompt-toolkit",
     "python-dotenv",
     "pydantic>=2",
@@ -42,6 +43,7 @@ dependencies = [
 dev = [
     "pytest",
     "pytest-asyncio",
+    "pytest-cov",
     "pytest-html",
     "nbval",            # For notebook testing
     "black",
@@ -53,20 +55,24 @@ dev = [
     "fastapi",
     "ruamel.yaml",      # needed for openapi generator
 ]
+# These are the dependencies required for running unit tests.
+unit = ["sqlite-vec", "openai", "aiosqlite", "pypdf", "chardet"]
+# These are the core dependencies required for running integration tests. They are shared across all
+# providers. If a provider requires additional dependencies, please add them to your environment
+# separately. If you are using "uv" to execute your tests, you can use the "--with" flag to specify extra
+# dependencies.
 test = [
     "openai",
     "aiosqlite",
-    "sqlite-vec",
-    "ollama",
     "torch>=2.6.0",
-    "fairscale>=0.4.13",
     "torchvision>=0.21.0",
-    "lm-format-enforcer>=0.10.9",
-    "groq",
     "opentelemetry-sdk",
     "opentelemetry-exporter-otlp-proto-http",
     "chardet",
     "pypdf",
+    "mcp",
+    "datasets",
+    "autoevals",
 ]
 docs = [
     "sphinx-autobuild",
