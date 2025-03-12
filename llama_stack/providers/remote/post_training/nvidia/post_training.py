@@ -3,6 +3,7 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
+import warnings
 from datetime import datetime
 from typing import Any, Dict, List, Literal, Optional
 
@@ -190,6 +191,13 @@ class NvidiaPostTrainingAdapter:
             job_uuid: str - Unique identifier for the job
             hyperparam_search_config: Dict[str, Any] - Configuration for hyperparameter search
             logger_config: Dict[str, Any] - Configuration for logging
+
+        Environment Variables:
+            - NVIDIA_PROJECT_ID: ID of the project
+            - NVIDIA_USER_ID: ID of the user
+            - NVIDIA_ACCESS_POLICIES: Access policies for the project
+            - NVIDIA_DATASET_NAMESPACE: Namespace of the dataset
+            - NVIDIA_OUTPUT_MODEL_DIR: Directory to save the output model
         """
         # map model to nvidia model name
         model_mapping = {
@@ -198,8 +206,29 @@ class NvidiaPostTrainingAdapter:
         }
         nvidia_model = model_mapping.get(model, model)
 
-        # Get output model directory from config
+        # Check for unsupported parameters
+        if checkpoint_dir or hyperparam_search_config or logger_config:
+            warnings.warn(
+                "Parameters: {} not supported atm, will be ignored".format(
+                    checkpoint_dir,
+                )
+            )
+
+        def warn_unsupported_params(config_dict: Dict[str, Any], supported_keys: List[str], config_name: str) -> None:
+            """Helper function to warn about unsupported parameters in a config dictionary."""
+            unsupported_params = [k for k in config_dict.keys() if k not in supported_keys]
+            if unsupported_params:
+                warnings.warn(f"Parameters: {unsupported_params} in {config_name} not supported and will be ignored.")
+
+        # Check for unsupported parameters
+        warn_unsupported_params(training_config, ["n_epochs", "data_config", "optimizer_config"], "TrainingConfig")
+        warn_unsupported_params(training_config["data_config"], ["dataset_id", "batch_size"], "DataConfig")
+        warn_unsupported_params(training_config["optimizer_config"], ["lr"], "OptimizerConfig")
+
         output_model = self.config.output_model_dir
+
+        if output_model == "default":
+            warnings.warn("output_model_dir set via default value, will be ignored")
 
         # Prepare base job configuration
         job_config = {
@@ -226,6 +255,7 @@ class NvidiaPostTrainingAdapter:
                 # Extract LoRA-specific parameters
                 lora_config = {k: v for k, v in algorithm_config.items() if k != "type"}
                 job_config["hyperparameters"]["lora"] = lora_config
+                warn_unsupported_params(lora_config, ["adapter_dim", "adapter_dropout"], "LoRA config")
             else:
                 raise NotImplementedError(f"Unsupported algorithm config: {algorithm_config}")
 
