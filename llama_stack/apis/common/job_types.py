@@ -28,9 +28,11 @@ class CommonJobFields(BaseModel):
     :param status: The status of the job.
     :param created_at: The time the job was created.
     :param finished_at: The time the job finished.
+    :param error: If status of the job is failed, this will contain the error message.
     """
 
     id: str
     status: JobStatus
     created_at: datetime
     finished_at: Optional[datetime] = None
+    error: Optional[str] = None

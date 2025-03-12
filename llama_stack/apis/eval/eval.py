@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
 from llama_stack.apis.agents import AgentConfig
-from llama_stack.apis.common.job_types import Job, JobStatus
+from llama_stack.apis.common.job_types import CommonJobFields, JobStatus
 from llama_stack.apis.inference import SamplingParams, SystemMessage
 from llama_stack.apis.scoring import ScoringResult
 from llama_stack.apis.scoring_functions import ScoringFnParams
@@ -84,12 +84,15 @@ class EvaluateResponse(BaseModel):
 
 
 @json_schema_type
-class EvalJob(Job):
-    """The EvalJob object representing a evaluation job that was created through API.
+class EvalJob(CommonJobFields):
+    """The EvalJob object representing a evaluation job that was created through API."""
 
-    :param job_id: The ID of the job.
-    :param status: The status of the job.
-    """
+    type: Literal["eval"] = "eval"
+    # TODO: result files or result datasets ids?
+    result_files: List[str] = Field(
+        default_factory=list,
+        description="Result files of an evaluation run. Which can be queried for results.",
+    )
 
 
 class Eval(Protocol):
@@ -99,7 +102,7 @@ class Eval(Protocol):
     async def evaluate_benchmark(
         self,
         benchmark_id: str,
-        benchmark_config: BenchmarkConfig,
+        candidate: EvalCandidate,
     ) -> EvalJob:
         """Run an evaluation on a benchmark.
 
