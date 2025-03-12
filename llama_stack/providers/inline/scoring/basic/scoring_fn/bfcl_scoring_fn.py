@@ -11,8 +11,8 @@ from llama_stack.apis.scoring_functions import ScoringFnParams
 from llama_stack.providers.utils.scoring.base_scoring_fn import RegisteredBaseScoringFn
 
 from .fn_defs.bfcl import bfcl
-from .bfcl.ast_parser import decode_ast
-from .bfcl.checker import ast_checker, is_empty_output
+from ..utils.bfcl.ast_parser import decode_ast
+from ..utils.bfcl.checker import ast_checker, is_empty_output
 import json
 import re
 

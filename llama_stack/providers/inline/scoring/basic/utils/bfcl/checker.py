@@ -1,6 +1,8 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates.
-# This software may be used and distributed according to the terms of the Llama 2 Community License Agreement.
-
+# All rights reserved.
+#
+# This source code is licensed under the terms described in the LICENSE file in
+# the root directory of this source tree.
 import json
 import re
 import time
@@ -18,47 +20,6 @@ class NoAPIKeyError(Exception):
 
 REAL_TIME_MATCH_ALLOWED_DIFFERENCE = 0.2
 
-UNDERSCORE_TO_DOT = [
-    "gpt-4o-2024-08-06-FC",
-    "gpt-4o-2024-05-13-FC",
-    "gpt-4o-mini-2024-07-18-FC",
-    "gpt-4-turbo-2024-04-09-FC",
-    "gpt-4-1106-preview-FC",
-    "gpt-4-0125-preview-FC",
-    "gpt-4-0613-FC",
-    "gpt-3.5-turbo-0125-FC",
-    "claude-3-opus-20240229-FC",
-    "claude-3-sonnet-20240229-FC",
-    "claude-3-haiku-20240307-FC",
-    "claude-3-5-sonnet-20240620-FC",
-    "open-mistral-nemo-2407-FC-Any",
-    "open-mistral-nemo-2407-FC-Auto",
-    "open-mixtral-8x22b-FC-Any",
-    "open-mixtral-8x22b-FC-Auto",
-    "mistral-large-2407-FC",
-    "mistral-large-2407-FC-Any",
-    "mistral-large-2407-FC-Auto",
-    "mistral-small-2402-FC-Any",
-    "mistral-small-2402-FC-Auto",
-    "mistral-small-2402-FC",
-    "gemini-1.0-pro",
-    "gemini-1.5-pro-preview-0409",
-    "gemini-1.5-pro-preview-0514",
-    "gemini-1.5-flash-preview-0514",
-    "meetkai/functionary-small-v3.1-FC",
-    "meetkai/functionary-small-v3.2-FC",
-    "meetkai/functionary-medium-v3.1-FC",
-    "NousResearch/Hermes-2-Pro-Llama-3-8B",
-    "NousResearch/Hermes-2-Pro-Llama-3-70B",
-    "NousResearch/Hermes-2-Pro-Mistral-7B",
-    "NousResearch/Hermes-2-Theta-Llama-3-8B",
-    "NousResearch/Hermes-2-Theta-Llama-3-70B",
-    "command-r-plus-FC",
-    "command-r-plus-FC-optimized",
-    "THUDM/glm-4-9b-chat",
-    "ibm-granite/granite-20b-functioncalling",
-    "yi-large-fc",
-]
 
 JAVA_TYPE_CONVERSION = {
     "byte": int,
@@ -131,16 +92,6 @@ def get_possible_answer_type(possible_answer: list):
         if answer != "":  # Optional parameter
             return type(answer)
     return None
-
-
-def convert_func_name(function_name, model_name: str):
-    model_name_escaped = model_name.replace("_", "/")
-    if "." in function_name:
-        if model_name_escaped in UNDERSCORE_TO_DOT:
-            # OAI does not support "." in the function name so we replace it with "_". ^[a-zA-Z0-9_-]{1,64}$ is the regex for the name.
-            # This happens for OpenAI, Mistral, and Google models
-            return re.sub(r"\.", "_", function_name)
-    return function_name
 
 
 def type_checker(
@@ -401,7 +352,6 @@ def simple_function_checker(
         "error_type": "simple_function_checker:unclear",
     }
 
-    func_name = convert_func_name(func_name, model_name)
 
     # Check if function name matches
     if func_name not in model_output:
