@@ -4419,6 +4419,7 @@ components:
         - categorical_count
         - accuracy
       title: AggregationFunctionType
+      description: A type of aggregation function.
     BasicScoringFnParams:
       type: object
       properties:
@@ -4430,10 +4431,15 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AggregationFunctionType'
+          description: >-
+            (Optional) Aggregation functions to apply to the scores of each row. No
+            aggregation for results is calculated if not provided.
       additionalProperties: false
       required:
         - type
       title: BasicScoringFnParams
+      description: >-
+        Parameters for a non-parameterized scoring function.
     BenchmarkConfig:
       type: object
       properties:
@@ -4473,25 +4479,35 @@ components:
       properties:
         type:
           type: string
-          const: llm_as_judge
-          default: llm_as_judge
+          const: custom_llm_as_judge
+          default: custom_llm_as_judge
         judge_model:
           type: string
+          description: The model to use for scoring.
         prompt_template:
           type: string
+          description: >-
+            (Optional) The prompt template to use for scoring.
         judge_score_regexes:
           type: array
           items:
             type: string
+          description: >-
+            (Optional) Regexes to extract the score from the judge model's response.
         aggregation_functions:
           type: array
           items:
             $ref: '#/components/schemas/AggregationFunctionType'
+          description: >-
+            (Optional) Aggregation functions to apply to the scores of each row. No
+            aggregation for results is calculated if not provided.
       additionalProperties: false
       required:
         - type
         - judge_model
       title: LLMAsJudgeScoringFnParams
+      description: >-
+        Parameters for a scoring function that uses a judge model to score the answer.
     ModelCandidate:
       type: object
       properties:
@@ -4528,14 +4544,22 @@ components:
           type: array
           items:
             type: string
+          description: >-
+            Regexes to extract the answer from generated response
         aggregation_functions:
           type: array
           items:
             $ref: '#/components/schemas/AggregationFunctionType'
+          description: >-
+            (Optional) Aggregation functions to apply to the scores of each row. No
+            aggregation for results is calculated if not provided.
       additionalProperties: false
       required:
         - type
       title: RegexParserScoringFnParams
+      description: >-
+        Parameters for a scoring function that parses the answer from the generated
+        response using regexes, and checks against the expected answer.
     ScoringFnParams:
       oneOf:
         - $ref: '#/components/schemas/LLMAsJudgeScoringFnParams'
@@ -4544,7 +4568,7 @@ components:
       discriminator:
         propertyName: type
         mapping:
-          llm_as_judge: '#/components/schemas/LLMAsJudgeScoringFnParams'
+          custom_llm_as_judge: '#/components/schemas/LLMAsJudgeScoringFnParams'
           regex_parser: '#/components/schemas/RegexParserScoringFnParams'
           basic: '#/components/schemas/BasicScoringFnParams'
     EvaluateRowsRequest:
