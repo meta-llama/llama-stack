@@ -118,30 +118,9 @@ models:
   model_type: embedding
 shields: []
 vector_dbs: []
-datasets:
-  - dataset_id: bfcl
-    provider_id: huggingface
-    url:
-      uri: https://huggingface.co/datasets/llamastack/bfcl_v3/tree/main
-    metadata:
-      path: llamastack/bfcl_v3
-      split: train
-    dataset_schema:
-      function:
-        type: string
-      language:
-        type: string
-      ground_truth:
-        type: string
-      id:
-        type: string
-      chat_completion_input:
-        type: string
+datasets: []
 scoring_fns: []
-benchmarks:
-  - benchmark_id: bfcl
-    dataset_id: bfcl
-    scoring_functions: ["basic::bfcl"]
+benchmarks: []
 tool_groups:
 - toolgroup_id: builtin::websearch
   provider_id: tavily-search
