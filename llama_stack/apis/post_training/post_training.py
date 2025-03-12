@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Literal, Optional, Protocol, Union
 
@@ -12,7 +11,7 @@ from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
 from llama_stack.apis.common.content_types import URL
-from llama_stack.apis.common.job_types import JobCommonFields, JobStatus
+from llama_stack.apis.common.job_types import CommonJobFields
 from llama_stack.apis.common.training_types import Checkpoint
 from llama_stack.schema_utils import json_schema_type, register_schema, webmethod
 
@@ -140,7 +139,7 @@ class PostTrainingRLHFRequest(BaseModel):
 
 
 @json_schema_type
-class PostTrainingJob(JobCommonFields):
+class PostTrainingJob(CommonJobFields):
     resources_allocated: Optional[Dict[str, Any]] = None
     checkpoints: List[Checkpoint] = Field(default_factory=list)
 

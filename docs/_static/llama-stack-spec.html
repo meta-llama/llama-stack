@@ -332,8 +332,55 @@
                 ]
             }
         },
-        "/v1/post-training/job/cancel": {
-            "post": {
+        "/v1/post-training/jobs/{job_id}": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/PostTrainingJob"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "PostTraining (Coming Soon)"
+                ],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "job_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            },
+            "delete": {
                 "responses": {
                     "200": {
                         "description": "OK"
@@ -355,17 +402,16 @@
                     "PostTraining (Coming Soon)"
                 ],
                 "description": "",
-                "parameters": [],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/CancelTrainingJobRequest"
-                            }
+                "parameters": [
+                    {
+                        "name": "job_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
                         }
-                    },
-                    "required": true
-                }
+                    }
+                ]
             }
         },
         "/v1/inference/chat-completion": {
@@ -1869,104 +1915,6 @@
                 ]
             }
         },
-        "/v1/post-training/job/artifacts": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/PostTrainingJobArtifactsResponse"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest400"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/TooManyRequests429"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError500"
-                    },
-                    "default": {
-                        "$ref": "#/components/responses/DefaultError"
-                    }
-                },
-                "tags": [
-                    "PostTraining (Coming Soon)"
-                ],
-                "description": "",
-                "parameters": [
-                    {
-                        "name": "job_uuid",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
-            }
-        },
-        "/v1/post-training/job/status": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/PostTrainingJobStatusResponse"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest400"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/TooManyRequests429"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError500"
-                    },
-                    "default": {
-                        "$ref": "#/components/responses/DefaultError"
-                    }
-                },
-                "tags": [
-                    "PostTraining (Coming Soon)"
-                ],
-                "description": "",
-                "parameters": [
-                    {
-                        "name": "job_uuid",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
-            }
-        },
         "/v1/post-training/jobs": {
             "get": {
                 "responses": {
@@ -3130,7 +3078,7 @@
                 }
             }
         },
-        "/v1/post-training/preference-optimize": {
+        "/v1/post-training/preference-optimize/jobs": {
             "post": {
                 "responses": {
                     "200": {
@@ -3586,7 +3534,7 @@
                 }
             }
         },
-        "/v1/post-training/supervised-fine-tune": {
+        "/v1/post-training/supervised-fine-tune/jobs": {
             "post": {
                 "responses": {
                     "200": {
@@ -4702,19 +4650,6 @@
                 ],
                 "title": "CompletionResponse",
                 "description": "Response from a completion request."
-            },
-            "CancelTrainingJobRequest": {
-                "type": "object",
-                "properties": {
-                    "job_uuid": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "job_uuid"
-                ],
-                "title": "CancelTrainingJobRequest"
             },
             "ToolConfig": {
                 "type": "object",
@@ -7900,32 +7835,12 @@
                 "description": "Checkpoint created during training runs",
                 "title": "Checkpoint"
             },
-            "PostTrainingJobArtifactsResponse": {
+            "PostTrainingJob": {
                 "type": "object",
                 "properties": {
-                    "job_uuid": {
-                        "type": "string"
-                    },
-                    "checkpoints": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/Checkpoint"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "job_uuid",
-                    "checkpoints"
-                ],
-                "title": "PostTrainingJobArtifactsResponse",
-                "description": "Artifacts of a finetuning job."
-            },
-            "PostTrainingJobStatusResponse": {
-                "type": "object",
-                "properties": {
-                    "job_uuid": {
-                        "type": "string"
+                    "id": {
+                        "type": "string",
+                        "description": "The ID of the job."
                     },
                     "status": {
                         "type": "string",
@@ -7936,19 +7851,21 @@
                             "scheduled",
                             "cancelled"
                         ],
-                        "title": "JobStatus"
+                        "description": "The status of the job."
                     },
-                    "scheduled_at": {
+                    "created_at": {
                         "type": "string",
-                        "format": "date-time"
+                        "format": "date-time",
+                        "description": "The time the job was created."
                     },
-                    "started_at": {
+                    "finished_at": {
                         "type": "string",
-                        "format": "date-time"
+                        "format": "date-time",
+                        "description": "The time the job finished."
                     },
-                    "completed_at": {
+                    "error": {
                         "type": "string",
-                        "format": "date-time"
+                        "description": "If status of the job is failed, this will contain the error message."
                     },
                     "resources_allocated": {
                         "type": "object",
@@ -7984,12 +7901,12 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "job_uuid",
+                    "id",
                     "status",
+                    "created_at",
                     "checkpoints"
                 ],
-                "title": "PostTrainingJobStatusResponse",
-                "description": "Status of a finetuning job."
+                "title": "PostTrainingJob"
             },
             "ListPostTrainingJobsResponse": {
                 "type": "object",
@@ -7997,17 +7914,7 @@
                     "data": {
                         "type": "array",
                         "items": {
-                            "type": "object",
-                            "properties": {
-                                "job_uuid": {
-                                    "type": "string"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "job_uuid"
-                            ],
-                            "title": "PostTrainingJob"
+                            "$ref": "#/components/schemas/PostTrainingJob"
                         }
                     }
                 },
@@ -9041,19 +8948,6 @@
                     "logger_config"
                 ],
                 "title": "PreferenceOptimizeRequest"
-            },
-            "PostTrainingJob": {
-                "type": "object",
-                "properties": {
-                    "job_uuid": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "job_uuid"
-                ],
-                "title": "PostTrainingJob"
             },
             "DefaultRAGQueryGeneratorConfig": {
                 "type": "object",

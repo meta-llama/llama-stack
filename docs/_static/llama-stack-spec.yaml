@@ -212,8 +212,37 @@ paths:
           required: true
           schema:
             type: string
-  /v1/post-training/job/cancel:
-    post:
+  /v1/post-training/jobs/{job_id}:
+    get:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/PostTrainingJob'
+                  - type: 'null'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - PostTraining (Coming Soon)
+      description: ''
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+    delete:
       responses:
         '200':
           description: OK
@@ -230,13 +259,12 @@ paths:
       tags:
         - PostTraining (Coming Soon)
       description: ''
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CancelTrainingJobRequest'
-        required: true
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
   /v1/inference/chat-completion:
     post:
       responses:
@@ -1263,66 +1291,6 @@ paths:
           required: true
           schema:
             type: string
-  /v1/post-training/job/artifacts:
-    get:
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - $ref: '#/components/schemas/PostTrainingJobArtifactsResponse'
-                  - type: 'null'
-        '400':
-          $ref: '#/components/responses/BadRequest400'
-        '429':
-          $ref: >-
-            #/components/responses/TooManyRequests429
-        '500':
-          $ref: >-
-            #/components/responses/InternalServerError500
-        default:
-          $ref: '#/components/responses/DefaultError'
-      tags:
-        - PostTraining (Coming Soon)
-      description: ''
-      parameters:
-        - name: job_uuid
-          in: query
-          required: true
-          schema:
-            type: string
-  /v1/post-training/job/status:
-    get:
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - $ref: '#/components/schemas/PostTrainingJobStatusResponse'
-                  - type: 'null'
-        '400':
-          $ref: '#/components/responses/BadRequest400'
-        '429':
-          $ref: >-
-            #/components/responses/TooManyRequests429
-        '500':
-          $ref: >-
-            #/components/responses/InternalServerError500
-        default:
-          $ref: '#/components/responses/DefaultError'
-      tags:
-        - PostTraining (Coming Soon)
-      description: ''
-      parameters:
-        - name: job_uuid
-          in: query
-          required: true
-          schema:
-            type: string
   /v1/post-training/jobs:
     get:
       responses:
@@ -2119,7 +2087,7 @@ paths:
             schema:
               $ref: '#/components/schemas/LogEventRequest'
         required: true
-  /v1/post-training/preference-optimize:
+  /v1/post-training/preference-optimize/jobs:
     post:
       responses:
         '200':
@@ -2435,7 +2403,7 @@ paths:
             schema:
               $ref: '#/components/schemas/ScoreRowsRequest'
         required: true
-  /v1/post-training/supervised-fine-tune:
+  /v1/post-training/supervised-fine-tune/jobs:
     post:
       responses:
         '200':
@@ -3207,15 +3175,6 @@ components:
         - stop_reason
       title: CompletionResponse
       description: Response from a completion request.
-    CancelTrainingJobRequest:
-      type: object
-      properties:
-        job_uuid:
-          type: string
-      additionalProperties: false
-      required:
-        - job_uuid
-      title: CancelTrainingJobRequest
     ToolConfig:
       type: object
       properties:
@@ -5452,26 +5411,12 @@ components:
     Checkpoint:
       description: Checkpoint created during training runs
       title: Checkpoint
-    PostTrainingJobArtifactsResponse:
+    PostTrainingJob:
       type: object
       properties:
-        job_uuid:
+        id:
           type: string
-        checkpoints:
-          type: array
-          items:
-            $ref: '#/components/schemas/Checkpoint'
-      additionalProperties: false
-      required:
-        - job_uuid
-        - checkpoints
-      title: PostTrainingJobArtifactsResponse
-      description: Artifacts of a finetuning job.
-    PostTrainingJobStatusResponse:
-      type: object
-      properties:
-        job_uuid:
-          type: string
+          description: The ID of the job.
         status:
           type: string
           enum:
@@ -5480,16 +5425,19 @@ components:
             - failed
             - scheduled
             - cancelled
-          title: JobStatus
-        scheduled_at:
+          description: The status of the job.
+        created_at:
           type: string
           format: date-time
-        started_at:
+          description: The time the job was created.
+        finished_at:
           type: string
           format: date-time
-        completed_at:
+          description: The time the job finished.
+        error:
           type: string
-          format: date-time
+          description: >-
+            If status of the job is failed, this will contain the error message.
         resources_allocated:
           type: object
           additionalProperties:
@@ -5506,25 +5454,18 @@ components:
             $ref: '#/components/schemas/Checkpoint'
       additionalProperties: false
       required:
-        - job_uuid
+        - id
         - status
+        - created_at
         - checkpoints
-      title: PostTrainingJobStatusResponse
-      description: Status of a finetuning job.
+      title: PostTrainingJob
     ListPostTrainingJobsResponse:
       type: object
       properties:
         data:
           type: array
           items:
-            type: object
-            properties:
-              job_uuid:
-                type: string
-            additionalProperties: false
-            required:
-              - job_uuid
-            title: PostTrainingJob
+            $ref: '#/components/schemas/PostTrainingJob'
       additionalProperties: false
       required:
         - data
@@ -6192,15 +6133,6 @@ components:
         - hyperparam_search_config
         - logger_config
       title: PreferenceOptimizeRequest
-    PostTrainingJob:
-      type: object
-      properties:
-        job_uuid:
-          type: string
-      additionalProperties: false
-      required:
-        - job_uuid
-      title: PostTrainingJob
     DefaultRAGQueryGeneratorConfig:
       type: object
       properties:
