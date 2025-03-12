@@ -201,14 +201,14 @@ paths:
       parameters:
         - name: job_id
           in: path
-          description: >-
-            The ID of the benchmark to run the evaluation on.
+          description: The ID of the job to cancel.
           required: true
           schema:
             type: string
-        - name: job_id
-          in: path
-          description: The ID of the job to cancel.
+        - name: benchmark_id
+          in: query
+          description: >-
+            The ID of the benchmark to run the evaluation on.
           required: true
           schema:
             type: string
