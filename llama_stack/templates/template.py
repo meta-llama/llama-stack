@@ -30,7 +30,9 @@ from llama_stack.providers.utils.inference.model_registry import ProviderModelEn
 from llama_stack.providers.utils.kvstore.config import SqliteKVStoreConfig
 
 
-def get_model_registry(available_models: Dict[str, List[ProviderModelEntry]]) -> List[ModelInput]:
+def get_model_registry(
+    available_models: Dict[str, List[ProviderModelEntry]],
+) -> List[ModelInput]:
     models = []
     for provider_id, entries in available_models.items():
         for entry in entries:
@@ -193,7 +195,7 @@ class DistributionTemplate(BaseModel):
                     default_models.append(
                         DefaultModel(
                             model_id=model_entry.provider_model_id,
-                            doc_string=f"({' -- '.join(doc_parts)})" if doc_parts else "",
+                            doc_string=(f"({' -- '.join(doc_parts)})" if doc_parts else ""),
                         )
                     )
 
