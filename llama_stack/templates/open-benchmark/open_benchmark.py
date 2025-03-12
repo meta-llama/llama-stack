@@ -229,7 +229,7 @@ def get_distribution_template() -> DistributionTemplate:
         DatasetInput(
             dataset_id="bfcl",
             provider_id="huggingface",
-            url={"uri": "https://huggingface.co/datasets/llamastack/bfcl_v3"},
+            url=URL(uri="https://huggingface.co/datasets/llamastack/bfcl_v3"),
             metadata={
                 "path": "llamastack/bfcl_v3",
                 "split": "train",
