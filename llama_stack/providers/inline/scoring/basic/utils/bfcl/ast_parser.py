@@ -1,4 +1,4 @@
-#ruff: noqa
+# ruff: noqa
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 # All rights reserved.
 #
@@ -71,11 +71,7 @@ def parse_java_function_call(source_code):
                 return f"new {type_text}()"
         elif node.type == "set":
             # Handling sets specifically
-            items = [
-                traverse_node(n, True)
-                for n in node.children
-                if n.type not in [",", "set"]
-            ]
+            items = [traverse_node(n, True) for n in node.children if n.type not in [",", "set"]]
             return "{" + ", ".join(items) + "}"
 
         elif node.child_count > 0:
@@ -124,9 +120,7 @@ def parse_java_function_call(source_code):
                 arguments = extract_arguments(arguments_node)
                 for key, value in arguments.items():
                     if isinstance(value, list):
-                        raise Exception(
-                            "Error: Multiple arguments with the same name are not supported."
-                        )
+                        raise Exception("Error: Multiple arguments with the same name are not supported.")
                 return [{function_name: arguments}]
 
         else:
@@ -157,9 +151,7 @@ def parse_javascript_function_call(source_code):
                 # Extract left (name) and right (value) parts of the assignment
                 name = child.children[0].text.decode("utf-8")
                 value = child.children[2].text.decode("utf-8")
-                if (value.startswith('"') and value.endswith('"')) or (
-                    value.startswith("'") and value.endswith("'")
-                ):
+                if (value.startswith('"') and value.endswith('"')) or (value.startswith("'") and value.endswith("'")):
                     value = value[1:-1]  # Trim the quotation marks
                 if name in args:
                     if not isinstance(args[name], list):
@@ -190,9 +182,7 @@ def parse_javascript_function_call(source_code):
                         parameters = extract_arguments(arguments_node)
                         for key, value in parameters.items():
                             if isinstance(value, list):
-                                raise Exception(
-                                    "Error: Multiple arguments with the same name are not supported."
-                                )
+                                raise Exception("Error: Multiple arguments with the same name are not supported.")
                         result = [{function_name: parameters}]
                         return result
 
@@ -209,9 +199,7 @@ def ast_parse(input_str, language="Python"):
                 extracted.append(resolve_ast_call(elem))
         return extracted
     elif language == "Java":
-        return parse_java_function_call(
-            input_str[1:-1]
-        )  # Remove the [ and ] from the string
+        return parse_java_function_call(input_str[1:-1])  # Remove the [ and ] from the string
     elif language == "JavaScript":
         return parse_javascript_function_call(input_str[1:-1])
     else:
@@ -254,17 +242,10 @@ def resolve_ast_by_type(value):
     elif isinstance(value, ast.List):
         output = [resolve_ast_by_type(v) for v in value.elts]
     elif isinstance(value, ast.Dict):
-        output = {
-            resolve_ast_by_type(k): resolve_ast_by_type(v)
-            for k, v in zip(value.keys, value.values)
-        }
-    elif isinstance(
-        value, ast.NameConstant
-    ):  # Added this condition to handle boolean values
+        output = {resolve_ast_by_type(k): resolve_ast_by_type(v) for k, v in zip(value.keys, value.values)}
+    elif isinstance(value, ast.NameConstant):  # Added this condition to handle boolean values
         output = value.value
-    elif isinstance(
-        value, ast.BinOp
-    ):  # Added this condition to handle function calls as arguments
+    elif isinstance(value, ast.BinOp):  # Added this condition to handle function calls as arguments
         output = eval(ast.unparse(value))
     elif isinstance(value, ast.Name):
         output = value.id
@@ -311,7 +292,5 @@ def decode_execute(result):
     execution_list = []
     for function_call in decode_output:
         for key, value in function_call.items():
-            execution_list.append(
-                f"{key}({','.join([f'{k}={repr(v)}' for k, v in value.items()])})"
-            )
+            execution_list.append(f"{key}({','.join([f'{k}={repr(v)}' for k, v in value.items()])})")
     return execution_list

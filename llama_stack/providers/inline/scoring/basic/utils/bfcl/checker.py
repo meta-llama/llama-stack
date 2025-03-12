@@ -1,4 +1,4 @@
-#ruff: noqa
+# ruff: noqa
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 # All rights reserved.
 #
@@ -220,9 +220,7 @@ def list_checker(param: str, model_output: list, possible_answer: list):
         standardize_possible_answer.append([])
         for j in range(len(possible_answer[i])):
             if type(possible_answer[i][j]) == str:
-                standardize_possible_answer[i].append(
-                    standardize_string(possible_answer[i][j])
-                )
+                standardize_possible_answer[i].append(standardize_string(possible_answer[i][j]))
             else:
                 standardize_possible_answer[i].append(possible_answer[i][j])
 
@@ -244,7 +242,6 @@ def dict_checker(param: str, model_output: dict, possible_answers: list):
 
     result = {"valid": False, "error": [], "error_type": "dict_checker:unclear"}
     for i in range(len(possible_answers)):
-
         if possible_answers[i] == "":
             continue
 
@@ -272,9 +269,7 @@ def dict_checker(param: str, model_output: dict, possible_answers: list):
             standardize_possible_answer = []
             for i in range(len(possible_answer[key])):
                 if type(possible_answer[key][i]) == str:
-                    standardize_possible_answer.append(
-                        standardize_string(possible_answer[key][i])
-                    )
+                    standardize_possible_answer.append(standardize_string(possible_answer[key][i]))
                 else:
                     standardize_possible_answer.append(possible_answer[key][i])
 
@@ -353,7 +348,6 @@ def simple_function_checker(
         "error_type": "simple_function_checker:unclear",
     }
 
-
     # Check if function name matches
     if func_name not in model_output:
         result["valid"] = False
@@ -403,9 +397,7 @@ def simple_function_checker(
                 if expected_type_description in NESTED_CONVERSION_TYPE_LIST:
                     nested_type = param_details[param]["items"]["type"]
                     nested_type_converted = JAVA_TYPE_CONVERSION[nested_type]
-                    value = java_type_converter(
-                        value, expected_type_description, nested_type
-                    )
+                    value = java_type_converter(value, expected_type_description, nested_type)
                 else:
                     value = java_type_converter(value, expected_type_description)
 
@@ -426,9 +418,7 @@ def simple_function_checker(
                 if expected_type_description in NESTED_CONVERSION_TYPE_LIST:
                     nested_type = param_details[param]["items"]["type"]
                     nested_type_converted = JS_TYPE_CONVERSION[nested_type]
-                    value = js_type_converter(
-                        value, expected_type_description, nested_type
-                    )
+                    value = js_type_converter(value, expected_type_description, nested_type)
                 else:
                     value = js_type_converter(value, expected_type_description)
 
@@ -445,11 +435,7 @@ def simple_function_checker(
             value = list(value)
 
         # Allow python auto conversion from int to float
-        if (
-            language == "Python"
-            and expected_type_description == "float"
-            and type(value) == int
-        ):
+        if language == "Python" and expected_type_description == "float" and type(value) == int:
             value = float(value)
 
         # Type checking
@@ -609,9 +595,7 @@ def parallel_function_checker_no_order(
                 )
 
         if not result["valid"]:
-            considered_indices = [
-                i for i in range(len(model_output)) if i not in matched_indices
-            ]
+            considered_indices = [i for i in range(len(model_output)) if i not in matched_indices]
             all_errors.insert(
                 0,
                 f"Could not find a matching function among index {considered_indices} of model output for index {i} of possible answers.",  # type: ignore[arg-type]
@@ -782,9 +766,7 @@ def executable_checker_simple(
 
     else:
         # structural match
-        pattern_match_result = patten_matcher(
-            exec_output, expected_result, function_call, is_sanity_check
-        )
+        pattern_match_result = patten_matcher(exec_output, expected_result, function_call, is_sanity_check)
         if not pattern_match_result["valid"]:
             return pattern_match_result
 
@@ -794,7 +776,6 @@ def executable_checker_simple(
 def executable_checker_parallel_no_order(
     decoded_result: list, expected_exec_result: list, expected_exec_result_type: list
 ):
-
     if len(decoded_result) != len(expected_exec_result):
         return {
             "valid": False,
@@ -828,18 +809,14 @@ def executable_checker_parallel_no_order(
                             "sub_error": result["error"],
                             "sub_error_type": result["error_type"],
                             "model_executed_output": (
-                                result["model_executed_output"]
-                                if "model_executed_output" in result
-                                else None
+                                result["model_executed_output"] if "model_executed_output" in result else None
                             ),
                         }
                     }
                 )
 
         if not result["valid"]:
-            considered_indices = [
-                i for i in range(len(decoded_result)) if i not in matched_indices
-            ]
+            considered_indices = [i for i in range(len(decoded_result)) if i not in matched_indices]
             all_errors.insert(
                 0,
                 f"Could not find a matching function among index {considered_indices} of model output for index {i} of possible answers.",  # type: ignore[arg-type]
@@ -874,7 +851,6 @@ def executable_checker_rest(func_call, idx):
 
     try:
         if response.status_code == 200:
-
             eval_GT_json = json.loads(EVAL_GROUND_TRUTH[idx])
             try:
                 if isinstance(eval_GT_json, dict):
@@ -888,9 +864,7 @@ def executable_checker_rest(func_call, idx):
                         }
                     return {
                         "valid": False,
-                        "error": [
-                            f"Expected dictionary, but got {type(response.json())}"
-                        ],
+                        "error": [f"Expected dictionary, but got {type(response.json())}"],
                         "error_type": "executable_checker_rest:wrong_type",
                     }
 
@@ -905,9 +879,7 @@ def executable_checker_rest(func_call, idx):
 
                         else:
                             for i in range(len(eval_GT_json)):
-                                if set(eval_GT_json[i].keys()) != set(
-                                    response.json()[i].keys()
-                                ):
+                                if set(eval_GT_json[i].keys()) != set(response.json()[i].keys()):
                                     return {
                                         "valid": False,
                                         "error": [f"Key inconsistency"],
@@ -918,16 +890,12 @@ def executable_checker_rest(func_call, idx):
                     else:
                         return {
                             "valid": False,
-                            "error": [
-                                f"Expected list, but got {type(response.json())}"
-                            ],
+                            "error": [f"Expected list, but got {type(response.json())}"],
                             "error_type": "executable_checker_rest:wrong_type",
                         }
                 return {
                     "valid": False,
-                    "error": [
-                        f"Expected dict or list, but got {type(response.json())}"
-                    ],
+                    "error": [f"Expected dict or list, but got {type(response.json())}"],
                     "error_type": "executable_checker_rest:wrong_type",
                 }
             except Exception as e:
@@ -941,9 +909,7 @@ def executable_checker_rest(func_call, idx):
         else:
             return {
                 "valid": False,
-                "error": [
-                    f"Execution result status code is not 200, got {response.status_code}"
-                ],
+                "error": [f"Execution result status code is not 200, got {response.status_code}"],
                 "error_type": "executable_checker_rest:wrong_status_code",
             }
     except Exception as e:
@@ -954,18 +920,12 @@ def executable_checker_rest(func_call, idx):
         }
 
 
-def ast_checker(
-    func_description, model_output, possible_answer, language, test_category, model_name
-):
+def ast_checker(func_description, model_output, possible_answer, language, test_category, model_name):
     if "parallel" in test_category:
-        return parallel_function_checker_no_order(
-            func_description, model_output, possible_answer, language, model_name
-        )
+        return parallel_function_checker_no_order(func_description, model_output, possible_answer, language, model_name)
 
     elif "multiple" in test_category:
-        return multiple_function_checker(
-            func_description, model_output, possible_answer, language, model_name
-        )
+        return multiple_function_checker(func_description, model_output, possible_answer, language, model_name)
 
     else:
         if len(model_output) != 1:
