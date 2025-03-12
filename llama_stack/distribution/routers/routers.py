@@ -34,6 +34,12 @@ from llama_stack.apis.inference import (
     ToolPromptFormat,
 )
 from llama_stack.apis.models import ModelType
+from llama_stack.apis.preprocessing import (
+    Preprocessing,
+    PreprocessingDataElement,
+    PreprocessorChain,
+    PreprocessorResponse,
+)
 from llama_stack.apis.safety import RunShieldResponse, Safety
 from llama_stack.apis.scoring import (
     ScoreBatchResponse,
@@ -51,6 +57,7 @@ from llama_stack.apis.tools import (
     ToolRuntime,
 )
 from llama_stack.apis.vector_io import Chunk, QueryChunksResponse, VectorIO
+from llama_stack.distribution.utils.chain import execute_preprocessor_chain
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import RoutingTable
 
@@ -502,12 +509,13 @@ class ToolRuntimeRouter(ToolRuntime):
             documents: List[RAGDocument],
             vector_db_id: str,
             chunk_size_in_tokens: int = 512,
+            preprocessor_chain: Optional[PreprocessorChain] = None,
         ) -> None:
             logger.debug(
                 f"ToolRuntimeRouter.RagToolImpl.insert: {vector_db_id}, {len(documents)} documents, chunk_size={chunk_size_in_tokens}"
             )
             return await self.routing_table.get_provider_impl("insert_into_memory").insert(
-                documents, vector_db_id, chunk_size_in_tokens
+                documents, vector_db_id, chunk_size_in_tokens, preprocessor_chain
             )
 
     def __init__(
@@ -542,3 +550,31 @@ class ToolRuntimeRouter(ToolRuntime):
     ) -> List[ToolDef]:
         logger.debug(f"ToolRuntimeRouter.list_runtime_tools: {tool_group_id}")
         return await self.routing_table.get_provider_impl(tool_group_id).list_tools(tool_group_id, mcp_endpoint)
+
+
+class PreprocessingRouter(Preprocessing):
+    def __init__(
+        self,
+        routing_table: RoutingTable,
+    ) -> None:
+        logger.debug("Initializing PreprocessingRouter")
+        self.routing_table = routing_table
+
+    async def initialize(self) -> None:
+        logger.debug("PreprocessingRouter.initialize")
+        pass
+
+    async def shutdown(self) -> None:
+        logger.debug("PreprocessingRouter.shutdown")
+        pass
+
+    async def preprocess(
+        self,
+        preprocessors: PreprocessorChain,
+        preprocessor_inputs: List[PreprocessingDataElement],
+    ) -> PreprocessorResponse:
+        logger.debug(
+            f"PreprocessingRouter.chain_preprocess: preprocessors {[p.preprocessor_id for p in preprocessors]}, {len(preprocessor_inputs)} inputs",
+        )
+        preprocessor_impls = [self.routing_table.get_provider_impl(p.preprocessor_id) for p in preprocessors]
+        return await execute_preprocessor_chain(preprocessors, preprocessor_impls, preprocessor_inputs)

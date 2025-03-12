@@ -7,6 +7,7 @@
 from pathlib import Path
 
 from llama_stack.apis.models.models import ModelType
+from llama_stack.apis.preprocessing.preprocessors import PreprocessorInput
 from llama_stack.distribution.datatypes import ModelInput, Provider, ToolGroupInput
 from llama_stack.providers.inline.inference.meta_reference import (
     MetaReferenceQuantizedInferenceConfig,
@@ -35,6 +36,7 @@ def get_distribution_template() -> DistributionTemplate:
             "inline::rag-runtime",
             "remote::model-context-protocol",
         ],
+        "preprocessing": ["inline::basic", "inline::simple_chunking"],
     }
     default_tool_groups = [
         ToolGroupInput(
@@ -48,6 +50,16 @@ def get_distribution_template() -> DistributionTemplate:
         ToolGroupInput(
             toolgroup_id="builtin::code_interpreter",
             provider_id="code-interpreter",
+        ),
+    ]
+    default_preprocessors = [
+        PreprocessorInput(
+            preprocessor_id="builtin::basic",
+            provider_id="basic",
+        ),
+        PreprocessorInput(
+            preprocessor_id="builtin::chunking",
+            provider_id="simple_chunking",
         ),
     ]
     name = "meta-reference-quantized-gpu"
@@ -96,6 +108,7 @@ def get_distribution_template() -> DistributionTemplate:
                 },
                 default_models=[inference_model, embedding_model],
                 default_tool_groups=default_tool_groups,
+                default_preprocessors=default_preprocessors,
             ),
         },
         run_config_env_vars={

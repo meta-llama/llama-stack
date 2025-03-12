@@ -23,6 +23,8 @@ from llama_stack.apis.inference import Inference
 from llama_stack.apis.inspect import Inspect
 from llama_stack.apis.models import Models
 from llama_stack.apis.post_training import PostTraining
+from llama_stack.apis.preprocessing import Preprocessing
+from llama_stack.apis.preprocessing.preprocessors import Preprocessors
 from llama_stack.apis.safety import Safety
 from llama_stack.apis.scoring import Scoring
 from llama_stack.apis.scoring_functions import ScoringFunctions
@@ -66,6 +68,8 @@ class LlamaStack(
     ToolRuntime,
     RAGToolRuntime,
     Files,
+    Preprocessing,
+    Preprocessors,
 ):
     pass
 
@@ -83,6 +87,7 @@ RESOURCES = [
     ),
     ("benchmarks", Api.benchmarks, "register_benchmark", "list_benchmarks"),
     ("tool_groups", Api.tool_groups, "register_tool_group", "list_tool_groups"),
+    ("preprocessors", Api.preprocessors, "register_preprocessor", "list_preprocessors"),
 ]
 
 

@@ -5,6 +5,7 @@ apis:
 - datasetio
 - eval
 - inference
+- preprocessing
 - safety
 - scoring
 - telemetry
@@ -91,6 +92,13 @@ providers:
     config: {}
   - provider_id: wolfram-alpha
     provider_type: remote::wolfram-alpha
+    config: {}
+  preprocessing:
+  - provider_id: basic
+    provider_type: inline::basic
+    config: {}
+  - provider_id: simple_chunking
+    provider_type: inline::simple_chunking
     config: {}
 metadata_store:
   type: sqlite
@@ -220,5 +228,10 @@ tool_groups:
   provider_id: code-interpreter
 - toolgroup_id: builtin::wolfram_alpha
   provider_id: wolfram-alpha
+preprocessors:
+- preprocessor_id: builtin::basic
+  provider_id: basic
+- preprocessor_id: builtin::chunking
+  provider_id: simple_chunking
 server:
   port: 8321

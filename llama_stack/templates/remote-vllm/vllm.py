@@ -7,6 +7,7 @@
 from pathlib import Path
 
 from llama_stack.apis.models.models import ModelType
+from llama_stack.apis.preprocessing.preprocessors import PreprocessorInput
 from llama_stack.distribution.datatypes import (
     ModelInput,
     Provider,
@@ -39,6 +40,7 @@ def get_distribution_template() -> DistributionTemplate:
             "remote::model-context-protocol",
             "remote::wolfram-alpha",
         ],
+        "preprocessing": ["inline::basic", "inline::simple_chunking"],
     }
     name = "remote-vllm"
     inference_provider = Provider(
@@ -93,6 +95,16 @@ def get_distribution_template() -> DistributionTemplate:
             provider_id="wolfram-alpha",
         ),
     ]
+    default_preprocessors = [
+        PreprocessorInput(
+            preprocessor_id="builtin::basic",
+            provider_id="basic",
+        ),
+        PreprocessorInput(
+            preprocessor_id="builtin::chunking",
+            provider_id="simple_chunking",
+        ),
+    ]
 
     return DistributionTemplate(
         name=name,
@@ -108,6 +120,7 @@ def get_distribution_template() -> DistributionTemplate:
                 },
                 default_models=[inference_model, embedding_model],
                 default_tool_groups=default_tool_groups,
+                default_preprocessors=default_preprocessors,
             ),
             "run-with-safety.yaml": RunConfigSettings(
                 provider_overrides={
@@ -131,6 +144,7 @@ def get_distribution_template() -> DistributionTemplate:
                 ],
                 default_shields=[ShieldInput(shield_id="${env.SAFETY_MODEL}")],
                 default_tool_groups=default_tool_groups,
+                default_preprocessors=default_preprocessors,
             ),
         },
         run_config_env_vars={

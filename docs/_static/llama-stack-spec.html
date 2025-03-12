@@ -1365,6 +1365,88 @@
                 ]
             }
         },
+        "/v1/preprocessors/{preprocessor_id}": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/Preprocessor"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Preprocessors"
+                ],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "preprocessor_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            },
+            "delete": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Preprocessors"
+                ],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "preprocessor_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
         "/v1/scoring-functions/{scoring_fn_id}": {
             "get": {
                 "responses": {
@@ -2642,6 +2724,80 @@
                 }
             }
         },
+        "/v1/preprocessors": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ListPreprocessorsResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Preprocessors"
+                ],
+                "description": "",
+                "parameters": []
+            },
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Preprocessor"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Preprocessors"
+                ],
+                "description": "",
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegisterPreprocessorRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/v1/inspect/providers": {
             "get": {
                 "responses": {
@@ -3154,6 +3310,49 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/PreferenceOptimizeRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/v1/preprocess": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PreprocessorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Preprocessing"
+                ],
+                "description": "",
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PreprocessRequest"
                             }
                         }
                     },
@@ -4715,6 +4914,12 @@
             "CompletionResponse": {
                 "type": "object",
                 "properties": {
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricEvent"
+                        }
+                    },
                     "content": {
                         "type": "string",
                         "description": "The generated completion text"
@@ -5082,6 +5287,12 @@
             "CompletionResponseStreamChunk": {
                 "type": "object",
                 "properties": {
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricEvent"
+                        }
+                    },
                     "delta": {
                         "type": "string",
                         "description": "New content generated since last chunk. This can be one or more tokens."
@@ -7160,6 +7371,58 @@
                 ],
                 "title": "ModelType"
             },
+            "Preprocessor": {
+                "type": "object",
+                "properties": {
+                    "identifier": {
+                        "type": "string"
+                    },
+                    "provider_resource_id": {
+                        "type": "string"
+                    },
+                    "provider_id": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "preprocessor",
+                        "default": "preprocessor"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "identifier",
+                    "provider_resource_id",
+                    "provider_id",
+                    "type"
+                ],
+                "title": "Preprocessor"
+            },
             "PaginatedRowsResult": {
                 "type": "object",
                 "properties": {
@@ -7816,6 +8079,44 @@
                 ],
                 "title": "HealthInfo"
             },
+            "PreprocessorChainElement": {
+                "type": "object",
+                "properties": {
+                    "preprocessor_id": {
+                        "type": "string"
+                    },
+                    "options": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "preprocessor_id"
+                ],
+                "title": "PreprocessorChainElement"
+            },
             "RAGDocument": {
                 "type": "object",
                 "properties": {
@@ -7892,6 +8193,12 @@
                     },
                     "chunk_size_in_tokens": {
                         "type": "integer"
+                    },
+                    "preprocessor_chain": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PreprocessorChainElement"
+                        }
                     }
                 },
                 "additionalProperties": false,
@@ -8172,6 +8479,22 @@
                     "data"
                 ],
                 "title": "ListModelsResponse"
+            },
+            "ListPreprocessorsResponse": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Preprocessor"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "data"
+                ],
+                "title": "ListPreprocessorsResponse"
             },
             "ProviderInfo": {
                 "type": "object",
@@ -8806,6 +9129,157 @@
                 ],
                 "title": "PostTrainingJob"
             },
+            "PreprocessingDataElement": {
+                "type": "object",
+                "properties": {
+                    "data_element_id": {
+                        "type": "string"
+                    },
+                    "data_element_type": {
+                        "type": "string",
+                        "enum": [
+                            "document_uri",
+                            "document_directory_uri",
+                            "binary_document",
+                            "raw_text_document",
+                            "chunks"
+                        ],
+                        "title": "PreprocessingDataType"
+                    },
+                    "data_element_format": {
+                        "type": "string",
+                        "enum": [
+                            "pdf",
+                            "docx",
+                            "xlsx",
+                            "pptx",
+                            "md",
+                            "json",
+                            "html",
+                            "csv",
+                            "txt"
+                        ],
+                        "title": "PreprocessingDataFormat"
+                    },
+                    "data_element_path_or_content": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "$ref": "#/components/schemas/InterleavedContentItem"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/InterleavedContentItem"
+                                }
+                            },
+                            {
+                                "$ref": "#/components/schemas/URL"
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "content": {
+                                        "$ref": "#/components/schemas/InterleavedContent"
+                                    },
+                                    "metadata": {
+                                        "type": "object",
+                                        "additionalProperties": {
+                                            "oneOf": [
+                                                {
+                                                    "type": "null"
+                                                },
+                                                {
+                                                    "type": "boolean"
+                                                },
+                                                {
+                                                    "type": "number"
+                                                },
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "type": "array"
+                                                },
+                                                {
+                                                    "type": "object"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "content",
+                                    "metadata"
+                                ],
+                                "title": "Chunk"
+                            }
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "data_element_id"
+                ],
+                "title": "PreprocessingDataElement"
+            },
+            "PreprocessRequest": {
+                "type": "object",
+                "properties": {
+                    "preprocessors": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PreprocessorChainElement"
+                        }
+                    },
+                    "preprocessor_inputs": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PreprocessingDataElement"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "preprocessors",
+                    "preprocessor_inputs"
+                ],
+                "title": "PreprocessRequest"
+            },
+            "PreprocessorResponse": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "output_data_type": {
+                        "type": "string",
+                        "enum": [
+                            "document_uri",
+                            "document_directory_uri",
+                            "binary_document",
+                            "raw_text_document",
+                            "chunks"
+                        ],
+                        "title": "PreprocessingDataType"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PreprocessingDataElement"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "success",
+                    "output_data_type"
+                ],
+                "title": "PreprocessorResponse"
+            },
             "DefaultRAGQueryGeneratorConfig": {
                 "type": "object",
                 "properties": {
@@ -9340,6 +9814,47 @@
                     "model_id"
                 ],
                 "title": "RegisterModelRequest"
+            },
+            "RegisterPreprocessorRequest": {
+                "type": "object",
+                "properties": {
+                    "preprocessor_id": {
+                        "type": "string"
+                    },
+                    "provider_id": {
+                        "type": "string"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "preprocessor_id"
+                ],
+                "title": "RegisterPreprocessorRequest"
             },
             "RegisterScoringFunctionRequest": {
                 "type": "object",
@@ -10136,6 +10651,12 @@
             "name": "PostTraining (Coming Soon)"
         },
         {
+            "name": "Preprocessing"
+        },
+        {
+            "name": "Preprocessors"
+        },
+        {
             "name": "Safety"
         },
         {
@@ -10181,6 +10702,8 @@
                 "Inspect",
                 "Models",
                 "PostTraining (Coming Soon)",
+                "Preprocessing",
+                "Preprocessors",
                 "Safety",
                 "Scoring",
                 "ScoringFunctions",
