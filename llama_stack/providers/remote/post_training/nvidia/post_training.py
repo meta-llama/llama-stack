@@ -50,7 +50,7 @@ class ListNvidiaPostTrainingJobs(BaseModel):
     data: List[NvidiaPostTrainingJob]
 
 
-class NvidiaPostTrainingImpl:
+class NvidiaPostTrainingAdapter:
     def __init__(self, config: NvidiaPostTrainingConfig):
         self.config = config
         self.headers = {}
@@ -226,12 +226,8 @@ class NvidiaPostTrainingImpl:
                 # Extract LoRA-specific parameters
                 lora_config = {k: v for k, v in algorithm_config.items() if k != "type"}
                 job_config["hyperparameters"]["lora"] = lora_config
-
-                # Add adapter_dim if available in training_config
-                if training_config.get("algorithm_config", {}).get("adapter_dim"):
-                    job_config["hyperparameters"]["lora"]["adapter_dim"] = training_config["algorithm_config"][
-                        "adapter_dim"
-                    ]
+            else:
+                raise NotImplementedError(f"Unsupported algorithm config: {algorithm_config}")
 
         # Create the customization job
         response = await self._make_request(

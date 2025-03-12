@@ -10,14 +10,18 @@ from llama_stack.distribution.datatypes import Api, ProviderSpec
 
 from .config import NvidiaPostTrainingConfig
 
-# post_training api and the torchtune provider is still experimental and under heavy development
-
 
 async def get_adapter_impl(
     config: NvidiaPostTrainingConfig,
     deps: Dict[Api, ProviderSpec],
 ):
-    from .post_training import NvidiaPostTrainingImpl
+    from .post_training import NvidiaPostTrainingAdapter
 
-    impl = NvidiaPostTrainingImpl(config)
+    if not isinstance(config, NvidiaPostTrainingConfig):
+        raise RuntimeError(f"Unexpected config type: {type(config)}")
+
+    impl = NvidiaPostTrainingAdapter(config)
     return impl
+
+
+__all__ = ["get_adapter_impl", "NvidiaPostTrainingAdapter"]
