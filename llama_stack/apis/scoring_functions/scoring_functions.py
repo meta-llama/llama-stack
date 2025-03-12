@@ -153,9 +153,15 @@ ScoringFnParams = register_schema(
 
 
 class CommonScoringFnFields(BaseModel):
+    """
+    :param scoring_fn_type: The type of scoring function.
+    :param params: (Optional) The parameters for the scoring function.
+    :param metadata: (Optional) Any additional metadata for this definition (e.g. description).
+    """
+
     scoring_fn_type: ScoringFunctionType
     params: Optional[ScoringFnParams] = Field(
-        description="The parameters for the scoring function for benchmark eval, these can be overridden for app eval",
+        description="The parameters for the scoring function.",
         default=None,
     )
     metadata: Dict[str, Any] = Field(

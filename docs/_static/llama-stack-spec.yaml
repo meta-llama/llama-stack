@@ -4976,11 +4976,11 @@ components:
             - context_precision
             - context_recall
             - context_relevancy
-          title: ScoringFunctionType
-          description: >-
-            A type of scoring function. Each type is a criteria for evaluating answers.
+          description: The type of scoring function.
         params:
           $ref: '#/components/schemas/ScoringFnParams'
+          description: >-
+            (Optional) The parameters for the scoring function.
         metadata:
           type: object
           additionalProperties:
@@ -4991,6 +4991,8 @@ components:
               - type: string
               - type: array
               - type: object
+          description: >-
+            (Optional) Any additional metadata for this definition (e.g. description).
       additionalProperties: false
       required:
         - identifier
