@@ -4936,7 +4936,25 @@ components:
           const: scoring_function
           default: scoring_function
         scoring_fn_type:
-          $ref: '#/components/schemas/ScoringFunctionType'
+          type: string
+          enum:
+            - custom_llm_as_judge
+            - regex_parser
+            - regex_parser_math_response
+            - equality
+            - subset_of
+            - factuality
+            - faithfulness
+            - answer_correctness
+            - answer_relevancy
+            - answer_similarity
+            - context_entity_recall
+            - context_precision
+            - context_recall
+            - context_relevancy
+          title: ScoringFunctionType
+          description: >-
+            A type of scoring function. Each type is a criteria for evaluating answers.
         params:
           $ref: '#/components/schemas/ScoringFnParams'
         metadata:
@@ -4958,26 +4976,6 @@ components:
         - scoring_fn_type
         - metadata
       title: ScoringFn
-    ScoringFunctionType:
-      type: string
-      enum:
-        - custom_llm_as_judge
-        - regex_parser
-        - regex_parser_math_response
-        - equality
-        - subset_of
-        - factuality
-        - faithfulness
-        - answer_correctness
-        - answer_relevancy
-        - answer_similarity
-        - context_entity_recall
-        - context_precision
-        - context_recall
-        - context_relevancy
-      title: ScoringFunctionType
-      description: >-
-        A type of scoring function. Each type is a criteria for evaluating answers.
     Shield:
       type: object
       properties:
@@ -6298,7 +6296,22 @@ components:
       type: object
       properties:
         scoring_fn_type:
-          $ref: '#/components/schemas/ScoringFunctionType'
+          type: string
+          enum:
+            - custom_llm_as_judge
+            - regex_parser
+            - regex_parser_math_response
+            - equality
+            - subset_of
+            - factuality
+            - faithfulness
+            - answer_correctness
+            - answer_relevancy
+            - answer_similarity
+            - context_entity_recall
+            - context_precision
+            - context_recall
+            - context_relevancy
           description: >-
             The type of scoring function to register.
         params:
