@@ -36,7 +36,7 @@ class ModelContextProtocolToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime):
             raise ValueError("mcp_endpoint is required")
 
         tools = []
-        async with sse_client(mcp_endpoint.uri) as streams:
+        async with sse_client(mcp_endpoint["uri"]) as streams:
             async with ClientSession(*streams) as session:
                 await session.initialize()
                 tools_result = await session.list_tools()
@@ -56,7 +56,7 @@ class ModelContextProtocolToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime):
                             description=tool.description,
                             parameters=parameters,
                             metadata={
-                                "endpoint": mcp_endpoint.uri,
+                                "endpoint": mcp_endpoint["uri"],
                             },
                         )
                     )
