@@ -3149,8 +3149,6 @@ components:
           type: string
       additionalProperties: false
       required:
-        - trace_id
-        - span_id
         - timestamp
         - type
         - metric
@@ -5760,8 +5758,6 @@ components:
           $ref: '#/components/schemas/StructuredLogPayload'
       additionalProperties: false
       required:
-        - trace_id
-        - span_id
         - timestamp
         - type
         - payload
@@ -5804,8 +5800,6 @@ components:
           $ref: '#/components/schemas/LogSeverity'
       additionalProperties: false
       required:
-        - trace_id
-        - span_id
         - timestamp
         - type
         - message

@@ -75,9 +75,9 @@ class LogSeverity(Enum):
 
 
 class EventCommon(BaseModel):
-    trace_id: str
-    span_id: str
-    timestamp: datetime
+    trace_id: Optional[str] = None
+    span_id: Optional[str] = None
+    timestamp: Optional[datetime] = None
     attributes: Optional[Dict[str, Primitive]] = Field(default_factory=dict)
 
 
@@ -93,7 +93,14 @@ class MetricEvent(EventCommon):
     type: Literal[EventType.METRIC.value] = EventType.METRIC.value
     metric: str  # this would be an enum
     value: Union[int, float]
-    unit: str
+    unit: Optional[str] = None
+
+
+@json_schema_type
+class MetricInResponse(BaseModel):
+    metric: str
+    value: Union[int, float]
+    unit: Optional[str] = None
 
 
 # This is a short term solution to allow inference API to return metrics
@@ -117,7 +124,7 @@ class MetricEvent(EventCommon):
 
 
 class MetricResponseMixin(BaseModel):
-    metrics: Optional[List[MetricEvent]] = None
+    metrics: Optional[List[MetricInResponse]] = None
 
 
 @json_schema_type
