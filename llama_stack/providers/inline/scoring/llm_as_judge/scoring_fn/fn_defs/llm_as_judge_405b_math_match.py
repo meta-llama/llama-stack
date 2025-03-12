@@ -11,7 +11,7 @@ from llama_stack.apis.scoring_functions import (
     ScoringFn,
 )
 
-EQUALITY_TEMPLATE = r"""
+EQUALITY_TEMPLATE = """
 Look at the following two expressions (answers to a math problem) and judge whether they are equivalent. Only perform trivial simplifications
 
 Examples:
@@ -67,8 +67,8 @@ YOUR TASK
 
 Respond with only "Yes" or "No" (without quotes). Do not include a rationale.
 
-    Expression 1: %(expression1)s
-    Expression 2: %(expression2)s
+    Expression 1: {expression1}
+    Expression 2: {expression2}
 """.strip()
 
 
@@ -79,7 +79,7 @@ llm_as_judge_405b_math_match = ScoringFn(
     provider_id="llm-as-judge",
     provider_resource_id="llm-as-judge-405b-math-match",
     params=LLMAsJudgeScoringFnParams(
-        judge_model="meta-llama/Llama-3.1-405B-Instruct",
+        judge_model="openai/gpt-4o",
         prompt_template=EQUALITY_TEMPLATE,
         aggregation_functions=[AggregationFunctionType.accuracy],
     ),

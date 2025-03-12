@@ -24,8 +24,9 @@ from llama_stack.providers.utils.common.data_schema_validator import (
 
 from .config import LlmAsJudgeScoringConfig
 from .scoring_fn.llm_as_judge_scoring_fn import LlmAsJudgeScoringFn
+from .scoring_fn.llm_as_judge_math_match_fn import LlmAsJudgeMathMatchFn
 
-LLM_JUDGE_FN = LlmAsJudgeScoringFn
+LLM_JUDGE_FN = [LlmAsJudgeScoringFn, LlmAsJudgeMathMatchFn]
 
 
 class LlmAsJudgeScoringImpl(
@@ -45,8 +46,9 @@ class LlmAsJudgeScoringImpl(
         self.inference_api = inference_api
 
     async def initialize(self) -> None:
-        impl = LLM_JUDGE_FN(inference_api=self.inference_api)
-        self.llm_as_judge_fn = impl
+        for fn in LLM_JUDGE_FN:
+            impl = fn(inference_api=self.inference_api)
+            self.llm_as_judge_fn = impl
 
     async def shutdown(self) -> None: ...
 

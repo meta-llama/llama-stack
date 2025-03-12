@@ -12,9 +12,9 @@ from llama_stack.providers.utils.scoring.base_scoring_fn import RegisteredBaseSc
 
 from .fn_defs.llm_as_judge_405b_math_match import llm_as_judge_405b_math_match
 from .fn_defs.llm_as_judge_base import llm_as_judge_base
+from ...basic.utils.math_utils import extract_result_from_boxed
 
-
-class LlmAsJudgeScoringFn(RegisteredBaseScoringFn):
+class LlmAsJudgeMathMatchFn(RegisteredBaseScoringFn):
     """
     A scoring_fn that assigns
     """
@@ -47,8 +47,8 @@ class LlmAsJudgeScoringFn(RegisteredBaseScoringFn):
         generated_answer = input_row["generated_answer"]
 
         judge_input_msg = fn_def.params.prompt_template.format(
-            expected_answer=expected_answer,
-            generated_answer=generated_answer,
+            expression1=expected_answer,
+            expression2=extract_result_from_boxed(generated_answer),
         )
 
         print("judge_input_msg", judge_input_msg)
@@ -62,9 +62,11 @@ class LlmAsJudgeScoringFn(RegisteredBaseScoringFn):
             ],
         )
 
-        score = 1.0 if judge_response.lower().strip() == "yes" else 0.0
+        content = judge_response.completion_message.content
+
+        score = 1.0 if content.lower().strip() == "yes" else 0.0
 
         return {
             "score": score,
-            "judge_feedback": judge_response,
+            "judge_feedback": content,
         }
