@@ -132,12 +132,12 @@ models:
   provider_model_id: gemini/gemini-1.5-flash
   model_type: llm
 - metadata: {}
-  model_id: groq/llama-3.3-70b-versatile
+  model_id: meta-llama/Llama-3.3-70B-Instruct
   provider_id: groq
   provider_model_id: groq/llama-3.3-70b-versatile
   model_type: llm
 - metadata: {}
-  model_id: meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo
+  model_id: meta-llama/Llama-3.1-405B-Instruct
   provider_id: together
   provider_model_id: meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo
   model_type: llm
@@ -156,7 +156,6 @@ datasets:
     uri: https://huggingface.co/datasets/llamastack/simpleqa
   metadata:
     path: llamastack/simpleqa
-    name: null
     split: train
   dataset_id: simpleqa
   provider_id: huggingface

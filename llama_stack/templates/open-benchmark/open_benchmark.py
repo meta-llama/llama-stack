@@ -62,6 +62,16 @@ def get_inference_providers() -> Tuple[List[Provider], List[ModelInput]]:
             ],
             GeminiConfig.sample_run_config(api_key="${env.GEMINI_API_KEY:}"),
         ),
+        (
+            "groq",
+            [],
+            GroqConfig.sample_run_config(api_key="${env.GROQ_API_KEY:}"),
+        ),
+        (
+            "together",
+            [],
+            TogetherImplConfig.sample_run_config(api_key="${env.TOGETHER_API_KEY:}"),
+        ),
     ]
     inference_providers = []
     available_models = {}
@@ -135,7 +145,20 @@ def get_distribution_template() -> DistributionTemplate:
         ),
     ]
 
-    default_models = get_model_registry(available_models)
+    default_models = get_model_registry(available_models) + [
+        ModelInput(
+            model_id="meta-llama/Llama-3.3-70B-Instruct",
+            provider_id="groq",
+            provider_model_id="groq/llama-3.3-70b-versatile",
+            model_type=ModelType.llm,
+        ),
+        ModelInput(
+            model_id="meta-llama/Llama-3.1-405B-Instruct",
+            provider_id="together",
+            provider_model_id="meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
+            model_type=ModelType.llm,
+        ),
+    ]
 
     default_datasets = [
         DatasetInput(
