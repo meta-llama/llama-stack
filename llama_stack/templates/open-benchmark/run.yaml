@@ -219,6 +219,9 @@ benchmarks:
   - benchmark_id: meta-reference-math-500
     dataset_id: math_500
     scoring_functions: ["basic::regex_parser_math_response"]
+  - benchmark_id: meta-reference-math-500-llm-as-judge
+    dataset_id: math_500
+    scoring_functions: ["llm-as-judge::405b-math-match"]
 tool_groups:
 - toolgroup_id: builtin::websearch
   provider_id: tavily-search
