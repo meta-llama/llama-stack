@@ -79,7 +79,7 @@ llm_as_judge_405b_math_match = ScoringFn(
     provider_id="llm-as-judge",
     provider_resource_id="llm-as-judge-405b-math-match",
     params=LLMAsJudgeScoringFnParams(
-        judge_model="openai/gpt-4o",
+        judge_model="meta-llama/Llama-3.1-405B-Instruct",
         prompt_template=EQUALITY_TEMPLATE,
         aggregation_functions=[AggregationFunctionType.accuracy],
     ),
