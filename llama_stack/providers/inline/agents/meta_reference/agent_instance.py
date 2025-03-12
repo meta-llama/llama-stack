@@ -153,7 +153,6 @@ class ChatAgent(ShieldRunnerMixin):
                     messages.append(
                         ToolResponseMessage(
                             call_id=response.call_id,
-                            tool_name=response.tool_name,
                             content=response.content,
                         )
                     )
@@ -219,8 +218,7 @@ class ChatAgent(ShieldRunnerMixin):
         messages = await self.get_messages_from_turns(turns)
         if is_resume:
             tool_response_messages = [
-                ToolResponseMessage(call_id=x.call_id, tool_name=x.tool_name, content=x.content)
-                for x in request.tool_responses
+                ToolResponseMessage(call_id=x.call_id, content=x.content) for x in request.tool_responses
             ]
             messages.extend(tool_response_messages)
             last_turn = turns[-1]
@@ -700,7 +698,6 @@ class ChatAgent(ShieldRunnerMixin):
                     result_messages = [
                         ToolResponseMessage(
                             call_id=tool_call.call_id,
-                            tool_name=tool_call.tool_name,
                             content=tool_result.content,
                         )
                     ]
@@ -720,7 +717,7 @@ class ChatAgent(ShieldRunnerMixin):
                                 tool_responses=[
                                     ToolResponse(
                                         call_id=result_message.call_id,
-                                        tool_name=result_message.tool_name,
+                                        tool_name=tool_call.tool_name,
                                         content=result_message.content,
                                         metadata=tool_result.metadata,
                                     )
@@ -989,7 +986,6 @@ async def attachment_message(tempdir: str, urls: List[URL]) -> ToolResponseMessa
 
     return ToolResponseMessage(
         call_id="",
-        tool_name=BuiltinTool.code_interpreter,
         content=content,
     )
 
