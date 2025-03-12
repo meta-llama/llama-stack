@@ -19,7 +19,7 @@ def preserve_contexts_async_generator(
     and we need to preserve the context across the event loop boundary.
     """
 
-    async def wrapper():
+    async def wrapper() -> AsyncGenerator[T, None]:
         while True:
             try:
                 item = await gen.__anext__()

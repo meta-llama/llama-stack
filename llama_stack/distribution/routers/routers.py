@@ -238,7 +238,6 @@ class InferenceRouter(Inference):
         tool_config: Optional[ToolConfig] = None,
     ) -> Union[ChatCompletionResponse, AsyncIterator[ChatCompletionResponseStreamChunk]]:
         logger.debug(
-            "core",
             f"InferenceRouter.chat_completion: {model_id=}, {stream=}, {messages=}, {tools=}, {tool_config=}, {response_format=}",
         )
         if sampling_params is None:
