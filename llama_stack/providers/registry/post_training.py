@@ -22,4 +22,15 @@ def available_providers() -> List[ProviderSpec]:
                 Api.datasets,
             ],
         ),
+        InlineProviderSpec(
+            api=Api.post_training,
+            provider_type="inline::huggingface-ilab",
+            pip_packages=["torch", "transformers", "datasets", "numpy"],
+            module="llama_stack.providers.inline.post_training.huggingface_ilab",
+            config_class="llama_stack.providers.inline.post_training.huggingface_ilab.HFilabPostTrainingConfig",
+            api_dependencies=[
+                Api.datasetio,
+                Api.datasets,
+            ],
+        ),
     ]
