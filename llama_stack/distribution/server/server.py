@@ -6,11 +6,9 @@
 
 import argparse
 import asyncio
-import functools
 import inspect
 import json
 import os
-import signal
 import sys
 import traceback
 import warnings
@@ -30,7 +28,7 @@ from typing_extensions import Annotated
 from llama_stack.distribution.datatypes import StackRunConfig
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
 from llama_stack.distribution.request_headers import (
-    preserve_headers_context_async_generator,
+    PROVIDER_DATA_VAR,
     request_provider_data_context,
 )
 from llama_stack.distribution.resolver import InvalidProviderError
@@ -40,6 +38,7 @@ from llama_stack.distribution.stack import (
     replace_env_vars,
     validate_env_pair,
 )
+from llama_stack.distribution.utils.context import preserve_contexts_async_generator
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import Api
 from llama_stack.providers.inline.telemetry.meta_reference.config import TelemetryConfig
@@ -47,6 +46,7 @@ from llama_stack.providers.inline.telemetry.meta_reference.telemetry import (
     TelemetryAdapter,
 )
 from llama_stack.providers.utils.telemetry.tracing import (
+    CURRENT_TRACE_CONTEXT,
     end_trace,
     setup_logger,
     start_trace,
@@ -118,69 +118,24 @@ def translate_exception(exc: Exception) -> Union[HTTPException, RequestValidatio
         )
 
 
-def handle_signal(app, signum, _) -> None:
+async def shutdown(app):
+    """Initiate a graceful shutdown of the application.
+
+    Handled by the lifespan context manager. The shutdown process involves
+    shutting down all implementations registered in the application.
     """
-    Handle incoming signals and initiate a graceful shutdown of the application.
-
-    This function is intended to be used as a signal handler for various signals
-    (e.g., SIGINT, SIGTERM). Upon receiving a signal, it will print a message
-    indicating the received signal and initiate a shutdown process.
-
-    Args:
-        app: The application instance containing implementations to be shut down.
-        signum (int): The signal number received.
-        frame: The current stack frame (not used in this function).
-
-    The shutdown process involves:
-        - Shutting down all implementations registered in the application.
-        - Gathering all running asyncio tasks.
-        - Cancelling all gathered tasks.
-        - Waiting for all tasks to finish.
-        - Stopping the event loop.
-
-    Note:
-        This function schedules the shutdown process as an asyncio task and does
-        not block the current execution.
-    """
-    signame = signal.Signals(signum).name
-    logger.info(f"Received signal {signame} ({signum}). Exiting gracefully...")
-
-    async def shutdown():
+    for impl in app.__llama_stack_impls__.values():
+        impl_name = impl.__class__.__name__
+        logger.info("Shutting down %s", impl_name)
         try:
-            # Gracefully shut down implementations
-            for impl in app.__llama_stack_impls__.values():
-                impl_name = impl.__class__.__name__
-                logger.info("Shutting down %s", impl_name)
-                try:
-                    if hasattr(impl, "shutdown"):
-                        await asyncio.wait_for(impl.shutdown(), timeout=5)
-                    else:
-                        logger.warning("No shutdown method for %s", impl_name)
-                except asyncio.TimeoutError:
-                    logger.exception("Shutdown timeout for %s ", impl_name, exc_info=True)
-                except Exception as e:
-                    logger.exception("Failed to shutdown %s: %s", impl_name, {e})
-
-            # Gather all running tasks
-            loop = asyncio.get_running_loop()
-            tasks = [task for task in asyncio.all_tasks(loop) if task is not asyncio.current_task()]
-
-            # Cancel all tasks
-            for task in tasks:
-                task.cancel()
-
-            # Wait for all tasks to finish
-            try:
-                await asyncio.wait_for(asyncio.gather(*tasks, return_exceptions=True), timeout=10)
-            except asyncio.TimeoutError:
-                logger.exception("Timeout while waiting for tasks to finish")
-        except asyncio.CancelledError:
-            pass
-        finally:
-            loop.stop()
-
-    loop = asyncio.get_running_loop()
-    loop.create_task(shutdown())
+            if hasattr(impl, "shutdown"):
+                await asyncio.wait_for(impl.shutdown(), timeout=5)
+            else:
+                logger.warning("No shutdown method for %s", impl_name)
+        except asyncio.TimeoutError:
+            logger.exception("Shutdown timeout for %s ", impl_name, exc_info=True)
+        except (Exception, asyncio.CancelledError) as e:
+            logger.exception("Failed to shutdown %s: %s", impl_name, {e})
 
 
 @asynccontextmanager
@@ -188,8 +143,7 @@ async def lifespan(app: FastAPI):
     logger.info("Starting up")
     yield
     logger.info("Shutting down")
-    for impl in app.__llama_stack_impls__.values():
-        await impl.shutdown()
+    await shutdown(app)
 
 
 def is_streaming_request(func_name: str, request: Request, **kwargs):
@@ -230,13 +184,15 @@ def create_dynamic_typed_route(func: Any, method: str, route: str):
 
             try:
                 if is_streaming:
-                    gen = preserve_headers_context_async_generator(sse_generator(func(**kwargs)))
+                    gen = preserve_contexts_async_generator(
+                        sse_generator(func(**kwargs)), [CURRENT_TRACE_CONTEXT, PROVIDER_DATA_VAR]
+                    )
                     return StreamingResponse(gen, media_type="text/event-stream")
                 else:
                     value = func(**kwargs)
                     return await maybe_await(value)
             except Exception as e:
-                logger.exception("Error executing endpoint %s", method, route)
+                logger.exception(f"Error executing endpoint {route=} {method=}")
                 raise translate_exception(e) from e
 
     sig = inspect.signature(func)
@@ -266,7 +222,7 @@ class TracingMiddleware:
         self.app = app
 
     async def __call__(self, scope, receive, send):
-        path = scope["path"]
+        path = scope.get("path", "")
         await start_trace(path, {"__location__": "server"})
         try:
             return await self.app(scope, receive, send)
@@ -439,8 +395,6 @@ def main():
 
     app.exception_handler(RequestValidationError)(global_exception_handler)
     app.exception_handler(Exception)(global_exception_handler)
-    signal.signal(signal.SIGINT, functools.partial(handle_signal, app))
-    signal.signal(signal.SIGTERM, functools.partial(handle_signal, app))
 
     app.__llama_stack_impls__ = impls
 
@@ -471,6 +425,8 @@ def main():
         "app": app,
         "host": listen_host,
         "port": port,
+        "lifespan": "on",
+        "log_level": logger.getEffectiveLevel(),
     }
     if ssl_config:
         uvicorn_config.update(ssl_config)

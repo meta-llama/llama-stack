@@ -23,8 +23,11 @@ In this example, we will show you how to:
 
 ##### Building a Search Agent
 ```python
+from llama_stack_client import LlamaStackClient
 from llama_stack_client.lib.agents.agent import Agent
 from llama_stack_client.lib.agents.event_logger import EventLogger
+
+client = LlamaStackClient(base_url=f"http://{HOST}:{PORT}")
 
 agent = Agent(
     client,
@@ -33,7 +36,7 @@ agent = Agent(
     tools=["builtin::websearch"],
 )
 user_prompts = [
-    "Which teams played in the NBA western conference finals of 2024. Search the web for the answer.",
+    "Which teams played in the NBA Western Conference Finals of 2024. Search the web for the answer.",
     "In which episode and season of South Park does Bill Cosby (BSM-471) first appear? Give me the number and title. Search the web for the answer.",
     "What is the British-American kickboxer Andrew Tate's kickboxing name? Search the web for the answer.",
 ]

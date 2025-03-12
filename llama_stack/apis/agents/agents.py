@@ -234,6 +234,23 @@ class AgentConfig(AgentConfigCommon):
     response_format: Optional[ResponseFormat] = None
 
 
+@json_schema_type
+class Agent(BaseModel):
+    agent_id: str
+    agent_config: AgentConfig
+    created_at: datetime
+
+
+@json_schema_type
+class ListAgentsResponse(BaseModel):
+    data: List[Agent]
+
+
+@json_schema_type
+class ListAgentSessionsResponse(BaseModel):
+    data: List[Session]
+
+
 class AgentConfigOverridablePerTurn(AgentConfigCommon):
     instructions: Optional[str] = None
 
@@ -353,7 +370,7 @@ class AgentTurnResumeRequest(BaseModel):
     agent_id: str
     session_id: str
     turn_id: str
-    tool_responses: Union[List[ToolResponse], List[ToolResponseMessage]]
+    tool_responses: List[ToolResponse]
     stream: Optional[bool] = False
 
 
@@ -432,7 +449,7 @@ class Agents(Protocol):
         agent_id: str,
         session_id: str,
         turn_id: str,
-        tool_responses: Union[List[ToolResponse], List[ToolResponseMessage]],
+        tool_responses: List[ToolResponse],
         stream: Optional[bool] = False,
     ) -> Union[Turn, AsyncIterator[AgentTurnResponseStreamChunk]]:
         """Resume an agent turn with executed tool call responses.
@@ -443,7 +460,6 @@ class Agents(Protocol):
         :param session_id: The ID of the session to resume.
         :param turn_id: The ID of the turn to resume.
         :param tool_responses: The tool call responses to resume the turn with.
-            NOTE: ToolResponseMessage will be deprecated. Use ToolResponse.
         :param stream: Whether to stream the response.
         :returns: A Turn object if stream is False, otherwise an AsyncIterator of AgentTurnResponseStreamChunk objects.
         """
@@ -539,5 +555,34 @@ class Agents(Protocol):
         """Delete an agent by its ID.
 
         :param agent_id: The ID of the agent to delete.
+        """
+        ...
+
+    @webmethod(route="/agents", method="GET")
+    async def list_agents(self) -> ListAgentsResponse:
+        """List all agents.
+
+        :returns: A ListAgentsResponse.
+        """
+        ...
+
+    @webmethod(route="/agents/{agent_id}", method="GET")
+    async def get_agent(self, agent_id: str) -> Agent:
+        """Describe an agent by its ID.
+
+        :param agent_id: ID of the agent.
+        :returns: An Agent of the agent.
+        """
+        ...
+
+    @webmethod(route="/agents/{agent_id}/sessions", method="GET")
+    async def list_agent_sessions(
+        self,
+        agent_id: str,
+    ) -> ListAgentSessionsResponse:
+        """List all session(s) of a given agent.
+
+        :param agent_id: The ID of the agent to list sessions for.
+        :returns: A ListAgentSessionsResponse.
         """
         ...

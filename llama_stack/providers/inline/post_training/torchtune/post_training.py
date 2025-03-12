@@ -43,6 +43,9 @@ class TorchtunePostTrainingImpl:
         self.jobs = {}
         self.checkpoints_dict = {}
 
+    async def shutdown(self):
+        pass
+
     async def supervised_fine_tune(
         self,
         job_uuid: str,

@@ -20,14 +20,14 @@ import importlib
 import json
 from pathlib import Path
 
-from llama_stack.distribution.utils.image_types import ImageType
+from llama_stack.distribution.utils.image_types import LlamaStackImageType
 
 
 def formulate_run_args(image_type, image_name, config, template_name) -> list:
     env_name = ""
-    if image_type == ImageType.container.value or config.container_image:
+    if image_type == LlamaStackImageType.CONTAINER.value or config.container_image:
         env_name = f"distribution-{template_name}" if template_name else config.container_image
-    elif image_type == ImageType.conda.value:
+    elif image_type == LlamaStackImageType.CONDA.value:
         current_conda_env = os.environ.get("CONDA_DEFAULT_ENV")
         env_name = image_name or current_conda_env
         if not env_name:

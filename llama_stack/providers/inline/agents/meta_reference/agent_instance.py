@@ -181,7 +181,7 @@ class ChatAgent(ShieldRunnerMixin):
         return messages
 
     async def create_and_execute_turn(self, request: AgentTurnCreateRequest) -> AsyncGenerator:
-        with tracing.span("create_and_execute_turn") as span:
+        async with tracing.span("create_and_execute_turn") as span:
             span.set_attribute("session_id", request.session_id)
             span.set_attribute("agent_id", self.agent_id)
             span.set_attribute("request", request.model_dump_json())
@@ -191,7 +191,7 @@ class ChatAgent(ShieldRunnerMixin):
                 yield chunk
 
     async def resume_turn(self, request: AgentTurnResumeRequest) -> AsyncGenerator:
-        with tracing.span("resume_turn") as span:
+        async with tracing.span("resume_turn") as span:
             span.set_attribute("agent_id", self.agent_id)
             span.set_attribute("session_id", request.session_id)
             span.set_attribute("turn_id", request.turn_id)
@@ -218,18 +218,10 @@ class ChatAgent(ShieldRunnerMixin):
         steps = []
         messages = await self.get_messages_from_turns(turns)
         if is_resume:
-            if isinstance(request.tool_responses[0], ToolResponseMessage):
-                tool_response_messages = request.tool_responses
-                tool_responses = [
-                    ToolResponse(call_id=x.call_id, tool_name=x.tool_name, content=x.content)
-                    for x in request.tool_responses
-                ]
-            else:
-                tool_response_messages = [
-                    ToolResponseMessage(call_id=x.call_id, tool_name=x.tool_name, content=x.content)
-                    for x in request.tool_responses
-                ]
-                tool_responses = request.tool_responses
+            tool_response_messages = [
+                ToolResponseMessage(call_id=x.call_id, tool_name=x.tool_name, content=x.content)
+                for x in request.tool_responses
+            ]
             messages.extend(tool_response_messages)
             last_turn = turns[-1]
             last_turn_messages = self.turn_to_messages(last_turn)
@@ -252,7 +244,7 @@ class ChatAgent(ShieldRunnerMixin):
                 step_id=(in_progress_tool_call_step.step_id if in_progress_tool_call_step else str(uuid.uuid4())),
                 turn_id=request.turn_id,
                 tool_calls=(in_progress_tool_call_step.tool_calls if in_progress_tool_call_step else []),
-                tool_responses=tool_responses,
+                tool_responses=request.tool_responses,
                 completed_at=now,
                 started_at=(in_progress_tool_call_step.started_at if in_progress_tool_call_step else now),
             )
@@ -390,7 +382,7 @@ class ChatAgent(ShieldRunnerMixin):
         shields: List[str],
         touchpoint: str,
     ) -> AsyncGenerator:
-        with tracing.span("run_shields") as span:
+        async with tracing.span("run_shields") as span:
             span.set_attribute("input", [m.model_dump_json() for m in messages])
             if len(shields) == 0:
                 span.set_attribute("output", "no shields")
@@ -508,7 +500,7 @@ class ChatAgent(ShieldRunnerMixin):
             content = ""
             stop_reason = None
 
-            with tracing.span("inference") as span:
+            async with tracing.span("inference") as span:
                 async for chunk in await self.inference_api.chat_completion(
                     self.agent_config.model,
                     input_messages,
@@ -685,7 +677,7 @@ class ChatAgent(ShieldRunnerMixin):
                 tool_name = tool_call.tool_name
                 if isinstance(tool_name, BuiltinTool):
                     tool_name = tool_name.value
-                with tracing.span(
+                async with tracing.span(
                     "tool_execution",
                     {
                         "tool_name": tool_name,

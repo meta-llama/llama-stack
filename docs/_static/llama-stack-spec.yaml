@@ -238,6 +238,28 @@ paths:
               $ref: '#/components/schemas/CompletionRequest'
         required: true
   /v1/agents:
+    get:
+      responses:
+        '200':
+          description: A ListAgentsResponse.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListAgentsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Agents
+      description: List all agents.
+      parameters: []
     post:
       responses:
         '200':
@@ -410,6 +432,34 @@ paths:
               $ref: '#/components/schemas/CreateUploadSessionRequest'
         required: true
   /v1/agents/{agent_id}:
+    get:
+      responses:
+        '200':
+          description: An Agent of the agent.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Agents
+      description: Describe an agent by its ID.
+      parameters:
+        - name: agent_id
+          in: path
+          description: ID of the agent.
+          required: true
+          schema:
+            type: string
     delete:
       responses:
         '200':
@@ -1525,6 +1575,36 @@ paths:
         - name: job_id
           in: path
           description: The ID of the job to get the result of.
+          required: true
+          schema:
+            type: string
+  /v1/agents/{agent_id}/sessions:
+    get:
+      responses:
+        '200':
+          description: A ListAgentSessionsResponse.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListAgentSessionsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Agents
+      description: List all session(s) of a given agent.
+      parameters:
+        - name: agent_id
+          in: path
+          description: >-
+            The ID of the agent to list sessions for.
           required: true
           schema:
             type: string
@@ -4549,6 +4629,22 @@ components:
         - aggregated_results
       title: ScoringResult
       description: A scoring result for a single row.
+    Agent:
+      type: object
+      properties:
+        agent_id:
+          type: string
+        agent_config:
+          $ref: '#/components/schemas/AgentConfig'
+        created_at:
+          type: string
+          format: date-time
+      additionalProperties: false
+      required:
+        - agent_id
+        - agent_config
+        - created_at
+      title: Agent
     Session:
       type: object
       properties:
@@ -5385,6 +5481,28 @@ components:
       required:
         - content
       title: ToolInvocationResult
+    ListAgentSessionsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Session'
+      additionalProperties: false
+      required:
+        - data
+      title: ListAgentSessionsResponse
+    ListAgentsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Agent'
+      additionalProperties: false
+      required:
+        - data
+      title: ListAgentsResponse
     BucketResponse:
       type: object
       properties:
@@ -6287,16 +6405,11 @@ components:
       type: object
       properties:
         tool_responses:
-          oneOf:
-            - type: array
-              items:
-                $ref: '#/components/schemas/ToolResponse'
-            - type: array
-              items:
-                $ref: '#/components/schemas/ToolResponseMessage'
+          type: array
+          items:
+            $ref: '#/components/schemas/ToolResponse'
           description: >-
-            The tool call responses to resume the turn with. NOTE: ToolResponseMessage
-            will be deprecated. Use ToolResponse.
+            The tool call responses to resume the turn with.
         stream:
           type: boolean
           description: Whether to stream the response.
