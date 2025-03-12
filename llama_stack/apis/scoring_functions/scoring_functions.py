@@ -12,8 +12,8 @@ from typing import (
     Literal,
     Optional,
     Protocol,
-    Union,
     runtime_checkable,
+    Union,
 )
 
 from pydantic import BaseModel, Field
@@ -218,7 +218,9 @@ class CommonScoringFnFields(BaseModel):
 
 @json_schema_type
 class ScoringFn(CommonScoringFnFields, Resource):
-    type: Literal[ResourceType.scoring_function.value] = ResourceType.scoring_function.value
+    type: Literal[ResourceType.scoring_function.value] = (
+        ResourceType.scoring_function.value
+    )
 
     @property
     def scoring_fn_id(self) -> str:
@@ -245,13 +247,14 @@ class ScoringFunctions(Protocol):
     async def list_scoring_functions(self) -> ListScoringFunctionsResponse: ...
 
     @webmethod(route="/scoring-functions/{scoring_fn_id:path}", method="GET")
-    async def get_scoring_function(self, scoring_fn_id: str, /) -> Optional[ScoringFn]: ...
+    async def get_scoring_function(
+        self, scoring_fn_id: str, /
+    ) -> Optional[ScoringFn]: ...
 
     @webmethod(route="/scoring-functions", method="POST")
     async def register_scoring_function(
         self,
-        scoring_fn_type: ScoringFunctionType,
-        params: ScoringFnParams = None,
+        fn: ScoringFnParams,
         scoring_fn_id: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None,
     ) -> ScoringFn:
@@ -259,8 +262,7 @@ class ScoringFunctions(Protocol):
         Register a new scoring function with given parameters.
         Only valid scoring function type that can be parameterized can be registered.
 
-        :param scoring_fn_type: The type of scoring function to register.
-        :param params: The parameters for the scoring function.
+        :param fn: The type and parameters for the scoring function.
         :param scoring_fn_id: (Optional) The ID of the scoring function to register. If not provided, a random ID will be generated.
         :param metadata: (Optional) Any additional metadata to be associated with the scoring function.
             - E.g. {"description": "This scoring function is used for ..."}
