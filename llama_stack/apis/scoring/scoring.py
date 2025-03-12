@@ -78,12 +78,12 @@ class Scoring(Protocol):
     @webmethod(route="/scoring/rows", method="POST")
     async def score_rows(
         self,
-        input_rows: List[Dict[str, Any]],
+        dataset_rows: List[Dict[str, Any]],
         scoring_functions: List[ScoringFnParams],
     ) -> ScoreResponse:
         """Score a list of rows.
 
-        :param input_rows: The rows to score.
+        :param dataset_rows: The rows to score.
         :param scoring_functions: The scoring functions to use for the scoring.
         :return: ScoreResponse object containing rows and aggregated results
         """
