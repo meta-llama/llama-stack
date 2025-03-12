@@ -196,7 +196,7 @@ def get_distribution_template() -> DistributionTemplate:
             url={"uri": "https://huggingface.co/datasets/llamastack/gpqa_0shot_cot"},
             metadata={
                 "path": "llamastack/gpqa_0shot_cot",
-                "name": "main",
+                "name": "gpqa_main",
                 "split": "train",
             },
             dataset_schema={
