@@ -89,7 +89,7 @@ class BFCLScoringFn(RegisteredBaseScoringFn):
     ) -> ScoringResultRow:
         test_category = re.sub(r'_[0-9_-]+$', '', input_row['id'])
         score_result = postprocess(input_row, test_category)
-        if (test_category in set(['irrelevance', 'live_relevance', 'live_irrelevance'])):
+        if (test_category in {'irrelevance', 'live_relevance', 'live_irrelevance'}):
             score = gen_relevance_acc(score_result)['valid']
         else:
             score = gen_valid(score_result)['valid']
