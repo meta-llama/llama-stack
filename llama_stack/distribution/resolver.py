@@ -14,6 +14,7 @@ from llama_stack.apis.datasets import Datasets
 from llama_stack.apis.eval import Eval
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.inspect import Inspect
+from llama_stack.apis.jobs import Jobs
 from llama_stack.apis.models import Models
 from llama_stack.apis.post_training import PostTraining
 from llama_stack.apis.safety import Safety
@@ -62,6 +63,7 @@ def api_protocol_map() -> Dict[Api, Any]:
         Api.agents: Agents,
         Api.inference: Inference,
         Api.inspect: Inspect,
+        Api.jobs: Jobs,
         Api.vector_io: VectorIO,
         Api.vector_dbs: VectorDBs,
         Api.models: Models,
@@ -226,26 +228,32 @@ def sort_providers_by_deps(
         {k: list(v.values()) for k, v in providers_with_specs.items()}
     )
 
-    # Append built-in "inspect" provider
+    # Append built-in providers
     apis = [x[1].spec.api for x in sorted_providers]
-    sorted_providers.append(
+    deps = [x.value for x in apis]
+    config = run_config.model_dump()
+    sorted_providers += [
         (
-            "inspect",
+            name,
             ProviderWithSpec(
                 provider_id="__builtin__",
                 provider_type="__builtin__",
-                config={"run_config": run_config.model_dump()},
+                config={"run_config": config},
                 spec=InlineProviderSpec(
-                    api=Api.inspect,
+                    api=api,
                     provider_type="__builtin__",
-                    config_class="llama_stack.distribution.inspect.DistributionInspectConfig",
-                    module="llama_stack.distribution.inspect",
+                    config_class=f"llama_stack.distribution.{name}.Distribution{name.title()}Config",
+                    module=f"llama_stack.distribution.{name}",
                     api_dependencies=apis,
-                    deps__=[x.value for x in apis],
+                    deps__=deps,
                 ),
             ),
         )
-    )
+        for name, api in [
+            ("inspect", Api.inspect),
+            ("jobs", Api.jobs),
+        ]
+    ]
 
     logger.debug(f"Resolved {len(sorted_providers)} providers")
     for api_str, provider in sorted_providers:

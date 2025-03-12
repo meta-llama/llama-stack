@@ -230,6 +230,41 @@
                 }
             }
         },
+        "/v1/jobs/{job_id}/cancel": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Jobs"
+                ],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "job_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
         "/v1/post-training/job/cancel": {
             "post": {
                 "responses": {
@@ -917,6 +952,81 @@
                         "name": "key",
                         "in": "path",
                         "description": "Key under which the file is stored (valid chars: a-zA-Z0-9_-/.)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/v1/jobs/{job_id}": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/JobInfo"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Jobs"
+                ],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "job_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            },
+            "delete": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Jobs"
+                ],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "job_id",
+                        "in": "path",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -2566,6 +2676,39 @@
                         }
                     }
                 ]
+            }
+        },
+        "/v1/jobs": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ListJobsResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Jobs"
+                ],
+                "description": "",
+                "parameters": []
             }
         },
         "/v1/models": {
@@ -4715,6 +4858,12 @@
             "CompletionResponse": {
                 "type": "object",
                 "properties": {
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricEvent"
+                        }
+                    },
                     "content": {
                         "type": "string",
                         "description": "The generated completion text"
@@ -5082,6 +5231,12 @@
             "CompletionResponseStreamChunk": {
                 "type": "object",
                 "properties": {
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricEvent"
+                        }
+                    },
                     "delta": {
                         "type": "string",
                         "description": "New content generated since last chunk. This can be one or more tokens."
@@ -7094,6 +7249,73 @@
                 ],
                 "title": "UnionType"
             },
+            "JobArtifact": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "uri": {
+                        "type": "string"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "title": "dict",
+                        "description": "dict() -> new empty dictionary dict(mapping) -> new dictionary initialized from a mapping object's     (key, value) pairs dict(iterable) -> new dictionary initialized as if via:     d = {}     for k, v in iterable:         d[k] = v dict(**kwargs) -> new dictionary initialized with the name=value pairs     in the keyword argument list.  For example:  dict(one=1, two=2)"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "name",
+                    "type",
+                    "uri",
+                    "metadata"
+                ],
+                "title": "JobArtifact"
+            },
+            "JobInfo": {
+                "type": "object",
+                "properties": {
+                    "uuid": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "scheduled_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "started_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "completed_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "artifacts": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/JobArtifact"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "uuid",
+                    "type",
+                    "status",
+                    "artifacts"
+                ],
+                "title": "JobInfo"
+            },
             "Model": {
                 "type": "object",
                 "properties": {
@@ -8156,6 +8378,22 @@
                 ],
                 "title": "ListFileResponse",
                 "description": "Response representing a list of file entries."
+            },
+            "ListJobsResponse": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/JobInfo"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "data"
+                ],
+                "title": "ListJobsResponse"
             },
             "ListModelsResponse": {
                 "type": "object",
@@ -10120,6 +10358,9 @@
             "name": "Inspect"
         },
         {
+            "name": "Jobs"
+        },
+        {
             "name": "Models"
         },
         {
@@ -10169,6 +10410,7 @@
                 "Files (Coming Soon)",
                 "Inference",
                 "Inspect",
+                "Jobs",
                 "Models",
                 "PostTraining (Coming Soon)",
                 "Safety",

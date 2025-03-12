@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field
 
 class ResourceType(Enum):
     model = "model"
+    job = "job"
     shield = "shield"
     vector_db = "vector_db"
     dataset = "dataset"
