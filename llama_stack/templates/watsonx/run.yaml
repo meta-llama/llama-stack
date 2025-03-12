@@ -1,0 +1,87 @@
+version: '2'
+image_name: watsonx
+apis:
+- agents
+- datasetio
+- eval
+- inference
+- safety
+- scoring
+- telemetry
+- tool_runtime
+- vector_io
+providers:
+  inference:
+  - provider_id: watsonx
+    provider_type: remote::watsonx
+    config:
+      url: ${env.WATSONX_BASE_URL:https://us-south.ml.cloud.ibm.com}
+      api_key: ${env.WATSONX_API_KEY:}
+      project_id: ${env.WATSONX_PROJECT_ID:}
+  safety:
+  - provider_id: llama-guard
+    provider_type: inline::llama-guard
+    config: {}
+  agents:
+  - provider_id: meta-reference
+    provider_type: inline::meta-reference
+    config:
+      persistence_store:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/llamastack-watsonx}/agents_store.db
+  vector_io:
+  - provider_id: faiss
+    provider_type: inline::faiss
+    config:
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/llamastack-watsonx}/faiss_store.db
+  datasetio:
+  - provider_id: huggingface
+    provider_type: remote::huggingface
+    config: {}
+  - provider_id: localfs
+    provider_type: inline::localfs
+    config: {}
+  scoring:
+  - provider_id: basic
+    provider_type: inline::basic
+    config: {}
+  eval:
+  - provider_id: meta-reference
+    provider_type: inline::meta-reference
+    config: {}
+  post_training:
+  - provider_id: torchtune
+    provider_type: inline::torchtune
+    config: {}
+  tool_runtime:
+  - provider_id: rag-runtime
+    provider_type: inline::rag-runtime
+    config: {}
+  telemetry:
+  - provider_id: meta-reference
+    provider_type: inline::meta-reference
+    config:
+      service_name: ${env.OTEL_SERVICE_NAME:llama-stack}
+      sinks: ${env.TELEMETRY_SINKS:console,sqlite}
+      sqlite_db_path: ${env.SQLITE_DB_PATH:~/.llama/distributions/llamastack-watsonx/trace_store.db}
+metadata_store: null
+models:
+- metadata: {}
+  model_id: meta-llama/llama-3-3-70b-instruct
+  provider_id: watsonx
+  provider_model_id: meta-llama/llama-3-3-70b-instruct
+  model_type: llm
+shields: []
+vector_dbs: []
+datasets: []
+scoring_fns: []
+benchmarks: []
+tool_groups:
+- toolgroup_id: builtin::rag
+  provider_id: rag-runtime
+server:
+  port: 8321
