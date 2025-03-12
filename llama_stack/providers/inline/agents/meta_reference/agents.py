@@ -172,7 +172,7 @@ class MetaReferenceAgentsImpl(Agents):
         agent_id: str,
         session_id: str,
         turn_id: str,
-        tool_responses: Union[List[ToolResponse], List[ToolResponseMessage]],
+        tool_responses: List[ToolResponse],
         stream: Optional[bool] = False,
     ) -> AsyncGenerator:
         request = AgentTurnResumeRequest(

@@ -9490,21 +9490,11 @@
                 "type": "object",
                 "properties": {
                     "tool_responses": {
-                        "oneOf": [
-                            {
-                                "type": "array",
-                                "items": {
-                                    "$ref": "#/components/schemas/ToolResponse"
-                                }
-                            },
-                            {
-                                "type": "array",
-                                "items": {
-                                    "$ref": "#/components/schemas/ToolResponseMessage"
-                                }
-                            }
-                        ],
-                        "description": "The tool call responses to resume the turn with. NOTE: ToolResponseMessage will be deprecated. Use ToolResponse."
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ToolResponse"
+                        },
+                        "description": "The tool call responses to resume the turn with."
                     },
                     "stream": {
                         "type": "boolean",

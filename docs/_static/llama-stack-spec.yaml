@@ -6405,16 +6405,11 @@ components:
       type: object
       properties:
         tool_responses:
-          oneOf:
-            - type: array
-              items:
-                $ref: '#/components/schemas/ToolResponse'
-            - type: array
-              items:
-                $ref: '#/components/schemas/ToolResponseMessage'
+          type: array
+          items:
+            $ref: '#/components/schemas/ToolResponse'
           description: >-
-            The tool call responses to resume the turn with. NOTE: ToolResponseMessage
-            will be deprecated. Use ToolResponse.
+            The tool call responses to resume the turn with.
         stream:
           type: boolean
           description: Whether to stream the response.
