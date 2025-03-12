@@ -2800,7 +2800,14 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ScoringFn"
+                                }
+                            }
+                        }
                     },
                     "400": {
                         "$ref": "#/components/responses/BadRequest400"
@@ -2818,7 +2825,7 @@
                 "tags": [
                     "ScoringFunctions"
                 ],
-                "description": "",
+                "description": "Register a new scoring function with given parameters. Only valid scoring function type that can be parameterized can be registered.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -7148,175 +7155,6 @@
                 "title": "PaginatedRowsResult",
                 "description": "A paginated list of rows from a dataset."
             },
-            "AgentTurnInputType": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "agent_turn_input",
-                        "default": "agent_turn_input"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type"
-                ],
-                "title": "AgentTurnInputType"
-            },
-            "ArrayType": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "array",
-                        "default": "array"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type"
-                ],
-                "title": "ArrayType"
-            },
-            "BooleanType": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "boolean",
-                        "default": "boolean"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type"
-                ],
-                "title": "BooleanType"
-            },
-            "ChatCompletionInputType": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "chat_completion_input",
-                        "default": "chat_completion_input"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type"
-                ],
-                "title": "ChatCompletionInputType"
-            },
-            "CompletionInputType": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "completion_input",
-                        "default": "completion_input"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type"
-                ],
-                "title": "CompletionInputType"
-            },
-            "JsonType": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "json",
-                        "default": "json"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type"
-                ],
-                "title": "JsonType"
-            },
-            "NumberType": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "number",
-                        "default": "number"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type"
-                ],
-                "title": "NumberType"
-            },
-            "ObjectType": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "object",
-                        "default": "object"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type"
-                ],
-                "title": "ObjectType"
-            },
-            "ParamType": {
-                "oneOf": [
-                    {
-                        "$ref": "#/components/schemas/StringType"
-                    },
-                    {
-                        "$ref": "#/components/schemas/NumberType"
-                    },
-                    {
-                        "$ref": "#/components/schemas/BooleanType"
-                    },
-                    {
-                        "$ref": "#/components/schemas/ArrayType"
-                    },
-                    {
-                        "$ref": "#/components/schemas/ObjectType"
-                    },
-                    {
-                        "$ref": "#/components/schemas/JsonType"
-                    },
-                    {
-                        "$ref": "#/components/schemas/UnionType"
-                    },
-                    {
-                        "$ref": "#/components/schemas/ChatCompletionInputType"
-                    },
-                    {
-                        "$ref": "#/components/schemas/CompletionInputType"
-                    },
-                    {
-                        "$ref": "#/components/schemas/AgentTurnInputType"
-                    }
-                ],
-                "discriminator": {
-                    "propertyName": "type",
-                    "mapping": {
-                        "string": "#/components/schemas/StringType",
-                        "number": "#/components/schemas/NumberType",
-                        "boolean": "#/components/schemas/BooleanType",
-                        "array": "#/components/schemas/ArrayType",
-                        "object": "#/components/schemas/ObjectType",
-                        "json": "#/components/schemas/JsonType",
-                        "union": "#/components/schemas/UnionType",
-                        "chat_completion_input": "#/components/schemas/ChatCompletionInputType",
-                        "completion_input": "#/components/schemas/CompletionInputType",
-                        "agent_turn_input": "#/components/schemas/AgentTurnInputType"
-                    }
-                }
-            },
             "ScoringFn": {
                 "type": "object",
                 "properties": {
@@ -7334,8 +7172,14 @@
                         "const": "scoring_function",
                         "default": "scoring_function"
                     },
+                    "scoring_fn_type": {
+                        "$ref": "#/components/schemas/ScoringFunctionType"
+                    },
                     "description": {
                         "type": "string"
+                    },
+                    "params": {
+                        "$ref": "#/components/schemas/ScoringFnParams"
                     },
                     "metadata": {
                         "type": "object",
@@ -7361,12 +7205,6 @@
                                 }
                             ]
                         }
-                    },
-                    "return_type": {
-                        "$ref": "#/components/schemas/ParamType"
-                    },
-                    "params": {
-                        "$ref": "#/components/schemas/ScoringFnParams"
                     }
                 },
                 "additionalProperties": false,
@@ -7375,40 +7213,31 @@
                     "provider_resource_id",
                     "provider_id",
                     "type",
-                    "metadata",
-                    "return_type"
+                    "scoring_fn_type",
+                    "metadata"
                 ],
                 "title": "ScoringFn"
             },
-            "StringType": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "string",
-                        "default": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type"
+            "ScoringFunctionType": {
+                "type": "string",
+                "enum": [
+                    "custom_llm_as_judge",
+                    "regex_parser",
+                    "regex_parser_math_response",
+                    "equality",
+                    "subset_of",
+                    "factuality",
+                    "faithfulness",
+                    "answer_correctness",
+                    "answer_relevancy",
+                    "answer_similarity",
+                    "context_entity_recall",
+                    "context_precision",
+                    "context_recall",
+                    "context_relevancy"
                 ],
-                "title": "StringType"
-            },
-            "UnionType": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "union",
-                        "default": "union"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type"
-                ],
-                "title": "UnionType"
+                "title": "ScoringFunctionType",
+                "description": "A type of scoring function. Each type is a criteria for evaluating answers."
             },
             "Shield": {
                 "type": "object",
@@ -9389,7 +9218,7 @@
                     },
                     "data_reference": {
                         "$ref": "#/components/schemas/DataReference",
-                        "description": "The data reference of the dataset. Examples: - { \"type\": \"uri\", \"uri\": \"https://mywebsite.com/mydata.jsonl\" } - { \"type\": \"uri\", \"uri\": \"lsfs://mydata.jsonl\" } - { \"type\": \"huggingface\", \"dataset_path\": \"tatsu-lab/alpaca\", \"params\": { \"split\": \"train\" } } - { \"type\": \"rows\", \"rows\": [{\"message\": \"Hello, world!\"}] }"
+                        "description": "The data reference of the dataset. Examples: - { \"type\": \"uri\", \"uri\": \"https://mywebsite.com/mydata.jsonl\" } - { \"type\": \"uri\", \"uri\": \"lsfs://mydata.jsonl\" } - { \"type\": \"huggingface\", \"dataset_path\": \"tatsu-lab/alpaca\", \"params\": { \"split\": \"train\" } } - { \"type\": \"rows\", \"rows\": [ { \"messages\": [ {\"role\": \"user\", \"content\": \"Hello, world!\"}, {\"role\": \"assistant\", \"content\": \"Hello, world!\"}, ] } ] }"
                     },
                     "metadata": {
                         "type": "object",
@@ -9479,30 +9308,52 @@
             "RegisterScoringFunctionRequest": {
                 "type": "object",
                 "properties": {
-                    "scoring_fn_id": {
-                        "type": "string"
-                    },
-                    "description": {
-                        "type": "string"
-                    },
-                    "return_type": {
-                        "$ref": "#/components/schemas/ParamType"
-                    },
-                    "provider_scoring_fn_id": {
-                        "type": "string"
-                    },
-                    "provider_id": {
-                        "type": "string"
+                    "scoring_fn_type": {
+                        "$ref": "#/components/schemas/ScoringFunctionType",
+                        "description": "The type of scoring function to register. A function type can only be registered if it is a valid type."
                     },
                     "params": {
-                        "$ref": "#/components/schemas/ScoringFnParams"
+                        "$ref": "#/components/schemas/ScoringFnParams",
+                        "description": "The parameters for the scoring function."
+                    },
+                    "scoring_fn_id": {
+                        "type": "string",
+                        "description": "(Optional) The ID of the scoring function to register. If not provided, a random ID will be generated."
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "(Optional) The description of the scoring function."
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        },
+                        "description": "(Optional) Any additional metadata to be associated with the scoring function."
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "scoring_fn_id",
-                    "description",
-                    "return_type"
+                    "scoring_fn_type"
                 ],
                 "title": "RegisterScoringFunctionRequest"
             },

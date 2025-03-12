@@ -175,7 +175,7 @@ class ScoringFunctions(Protocol):
         scoring_fn_id: Optional[str] = None,
         description: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None,
-    ):
+    ) -> ScoringFn:
         """
         Register a new scoring function with given parameters.
         Only valid scoring function type that can be parameterized can be registered.
