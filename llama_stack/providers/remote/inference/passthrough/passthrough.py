@@ -94,7 +94,7 @@ class PassthroughInferenceAdapter(Inference):
         client = self._get_client()
         model = await self.model_store.get_model(model_id)
 
-        params = {
+        request_params = {
             "model_id": model.provider_resource_id,
             "content": content,
             "sampling_params": sampling_params,
@@ -103,10 +103,13 @@ class PassthroughInferenceAdapter(Inference):
             "logprobs": logprobs,
         }
 
-        params = {key: value for key, value in params.items() if value is not None}
+        request_params = {key: value for key, value in request_params.items() if value is not None}
+
+        # cast everything to json dict
+        json_params = self.cast_value_to_json_dict(request_params)
 
         # only pass through the not None params
-        return await client.inference.completion(**params)
+        return await client.inference.completion(**json_params)
 
     async def chat_completion(
         self,

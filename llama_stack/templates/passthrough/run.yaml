@@ -20,13 +20,6 @@ providers:
   - provider_id: sentence-transformers
     provider_type: inline::sentence-transformers
     config: {}
-  - provider_id: meta-reference-inference
-    provider_type: inline::meta-reference
-    config:
-      model: meta-llama/Llama-Guard-3-1B
-      max_seq_len: 4096
-      checkpoint_dir: ${env.INFERENCE_CHECKPOINT_DIR:null}
-      # api_key: ${env.TOGETHER_API_KEY}
   vector_io:
   - provider_id: faiss
     provider_type: inline::faiss
@@ -110,12 +103,8 @@ models:
   provider_id: passthrough
   provider_model_id: llama3.2-11b-vision-instruct
   model_type: llm
-- metadata: {}
-  model_id: meta-llama/Llama-Guard-3-1B
-  provider_id: meta-reference-inference
-  model_type: llm
 shields:
-- shield_id: meta-llama/Llama-Guard-3-1B
+- shield_id: meta-llama/Llama-Guard-3-8B
 vector_dbs: []
 datasets: []
 scoring_fns: []
