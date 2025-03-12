@@ -5,12 +5,12 @@
 # the root directory of this source tree.
 
 from enum import Enum
-from typing import Any, Dict, List, Literal, Optional, Protocol, Annotated, Union
+from typing import Annotated, Any, Dict, List, Literal, Optional, Protocol, Union
 
 from pydantic import BaseModel, Field
 
 from llama_stack.apis.resource import Resource, ResourceType
-from llama_stack.schema_utils import json_schema_type, webmethod, register_schema
+from llama_stack.schema_utils import json_schema_type, register_schema, webmethod
 
 
 class Schema(Enum):
@@ -61,6 +61,7 @@ DataReference = register_schema(
     ],
     name="DataReference",
 )
+
 
 class CommonDatasetFields(BaseModel):
     schema: Schema
@@ -126,7 +127,14 @@ class Datasets(Protocol):
            }
            - {
                "type": "rows",
-               "rows": [{"message": "Hello, world!"}]
+               "rows": [
+                   {
+                       "messages": [
+                           {"role": "user", "content": "Hello, world!"},
+                           {"role": "assistant", "content": "Hello, world!"},
+                       ]
+                   }
+               ]
            }
         :param metadata: The metadata for the dataset.
            - E.g. {"description": "My dataset"}
