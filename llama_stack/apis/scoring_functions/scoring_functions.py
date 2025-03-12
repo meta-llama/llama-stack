@@ -19,7 +19,6 @@ from typing import (
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
-from llama_stack.apis.common.type_system import ParamType
 from llama_stack.apis.resource import Resource, ResourceType
 from llama_stack.schema_utils import json_schema_type, register_schema, webmethod
 
