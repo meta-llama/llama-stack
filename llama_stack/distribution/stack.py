@@ -21,6 +21,7 @@ from llama_stack.apis.eval import Eval
 from llama_stack.apis.files import Files
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.inspect import Inspect
+from llama_stack.apis.jobs import Jobs
 from llama_stack.apis.models import Models
 from llama_stack.apis.post_training import PostTraining
 from llama_stack.apis.safety import Safety
@@ -62,6 +63,7 @@ class LlamaStack(
     Models,
     Shields,
     Inspect,
+    Jobs,
     ToolGroups,
     ToolRuntime,
     RAGToolRuntime,
