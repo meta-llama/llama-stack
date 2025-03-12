@@ -142,7 +142,7 @@ paths:
             schema:
               $ref: '#/components/schemas/BatchCompletionRequest'
         required: true
-  /v1/eval/benchmark/{benchmark_id}/jobs/{job_id}:
+  /v1/eval/jobs/{job_id}:
     get:
       responses:
         '200':
@@ -168,16 +168,16 @@ paths:
       description: >-
         Get the EvalJob object for a given job id and benchmark id.
       parameters:
-        - name: benchmark_id
-          in: path
-          description: >-
-            The ID of the benchmark to run the evaluation on.
-          required: true
-          schema:
-            type: string
         - name: job_id
           in: path
           description: The ID of the job to get the status of.
+          required: true
+          schema:
+            type: string
+        - name: benchmark_id
+          in: query
+          description: >-
+            The ID of the benchmark to run the evaluation on.
           required: true
           schema:
             type: string
@@ -199,16 +199,16 @@ paths:
         - Scoring
       description: Cancel a job.
       parameters:
-        - name: benchmark_id
-          in: path
-          description: >-
-            The ID of the benchmark to run the evaluation on.
-          required: true
-          schema:
-            type: string
         - name: job_id
           in: path
           description: The ID of the job to cancel.
+          required: true
+          schema:
+            type: string
+        - name: benchmark_id
+          in: query
+          description: >-
+            The ID of the benchmark to run the evaluation on.
           required: true
           schema:
             type: string
@@ -736,7 +736,7 @@ paths:
             schema:
               $ref: '#/components/schemas/EmbeddingsRequest'
         required: true
-  /v1/eval/benchmark/{benchmark_id}/jobs:
+  /v1/eval/jobs:
     post:
       responses:
         '200':
@@ -759,14 +759,7 @@ paths:
       tags:
         - Eval
       description: Run an evaluation on a benchmark.
-      parameters:
-        - name: benchmark_id
-          in: path
-          description: >-
-            The ID of the benchmark to run the evaluation on.
-          required: true
-          schema:
-            type: string
+      parameters: []
       requestBody:
         content:
           application/json:
@@ -4410,6 +4403,10 @@ components:
     EvaluateBenchmarkRequest:
       type: object
       properties:
+        benchmark_id:
+          type: string
+          description: >-
+            The ID of the benchmark to run the evaluation on.
         candidate:
           $ref: '#/components/schemas/EvalCandidate'
           description: >-
@@ -4418,6 +4415,7 @@ components:
             } - { "type": "agent", "config": {...}, }
       additionalProperties: false
       required:
+        - benchmark_id
         - candidate
       title: EvaluateBenchmarkRequest
     EvalJob:
