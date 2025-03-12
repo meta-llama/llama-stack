@@ -5,12 +5,16 @@
 # the root directory of this source tree.
 import inspect
 import itertools
+import logging
 import os
+import platform
 import textwrap
 
 from dotenv import load_dotenv
 
 from .report import Report
+
+logger = logging.getLogger(__name__)
 
 
 def pytest_configure(config):
@@ -23,6 +27,10 @@ def pytest_configure(config):
     for env_var in env_vars:
         key, value = env_var.split("=", 1)
         os.environ[key] = value
+
+    if platform.system() == "Darwin":  # Darwin is the system name for macOS
+        os.environ["DISABLE_CODE_SANDBOX"] = "1"
+        logger.info("Setting DISABLE_CODE_SANDBOX=1 for macOS")
 
     if config.getoption("--report"):
         config.pluginmanager.register(Report(config))

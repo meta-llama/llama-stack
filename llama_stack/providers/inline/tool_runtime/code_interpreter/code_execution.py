@@ -76,6 +76,7 @@ class CodeExecutionRequest:
     only_last_cell_fail: bool = True
     seed: int = 0
     strip_fpaths_in_stderr: bool = True
+    use_bwrap: bool = True
 
 
 class CodeExecutor:
@@ -103,8 +104,6 @@ _set_seeds()\
 
         script = "\n\n".join([seeds_prefix] + [CODE_ENV_PREFIX] + scripts)
         with tempfile.TemporaryDirectory() as dpath:
-            bwrap_prefix = "bwrap " + generate_bwrap_command(bind_dirs=[dpath])
-            cmd = [*bwrap_prefix.split(), sys.executable, "-c", script]
             code_fpath = os.path.join(dpath, "code.py")
             with open(code_fpath, "w") as f:
                 f.write(script)
@@ -118,6 +117,13 @@ _set_seeds()\
                     MPLBACKEND="module://matplotlib_custom_backend",
                     PYTHONPATH=f"{DIRNAME}:{python_path}",
                 )
+
+                if req.use_bwrap:
+                    bwrap_prefix = "bwrap " + generate_bwrap_command(bind_dirs=[dpath])
+                    cmd = [*bwrap_prefix.split(), sys.executable, "-c", script]
+                else:
+                    cmd = [sys.executable, "-c", script]
+
                 stdout, stderr, returncode = do_subprocess(
                     cmd=cmd,
                     env=env,
