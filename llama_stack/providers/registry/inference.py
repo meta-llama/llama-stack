@@ -241,11 +241,10 @@ def available_providers() -> List[ProviderSpec]:
             api=Api.inference,
             adapter=AdapterSpec(
                 adapter_type="sambanova",
-                pip_packages=[
-                    "openai",
-                ],
+                pip_packages=["litellm"],
                 module="llama_stack.providers.remote.inference.sambanova",
                 config_class="llama_stack.providers.remote.inference.sambanova.SambaNovaImplConfig",
+                provider_data_validator="llama_stack.providers.remote.inference.sambanova.config.SambaNovaProviderDataValidator",
             ),
         ),
         remote_provider_spec(

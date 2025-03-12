@@ -1,9 +1,10 @@
 version: '2'
 distribution_spec:
-  description: Use SambaNova.AI for running LLM inference
+  description: Use SambaNova for running LLM inference
   providers:
     inference:
     - remote::sambanova
+    - inline::sentence-transformers
     vector_io:
     - inline::faiss
     - remote::chromadb
@@ -19,4 +20,6 @@ distribution_spec:
     - remote::tavily-search
     - inline::code-interpreter
     - inline::rag-runtime
+    - remote::model-context-protocol
+    - remote::wolfram-alpha
 image_type: conda
