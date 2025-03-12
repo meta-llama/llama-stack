@@ -23,6 +23,10 @@ class ColumnName(Enum):
     generated_answer = "generated_answer"
     context = "context"
     dialog = "dialog"
+    function = "function"
+    language = "language"
+    id = "id"
+    ground_truth = "ground_truth"
 
 
 VALID_SCHEMAS_FOR_SCORING = [
