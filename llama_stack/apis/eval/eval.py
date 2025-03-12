@@ -83,15 +83,24 @@ class EvaluateResponse(BaseModel):
     scores: Dict[str, ScoringResult]
 
 
+@json_schema_type
+class EvalJob(Job):
+    """The EvalJob object representing a evaluation job that was created through API.
+
+    :param job_id: The ID of the job.
+    :param status: The status of the job.
+    """
+
+
 class Eval(Protocol):
     """Llama Stack Evaluation API for running evaluations on model and agent candidates."""
 
-    @webmethod(route="/eval/benchmarks/{benchmark_id}/jobs", method="POST")
-    async def run_eval(
+    @webmethod(route="/eval/benchmark/{benchmark_id}/jobs", method="POST")
+    async def evaluate_benchmark(
         self,
         benchmark_id: str,
         benchmark_config: BenchmarkConfig,
-    ) -> Job:
+    ) -> EvalJob:
         """Run an evaluation on a benchmark.
 
         :param benchmark_id: The ID of the benchmark to run the evaluation on.
@@ -99,47 +108,61 @@ class Eval(Protocol):
         :return: The job that was created to run the evaluation.
         """
 
-    @webmethod(route="/eval/benchmarks/{benchmark_id}/evaluations", method="POST")
-    async def evaluate_rows(
-        self,
-        benchmark_id: str,
-        input_rows: List[Dict[str, Any]],
-        scoring_functions: List[str],
-        benchmark_config: BenchmarkConfig,
-    ) -> EvaluateResponse:
-        """Evaluate a list of rows on a benchmark.
+    # TODO: add these back in
+    # @webmethod(route="/eval/benchmarks/{benchmark_id}/jobs", method="POST")
+    # async def run_eval(
+    #     self,
+    #     benchmark_id: str,
+    #     benchmark_config: BenchmarkConfig,
+    # ) -> Job:
+    #     """Run an evaluation on a benchmark.
 
-        :param benchmark_id: The ID of the benchmark to run the evaluation on.
-        :param input_rows: The rows to evaluate.
-        :param scoring_functions: The scoring functions to use for the evaluation.
-        :param benchmark_config: The configuration for the benchmark.
-        :return: EvaluateResponse object containing generations and scores
-        """
+    #     :param benchmark_id: The ID of the benchmark to run the evaluation on.
+    #     :param benchmark_config: The configuration for the benchmark.
+    #     :return: The job that was created to run the evaluation.
+    #     """
 
-    @webmethod(route="/eval/benchmarks/{benchmark_id}/jobs/{job_id}", method="GET")
-    async def job_status(self, benchmark_id: str, job_id: str) -> Optional[JobStatus]:
-        """Get the status of a job.
+    # @webmethod(route="/eval/benchmarks/{benchmark_id}/evaluations", method="POST")
+    # async def evaluate_rows(
+    #     self,
+    #     benchmark_id: str,
+    #     input_rows: List[Dict[str, Any]],
+    #     scoring_functions: List[str],
+    #     benchmark_config: BenchmarkConfig,
+    # ) -> EvaluateResponse:
+    #     """Evaluate a list of rows on a benchmark.
 
-        :param benchmark_id: The ID of the benchmark to run the evaluation on.
-        :param job_id: The ID of the job to get the status of.
-        :return: The status of the evaluationjob.
-        """
-        ...
+    #     :param benchmark_id: The ID of the benchmark to run the evaluation on.
+    #     :param input_rows: The rows to evaluate.
+    #     :param scoring_functions: The scoring functions to use for the evaluation.
+    #     :param benchmark_config: The configuration for the benchmark.
+    #     :return: EvaluateResponse object containing generations and scores
+    #     """
 
-    @webmethod(route="/eval/benchmarks/{benchmark_id}/jobs/{job_id}", method="DELETE")
-    async def job_cancel(self, benchmark_id: str, job_id: str) -> None:
-        """Cancel a job.
+    # @webmethod(route="/eval/benchmarks/{benchmark_id}/jobs/{job_id}", method="GET")
+    # async def job_status(self, benchmark_id: str, job_id: str) -> Optional[JobStatus]:
+    #     """Get the status of a job.
 
-        :param benchmark_id: The ID of the benchmark to run the evaluation on.
-        :param job_id: The ID of the job to cancel.
-        """
-        ...
+    #     :param benchmark_id: The ID of the benchmark to run the evaluation on.
+    #     :param job_id: The ID of the job to get the status of.
+    #     :return: The status of the evaluationjob.
+    #     """
+    #     ...
 
-    @webmethod(route="/eval/benchmarks/{benchmark_id}/jobs/{job_id}/result", method="GET")
-    async def job_result(self, benchmark_id: str, job_id: str) -> EvaluateResponse:
-        """Get the result of a job.
+    # @webmethod(route="/eval/benchmarks/{benchmark_id}/jobs/{job_id}", method="DELETE")
+    # async def job_cancel(self, benchmark_id: str, job_id: str) -> None:
+    #     """Cancel a job.
 
-        :param benchmark_id: The ID of the benchmark to run the evaluation on.
-        :param job_id: The ID of the job to get the result of.
-        :return: The result of the job.
-        """
+    #     :param benchmark_id: The ID of the benchmark to run the evaluation on.
+    #     :param job_id: The ID of the job to cancel.
+    #     """
+    #     ...
+
+    # @webmethod(route="/eval/benchmarks/{benchmark_id}/jobs/{job_id}/result", method="GET")
+    # async def job_result(self, benchmark_id: str, job_id: str) -> EvaluateResponse:
+    #     """Get the result of a job.
+
+    #     :param benchmark_id: The ID of the benchmark to run the evaluation on.
+    #     :param job_id: The ID of the job to get the result of.
+    #     :return: The result of the job.
+    #     """
