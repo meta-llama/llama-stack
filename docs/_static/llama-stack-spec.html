@@ -7175,9 +7175,6 @@
                     "scoring_fn_type": {
                         "$ref": "#/components/schemas/ScoringFunctionType"
                     },
-                    "description": {
-                        "type": "string"
-                    },
                     "params": {
                         "$ref": "#/components/schemas/ScoringFnParams"
                     },
@@ -9310,7 +9307,7 @@
                 "properties": {
                     "scoring_fn_type": {
                         "$ref": "#/components/schemas/ScoringFunctionType",
-                        "description": "The type of scoring function to register. A function type can only be registered if it is a valid type."
+                        "description": "The type of scoring function to register."
                     },
                     "params": {
                         "$ref": "#/components/schemas/ScoringFnParams",
@@ -9319,10 +9316,6 @@
                     "scoring_fn_id": {
                         "type": "string",
                         "description": "(Optional) The ID of the scoring function to register. If not provided, a random ID will be generated."
-                    },
-                    "description": {
-                        "type": "string",
-                        "description": "(Optional) The description of the scoring function."
                     },
                     "metadata": {
                         "type": "object",
@@ -9348,7 +9341,7 @@
                                 }
                             ]
                         },
-                        "description": "(Optional) Any additional metadata to be associated with the scoring function."
+                        "description": "(Optional) Any additional metadata to be associated with the scoring function. - E.g. {\"description\": \"This scoring function is used for ...\"}"
                     }
                 },
                 "additionalProperties": false,

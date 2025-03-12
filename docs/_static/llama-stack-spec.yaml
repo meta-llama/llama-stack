@@ -4937,8 +4937,6 @@ components:
           default: scoring_function
         scoring_fn_type:
           $ref: '#/components/schemas/ScoringFunctionType'
-        description:
-          type: string
         params:
           $ref: '#/components/schemas/ScoringFnParams'
         metadata:
@@ -6302,8 +6300,7 @@ components:
         scoring_fn_type:
           $ref: '#/components/schemas/ScoringFunctionType'
           description: >-
-            The type of scoring function to register. A function type can only be
-            registered if it is a valid type.
+            The type of scoring function to register.
         params:
           $ref: '#/components/schemas/ScoringFnParams'
           description: The parameters for the scoring function.
@@ -6312,10 +6309,6 @@ components:
           description: >-
             (Optional) The ID of the scoring function to register. If not provided,
             a random ID will be generated.
-        description:
-          type: string
-          description: >-
-            (Optional) The description of the scoring function.
         metadata:
           type: object
           additionalProperties:
@@ -6328,6 +6321,7 @@ components:
               - type: object
           description: >-
             (Optional) Any additional metadata to be associated with the scoring function.
+            - E.g. {"description": "This scoring function is used for ..."}
       additionalProperties: false
       required:
         - scoring_fn_type
