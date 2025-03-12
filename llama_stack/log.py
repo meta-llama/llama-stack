@@ -170,6 +170,11 @@ def setup_logging(category_levels: Dict[str, int], log_file: str | None) -> None
     }
     dictConfig(logging_config)
 
+    # Ensure third-party libraries follow the root log level
+    for _, logger in logging.root.manager.loggerDict.items():
+        if isinstance(logger, logging.Logger):
+            logger.setLevel(root_level)
+
 
 def get_logger(name: str, category: str = "uncategorized") -> logging.LoggerAdapter:
     """

@@ -14,7 +14,9 @@ from pydantic import BaseModel, Field
 from llama_stack.apis.models.models import ModelType
 from llama_stack.distribution.datatypes import (
     Api,
+    BenchmarkInput,
     BuildConfig,
+    DatasetInput,
     DistributionSpec,
     ModelInput,
     Provider,
@@ -28,7 +30,9 @@ from llama_stack.providers.utils.inference.model_registry import ProviderModelEn
 from llama_stack.providers.utils.kvstore.config import SqliteKVStoreConfig
 
 
-def get_model_registry(available_models: Dict[str, List[ProviderModelEntry]]) -> List[ModelInput]:
+def get_model_registry(
+    available_models: Dict[str, List[ProviderModelEntry]],
+) -> List[ModelInput]:
     models = []
     for provider_id, entries in available_models.items():
         for entry in entries:
@@ -56,6 +60,8 @@ class RunConfigSettings(BaseModel):
     default_models: Optional[List[ModelInput]] = None
     default_shields: Optional[List[ShieldInput]] = None
     default_tool_groups: Optional[List[ToolGroupInput]] = None
+    default_datasets: Optional[List[DatasetInput]] = None
+    default_benchmarks: Optional[List[BenchmarkInput]] = None
 
     def run_config(
         self,
@@ -113,6 +119,8 @@ class RunConfigSettings(BaseModel):
             models=self.default_models or [],
             shields=self.default_shields or [],
             tool_groups=self.default_tool_groups or [],
+            datasets=self.default_datasets or [],
+            benchmarks=self.default_benchmarks or [],
         )
 
 
@@ -187,7 +195,7 @@ class DistributionTemplate(BaseModel):
                     default_models.append(
                         DefaultModel(
                             model_id=model_entry.provider_model_id,
-                            doc_string=f"({' -- '.join(doc_parts)})" if doc_parts else "",
+                            doc_string=(f"({' -- '.join(doc_parts)})" if doc_parts else ""),
                         )
                     )
 

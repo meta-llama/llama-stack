@@ -33,7 +33,7 @@ from llama_stack.distribution.build import print_pip_install_help
 from llama_stack.distribution.configure import parse_and_maybe_upgrade_config
 from llama_stack.distribution.datatypes import Api
 from llama_stack.distribution.request_headers import (
-    preserve_headers_context_async_generator,
+    PROVIDER_DATA_VAR,
     request_provider_data_context,
 )
 from llama_stack.distribution.resolver import ProviderRegistry
@@ -44,8 +44,10 @@ from llama_stack.distribution.stack import (
     redact_sensitive_fields,
     replace_env_vars,
 )
+from llama_stack.distribution.utils.context import preserve_contexts_async_generator
 from llama_stack.distribution.utils.exec import in_notebook
 from llama_stack.providers.utils.telemetry.tracing import (
+    CURRENT_TRACE_CONTEXT,
     end_trace,
     setup_logger,
     start_trace,
@@ -384,8 +386,8 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
             finally:
                 await end_trace()
 
-        # Wrap the generator to preserve context across iterations
-        wrapped_gen = preserve_headers_context_async_generator(gen())
+        wrapped_gen = preserve_contexts_async_generator(gen(), [CURRENT_TRACE_CONTEXT, PROVIDER_DATA_VAR])
+
         mock_response = httpx.Response(
             status_code=httpx.codes.OK,
             content=wrapped_gen,
