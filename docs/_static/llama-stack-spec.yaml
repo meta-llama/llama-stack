@@ -4731,6 +4731,17 @@ components:
         - scoring_functions
         - metadata
       title: Benchmark
+    DataReference:
+      oneOf:
+        - $ref: '#/components/schemas/URIDataReference'
+        - $ref: '#/components/schemas/HuggingfaceDataReference'
+        - $ref: '#/components/schemas/RowsDataReference'
+      discriminator:
+        propertyName: type
+        mapping:
+          uri: '#/components/schemas/URIDataReference'
+          huggingface: '#/components/schemas/HuggingfaceDataReference'
+          rows: '#/components/schemas/RowsDataReference'
     Dataset:
       type: object
       properties:
@@ -4745,9 +4756,14 @@ components:
           const: dataset
           default: dataset
         schema:
-          $ref: '#/components/schemas/Schema'
-        uri:
           type: string
+          enum:
+            - jsonl_messages
+          title: Schema
+          description: >-
+            Schema of the dataset. Each type has a different column format.
+        data_reference:
+          $ref: '#/components/schemas/DataReference'
         metadata:
           type: object
           additionalProperties:
@@ -4765,16 +4781,72 @@ components:
         - provider_id
         - type
         - schema
-        - uri
+        - data_reference
         - metadata
       title: Dataset
-    Schema:
-      type: string
-      enum:
-        - jsonl_messages
-      title: Schema
-      description: >-
-        Schema of the dataset. Each type has a different column format.
+    HuggingfaceDataReference:
+      type: object
+      properties:
+        type:
+          type: string
+          const: huggingface
+          default: huggingface
+        dataset_path:
+          type: string
+        params:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+      additionalProperties: false
+      required:
+        - type
+        - dataset_path
+        - params
+      title: HuggingfaceDataReference
+    RowsDataReference:
+      type: object
+      properties:
+        type:
+          type: string
+          const: rows
+          default: rows
+        rows:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              oneOf:
+                - type: 'null'
+                - type: boolean
+                - type: number
+                - type: string
+                - type: array
+                - type: object
+      additionalProperties: false
+      required:
+        - type
+        - rows
+      title: RowsDataReference
+    URIDataReference:
+      type: object
+      properties:
+        type:
+          type: string
+          const: uri
+          default: uri
+        uri:
+          type: string
+      additionalProperties: false
+      required:
+        - type
+        - uri
+      title: URIDataReference
     Model:
       type: object
       properties:
@@ -6272,28 +6344,20 @@ components:
       type: object
       properties:
         schema:
-          $ref: '#/components/schemas/Schema'
+          type: string
+          enum:
+            - jsonl_messages
           description: >-
             The schema format of the dataset. One of - jsonl_messages: The dataset
             is a JSONL file with messages in column format
-        uri:
-          type: string
+        data_reference:
+          $ref: '#/components/schemas/DataReference'
           description: >-
-            The URI of the dataset. Examples: - file://mydata.jsonl - s3://mybucket/myfile.jsonl
-            - https://mywebsite.com/myfile.jsonl - huggingface://tatsu-lab/alpaca
-        uri_params:
-          type: object
-          additionalProperties:
-            oneOf:
-              - type: 'null'
-              - type: boolean
-              - type: number
-              - type: string
-              - type: array
-              - type: object
-          description: >-
-            The parameters for the URI. - E.g. If URL is a huggingface dataset, parameters
-            could be uri_params={"split": "train"}
+            The data reference of the dataset. Examples: - { "type": "uri", "uri":
+            "https://mywebsite.com/mydata.jsonl" } - { "type": "uri", "uri": "lsfs://mydata.jsonl"
+            } - { "type": "huggingface", "dataset_path": "tatsu-lab/alpaca", "params":
+            { "split": "train" } } - { "type": "rows", "rows": [{"message": "Hello,
+            world!"}] }
         metadata:
           type: object
           additionalProperties:
@@ -6313,7 +6377,7 @@ components:
       additionalProperties: false
       required:
         - schema
-        - uri
+        - data_reference
       title: RegisterDatasetRequest
     RegisterModelRequest:
       type: object
