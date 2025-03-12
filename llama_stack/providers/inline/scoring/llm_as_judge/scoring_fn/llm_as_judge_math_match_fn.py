@@ -10,9 +10,10 @@ from llama_stack.apis.scoring import ScoringResultRow
 from llama_stack.apis.scoring_functions import ScoringFnParams
 from llama_stack.providers.utils.scoring.base_scoring_fn import RegisteredBaseScoringFn
 
+from ...basic.utils.math_utils import extract_result_from_boxed
 from .fn_defs.llm_as_judge_405b_math_match import llm_as_judge_405b_math_match
 from .fn_defs.llm_as_judge_base import llm_as_judge_base
-from ...basic.utils.math_utils import extract_result_from_boxed
+
 
 class LlmAsJudgeMathMatchFn(RegisteredBaseScoringFn):
     """
@@ -50,8 +51,6 @@ class LlmAsJudgeMathMatchFn(RegisteredBaseScoringFn):
             expression1=expected_answer,
             expression2=extract_result_from_boxed(generated_answer),
         )
-
-        print("judge_input_msg", judge_input_msg)
 
         judge_response = await self.inference_api.chat_completion(
             model_id=fn_def.params.judge_model,

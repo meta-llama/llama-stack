@@ -23,8 +23,8 @@ from llama_stack.providers.utils.common.data_schema_validator import (
 )
 
 from .config import LlmAsJudgeScoringConfig
-from .scoring_fn.llm_as_judge_scoring_fn import LlmAsJudgeScoringFn
 from .scoring_fn.llm_as_judge_math_match_fn import LlmAsJudgeMathMatchFn
+from .scoring_fn.llm_as_judge_scoring_fn import LlmAsJudgeScoringFn
 
 LLM_JUDGE_FN = [LlmAsJudgeScoringFn, LlmAsJudgeMathMatchFn]
 
