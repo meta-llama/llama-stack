@@ -6348,8 +6348,8 @@ components:
           enum:
             - messages
           description: >-
-            The schema format of the dataset. One of - jsonl_messages: The dataset
-            is a JSONL file with messages in column format
+            The schema format of the dataset. One of - messages: The dataset contains
+            a messages column with list of messages for post-training.
         data_source:
           $ref: '#/components/schemas/DataSource'
           description: >-

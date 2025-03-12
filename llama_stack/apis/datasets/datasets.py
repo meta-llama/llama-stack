@@ -108,7 +108,7 @@ class Datasets(Protocol):
         Register a new dataset.
 
         :param schema: The schema format of the dataset. One of
-            - jsonl_messages: The dataset is a JSONL file with messages in column format
+            - messages: The dataset contains a messages column with list of messages for post-training.
         :param data_source: The data source of the dataset. Examples:
            - {
                "type": "uri",
