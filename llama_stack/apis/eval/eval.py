@@ -94,7 +94,7 @@ class EvalJob(CommonJobFields):
 class Eval(Protocol):
     """Llama Stack Evaluation API for running evaluations on model and agent candidates."""
 
-    @webmethod(route="/eval/benchmark/{benchmark_id}/jobs", method="POST")
+    @webmethod(route="/eval/jobs", method="POST")
     async def evaluate_benchmark(
         self,
         benchmark_id: str,
@@ -132,7 +132,7 @@ class Eval(Protocol):
         :return: EvaluateResponse object containing generations and scores
         """
 
-    @webmethod(route="/eval/benchmark/{benchmark_id}/jobs/{job_id}", method="GET")
+    @webmethod(route="/eval/jobs/{job_id}", method="GET")
     async def get_job(self, benchmark_id: str, job_id: str) -> Optional[EvalJob]:
         """Get the EvalJob object for a given job id and benchmark id.
 
@@ -142,7 +142,7 @@ class Eval(Protocol):
         """
         ...
 
-    @webmethod(route="/eval/benchmark/{benchmark_id}/jobs/{job_id}", method="DELETE")
+    @webmethod(route="/eval/jobs/{job_id}", method="DELETE")
     async def cancel_job(self, benchmark_id: str, job_id: str) -> None:
         """Cancel a job.
 

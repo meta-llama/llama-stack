@@ -230,7 +230,7 @@
                 }
             }
         },
-        "/v1/eval/benchmark/{benchmark_id}/jobs/{job_id}": {
+        "/v1/eval/jobs/{job_id}": {
             "get": {
                 "responses": {
                     "200": {
@@ -269,18 +269,18 @@
                 "description": "Get the EvalJob object for a given job id and benchmark id.",
                 "parameters": [
                     {
-                        "name": "benchmark_id",
+                        "name": "job_id",
                         "in": "path",
-                        "description": "The ID of the benchmark to run the evaluation on.",
+                        "description": "The ID of the job to get the status of.",
                         "required": true,
                         "schema": {
                             "type": "string"
                         }
                     },
                     {
-                        "name": "job_id",
-                        "in": "path",
-                        "description": "The ID of the job to get the status of.",
+                        "name": "benchmark_id",
+                        "in": "query",
+                        "description": "The ID of the benchmark to run the evaluation on.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -312,18 +312,18 @@
                 "description": "Cancel a job.",
                 "parameters": [
                     {
-                        "name": "benchmark_id",
+                        "name": "job_id",
                         "in": "path",
-                        "description": "The ID of the benchmark to run the evaluation on.",
+                        "description": "The ID of the job to cancel.",
                         "required": true,
                         "schema": {
                             "type": "string"
                         }
                     },
                     {
-                        "name": "job_id",
-                        "in": "path",
-                        "description": "The ID of the job to cancel.",
+                        "name": "benchmark_id",
+                        "in": "query",
+                        "description": "The ID of the benchmark to run the evaluation on.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1116,7 +1116,7 @@
                 }
             }
         },
-        "/v1/eval/benchmark/{benchmark_id}/jobs": {
+        "/v1/eval/jobs": {
             "post": {
                 "responses": {
                     "200": {
@@ -1146,17 +1146,7 @@
                     "Eval"
                 ],
                 "description": "Run an evaluation on a benchmark.",
-                "parameters": [
-                    {
-                        "name": "benchmark_id",
-                        "in": "path",
-                        "description": "The ID of the benchmark to run the evaluation on.",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -6270,6 +6260,10 @@
             "EvaluateBenchmarkRequest": {
                 "type": "object",
                 "properties": {
+                    "benchmark_id": {
+                        "type": "string",
+                        "description": "The ID of the benchmark to run the evaluation on."
+                    },
                     "candidate": {
                         "$ref": "#/components/schemas/EvalCandidate",
                         "description": "Candidate to evaluate on. - { \"type\": \"model\", \"model\": \"Llama-3.1-8B-Instruct\", \"sampling_params\": {...}, \"system_message\": \"You are a helpful assistant.\", } - { \"type\": \"agent\", \"config\": {...}, }"
@@ -6277,6 +6271,7 @@
                 },
                 "additionalProperties": false,
                 "required": [
+                    "benchmark_id",
                     "candidate"
                 ],
                 "title": "EvaluateBenchmarkRequest"
