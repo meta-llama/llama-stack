@@ -6534,28 +6534,10 @@ components:
     RegisterScoringFunctionRequest:
       type: object
       properties:
-        scoring_fn_type:
-          type: string
-          enum:
-            - custom_llm_as_judge
-            - regex_parser
-            - regex_parser_math_response
-            - equality
-            - subset_of
-            - factuality
-            - faithfulness
-            - answer_correctness
-            - answer_relevancy
-            - answer_similarity
-            - context_entity_recall
-            - context_precision
-            - context_recall
-            - context_relevancy
-          description: >-
-            The type of scoring function to register.
-        params:
+        fn:
           $ref: '#/components/schemas/ScoringFnParams'
-          description: The parameters for the scoring function.
+          description: >-
+            The type and parameters for the scoring function.
         scoring_fn_id:
           type: string
           description: >-
@@ -6576,8 +6558,7 @@ components:
             - E.g. {"description": "This scoring function is used for ..."}
       additionalProperties: false
       required:
-        - scoring_fn_type
-        - params
+        - fn
       title: RegisterScoringFunctionRequest
     RegisterShieldRequest:
       type: object
