@@ -26,8 +26,10 @@ from .scoring_fn.equality_scoring_fn import EqualityScoringFn
 from .scoring_fn.regex_parser_math_response_scoring_fn import RegexParserMathResponseScoringFn
 from .scoring_fn.regex_parser_scoring_fn import RegexParserScoringFn
 from .scoring_fn.subset_of_scoring_fn import SubsetOfScoringFn
+from .scoring_fn.bfcl_scoring_fn import BFCLScoringFn
 
-FIXED_FNS = [EqualityScoringFn, SubsetOfScoringFn, RegexParserScoringFn, RegexParserMathResponseScoringFn]
+
+FIXED_FNS = [EqualityScoringFn, SubsetOfScoringFn, RegexParserScoringFn, RegexParserMathResponseScoringFn, BFCLScoringFn]
 
 
 class BasicScoringImpl(
