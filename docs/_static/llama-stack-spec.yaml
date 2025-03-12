@@ -142,6 +142,76 @@ paths:
             schema:
               $ref: '#/components/schemas/BatchCompletionRequest'
         required: true
+  /v1/eval/benchmark/{benchmark_id}/jobs/{job_id}:
+    get:
+      responses:
+        '200':
+          description: EvalJob object indicating its status
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/EvalJob'
+                  - type: 'null'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Scoring
+      description: >-
+        Get the EvalJob object for a given job id and benchmark id.
+      parameters:
+        - name: benchmark_id
+          in: path
+          description: >-
+            The ID of the benchmark to run the evaluation on.
+          required: true
+          schema:
+            type: string
+        - name: job_id
+          in: path
+          description: The ID of the job to get the status of.
+          required: true
+          schema:
+            type: string
+    delete:
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Scoring
+      description: Cancel a job.
+      parameters:
+        - name: benchmark_id
+          in: path
+          description: >-
+            The ID of the benchmark to run the evaluation on.
+          required: true
+          schema:
+            type: string
+        - name: job_id
+          in: path
+          description: The ID of the job to cancel.
+          required: true
+          schema:
+            type: string
   /v1/post-training/job/cancel:
     post:
       responses:
@@ -666,7 +736,44 @@ paths:
             schema:
               $ref: '#/components/schemas/EmbeddingsRequest'
         required: true
-  /v1/eval/benchmarks/{benchmark_id}/evaluations:
+  /v1/eval/benchmark/{benchmark_id}/jobs:
+    post:
+      responses:
+        '200':
+          description: >-
+            The job that was created to run the evaluation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvalJob'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Eval
+      description: Run an evaluation on a benchmark.
+      parameters:
+        - name: benchmark_id
+          in: path
+          description: >-
+            The ID of the benchmark to run the evaluation on.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EvaluateBenchmarkRequest'
+        required: true
+  /v1/eval/rows:
     post:
       responses:
         '200':
@@ -688,15 +795,8 @@ paths:
           $ref: '#/components/responses/DefaultError'
       tags:
         - Eval
-      description: Evaluate a list of rows on a benchmark.
-      parameters:
-        - name: benchmark_id
-          in: path
-          description: >-
-            The ID of the benchmark to run the evaluation on.
-          required: true
-          schema:
-            type: string
+      description: Evaluate a list of rows on a candidate.
+      parameters: []
       requestBody:
         content:
           application/json:
@@ -1473,111 +1573,6 @@ paths:
             schema:
               $ref: '#/components/schemas/InvokeToolRequest'
         required: true
-  /v1/eval/benchmarks/{benchmark_id}/jobs/{job_id}:
-    get:
-      responses:
-        '200':
-          description: The status of the evaluationjob.
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - $ref: '#/components/schemas/JobStatus'
-                  - type: 'null'
-        '400':
-          $ref: '#/components/responses/BadRequest400'
-        '429':
-          $ref: >-
-            #/components/responses/TooManyRequests429
-        '500':
-          $ref: >-
-            #/components/responses/InternalServerError500
-        default:
-          $ref: '#/components/responses/DefaultError'
-      tags:
-        - Eval
-      description: Get the status of a job.
-      parameters:
-        - name: benchmark_id
-          in: path
-          description: >-
-            The ID of the benchmark to run the evaluation on.
-          required: true
-          schema:
-            type: string
-        - name: job_id
-          in: path
-          description: The ID of the job to get the status of.
-          required: true
-          schema:
-            type: string
-    delete:
-      responses:
-        '200':
-          description: OK
-        '400':
-          $ref: '#/components/responses/BadRequest400'
-        '429':
-          $ref: >-
-            #/components/responses/TooManyRequests429
-        '500':
-          $ref: >-
-            #/components/responses/InternalServerError500
-        default:
-          $ref: '#/components/responses/DefaultError'
-      tags:
-        - Eval
-      description: Cancel a job.
-      parameters:
-        - name: benchmark_id
-          in: path
-          description: >-
-            The ID of the benchmark to run the evaluation on.
-          required: true
-          schema:
-            type: string
-        - name: job_id
-          in: path
-          description: The ID of the job to cancel.
-          required: true
-          schema:
-            type: string
-  /v1/eval/benchmarks/{benchmark_id}/jobs/{job_id}/result:
-    get:
-      responses:
-        '200':
-          description: The result of the job.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EvaluateResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest400'
-        '429':
-          $ref: >-
-            #/components/responses/TooManyRequests429
-        '500':
-          $ref: >-
-            #/components/responses/InternalServerError500
-        default:
-          $ref: '#/components/responses/DefaultError'
-      tags:
-        - Eval
-      description: Get the result of a job.
-      parameters:
-        - name: benchmark_id
-          in: path
-          description: >-
-            The ID of the benchmark to run the evaluation on.
-          required: true
-          schema:
-            type: string
-        - name: job_id
-          in: path
-          description: The ID of the job to get the result of.
-          required: true
-          schema:
-            type: string
   /v1/agents/{agent_id}/sessions:
     get:
       responses:
@@ -2327,43 +2322,6 @@ paths:
             schema:
               $ref: '#/components/schemas/ResumeAgentTurnRequest'
         required: true
-  /v1/eval/benchmarks/{benchmark_id}/jobs:
-    post:
-      responses:
-        '200':
-          description: >-
-            The job that was created to run the evaluation.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Job'
-        '400':
-          $ref: '#/components/responses/BadRequest400'
-        '429':
-          $ref: >-
-            #/components/responses/TooManyRequests429
-        '500':
-          $ref: >-
-            #/components/responses/InternalServerError500
-        default:
-          $ref: '#/components/responses/DefaultError'
-      tags:
-        - Eval
-      description: Run an evaluation on a benchmark.
-      parameters:
-        - name: benchmark_id
-          in: path
-          description: >-
-            The ID of the benchmark to run the evaluation on.
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RunEvalRequest'
-        required: true
   /v1/safety/run-shield:
     post:
       responses:
@@ -2418,7 +2376,36 @@ paths:
             schema:
               $ref: '#/components/schemas/SaveSpansToDatasetRequest'
         required: true
-  /v1/scoring/score:
+  /v1/scoring/jobs:
+    post:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScoringJob'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Scoring
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScoreDatasetRequest'
+        required: true
+  /v1/scoring/rows:
     post:
       responses:
         '200':
@@ -2446,36 +2433,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ScoreRequest'
-        required: true
-  /v1/scoring/score-batch:
-    post:
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ScoreBatchResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest400'
-        '429':
-          $ref: >-
-            #/components/responses/TooManyRequests429
-        '500':
-          $ref: >-
-            #/components/responses/InternalServerError500
-        default:
-          $ref: '#/components/responses/DefaultError'
-      tags:
-        - Scoring
-      description: ''
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ScoreBatchRequest'
+              $ref: '#/components/schemas/ScoreRowsRequest'
         required: true
   /v1/post-training/supervised-fine-tune:
     post:
@@ -4415,6 +4373,99 @@ components:
         - config
       title: AgentCandidate
       description: An agent candidate for evaluation.
+    EvalCandidate:
+      oneOf:
+        - $ref: '#/components/schemas/ModelCandidate'
+        - $ref: '#/components/schemas/AgentCandidate'
+      discriminator:
+        propertyName: type
+        mapping:
+          model: '#/components/schemas/ModelCandidate'
+          agent: '#/components/schemas/AgentCandidate'
+    ModelCandidate:
+      type: object
+      properties:
+        type:
+          type: string
+          const: model
+          default: model
+        model:
+          type: string
+          description: The model ID to evaluate.
+        sampling_params:
+          $ref: '#/components/schemas/SamplingParams'
+          description: The sampling parameters for the model.
+        system_message:
+          $ref: '#/components/schemas/SystemMessage'
+          description: >-
+            (Optional) The system message providing instructions or context to the
+            model.
+      additionalProperties: false
+      required:
+        - type
+        - model
+        - sampling_params
+      title: ModelCandidate
+      description: A model candidate for evaluation.
+    EvaluateBenchmarkRequest:
+      type: object
+      properties:
+        candidate:
+          $ref: '#/components/schemas/EvalCandidate'
+          description: >-
+            Candidate to evaluate on. - { "type": "model", "model": "Llama-3.1-8B-Instruct",
+            "sampling_params": {...}, "system_message": "You are a helpful assistant.",
+            } - { "type": "agent", "config": {...}, }
+      additionalProperties: false
+      required:
+        - candidate
+      title: EvaluateBenchmarkRequest
+    EvalJob:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The ID of the job.
+        status:
+          type: string
+          enum:
+            - completed
+            - in_progress
+            - failed
+            - scheduled
+            - cancelled
+          description: The status of the job.
+        created_at:
+          type: string
+          format: date-time
+          description: The time the job was created.
+        finished_at:
+          type: string
+          format: date-time
+          description: The time the job finished.
+        error:
+          type: string
+          description: >-
+            If status of the job is failed, this will contain the error message.
+        type:
+          type: string
+          const: eval
+          default: eval
+        result_files:
+          type: array
+          items:
+            type: string
+      additionalProperties: false
+      required:
+        - id
+        - status
+        - created_at
+        - type
+        - result_files
+      title: EvalJob
+      description: >-
+        The EvalJob object representing a evaluation job that was created through
+        API.
     AggregationFunctionType:
       type: string
       enum:
@@ -4478,31 +4529,6 @@ components:
       required:
         - type
       title: AnswerSimilarityScoringFnParams
-    BenchmarkConfig:
-      type: object
-      properties:
-        eval_candidate:
-          $ref: '#/components/schemas/EvalCandidate'
-          description: The candidate to evaluate.
-        scoring_params:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/ScoringFnParams'
-          description: >-
-            Map between scoring function id and parameters for each scoring function
-            you want to run
-        num_examples:
-          type: integer
-          description: >-
-            (Optional) The number of examples to evaluate. If not provided, all examples
-            in the dataset will be evaluated
-      additionalProperties: false
-      required:
-        - eval_candidate
-        - scoring_params
-      title: BenchmarkConfig
-      description: >-
-        A benchmark configuration for evaluation.
     ContextEntityRecallScoringFnParams:
       type: object
       properties:
@@ -4593,15 +4619,6 @@ components:
       required:
         - type
       title: EqualityScoringFnParams
-    EvalCandidate:
-      oneOf:
-        - $ref: '#/components/schemas/ModelCandidate'
-        - $ref: '#/components/schemas/AgentCandidate'
-      discriminator:
-        propertyName: type
-        mapping:
-          model: '#/components/schemas/ModelCandidate'
-          agent: '#/components/schemas/AgentCandidate'
     FactualityScoringFnParams:
       type: object
       properties:
@@ -4662,31 +4679,6 @@ components:
         - type
         - judge_model
       title: LLMAsJudgeScoringFnParams
-    ModelCandidate:
-      type: object
-      properties:
-        type:
-          type: string
-          const: model
-          default: model
-        model:
-          type: string
-          description: The model ID to evaluate.
-        sampling_params:
-          $ref: '#/components/schemas/SamplingParams'
-          description: The sampling parameters for the model.
-        system_message:
-          $ref: '#/components/schemas/SystemMessage'
-          description: >-
-            (Optional) The system message providing instructions or context to the
-            model.
-      additionalProperties: false
-      required:
-        - type
-        - model
-        - sampling_params
-      title: ModelCandidate
-      description: A model candidate for evaluation.
     RegexParserMathScoringFnParams:
       type: object
       properties:
@@ -4791,7 +4783,7 @@ components:
     EvaluateRowsRequest:
       type: object
       properties:
-        input_rows:
+        dataset_rows:
           type: array
           items:
             type: object
@@ -4807,17 +4799,17 @@ components:
         scoring_functions:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/ScoringFnParams'
           description: >-
             The scoring functions to use for the evaluation.
-        benchmark_config:
-          $ref: '#/components/schemas/BenchmarkConfig'
-          description: The configuration for the benchmark.
+        candidate:
+          $ref: '#/components/schemas/EvalCandidate'
+          description: The candidate to evaluate on.
       additionalProperties: false
       required:
-        - input_rows
+        - dataset_rows
         - scoring_functions
-        - benchmark_config
+        - candidate
       title: EvaluateRowsRequest
     EvaluateResponse:
       type: object
@@ -5475,21 +5467,20 @@ components:
         - checkpoints
       title: PostTrainingJobArtifactsResponse
       description: Artifacts of a finetuning job.
-    JobStatus:
-      type: string
-      enum:
-        - completed
-        - in_progress
-        - failed
-        - scheduled
-      title: JobStatus
     PostTrainingJobStatusResponse:
       type: object
       properties:
         job_uuid:
           type: string
         status:
-          $ref: '#/components/schemas/JobStatus'
+          type: string
+          enum:
+            - completed
+            - in_progress
+            - failed
+            - scheduled
+            - cancelled
+          title: JobStatus
         scheduled_at:
           type: string
           format: date-time
@@ -6660,25 +6651,6 @@ components:
       required:
         - tool_responses
       title: ResumeAgentTurnRequest
-    RunEvalRequest:
-      type: object
-      properties:
-        benchmark_config:
-          $ref: '#/components/schemas/BenchmarkConfig'
-          description: The configuration for the benchmark.
-      additionalProperties: false
-      required:
-        - benchmark_config
-      title: RunEvalRequest
-    Job:
-      type: object
-      properties:
-        job_id:
-          type: string
-      additionalProperties: false
-      required:
-        - job_id
-      title: Job
     RunShieldRequest:
       type: object
       properties:
@@ -6732,7 +6704,67 @@ components:
         - attributes_to_save
         - dataset_id
       title: SaveSpansToDatasetRequest
-    ScoreRequest:
+    ScoreDatasetRequest:
+      type: object
+      properties:
+        dataset_id:
+          type: string
+        scoring_functions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScoringFnParams'
+      additionalProperties: false
+      required:
+        - dataset_id
+        - scoring_functions
+      title: ScoreDatasetRequest
+    ScoringJob:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The ID of the job.
+        status:
+          type: string
+          enum:
+            - completed
+            - in_progress
+            - failed
+            - scheduled
+            - cancelled
+          description: The status of the job.
+        created_at:
+          type: string
+          format: date-time
+          description: The time the job was created.
+        finished_at:
+          type: string
+          format: date-time
+          description: The time the job finished.
+        error:
+          type: string
+          description: >-
+            If status of the job is failed, this will contain the error message.
+        type:
+          type: string
+          const: scoring
+          default: scoring
+        result_files:
+          type: array
+          items:
+            type: string
+      additionalProperties: false
+      required:
+        - id
+        - status
+        - created_at
+        - type
+        - result_files
+      title: ScoringJob
+      description: >-
+        The ScoringJob object representing a scoring job that was created through
+        API.
+    ScoreRowsRequest:
       type: object
       properties:
         input_rows:
@@ -6749,18 +6781,16 @@ components:
                 - type: object
           description: The rows to score.
         scoring_functions:
-          type: object
-          additionalProperties:
-            oneOf:
-              - $ref: '#/components/schemas/ScoringFnParams'
-              - type: 'null'
+          type: array
+          items:
+            $ref: '#/components/schemas/ScoringFnParams'
           description: >-
             The scoring functions to use for the scoring.
       additionalProperties: false
       required:
         - input_rows
         - scoring_functions
-      title: ScoreRequest
+      title: ScoreRowsRequest
     ScoreResponse:
       type: object
       properties:
@@ -6775,38 +6805,6 @@ components:
         - results
       title: ScoreResponse
       description: The response from scoring.
-    ScoreBatchRequest:
-      type: object
-      properties:
-        dataset_id:
-          type: string
-        scoring_functions:
-          type: object
-          additionalProperties:
-            oneOf:
-              - $ref: '#/components/schemas/ScoringFnParams'
-              - type: 'null'
-        save_results_dataset:
-          type: boolean
-      additionalProperties: false
-      required:
-        - dataset_id
-        - scoring_functions
-        - save_results_dataset
-      title: ScoreBatchRequest
-    ScoreBatchResponse:
-      type: object
-      properties:
-        dataset_id:
-          type: string
-        results:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/ScoringResult'
-      additionalProperties: false
-      required:
-        - results
-      title: ScoreBatchResponse
     AlgorithmConfig:
       oneOf:
         - $ref: '#/components/schemas/LoraFinetuningConfig'
