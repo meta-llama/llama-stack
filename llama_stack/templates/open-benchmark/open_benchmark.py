@@ -36,7 +36,7 @@ def get_inference_providers() -> Tuple[List[Provider], List[ModelInput]]:
             "openai",
             [
                 ProviderModelEntry(
-                    provider_model_id="penai/gpt-4o",
+                    provider_model_id="openai/gpt-4o",
                     model_type=ModelType.llm,
                 )
             ],
@@ -61,26 +61,6 @@ def get_inference_providers() -> Tuple[List[Provider], List[ModelInput]]:
                 )
             ],
             GeminiConfig.sample_run_config(api_key="${env.GEMINI_API_KEY:}"),
-        ),
-        (
-            "groq",
-            [
-                ProviderModelEntry(
-                    provider_model_id="groq/llama-3.3-70b-versatile",
-                    model_type=ModelType.llm,
-                )
-            ],
-            GroqConfig.sample_run_config(api_key="${env.GROQ_API_KEY:}"),
-        ),
-        (
-            "together",
-            [
-                ProviderModelEntry(
-                    provider_model_id="meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
-                    model_type=ModelType.llm,
-                )
-            ],
-            TogetherImplConfig.sample_run_config(api_key="${env.TOGETHER_API_KEY:}"),
         ),
     ]
     inference_providers = []
@@ -243,7 +223,7 @@ def get_distribution_template() -> DistributionTemplate:
     return DistributionTemplate(
         name=name,
         distro_type="self_hosted",
-        description="Distribution for running e2e tests in CI",
+        description="Distribution for running open benchmarks",
         container_image=None,
         template_path=None,
         providers=providers,
@@ -266,13 +246,25 @@ def get_distribution_template() -> DistributionTemplate:
                 "5001",
                 "Port for the Llama Stack distribution server",
             ),
-            "FIREWORKS_API_KEY": (
+            "TOGETHER_API_KEY": (
                 "",
-                "Fireworks API Key",
+                "Together API Key",
             ),
             "OPENAI_API_KEY": (
                 "",
                 "OpenAI API Key",
+            ),
+            "GEMINI_API_KEY": (
+                "",
+                "Gemini API Key",
+            ),
+            "ANTHROPIC_API_KEY": (
+                "",
+                "Anthropic API Key",
+            ),
+            "GROQ_API_KEY": (
+                "",
+                "Groq API Key",
             ),
         },
     )
