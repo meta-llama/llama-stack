@@ -88,9 +88,7 @@ class QATFinetuningConfig(BaseModel):
 
 
 AlgorithmConfig = register_schema(
-    Annotated[
-        Union[LoraFinetuningConfig, QATFinetuningConfig], Field(discriminator="type")
-    ],
+    Annotated[Union[LoraFinetuningConfig, QATFinetuningConfig], Field(discriminator="type")],
     name="AlgorithmConfig",
 )
 
