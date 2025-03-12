@@ -68,15 +68,15 @@ class ScoringFunctionStore(Protocol):
 class Scoring(Protocol):
     scoring_function_store: ScoringFunctionStore
 
-    @webmethod(route="/scoring/score-batch", method="POST")
-    async def score_batch(
+    @webmethod(route="/scoring/jobs", method="POST")
+    async def score_dataset(
         self,
         dataset_id: str,
         scoring_functions: List[ScoringFnParams],
     ) -> ScoringJob: ...
 
-    @webmethod(route="/scoring/score", method="POST")
-    async def score(
+    @webmethod(route="/scoring/rows", method="POST")
+    async def score_rows(
         self,
         input_rows: List[Dict[str, Any]],
         scoring_functions: List[ScoringFnParams],
@@ -86,5 +86,22 @@ class Scoring(Protocol):
         :param input_rows: The rows to score.
         :param scoring_functions: The scoring functions to use for the scoring.
         :return: ScoreResponse object containing rows and aggregated results
+        """
+        ...
+
+    @webmethod(route="/scoring/jobs/{job_id}", method="GET")
+    async def get_job(self, job_id: str) -> Optional[ScoringJob]:
+        """Get the ScoringJob object for a given job id.
+
+        :param job_id: The ID of the job to get the status of.
+        :return: ScoringJob object indicating its status
+        """
+        ...
+
+    @webmethod(route="/scoring/jobs/{job_id}", method="DELETE")
+    async def cancel_job(self, job_id: str) -> None:
+        """Cancel a job.
+
+        :param job_id: The ID of the job to cancel.
         """
         ...
