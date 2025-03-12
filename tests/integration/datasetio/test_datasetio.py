@@ -9,9 +9,22 @@ import mimetypes
 import os
 from pathlib import Path
 
+import pytest
+
 # How to run this test:
 #
 # LLAMA_STACK_CONFIG="template-name" pytest -v tests/integration/datasetio
+
+@pytest.fixture
+def test_dataset(llama_stack_client):
+    register_dataset(llama_stack_client)
+    yield  # This is where the test function will run
+    
+    # Teardown - this always runs, even if the test fails
+    try:
+        llama_stack_client.datasets.unregister("test_dataset")
+    except Exception as e:
+        print(f"Warning: Failed to unregister test_dataset: {e}")
 
 
 def data_url_from_file(file_path: str) -> str:
@@ -80,8 +93,7 @@ def test_register_unregister_dataset(llama_stack_client):
     assert len(response) == 0
 
 
-def test_get_rows_paginated(llama_stack_client):
-    register_dataset(llama_stack_client)
+def test_get_rows_paginated(llama_stack_client, test_dataset):
     response = llama_stack_client.datasetio.get_rows_paginated(
         dataset_id="test_dataset",
         rows_in_page=3,
@@ -99,4 +111,3 @@ def test_get_rows_paginated(llama_stack_client):
     assert isinstance(response.rows, list)
     assert len(response.rows) == 2
     assert response.next_page_token == "5"
-    llama_stack_client.datasets.unregister("test_dataset")

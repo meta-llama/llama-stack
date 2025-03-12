@@ -9,6 +9,17 @@ import pytest
 
 from ..datasetio.test_datasetio import register_dataset
 
+@pytest.fixture
+def test_dataset_rag(llama_stack_client):
+    register_dataset(llama_stack_client, for_rag=True)
+    yield  # This is where the test function will run
+    
+    # Teardown - this always runs, even if the test fails
+    try:
+        llama_stack_client.datasets.unregister("test_dataset")
+    except Exception as e:
+        print(f"Warning: Failed to unregister test_dataset: {e}")
+
 
 @pytest.fixture
 def sample_judge_prompt_template():
@@ -79,9 +90,7 @@ def test_scoring_functions_register(
     # TODO: add unregister api for scoring functions
 
 
-def test_scoring_score(llama_stack_client):
-    register_dataset(llama_stack_client, for_rag=True)
-
+def test_scoring_score(llama_stack_client, test_dataset_rag):
     # scoring individual rows
     rows = llama_stack_client.datasetio.get_rows_paginated(
         dataset_id="test_dataset",
@@ -114,12 +123,8 @@ def test_scoring_score(llama_stack_client):
         assert x in response.results
         assert len(response.results[x].score_rows) == 5
 
-    llama_stack_client.datasets.unregister("test_dataset")
 
-
-def test_scoring_score_with_params_llm_as_judge(llama_stack_client, sample_judge_prompt_template, judge_model_id):
-    register_dataset(llama_stack_client, for_rag=True)
-
+def test_scoring_score_with_params_llm_as_judge(llama_stack_client, sample_judge_prompt_template, judge_model_id, test_dataset_rag):
     # scoring individual rows
     rows = llama_stack_client.datasetio.get_rows_paginated(
         dataset_id="test_dataset",
@@ -159,8 +164,6 @@ def test_scoring_score_with_params_llm_as_judge(llama_stack_client, sample_judge
         assert x in response.results
         assert len(response.results[x].score_rows) == 5
 
-    llama_stack_client.datasets.unregister("test_dataset")
-
 
 @pytest.mark.parametrize(
     "provider_id",
@@ -171,9 +174,8 @@ def test_scoring_score_with_params_llm_as_judge(llama_stack_client, sample_judge
     ],
 )
 def test_scoring_score_with_aggregation_functions(
-    llama_stack_client, sample_judge_prompt_template, judge_model_id, provider_id
+    llama_stack_client, sample_judge_prompt_template, judge_model_id, provider_id, test_dataset_rag
 ):
-    register_dataset(llama_stack_client, for_rag=True)
     rows = llama_stack_client.datasetio.get_rows_paginated(
         dataset_id="test_dataset",
         rows_in_page=3,
@@ -227,5 +229,3 @@ def test_scoring_score_with_aggregation_functions(
         assert x in response.results
         assert len(response.results[x].score_rows) == len(rows.rows)
         assert len(response.results[x].aggregated_results) == len(aggr_fns)
-
-    llama_stack_client.datasets.unregister("test_dataset")
