@@ -28,7 +28,7 @@ from typing_extensions import Annotated
 from llama_stack.distribution.datatypes import StackRunConfig
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
 from llama_stack.distribution.request_headers import (
-    preserve_headers_context_async_generator,
+    PROVIDER_DATA_VAR,
     request_provider_data_context,
 )
 from llama_stack.distribution.resolver import InvalidProviderError
@@ -38,6 +38,7 @@ from llama_stack.distribution.stack import (
     replace_env_vars,
     validate_env_pair,
 )
+from llama_stack.distribution.utils.context import preserve_contexts_async_generator
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import Api
 from llama_stack.providers.inline.telemetry.meta_reference.config import TelemetryConfig
@@ -45,6 +46,7 @@ from llama_stack.providers.inline.telemetry.meta_reference.telemetry import (
     TelemetryAdapter,
 )
 from llama_stack.providers.utils.telemetry.tracing import (
+    CURRENT_TRACE_CONTEXT,
     end_trace,
     setup_logger,
     start_trace,
@@ -182,7 +184,9 @@ def create_dynamic_typed_route(func: Any, method: str, route: str):
 
             try:
                 if is_streaming:
-                    gen = preserve_headers_context_async_generator(sse_generator(func(**kwargs)))
+                    gen = preserve_contexts_async_generator(
+                        sse_generator(func(**kwargs)), [CURRENT_TRACE_CONTEXT, PROVIDER_DATA_VAR]
+                    )
                     return StreamingResponse(gen, media_type="text/event-stream")
                 else:
                     value = func(**kwargs)
