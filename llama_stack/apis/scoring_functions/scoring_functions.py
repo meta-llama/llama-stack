@@ -239,7 +239,7 @@ class ScoringFnTypeInfo(BaseModel):
     type: ScoringFunctionType
     description: str
     supported_purposes: List[DatasetPurpose] = Field(
-        description="The purposes that this scoring function can be used for",
+        description="The supported purposes (supported dataset schema) that this scoring function can be used for. E.g. eval/question-answer",
         default_factory=list,
     )
 
