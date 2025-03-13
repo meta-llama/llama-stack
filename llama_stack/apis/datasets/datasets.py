@@ -93,7 +93,7 @@ class CommonDatasetFields(BaseModel):
     Common fields for a dataset.
     """
     purpose: DatasetPurpose
-    data_source: DataSource
+    source: DataSource
     metadata: Dict[str, Any] = Field(
         default_factory=dict,
         description="Any additional metadata for this dataset",
