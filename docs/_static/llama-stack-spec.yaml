@@ -659,7 +659,7 @@ paths:
             schema:
               $ref: '#/components/schemas/EvaluateBenchmarkRequest'
         required: true
-  /v1/eval/rows:
+  /v1/eval/evaluate_rows:
     post:
       responses:
         '200':
@@ -2467,36 +2467,6 @@ paths:
             schema:
               $ref: '#/components/schemas/SaveSpansToDatasetRequest'
         required: true
-  /v1/scoring/rows:
-    post:
-      responses:
-        '200':
-          description: >-
-            ScoreResponse object containing rows and aggregated results
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ScoreResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest400'
-        '429':
-          $ref: >-
-            #/components/responses/TooManyRequests429
-        '500':
-          $ref: >-
-            #/components/responses/InternalServerError500
-        default:
-          $ref: '#/components/responses/DefaultError'
-      tags:
-        - Scoring
-      description: Score a list of rows.
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ScoreRequest'
-        required: true
   /v1/scoring/jobs:
     post:
       responses:
@@ -2525,6 +2495,36 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ScoreDatasetRequest'
+        required: true
+  /v1/scoring/score-rows:
+    post:
+      responses:
+        '200':
+          description: >-
+            ScoreResponse object containing rows and aggregated results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScoreResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Scoring
+      description: Score a list of rows.
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScoreRowsRequest'
         required: true
   /v1/post-training/supervised-fine-tune:
     post:
@@ -6019,7 +6019,7 @@ components:
           description: >-
             A description of the scoring function type. - E.g. Write your custom judge
             prompt to score the answer.
-        supported_purposes:
+        supported_dataset_purposes:
           type: array
           items:
             type: string
@@ -6039,7 +6039,7 @@ components:
       required:
         - type
         - description
-        - supported_purposes
+        - supported_dataset_purposes
       title: ScoringFnTypeInfo
     ListScoringFunctionTypesResponse:
       type: object
@@ -6982,47 +6982,6 @@ components:
         - attributes_to_save
         - dataset_id
       title: SaveSpansToDatasetRequest
-    ScoreRequest:
-      type: object
-      properties:
-        dataset_rows:
-          type: array
-          items:
-            type: object
-            additionalProperties:
-              oneOf:
-                - type: 'null'
-                - type: boolean
-                - type: number
-                - type: string
-                - type: array
-                - type: object
-          description: The rows to score.
-        scoring_fn_ids:
-          type: array
-          items:
-            type: string
-          description: >-
-            The scoring function ids to use for the scoring.
-      additionalProperties: false
-      required:
-        - dataset_rows
-        - scoring_fn_ids
-      title: ScoreRequest
-    ScoreResponse:
-      type: object
-      properties:
-        results:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/ScoringResult'
-          description: >-
-            A map of scoring function name to ScoringResult.
-      additionalProperties: false
-      required:
-        - results
-      title: ScoreResponse
-      description: The response from scoring.
     ScoreDatasetRequest:
       type: object
       properties:
@@ -7050,6 +7009,47 @@ components:
       required:
         - results
       title: ScoreBatchResponse
+    ScoreRowsRequest:
+      type: object
+      properties:
+        dataset_rows:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              oneOf:
+                - type: 'null'
+                - type: boolean
+                - type: number
+                - type: string
+                - type: array
+                - type: object
+          description: The rows to score.
+        scoring_fn_ids:
+          type: array
+          items:
+            type: string
+          description: >-
+            The scoring function ids to use for the scoring.
+      additionalProperties: false
+      required:
+        - dataset_rows
+        - scoring_fn_ids
+      title: ScoreRowsRequest
+    ScoreResponse:
+      type: object
+      properties:
+        results:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ScoringResult'
+          description: >-
+            A map of scoring function name to ScoringResult.
+      additionalProperties: false
+      required:
+        - results
+      title: ScoreResponse
+      description: The response from scoring.
     AlgorithmConfig:
       oneOf:
         - $ref: '#/components/schemas/LoraFinetuningConfig'

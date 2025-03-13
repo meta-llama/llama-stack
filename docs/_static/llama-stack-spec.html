@@ -962,7 +962,7 @@
                 }
             }
         },
-        "/v1/eval/rows": {
+        "/v1/eval/evaluate_rows": {
             "post": {
                 "responses": {
                     "200": {
@@ -3631,49 +3631,6 @@
                 }
             }
         },
-        "/v1/scoring/rows": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "ScoreResponse object containing rows and aggregated results",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ScoreResponse"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest400"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/TooManyRequests429"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError500"
-                    },
-                    "default": {
-                        "$ref": "#/components/responses/DefaultError"
-                    }
-                },
-                "tags": [
-                    "Scoring"
-                ],
-                "description": "Score a list of rows.",
-                "parameters": [],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ScoreRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
         "/v1/scoring/jobs": {
             "post": {
                 "responses": {
@@ -3710,6 +3667,49 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/ScoreDatasetRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/v1/scoring/score-rows": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "ScoreResponse object containing rows and aggregated results",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ScoreResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Scoring"
+                ],
+                "description": "Score a list of rows.",
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ScoreRowsRequest"
                             }
                         }
                     },
@@ -8714,7 +8714,7 @@
                         "type": "string",
                         "description": "A description of the scoring function type. - E.g. Write your custom judge prompt to score the answer."
                     },
-                    "supported_purposes": {
+                    "supported_dataset_purposes": {
                         "type": "array",
                         "items": {
                             "type": "string",
@@ -8736,7 +8736,7 @@
                 "required": [
                     "type",
                     "description",
-                    "supported_purposes"
+                    "supported_dataset_purposes"
                 ],
                 "title": "ScoringFnTypeInfo"
             },
@@ -10181,7 +10181,46 @@
                 ],
                 "title": "SaveSpansToDatasetRequest"
             },
-            "ScoreRequest": {
+            "ScoreDatasetRequest": {
+                "type": "object",
+                "properties": {
+                    "dataset_id": {
+                        "type": "string"
+                    },
+                    "scoring_fn_ids": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "dataset_id",
+                    "scoring_fn_ids"
+                ],
+                "title": "ScoreDatasetRequest"
+            },
+            "ScoreBatchResponse": {
+                "type": "object",
+                "properties": {
+                    "dataset_id": {
+                        "type": "string"
+                    },
+                    "results": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/ScoringResult"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "results"
+                ],
+                "title": "ScoreBatchResponse"
+            },
+            "ScoreRowsRequest": {
                 "type": "object",
                 "properties": {
                     "dataset_rows": {
@@ -10226,7 +10265,7 @@
                     "dataset_rows",
                     "scoring_fn_ids"
                 ],
-                "title": "ScoreRequest"
+                "title": "ScoreRowsRequest"
             },
             "ScoreResponse": {
                 "type": "object",
@@ -10245,45 +10284,6 @@
                 ],
                 "title": "ScoreResponse",
                 "description": "The response from scoring."
-            },
-            "ScoreDatasetRequest": {
-                "type": "object",
-                "properties": {
-                    "dataset_id": {
-                        "type": "string"
-                    },
-                    "scoring_fn_ids": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "dataset_id",
-                    "scoring_fn_ids"
-                ],
-                "title": "ScoreDatasetRequest"
-            },
-            "ScoreBatchResponse": {
-                "type": "object",
-                "properties": {
-                    "dataset_id": {
-                        "type": "string"
-                    },
-                    "results": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "$ref": "#/components/schemas/ScoringResult"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "results"
-                ],
-                "title": "ScoreBatchResponse"
             },
             "AlgorithmConfig": {
                 "oneOf": [
