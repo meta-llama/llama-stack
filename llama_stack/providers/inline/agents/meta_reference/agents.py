@@ -4,11 +4,11 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import json
 import logging
 import shutil
 import tempfile
 import uuid
+from datetime import datetime, timezone
 from typing import AsyncGenerator, List, Optional, Union
 
 from llama_stack.apis.agents import (
@@ -41,6 +41,7 @@ from llama_stack.providers.utils.kvstore import InmemoryKVStoreImpl, kvstore_imp
 
 from .agent_instance import ChatAgent
 from .config import MetaReferenceAgentsImplConfig
+from .persistence import AgentInfo
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -78,35 +79,39 @@ class MetaReferenceAgentsImpl(Agents):
         agent_config: AgentConfig,
     ) -> AgentCreateResponse:
         agent_id = str(uuid.uuid4())
+        created_at = datetime.now(timezone.utc)
 
+        # Create AgentInfo with the config and created_at
+        agent_info = AgentInfo(
+            **agent_config.model_dump(),
+            created_at=created_at,
+        )
+
+        # Store the agent info
         await self.persistence_store.set(
             key=f"agent:{agent_id}",
-            value=agent_config.model_dump_json(),
+            value=agent_info.model_dump_json(),
         )
+
         return AgentCreateResponse(
             agent_id=agent_id,
         )
 
     async def _get_agent_impl(self, agent_id: str) -> ChatAgent:
-        agent_config = await self.persistence_store.get(
+        agent_info = await self.persistence_store.get(
             key=f"agent:{agent_id}",
         )
-        if not agent_config:
-            raise ValueError(f"Could not find agent config for {agent_id}")
+        if not agent_info:
+            raise ValueError(f"Could not find agent info for {agent_id}")
 
         try:
-            agent_config = json.loads(agent_config)
-        except json.JSONDecodeError as e:
-            raise ValueError(f"Could not JSON decode agent config for {agent_id}") from e
-
-        try:
-            agent_config = AgentConfig(**agent_config)
+            agent_info = AgentInfo.model_validate_json(agent_info)
         except Exception as e:
-            raise ValueError(f"Could not validate(?) agent config for {agent_id}") from e
+            raise ValueError(f"Could not validate agent info for {agent_id}") from e
 
         return ChatAgent(
             agent_id=agent_id,
-            agent_config=agent_config,
+            agent_config=agent_info,
             tempdir=self.tempdir,
             inference_api=self.inference_api,
             safety_api=self.safety_api,
@@ -114,8 +119,9 @@ class MetaReferenceAgentsImpl(Agents):
             tool_runtime_api=self.tool_runtime_api,
             tool_groups_api=self.tool_groups_api,
             persistence_store=(
-                self.persistence_store if agent_config.enable_session_persistence else self.in_memory_store
+                self.persistence_store if agent_info.enable_session_persistence else self.in_memory_store
             ),
+            created_at=agent_info.created_at,
         )
 
     async def create_agent_session(
@@ -214,6 +220,7 @@ class MetaReferenceAgentsImpl(Agents):
         turn_ids: Optional[List[str]] = None,
     ) -> Session:
         agent = await self._get_agent_impl(agent_id)
+
         session_info = await agent.storage.get_session_info(session_id)
         if session_info is None:
             raise ValueError(f"Session {session_id} not found")
@@ -228,22 +235,67 @@ class MetaReferenceAgentsImpl(Agents):
         )
 
     async def delete_agents_session(self, agent_id: str, session_id: str) -> None:
-        await self.persistence_store.delete(f"session:{agent_id}:{session_id}")
+        agent = await self._get_agent_impl(agent_id)
+        session_info = await agent.storage.get_session_info(session_id)
+        if session_info is None:
+            raise ValueError(f"Session {session_id} not found")
+
+        await agent.storage.delete_session(session_id)
+        await agent.storage.delete_session_turns(session_id)
 
     async def delete_agent(self, agent_id: str) -> None:
+        # First get all sessions for this agent
+        agent = await self._get_agent_impl(agent_id)
+        sessions = await agent.storage.list_sessions()
+
+        # Delete all sessions
+        for session in sessions:
+            await self.delete_agents_session(agent_id, session.session_id)
+
+        # Finally delete the agent itself
         await self.persistence_store.delete(f"agent:{agent_id}")
 
-    async def shutdown(self) -> None:
-        pass
-
     async def list_agents(self) -> ListAgentsResponse:
-        pass
+        agents = await self.persistence_store.list()
+        agent_list: List[Agent] = []
+        for agent in agents:
+            if not agent.startswith("agent:"):
+                continue
+            agent_id = agent.split(":")[1]
+
+            # Get the agent info
+            agent_info = await self.persistence_store.get(agent)
+            if not agent_info:
+                continue
+
+            try:
+                agent_info = AgentInfo.model_validate_json(agent_info)
+                agent_list.append(
+                    Agent(
+                        agent_id=agent_id,
+                        agent_config=agent_info,
+                        created_at=agent_info.created_at,
+                    )
+                )
+            except Exception as e:
+                logger.error(f"Error parsing agent info for {agent_id}: {e}")
+                continue
+
+        return ListAgentsResponse(data=agent_list)
 
     async def get_agent(self, agent_id: str) -> Agent:
-        pass
+        chat_agent = await self._get_agent_impl(agent_id)
+        agent = Agent(
+            agent_id=agent_id,
+            agent_config=chat_agent.agent_config,
+            created_at=chat_agent.created_at,
+        )
+        return agent
 
-    async def list_agent_sessions(
-        self,
-        agent_id: str,
-    ) -> ListAgentSessionsResponse:
+    async def list_agent_sessions(self, agent_id: str) -> ListAgentSessionsResponse:
+        agent = await self._get_agent_impl(agent_id)
+        sessions = await agent.storage.list_sessions()
+        return ListAgentSessionsResponse(data=sessions)
+
+    async def shutdown(self) -> None:
         pass
