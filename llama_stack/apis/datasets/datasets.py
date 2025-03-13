@@ -15,7 +15,8 @@ from llama_stack.schema_utils import json_schema_type, register_schema, webmetho
 
 class DatasetPurpose(Enum):
     """
-    Purpose of the dataset. Each type has a different column format.
+    Purpose of the dataset. Each purpose has a required input data schema.
+    
     :cvar post-training/messages: The dataset contains messages used for post-training. Examples:
         {
             "messages": [
