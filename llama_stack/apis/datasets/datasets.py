@@ -16,17 +16,17 @@ from llama_stack.schema_utils import json_schema_type, register_schema, webmetho
 class DatasetPurpose(Enum):
     """
     Purpose of the dataset. Each purpose has a required input data schema.
-    
-    :cvar post-training/messages: The dataset contains messages used for post-training. Examples:
+
+    :cvar post-training/messages: The dataset contains messages used for post-training.
         {
             "messages": [
                 {"role": "user", "content": "Hello, world!"},
                 {"role": "assistant", "content": "Hello, world!"},
             ]
         }
-    :cvar eval/question-answer: The dataset contains a question and answer column.
+    :cvar eval/messages-answer: The dataset contains a messages column with list of messages and an answer column.
         {
-            "question": [
+            "messages": [
                 {"role": "user", "content": "What is the capital of France?"},
             ],
             "answer": "Paris"
@@ -34,7 +34,7 @@ class DatasetPurpose(Enum):
     """
 
     post_training_messages = "post-training/messages"
-    eval_question_answer = "eval/question-answer"
+    eval_messages_answer = "eval/messages-answer"
 
     # TODO: add more schemas here
 
@@ -153,7 +153,21 @@ class Datasets(Protocol):
 
         :param purpose: The purpose of the dataset. One of
             - "post-training/messages": The dataset contains a messages column with list of messages for post-training.
-            - "eval/question-answer": The dataset contains a question and answer column.
+                - Example data rows:
+                    {
+                        "messages": [
+                            {"role": "user", "content": "Hello, world!"},
+                            {"role": "assistant", "content": "Hello, world!"},
+                        ]
+                    }
+            - "eval/messages-answer": The dataset contains a messages column with list of messages and an answer column.
+                - Example data rows:
+                    {
+                        "messages": [
+                            {"role": "user", "content": "What is the capital of France?"},
+                        ],
+                        "answer": "Paris"
+                    }
         :param source: The data source of the dataset. Examples:
            - {
                "type": "uri",

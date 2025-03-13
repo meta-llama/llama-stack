@@ -4742,10 +4742,10 @@ components:
           type: string
           enum:
             - post-training/messages
-            - eval/question-answer
+            - eval/messages-answer
           title: DatasetPurpose
           description: >-
-            Purpose of the dataset. Each type has a different column format.
+            Purpose of the dataset. Each purpose has a required input data schema.
         source:
           $ref: '#/components/schemas/DataSource'
         metadata:
@@ -6394,11 +6394,15 @@ components:
           type: string
           enum:
             - post-training/messages
-            - eval/question-answer
+            - eval/messages-answer
           description: >-
             The purpose of the dataset. One of - "post-training/messages": The dataset
             contains a messages column with list of messages for post-training. -
-            "eval/question-answer": The dataset contains a question and answer column.
+            Example data rows: { "messages": [ {"role": "user", "content": "Hello,
+            world!"}, {"role": "assistant", "content": "Hello, world!"}, ] } - "eval/messages-answer":
+            The dataset contains a messages column with list of messages and an answer
+            column. - Example data rows: { "messages": [ {"role": "user", "content":
+            "What is the capital of France?"}, ], "answer": "Paris" }
         source:
           $ref: '#/components/schemas/DataSource'
           description: >-
