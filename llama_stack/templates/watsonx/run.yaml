@@ -75,6 +75,26 @@ models:
   provider_id: watsonx
   provider_model_id: meta-llama/llama-3-3-70b-instruct
   model_type: llm
+- metadata: {}
+  model_id: meta-llama/llama-2-13b-chat
+  provider_id: watsonx
+  provider_model_id: meta-llama/llama-2-13b-chat
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/llama-3-1-70b-instruct
+  provider_id: watsonx
+  provider_model_id: meta-llama/llama-3-1-70b-instruct
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/llama-3-1-8b-instruct
+  provider_id: watsonx
+  provider_model_id: meta-llama/llama-3-1-8b-instruct
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/llama-3-2-11b-vision-instruct
+  provider_id: watsonx
+  provider_model_id: meta-llama/llama-3-2-11b-vision-instruct
+  model_type: llm
 shields: []
 vector_dbs: []
 datasets: []

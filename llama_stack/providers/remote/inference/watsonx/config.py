@@ -8,7 +8,7 @@ import os
 from typing import Optional, Dict, Any
 
 from llama_stack.schema_utils import json_schema_type
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, SecretStr
 
 
 class WatsonXProviderDataValidator(BaseModel):
@@ -24,7 +24,7 @@ class WatsonXConfig(BaseModel):
         default_factory=lambda: os.getenv("WATSONX_BASE_URL", "https://us-south.ml.cloud.ibm.com"),
         description="A base url for accessing the Watsonx.ai",
     )
-    api_key: Optional[str] = Field(
+    api_key: Optional[SecretStr] = Field(
         default_factory=lambda: os.getenv("WATSONX_API_KEY"),
         description="The Watsonx API key, only needed of using the hosted service",
     )
