@@ -4718,6 +4718,9 @@ components:
             - post-training/messages
             - eval/question-answer
             - eval/messages-answer
+            - scoring/question-generation-answer
+            - scoring/messages-generation-answer
+            - scoring/generation-answer
           title: DatasetPurpose
           description: >-
             Purpose of the dataset. Each purpose has a required input data schema.
@@ -6070,7 +6073,11 @@ components:
             type: string
             enum:
               - post-training/messages
+              - eval/question-answer
               - eval/messages-answer
+              - scoring/question-generation-answer
+              - scoring/messages-generation-answer
+              - scoring/generation-answer
             title: DatasetPurpose
             description: >-
               Purpose of the dataset. Each purpose has a required input data schema.
@@ -6779,6 +6786,9 @@ components:
             - post-training/messages
             - eval/question-answer
             - eval/messages-answer
+            - scoring/question-generation-answer
+            - scoring/messages-generation-answer
+            - scoring/generation-answer
           description: >-
             The purpose of the dataset. One of - "post-training/messages": The dataset
             contains a messages column with list of messages for post-training. {
@@ -6790,7 +6800,18 @@ components:
             column for evaluation. { "messages": [ {"role": "user", "content": "Hello,
             my name is John Doe."}, {"role": "assistant", "content": "Hello, John
             Doe. How can I help you today?"}, {"role": "user", "content": "What's
-            my name?"}, ], "answer": "John Doe" }
+            my name?"}, ], "answer": "John Doe" } - "scoring/question-generation-answer":
+            The dataset contains a question column, a generation column and an answer
+            column for scoring. { "question": "What is the capital of France?", "generation":
+            "Paris", "answer": "Paris" } - "scoring/messages-generation-answer": The
+            dataset contains a messages column with list of messages, a generation
+            column and an answer column for scoring. { "messages": [ {"role": "user",
+            "content": "Hello, my name is John Doe."}, {"role": "assistant", "content":
+            "Hello, John Doe. How can I help you today?"}, {"role": "user", "content":
+            "What's my name?"}, ], "generation": "John Doe", "answer": "John Doe"
+            } - "scoring/generation-answer": The dataset contains a generation column
+            and an answer column for scoring. { "generation": "Paris", "answer": "Paris"
+            }
         source:
           $ref: '#/components/schemas/DataSource'
           description: >-

@@ -38,10 +38,36 @@ class DatasetPurpose(Enum):
             ],
             "answer": "John Doe"
         }
+    :cvar scoring/question-generation-answer: The dataset contains a question column, a generation column and an answer column.
+        {
+            "question": "What is the capital of France?",
+            "generation": "Paris",
+            "answer": "Paris"
+        }
+    :cvar scoring/messages-generation-answer: The dataset contains a messages column with list of messages, a generation column and an answer column.
+        {
+            "messages": [
+                {"role": "user", "content": "Hello, my name is John Doe."},
+                {"role": "assistant", "content": "Hello, John Doe. How can I help you today?"},
+                {"role": "user", "content": "What's my name?"},
+            ],
+            "generation": "John Doe",
+            "answer": "John Doe"
+        }
+    :cvar scoring/generation-answer: The dataset contains a generation column and an answer column.
+        {
+            "generation": "Paris",
+            "answer": "Paris"
+        }
     """
     post_training_messages = "post-training/messages"
+
     eval_question_answer = "eval/question-answer"
     eval_messages_answer = "eval/messages-answer"
+
+    scoring_question_generation_answer = "scoring/question-generation-answer"
+    scoring_messages_generation_answer = "scoring/messages-generation-answer"
+    scoring_generation_answer = "scoring/generation-answer"
 
     # TODO: add more schemas here
 
@@ -179,6 +205,27 @@ class Datasets(Protocol):
                         {"role": "user", "content": "What's my name?"},
                     ],
                     "answer": "John Doe"
+                }
+            - "scoring/question-generation-answer": The dataset contains a question column, a generation column and an answer column for scoring.
+                {
+                    "question": "What is the capital of France?",
+                    "generation": "Paris",
+                    "answer": "Paris"
+                }
+            - "scoring/messages-generation-answer": The dataset contains a messages column with list of messages, a generation column and an answer column for scoring.
+                {
+                    "messages": [
+                        {"role": "user", "content": "Hello, my name is John Doe."},
+                        {"role": "assistant", "content": "Hello, John Doe. How can I help you today?"},
+                        {"role": "user", "content": "What's my name?"},
+                    ],
+                    "generation": "John Doe",
+                    "answer": "John Doe"
+                }
+            - "scoring/generation-answer": The dataset contains a generation column and an answer column for scoring.
+                {
+                    "generation": "Paris",
+                    "answer": "Paris"
                 }
         :param source: The data source of the dataset. Examples:
            - {
