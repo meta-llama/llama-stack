@@ -4718,8 +4718,8 @@ components:
             - post-training/messages
             - eval/question-answer
             - eval/messages-answer
-            - scoring/question-generation-answer
-            - scoring/messages-generation-answer
+            - scoring/question-answer-generation
+            - scoring/messages-answer-generation
             - scoring/generation-answer
           title: DatasetPurpose
           description: >-
@@ -6075,8 +6075,8 @@ components:
               - post-training/messages
               - eval/question-answer
               - eval/messages-answer
-              - scoring/question-generation-answer
-              - scoring/messages-generation-answer
+              - scoring/question-answer-generation
+              - scoring/messages-answer-generation
               - scoring/generation-answer
             title: DatasetPurpose
             description: >-
@@ -6786,8 +6786,8 @@ components:
             - post-training/messages
             - eval/question-answer
             - eval/messages-answer
-            - scoring/question-generation-answer
-            - scoring/messages-generation-answer
+            - scoring/question-answer-generation
+            - scoring/messages-answer-generation
             - scoring/generation-answer
           description: >-
             The purpose of the dataset. One of - "post-training/messages": The dataset
@@ -6800,10 +6800,10 @@ components:
             column for evaluation. { "messages": [ {"role": "user", "content": "Hello,
             my name is John Doe."}, {"role": "assistant", "content": "Hello, John
             Doe. How can I help you today?"}, {"role": "user", "content": "What's
-            my name?"}, ], "answer": "John Doe" } - "scoring/question-generation-answer":
+            my name?"}, ], "answer": "John Doe" } - "scoring/question-answer-generation":
             The dataset contains a question column, a generation column and an answer
             column for scoring. { "question": "What is the capital of France?", "generation":
-            "Paris", "answer": "Paris" } - "scoring/messages-generation-answer": The
+            "Paris", "answer": "Paris" } - "scoring/messages-answer-generation": The
             dataset contains a messages column with list of messages, a generation
             column and an answer column for scoring. { "messages": [ {"role": "user",
             "content": "Hello, my name is John Doe."}, {"role": "assistant", "content":
