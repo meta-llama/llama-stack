@@ -168,7 +168,7 @@ def process_matplotlib_response(response, matplotlib_dump_dir: str):
     image_paths = []
     for i, img in enumerate(images):
         # create new directory for each day to better organize data:
-        dump_dname = datetime.today().strftime("%Y-%m-%d")
+        dump_dname = datetime.today().strftime("%Y-%m-%d")  # noqa: DTZ002 - we don't care about timezones here since we are displaying the date
         dump_dpath = Path(matplotlib_dump_dir, dump_dname)
         dump_dpath.mkdir(parents=True, exist_ok=True)
         # save image into a file

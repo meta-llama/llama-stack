@@ -8,7 +8,7 @@ import json
 import os
 import sqlite3
 import threading
-from datetime import datetime
+from datetime import datetime, timezone
 
 from opentelemetry.sdk.trace import SpanProcessor
 from opentelemetry.trace import Span
@@ -124,8 +124,8 @@ class SQLiteSpanProcessor(SpanProcessor):
                     trace_id,
                     service_name,
                     (span_id if not parent_span_id else None),
-                    datetime.fromtimestamp(span.start_time / 1e9).isoformat(),
-                    datetime.fromtimestamp(span.end_time / 1e9).isoformat(),
+                    datetime.fromtimestamp(span.start_time / 1e9, timezone.utc).isoformat(),
+                    datetime.fromtimestamp(span.end_time / 1e9, timezone.utc).isoformat(),
                 ),
             )
 
@@ -143,8 +143,8 @@ class SQLiteSpanProcessor(SpanProcessor):
                     trace_id,
                     parent_span_id,
                     span.name,
-                    datetime.fromtimestamp(span.start_time / 1e9).isoformat(),
-                    datetime.fromtimestamp(span.end_time / 1e9).isoformat(),
+                    datetime.fromtimestamp(span.start_time / 1e9, timezone.utc).isoformat(),
+                    datetime.fromtimestamp(span.end_time / 1e9, timezone.utc).isoformat(),
                     json.dumps(dict(span.attributes)),
                     span.status.status_code.name,
                     span.kind.name,
@@ -161,7 +161,7 @@ class SQLiteSpanProcessor(SpanProcessor):
                     (
                         span_id,
                         event.name,
-                        datetime.fromtimestamp(event.timestamp / 1e9).isoformat(),
+                        datetime.fromtimestamp(event.timestamp / 1e9, timezone.utc).isoformat(),
                         json.dumps(dict(event.attributes)),
                     ),
                 )
