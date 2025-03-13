@@ -48,7 +48,7 @@ from llama_stack.apis.scoring import (
     ScoringFnParams,
 )
 from llama_stack.apis.shields import Shield
-from llama_stack.apis.telemetry import MetricEvent, Telemetry
+from llama_stack.apis.telemetry import MetricEvent, MetricInResponse, Telemetry
 from llama_stack.apis.tools import (
     RAGDocument,
     RAGQueryConfig,
@@ -206,12 +206,12 @@ class InferenceRouter(Inference):
         completion_tokens: int,
         total_tokens: int,
         model: Model,
-    ) -> List[MetricEvent]:
+    ) -> List[MetricInResponse]:
         metrics = self._construct_metrics(prompt_tokens, completion_tokens, total_tokens, model)
         if self.telemetry:
             for metric in metrics:
                 await self.telemetry.log_event(metric)
-        return metrics
+        return [MetricInResponse(metric=metric.metric, value=metric.value) for metric in metrics]
 
     async def _count_tokens(
         self,

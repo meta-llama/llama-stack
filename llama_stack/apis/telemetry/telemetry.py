@@ -96,6 +96,13 @@ class MetricEvent(EventCommon):
     unit: str
 
 
+@json_schema_type
+class MetricInResponse(BaseModel):
+    metric: str
+    value: Union[int, float]
+    unit: Optional[str] = None
+
+
 # This is a short term solution to allow inference API to return metrics
 # The ideal way to do this is to have a way for all response types to include metrics
 # and all metric events logged to the telemetry API to be inlcuded with the response
@@ -117,7 +124,7 @@ class MetricEvent(EventCommon):
 
 
 class MetricResponseMixin(BaseModel):
-    metrics: Optional[List[MetricEvent]] = None
+    metrics: Optional[List[MetricInResponse]] = None
 
 
 @json_schema_type
