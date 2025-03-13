@@ -9889,7 +9889,7 @@
                             "eval/question-answer",
                             "eval/messages-answer"
                         ],
-                        "description": "The purpose of the dataset. One of - \"post-training/messages\": The dataset contains a messages column with list of messages for post-training. - \"eval/question-answer\": The dataset contains a question column and an answer column for evaluation. - \"eval/messages-answer\": The dataset contains a messages column with list of messages and an answer column for evaluation."
+                        "description": "The purpose of the dataset. One of - \"post-training/messages\": The dataset contains a messages column with list of messages for post-training. { \"messages\": [ {\"role\": \"user\", \"content\": \"Hello, world!\"}, {\"role\": \"assistant\", \"content\": \"Hello, world!\"}, ] } - \"eval/question-answer\": The dataset contains a question column and an answer column for evaluation. { \"question\": \"What is the capital of France?\", \"answer\": \"Paris\" } - \"eval/messages-answer\": The dataset contains a messages column with list of messages and an answer column for evaluation. { \"messages\": [ {\"role\": \"user\", \"content\": \"Hello, my name is John Doe.\"}, {\"role\": \"assistant\", \"content\": \"Hello, John Doe. How can I help you today?\"}, {\"role\": \"user\", \"content\": \"What's my name?\"}, ], \"answer\": \"John Doe\" }"
                     },
                     "source": {
                         "$ref": "#/components/schemas/DataSource",
