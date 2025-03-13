@@ -11,39 +11,40 @@ from llama_stack.distribution.distribution import get_provider_registry, provida
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
 
 
-def test_all_provider_configs_can_be_instantiated():
-    """
-    Test that all provider configs can be instantiated "lightly". If a config class ends up
-    importing the implementation class, this will likely fail because we don't run unit tests
-    with tons of dependencies.
-    """
-    # Get all provider registries
-    provider_registry = get_provider_registry()
+class TestProviderConfigurations:
+    """Test suite for testing provider configurations across all API types."""
 
-    # Track any failures
-    failures = []
+    def test_all_api_providers_exist(self):
+        provider_registry = get_provider_registry()
+        for api in providable_apis():
+            providers = provider_registry.get(api, {})
+            assert providers, f"No providers found for API type: {api}"
 
-    # For each API type
-    for api in providable_apis():
+    @pytest.mark.parametrize("api", providable_apis())
+    def test_api_providers(self, api):
+        provider_registry = get_provider_registry()
         providers = provider_registry.get(api, {})
+        assert providers, f"No providers found for API type: {api}"
 
-        # For each provider of this API type
+        failures = []
         for provider_type, provider_spec in providers.items():
             try:
-                # Get the config class
-                config_class_name = provider_spec.config_class
-                config_type = instantiate_class_type(config_class_name)
-
-                assert issubclass(config_type, BaseModel)
-                assert hasattr(config_type, "sample_run_config"), (
-                    f"{config_class_name} does not have sample_run_config method"
-                )
-                sample_config = config_type.sample_run_config(__distro_dir__="foobarbaz")
-                assert isinstance(sample_config, dict)
-
+                self._verify_provider_config(provider_type, provider_spec)
             except Exception as e:
-                failures.append(f"Failed to instantiate {provider_type} config: {str(e)}")
+                failures.append(f"Failed to verify {provider_type} config: {str(e)}")
 
-    # Report all failures at once
-    if failures:
-        pytest.fail("\n".join(failures))
+        if failures:
+            pytest.fail("\n".join(failures))
+
+    def _verify_provider_config(self, provider_type, provider_spec):
+        """Helper method to verify a single provider configuration."""
+        # Get the config class
+        config_class_name = provider_spec.config_class
+        config_type = instantiate_class_type(config_class_name)
+
+        assert issubclass(config_type, BaseModel), f"{config_class_name} is not a subclass of BaseModel"
+
+        assert hasattr(config_type, "sample_run_config"), f"{config_class_name} does not have sample_run_config method"
+
+        sample_config = config_type.sample_run_config(__distro_dir__="foobarbaz")
+        assert isinstance(sample_config, dict), f"{config_class_name}.sample_run_config() did not return a dict"

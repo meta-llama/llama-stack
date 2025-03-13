@@ -49,15 +49,6 @@ def available_providers() -> List[ProviderSpec]:
         remote_provider_spec(
             api=Api.safety,
             adapter=AdapterSpec(
-                adapter_type="sample",
-                pip_packages=[],
-                module="llama_stack.providers.remote.safety.sample",
-                config_class="llama_stack.providers.remote.safety.sample.SampleConfig",
-            ),
-        ),
-        remote_provider_spec(
-            api=Api.safety,
-            adapter=AdapterSpec(
                 adapter_type="bedrock",
                 pip_packages=["boto3"],
                 module="llama_stack.providers.remote.safety.bedrock",
