@@ -21,7 +21,7 @@
 5. [API Design Overview](#api-design-overview)
 6. [Considerations and Tradeoffs](#6-considerations-and-tradeoffs)
 7. [Conclusion](#7-conclusion)
-8. [Approvals](#8-approvals)
+8. [Approval](#8-approval)
 
 ## Abstract
 
@@ -626,30 +626,19 @@ And an example API call using cURL:
 
 ```bash
 curl -X POST "http://localhost:8000/tool-runtime/rag-tool/rerank" \
-
      -H "Content-Type: application/json" \
-
      -d '{
-
          "query": "Find relevant documents for query text.",
-
          "retrieved_docs": [/* List of RAGDocument objects */],
-
          "top_k": 5,
-
          "rerank_strategy": "DEFAULT",
-
          "reranker_model_id": "LlamaRank",
-
-         "rerank_config: {
-
-                      "api_url": "https://api.together.xyz/v1",
-
-                      "api_key": "API_KEY",
-
-                 }
-
+         "rerank_config": {
+             "api_url": "https://api.together.xyz/v1",
+             "api_key": "API_KEY"
+         }
      }'
+
 ```
 
 ## API Design Overview
