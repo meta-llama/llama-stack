@@ -3,7 +3,7 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from asyncio.subprocess import Process
+from asyncio import subprocess
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -40,7 +40,7 @@ class TuningJob(pydantic.BaseModel):
     scheduled_at: datetime | None = None
     completed_at: datetime | None = None
 
-    background_proc_pid: Process | None = None
+    subproc_ref: subprocess.Process | None = None
 
 
 class HFilabPostTrainingImpl:
@@ -73,6 +73,10 @@ class HFilabPostTrainingImpl:
         if self.current_job is not None:
             self.current_job.status.append(new_status)
 
+    def __set_subproc_ref_callback(self, subproc_ref: subprocess.Process):
+        if self.current_job is not None:
+            self.current_job.subproc_ref = subproc_ref
+
     async def supervised_fine_tune(
         self,
         job_uuid: str,
@@ -100,6 +104,7 @@ class HFilabPostTrainingImpl:
             datasetsio_api=self.datasetio_api,
         )
 
+        # This is not a reliable or tidy way to implement the behavior that we want.
         tasks = BackgroundTasks()
         tasks.add_task(
             recipe.load_dataset_from_datasetsio,  # asynchronous request
@@ -114,6 +119,7 @@ class HFilabPostTrainingImpl:
         tasks.add_task(
             recipe.train,  # asynchronous request
             set_status_callback=self.__set_status_callback,
+            set_subproc_ref_callback=self.__set_subproc_ref_callback,
         )
 
         self.current_job = TuningJob(job_uuid=job_uuid, status=[JobStatus.scheduled])
