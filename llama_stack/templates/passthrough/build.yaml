@@ -1,9 +1,10 @@
 version: '2'
 distribution_spec:
-  description: Use for running LLM inference with the endpoint that compatible with Llama Stack API
+  description: Use Passthrough hosted llama-stack endpoint for LLM inference
   providers:
     inference:
     - remote::passthrough
+    - inline::sentence-transformers
     vector_io:
     - inline::faiss
     - remote::chromadb
@@ -26,6 +27,7 @@ distribution_spec:
     tool_runtime:
     - remote::brave-search
     - remote::tavily-search
+    - remote::wolfram-alpha
     - inline::code-interpreter
     - inline::rag-runtime
     - remote::model-context-protocol
