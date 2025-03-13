@@ -3,8 +3,16 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
+from asyncio.subprocess import Process
 from datetime import datetime
+from pathlib import Path
 from typing import Any, Dict, Optional
+
+import fastapi
+import fastapi.concurrency
+import pydantic
+from starlette.background import BackgroundTasks
+from starlette.responses import JSONResponse
 
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
@@ -13,14 +21,26 @@ from llama_stack.apis.post_training import (
     DPOAlignmentConfig,
     JobStatus,
     ListPostTrainingJobsResponse,
-    LoraFinetuningConfig,
     PostTrainingJob,
     PostTrainingJobArtifactsResponse,
     PostTrainingJobStatusResponse,
     TrainingConfig,
 )
 from llama_stack.providers.inline.post_training.huggingface_ilab.config import HFilabPostTrainingConfig
+from llama_stack.providers.inline.post_training.huggingface_ilab.recipes import FullPrecisionFineTuning
 from llama_stack.schema_utils import webmethod
+
+
+class TuningJob(pydantic.BaseModel):
+    model_config = pydantic.ConfigDict(validate_assignment=True, arbitrary_types_allowed=True)
+    job_uuid: str
+    status: list[JobStatus] = []
+
+    created_at: datetime | None = None
+    scheduled_at: datetime | None = None
+    completed_at: datetime | None = None
+
+    background_proc_pid: Process | None = None
 
 
 class HFilabPostTrainingImpl:
@@ -34,12 +54,24 @@ class HFilabPostTrainingImpl:
         self.datasetio_api = datasetio_api
         self.datasets_api = datasets
 
-        # TODO: assume sync job, will need jobs API for async scheduling
-        self.jobs = {}
-        self.checkpoints_dict = {}
+        self.current_job: TuningJob | None = None
 
     async def shutdown(self):
         pass
+
+    async def can_schedule_new_job(self) -> bool:
+        if self.current_job is None:
+            return True
+
+        finalized_job_states = [JobStatus.completed.value, JobStatus.failed.value]
+        if self.current_job.status in finalized_job_states:
+            return True
+
+        return False
+
+    def __set_status_callback(self, new_status: JobStatus):
+        if self.current_job is not None:
+            self.current_job.status.append(new_status)
 
     async def supervised_fine_tune(
         self,
@@ -50,53 +82,46 @@ class HFilabPostTrainingImpl:
         model: str,
         checkpoint_dir: Optional[str],
         algorithm_config: Optional[AlgorithmConfig],
-    ) -> PostTrainingJob:
-        if job_uuid in self.jobs:
-            raise ValueError(f"Job {job_uuid} already exists")
+    ) -> JSONResponse:
+        if not self.can_schedule_new_job():
+            raise fastapi.HTTPException(
+                status_code=503,  # service unavailable, try again later.
+                detail="A tuning job is currently running; this could take a while.",
+                headers={"Retry-After": "3600"},  # 60sec * 60min = 3600 seconds
+            )
 
-        post_training_job = PostTrainingJob(job_uuid=job_uuid)
-
-        job_status_response = PostTrainingJobStatusResponse(
-            job_uuid=job_uuid,
-            status=JobStatus.scheduled,
-            scheduled_at=datetime.now(),
+        recipe = FullPrecisionFineTuning(
+            model=model,
+            training_config=training_config,
+            logger_config=logger_config,
+            storage_dir=Path(checkpoint_dir) if checkpoint_dir else None,
+            algorithm_config=algorithm_config,
+            datasets_api=self.datasets_api,
+            datasetsio_api=self.datasetio_api,
         )
-        self.jobs[job_uuid] = job_status_response
 
-        if isinstance(algorithm_config, LoraFinetuningConfig):
-            try:
-                recipe = LoraFinetuningSingleDevice(
-                    self.config,
-                    job_uuid,
-                    training_config,
-                    hyperparam_search_config,
-                    logger_config,
-                    model,
-                    checkpoint_dir,
-                    algorithm_config,
-                    self.datasetio_api,
-                    self.datasets_api,
-                )
+        tasks = BackgroundTasks()
+        tasks.add_task(
+            recipe.load_dataset_from_datasetsio,  # asynchronous request
+        )
+        tasks.add_task(
+            recipe.preflight,  # synchronous request
+            set_status_callback=self.__set_status_callback,
+        )
+        tasks.add_task(
+            recipe.setup,  # synchronous request
+        )
+        tasks.add_task(
+            recipe.train,  # asynchronous request
+            set_status_callback=self.__set_status_callback,
+        )
 
-                job_status_response.status = JobStatus.in_progress
-                job_status_response.started_at = datetime.now()
-
-                await recipe.setup()
-                resources_allocated, checkpoints = await recipe.train()
-
-                self.checkpoints_dict[job_uuid] = checkpoints
-                job_status_response.resources_allocated = resources_allocated
-                job_status_response.checkpoints = checkpoints
-                job_status_response.status = JobStatus.completed
-                job_status_response.completed_at = datetime.now()
-
-            except Exception:
-                job_status_response.status = JobStatus.failed
-                raise
-        else:
-            raise NotImplementedError()
-
-        return post_training_job
+        self.current_job = TuningJob(job_uuid=job_uuid, status=[JobStatus.scheduled])
+        resp_object = PostTrainingJob(job_uuid=job_uuid)
+        return JSONResponse(
+            content=resp_object.model_dump(),
+            background=tasks,
+        )
 
     async def preference_optimize(
         self,
