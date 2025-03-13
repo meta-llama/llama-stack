@@ -13,8 +13,9 @@ from llama_stack.distribution.utils.dynamic import instantiate_class_type
 
 def test_all_provider_configs_can_be_instantiated():
     """
-    Test that all provider configs can be instantiated.
-    This ensures that all config classes are correctly defined and can be instantiated without errors.
+    Test that all provider configs can be instantiated "lightly". If a config class ends up
+    importing the implementation class, this will likely fail because we don't run unit tests
+    with tons of dependencies.
     """
     # Get all provider registries
     provider_registry = get_provider_registry()
@@ -34,6 +35,11 @@ def test_all_provider_configs_can_be_instantiated():
                 config_type = instantiate_class_type(config_class_name)
 
                 assert issubclass(config_type, BaseModel)
+                assert hasattr(config_type, "sample_run_config"), (
+                    f"{config_class_name} does not have sample_run_config method"
+                )
+                sample_config = config_type.sample_run_config(__distro_dir__="foobarbaz")
+                assert isinstance(sample_config, dict)
 
             except Exception as e:
                 failures.append(f"Failed to instantiate {provider_type} config: {str(e)}")
