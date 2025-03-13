@@ -1,4 +1,43 @@
 {
+  "[[], {\"kwargs\": {\"code\": \"# Group by year and calculate the average inflation\\naverage_inflation = data.groupby('Year')['Inflation Rate'].mean()\\n\\n# Plotting the average yearly inflation as a time series\\nplt.figure(figsize=(12, 6))\\nplt.plot(average_inflation.index, average_inflation.values, marker='o')\\nplt.title('Average Yearly Inflation Over Time')\\nplt.xlabel('Year')\\nplt.ylabel('Average Inflation Rate (%)')\\nplt.grid()\\nplt.xticks(rotation=45)\\nplt.tight_layout()\\nplt.show()\", \"session_id\": \"<UUID>\"}, \"tool_name\": \"code_interpreter\"}]": {
+    "type": "value",
+    "value": {
+      "__module__": "llama_stack.apis.tools.tools",
+      "__pydantic__": "ToolInvocationResult",
+      "data": {
+        "content": "completed\n[stderr]\nTraceback (most recent call last):\n  line 142, in <module>\nNameError: name 'data' is not defined\n[/stderr]",
+        "error_code": null,
+        "error_message": null,
+        "metadata": null
+      }
+    }
+  },
+  "[[], {\"kwargs\": {\"code\": \"# Let's check the columns of the DataFrame to understand its structure\\nfile_path = '<TEMP_FILE>'\\ndata = pd.read_csv(file_path)\\n\\n# Display the first few rows and the columns of the DataFrame\\ndata.head(), data.columns\", \"session_id\": \"<UUID>\"}, \"tool_name\": \"code_interpreter\"}]": {
+    "type": "value",
+    "value": {
+      "__module__": "llama_stack.apis.tools.tools",
+      "__pydantic__": "ToolInvocationResult",
+      "data": {
+        "content": "completed\n[stderr]\nTraceback (most recent call last):\n  line 143, in <module>\nNameError: name 'pd' is not defined. Did you mean: 'id'?\n[/stderr]",
+        "error_code": null,
+        "error_message": null,
+        "metadata": null
+      }
+    }
+  },
+  "[[], {\"kwargs\": {\"code\": \"def is_prime(n):\\n    if n <= 1:\\n        return False\\n    for i in range(2, int(n**0.5) + 1):\\n        if n % i == 0:\\n            return False\\n    return True\\n\\nprimes = []\\nnum = 2\\nwhile len(primes) < 100:\\n    if is_prime(num):\\n        primes.append(num)\\n    num += 1\\n\\nprimes[99]\", \"session_id\": \"<UUID>\"}, \"tool_name\": \"code_interpreter\"}]": {
+    "type": "value",
+    "value": {
+      "__module__": "llama_stack.apis.tools.tools",
+      "__pydantic__": "ToolInvocationResult",
+      "data": {
+        "content": "completed",
+        "error_code": null,
+        "error_message": null,
+        "metadata": null
+      }
+    }
+  },
   "[[], {\"kwargs\": {\"code\": \"def is_prime(n):\\n    if n <= 1:\\n        return False\\n    if n <= 3:\\n        return True\\n    if n % 2 == 0 or n % 3 == 0:\\n        return False\\n    i = 5\\n    while i * i <= n:\\n        if n % i == 0 or n % (i + 2) == 0:\\n            return False\\n        i += 6\\n    return True\\n\\ndef get_nth_prime(n):\\n    count = 0\\n    num = 2\\n    while True:\\n        if is_prime(num):\\n            count += 1\\n            if count == n:\\n                return num\\n        num += 1\\n\\nprint(get_nth_prime(100))\", \"session_id\": \"<UUID>\"}, \"tool_name\": \"code_interpreter\"}]": {
     "type": "value",
     "value": {
@@ -19,6 +58,32 @@
       "__pydantic__": "ToolInvocationResult",
       "data": {
         "content": "error\n[stdout]\n[Errno 2] No such file or directory: 'bwrap'\n[/stdout]\n[stderr]\n[Errno 2] No such file or directory: 'bwrap'\n[/stderr]",
+        "error_code": null,
+        "error_message": null,
+        "metadata": null
+      }
+    }
+  },
+  "[[], {\"kwargs\": {\"code\": \"import matplotlib.pyplot as plt\\n\\n# Group by year and calculate the average inflation rate\\naverage_inflation = data.groupby('Year')['Inflation Rate'].mean()\\n\\n# Plotting\\nplt.figure(figsize=(12, 6))\\nplt.plot(average_inflation.index, average_inflation.values, marker='o')\\nplt.title('Average Yearly Inflation Rate Over Time')\\nplt.xlabel('Year')\\nplt.ylabel('Average Inflation Rate (%)')\\nplt.grid()\\nplt.xticks(rotation=45)\\nplt.tight_layout()\\nplt.show()\", \"session_id\": \"<UUID>\"}, \"tool_name\": \"code_interpreter\"}]": {
+    "type": "value",
+    "value": {
+      "__module__": "llama_stack.apis.tools.tools",
+      "__pydantic__": "ToolInvocationResult",
+      "data": {
+        "content": "completed\n[stderr]\nTraceback (most recent call last):\n  line 144, in <module>\nNameError: name 'data' is not defined\n[/stderr]",
+        "error_code": null,
+        "error_message": null,
+        "metadata": null
+      }
+    }
+  },
+  "[[], {\"kwargs\": {\"code\": \"import matplotlib.pyplot as plt\\n\\n# Group by year and calculate the average inflation\\naverage_inflation = data.groupby('Year')['Inflation Rate'].mean()\\n\\n# Plotting the average yearly inflation as a time series\\nplt.figure(figsize=(12, 6))\\nplt.plot(average_inflation.index, average_inflation.values, marker='o')\\nplt.title('Average Yearly Inflation Over Time')\\nplt.xlabel('Year')\\nplt.ylabel('Average Inflation Rate (%)')\\nplt.grid()\\nplt.xticks(rotation=45)\\nplt.tight_layout()\\nplt.show()\", \"session_id\": \"<UUID>\"}, \"tool_name\": \"code_interpreter\"}]": {
+    "type": "value",
+    "value": {
+      "__module__": "llama_stack.apis.tools.tools",
+      "__pydantic__": "ToolInvocationResult",
+      "data": {
+        "content": "completed\n[stderr]\nTraceback (most recent call last):\n  line 144, in <module>\nNameError: name 'data' is not defined\n[/stderr]",
         "error_code": null,
         "error_message": null,
         "metadata": null
@@ -58,6 +123,84 @@
       "__pydantic__": "ToolInvocationResult",
       "data": {
         "content": "error\n[stdout]\n[Errno 2] No such file or directory: 'bwrap'\n[/stdout]\n[stderr]\n[Errno 2] No such file or directory: 'bwrap'\n[/stderr]",
+        "error_code": null,
+        "error_message": null,
+        "metadata": null
+      }
+    }
+  },
+  "[[], {\"kwargs\": {\"code\": \"import pandas as pd\\n\\n# Load the CSV file\\nfile_path = '<TEMP_FILE>'\\n\\n# Read the CSV file into a DataFrame\\ndata = pd.read_csv(file_path)\\n\\ndata.describe()\", \"session_id\": \"<UUID>\"}, \"tool_name\": \"code_interpreter\"}]": {
+    "type": "value",
+    "value": {
+      "__module__": "llama_stack.apis.tools.tools",
+      "__pydantic__": "ToolInvocationResult",
+      "data": {
+        "content": "completed",
+        "error_code": null,
+        "error_message": null,
+        "metadata": null
+      }
+    }
+  },
+  "[[], {\"kwargs\": {\"code\": \"import pandas as pd\\n\\n# Load the CSV file\\nfile_path = '<TEMP_FILE>'\\ndata = pd.read_csv(file_path)\\n\\n# Display the first few rows and the column names\\ncolumn_names = data.columns.tolist()\\nfirst_rows = data.head()\\ncolumn_names, first_rows\", \"session_id\": \"<UUID>\"}, \"tool_name\": \"code_interpreter\"}]": {
+    "type": "value",
+    "value": {
+      "__module__": "llama_stack.apis.tools.tools",
+      "__pydantic__": "ToolInvocationResult",
+      "data": {
+        "content": "completed",
+        "error_code": null,
+        "error_message": null,
+        "metadata": null
+      }
+    }
+  },
+  "[[], {\"kwargs\": {\"code\": \"import pandas as pd\\n\\n# Load the CSV file\\nfile_path = '<TEMP_FILE>'\\ndata = pd.read_csv(file_path)\\n\\n# Display the first few rows and the columns of the DataFrame\\ndata.head(), data.columns\", \"session_id\": \"<UUID>\"}, \"tool_name\": \"code_interpreter\"}]": {
+    "type": "value",
+    "value": {
+      "__module__": "llama_stack.apis.tools.tools",
+      "__pydantic__": "ToolInvocationResult",
+      "data": {
+        "content": "completed",
+        "error_code": null,
+        "error_message": null,
+        "metadata": null
+      }
+    }
+  },
+  "[[], {\"kwargs\": {\"code\": \"import pandas as pd\\n\\n# Load the CSV file\\nfile_path = '<TEMP_FILE>'\\ndata = pd.read_csv(file_path)\\n\\ndata.describe()\", \"session_id\": \"<UUID>\"}, \"tool_name\": \"code_interpreter\"}]": {
+    "type": "value",
+    "value": {
+      "__module__": "llama_stack.apis.tools.tools",
+      "__pydantic__": "ToolInvocationResult",
+      "data": {
+        "content": "completed",
+        "error_code": null,
+        "error_message": null,
+        "metadata": null
+      }
+    }
+  },
+  "[[], {\"kwargs\": {\"code\": \"import pandas as pd\\n\\n# Load the CSV file\\nfile_path = '<TEMP_FILE>'\\ndf = pd.read_csv(file_path)\\n\\ndf.describe(), df.head()\", \"session_id\": \"<UUID>\"}, \"tool_name\": \"code_interpreter\"}]": {
+    "type": "value",
+    "value": {
+      "__module__": "llama_stack.apis.tools.tools",
+      "__pydantic__": "ToolInvocationResult",
+      "data": {
+        "content": "completed",
+        "error_code": null,
+        "error_message": null,
+        "metadata": null
+      }
+    }
+  },
+  "[[], {\"kwargs\": {\"code\": \"import pandas as pd\\n\\n# Load the CSV file\\nfile_path = '<TEMP_FILE>'\\ndf = pd.read_csv(file_path)\\n\\ndf.describe(include='all')\", \"session_id\": \"<UUID>\"}, \"tool_name\": \"code_interpreter\"}]": {
+    "type": "value",
+    "value": {
+      "__module__": "llama_stack.apis.tools.tools",
+      "__pydantic__": "ToolInvocationResult",
+      "data": {
+        "content": "completed",
         "error_code": null,
         "error_message": null,
         "metadata": null
@@ -149,6 +292,71 @@
       "__pydantic__": "ToolInvocationResult",
       "data": {
         "content": "error\n[stdout]\n[Errno 2] No such file or directory: 'bwrap'\n[/stdout]\n[stderr]\n[Errno 2] No such file or directory: 'bwrap'\n[/stderr]",
+        "error_code": null,
+        "error_message": null,
+        "metadata": null
+      }
+    }
+  },
+  "[[], {\"kwargs\": {\"code\": \"import pandas as pd\\nimport matplotlib.pyplot as plt\\n\\n# Load the CSV file\\nfile_path = '<TEMP_FILE>'\\ndata = pd.read_csv(file_path)\\n\\n# Assuming the CSV has 'Year' and 'Inflation' columns\\n# Convert 'Year' to datetime if necessary\\n# data['Year'] = pd.to_datetime(data['Year'], format='%Y')\\n\\n# Group by year and calculate the average inflation\\naverage_inflation = data.groupby('Year')['Inflation'].mean()\\n\\n# Plotting\\nplt.figure(figsize=(12, 6))\\nplt.plot(average_inflation.index, average_inflation.values, marker='o')\\nplt.title('Average Yearly Inflation Over Time')\\nplt.xlabel('Year')\\nplt.ylabel('Average Inflation (%)')\\nplt.grid()\\nplt.xticks(rotation=45)\\nplt.tight_layout()\\nplt.show()\", \"session_id\": \"<UUID>\"}, \"tool_name\": \"code_interpreter\"}]": {
+    "type": "value",
+    "value": {
+      "__module__": "llama_stack.apis.tools.tools",
+      "__pydantic__": "ToolInvocationResult",
+      "data": {
+        "content": "completed\n[stderr]\nTraceback (most recent call last):\n  line 153, in <module>\n  line 1951, in __getitem__\n    return super().__getitem__(key)\n  line 244, in __getitem__\n    raise KeyError(f\"Column not found: {key}\")\nKeyError: 'Column not found: Inflation'\n[/stderr]",
+        "error_code": null,
+        "error_message": null,
+        "metadata": null
+      }
+    }
+  },
+  "[[], {\"kwargs\": {\"code\": \"import pandas as pd\\nimport matplotlib.pyplot as plt\\n\\n# Load the CSV file\\nfile_path = '<TEMP_FILE>'\\ndata = pd.read_csv(file_path)\\n\\n# Assuming the CSV has columns 'Year' and 'Inflation'\\n# Group by year and calculate the average inflation\\naverage_inflation = data.groupby('Year')['Inflation'].mean()\\n\\n# Plotting the average yearly inflation as a time series\\nplt.figure(figsize=(12, 6))\\nplt.plot(average_inflation.index, average_inflation.values, marker='o')\\nplt.title('Average Yearly Inflation Over Time')\\nplt.xlabel('Year')\\nplt.ylabel('Average Inflation (%)')\\nplt.grid()\\nplt.xticks(rotation=45)\\nplt.tight_layout()\\nplt.show()\", \"session_id\": \"<UUID>\"}, \"tool_name\": \"code_interpreter\"}]": {
+    "type": "value",
+    "value": {
+      "__module__": "llama_stack.apis.tools.tools",
+      "__pydantic__": "ToolInvocationResult",
+      "data": {
+        "content": "completed\n[stderr]\nTraceback (most recent call last):\n  line 150, in <module>\n  line 1951, in __getitem__\n    return super().__getitem__(key)\n  line 244, in __getitem__\n    raise KeyError(f\"Column not found: {key}\")\nKeyError: 'Column not found: Inflation'\n[/stderr]",
+        "error_code": null,
+        "error_message": null,
+        "metadata": null
+      }
+    }
+  },
+  "[[], {\"kwargs\": {\"code\": \"import pandas as pd\\nimport matplotlib.pyplot as plt\\n\\n# Load the CSV file\\nfile_path = '<TEMP_FILE>'\\ndata = pd.read_csv(file_path)\\n\\n# Display the first few rows and the column names\\ncolumn_names = data.columns.tolist()\\nfirst_rows = data.head()\\n\\n# Group by year and calculate the average inflation rate\\naverage_inflation = data.groupby('Year')['Inflation Rate'].mean()\\n\\n# Plotting\\nplt.figure(figsize=(12, 6))\\nplt.plot(average_inflation.index, average_inflation.values, marker='o')\\nplt.title('Average Yearly Inflation Rate Over Time')\\nplt.xlabel('Year')\\nplt.ylabel('Average Inflation Rate (%)')\\nplt.grid()\\nplt.xticks(rotation=45)\\nplt.tight_layout()\\nplt.show()\", \"session_id\": \"<UUID>\"}, \"tool_name\": \"code_interpreter\"}]": {
+    "type": "value",
+    "value": {
+      "__module__": "llama_stack.apis.tools.tools",
+      "__pydantic__": "ToolInvocationResult",
+      "data": {
+        "content": "completed\n[stderr]\nTraceback (most recent call last):\n  line 153, in <module>\n  line 1951, in __getitem__\n    return super().__getitem__(key)\n  line 244, in __getitem__\n    raise KeyError(f\"Column not found: {key}\")\nKeyError: 'Column not found: Inflation Rate'\n[/stderr]",
+        "error_code": null,
+        "error_message": null,
+        "metadata": null
+      }
+    }
+  },
+  "[[], {\"kwargs\": {\"code\": \"import pandas as pd\\nimport matplotlib.pyplot as plt\\n\\n# Load the CSV file\\nfile_path = '<TEMP_FILE>'\\ndata = pd.read_csv(file_path)\\n\\n# Display the first few rows and the column names\\ncolumn_names = data.columns.tolist()\\nfirst_rows = data.head()\\ncolumn_names, first_rows\", \"session_id\": \"<UUID>\"}, \"tool_name\": \"code_interpreter\"}]": {
+    "type": "value",
+    "value": {
+      "__module__": "llama_stack.apis.tools.tools",
+      "__pydantic__": "ToolInvocationResult",
+      "data": {
+        "content": "completed",
+        "error_code": null,
+        "error_message": null,
+        "metadata": null
+      }
+    }
+  },
+  "[[], {\"kwargs\": {\"code\": \"import pandas as pd\\nimport matplotlib.pyplot as plt\\n\\n# Load the CSV file\\nfile_path = '<TEMP_FILE>'\\ndata = pd.read_csv(file_path)\\n\\n# Display the first few rows and the columns of the DataFrame\\ndata.head(), data.columns\", \"session_id\": \"<UUID>\"}, \"tool_name\": \"code_interpreter\"}]": {
+    "type": "value",
+    "value": {
+      "__module__": "llama_stack.apis.tools.tools",
+      "__pydantic__": "ToolInvocationResult",
+      "data": {
+        "content": "completed",
         "error_code": null,
         "error_message": null,
         "metadata": null
@@ -255,6 +463,7 @@
       }
     }
   },
+<<<<<<< dest:   e06809a80a91 - erichuang: code exec
   "[[], {\"kwargs\": {\"query\": \"Meta founder\", \"session_id\": \"<UUID>\"}, \"tool_name\": \"web_search\"}]": {
     "type": "value",
     "value": {
@@ -268,6 +477,59 @@
       }
     }
   },
+||||||| base:   6891abfc0ce6 - erichuang: code exec
+=======
+  "[[], {\"kwargs\": {\"query\": \"LoRA usage in Torchtune\", \"session_id\": \"<UUID>\", \"vector_db_ids\": [\"vector_db_<UUID>\"]}, \"tool_name\": \"knowledge_search\"}]": {
+    "type": "value",
+    "value": {
+      "__module__": "llama_stack.apis.tools.tools",
+      "__pydantic__": "ToolInvocationResult",
+      "data": {
+        "content": [
+          {
+            "text": "knowledge_search tool found 5 chunks:\nBEGIN of knowledge_search tool results.\n",
+            "type": "text"
+          },
+          {
+            "text": "Result 1:\nDocument_id:0674c\nContent: .. _lora_finetune_label:\n\n============================\nFine-Tuning Llama2 with LoRA\n============================\n\nThis guide will teach you about `LoRA <https://arxiv.org/abs/2106.09685>`_, a parameter-efficient finetuning technique,\nand show you how you can use torchtune to finetune a Llama2 model with LoRA.\nIf you already know what LoRA is and want to get straight to running\nyour own LoRA finetune in torchtune, you can jump to :ref:`LoRA finetuning recipe in torchtune<lora_recipe_label>`.\n\n.. grid:: 2\n\n    .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn\n\n      * What LoRA is and how it saves memory during finetuning\n      * An overview of LoRA components in torchtune\n      * How to run a LoRA finetune using torchtune\n      * How to experiment with different LoRA configurations\n\n    .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites\n\n      * Be familiar with :ref:`torchtune<overview_label>`\n      * Make sure to :ref:`install torchtune<install_label>`\n      * Make sure you have downloaded the :ref:`Llama2-7B model weights<download_llama_label>`\n\nWhat is LoRA?\n-------------\n\n`LoRA <https://arxiv.org/abs/2106.09685>`_ is an adapter-based method for\nparameter-efficient finetuning that adds trainable low-rank decomposition matrices to different layers of a neural network,\nthen freezes the network's remaining parameters. LoRA is most commonly applied to\ntransformer models, in which case it is common to add the low-rank matrices\nto some of the linear projections in each transformer layer's self-attention.\n\n.. note::\n\n    If you're unfamiliar, check out these references for the `definition of rank <https://en.wikipedia.org/wiki/Rank_(linear_algebra)>`_\n    and discussion of `low-rank approximations <https://en.wikipedia.org/wiki/Low-rank_approximation>`_.\n\nBy finetuning with LoRA (as opposed to finetuning all model parameters),\nyou can expect to see memory savings due to a substantial reduction in the\nnumber of parameters with gradients. When using an optimizer with momentum,\nlike `AdamW <https://py\n",
+            "type": "text"
+          },
+          {
+            "text": "Result 2:\nDocument_id:0674c\nContent:  LoRA to Llama2 models\n------------------------------\n\nWith torchtune, we can easily apply LoRA to Llama2 with a variety of different configurations.\nLet's take a look at how to construct Llama2 models in torchtune with and without LoRA.\n\n.. code-block:: python\n\n  from torchtune.models.llama2 import llama2_7b, lora_llama2_7b\n\n  # Build Llama2 without any LoRA layers\n  base_model = llama2_7b()\n\n  # The default settings for lora_llama2_7b will match those for llama2_7b\n  # We just need to define which layers we want LoRA applied to.\n  # Within each self-attention, we can choose from [\"q_proj\", \"k_proj\", \"v_proj\", and \"output_proj\"].\n  # We can also set apply_lora_to_mlp=True or apply_lora_to_output=True to apply LoRA to other linear\n  # layers outside of the self-attention.\n  lora_model = lora_llama2_7b(lora_attn_modules=[\"q_proj\", \"v_proj\"])\n\n.. note::\n\n    Calling :func:`lora_llama_2_7b <torchtune.models.llama2.lora_llama2_7b>` alone will not handle the definition of which parameters are trainable.\n    See :ref:`below<setting_trainable_params>` for how to do this.\n\nLet's inspect each of these models a bit more closely.\n\n.. code-block:: bash\n\n  # Print the first layer's self-attention in the usual Llama2 model\n  >>> print(base_model.layers[0].attn)\n  MultiHeadAttention(\n    (q_proj): Linear(in_features=4096, out_features=4096, bias=False)\n    (k_proj): Linear(in_features=4096, out_features=4096, bias=False)\n    (v_proj): Linear(in_features=4096, out_features=4096, bias=False)\n    (output_proj): Linear(in_features=4096, out_features=4096, bias=False)\n    (pos_embeddings): RotaryPositionalEmbeddings()\n  )\n\n  # Print the same for Llama2 with LoRA weights\n  >>> print(lora_model.layers[0].attn)\n  MultiHeadAttention(\n    (q_proj): LoRALinear(\n      (dropout): Dropout(p=0.0, inplace=False)\n     \n",
+            "type": "text"
+          },
+          {
+            "text": "Result 3:\nDocument_id:0674c\nContent: 06% of all params are trainable.\n\n.. note::\n    If you are directly using the LoRA recipe (as detailed :ref:`here<lora_recipe_label>`), you need only pass the\n    relevant checkpoint path. Loading model weights and setting trainable parameters will be taken care\n    of in the recipe.\n\n\n.. _lora_recipe_label:\n\nLoRA finetuning recipe in torchtune\n-----------------------------------\n\nFinally, we can put it all together and finetune a model using torchtune's `LoRA recipe <https://github.com/pytorch/torchtune/blob/48626d19d2108f92c749411fbd5f0ff140023a25/recipes/lora_finetune.py>`_.\nMake sure that you have first downloaded the Llama2 weights and tokenizer by following :ref:`these instructions<download_llama_label>`.\nYou can then run the following command to perform a LoRA finetune of Llama2-7B with two GPUs (each having VRAM of at least 16GB):\n\n.. code-block:: bash\n\n    tune run --nnodes 1 --nproc_per_node 2 lora_finetune_distributed --config llama2/7B_lora\n\n.. note::\n    Make sure to point to the location of your Llama2 weights and tokenizer. This can be done\n    either by adding :code:`checkpointer.checkpoint_files=[my_model_checkpoint_path] tokenizer_checkpoint=my_tokenizer_checkpoint_path`\n    or by directly modifying the :code:`7B_lora.yaml` file. See our \"\":ref:`config_tutorial_label`\" recipe\n    for more details on how you can easily clone and modify torchtune configs.\n\n.. note::\n    You can modify the value of :code:`nproc_per_node` depending on (a) the number of GPUs you have available,\n    and (b) the memory constraints of your hardware.\n\nThe preceding command will run a LoRA finetune with torchtune's factory settings, but we may want to experiment a bit.\nLet's take a closer look at some of the :code:`lora_finetune_distributed` config.\n\n.. code-block:: yaml\n\n  # Model Arguments\n  model:\n    _component_: lora_llama2_7b\n    lora_attn_modules: ['q_proj', 'v_proj']\n    lora_rank: 8\n    lora_alpha: 16\n  ...\n\nWe see that the\n",
+            "type": "text"
+          },
+          {
+            "text": "Result 4:\nDocument_id:0674c\nContent: ,\n    and (b) the memory constraints of your hardware.\n\nThe preceding command will run a LoRA finetune with torchtune's factory settings, but we may want to experiment a bit.\nLet's take a closer look at some of the :code:`lora_finetune_distributed` config.\n\n.. code-block:: yaml\n\n  # Model Arguments\n  model:\n    _component_: lora_llama2_7b\n    lora_attn_modules: ['q_proj', 'v_proj']\n    lora_rank: 8\n    lora_alpha: 16\n  ...\n\nWe see that the default is to apply LoRA to Q and V projections with a rank of 8.\nSome experiments with LoRA have found that it can be beneficial to apply LoRA to all linear layers in\nthe self-attention, and to increase the rank to 16 or 32. Note that this is likely to increase our max memory,\nbut as long as we keep :code:`rank<<embed_dim`, the impact should be relatively minor.\n\nLet's run this experiment. We can also increase alpha (in general it is good practice to scale alpha and rank together).\n\n.. code-block:: bash\n\n    tune run --nnodes 1 --nproc_per_node 2 lora_finetune_distributed --config llama2/7B_lora \\\n    lora_attn_modules=['q_proj','k_proj','v_proj','output_proj'] \\\n    lora_rank=32 lora_alpha=64 output_dir=./lora_experiment_1\n\nA comparison of the (smoothed) loss curves between this run and our baseline over the first 500 steps can be seen below.\n\n.. image:: /_static/img/lora_experiment_loss_curves.png\n\n.. note::\n    The above figure was generated with W&B. You can use torchtune's :class:`~torchtune.training.metric_logging.WandBLogger`\n    to generate similar loss curves, but you will need to install W&B and setup an account separately. For more details on\n    using W&B in torchtune, see our \":ref:`wandb_logging`\" recipe.\n\n.. _lora_tutorial_memory_tradeoff_label:\n\nTrading off memory and model performance with LoRA\n--------------------------------------------------\n\nIn the preceding example, we ran LoRA on two devices. But given LoRA's low memory footprint, we can run fine-tuning\non a single device using most commodity GPUs which support `bfloat16 <https://\n",
+            "type": "text"
+          },
+          {
+            "text": "Result 5:\nDocument_id:0674c\nContent:  from our Llama2\nmodel without any wrappers or custom checkpoint conversion logic.\n\n.. code-block:: python\n\n  # Assuming that base_model already has the pretrained Llama2 weights,\n  # this will directly load them into your LoRA model without any conversion necessary.\n  lora_model.load_state_dict(base_model.state_dict(), strict=False)\n\n.. note::\n    Whenever loading weights with :code:`strict=False`, you should verify that any missing or extra keys in\n    the loaded :code:`state_dict` are as expected. torchtune's LoRA recipes do this by default via\n    :func:`validate_missing_and_unexpected_for_lora() <torchtune.modules.peft.validate_missing_and_unexpected_for_lora>`.\n\nOnce we've loaded the base model weights, we also want to set only LoRA parameters to trainable.\n\n.. _setting_trainable_params:\n\n.. code-block:: python\n\n  from torchtune.modules.peft.peft_utils import get_adapter_params, set_trainable_params\n\n  # Fetch all params from the model that are associated with LoRA.\n  lora_params = get_adapter_params(lora_model)\n\n  # Set requires_grad=True on lora_params, and requires_grad=False on all others.\n  set_trainable_params(lora_model, lora_params)\n\n  # Print the total number of parameters\n  total_params = sum([p.numel() for p in lora_model.parameters()])\n  trainable_params = sum([p.numel() for p in lora_model.parameters() if p.requires_grad])\n  print(\n    f\"\"\"\n    {total_params} total params,\n    {trainable_params}\" trainable params,\n    {(100.0 * trainable_params / total_params):.2f}% of all params are trainable.\n    \"\"\"\n  )\n\n  6742609920 total params,\n  4194304 trainable params,\n  0.06% of all params are trainable.\n\n.. note::\n    If you are directly using the LoRA recipe (as detailed :ref:`here<lora_recipe_label>`), you need only pass the\n    relevant checkpoint path. Loading model weights and setting trainable parameters will be taken care\n    of in the recipe.\n\n\n.. _lora_recipe_label:\n\nLoRA finetuning recipe in torchtune\n-----------------------------------\n\nFinally, we can put it all together and finetune a model using torchtune's `LoRA recipe <https://github.com/pytorch/torchtune/blob/48626d19d2108f92\n",
+            "type": "text"
+          },
+          {
+            "text": "END of knowledge_search tool results.\n",
+            "type": "text"
+          }
+        ],
+        "error_code": null,
+        "error_message": null,
+        "metadata": {
+          "document_ids": [
+            "0674c101-0902-4688-8992-fe50812da0de",
+            "0674c101-0902-4688-8992-fe50812da0de",
+            "0674c101-0902-4688-8992-fe50812da0de",
+            "0674c101-0902-4688-8992-fe50812da0de",
+            "0674c101-0902-4688-8992-fe50812da0de"
+          ]
+        }
+      }
+    }
+  },
+>>>>>>> source: 3875dc08e251 - erichuang: fix: non-llama tool extraction
   "[[], {\"kwargs\": {\"query\": \"NBA creation date\", \"session_id\": \"<UUID>\", \"vector_db_ids\": [\"test-vector-db-<UUID>\"]}, \"tool_name\": \"knowledge_search\"}]": {
     "type": "value",
     "value": {
@@ -438,6 +700,19 @@
       }
     }
   },
+  "[[], {\"kwargs\": {\"query\": \"current CEO of Meta 2023\", \"session_id\": \"<UUID>\"}, \"tool_name\": \"web_search\"}]": {
+    "type": "value",
+    "value": {
+      "__module__": "llama_stack.apis.tools.tools",
+      "__pydantic__": "ToolInvocationResult",
+      "data": {
+        "content": "{\"query\": \"current CEO of Meta 2023\", \"top_k\": [{\"title\": \"Executives - Meta\", \"url\": \"https://about.meta.com/media-gallery/executives/\", \"content\": \"Mark Zuckerberg, Founder, Chairman and Chief Executive Officer Joel Kaplan, Chief Global Affairs Officer Susan Li, Chief Financial Officer Javier Olivan, Chief Operating Officer Chris Cox, Chief Product Officer Andrew \\u2018Boz\\u2019 Bosworth, Chief Technology Officer Jennifer Newstead, Chief Legal Officer Dave Wehner, Chief Strategy Officer Will Cathcart, Head of WhatsApp Naomi Gleit, Head of Product John Hegeman, Chief Revenue Officer Adam Mosseri, Head of Instagram Erin Egan, Chief Privacy Officer, Policy Michel Protti, Chief Privacy Officer, Product Alex Schultz, Chief Marketing Officer and VP of Analytics Tom Alison, Head of Facebook Nicola Mendelsohn, Head of Global Business Group Ahmad Al-Dahle, VP and Head of GenAI at Meta Joelle Pineau, Vice President of AI Research and Head of FAIR at Meta\", \"score\": 0.7515939, \"raw_content\": null}, {\"title\": \"Mark Zuckerberg, Founder, Chairman and Chief Executive Officer - Meta\", \"url\": \"https://about.meta.com/media-gallery/executives/mark-zuckerberg/\", \"content\": \"Mark Zuckerberg, Founder, Chairman and Chief Executive Officer | Meta Meta Quest Ray-Ban Meta Meta Horizon Meta AI Meta Verified Meta Pay Meta Horizon Workrooms Meta and you Learn about our community Shop Meta Meta Quest Meta Portal Meta Horizon Mark Zuckerberg is the founder, chairman and CEO of Meta, which he originally founded as Facebook in 2004. In October 2021, Facebook rebranded to Meta to reflect all of its products and services across its family of apps and a focus on developing social experiences for the metaverse \\u2014 moving beyond 2D screens toward immersive experiences like augmented and virtual reality to help build the next evolution in social technology. Shop Ray-Ban Meta glassesRay-Ban StoriesPrivacy informationSupported countries \\u00a9 2025 Meta\", \"score\": 0.6141863, \"raw_content\": null}, {\"title\": \"Meta - Leadership & Governance\", \"url\": \"https://investor.atmeta.com/leadership-and-governance/\", \"content\": \"Mr. Andreessen was a co-founder of Netscape Communications Corporation, a software company, serving in various positions, including Chief Technology Officer and Executive Vice President of Products. Ms. Killefer also served as Assistant Secretary for Management, Chief Financial Officer, and Chief Operating Officer of the U.S. Department of the Treasury from 1997 to 2000 and as a member of the IRS Oversight Board from 2000 to 2005, including as Chair of the IRS Oversight Board from 2002 to 2004. Ms. Travis has served as Executive Vice President and Chief Financial Officer of The Estee Lauder Companies Inc., a global manufacturer and marketer of skin care, makeup, fragrance and hair care products, since August 2012.\", \"score\": 0.55565286, \"raw_content\": null}, {\"title\": \"META | Meta Platforms Inc. Company Profile & Executives - WSJ\", \"url\": \"https://www.wsj.com/market-data/quotes/META/company-people\", \"content\": \"Company profile for Meta Platforms Inc. including key executives, insider trading, ownership, revenue and average growth rates. ... Current Board Membership; ... Past Five Years Ending 12/31/2023\", \"score\": 0.34409124, \"raw_content\": null}, {\"title\": \"Mark Zuckerberg - Wikipedia\", \"url\": \"https://en.wikipedia.org/wiki/Mark_Zuckerberg\", \"content\": \"They began dating in 2003.[175] In September 2010, Chan, who was a medical student at the University of California, San Francisco at the time,[176] moved into his rented house in Palo Alto, California.[177][178] They married on May 19, 2012, in the grounds of his mansion in an event that also celebrated her graduation from medical school.[179][180] Zuckerberg revealed in July 2015 that they were expecting a baby girl and that Chan had previously experienced three miscarriages.[181] Their first daughter was born in December 2015.[182] They announced in a Chinese New Year video that their daughter's Chinese name is Chen Mingyu (Chinese: \\u9648\\u660e\\u5b87).[183] Their second daughter was born in August 2017.[184] Zuckerberg and his wife welcomed their third daughter in March 2023 and announced the news across his social media pages.[185] The couple also have a Puli dog named Beast,[186] who has over two million followers on Facebook.[187] Zuckerberg commissioned the visual artist Daniel Arsham to build a 7-foot-tall sculpture of his wife, which was unveiled in 2024.[188]\", \"score\": 0.04345105, \"raw_content\": null}]}",
+        "error_code": null,
+        "error_message": null,
+        "metadata": null
+      }
+    }
+  },
   "[[], {\"kwargs\": {\"query\": \"current CEO of Meta\", \"session_id\": \"<UUID>\"}, \"tool_name\": \"web_search\"}]": {
     "type": "value",
     "value": {
@@ -448,6 +723,56 @@
         "error_code": null,
         "error_message": null,
         "metadata": null
+      }
+    }
+  },
+  "[[], {\"kwargs\": {\"query\": \"how to use LoRA in Torchtune\", \"session_id\": \"<UUID>\", \"vector_db_ids\": [\"vector_db_<UUID>\"]}, \"tool_name\": \"knowledge_search\"}]": {
+    "type": "value",
+    "value": {
+      "__module__": "llama_stack.apis.tools.tools",
+      "__pydantic__": "ToolInvocationResult",
+      "data": {
+        "content": [
+          {
+            "text": "knowledge_search tool found 5 chunks:\nBEGIN of knowledge_search tool results.\n",
+            "type": "text"
+          },
+          {
+            "text": "Result 1:\nDocument_id:1d081\nContent: .. _lora_finetune_label:\n\n============================\nFine-Tuning Llama2 with LoRA\n============================\n\nThis guide will teach you about `LoRA <https://arxiv.org/abs/2106.09685>`_, a parameter-efficient finetuning technique,\nand show you how you can use torchtune to finetune a Llama2 model with LoRA.\nIf you already know what LoRA is and want to get straight to running\nyour own LoRA finetune in torchtune, you can jump to :ref:`LoRA finetuning recipe in torchtune<lora_recipe_label>`.\n\n.. grid:: 2\n\n    .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn\n\n      * What LoRA is and how it saves memory during finetuning\n      * An overview of LoRA components in torchtune\n      * How to run a LoRA finetune using torchtune\n      * How to experiment with different LoRA configurations\n\n    .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites\n\n      * Be familiar with :ref:`torchtune<overview_label>`\n      * Make sure to :ref:`install torchtune<install_label>`\n      * Make sure you have downloaded the :ref:`Llama2-7B model weights<download_llama_label>`\n\nWhat is LoRA?\n-------------\n\n`LoRA <https://arxiv.org/abs/2106.09685>`_ is an adapter-based method for\nparameter-efficient finetuning that adds trainable low-rank decomposition matrices to different layers of a neural network,\nthen freezes the network's remaining parameters. LoRA is most commonly applied to\ntransformer models, in which case it is common to add the low-rank matrices\nto some of the linear projections in each transformer layer's self-attention.\n\n.. note::\n\n    If you're unfamiliar, check out these references for the `definition of rank <https://en.wikipedia.org/wiki/Rank_(linear_algebra)>`_\n    and discussion of `low-rank approximations <https://en.wikipedia.org/wiki/Low-rank_approximation>`_.\n\nBy finetuning with LoRA (as opposed to finetuning all model parameters),\nyou can expect to see memory savings due to a substantial reduction in the\nnumber of parameters with gradients. When using an optimizer with momentum,\nlike `AdamW <https://py\n",
+            "type": "text"
+          },
+          {
+            "text": "Result 2:\nDocument_id:1d081\nContent:  LoRA to Llama2 models\n------------------------------\n\nWith torchtune, we can easily apply LoRA to Llama2 with a variety of different configurations.\nLet's take a look at how to construct Llama2 models in torchtune with and without LoRA.\n\n.. code-block:: python\n\n  from torchtune.models.llama2 import llama2_7b, lora_llama2_7b\n\n  # Build Llama2 without any LoRA layers\n  base_model = llama2_7b()\n\n  # The default settings for lora_llama2_7b will match those for llama2_7b\n  # We just need to define which layers we want LoRA applied to.\n  # Within each self-attention, we can choose from [\"q_proj\", \"k_proj\", \"v_proj\", and \"output_proj\"].\n  # We can also set apply_lora_to_mlp=True or apply_lora_to_output=True to apply LoRA to other linear\n  # layers outside of the self-attention.\n  lora_model = lora_llama2_7b(lora_attn_modules=[\"q_proj\", \"v_proj\"])\n\n.. note::\n\n    Calling :func:`lora_llama_2_7b <torchtune.models.llama2.lora_llama2_7b>` alone will not handle the definition of which parameters are trainable.\n    See :ref:`below<setting_trainable_params>` for how to do this.\n\nLet's inspect each of these models a bit more closely.\n\n.. code-block:: bash\n\n  # Print the first layer's self-attention in the usual Llama2 model\n  >>> print(base_model.layers[0].attn)\n  MultiHeadAttention(\n    (q_proj): Linear(in_features=4096, out_features=4096, bias=False)\n    (k_proj): Linear(in_features=4096, out_features=4096, bias=False)\n    (v_proj): Linear(in_features=4096, out_features=4096, bias=False)\n    (output_proj): Linear(in_features=4096, out_features=4096, bias=False)\n    (pos_embeddings): RotaryPositionalEmbeddings()\n  )\n\n  # Print the same for Llama2 with LoRA weights\n  >>> print(lora_model.layers[0].attn)\n  MultiHeadAttention(\n    (q_proj): LoRALinear(\n      (dropout): Dropout(p=0.0, inplace=False)\n     \n",
+            "type": "text"
+          },
+          {
+            "text": "Result 3:\nDocument_id:1d081\nContent: 06% of all params are trainable.\n\n.. note::\n    If you are directly using the LoRA recipe (as detailed :ref:`here<lora_recipe_label>`), you need only pass the\n    relevant checkpoint path. Loading model weights and setting trainable parameters will be taken care\n    of in the recipe.\n\n\n.. _lora_recipe_label:\n\nLoRA finetuning recipe in torchtune\n-----------------------------------\n\nFinally, we can put it all together and finetune a model using torchtune's `LoRA recipe <https://github.com/pytorch/torchtune/blob/48626d19d2108f92c749411fbd5f0ff140023a25/recipes/lora_finetune.py>`_.\nMake sure that you have first downloaded the Llama2 weights and tokenizer by following :ref:`these instructions<download_llama_label>`.\nYou can then run the following command to perform a LoRA finetune of Llama2-7B with two GPUs (each having VRAM of at least 16GB):\n\n.. code-block:: bash\n\n    tune run --nnodes 1 --nproc_per_node 2 lora_finetune_distributed --config llama2/7B_lora\n\n.. note::\n    Make sure to point to the location of your Llama2 weights and tokenizer. This can be done\n    either by adding :code:`checkpointer.checkpoint_files=[my_model_checkpoint_path] tokenizer_checkpoint=my_tokenizer_checkpoint_path`\n    or by directly modifying the :code:`7B_lora.yaml` file. See our \"\":ref:`config_tutorial_label`\" recipe\n    for more details on how you can easily clone and modify torchtune configs.\n\n.. note::\n    You can modify the value of :code:`nproc_per_node` depending on (a) the number of GPUs you have available,\n    and (b) the memory constraints of your hardware.\n\nThe preceding command will run a LoRA finetune with torchtune's factory settings, but we may want to experiment a bit.\nLet's take a closer look at some of the :code:`lora_finetune_distributed` config.\n\n.. code-block:: yaml\n\n  # Model Arguments\n  model:\n    _component_: lora_llama2_7b\n    lora_attn_modules: ['q_proj', 'v_proj']\n    lora_rank: 8\n    lora_alpha: 16\n  ...\n\nWe see that the\n",
+            "type": "text"
+          },
+          {
+            "text": "Result 4:\nDocument_id:1d081\nContent:  from our Llama2\nmodel without any wrappers or custom checkpoint conversion logic.\n\n.. code-block:: python\n\n  # Assuming that base_model already has the pretrained Llama2 weights,\n  # this will directly load them into your LoRA model without any conversion necessary.\n  lora_model.load_state_dict(base_model.state_dict(), strict=False)\n\n.. note::\n    Whenever loading weights with :code:`strict=False`, you should verify that any missing or extra keys in\n    the loaded :code:`state_dict` are as expected. torchtune's LoRA recipes do this by default via\n    :func:`validate_missing_and_unexpected_for_lora() <torchtune.modules.peft.validate_missing_and_unexpected_for_lora>`.\n\nOnce we've loaded the base model weights, we also want to set only LoRA parameters to trainable.\n\n.. _setting_trainable_params:\n\n.. code-block:: python\n\n  from torchtune.modules.peft.peft_utils import get_adapter_params, set_trainable_params\n\n  # Fetch all params from the model that are associated with LoRA.\n  lora_params = get_adapter_params(lora_model)\n\n  # Set requires_grad=True on lora_params, and requires_grad=False on all others.\n  set_trainable_params(lora_model, lora_params)\n\n  # Print the total number of parameters\n  total_params = sum([p.numel() for p in lora_model.parameters()])\n  trainable_params = sum([p.numel() for p in lora_model.parameters() if p.requires_grad])\n  print(\n    f\"\"\"\n    {total_params} total params,\n    {trainable_params}\" trainable params,\n    {(100.0 * trainable_params / total_params):.2f}% of all params are trainable.\n    \"\"\"\n  )\n\n  6742609920 total params,\n  4194304 trainable params,\n  0.06% of all params are trainable.\n\n.. note::\n    If you are directly using the LoRA recipe (as detailed :ref:`here<lora_recipe_label>`), you need only pass the\n    relevant checkpoint path. Loading model weights and setting trainable parameters will be taken care\n    of in the recipe.\n\n\n.. _lora_recipe_label:\n\nLoRA finetuning recipe in torchtune\n-----------------------------------\n\nFinally, we can put it all together and finetune a model using torchtune's `LoRA recipe <https://github.com/pytorch/torchtune/blob/48626d19d2108f92\n",
+            "type": "text"
+          },
+          {
+            "text": "Result 5:\nDocument_id:1d081\nContent: ,\n    and (b) the memory constraints of your hardware.\n\nThe preceding command will run a LoRA finetune with torchtune's factory settings, but we may want to experiment a bit.\nLet's take a closer look at some of the :code:`lora_finetune_distributed` config.\n\n.. code-block:: yaml\n\n  # Model Arguments\n  model:\n    _component_: lora_llama2_7b\n    lora_attn_modules: ['q_proj', 'v_proj']\n    lora_rank: 8\n    lora_alpha: 16\n  ...\n\nWe see that the default is to apply LoRA to Q and V projections with a rank of 8.\nSome experiments with LoRA have found that it can be beneficial to apply LoRA to all linear layers in\nthe self-attention, and to increase the rank to 16 or 32. Note that this is likely to increase our max memory,\nbut as long as we keep :code:`rank<<embed_dim`, the impact should be relatively minor.\n\nLet's run this experiment. We can also increase alpha (in general it is good practice to scale alpha and rank together).\n\n.. code-block:: bash\n\n    tune run --nnodes 1 --nproc_per_node 2 lora_finetune_distributed --config llama2/7B_lora \\\n    lora_attn_modules=['q_proj','k_proj','v_proj','output_proj'] \\\n    lora_rank=32 lora_alpha=64 output_dir=./lora_experiment_1\n\nA comparison of the (smoothed) loss curves between this run and our baseline over the first 500 steps can be seen below.\n\n.. image:: /_static/img/lora_experiment_loss_curves.png\n\n.. note::\n    The above figure was generated with W&B. You can use torchtune's :class:`~torchtune.training.metric_logging.WandBLogger`\n    to generate similar loss curves, but you will need to install W&B and setup an account separately. For more details on\n    using W&B in torchtune, see our \":ref:`wandb_logging`\" recipe.\n\n.. _lora_tutorial_memory_tradeoff_label:\n\nTrading off memory and model performance with LoRA\n--------------------------------------------------\n\nIn the preceding example, we ran LoRA on two devices. But given LoRA's low memory footprint, we can run fine-tuning\non a single device using most commodity GPUs which support `bfloat16 <https://\n",
+            "type": "text"
+          },
+          {
+            "text": "END of knowledge_search tool results.\n",
+            "type": "text"
+          }
+        ],
+        "error_code": null,
+        "error_message": null,
+        "metadata": {
+          "document_ids": [
+            "1d081203-6782-4a30-a947-51be3e25f910",
+            "1d081203-6782-4a30-a947-51be3e25f910",
+            "1d081203-6782-4a30-a947-51be3e25f910",
+            "1d081203-6782-4a30-a947-51be3e25f910",
+            "1d081203-6782-4a30-a947-51be3e25f910"
+          ]
+        }
       }
     }
   },
