@@ -36,6 +36,7 @@ dependencies = [
     "setuptools",
     "termcolor",
     "tiktoken",
+    "tree_sitter",
     "pillow",
 ]
 
