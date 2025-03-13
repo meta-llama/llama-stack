@@ -15,18 +15,26 @@ from llama_stack.schema_utils import json_schema_type, register_schema, webmetho
 
 class DatasetPurpose(Enum):
     """
-    Purpose of the dataset. Each type has a different column format.
-    :cvar post-training/messages: The dataset contains messages used for post-training. Examples:
+    Purpose of the dataset. Each purpose has a required input data schema.
+
+    :cvar post-training/messages: The dataset contains messages used for post-training.
         {
             "messages": [
                 {"role": "user", "content": "Hello, world!"},
                 {"role": "assistant", "content": "Hello, world!"},
             ]
         }
+    :cvar eval/messages-answer: The dataset contains a messages column with list of messages and an answer column.
+        {
+            "messages": [
+                {"role": "user", "content": "What is the capital of France?"},
+            ],
+            "answer": "Paris"
+        }
     """
 
     post_training_messages = "post-training/messages"
-    eval_question_answer = "eval/question-answer"
+    eval_messages_answer = "eval/messages-answer"
 
     # TODO: add more schemas here
 
@@ -145,7 +153,7 @@ class Datasets(Protocol):
 
         :param purpose: The purpose of the dataset. One of
             - "post-training/messages": The dataset contains a messages column with list of messages for post-training.
-            - "eval/question-answer": The dataset contains a question and answer column.
+            - "eval/messages-answer": The dataset contains a messages column with list of messages and an answer column.
         :param source: The data source of the dataset. Examples:
            - {
                "type": "uri",
@@ -157,9 +165,11 @@ class Datasets(Protocol):
            }
            - {
                "type": "huggingface",
-               "dataset_path": "tatsu-lab/alpaca",
-               "params": {
-                   "split": "train"
+               "huggingface": {
+                   "dataset_path": "tatsu-lab/alpaca",
+                   "params": {
+                       "split": "train"
+                   }
                }
            }
            - {
