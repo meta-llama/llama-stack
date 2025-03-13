@@ -23,7 +23,6 @@ from llama_stack.providers.remote.inference.passthrough.config import (
 from llama_stack.providers.utils.inference.model_registry import ProviderModelEntry
 from llama_stack.templates.template import (
     DistributionTemplate,
-    get_model_registry,
     RunConfigSettings,
 )
 
