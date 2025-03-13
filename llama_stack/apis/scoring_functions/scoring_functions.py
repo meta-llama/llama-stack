@@ -148,20 +148,24 @@ class AnswerSimilarityScoringFnParams(BaseModel):
     type: Literal["answer_similarity"] = "answer_similarity"
     answer_similarity: BasicScoringFnParamsFields
 
+
 @json_schema_type
 class ContextEntityRecallScoringFnParams(BaseModel):
     type: Literal["context_entity_recall"] = "context_entity_recall"
     context_entity_recall: BasicScoringFnParamsFields
+
 
 @json_schema_type
 class ContextPrecisionScoringFnParams(BaseModel):
     type: Literal["context_precision"] = "context_precision"
     context_precision: BasicScoringFnParamsFields
 
+
 @json_schema_type
 class ContextRecallScoringFnParams(BaseModel):
     type: Literal["context_recall"] = "context_recall"
     context_recall: BasicScoringFnParamsFields
+
 
 @json_schema_type
 class ContextRelevancyScoringFnParams(BaseModel):
