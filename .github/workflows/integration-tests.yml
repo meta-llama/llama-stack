@@ -77,4 +77,4 @@ jobs:
         env:
           INFERENCE_MODEL: "meta-llama/Llama-3.2-3B-Instruct"
         run: |
-          uv run pytest --stack-config=ollama --text-model="meta-llama/Llama-3.2-3B-Instruct" -v tests/integration/inference
+          uv run pytest --stack-config=ollama --text-model="meta-llama/Llama-3.2-3B-Instruct" --embedding-model all-MiniLM-L6-v2 -v tests/integration/inference
