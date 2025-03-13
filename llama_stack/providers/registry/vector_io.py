@@ -93,16 +93,6 @@ def available_providers() -> List[ProviderSpec]:
             api_dependencies=[Api.inference],
         ),
         remote_provider_spec(
-            api=Api.vector_io,
-            adapter=AdapterSpec(
-                adapter_type="sample",
-                pip_packages=[],
-                module="llama_stack.providers.remote.vector_io.sample",
-                config_class="llama_stack.providers.remote.vector_io.sample.SampleVectorIOConfig",
-            ),
-            api_dependencies=[],
-        ),
-        remote_provider_spec(
             Api.vector_io,
             AdapterSpec(
                 adapter_type="qdrant",

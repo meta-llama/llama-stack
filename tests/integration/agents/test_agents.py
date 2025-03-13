@@ -186,7 +186,7 @@ def test_builtin_tool_web_search(llama_stack_client_with_mocked_inference, agent
         messages=[
             {
                 "role": "user",
-                "content": "Search the web and tell me who the current CEO of Meta is.",
+                "content": "Search the web and tell me who the founder of Meta is.",
             }
         ],
         session_id=session_id,

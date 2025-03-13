@@ -71,15 +71,6 @@ def available_providers() -> List[ProviderSpec]:
         remote_provider_spec(
             api=Api.inference,
             adapter=AdapterSpec(
-                adapter_type="sample",
-                pip_packages=[],
-                module="llama_stack.providers.remote.inference.sample",
-                config_class="llama_stack.providers.remote.inference.sample.SampleConfig",
-            ),
-        ),
-        remote_provider_spec(
-            api=Api.inference,
-            adapter=AdapterSpec(
                 adapter_type="cerebras",
                 pip_packages=[
                     "cerebras_cloud_sdk",

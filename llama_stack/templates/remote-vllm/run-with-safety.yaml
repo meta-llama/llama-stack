@@ -38,7 +38,8 @@ providers:
   safety:
   - provider_id: llama-guard
     provider_type: inline::llama-guard
-    config: {}
+    config:
+      excluded_categories: []
   agents:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -50,14 +51,26 @@ providers:
   eval:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
-    config: {}
+    config:
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/remote-vllm}/meta_reference_eval.db
   datasetio:
   - provider_id: huggingface
     provider_type: remote::huggingface
-    config: {}
+    config:
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/remote-vllm}/huggingface_datasetio.db
   - provider_id: localfs
     provider_type: inline::localfs
-    config: {}
+    config:
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/remote-vllm}/localfs_datasetio.db
   scoring:
   - provider_id: basic
     provider_type: inline::basic
@@ -98,7 +111,8 @@ providers:
     config: {}
   - provider_id: wolfram-alpha
     provider_type: remote::wolfram-alpha
-    config: {}
+    config:
+      api_key: ${env.WOLFRAM_ALPHA_API_KEY:}
 metadata_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/remote-vllm}/registry.db
