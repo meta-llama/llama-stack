@@ -5,10 +5,11 @@
 # the root directory of this source tree.
 
 from .config import RunpodImplConfig
-from .runpod import RunpodInferenceAdapter
 
 
 async def get_adapter_impl(config: RunpodImplConfig, _deps):
+    from .runpod import RunpodInferenceAdapter
+
     assert isinstance(config, RunpodImplConfig), f"Unexpected config type: {type(config)}"
     impl = RunpodInferenceAdapter(config)
     await impl.initialize()
