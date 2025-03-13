@@ -12,12 +12,13 @@ from ..datasetio.test_datasetio import register_dataset
 
 @pytest.fixture
 def rag_dataset_for_test(llama_stack_client):
-    register_dataset(llama_stack_client, for_rag=True)
+    dataset_id = "test_dataset"
+    register_dataset(llama_stack_client, for_rag=True, dataset_id=dataset_id)
     yield  # This is where the test function will run
 
     # Teardown - this always runs, even if the test fails
     try:
-        llama_stack_client.datasets.unregister("test_dataset")
+        llama_stack_client.datasets.unregister(dataset_id)
     except Exception as e:
         print(f"Warning: Failed to unregister test_dataset: {e}")
 
