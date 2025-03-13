@@ -11,7 +11,7 @@ from ..datasetio.test_datasetio import register_dataset
 
 
 @pytest.fixture
-def test_dataset_rag(llama_stack_client):
+def rag_dataset_for_test(llama_stack_client):
     register_dataset(llama_stack_client, for_rag=True)
     yield  # This is where the test function will run
 
@@ -91,7 +91,7 @@ def test_scoring_functions_register(
     # TODO: add unregister api for scoring functions
 
 
-def test_scoring_score(llama_stack_client, test_dataset_rag):
+def test_scoring_score(llama_stack_client, rag_dataset_for_test):
     # scoring individual rows
     rows = llama_stack_client.datasetio.get_rows_paginated(
         dataset_id="test_dataset",
@@ -126,7 +126,7 @@ def test_scoring_score(llama_stack_client, test_dataset_rag):
 
 
 def test_scoring_score_with_params_llm_as_judge(
-    llama_stack_client, sample_judge_prompt_template, judge_model_id, test_dataset_rag
+    llama_stack_client, sample_judge_prompt_template, judge_model_id, rag_dataset_for_test
 ):
     # scoring individual rows
     rows = llama_stack_client.datasetio.get_rows_paginated(
@@ -177,7 +177,7 @@ def test_scoring_score_with_params_llm_as_judge(
     ],
 )
 def test_scoring_score_with_aggregation_functions(
-    llama_stack_client, sample_judge_prompt_template, judge_model_id, provider_id, test_dataset_rag
+    llama_stack_client, sample_judge_prompt_template, judge_model_id, provider_id, rag_dataset_for_test
 ):
     rows = llama_stack_client.datasetio.get_rows_paginated(
         dataset_id="test_dataset",
