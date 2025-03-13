@@ -6069,10 +6069,10 @@ components:
             type: string
             enum:
               - post-training/messages
-              - eval/question-answer
+              - eval/messages-answer
             title: DatasetPurpose
             description: >-
-              Purpose of the dataset. Each type has a different column format.
+              Purpose of the dataset. Each purpose has a required input data schema.
           description: >-
             The purposes that this scoring function can be used for.
       additionalProperties: false
