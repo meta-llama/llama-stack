@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
 from llama_stack.apis.agents import AgentConfig
-from llama_stack.apis.common.job_types import Job, JobStatus
+from llama_stack.apis.common.job_types import CommonJobFields, JobStatus
 from llama_stack.apis.inference import SamplingParams, SystemMessage
 from llama_stack.apis.scoring import ScoringResult
 from llama_stack.schema_utils import json_schema_type, register_schema, webmethod
@@ -61,15 +61,32 @@ class EvaluateResponse(BaseModel):
     scores: Dict[str, ScoringResult]
 
 
+@json_schema_type
+class EvalJob(CommonJobFields):
+    type: Literal["eval"] = "eval"
+    result_files: List[str] = Field(
+        description="The file ids of the eval results.",
+        default_factory=list,
+    )
+    result_datasets: List[str] = Field(
+        description="The ids of the datasets containing the eval results.",
+        default_factory=list,
+    )
+
+    # how the job is created
+    benchmark_id: str = Field(description="The id of the benchmark to evaluate on.")
+    candidate: EvalCandidate = Field(description="The candidate to evaluate on.")
+
+
 class Eval(Protocol):
     """Llama Stack Evaluation API for running evaluations on model and agent candidates."""
 
-    @webmethod(route="/eval/benchmarks/{benchmark_id}/jobs", method="POST")
+    @webmethod(route="/eval/jobs", method="POST")
     async def evaluate_benchmark(
         self,
         benchmark_id: str,
         candidate: EvalCandidate,
-    ) -> Job:
+    ) -> EvalJob:
         """Run an evaluation on a benchmark.
 
         :param benchmark_id: The ID of the benchmark to run the evaluation on.
@@ -85,37 +102,42 @@ class Eval(Protocol):
         candidate: EvalCandidate,
     ) -> EvaluateResponse:
         """Evaluate a list of rows on a candidate.
-        
+
         :param dataset_rows: The rows to evaluate.
         :param scoring_fn_ids: The scoring function ids to use for the evaluation.
         :param candidate: The candidate to evaluate on.
         :return: EvaluateResponse object containing generations and scores
         """
 
-    @webmethod(route="/eval/benchmarks/{benchmark_id}/jobs/{job_id}", method="GET")
-    async def job_status(self, benchmark_id: str, job_id: str) -> Optional[JobStatus]:
-        """Get the status of a job.
+    @webmethod(route="/eval/jobs", method="GET")
+    async def list_eval_jobs(self) -> List[EvalJob]:
+        """List all evaluation jobs.
 
-        :param benchmark_id: The ID of the benchmark to run the evaluation on.
-        :param job_id: The ID of the job to get the status of.
-        :return: The status of the evaluationjob.
+        :return: A list of evaluation jobs.
         """
         ...
 
-    @webmethod(route="/eval/benchmarks/{benchmark_id}/jobs/{job_id}", method="DELETE")
-    async def job_cancel(self, benchmark_id: str, job_id: str) -> None:
+    @webmethod(route="/eval/job/{job_id}", method="GET")
+    async def get_eval_job(self, job_id: str) -> Optional[EvalJob]:
+        """Get a job by id.
+
+        :param job_id: The id of the job to get.
+        :return: The job.
+        """
+        ...
+
+    @webmethod(route="/eval/job/{job_id}", method="DELETE")
+    async def delete_eval_job(self, job_id: str) -> Optional[EvalJob]:
+        """Delete a job.
+
+        :param job_id: The id of the job to delete.
+        """
+        ...
+
+    @webmethod(route="/eval/job/{job_id}/cancel", method="POST")
+    async def cancel_eval_job(self, job_id: str) -> Optional[EvalJob]:
         """Cancel a job.
 
-        :param benchmark_id: The ID of the benchmark to run the evaluation on.
-        :param job_id: The ID of the job to cancel.
+        :param job_id: The id of the job to cancel.
         """
         ...
-
-    @webmethod(route="/eval/benchmarks/{benchmark_id}/jobs/{job_id}/result", method="GET")
-    async def job_result(self, benchmark_id: str, job_id: str) -> EvaluateResponse:
-        """Get the result of a job.
-
-        :param benchmark_id: The ID of the benchmark to run the evaluation on.
-        :param job_id: The ID of the job to get the result of.
-        :return: The result of the job.
-        """

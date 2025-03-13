@@ -20,6 +20,13 @@ class JobStatus(Enum):
     cancelled = "cancelled"
 
 
+class JobType(Enum):
+    batch_inference = "batch_inference"
+    scoring = "scoring"
+    evaluation = "evaluation"
+    post_training = "post_training"
+
+
 @json_schema_type
 class CommonJobFields(BaseModel):
     """Common fields for all jobs.

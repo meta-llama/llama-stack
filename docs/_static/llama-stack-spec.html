@@ -230,6 +230,106 @@
                 }
             }
         },
+        "/v1/eval/job/{job_id}/cancel": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/EvalJob"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Eval"
+                ],
+                "description": "Cancel a job.",
+                "parameters": [
+                    {
+                        "name": "job_id",
+                        "in": "path",
+                        "description": "The id of the job to cancel.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/v1/scoring/job/{job_id}/cancel": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/ScoringJob"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Scoring"
+                ],
+                "description": "Cancel a job.",
+                "parameters": [
+                    {
+                        "name": "job_id",
+                        "in": "path",
+                        "description": "The id of the job to cancel.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
         "/v1/post-training/job/cancel": {
             "post": {
                 "responses": {
@@ -823,6 +923,104 @@
                 ]
             }
         },
+        "/v1/eval/job/{job_id}": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "The job.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/EvalJob"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Eval"
+                ],
+                "description": "Get a job by id.",
+                "parameters": [
+                    {
+                        "name": "job_id",
+                        "in": "path",
+                        "description": "The id of the job to get.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            },
+            "delete": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/EvalJob"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Eval"
+                ],
+                "description": "Delete a job.",
+                "parameters": [
+                    {
+                        "name": "job_id",
+                        "in": "path",
+                        "description": "The id of the job to delete.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
         "/v1/files/{bucket}/{key}": {
             "get": {
                 "responses": {
@@ -925,6 +1123,104 @@
                 ]
             }
         },
+        "/v1/scoring/job/{job_id}": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "The job.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/ScoringJob"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Scoring"
+                ],
+                "description": "Get a job by id.",
+                "parameters": [
+                    {
+                        "name": "job_id",
+                        "in": "path",
+                        "description": "The id of the job to get.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            },
+            "delete": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/ScoringJob"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Scoring"
+                ],
+                "description": "Delete a job.",
+                "parameters": [
+                    {
+                        "name": "job_id",
+                        "in": "path",
+                        "description": "The id of the job to delete.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
         "/v1/inference/embeddings": {
             "post": {
                 "responses": {
@@ -968,7 +1264,38 @@
                 }
             }
         },
-        "/v1/eval/benchmarks/{benchmark_id}/jobs": {
+        "/v1/eval/jobs": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "A list of evaluation jobs.",
+                        "content": {
+                            "application/jsonl": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EvalJob"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Eval"
+                ],
+                "description": "List all evaluation jobs.",
+                "parameters": []
+            },
             "post": {
                 "responses": {
                     "200": {
@@ -976,7 +1303,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Job"
+                                    "$ref": "#/components/schemas/EvalJob"
                                 }
                             }
                         }
@@ -998,17 +1325,7 @@
                     "Eval"
                 ],
                 "description": "Run an evaluation on a benchmark.",
-                "parameters": [
-                    {
-                        "name": "benchmark_id",
-                        "in": "path",
-                        "description": "The ID of the benchmark to run the evaluation on.",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -2272,160 +2589,6 @@
                 }
             }
         },
-        "/v1/eval/benchmarks/{benchmark_id}/jobs/{job_id}": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "The status of the evaluationjob.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/JobStatus"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest400"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/TooManyRequests429"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError500"
-                    },
-                    "default": {
-                        "$ref": "#/components/responses/DefaultError"
-                    }
-                },
-                "tags": [
-                    "Eval"
-                ],
-                "description": "Get the status of a job.",
-                "parameters": [
-                    {
-                        "name": "benchmark_id",
-                        "in": "path",
-                        "description": "The ID of the benchmark to run the evaluation on.",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "job_id",
-                        "in": "path",
-                        "description": "The ID of the job to get the status of.",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
-            },
-            "delete": {
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest400"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/TooManyRequests429"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError500"
-                    },
-                    "default": {
-                        "$ref": "#/components/responses/DefaultError"
-                    }
-                },
-                "tags": [
-                    "Eval"
-                ],
-                "description": "Cancel a job.",
-                "parameters": [
-                    {
-                        "name": "benchmark_id",
-                        "in": "path",
-                        "description": "The ID of the benchmark to run the evaluation on.",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "job_id",
-                        "in": "path",
-                        "description": "The ID of the job to cancel.",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
-            }
-        },
-        "/v1/eval/benchmarks/{benchmark_id}/jobs/{job_id}/result": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "The result of the job.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/EvaluateResponse"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest400"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/TooManyRequests429"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError500"
-                    },
-                    "default": {
-                        "$ref": "#/components/responses/DefaultError"
-                    }
-                },
-                "tags": [
-                    "Eval"
-                ],
-                "description": "Get the result of a job.",
-                "parameters": [
-                    {
-                        "name": "benchmark_id",
-                        "in": "path",
-                        "description": "The ID of the benchmark to run the evaluation on.",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "job_id",
-                        "in": "path",
-                        "description": "The ID of the job to get the result of.",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
-            }
-        },
         "/v1/agents/{agent_id}/sessions": {
             "get": {
                 "responses": {
@@ -2950,6 +3113,80 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/RegisterScoringFunctionRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/v1/scoring/jobs": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "A list of scoring jobs.",
+                        "content": {
+                            "application/jsonl": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ScoringJob"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Scoring"
+                ],
+                "description": "List all scoring jobs.",
+                "parameters": []
+            },
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ScoringJob"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Scoring"
+                ],
+                "description": "",
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ScoreDatasetRequest"
                             }
                         }
                     },
@@ -3656,49 +3893,6 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/ScoreRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/v1/scoring/jobs": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ScoreBatchResponse"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest400"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/TooManyRequests429"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError500"
-                    },
-                    "default": {
-                        "$ref": "#/components/responses/DefaultError"
-                    }
-                },
-                "tags": [
-                    "Scoring"
-                ],
-                "description": "",
-                "parameters": [],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ScoreDatasetRequest"
                             }
                         }
                     },
@@ -4768,18 +4962,268 @@
                 "title": "CompletionResponse",
                 "description": "Response from a completion request."
             },
-            "CancelTrainingJobRequest": {
+            "AgentCandidate": {
                 "type": "object",
                 "properties": {
-                    "job_uuid": {
-                        "type": "string"
+                    "type": {
+                        "type": "string",
+                        "const": "agent",
+                        "default": "agent"
+                    },
+                    "config": {
+                        "$ref": "#/components/schemas/AgentConfig",
+                        "description": "The configuration for the agent candidate."
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "job_uuid"
+                    "type",
+                    "config"
                 ],
-                "title": "CancelTrainingJobRequest"
+                "title": "AgentCandidate",
+                "description": "An agent candidate for evaluation."
+            },
+            "AgentConfig": {
+                "type": "object",
+                "properties": {
+                    "sampling_params": {
+                        "$ref": "#/components/schemas/SamplingParams"
+                    },
+                    "input_shields": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "output_shields": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "toolgroups": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AgentTool"
+                        }
+                    },
+                    "client_tools": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ToolDef"
+                        }
+                    },
+                    "tool_choice": {
+                        "type": "string",
+                        "enum": [
+                            "auto",
+                            "required",
+                            "none"
+                        ],
+                        "title": "ToolChoice",
+                        "description": "Whether tool use is required or automatic. This is a hint to the model which may not be followed. It depends on the Instruction Following capabilities of the model.",
+                        "deprecated": true
+                    },
+                    "tool_prompt_format": {
+                        "type": "string",
+                        "enum": [
+                            "json",
+                            "function_tag",
+                            "python_list"
+                        ],
+                        "title": "ToolPromptFormat",
+                        "description": "Prompt format for calling custom / zero shot tools.",
+                        "deprecated": true
+                    },
+                    "tool_config": {
+                        "$ref": "#/components/schemas/ToolConfig"
+                    },
+                    "max_infer_iters": {
+                        "type": "integer",
+                        "default": 10
+                    },
+                    "model": {
+                        "type": "string"
+                    },
+                    "instructions": {
+                        "type": "string"
+                    },
+                    "enable_session_persistence": {
+                        "type": "boolean",
+                        "default": false
+                    },
+                    "response_format": {
+                        "$ref": "#/components/schemas/ResponseFormat"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "model",
+                    "instructions"
+                ],
+                "title": "AgentConfig"
+            },
+            "AgentTool": {
+                "oneOf": [
+                    {
+                        "type": "string"
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "args": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "oneOf": [
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "type": "boolean"
+                                        },
+                                        {
+                                            "type": "number"
+                                        },
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "array"
+                                        },
+                                        {
+                                            "type": "object"
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "name",
+                            "args"
+                        ],
+                        "title": "AgentToolGroupWithArgs"
+                    }
+                ]
+            },
+            "EvalCandidate": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/ModelCandidate"
+                    },
+                    {
+                        "$ref": "#/components/schemas/AgentCandidate"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "model": "#/components/schemas/ModelCandidate",
+                        "agent": "#/components/schemas/AgentCandidate"
+                    }
+                }
+            },
+            "EvalJob": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "The ID of the job."
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "completed",
+                            "in_progress",
+                            "failed",
+                            "scheduled",
+                            "cancelled"
+                        ],
+                        "description": "The status of the job."
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "The time the job was created."
+                    },
+                    "finished_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "The time the job finished."
+                    },
+                    "error": {
+                        "type": "string",
+                        "description": "If status of the job is failed, this will contain the error message."
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "eval",
+                        "default": "eval"
+                    },
+                    "result_files": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "result_datasets": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "benchmark_id": {
+                        "type": "string"
+                    },
+                    "candidate": {
+                        "$ref": "#/components/schemas/EvalCandidate"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "id",
+                    "status",
+                    "created_at",
+                    "type",
+                    "result_files",
+                    "result_datasets",
+                    "benchmark_id",
+                    "candidate"
+                ],
+                "title": "EvalJob"
+            },
+            "ModelCandidate": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "model",
+                        "default": "model"
+                    },
+                    "model": {
+                        "type": "string",
+                        "description": "The model ID to evaluate."
+                    },
+                    "sampling_params": {
+                        "$ref": "#/components/schemas/SamplingParams",
+                        "description": "The sampling parameters for the model."
+                    },
+                    "system_message": {
+                        "$ref": "#/components/schemas/SystemMessage",
+                        "description": "(Optional) The system message providing instructions or context to the model."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "model",
+                    "sampling_params"
+                ],
+                "title": "ModelCandidate",
+                "description": "A model candidate for evaluation."
             },
             "ToolConfig": {
                 "type": "object",
@@ -4825,6 +5269,186 @@
                 "additionalProperties": false,
                 "title": "ToolConfig",
                 "description": "Configuration for tool use."
+            },
+            "ToolDef": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "parameters": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ToolParameter"
+                        }
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "name"
+                ],
+                "title": "ToolDef"
+            },
+            "ToolParameter": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "parameter_type": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "required": {
+                        "type": "boolean",
+                        "default": true
+                    },
+                    "default": {
+                        "oneOf": [
+                            {
+                                "type": "null"
+                            },
+                            {
+                                "type": "boolean"
+                            },
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array"
+                            },
+                            {
+                                "type": "object"
+                            }
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "name",
+                    "parameter_type",
+                    "description",
+                    "required"
+                ],
+                "title": "ToolParameter"
+            },
+            "ScoringJob": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "The ID of the job."
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "completed",
+                            "in_progress",
+                            "failed",
+                            "scheduled",
+                            "cancelled"
+                        ],
+                        "description": "The status of the job."
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "The time the job was created."
+                    },
+                    "finished_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "The time the job finished."
+                    },
+                    "error": {
+                        "type": "string",
+                        "description": "If status of the job is failed, this will contain the error message."
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "scoring",
+                        "default": "scoring"
+                    },
+                    "result_files": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "result_datasets": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "dataset_id": {
+                        "type": "string"
+                    },
+                    "scoring_fn_ids": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "id",
+                    "status",
+                    "created_at",
+                    "type",
+                    "result_files",
+                    "result_datasets",
+                    "dataset_id",
+                    "scoring_fn_ids"
+                ],
+                "title": "ScoringJob"
+            },
+            "CancelTrainingJobRequest": {
+                "type": "object",
+                "properties": {
+                    "job_uuid": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "job_uuid"
+                ],
+                "title": "CancelTrainingJobRequest"
             },
             "ChatCompletionRequest": {
                 "type": "object",
@@ -5139,227 +5763,6 @@
                 ],
                 "title": "CompletionResponseStreamChunk",
                 "description": "A chunk of a streamed completion response."
-            },
-            "AgentConfig": {
-                "type": "object",
-                "properties": {
-                    "sampling_params": {
-                        "$ref": "#/components/schemas/SamplingParams"
-                    },
-                    "input_shields": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "output_shields": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "toolgroups": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/AgentTool"
-                        }
-                    },
-                    "client_tools": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/ToolDef"
-                        }
-                    },
-                    "tool_choice": {
-                        "type": "string",
-                        "enum": [
-                            "auto",
-                            "required",
-                            "none"
-                        ],
-                        "title": "ToolChoice",
-                        "description": "Whether tool use is required or automatic. This is a hint to the model which may not be followed. It depends on the Instruction Following capabilities of the model.",
-                        "deprecated": true
-                    },
-                    "tool_prompt_format": {
-                        "type": "string",
-                        "enum": [
-                            "json",
-                            "function_tag",
-                            "python_list"
-                        ],
-                        "title": "ToolPromptFormat",
-                        "description": "Prompt format for calling custom / zero shot tools.",
-                        "deprecated": true
-                    },
-                    "tool_config": {
-                        "$ref": "#/components/schemas/ToolConfig"
-                    },
-                    "max_infer_iters": {
-                        "type": "integer",
-                        "default": 10
-                    },
-                    "model": {
-                        "type": "string"
-                    },
-                    "instructions": {
-                        "type": "string"
-                    },
-                    "enable_session_persistence": {
-                        "type": "boolean",
-                        "default": false
-                    },
-                    "response_format": {
-                        "$ref": "#/components/schemas/ResponseFormat"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "model",
-                    "instructions"
-                ],
-                "title": "AgentConfig"
-            },
-            "AgentTool": {
-                "oneOf": [
-                    {
-                        "type": "string"
-                    },
-                    {
-                        "type": "object",
-                        "properties": {
-                            "name": {
-                                "type": "string"
-                            },
-                            "args": {
-                                "type": "object",
-                                "additionalProperties": {
-                                    "oneOf": [
-                                        {
-                                            "type": "null"
-                                        },
-                                        {
-                                            "type": "boolean"
-                                        },
-                                        {
-                                            "type": "number"
-                                        },
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "type": "array"
-                                        },
-                                        {
-                                            "type": "object"
-                                        }
-                                    ]
-                                }
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "name",
-                            "args"
-                        ],
-                        "title": "AgentToolGroupWithArgs"
-                    }
-                ]
-            },
-            "ToolDef": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "description": {
-                        "type": "string"
-                    },
-                    "parameters": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/ToolParameter"
-                        }
-                    },
-                    "metadata": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "name"
-                ],
-                "title": "ToolDef"
-            },
-            "ToolParameter": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "parameter_type": {
-                        "type": "string"
-                    },
-                    "description": {
-                        "type": "string"
-                    },
-                    "required": {
-                        "type": "boolean",
-                        "default": true
-                    },
-                    "default": {
-                        "oneOf": [
-                            {
-                                "type": "null"
-                            },
-                            {
-                                "type": "boolean"
-                            },
-                            {
-                                "type": "number"
-                            },
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "type": "array"
-                            },
-                            {
-                                "type": "object"
-                            }
-                        ]
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "name",
-                    "parameter_type",
-                    "description",
-                    "required"
-                ],
-                "title": "ToolParameter"
             },
             "CreateAgentRequest": {
                 "type": "object",
@@ -6335,77 +6738,13 @@
                 "title": "EmbeddingsResponse",
                 "description": "Response containing generated embeddings."
             },
-            "AgentCandidate": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "agent",
-                        "default": "agent"
-                    },
-                    "config": {
-                        "$ref": "#/components/schemas/AgentConfig",
-                        "description": "The configuration for the agent candidate."
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type",
-                    "config"
-                ],
-                "title": "AgentCandidate",
-                "description": "An agent candidate for evaluation."
-            },
-            "EvalCandidate": {
-                "oneOf": [
-                    {
-                        "$ref": "#/components/schemas/ModelCandidate"
-                    },
-                    {
-                        "$ref": "#/components/schemas/AgentCandidate"
-                    }
-                ],
-                "discriminator": {
-                    "propertyName": "type",
-                    "mapping": {
-                        "model": "#/components/schemas/ModelCandidate",
-                        "agent": "#/components/schemas/AgentCandidate"
-                    }
-                }
-            },
-            "ModelCandidate": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "model",
-                        "default": "model"
-                    },
-                    "model": {
-                        "type": "string",
-                        "description": "The model ID to evaluate."
-                    },
-                    "sampling_params": {
-                        "$ref": "#/components/schemas/SamplingParams",
-                        "description": "The sampling parameters for the model."
-                    },
-                    "system_message": {
-                        "$ref": "#/components/schemas/SystemMessage",
-                        "description": "(Optional) The system message providing instructions or context to the model."
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type",
-                    "model",
-                    "sampling_params"
-                ],
-                "title": "ModelCandidate",
-                "description": "A model candidate for evaluation."
-            },
             "EvaluateBenchmarkRequest": {
                 "type": "object",
                 "properties": {
+                    "benchmark_id": {
+                        "type": "string",
+                        "description": "The ID of the benchmark to run the evaluation on."
+                    },
                     "candidate": {
                         "$ref": "#/components/schemas/EvalCandidate",
                         "description": "The candidate to evaluate on."
@@ -6413,22 +6752,10 @@
                 },
                 "additionalProperties": false,
                 "required": [
+                    "benchmark_id",
                     "candidate"
                 ],
                 "title": "EvaluateBenchmarkRequest"
-            },
-            "Job": {
-                "type": "object",
-                "properties": {
-                    "job_id": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "job_id"
-                ],
-                "title": "Job"
             },
             "EvaluateRowsRequest": {
                 "type": "object",
@@ -8163,16 +8490,6 @@
                 "title": "PostTrainingJobArtifactsResponse",
                 "description": "Artifacts of a finetuning job."
             },
-            "JobStatus": {
-                "type": "string",
-                "enum": [
-                    "completed",
-                    "in_progress",
-                    "failed",
-                    "scheduled"
-                ],
-                "title": "JobStatus"
-            },
             "PostTrainingJobStatusResponse": {
                 "type": "object",
                 "properties": {
@@ -8180,7 +8497,15 @@
                         "type": "string"
                     },
                     "status": {
-                        "$ref": "#/components/schemas/JobStatus"
+                        "type": "string",
+                        "enum": [
+                            "completed",
+                            "in_progress",
+                            "failed",
+                            "scheduled",
+                            "cancelled"
+                        ],
+                        "title": "JobStatus"
                     },
                     "scheduled_at": {
                         "type": "string",
@@ -10321,25 +10646,6 @@
                     "scoring_fn_ids"
                 ],
                 "title": "ScoreDatasetRequest"
-            },
-            "ScoreBatchResponse": {
-                "type": "object",
-                "properties": {
-                    "dataset_id": {
-                        "type": "string"
-                    },
-                    "results": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "$ref": "#/components/schemas/ScoringResult"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "results"
-                ],
-                "title": "ScoreBatchResponse"
             },
             "AlgorithmConfig": {
                 "oneOf": [
