@@ -6,6 +6,7 @@
 
 
 import logging
+import os
 import tempfile
 from typing import Any, Dict, List, Optional
 
@@ -61,7 +62,9 @@ class CodeInterpreterToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime):
 
     async def invoke_tool(self, tool_name: str, kwargs: Dict[str, Any]) -> ToolInvocationResult:
         script = kwargs["code"]
-        req = CodeExecutionRequest(scripts=[script])
+        # Use environment variable to control bwrap usage
+        force_disable_bwrap = os.environ.get("DISABLE_CODE_SANDBOX", "").lower() in ("1", "true", "yes")
+        req = CodeExecutionRequest(scripts=[script], use_bwrap=not force_disable_bwrap)
         res = self.code_executor.execute(req)
         pieces = [res["process_status"]]
         for out_type in ["stdout", "stderr"]:
