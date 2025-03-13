@@ -50,7 +50,17 @@ class ScoreResponse(BaseModel):
 
 @json_schema_type
 class ScoringJob(CommonJobFields):
-    type: Literal["scoring"] = "scoring"
+    """
+    A scoring job.
+
+    :param type: The type of the job.
+    :param result_files: The file ids of the scoring results.
+    :param result_datasets: The ids of the datasets containing the scoring results.
+    :param dataset_id: The id of the dataset used for scoring.
+    :param scoring_fn_ids: The ids of the scoring functions used.
+    """
+
+    type: JobType = JobType.scoring.value
 
     result_files: List[str] = Field(
         description="The file ids of the scoring results.",

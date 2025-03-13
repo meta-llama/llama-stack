@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
 from llama_stack.apis.agents import AgentConfig
-from llama_stack.apis.common.job_types import CommonJobFields, JobStatus
+from llama_stack.apis.common.job_types import CommonJobFields, JobType
 from llama_stack.apis.inference import SamplingParams, SystemMessage
 from llama_stack.apis.scoring import ScoringResult
 from llama_stack.schema_utils import json_schema_type, register_schema, webmethod
@@ -63,7 +63,17 @@ class EvaluateResponse(BaseModel):
 
 @json_schema_type
 class EvalJob(CommonJobFields):
-    type: Literal["eval"] = "eval"
+    """
+    An evaluation job.
+
+    :param type: The type of the job.
+    :param result_files: The file ids of the eval results.
+    :param result_datasets: The ids of the datasets containing the eval results.
+    :param benchmark_id: The id of the benchmark to evaluate on.
+    :param candidate: The candidate to evaluate on.
+    """
+
+    type: JobType = JobType.evaluation.value
     result_files: List[str] = Field(
         description="The file ids of the eval results.",
         default_factory=list,

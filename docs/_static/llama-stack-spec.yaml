@@ -142,7 +142,7 @@ paths:
             schema:
               $ref: '#/components/schemas/BatchCompletionRequest'
         required: true
-  /v1/eval/job/{job_id}/cancel:
+  /v1/eval/jobs/{job_id}/cancel:
     post:
       responses:
         '200':
@@ -173,7 +173,7 @@ paths:
           required: true
           schema:
             type: string
-  /v1/scoring/job/{job_id}/cancel:
+  /v1/scoring/jobs/{job_id}/cancel:
     post:
       responses:
         '200':
@@ -622,7 +622,7 @@ paths:
           required: true
           schema:
             type: string
-  /v1/eval/job/{job_id}:
+  /v1/eval/jobs/{job_id}:
     get:
       responses:
         '200':
@@ -756,7 +756,7 @@ paths:
           required: true
           schema:
             type: string
-  /v1/scoring/job/{job_id}:
+  /v1/scoring/jobs/{job_id}:
     get:
       responses:
         '200':
@@ -3514,20 +3514,30 @@ components:
             If status of the job is failed, this will contain the error message.
         type:
           type: string
-          const: eval
-          default: eval
+          enum:
+            - batch_inference
+            - scoring
+            - evaluation
+            - post_training
+          default: evaluation
+          description: The type of the job.
         result_files:
           type: array
           items:
             type: string
+          description: The file ids of the eval results.
         result_datasets:
           type: array
           items:
             type: string
+          description: >-
+            The ids of the datasets containing the eval results.
         benchmark_id:
           type: string
+          description: The id of the benchmark to evaluate on.
         candidate:
           $ref: '#/components/schemas/EvalCandidate'
+          description: The candidate to evaluate on.
       additionalProperties: false
       required:
         - id
@@ -3539,6 +3549,7 @@ components:
         - benchmark_id
         - candidate
       title: EvalJob
+      description: An evaluation job.
     ModelCandidate:
       type: object
       properties:
@@ -3693,22 +3704,32 @@ components:
             If status of the job is failed, this will contain the error message.
         type:
           type: string
-          const: scoring
+          enum:
+            - batch_inference
+            - scoring
+            - evaluation
+            - post_training
           default: scoring
+          description: The type of the job.
         result_files:
           type: array
           items:
             type: string
+          description: The file ids of the scoring results.
         result_datasets:
           type: array
           items:
             type: string
+          description: >-
+            The ids of the datasets containing the scoring results.
         dataset_id:
           type: string
+          description: The id of the dataset used for scoring.
         scoring_fn_ids:
           type: array
           items:
             type: string
+          description: The ids of the scoring functions used.
       additionalProperties: false
       required:
         - id
@@ -3720,6 +3741,7 @@ components:
         - dataset_id
         - scoring_fn_ids
       title: ScoringJob
+      description: A scoring job.
     CancelTrainingJobRequest:
       type: object
       properties:
