@@ -55,14 +55,14 @@ class ScoringFunctionStore(Protocol):
 class Scoring(Protocol):
     scoring_function_store: ScoringFunctionStore
 
-    @webmethod(route="/scoring/score-batch", method="POST")
+    @webmethod(route="/scoring/jobs", method="POST")
     async def score_dataset(
         self,
         dataset_id: str,
         scoring_fn_ids: List[str],
     ) -> ScoreBatchResponse: ...
 
-    @webmethod(route="/scoring/score", method="POST")
+    @webmethod(route="/scoring/rows", method="POST")
     async def score(
         self,
         dataset_rows: List[Dict[str, Any]],
