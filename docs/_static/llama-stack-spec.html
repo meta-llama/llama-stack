@@ -968,7 +968,60 @@
                 }
             }
         },
-        "/v1/eval/benchmarks/{benchmark_id}/evaluations": {
+        "/v1/eval/benchmarks/{benchmark_id}/jobs": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "The job that was created to run the evaluation.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Job"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Eval"
+                ],
+                "description": "Run an evaluation on a benchmark.",
+                "parameters": [
+                    {
+                        "name": "benchmark_id",
+                        "in": "path",
+                        "description": "The ID of the benchmark to run the evaluation on.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/EvaluateBenchmarkRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/v1/eval/rows": {
             "post": {
                 "responses": {
                     "200": {
@@ -997,18 +1050,8 @@
                 "tags": [
                     "Eval"
                 ],
-                "description": "Evaluate a list of rows on a benchmark.",
-                "parameters": [
-                    {
-                        "name": "benchmark_id",
-                        "in": "path",
-                        "description": "The ID of the benchmark to run the evaluation on.",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "description": "Evaluate a list of rows on a candidate.",
+                "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -3498,59 +3541,6 @@
                 }
             }
         },
-        "/v1/eval/benchmarks/{benchmark_id}/jobs": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "The job that was created to run the evaluation.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Job"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest400"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/TooManyRequests429"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError500"
-                    },
-                    "default": {
-                        "$ref": "#/components/responses/DefaultError"
-                    }
-                },
-                "tags": [
-                    "Eval"
-                ],
-                "description": "Run an evaluation on a benchmark.",
-                "parameters": [
-                    {
-                        "name": "benchmark_id",
-                        "in": "path",
-                        "description": "The ID of the benchmark to run the evaluation on.",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/RunEvalRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
         "/v1/safety/run-shield": {
             "post": {
                 "responses": {
@@ -3708,7 +3698,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/ScoreBatchRequest"
+                                "$ref": "#/components/schemas/ScoreDatasetRequest"
                             }
                         }
                     },
@@ -6385,381 +6375,6 @@
                 "title": "AgentCandidate",
                 "description": "An agent candidate for evaluation."
             },
-            "AnswerCorrectnessScoringFnParams": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "answer_correctness",
-                        "default": "answer_correctness"
-                    },
-                    "answer_correctness": {
-                        "type": "object",
-                        "properties": {
-                            "aggregation_functions": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string",
-                                    "enum": [
-                                        "average",
-                                        "median",
-                                        "categorical_count",
-                                        "accuracy"
-                                    ],
-                                    "title": "AggregationFunctionType",
-                                    "description": "A type of aggregation function."
-                                },
-                                "description": "(Optional) Aggregation functions to apply to the scores of each row. If not provided, no aggregation will be performed."
-                            }
-                        },
-                        "additionalProperties": false,
-                        "title": "BasicScoringFnParamsFields"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type",
-                    "answer_correctness"
-                ],
-                "title": "AnswerCorrectnessScoringFnParams"
-            },
-            "AnswerRelevancyScoringFnParams": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "answer_relevancy",
-                        "default": "answer_relevancy"
-                    },
-                    "answer_relevancy": {
-                        "type": "object",
-                        "properties": {
-                            "aggregation_functions": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string",
-                                    "enum": [
-                                        "average",
-                                        "median",
-                                        "categorical_count",
-                                        "accuracy"
-                                    ],
-                                    "title": "AggregationFunctionType",
-                                    "description": "A type of aggregation function."
-                                },
-                                "description": "(Optional) Aggregation functions to apply to the scores of each row. If not provided, no aggregation will be performed."
-                            }
-                        },
-                        "additionalProperties": false,
-                        "title": "BasicScoringFnParamsFields"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type",
-                    "answer_relevancy"
-                ],
-                "title": "AnswerRelevancyScoringFnParams"
-            },
-            "AnswerSimilarityScoringFnParams": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "answer_similarity",
-                        "default": "answer_similarity"
-                    },
-                    "answer_similarity": {
-                        "type": "object",
-                        "properties": {
-                            "aggregation_functions": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string",
-                                    "enum": [
-                                        "average",
-                                        "median",
-                                        "categorical_count",
-                                        "accuracy"
-                                    ],
-                                    "title": "AggregationFunctionType",
-                                    "description": "A type of aggregation function."
-                                },
-                                "description": "(Optional) Aggregation functions to apply to the scores of each row. If not provided, no aggregation will be performed."
-                            }
-                        },
-                        "additionalProperties": false,
-                        "title": "BasicScoringFnParamsFields"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type",
-                    "answer_similarity"
-                ],
-                "title": "AnswerSimilarityScoringFnParams"
-            },
-            "BenchmarkConfig": {
-                "type": "object",
-                "properties": {
-                    "eval_candidate": {
-                        "$ref": "#/components/schemas/EvalCandidate",
-                        "description": "The candidate to evaluate."
-                    },
-                    "scoring_params": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "$ref": "#/components/schemas/ScoringFnParams"
-                        },
-                        "description": "Map between scoring function id and parameters for each scoring function you want to run"
-                    },
-                    "num_examples": {
-                        "type": "integer",
-                        "description": "(Optional) The number of examples to evaluate. If not provided, all examples in the dataset will be evaluated"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "eval_candidate",
-                    "scoring_params"
-                ],
-                "title": "BenchmarkConfig",
-                "description": "A benchmark configuration for evaluation."
-            },
-            "ContextEntityRecallScoringFnParams": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "context_entity_recall",
-                        "default": "context_entity_recall"
-                    },
-                    "context_entity_recall": {
-                        "type": "object",
-                        "properties": {
-                            "aggregation_functions": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string",
-                                    "enum": [
-                                        "average",
-                                        "median",
-                                        "categorical_count",
-                                        "accuracy"
-                                    ],
-                                    "title": "AggregationFunctionType",
-                                    "description": "A type of aggregation function."
-                                },
-                                "description": "(Optional) Aggregation functions to apply to the scores of each row. If not provided, no aggregation will be performed."
-                            }
-                        },
-                        "additionalProperties": false,
-                        "title": "BasicScoringFnParamsFields"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type",
-                    "context_entity_recall"
-                ],
-                "title": "ContextEntityRecallScoringFnParams"
-            },
-            "ContextPrecisionScoringFnParams": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "context_precision",
-                        "default": "context_precision"
-                    },
-                    "context_precision": {
-                        "type": "object",
-                        "properties": {
-                            "aggregation_functions": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string",
-                                    "enum": [
-                                        "average",
-                                        "median",
-                                        "categorical_count",
-                                        "accuracy"
-                                    ],
-                                    "title": "AggregationFunctionType",
-                                    "description": "A type of aggregation function."
-                                },
-                                "description": "(Optional) Aggregation functions to apply to the scores of each row. If not provided, no aggregation will be performed."
-                            }
-                        },
-                        "additionalProperties": false,
-                        "title": "BasicScoringFnParamsFields"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type",
-                    "context_precision"
-                ],
-                "title": "ContextPrecisionScoringFnParams"
-            },
-            "ContextRecallScoringFnParams": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "context_recall",
-                        "default": "context_recall"
-                    },
-                    "context_recall": {
-                        "type": "object",
-                        "properties": {
-                            "aggregation_functions": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string",
-                                    "enum": [
-                                        "average",
-                                        "median",
-                                        "categorical_count",
-                                        "accuracy"
-                                    ],
-                                    "title": "AggregationFunctionType",
-                                    "description": "A type of aggregation function."
-                                },
-                                "description": "(Optional) Aggregation functions to apply to the scores of each row. If not provided, no aggregation will be performed."
-                            }
-                        },
-                        "additionalProperties": false,
-                        "title": "BasicScoringFnParamsFields"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type",
-                    "context_recall"
-                ],
-                "title": "ContextRecallScoringFnParams"
-            },
-            "ContextRelevancyScoringFnParams": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "context_relevancy",
-                        "default": "context_relevancy"
-                    },
-                    "context_relevancy": {
-                        "type": "object",
-                        "properties": {
-                            "aggregation_functions": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string",
-                                    "enum": [
-                                        "average",
-                                        "median",
-                                        "categorical_count",
-                                        "accuracy"
-                                    ],
-                                    "title": "AggregationFunctionType",
-                                    "description": "A type of aggregation function."
-                                },
-                                "description": "(Optional) Aggregation functions to apply to the scores of each row. If not provided, no aggregation will be performed."
-                            }
-                        },
-                        "additionalProperties": false,
-                        "title": "BasicScoringFnParamsFields"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type",
-                    "context_relevancy"
-                ],
-                "title": "ContextRelevancyScoringFnParams"
-            },
-            "CustomLLMAsJudgeScoringFnParams": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "custom_llm_as_judge",
-                        "default": "custom_llm_as_judge"
-                    },
-                    "custom_llm_as_judge": {
-                        "type": "object",
-                        "properties": {
-                            "type": {
-                                "type": "string",
-                                "const": "custom_llm_as_judge",
-                                "default": "custom_llm_as_judge"
-                            },
-                            "judge_model": {
-                                "type": "string"
-                            },
-                            "prompt_template": {
-                                "type": "string"
-                            },
-                            "judge_score_regexes": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
-                                }
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "type",
-                            "judge_model"
-                        ],
-                        "title": "CustomLLMAsJudgeScoringFnParamsFields"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type",
-                    "custom_llm_as_judge"
-                ],
-                "title": "CustomLLMAsJudgeScoringFnParams"
-            },
-            "EqualityScoringFnParams": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "equality",
-                        "default": "equality"
-                    },
-                    "equality": {
-                        "type": "object",
-                        "properties": {
-                            "aggregation_functions": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string",
-                                    "enum": [
-                                        "average",
-                                        "median",
-                                        "categorical_count",
-                                        "accuracy"
-                                    ],
-                                    "title": "AggregationFunctionType",
-                                    "description": "A type of aggregation function."
-                                },
-                                "description": "(Optional) Aggregation functions to apply to the scores of each row. If not provided, no aggregation will be performed."
-                            }
-                        },
-                        "additionalProperties": false,
-                        "title": "BasicScoringFnParamsFields"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type",
-                    "equality"
-                ],
-                "title": "EqualityScoringFnParams"
-            },
             "EvalCandidate": {
                 "oneOf": [
                     {
@@ -6776,82 +6391,6 @@
                         "agent": "#/components/schemas/AgentCandidate"
                     }
                 }
-            },
-            "FactualityScoringFnParams": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "factuality",
-                        "default": "factuality"
-                    },
-                    "factuality": {
-                        "type": "object",
-                        "properties": {
-                            "aggregation_functions": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string",
-                                    "enum": [
-                                        "average",
-                                        "median",
-                                        "categorical_count",
-                                        "accuracy"
-                                    ],
-                                    "title": "AggregationFunctionType",
-                                    "description": "A type of aggregation function."
-                                },
-                                "description": "(Optional) Aggregation functions to apply to the scores of each row. If not provided, no aggregation will be performed."
-                            }
-                        },
-                        "additionalProperties": false,
-                        "title": "BasicScoringFnParamsFields"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type",
-                    "factuality"
-                ],
-                "title": "FactualityScoringFnParams"
-            },
-            "FaithfulnessScoringFnParams": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "faithfulness",
-                        "default": "faithfulness"
-                    },
-                    "faithfulness": {
-                        "type": "object",
-                        "properties": {
-                            "aggregation_functions": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string",
-                                    "enum": [
-                                        "average",
-                                        "median",
-                                        "categorical_count",
-                                        "accuracy"
-                                    ],
-                                    "title": "AggregationFunctionType",
-                                    "description": "A type of aggregation function."
-                                },
-                                "description": "(Optional) Aggregation functions to apply to the scores of each row. If not provided, no aggregation will be performed."
-                            }
-                        },
-                        "additionalProperties": false,
-                        "title": "BasicScoringFnParamsFields"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type",
-                    "faithfulness"
-                ],
-                "title": "FaithfulnessScoringFnParams"
             },
             "ModelCandidate": {
                 "type": "object",
@@ -6883,209 +6422,37 @@
                 "title": "ModelCandidate",
                 "description": "A model candidate for evaluation."
             },
-            "RegexParserMathScoringFnParams": {
+            "EvaluateBenchmarkRequest": {
                 "type": "object",
                 "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "regex_parser_math_response",
-                        "default": "regex_parser_math_response"
-                    },
-                    "regex_parser_math_response": {
-                        "type": "object",
-                        "properties": {
-                            "parsing_regexes": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
-                                },
-                                "description": "(Optional) Regexes to extract the answer from generated response."
-                            },
-                            "aggregation_functions": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string",
-                                    "enum": [
-                                        "average",
-                                        "median",
-                                        "categorical_count",
-                                        "accuracy"
-                                    ],
-                                    "title": "AggregationFunctionType",
-                                    "description": "A type of aggregation function."
-                                },
-                                "description": "(Optional) Aggregation functions to apply to the scores of each row. If not provided, no aggregation will be performed."
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "parsing_regexes"
-                        ],
-                        "title": "RegexParserScoringFnParamsFields"
+                    "candidate": {
+                        "$ref": "#/components/schemas/EvalCandidate",
+                        "description": "The candidate to evaluate on."
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "type",
-                    "regex_parser_math_response"
+                    "candidate"
                 ],
-                "title": "RegexParserMathScoringFnParams"
+                "title": "EvaluateBenchmarkRequest"
             },
-            "RegexParserScoringFnParams": {
+            "Job": {
                 "type": "object",
                 "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "regex_parser",
-                        "default": "regex_parser"
-                    },
-                    "regex_parser": {
-                        "type": "object",
-                        "properties": {
-                            "parsing_regexes": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
-                                },
-                                "description": "(Optional) Regexes to extract the answer from generated response."
-                            },
-                            "aggregation_functions": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string",
-                                    "enum": [
-                                        "average",
-                                        "median",
-                                        "categorical_count",
-                                        "accuracy"
-                                    ],
-                                    "title": "AggregationFunctionType",
-                                    "description": "A type of aggregation function."
-                                },
-                                "description": "(Optional) Aggregation functions to apply to the scores of each row. If not provided, no aggregation will be performed."
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "parsing_regexes"
-                        ],
-                        "title": "RegexParserScoringFnParamsFields"
+                    "job_id": {
+                        "type": "string"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "type",
-                    "regex_parser"
+                    "job_id"
                 ],
-                "title": "RegexParserScoringFnParams"
-            },
-            "ScoringFnParams": {
-                "oneOf": [
-                    {
-                        "$ref": "#/components/schemas/CustomLLMAsJudgeScoringFnParams"
-                    },
-                    {
-                        "$ref": "#/components/schemas/RegexParserScoringFnParams"
-                    },
-                    {
-                        "$ref": "#/components/schemas/RegexParserMathScoringFnParams"
-                    },
-                    {
-                        "$ref": "#/components/schemas/EqualityScoringFnParams"
-                    },
-                    {
-                        "$ref": "#/components/schemas/SubsetOfcoringFnParams"
-                    },
-                    {
-                        "$ref": "#/components/schemas/FactualityScoringFnParams"
-                    },
-                    {
-                        "$ref": "#/components/schemas/FaithfulnessScoringFnParams"
-                    },
-                    {
-                        "$ref": "#/components/schemas/AnswerCorrectnessScoringFnParams"
-                    },
-                    {
-                        "$ref": "#/components/schemas/AnswerRelevancyScoringFnParams"
-                    },
-                    {
-                        "$ref": "#/components/schemas/AnswerSimilarityScoringFnParams"
-                    },
-                    {
-                        "$ref": "#/components/schemas/ContextEntityRecallScoringFnParams"
-                    },
-                    {
-                        "$ref": "#/components/schemas/ContextPrecisionScoringFnParams"
-                    },
-                    {
-                        "$ref": "#/components/schemas/ContextRecallScoringFnParams"
-                    },
-                    {
-                        "$ref": "#/components/schemas/ContextRelevancyScoringFnParams"
-                    }
-                ],
-                "discriminator": {
-                    "propertyName": "type",
-                    "mapping": {
-                        "custom_llm_as_judge": "#/components/schemas/CustomLLMAsJudgeScoringFnParams",
-                        "regex_parser": "#/components/schemas/RegexParserScoringFnParams",
-                        "regex_parser_math_response": "#/components/schemas/RegexParserMathScoringFnParams",
-                        "equality": "#/components/schemas/EqualityScoringFnParams",
-                        "subset_of": "#/components/schemas/SubsetOfcoringFnParams",
-                        "factuality": "#/components/schemas/FactualityScoringFnParams",
-                        "faithfulness": "#/components/schemas/FaithfulnessScoringFnParams",
-                        "answer_correctness": "#/components/schemas/AnswerCorrectnessScoringFnParams",
-                        "answer_relevancy": "#/components/schemas/AnswerRelevancyScoringFnParams",
-                        "answer_similarity": "#/components/schemas/AnswerSimilarityScoringFnParams",
-                        "context_entity_recall": "#/components/schemas/ContextEntityRecallScoringFnParams",
-                        "context_precision": "#/components/schemas/ContextPrecisionScoringFnParams",
-                        "context_recall": "#/components/schemas/ContextRecallScoringFnParams",
-                        "context_relevancy": "#/components/schemas/ContextRelevancyScoringFnParams"
-                    }
-                }
-            },
-            "SubsetOfcoringFnParams": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "subset_of",
-                        "default": "subset_of"
-                    },
-                    "subset_of": {
-                        "type": "object",
-                        "properties": {
-                            "aggregation_functions": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string",
-                                    "enum": [
-                                        "average",
-                                        "median",
-                                        "categorical_count",
-                                        "accuracy"
-                                    ],
-                                    "title": "AggregationFunctionType",
-                                    "description": "A type of aggregation function."
-                                },
-                                "description": "(Optional) Aggregation functions to apply to the scores of each row. If not provided, no aggregation will be performed."
-                            }
-                        },
-                        "additionalProperties": false,
-                        "title": "BasicScoringFnParamsFields"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type",
-                    "subset_of"
-                ],
-                "title": "SubsetOfcoringFnParams"
+                "title": "Job"
             },
             "EvaluateRowsRequest": {
                 "type": "object",
                 "properties": {
-                    "input_rows": {
+                    "dataset_rows": {
                         "type": "array",
                         "items": {
                             "type": "object",
@@ -7114,23 +6481,23 @@
                         },
                         "description": "The rows to evaluate."
                     },
-                    "scoring_functions": {
+                    "scoring_fn_ids": {
                         "type": "array",
                         "items": {
                             "type": "string"
                         },
-                        "description": "The scoring functions to use for the evaluation."
+                        "description": "The scoring function ids to use for the evaluation."
                     },
-                    "benchmark_config": {
-                        "$ref": "#/components/schemas/BenchmarkConfig",
-                        "description": "The configuration for the benchmark."
+                    "candidate": {
+                        "$ref": "#/components/schemas/EvalCandidate",
+                        "description": "The candidate to evaluate on."
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "input_rows",
-                    "scoring_functions",
-                    "benchmark_config"
+                    "dataset_rows",
+                    "scoring_fn_ids",
+                    "candidate"
                 ],
                 "title": "EvaluateRowsRequest"
             },
@@ -7731,6 +7098,526 @@
                 "title": "PaginatedRowsResult",
                 "description": "A paginated list of rows from a dataset."
             },
+            "AnswerCorrectnessScoringFn": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "answer_correctness",
+                        "default": "answer_correctness"
+                    },
+                    "answer_correctness": {
+                        "type": "object",
+                        "properties": {
+                            "aggregation_functions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": [
+                                        "average",
+                                        "median",
+                                        "categorical_count",
+                                        "accuracy"
+                                    ],
+                                    "title": "AggregationFunctionType",
+                                    "description": "A type of aggregation function."
+                                },
+                                "description": "(Optional) Aggregation functions to apply to the scores of each row. If not provided, no aggregation will be performed."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "title": "BasicScoringFnParams"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "answer_correctness"
+                ],
+                "title": "AnswerCorrectnessScoringFn"
+            },
+            "AnswerRelevancyScoringFn": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "answer_relevancy",
+                        "default": "answer_relevancy"
+                    },
+                    "answer_relevancy": {
+                        "type": "object",
+                        "properties": {
+                            "aggregation_functions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": [
+                                        "average",
+                                        "median",
+                                        "categorical_count",
+                                        "accuracy"
+                                    ],
+                                    "title": "AggregationFunctionType",
+                                    "description": "A type of aggregation function."
+                                },
+                                "description": "(Optional) Aggregation functions to apply to the scores of each row. If not provided, no aggregation will be performed."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "title": "BasicScoringFnParams"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "answer_relevancy"
+                ],
+                "title": "AnswerRelevancyScoringFn"
+            },
+            "AnswerSimilarityScoringFn": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "answer_similarity",
+                        "default": "answer_similarity"
+                    },
+                    "answer_similarity": {
+                        "type": "object",
+                        "properties": {
+                            "aggregation_functions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": [
+                                        "average",
+                                        "median",
+                                        "categorical_count",
+                                        "accuracy"
+                                    ],
+                                    "title": "AggregationFunctionType",
+                                    "description": "A type of aggregation function."
+                                },
+                                "description": "(Optional) Aggregation functions to apply to the scores of each row. If not provided, no aggregation will be performed."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "title": "BasicScoringFnParams"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "answer_similarity"
+                ],
+                "title": "AnswerSimilarityScoringFn"
+            },
+            "ContextEntityRecallScoringFn": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "context_entity_recall",
+                        "default": "context_entity_recall"
+                    },
+                    "context_entity_recall": {
+                        "type": "object",
+                        "properties": {
+                            "aggregation_functions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": [
+                                        "average",
+                                        "median",
+                                        "categorical_count",
+                                        "accuracy"
+                                    ],
+                                    "title": "AggregationFunctionType",
+                                    "description": "A type of aggregation function."
+                                },
+                                "description": "(Optional) Aggregation functions to apply to the scores of each row. If not provided, no aggregation will be performed."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "title": "BasicScoringFnParams"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "context_entity_recall"
+                ],
+                "title": "ContextEntityRecallScoringFn"
+            },
+            "ContextPrecisionScoringFn": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "context_precision",
+                        "default": "context_precision"
+                    },
+                    "context_precision": {
+                        "type": "object",
+                        "properties": {
+                            "aggregation_functions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": [
+                                        "average",
+                                        "median",
+                                        "categorical_count",
+                                        "accuracy"
+                                    ],
+                                    "title": "AggregationFunctionType",
+                                    "description": "A type of aggregation function."
+                                },
+                                "description": "(Optional) Aggregation functions to apply to the scores of each row. If not provided, no aggregation will be performed."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "title": "BasicScoringFnParams"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "context_precision"
+                ],
+                "title": "ContextPrecisionScoringFn"
+            },
+            "ContextRecallScoringFn": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "context_recall",
+                        "default": "context_recall"
+                    },
+                    "context_recall": {
+                        "type": "object",
+                        "properties": {
+                            "aggregation_functions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": [
+                                        "average",
+                                        "median",
+                                        "categorical_count",
+                                        "accuracy"
+                                    ],
+                                    "title": "AggregationFunctionType",
+                                    "description": "A type of aggregation function."
+                                },
+                                "description": "(Optional) Aggregation functions to apply to the scores of each row. If not provided, no aggregation will be performed."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "title": "BasicScoringFnParams"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "context_recall"
+                ],
+                "title": "ContextRecallScoringFn"
+            },
+            "ContextRelevancyScoringFn": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "context_relevancy",
+                        "default": "context_relevancy"
+                    },
+                    "context_relevancy": {
+                        "type": "object",
+                        "properties": {
+                            "aggregation_functions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": [
+                                        "average",
+                                        "median",
+                                        "categorical_count",
+                                        "accuracy"
+                                    ],
+                                    "title": "AggregationFunctionType",
+                                    "description": "A type of aggregation function."
+                                },
+                                "description": "(Optional) Aggregation functions to apply to the scores of each row. If not provided, no aggregation will be performed."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "title": "BasicScoringFnParams"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "context_relevancy"
+                ],
+                "title": "ContextRelevancyScoringFn"
+            },
+            "CustomLLMAsJudgeScoringFn": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "custom_llm_as_judge",
+                        "default": "custom_llm_as_judge"
+                    },
+                    "custom_llm_as_judge": {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "custom_llm_as_judge",
+                                "default": "custom_llm_as_judge"
+                            },
+                            "judge_model": {
+                                "type": "string"
+                            },
+                            "prompt_template": {
+                                "type": "string"
+                            },
+                            "judge_score_regexes": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "type",
+                            "judge_model"
+                        ],
+                        "title": "CustomLLMAsJudgeScoringFnParams"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "custom_llm_as_judge"
+                ],
+                "title": "CustomLLMAsJudgeScoringFn"
+            },
+            "EqualityScoringFn": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "equality",
+                        "default": "equality"
+                    },
+                    "equality": {
+                        "type": "object",
+                        "properties": {
+                            "aggregation_functions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": [
+                                        "average",
+                                        "median",
+                                        "categorical_count",
+                                        "accuracy"
+                                    ],
+                                    "title": "AggregationFunctionType",
+                                    "description": "A type of aggregation function."
+                                },
+                                "description": "(Optional) Aggregation functions to apply to the scores of each row. If not provided, no aggregation will be performed."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "title": "BasicScoringFnParams"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "equality"
+                ],
+                "title": "EqualityScoringFn"
+            },
+            "FactualityScoringFn": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "factuality",
+                        "default": "factuality"
+                    },
+                    "factuality": {
+                        "type": "object",
+                        "properties": {
+                            "aggregation_functions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": [
+                                        "average",
+                                        "median",
+                                        "categorical_count",
+                                        "accuracy"
+                                    ],
+                                    "title": "AggregationFunctionType",
+                                    "description": "A type of aggregation function."
+                                },
+                                "description": "(Optional) Aggregation functions to apply to the scores of each row. If not provided, no aggregation will be performed."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "title": "BasicScoringFnParams"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "factuality"
+                ],
+                "title": "FactualityScoringFn"
+            },
+            "FaithfulnessScoringFn": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "faithfulness",
+                        "default": "faithfulness"
+                    },
+                    "faithfulness": {
+                        "type": "object",
+                        "properties": {
+                            "aggregation_functions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": [
+                                        "average",
+                                        "median",
+                                        "categorical_count",
+                                        "accuracy"
+                                    ],
+                                    "title": "AggregationFunctionType",
+                                    "description": "A type of aggregation function."
+                                },
+                                "description": "(Optional) Aggregation functions to apply to the scores of each row. If not provided, no aggregation will be performed."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "title": "BasicScoringFnParams"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "faithfulness"
+                ],
+                "title": "FaithfulnessScoringFn"
+            },
+            "RegexParserMathScoringFn": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "regex_parser_math_response",
+                        "default": "regex_parser_math_response"
+                    },
+                    "regex_parser_math_response": {
+                        "type": "object",
+                        "properties": {
+                            "parsing_regexes": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "(Optional) Regexes to extract the answer from generated response."
+                            },
+                            "aggregation_functions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": [
+                                        "average",
+                                        "median",
+                                        "categorical_count",
+                                        "accuracy"
+                                    ],
+                                    "title": "AggregationFunctionType",
+                                    "description": "A type of aggregation function."
+                                },
+                                "description": "(Optional) Aggregation functions to apply to the scores of each row. If not provided, no aggregation will be performed."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "parsing_regexes"
+                        ],
+                        "title": "RegexParserScoringFnParams"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "regex_parser_math_response"
+                ],
+                "title": "RegexParserMathScoringFn"
+            },
+            "RegexParserScoringFn": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "regex_parser",
+                        "default": "regex_parser"
+                    },
+                    "regex_parser": {
+                        "type": "object",
+                        "properties": {
+                            "parsing_regexes": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "(Optional) Regexes to extract the answer from generated response."
+                            },
+                            "aggregation_functions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": [
+                                        "average",
+                                        "median",
+                                        "categorical_count",
+                                        "accuracy"
+                                    ],
+                                    "title": "AggregationFunctionType",
+                                    "description": "A type of aggregation function."
+                                },
+                                "description": "(Optional) Aggregation functions to apply to the scores of each row. If not provided, no aggregation will be performed."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "parsing_regexes"
+                        ],
+                        "title": "RegexParserScoringFnParams"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "regex_parser"
+                ],
+                "title": "RegexParserScoringFn"
+            },
             "ScoringFn": {
                 "type": "object",
                 "properties": {
@@ -7749,7 +7636,7 @@
                         "default": "scoring_function"
                     },
                     "fn": {
-                        "$ref": "#/components/schemas/ScoringFnParams",
+                        "$ref": "#/components/schemas/ScoringFnDefinition",
                         "description": "The scoring function type and parameters."
                     },
                     "metadata": {
@@ -7789,6 +7676,109 @@
                     "metadata"
                 ],
                 "title": "ScoringFn"
+            },
+            "ScoringFnDefinition": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/CustomLLMAsJudgeScoringFn"
+                    },
+                    {
+                        "$ref": "#/components/schemas/RegexParserScoringFn"
+                    },
+                    {
+                        "$ref": "#/components/schemas/RegexParserMathScoringFn"
+                    },
+                    {
+                        "$ref": "#/components/schemas/EqualityScoringFn"
+                    },
+                    {
+                        "$ref": "#/components/schemas/SubsetOfScoringFn"
+                    },
+                    {
+                        "$ref": "#/components/schemas/FactualityScoringFn"
+                    },
+                    {
+                        "$ref": "#/components/schemas/FaithfulnessScoringFn"
+                    },
+                    {
+                        "$ref": "#/components/schemas/AnswerCorrectnessScoringFn"
+                    },
+                    {
+                        "$ref": "#/components/schemas/AnswerRelevancyScoringFn"
+                    },
+                    {
+                        "$ref": "#/components/schemas/AnswerSimilarityScoringFn"
+                    },
+                    {
+                        "$ref": "#/components/schemas/ContextEntityRecallScoringFn"
+                    },
+                    {
+                        "$ref": "#/components/schemas/ContextPrecisionScoringFn"
+                    },
+                    {
+                        "$ref": "#/components/schemas/ContextRecallScoringFn"
+                    },
+                    {
+                        "$ref": "#/components/schemas/ContextRelevancyScoringFn"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "custom_llm_as_judge": "#/components/schemas/CustomLLMAsJudgeScoringFn",
+                        "regex_parser": "#/components/schemas/RegexParserScoringFn",
+                        "regex_parser_math_response": "#/components/schemas/RegexParserMathScoringFn",
+                        "equality": "#/components/schemas/EqualityScoringFn",
+                        "subset_of": "#/components/schemas/SubsetOfScoringFn",
+                        "factuality": "#/components/schemas/FactualityScoringFn",
+                        "faithfulness": "#/components/schemas/FaithfulnessScoringFn",
+                        "answer_correctness": "#/components/schemas/AnswerCorrectnessScoringFn",
+                        "answer_relevancy": "#/components/schemas/AnswerRelevancyScoringFn",
+                        "answer_similarity": "#/components/schemas/AnswerSimilarityScoringFn",
+                        "context_entity_recall": "#/components/schemas/ContextEntityRecallScoringFn",
+                        "context_precision": "#/components/schemas/ContextPrecisionScoringFn",
+                        "context_recall": "#/components/schemas/ContextRecallScoringFn",
+                        "context_relevancy": "#/components/schemas/ContextRelevancyScoringFn"
+                    }
+                }
+            },
+            "SubsetOfScoringFn": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "subset_of",
+                        "default": "subset_of"
+                    },
+                    "subset_of": {
+                        "type": "object",
+                        "properties": {
+                            "aggregation_functions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": [
+                                        "average",
+                                        "median",
+                                        "categorical_count",
+                                        "accuracy"
+                                    ],
+                                    "title": "AggregationFunctionType",
+                                    "description": "A type of aggregation function."
+                                },
+                                "description": "(Optional) Aggregation functions to apply to the scores of each row. If not provided, no aggregation will be performed."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "title": "BasicScoringFnParams"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "subset_of"
+                ],
+                "title": "SubsetOfScoringFn"
             },
             "Shield": {
                 "type": "object",
@@ -9992,7 +9982,7 @@
                 "type": "object",
                 "properties": {
                     "fn": {
-                        "$ref": "#/components/schemas/ScoringFnParams",
+                        "$ref": "#/components/schemas/ScoringFnDefinition",
                         "description": "The type and parameters for the scoring function."
                     },
                     "scoring_fn_id": {
@@ -10168,33 +10158,6 @@
                 ],
                 "title": "ResumeAgentTurnRequest"
             },
-            "RunEvalRequest": {
-                "type": "object",
-                "properties": {
-                    "benchmark_config": {
-                        "$ref": "#/components/schemas/BenchmarkConfig",
-                        "description": "The configuration for the benchmark."
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "benchmark_config"
-                ],
-                "title": "RunEvalRequest"
-            },
-            "Job": {
-                "type": "object",
-                "properties": {
-                    "job_id": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "job_id"
-                ],
-                "title": "Job"
-            },
             "RunShieldRequest": {
                 "type": "object",
                 "properties": {
@@ -10284,7 +10247,7 @@
             "ScoreRequest": {
                 "type": "object",
                 "properties": {
-                    "input_rows": {
+                    "dataset_rows": {
                         "type": "array",
                         "items": {
                             "type": "object",
@@ -10313,25 +10276,18 @@
                         },
                         "description": "The rows to score."
                     },
-                    "scoring_functions": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "$ref": "#/components/schemas/ScoringFnParams"
-                                },
-                                {
-                                    "type": "null"
-                                }
-                            ]
+                    "scoring_fn_ids": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
                         },
-                        "description": "The scoring functions to use for the scoring."
+                        "description": "The scoring function ids to use for the scoring."
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "input_rows",
-                    "scoring_functions"
+                    "dataset_rows",
+                    "scoring_fn_ids"
                 ],
                 "title": "ScoreRequest"
             },
@@ -10353,36 +10309,25 @@
                 "title": "ScoreResponse",
                 "description": "The response from scoring."
             },
-            "ScoreBatchRequest": {
+            "ScoreDatasetRequest": {
                 "type": "object",
                 "properties": {
                     "dataset_id": {
                         "type": "string"
                     },
-                    "scoring_functions": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "$ref": "#/components/schemas/ScoringFnParams"
-                                },
-                                {
-                                    "type": "null"
-                                }
-                            ]
+                    "scoring_fn_ids": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
                         }
-                    },
-                    "save_results_dataset": {
-                        "type": "boolean"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "dataset_id",
-                    "scoring_functions",
-                    "save_results_dataset"
+                    "scoring_fn_ids"
                 ],
-                "title": "ScoreBatchRequest"
+                "title": "ScoreDatasetRequest"
             },
             "ScoreBatchResponse": {
                 "type": "object",

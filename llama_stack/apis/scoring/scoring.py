@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
 
 from pydantic import BaseModel
 
-from llama_stack.apis.scoring_functions import ScoringFn, ScoringFnParams
+from llama_stack.apis.scoring_functions import ScoringFn
 from llama_stack.schema_utils import json_schema_type, webmethod
 
 # mapping of metric to value
@@ -56,23 +56,22 @@ class Scoring(Protocol):
     scoring_function_store: ScoringFunctionStore
 
     @webmethod(route="/scoring/score-batch", method="POST")
-    async def score_batch(
+    async def score_dataset(
         self,
         dataset_id: str,
-        scoring_functions: Dict[str, Optional[ScoringFnParams]],
-        save_results_dataset: bool = False,
+        scoring_fn_ids: List[str],
     ) -> ScoreBatchResponse: ...
 
     @webmethod(route="/scoring/score", method="POST")
     async def score(
         self,
-        input_rows: List[Dict[str, Any]],
-        scoring_functions: Dict[str, Optional[ScoringFnParams]],
+        dataset_rows: List[Dict[str, Any]],
+        scoring_fn_ids: List[str],
     ) -> ScoreResponse:
         """Score a list of rows.
 
-        :param input_rows: The rows to score.
-        :param scoring_functions: The scoring functions to use for the scoring.
+        :param dataset_rows: The rows to score.
+        :param scoring_fn_ids: The scoring function ids to use for the scoring.
         :return: ScoreResponse object containing rows and aggregated results
         """
         ...

@@ -13,7 +13,6 @@ from llama_stack.apis.agents import AgentConfig
 from llama_stack.apis.common.job_types import Job, JobStatus
 from llama_stack.apis.inference import SamplingParams, SystemMessage
 from llama_stack.apis.scoring import ScoringResult
-from llama_stack.apis.scoring_functions import ScoringFnParams
 from llama_stack.schema_utils import json_schema_type, register_schema, webmethod
 
 
@@ -50,27 +49,6 @@ EvalCandidate = register_schema(
 
 
 @json_schema_type
-class BenchmarkConfig(BaseModel):
-    """A benchmark configuration for evaluation.
-
-    :param eval_candidate: The candidate to evaluate.
-    :param scoring_params: Map between scoring function id and parameters for each scoring function you want to run
-    :param num_examples: (Optional) The number of examples to evaluate. If not provided, all examples in the dataset will be evaluated
-    """
-
-    eval_candidate: EvalCandidate
-    scoring_params: Dict[str, ScoringFnParams] = Field(
-        description="Map between scoring function id and parameters for each scoring function you want to run",
-        default_factory=dict,
-    )
-    num_examples: Optional[int] = Field(
-        description="Number of examples to evaluate (useful for testing), if not provided, all examples in the dataset will be evaluated",
-        default=None,
-    )
-    # we could optinally add any specific dataset config here
-
-
-@json_schema_type
 class EvaluateResponse(BaseModel):
     """The response from an evaluation.
 
@@ -87,32 +65,30 @@ class Eval(Protocol):
     """Llama Stack Evaluation API for running evaluations on model and agent candidates."""
 
     @webmethod(route="/eval/benchmarks/{benchmark_id}/jobs", method="POST")
-    async def run_eval(
+    async def evaluate_benchmark(
         self,
         benchmark_id: str,
-        benchmark_config: BenchmarkConfig,
+        candidate: EvalCandidate,
     ) -> Job:
         """Run an evaluation on a benchmark.
 
         :param benchmark_id: The ID of the benchmark to run the evaluation on.
-        :param benchmark_config: The configuration for the benchmark.
+        :param candidate: The candidate to evaluate on.
         :return: The job that was created to run the evaluation.
         """
 
-    @webmethod(route="/eval/benchmarks/{benchmark_id}/evaluations", method="POST")
+    @webmethod(route="/eval/rows", method="POST")
     async def evaluate_rows(
         self,
-        benchmark_id: str,
-        input_rows: List[Dict[str, Any]],
-        scoring_functions: List[str],
-        benchmark_config: BenchmarkConfig,
+        dataset_rows: List[Dict[str, Any]],
+        scoring_fn_ids: List[str],
+        candidate: EvalCandidate,
     ) -> EvaluateResponse:
-        """Evaluate a list of rows on a benchmark.
-
-        :param benchmark_id: The ID of the benchmark to run the evaluation on.
-        :param input_rows: The rows to evaluate.
-        :param scoring_functions: The scoring functions to use for the evaluation.
-        :param benchmark_config: The configuration for the benchmark.
+        """Evaluate a list of rows on a candidate.
+        
+        :param dataset_rows: The rows to evaluate.
+        :param scoring_fn_ids: The scoring function ids to use for the evaluation.
+        :param candidate: The candidate to evaluate on.
         :return: EvaluateResponse object containing generations and scores
         """
 

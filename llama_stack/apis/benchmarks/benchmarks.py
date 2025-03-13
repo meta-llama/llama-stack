@@ -8,7 +8,6 @@ from typing import Any, Dict, List, Literal, Optional, Protocol, runtime_checkab
 from pydantic import BaseModel, Field
 
 from llama_stack.apis.resource import Resource, ResourceType
-from llama_stack.apis.scoring_functions import ScoringFnParams
 from llama_stack.schema_utils import json_schema_type, webmethod
 
 
