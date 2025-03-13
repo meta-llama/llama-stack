@@ -20,7 +20,7 @@ class CommonBenchmarkFields(BaseModel):
     """
 
     dataset_id: str
-    scoring_functions: List[ScoringFnParams]
+    scoring_fn_ids: List[str]
     metadata: Dict[str, Any] = Field(
         default_factory=dict,
         description="Metadata for this benchmark",
@@ -65,7 +65,7 @@ class Benchmarks(Protocol):
     async def register_benchmark(
         self,
         dataset_id: str,
-        scoring_functions: List[ScoringFnParams],
+        scoring_fn_ids: List[str],
         benchmark_id: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None,
     ) -> Benchmark:
@@ -73,7 +73,7 @@ class Benchmarks(Protocol):
         Register a new benchmark.
 
         :param dataset_id: The ID of the dataset to used to run the benchmark.
-        :param scoring_functions: The scoring functions with parameters to use for this benchmark.
+        :param scoring_fn_ids: List of scoring function ids to use for this benchmark.
         :param benchmark_id: (Optional) The ID of the benchmark to register. If not provided, a random ID will be generated.
         :param metadata: (Optional) Metadata for this benchmark for additional descriptions.
         """
