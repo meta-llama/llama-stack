@@ -271,7 +271,7 @@ def test_custom_tool(llama_stack_client_with_mocked_inference, agent_config):
     client_tool = get_boiling_point
     agent_config = {
         **agent_config,
-        "tools": ["builtin::websearch", client_tool],
+        "tools": [client_tool],
     }
 
     agent = Agent(llama_stack_client_with_mocked_inference, **agent_config)
@@ -320,40 +320,53 @@ def test_custom_tool_infinite_loop(llama_stack_client_with_mocked_inference, age
     assert num_tool_calls <= 5
 
 
-def test_tool_choice(llama_stack_client_with_mocked_inference, agent_config):
-    def run_agent(tool_choice):
-        client_tool = get_boiling_point
-
-        test_agent_config = {
-            **agent_config,
-            "tool_config": {"tool_choice": tool_choice},
-            "tools": [client_tool],
-        }
-
-        agent = Agent(llama_stack_client_with_mocked_inference, **test_agent_config)
-        session_id = agent.create_session(f"test-session-{uuid4()}")
-
-        response = agent.create_turn(
-            messages=[
-                {
-                    "role": "user",
-                    "content": "What is the boiling point of polyjuice?",
-                },
-            ],
-            session_id=session_id,
-            stream=False,
-        )
-
-        return [step for step in response.steps if step.step_type == "tool_execution"]
-
-    tool_execution_steps = run_agent("required")
+def test_tool_choice_required(llama_stack_client_with_mocked_inference, agent_config):
+    tool_execution_steps = run_agent_with_tool_choice(
+        llama_stack_client_with_mocked_inference, agent_config, "required"
+    )
     assert len(tool_execution_steps) > 0
 
-    tool_execution_steps = run_agent("none")
+
+def test_tool_choice_none(llama_stack_client_with_mocked_inference, agent_config):
+    tool_execution_steps = run_agent_with_tool_choice(llama_stack_client_with_mocked_inference, agent_config, "none")
     assert len(tool_execution_steps) == 0
 
-    tool_execution_steps = run_agent("get_boiling_point")
+
+def test_tool_choice_get_boiling_point(llama_stack_client_with_mocked_inference, agent_config):
+    if "llama" not in agent_config["model"].lower():
+        pytest.xfail("NotImplemented for non-llama models")
+
+    tool_execution_steps = run_agent_with_tool_choice(
+        llama_stack_client_with_mocked_inference, agent_config, "get_boiling_point"
+    )
     assert len(tool_execution_steps) >= 1 and tool_execution_steps[0].tool_calls[0].tool_name == "get_boiling_point"
+
+
+def run_agent_with_tool_choice(client, agent_config, tool_choice):
+    client_tool = get_boiling_point
+
+    test_agent_config = {
+        **agent_config,
+        "tool_config": {"tool_choice": tool_choice},
+        "tools": [client_tool],
+        "max_infer_iters": 2,
+    }
+
+    agent = Agent(client, **test_agent_config)
+    session_id = agent.create_session(f"test-session-{uuid4()}")
+
+    response = agent.create_turn(
+        messages=[
+            {
+                "role": "user",
+                "content": "What is the boiling point of polyjuice?",
+            },
+        ],
+        session_id=session_id,
+        stream=False,
+    )
+
+    return [step for step in response.steps if step.step_type == "tool_execution"]
 
 
 @pytest.mark.parametrize("rag_tool_name", ["builtin::rag/knowledge_search", "builtin::rag"])
@@ -571,7 +584,7 @@ def test_rag_and_code_agent(llama_stack_client_with_mocked_inference, agent_conf
     [(get_boiling_point, False), (get_boiling_point_with_metadata, True)],
 )
 def test_create_turn_response(llama_stack_client_with_mocked_inference, agent_config, client_tools):
-    client_tool, expectes_metadata = client_tools
+    client_tool, expects_metadata = client_tools
     agent_config = {
         **agent_config,
         "input_shields": [],
@@ -597,7 +610,7 @@ def test_create_turn_response(llama_stack_client_with_mocked_inference, agent_co
     assert steps[0].step_type == "inference"
     assert steps[1].step_type == "tool_execution"
     assert steps[1].tool_calls[0].tool_name.startswith("get_boiling_point")
-    if expectes_metadata:
+    if expects_metadata:
         assert steps[1].tool_responses[0].metadata["source"] == "https://www.google.com"
     assert steps[2].step_type == "inference"
 
@@ -609,3 +622,44 @@ def test_create_turn_response(llama_stack_client_with_mocked_inference, agent_co
             assert last_step_completed_at < step.started_at
             assert step.started_at < step.completed_at
             last_step_completed_at = step.completed_at
+
+
+def test_multi_tool_calls(llama_stack_client_with_mocked_inference, agent_config):
+    if "gpt" not in agent_config["model"]:
+        pytest.xfail("Only tested on GPT models")
+
+    agent_config = {
+        **agent_config,
+        "tools": [get_boiling_point],
+    }
+
+    agent = Agent(llama_stack_client_with_mocked_inference, **agent_config)
+    session_id = agent.create_session(f"test-session-{uuid4()}")
+
+    response = agent.create_turn(
+        messages=[
+            {
+                "role": "user",
+                "content": "Call get_boiling_point twice to answer: What is the boiling point of polyjuice in both celsius and fahrenheit?",
+            },
+        ],
+        session_id=session_id,
+        stream=False,
+    )
+    steps = response.steps
+    assert len(steps) == 7
+    assert steps[0].step_type == "shield_call"
+    assert steps[1].step_type == "inference"
+    assert steps[2].step_type == "shield_call"
+    assert steps[3].step_type == "tool_execution"
+    assert steps[4].step_type == "shield_call"
+    assert steps[5].step_type == "inference"
+    assert steps[6].step_type == "shield_call"
+
+    tool_execution_step = steps[3]
+    assert len(tool_execution_step.tool_calls) == 2
+    assert tool_execution_step.tool_calls[0].tool_name.startswith("get_boiling_point")
+    assert tool_execution_step.tool_calls[1].tool_name.startswith("get_boiling_point")
+
+    output = response.output_message.content.lower()
+    assert "-100" in output and "-212" in output
