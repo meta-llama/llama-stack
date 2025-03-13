@@ -31,8 +31,13 @@ providers:
   safety:
   - provider_id: llama-guard
     provider_type: inline::llama-guard
-    config:
-      excluded_categories: []
+    config: {}
+  - provider_id: llama-guard-vision
+    provider_type: inline::llama-guard
+    config: {}
+  - provider_id: code-scanner
+    provider_type: inline::code-scanner
+    config: {}
   agents:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -127,6 +132,11 @@ models:
   model_type: embedding
 shields:
 - shield_id: meta-llama/Llama-Guard-3-8B
+  provider_id: llama-guard
+- shield_id: meta-llama/Llama-Guard-3-11B-Vision
+  provider_id: llama-guard-vision
+- shield_id: CodeScanner
+  provider_id: code-scanner
 vector_dbs: []
 datasets: []
 scoring_fns: []
