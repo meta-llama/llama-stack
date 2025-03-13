@@ -23,6 +23,13 @@ class DatasetPurpose(Enum):
                 {"role": "assistant", "content": "Hello, world!"},
             ]
         }
+    :cvar eval/question-answer: The dataset contains a question and answer column.
+        {
+            "question": [
+                {"role": "user", "content": "What is the capital of France?"},
+            ],
+            "answer": "Paris"
+        }
     """
 
     post_training_messages = "post-training/messages"
@@ -157,9 +164,11 @@ class Datasets(Protocol):
            }
            - {
                "type": "huggingface",
-               "dataset_path": "tatsu-lab/alpaca",
-               "params": {
-                   "split": "train"
+               "huggingface": {
+                   "dataset_path": "tatsu-lab/alpaca",
+                   "params": {
+                       "split": "train"
+                   }
                }
            }
            - {
