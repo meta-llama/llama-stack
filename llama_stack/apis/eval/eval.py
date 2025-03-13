@@ -77,7 +77,7 @@ class Eval(Protocol):
         :return: The job that was created to run the evaluation.
         """
 
-    @webmethod(route="/eval/rows", method="POST")
+    @webmethod(route="/eval/evaluate_rows", method="POST")
     async def evaluate_rows(
         self,
         dataset_rows: List[Dict[str, Any]],
@@ -85,7 +85,7 @@ class Eval(Protocol):
         candidate: EvalCandidate,
     ) -> EvaluateResponse:
         """Evaluate a list of rows on a candidate.
-        
+
         :param dataset_rows: The rows to evaluate.
         :param scoring_fn_ids: The scoring function ids to use for the evaluation.
         :param candidate: The candidate to evaluate on.
@@ -111,7 +111,9 @@ class Eval(Protocol):
         """
         ...
 
-    @webmethod(route="/eval/benchmarks/{benchmark_id}/jobs/{job_id}/result", method="GET")
+    @webmethod(
+        route="/eval/benchmarks/{benchmark_id}/jobs/{job_id}/result", method="GET"
+    )
     async def job_result(self, benchmark_id: str, job_id: str) -> EvaluateResponse:
         """Get the result of a job.
 

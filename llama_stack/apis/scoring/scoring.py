@@ -62,8 +62,8 @@ class Scoring(Protocol):
         scoring_fn_ids: List[str],
     ) -> ScoreBatchResponse: ...
 
-    @webmethod(route="/scoring/rows", method="POST")
-    async def score(
+    @webmethod(route="/scoring/score-rows", method="POST")
+    async def score_rows(
         self,
         dataset_rows: List[Dict[str, Any]],
         scoring_fn_ids: List[str],
