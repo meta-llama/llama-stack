@@ -37,8 +37,8 @@ class DatasetIO(Protocol):
     # keeping for aligning with inference/safety, but this is not used
     dataset_store: DatasetStore
 
-    @webmethod(route="/datasetio/rows", method="GET")
-    async def get_rows_paginated(
+    @webmethod(route="/datasets/{dataset_id}/iterrows", method="GET")
+    async def iterrows(
         self,
         dataset_id: str,
         rows_in_page: int,
@@ -54,5 +54,7 @@ class DatasetIO(Protocol):
         """
         ...
 
-    @webmethod(route="/datasetio/rows", method="POST")
-    async def append_rows(self, dataset_id: str, rows: List[Dict[str, Any]]) -> None: ...
+    @webmethod(route="/datasets/{dataset_id}/rows", method="POST")
+    async def append_rows(
+        self, dataset_id: str, rows: List[Dict[str, Any]]
+    ) -> None: ...

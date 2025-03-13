@@ -40,75 +40,7 @@
         }
     ],
     "paths": {
-        "/v1/datasetio/rows": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PaginatedRowsResult"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest400"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/TooManyRequests429"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError500"
-                    },
-                    "default": {
-                        "$ref": "#/components/responses/DefaultError"
-                    }
-                },
-                "tags": [
-                    "DatasetIO"
-                ],
-                "description": "Get a paginated list of rows from a dataset.",
-                "parameters": [
-                    {
-                        "name": "dataset_id",
-                        "in": "query",
-                        "description": "The ID of the dataset to get the rows from.",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "rows_in_page",
-                        "in": "query",
-                        "description": "The number of rows to get per page.",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "page_token",
-                        "in": "query",
-                        "description": "The token to get the next page of rows.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "filter_condition",
-                        "in": "query",
-                        "description": "(Optional) A condition to filter the rows by.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
-            },
+        "/v1/datasets/{dataset_id}/rows": {
             "post": {
                 "responses": {
                     "200": {
@@ -131,7 +63,16 @@
                     "DatasetIO"
                 ],
                 "description": "",
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "dataset_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -2272,6 +2213,76 @@
                 }
             }
         },
+        "/v1/datasets/{dataset_id}/iterrows": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedRowsResult"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "DatasetIO"
+                ],
+                "description": "Get a paginated list of rows from a dataset.",
+                "parameters": [
+                    {
+                        "name": "dataset_id",
+                        "in": "path",
+                        "description": "The ID of the dataset to get the rows from.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "rows_in_page",
+                        "in": "query",
+                        "description": "The number of rows to get per page.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page_token",
+                        "in": "query",
+                        "description": "The token to get the next page of rows.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "filter_condition",
+                        "in": "query",
+                        "description": "(Optional) A condition to filter the rows by.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
         "/v1/eval/benchmarks/{benchmark_id}/jobs/{job_id}": {
             "get": {
                 "responses": {
@@ -3861,9 +3872,6 @@
             "AppendRowsRequest": {
                 "type": "object",
                 "properties": {
-                    "dataset_id": {
-                        "type": "string"
-                    },
                     "rows": {
                         "type": "array",
                         "items": {
@@ -3895,7 +3903,6 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "dataset_id",
                     "rows"
                 ],
                 "title": "AppendRowsRequest"
@@ -6756,9 +6763,6 @@
                         "$ref": "#/components/schemas/URIDataSource"
                     },
                     {
-                        "$ref": "#/components/schemas/HuggingfaceDataSource"
-                    },
-                    {
                         "$ref": "#/components/schemas/RowsDataSource"
                     }
                 ],
@@ -6766,7 +6770,6 @@
                     "propertyName": "type",
                     "mapping": {
                         "uri": "#/components/schemas/URIDataSource",
-                        "huggingface": "#/components/schemas/HuggingfaceDataSource",
                         "rows": "#/components/schemas/RowsDataSource"
                     }
                 }
@@ -6841,65 +6844,6 @@
                     "metadata"
                 ],
                 "title": "Dataset"
-            },
-            "HuggingfaceDataSource": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "huggingface",
-                        "default": "huggingface",
-                        "description": "The type of the data source."
-                    },
-                    "huggingface": {
-                        "type": "object",
-                        "properties": {
-                            "path": {
-                                "type": "string",
-                                "description": "The path to the dataset in Huggingface. E.g. - \"llamastack/simpleqa\""
-                            },
-                            "params": {
-                                "type": "object",
-                                "additionalProperties": {
-                                    "oneOf": [
-                                        {
-                                            "type": "null"
-                                        },
-                                        {
-                                            "type": "boolean"
-                                        },
-                                        {
-                                            "type": "number"
-                                        },
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "type": "array"
-                                        },
-                                        {
-                                            "type": "object"
-                                        }
-                                    ]
-                                },
-                                "description": "The parameters for the dataset."
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "path",
-                            "params"
-                        ],
-                        "description": "The fields for a Huggingface dataset."
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type",
-                    "huggingface"
-                ],
-                "title": "HuggingfaceDataSource",
-                "description": "A dataset stored in Huggingface."
             },
             "RowsDataSource": {
                 "type": "object",
@@ -7034,56 +6978,7 @@
                 ],
                 "title": "ModelType"
             },
-            "PaginatedRowsResult": {
-                "type": "object",
-                "properties": {
-                    "rows": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "oneOf": [
-                                    {
-                                        "type": "null"
-                                    },
-                                    {
-                                        "type": "boolean"
-                                    },
-                                    {
-                                        "type": "number"
-                                    },
-                                    {
-                                        "type": "string"
-                                    },
-                                    {
-                                        "type": "array"
-                                    },
-                                    {
-                                        "type": "object"
-                                    }
-                                ]
-                            }
-                        },
-                        "description": "The rows in the current page."
-                    },
-                    "total_count": {
-                        "type": "integer",
-                        "description": "The total number of rows in the dataset."
-                    },
-                    "next_page_token": {
-                        "type": "string",
-                        "description": "The token to get the next page of rows."
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "rows",
-                    "total_count"
-                ],
-                "title": "PaginatedRowsResult",
-                "description": "A paginated list of rows from a dataset."
-            },
-            "AnswerCorrectnessScoringFn": {
+            "AgentTurnInputType": {
                 "type": "object",
                 "properties": {
                     "type": {
@@ -8537,6 +8432,55 @@
                 ],
                 "title": "ToolInvocationResult"
             },
+            "PaginatedRowsResult": {
+                "type": "object",
+                "properties": {
+                    "rows": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "oneOf": [
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "type": "boolean"
+                                    },
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array"
+                                    },
+                                    {
+                                        "type": "object"
+                                    }
+                                ]
+                            }
+                        },
+                        "description": "The rows in the current page."
+                    },
+                    "total_count": {
+                        "type": "integer",
+                        "description": "The total number of rows in the dataset."
+                    },
+                    "next_page_token": {
+                        "type": "string",
+                        "description": "The token to get the next page of rows."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "rows",
+                    "total_count"
+                ],
+                "title": "PaginatedRowsResult",
+                "description": "A paginated list of rows from a dataset."
+            },
             "ListAgentSessionsResponse": {
                 "type": "object",
                 "properties": {
@@ -9884,7 +9828,7 @@
                     },
                     "source": {
                         "$ref": "#/components/schemas/DataSource",
-                        "description": "The data source of the dataset. Examples: - { \"type\": \"uri\", \"uri\": \"https://mywebsite.com/mydata.jsonl\" } - { \"type\": \"uri\", \"uri\": \"lsfs://mydata.jsonl\" } - { \"type\": \"huggingface\", \"huggingface\": { \"dataset_path\": \"tatsu-lab/alpaca\", \"params\": { \"split\": \"train\" } } } - { \"type\": \"rows\", \"rows\": [ { \"messages\": [ {\"role\": \"user\", \"content\": \"Hello, world!\"}, {\"role\": \"assistant\", \"content\": \"Hello, world!\"}, ] } ] }"
+                        "description": "The data source of the dataset. Examples: - { \"type\": \"uri\", \"uri\": \"https://mywebsite.com/mydata.jsonl\" } - { \"type\": \"uri\", \"uri\": \"lsfs://mydata.jsonl\" } - { \"type\": \"uri\", \"uri\": \"data:csv;base64,{base64_content}\" } - { \"type\": \"uri\", \"uri\": \"huggingface://llamastack/simpleqa?split=train\" } - { \"type\": \"rows\", \"rows\": [ { \"messages\": [ {\"role\": \"user\", \"content\": \"Hello, world!\"}, {\"role\": \"assistant\", \"content\": \"Hello, world!\"}, ] } ] }"
                     },
                     "metadata": {
                         "type": "object",
@@ -9914,7 +9858,7 @@
                     },
                     "dataset_id": {
                         "type": "string",
-                        "description": "The ID of the dataset. If not provided, a random ID will be generated."
+                        "description": "The ID of the dataset. If not provided, an ID will be generated."
                     }
                 },
                 "additionalProperties": false,
