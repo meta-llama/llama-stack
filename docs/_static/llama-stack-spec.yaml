@@ -952,10 +952,36 @@ paths:
           $ref: '#/components/responses/DefaultError'
       tags:
         - ScoringFunctions
-      description: ''
+      description: Get a scoring function by its ID.
       parameters:
         - name: scoring_fn_id
           in: path
+          description: The ID of the scoring function to get.
+          required: true
+          schema:
+            type: string
+    delete:
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - ScoringFunctions
+      description: Unregister a scoring function by its ID.
+      parameters:
+        - name: scoring_fn_id
+          in: path
+          description: >-
+            The ID of the scoring function to unregister.
           required: true
           schema:
             type: string
@@ -1869,6 +1895,30 @@ paths:
           required: false
           schema:
             $ref: '#/components/schemas/URL'
+  /v1/scoring-functions/types:
+    get:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListScoringFunctionTypesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - ScoringFunctions
+      description: >-
+        List all available scoring function types information and how to use them.
+      parameters: []
   /v1/scoring-functions:
     get:
       responses:
@@ -1890,7 +1940,7 @@ paths:
           $ref: '#/components/responses/DefaultError'
       tags:
         - ScoringFunctions
-      description: ''
+      description: List all registered scoring functions.
       parameters: []
     post:
       responses:
@@ -4398,22 +4448,20 @@ components:
         - config
       title: AgentCandidate
       description: An agent candidate for evaluation.
-    AggregationFunctionType:
-      type: string
-      enum:
-        - average
-        - median
-        - categorical_count
-        - accuracy
-      title: AggregationFunctionType
-      description: A type of aggregation function.
     AnswerCorrectnessScoringFnParams:
       type: object
       properties:
         aggregation_functions:
           type: array
           items:
-            $ref: '#/components/schemas/AggregationFunctionType'
+            type: string
+            enum:
+              - average
+              - median
+              - categorical_count
+              - accuracy
+            title: AggregationFunctionType
+            description: A type of aggregation function.
           description: >-
             (Optional) Aggregation functions to apply to the scores of each row. If
             not provided, no aggregation will be performed.
@@ -4431,7 +4479,14 @@ components:
         aggregation_functions:
           type: array
           items:
-            $ref: '#/components/schemas/AggregationFunctionType'
+            type: string
+            enum:
+              - average
+              - median
+              - categorical_count
+              - accuracy
+            title: AggregationFunctionType
+            description: A type of aggregation function.
           description: >-
             (Optional) Aggregation functions to apply to the scores of each row. If
             not provided, no aggregation will be performed.
@@ -4449,7 +4504,14 @@ components:
         aggregation_functions:
           type: array
           items:
-            $ref: '#/components/schemas/AggregationFunctionType'
+            type: string
+            enum:
+              - average
+              - median
+              - categorical_count
+              - accuracy
+            title: AggregationFunctionType
+            description: A type of aggregation function.
           description: >-
             (Optional) Aggregation functions to apply to the scores of each row. If
             not provided, no aggregation will be performed.
@@ -4492,7 +4554,14 @@ components:
         aggregation_functions:
           type: array
           items:
-            $ref: '#/components/schemas/AggregationFunctionType'
+            type: string
+            enum:
+              - average
+              - median
+              - categorical_count
+              - accuracy
+            title: AggregationFunctionType
+            description: A type of aggregation function.
           description: >-
             (Optional) Aggregation functions to apply to the scores of each row. If
             not provided, no aggregation will be performed.
@@ -4510,7 +4579,14 @@ components:
         aggregation_functions:
           type: array
           items:
-            $ref: '#/components/schemas/AggregationFunctionType'
+            type: string
+            enum:
+              - average
+              - median
+              - categorical_count
+              - accuracy
+            title: AggregationFunctionType
+            description: A type of aggregation function.
           description: >-
             (Optional) Aggregation functions to apply to the scores of each row. If
             not provided, no aggregation will be performed.
@@ -4528,7 +4604,14 @@ components:
         aggregation_functions:
           type: array
           items:
-            $ref: '#/components/schemas/AggregationFunctionType'
+            type: string
+            enum:
+              - average
+              - median
+              - categorical_count
+              - accuracy
+            title: AggregationFunctionType
+            description: A type of aggregation function.
           description: >-
             (Optional) Aggregation functions to apply to the scores of each row. If
             not provided, no aggregation will be performed.
@@ -4546,7 +4629,14 @@ components:
         aggregation_functions:
           type: array
           items:
-            $ref: '#/components/schemas/AggregationFunctionType'
+            type: string
+            enum:
+              - average
+              - median
+              - categorical_count
+              - accuracy
+            title: AggregationFunctionType
+            description: A type of aggregation function.
           description: >-
             (Optional) Aggregation functions to apply to the scores of each row. If
             not provided, no aggregation will be performed.
@@ -4564,7 +4654,14 @@ components:
         aggregation_functions:
           type: array
           items:
-            $ref: '#/components/schemas/AggregationFunctionType'
+            type: string
+            enum:
+              - average
+              - median
+              - categorical_count
+              - accuracy
+            title: AggregationFunctionType
+            description: A type of aggregation function.
           description: >-
             (Optional) Aggregation functions to apply to the scores of each row. If
             not provided, no aggregation will be performed.
@@ -4591,7 +4688,14 @@ components:
         aggregation_functions:
           type: array
           items:
-            $ref: '#/components/schemas/AggregationFunctionType'
+            type: string
+            enum:
+              - average
+              - median
+              - categorical_count
+              - accuracy
+            title: AggregationFunctionType
+            description: A type of aggregation function.
           description: >-
             (Optional) Aggregation functions to apply to the scores of each row. If
             not provided, no aggregation will be performed.
@@ -4609,7 +4713,14 @@ components:
         aggregation_functions:
           type: array
           items:
-            $ref: '#/components/schemas/AggregationFunctionType'
+            type: string
+            enum:
+              - average
+              - median
+              - categorical_count
+              - accuracy
+            title: AggregationFunctionType
+            description: A type of aggregation function.
           description: >-
             (Optional) Aggregation functions to apply to the scores of each row. If
             not provided, no aggregation will be performed.
@@ -4639,7 +4750,14 @@ components:
         aggregation_functions:
           type: array
           items:
-            $ref: '#/components/schemas/AggregationFunctionType'
+            type: string
+            enum:
+              - average
+              - median
+              - categorical_count
+              - accuracy
+            title: AggregationFunctionType
+            description: A type of aggregation function.
       additionalProperties: false
       required:
         - type
@@ -4682,7 +4800,14 @@ components:
         aggregation_functions:
           type: array
           items:
-            $ref: '#/components/schemas/AggregationFunctionType'
+            type: string
+            enum:
+              - average
+              - median
+              - categorical_count
+              - accuracy
+            title: AggregationFunctionType
+            description: A type of aggregation function.
           description: >-
             (Optional) Aggregation functions to apply to the scores of each row. If
             not provided, no aggregation will be performed.
@@ -4707,7 +4832,14 @@ components:
         aggregation_functions:
           type: array
           items:
-            $ref: '#/components/schemas/AggregationFunctionType'
+            type: string
+            enum:
+              - average
+              - median
+              - categorical_count
+              - accuracy
+            title: AggregationFunctionType
+            description: A type of aggregation function.
           description: >-
             (Optional) Aggregation functions to apply to the scores of each row. If
             not provided, no aggregation will be performed.
@@ -4759,7 +4891,14 @@ components:
         aggregation_functions:
           type: array
           items:
-            $ref: '#/components/schemas/AggregationFunctionType'
+            type: string
+            enum:
+              - average
+              - median
+              - categorical_count
+              - accuracy
+            title: AggregationFunctionType
+            description: A type of aggregation function.
           description: >-
             (Optional) Aggregation functions to apply to the scores of each row. If
             not provided, no aggregation will be performed.
@@ -4939,12 +5078,10 @@ components:
           type: string
           description: >-
             The ID of the dataset to used to run the benchmark.
-        scoring_functions:
+        scoring_fn_ids:
           type: array
           items:
-            $ref: '#/components/schemas/ScoringFnParams'
-          description: >-
-            The scoring functions with parameters to use for this benchmark.
+            type: string
         metadata:
           type: object
           additionalProperties:
@@ -4964,7 +5101,7 @@ components:
         - provider_id
         - type
         - dataset_id
-        - scoring_functions
+        - scoring_fn_ids
         - metadata
       title: Benchmark
     DataSource:
@@ -5180,28 +5317,10 @@ components:
           type: string
           const: scoring_function
           default: scoring_function
-        scoring_fn_type:
-          type: string
-          enum:
-            - custom_llm_as_judge
-            - regex_parser
-            - regex_parser_math_response
-            - equality
-            - subset_of
-            - factuality
-            - faithfulness
-            - answer_correctness
-            - answer_relevancy
-            - answer_similarity
-            - context_entity_recall
-            - context_precision
-            - context_recall
-            - context_relevancy
-          description: The type of scoring function.
-        params:
+        fn:
           $ref: '#/components/schemas/ScoringFnParams'
           description: >-
-            (Optional) The parameters for the scoring function.
+            The scoring function type and parameters.
         metadata:
           type: object
           additionalProperties:
@@ -5220,7 +5339,7 @@ components:
         - provider_resource_id
         - provider_id
         - type
-        - scoring_fn_type
+        - fn
         - metadata
       title: ScoringFn
     Shield:
@@ -5842,6 +5961,61 @@ components:
       required:
         - data
       title: ListRoutesResponse
+    ScoringFnTypeInfo:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - custom_llm_as_judge
+            - regex_parser
+            - regex_parser_math_response
+            - equality
+            - subset_of
+            - factuality
+            - faithfulness
+            - answer_correctness
+            - answer_relevancy
+            - answer_similarity
+            - context_entity_recall
+            - context_precision
+            - context_recall
+            - context_relevancy
+          description: The type of scoring function.
+        description:
+          type: string
+          description: >-
+            A description of the scoring function type. - E.g. Write your custom judge
+            prompt to score the answer.
+        supported_purposes:
+          type: array
+          items:
+            type: string
+            enum:
+              - post-training/messages
+              - eval/question-answer
+            title: DatasetPurpose
+            description: >-
+              Purpose of the dataset. Each type has a different column format.
+          description: >-
+            The purposes that this scoring function can be used for.
+      additionalProperties: false
+      required:
+        - type
+        - description
+        - supported_purposes
+      title: ScoringFnTypeInfo
+    ListScoringFunctionTypesResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScoringFnTypeInfo'
+      additionalProperties: false
+      required:
+        - data
+      title: ListScoringFunctionTypesResponse
     ListScoringFunctionsResponse:
       type: object
       properties:
@@ -6491,12 +6665,12 @@ components:
           type: string
           description: >-
             The ID of the dataset to used to run the benchmark.
-        scoring_functions:
+        scoring_fn_ids:
           type: array
           items:
-            $ref: '#/components/schemas/ScoringFnParams'
+            type: string
           description: >-
-            The scoring functions with parameters to use for this benchmark.
+            List of scoring function ids to use for this benchmark.
         benchmark_id:
           type: string
           description: >-
@@ -6517,7 +6691,7 @@ components:
       additionalProperties: false
       required:
         - dataset_id
-        - scoring_functions
+        - scoring_fn_ids
       title: RegisterBenchmarkRequest
     RegisterDatasetRequest:
       type: object
