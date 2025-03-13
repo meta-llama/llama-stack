@@ -6,12 +6,8 @@
 
 from typing import AsyncGenerator, List, Optional, Union
 
-from openai import OpenAI
-from pydantic import parse_obj_as
-
 from llama_models.datatypes import CoreModelId
-from llama_models.llama3.api.chat_format import ChatFormat
-from llama_models.llama3.api.tokenizer import Tokenizer
+from openai import OpenAI
 
 from llama_stack.apis.common.content_types import InterleavedContent
 from llama_stack.apis.inference import (
@@ -33,8 +29,8 @@ from llama_stack.apis.inference import (
 )
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.providers.utils.inference.model_registry import (
-    build_model_entry,
     ModelRegistryHelper,
+    build_model_entry,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
     convert_message_to_openai_dict,
@@ -48,7 +44,6 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
     chat_completion_request_to_prompt,
     completion_request_to_prompt,
     content_has_media,
-    interleaved_content_as_str,
     request_has_media,
 )
 
@@ -67,8 +62,7 @@ MODEL_ALIASES = [
 ]
 
 
-class CentMLInferenceAdapter(ModelRegistryHelper, Inference,
-                             NeedsRequestProviderData):
+class CentMLInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProviderData):
     """
     Adapter to use CentML's serverless inference endpoints,
     which adhere to the OpenAI chat/completions API spec,
@@ -116,7 +110,7 @@ class CentMLInferenceAdapter(ModelRegistryHelper, Inference,
         self,
         model_id: str,
         content: InterleavedContent,
-        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        sampling_params: Optional[SamplingParams] = None,  # Avoid function call in default argument.
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
@@ -124,6 +118,9 @@ class CentMLInferenceAdapter(ModelRegistryHelper, Inference,
         """
         For "completion" style requests (non-chat).
         """
+        # Instantiate sampling_params if not provided.
+        if sampling_params is None:
+            sampling_params = SamplingParams()
         model = await self.model_store.get_model(model_id)
         request = CompletionRequest(
             model=model.provider_resource_id,
@@ -138,8 +135,7 @@ class CentMLInferenceAdapter(ModelRegistryHelper, Inference,
         else:
             return await self._nonstream_completion(request)
 
-    async def _nonstream_completion(
-            self, request: CompletionRequest) -> CompletionResponse:
+    async def _nonstream_completion(self, request: CompletionRequest) -> CompletionResponse:
         """
         Process non-streaming completion requests.
 
@@ -157,12 +153,10 @@ class CentMLInferenceAdapter(ModelRegistryHelper, Inference,
             choice = response.choices[0]
             message = choice.message
             # If message.content is returned as a list of tokens, join them into a string.
-            content = message.content if not isinstance(
-                message.content, list) else "".join(message.content)
+            content = message.content if not isinstance(message.content, list) else "".join(message.content)
             return CompletionResponse(
                 content=content,
-                stop_reason=
-                "end_of_message",  # ***** HACK: Hard-coded stop_reason because the chat API doesn't return one.
+                stop_reason="end_of_message",  # ***** HACK: Hard-coded stop_reason because the chat API doesn't return one.
                 logprobs=None,
             )
         else:
@@ -180,8 +174,7 @@ class CentMLInferenceAdapter(ModelRegistryHelper, Inference,
                 result.content = "".join(result.content)
             return result
 
-    async def _stream_completion(self,
-                                 request: CompletionRequest) -> AsyncGenerator:
+    async def _stream_completion(self, request: CompletionRequest) -> AsyncGenerator:
         params = await self._get_params(request)
 
         async def _to_async_generator():
@@ -196,8 +189,7 @@ class CentMLInferenceAdapter(ModelRegistryHelper, Inference,
 
         stream = _to_async_generator()
         if request.response_format is not None:
-            async for chunk in process_chat_completion_stream_response(
-                    stream, request):
+            async for chunk in process_chat_completion_stream_response(stream, request):
                 yield chunk
         else:
             async for chunk in process_completion_stream_response(stream):
@@ -211,7 +203,7 @@ class CentMLInferenceAdapter(ModelRegistryHelper, Inference,
         self,
         model_id: str,
         messages: List[Message],
-        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        sampling_params: Optional[SamplingParams] = None,  # Avoid function call in default argument.
         tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
         tool_prompt_format: Optional[ToolPromptFormat] = None,
@@ -223,6 +215,9 @@ class CentMLInferenceAdapter(ModelRegistryHelper, Inference,
         """
         For "chat completion" style requests.
         """
+        # Instantiate sampling_params if not provided.
+        if sampling_params is None:
+            sampling_params = SamplingParams()
         model = await self.model_store.get_model(model_id)
         request = ChatCompletionRequest(
             model=model.provider_resource_id,
@@ -240,8 +235,7 @@ class CentMLInferenceAdapter(ModelRegistryHelper, Inference,
         else:
             return await self._nonstream_chat_completion(request)
 
-    async def _nonstream_chat_completion(
-            self, request: ChatCompletionRequest) -> ChatCompletionResponse:
+    async def _nonstream_chat_completion(self, request: ChatCompletionRequest) -> ChatCompletionResponse:
         params = await self._get_params(request)
         # Use the chat completions endpoint if "messages" key is present.
         if "messages" in params:
@@ -258,16 +252,13 @@ class CentMLInferenceAdapter(ModelRegistryHelper, Inference,
                     result.completion_message["content"] = "".join(content)
             else:
                 if isinstance(result.completion_message.content, list):
-                    updated_msg = result.completion_message.copy(update={
-                        "content":
-                        "".join(result.completion_message.content)
-                    })
-                    result = result.copy(
-                        update={"completion_message": updated_msg})
+                    updated_msg = result.completion_message.copy(
+                        update={"content": "".join(result.completion_message.content)}
+                    )
+                    result = result.copy(update={"completion_message": updated_msg})
         return result
 
-    async def _stream_chat_completion(
-            self, request: ChatCompletionRequest) -> AsyncGenerator:
+    async def _stream_chat_completion(self, request: ChatCompletionRequest) -> AsyncGenerator:
         params = await self._get_params(request)
 
         async def _to_async_generator():
@@ -280,17 +271,14 @@ class CentMLInferenceAdapter(ModelRegistryHelper, Inference,
                 yield chunk
 
         stream = _to_async_generator()
-        async for chunk in process_chat_completion_stream_response(
-                stream, request):
+        async for chunk in process_chat_completion_stream_response(stream, request):
             yield chunk
 
     #
     # HELPER METHODS
     #
 
-    async def _get_params(
-            self, request: Union[ChatCompletionRequest,
-                                 CompletionRequest]) -> dict:
+    async def _get_params(self, request: Union[ChatCompletionRequest, CompletionRequest]) -> dict:
         """
         Build a unified set of parameters for both chat and non-chat requests.
         When a structured output is specified (response_format is not None), we force
@@ -301,38 +289,24 @@ class CentMLInferenceAdapter(ModelRegistryHelper, Inference,
         llama_model = self.get_llama_model(request.model)
         if request.response_format is not None:
             if isinstance(request, ChatCompletionRequest):
-                input_dict["messages"] = [
-                    await convert_message_to_openai_dict(m)
-                    for m in request.messages
-                ]
+                input_dict["messages"] = [await convert_message_to_openai_dict(m) for m in request.messages]
             else:
                 # ***** HACK: For CompletionRequests with structured output,
                 # we simulate a chat conversation by wrapping the prompt as a single user message.
                 prompt_str = await completion_request_to_prompt(request)
-                input_dict["messages"] = [{
-                    "role": "user",
-                    "content": prompt_str
-                }]
+                input_dict["messages"] = [{"role": "user", "content": prompt_str}]
         else:
             if isinstance(request, ChatCompletionRequest):
                 if media_present or not llama_model:
-                    input_dict["messages"] = [
-                        await convert_message_to_openai_dict(m)
-                        for m in request.messages
-                    ]
+                    input_dict["messages"] = [await convert_message_to_openai_dict(m) for m in request.messages]
                 else:
-                    input_dict[
-                        "prompt"] = await chat_completion_request_to_prompt(
-                            request, llama_model)
+                    input_dict["prompt"] = await chat_completion_request_to_prompt(request, llama_model)
             else:
-                input_dict["prompt"] = await completion_request_to_prompt(
-                    request)
+                input_dict["prompt"] = await completion_request_to_prompt(request)
         params = {
-            "model":
-            request.model,
+            "model": request.model,
             **input_dict,
-            "stream":
-            request.stream,
+            "stream": request.stream,
             **self._build_options(request.sampling_params, request.logprobs, request.response_format),
         }
         return params
@@ -352,14 +326,10 @@ class CentMLInferenceAdapter(ModelRegistryHelper, Inference,
             if fmt.type == ResponseFormatType.json_schema.value:
                 options["response_format"] = {
                     "type": "json_schema",
-                    "json_schema": {
-                        "name": "schema",
-                        "schema": fmt.json_schema
-                    },
+                    "json_schema": {"name": "schema", "schema": fmt.json_schema},
                 }
             elif fmt.type == ResponseFormatType.grammar.value:
-                raise NotImplementedError(
-                    "Grammar response format not supported yet")
+                raise NotImplementedError("Grammar response format not supported yet")
             else:
                 raise ValueError(f"Unknown response format {fmt.type}")
         if logprobs and logprobs.top_k:
@@ -378,13 +348,11 @@ class CentMLInferenceAdapter(ModelRegistryHelper, Inference,
         output_dimension: Optional[int],
         contents: List[InterleavedContent],
     ) -> EmbeddingsResponse:
-        # this will come in future updates
-        model = await self.model_store.get_model(model_id)
-        assert all(not content_has_media(c) for c in contents), (
-            "CentML does not support media for embeddings")
-        resp = self._get_client().embeddings.create(
-            model=model.provider_resource_id,
-            input=[interleaved_content_as_str(c) for c in contents],
-        )
-        embeddings = [item.embedding for item in resp.data]
-        return EmbeddingsResponse(embeddings=embeddings)
+        # ***** HACK/ASSERT: CentML does not support media for embeddings.
+        # We assert here to catch any cases where media is inadvertently included.
+        # model = await self.model_store.get_model(model_id)
+        assert all(not content_has_media(c) for c in contents), "CentML does not support media for embeddings"
+        # resp = self._get_client().embeddings.create(
+        #    model=model.provider_resource_id,
+        #    input=[interleaved_content_as_str(c) for c in contents],
+        # )
