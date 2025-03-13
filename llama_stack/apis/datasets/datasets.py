@@ -13,10 +13,10 @@ from llama_stack.apis.resource import Resource, ResourceType
 from llama_stack.schema_utils import json_schema_type, register_schema, webmethod
 
 
-class Schema(Enum):
+class DatasetPurpose(Enum):
     """
-    Schema of the dataset. Each type has a different column format.
-    :cvar messages: The dataset contains messages used for post-training. Examples:
+    Purpose of the dataset. Each type has a different column format.
+    :cvar tuning/messages: The dataset contains messages used for post-training. Examples:
         {
             "messages": [
                 {"role": "user", "content": "Hello, world!"},
@@ -25,7 +25,8 @@ class Schema(Enum):
         }
     """
 
-    messages = "messages"
+    tuning_messages = "tuning/messages"
+
     # TODO: add more schemas here
 
 
@@ -99,8 +100,8 @@ class Datasets(Protocol):
     @webmethod(route="/datasets", method="POST")
     async def register_dataset(
         self,
-        schema: Schema,
-        data_source: DataSource,
+        purpose: DatasetPurpose,
+        source: DataSource,
         metadata: Optional[Dict[str, Any]] = None,
         dataset_id: Optional[str] = None,
     ) -> Dataset:
