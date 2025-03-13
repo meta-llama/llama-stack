@@ -6811,6 +6811,7 @@
                         "type": "string",
                         "enum": [
                             "post-training/messages",
+                            "eval/question-answer",
                             "eval/messages-answer"
                         ],
                         "title": "DatasetPurpose",
@@ -9885,9 +9886,10 @@
                         "type": "string",
                         "enum": [
                             "post-training/messages",
+                            "eval/question-answer",
                             "eval/messages-answer"
                         ],
-                        "description": "The purpose of the dataset. One of - \"post-training/messages\": The dataset contains a messages column with list of messages for post-training. - \"eval/messages-answer\": The dataset contains a messages column with list of messages and an answer column."
+                        "description": "The purpose of the dataset. One of - \"post-training/messages\": The dataset contains a messages column with list of messages for post-training. - \"eval/question-answer\": The dataset contains a question column and an answer column for evaluation. - \"eval/messages-answer\": The dataset contains a messages column with list of messages and an answer column for evaluation."
                     },
                     "source": {
                         "$ref": "#/components/schemas/DataSource",

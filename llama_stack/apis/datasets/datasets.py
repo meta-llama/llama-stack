@@ -24,16 +24,23 @@ class DatasetPurpose(Enum):
                 {"role": "assistant", "content": "Hello, world!"},
             ]
         }
+    :cvar eval/question-answer: The dataset contains a question column and an answer column.
+        {
+            "question": "What is the capital of France?",
+            "answer": "Paris"
+        }
     :cvar eval/messages-answer: The dataset contains a messages column with list of messages and an answer column.
         {
             "messages": [
-                {"role": "user", "content": "What is the capital of France?"},
+                {"role": "user", "content": "Hello, my name is John Doe."},
+                {"role": "assistant", "content": "Hello, John Doe. How can I help you today?"},
+                {"role": "user", "content": "What's my name?"},
             ],
-            "answer": "Paris"
+            "answer": "John Doe"
         }
     """
-
     post_training_messages = "post-training/messages"
+    eval_question_answer = "eval/question-answer"
     eval_messages_answer = "eval/messages-answer"
 
     # TODO: add more schemas here
@@ -153,7 +160,8 @@ class Datasets(Protocol):
 
         :param purpose: The purpose of the dataset. One of
             - "post-training/messages": The dataset contains a messages column with list of messages for post-training.
-            - "eval/messages-answer": The dataset contains a messages column with list of messages and an answer column.
+            - "eval/question-answer": The dataset contains a question column and an answer column for evaluation.
+            - "eval/messages-answer": The dataset contains a messages column with list of messages and an answer column for evaluation.
         :param source: The data source of the dataset. Examples:
            - {
                "type": "uri",
