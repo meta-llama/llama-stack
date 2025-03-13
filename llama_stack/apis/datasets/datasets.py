@@ -13,10 +13,10 @@ from llama_stack.apis.resource import Resource, ResourceType
 from llama_stack.schema_utils import json_schema_type, register_schema, webmethod
 
 
-class Schema(Enum):
+class DatasetPurpose(Enum):
     """
-    Schema of the dataset. Each type has a different column format.
-    :cvar messages: The dataset contains messages used for post-training. Examples:
+    Purpose of the dataset. Each type has a different column format.
+    :cvar post-training/messages: The dataset contains messages used for post-training. Examples:
         {
             "messages": [
                 {"role": "user", "content": "Hello, world!"},
@@ -25,11 +25,19 @@ class Schema(Enum):
         }
     """
 
-    messages = "messages"
+    post_training_messages = "post-training/messages"
+    eval_question_answer = "eval/question-answer"
+
     # TODO: add more schemas here
 
 
 class DatasetType(Enum):
+    """
+    Type of the dataset source.
+    :cvar huggingface: The dataset is stored in Huggingface.
+    :cvar uri: The dataset can be obtained from a URI. 
+    :cvar rows: The dataset is stored in rows. 
+    """
     huggingface = "huggingface"
     uri = "uri"
     rows = "rows"
@@ -37,19 +45,36 @@ class DatasetType(Enum):
 
 @json_schema_type
 class URIDataSource(BaseModel):
+    """A dataset that can be obtained from a URI.
+    :param uri: The dataset can be obtained from a URI. E.g.
+        - "https://mywebsite.com/mydata.jsonl"
+        - "lsfs://mydata.jsonl"
+        - "data:csv;base64,{base64_content}"
+    """
     type: Literal["uri"] = "uri"
     uri: str
 
 
 @json_schema_type
 class HuggingfaceDataSource(BaseModel):
+    """A dataset stored in Huggingface.
+    :param path: The path to the dataset in Huggingface. E.g.
+        - "llamastack/simpleqa"
+    :param params: The parameters for the dataset.
+    """
     type: Literal["huggingface"] = "huggingface"
-    dataset_path: str
+    path: str
     params: Dict[str, Any]
 
 
 @json_schema_type
 class RowsDataSource(BaseModel):
+    """A dataset stored in rows.
+    :param rows: The dataset is stored in rows. E.g.
+        - [
+            {"messages": [{"role": "user", "content": "Hello, world!"}, {"role": "assistant", "content": "Hello, world!"}]}
+        ]
+    """
     type: Literal["rows"] = "rows"
     rows: List[Dict[str, Any]]
 
@@ -64,8 +89,11 @@ DataSource = register_schema(
 
 
 class CommonDatasetFields(BaseModel):
-    schema: Schema
-    data_source: DataSource
+    """
+    Common fields for a dataset.
+    """
+    purpose: DatasetPurpose
+    source: DataSource
     metadata: Dict[str, Any] = Field(
         default_factory=dict,
         description="Any additional metadata for this dataset",
@@ -99,17 +127,18 @@ class Datasets(Protocol):
     @webmethod(route="/datasets", method="POST")
     async def register_dataset(
         self,
-        schema: Schema,
-        data_source: DataSource,
+        purpose: DatasetPurpose,
+        source: DataSource,
         metadata: Optional[Dict[str, Any]] = None,
         dataset_id: Optional[str] = None,
     ) -> Dataset:
         """
         Register a new dataset.
 
-        :param schema: The schema format of the dataset. One of
-            - messages: The dataset contains a messages column with list of messages for post-training.
-        :param data_source: The data source of the dataset. Examples:
+        :param purpose: The purpose of the dataset. One of
+            - "post-training/messages": The dataset contains a messages column with list of messages for post-training.
+            - "eval/question-answer": The dataset contains a question and answer column.
+        :param source: The data source of the dataset. Examples:
            - {
                "type": "uri",
                "uri": "https://mywebsite.com/mydata.jsonl"

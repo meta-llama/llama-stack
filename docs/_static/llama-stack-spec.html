@@ -4570,7 +4570,7 @@
                     "metrics": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/MetricEvent"
+                            "$ref": "#/components/schemas/MetricInResponse"
                         }
                     },
                     "completion_message": {
@@ -4592,46 +4592,9 @@
                 "title": "ChatCompletionResponse",
                 "description": "Response from a chat completion request."
             },
-            "MetricEvent": {
+            "MetricInResponse": {
                 "type": "object",
                 "properties": {
-                    "trace_id": {
-                        "type": "string"
-                    },
-                    "span_id": {
-                        "type": "string"
-                    },
-                    "timestamp": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "attributes": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "integer"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "null"
-                                }
-                            ]
-                        }
-                    },
-                    "type": {
-                        "type": "string",
-                        "const": "metric",
-                        "default": "metric"
-                    },
                     "metric": {
                         "type": "string"
                     },
@@ -4651,15 +4614,10 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "trace_id",
-                    "span_id",
-                    "timestamp",
-                    "type",
                     "metric",
-                    "value",
-                    "unit"
+                    "value"
                 ],
-                "title": "MetricEvent"
+                "title": "MetricInResponse"
             },
             "TokenLogProbs": {
                 "type": "object",
@@ -4736,6 +4694,12 @@
             "CompletionResponse": {
                 "type": "object",
                 "properties": {
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricInResponse"
+                        }
+                    },
                     "content": {
                         "type": "string",
                         "description": "The generated completion text"
@@ -4945,7 +4909,7 @@
                     "metrics": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/MetricEvent"
+                            "$ref": "#/components/schemas/MetricInResponse"
                         }
                     },
                     "event": {
@@ -5103,6 +5067,12 @@
             "CompletionResponseStreamChunk": {
                 "type": "object",
                 "properties": {
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricInResponse"
+                        }
+                    },
                     "delta": {
                         "type": "string",
                         "description": "New content generated since last chunk. This can be one or more tokens."
@@ -7192,15 +7162,16 @@
                         "const": "dataset",
                         "default": "dataset"
                     },
-                    "schema": {
+                    "purpose": {
                         "type": "string",
                         "enum": [
-                            "messages"
+                            "post-training/messages",
+                            "eval/question-answer"
                         ],
-                        "title": "Schema",
-                        "description": "Schema of the dataset. Each type has a different column format."
+                        "title": "DatasetPurpose",
+                        "description": "Purpose of the dataset. Each type has a different column format."
                     },
-                    "data_source": {
+                    "source": {
                         "$ref": "#/components/schemas/DataSource"
                     },
                     "metadata": {
@@ -7235,8 +7206,8 @@
                     "provider_resource_id",
                     "provider_id",
                     "type",
-                    "schema",
-                    "data_source",
+                    "purpose",
+                    "source",
                     "metadata"
                 ],
                 "title": "Dataset"
@@ -7249,8 +7220,9 @@
                         "const": "huggingface",
                         "default": "huggingface"
                     },
-                    "dataset_path": {
-                        "type": "string"
+                    "path": {
+                        "type": "string",
+                        "description": "The path to the dataset in Huggingface. E.g. - \"llamastack/simpleqa\""
                     },
                     "params": {
                         "type": "object",
@@ -7275,16 +7247,18 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "The parameters for the dataset."
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "type",
-                    "dataset_path",
+                    "path",
                     "params"
                 ],
-                "title": "HuggingfaceDataSource"
+                "title": "HuggingfaceDataSource",
+                "description": "A dataset stored in Huggingface."
             },
             "RowsDataSource": {
                 "type": "object",
@@ -7320,7 +7294,8 @@
                                     }
                                 ]
                             }
-                        }
+                        },
+                        "description": "The dataset is stored in rows. E.g. - [ {\"messages\": [{\"role\": \"user\", \"content\": \"Hello, world!\"}, {\"role\": \"assistant\", \"content\": \"Hello, world!\"}]} ]"
                     }
                 },
                 "additionalProperties": false,
@@ -7328,7 +7303,8 @@
                     "type",
                     "rows"
                 ],
-                "title": "RowsDataSource"
+                "title": "RowsDataSource",
+                "description": "A dataset stored in rows."
             },
             "URIDataSource": {
                 "type": "object",
@@ -7339,7 +7315,8 @@
                         "default": "uri"
                     },
                     "uri": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The dataset can be obtained from a URI. E.g. - \"https://mywebsite.com/mydata.jsonl\" - \"lsfs://mydata.jsonl\" - \"data:csv;base64,{base64_content}\""
                     }
                 },
                 "additionalProperties": false,
@@ -7347,7 +7324,8 @@
                     "type",
                     "uri"
                 ],
-                "title": "URIDataSource"
+                "title": "URIDataSource",
+                "description": "A dataset that can be obtained from a URI."
             },
             "Model": {
                 "type": "object",
@@ -8634,6 +8612,75 @@
                 ],
                 "title": "LogSeverity"
             },
+            "MetricEvent": {
+                "type": "object",
+                "properties": {
+                    "trace_id": {
+                        "type": "string"
+                    },
+                    "span_id": {
+                        "type": "string"
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "attributes": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "integer"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ]
+                        }
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "metric",
+                        "default": "metric"
+                    },
+                    "metric": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "oneOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "number"
+                            }
+                        ]
+                    },
+                    "unit": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "trace_id",
+                    "span_id",
+                    "timestamp",
+                    "type",
+                    "metric",
+                    "value",
+                    "unit"
+                ],
+                "title": "MetricEvent"
+            },
             "SpanEndPayload": {
                 "type": "object",
                 "properties": {
@@ -9510,14 +9557,15 @@
             "RegisterDatasetRequest": {
                 "type": "object",
                 "properties": {
-                    "schema": {
+                    "purpose": {
                         "type": "string",
                         "enum": [
-                            "messages"
+                            "post-training/messages",
+                            "eval/question-answer"
                         ],
-                        "description": "The schema format of the dataset. One of - messages: The dataset contains a messages column with list of messages for post-training."
+                        "description": "The purpose of the dataset. One of - \"post-training/messages\": The dataset contains a messages column with list of messages for post-training. - \"eval/question-answer\": The dataset contains a question and answer column."
                     },
-                    "data_source": {
+                    "source": {
                         "$ref": "#/components/schemas/DataSource",
                         "description": "The data source of the dataset. Examples: - { \"type\": \"uri\", \"uri\": \"https://mywebsite.com/mydata.jsonl\" } - { \"type\": \"uri\", \"uri\": \"lsfs://mydata.jsonl\" } - { \"type\": \"huggingface\", \"dataset_path\": \"tatsu-lab/alpaca\", \"params\": { \"split\": \"train\" } } - { \"type\": \"rows\", \"rows\": [ { \"messages\": [ {\"role\": \"user\", \"content\": \"Hello, world!\"}, {\"role\": \"assistant\", \"content\": \"Hello, world!\"}, ] } ] }"
                     },
@@ -9554,8 +9602,8 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "schema",
-                    "data_source"
+                    "purpose",
+                    "source"
                 ],
                 "title": "RegisterDatasetRequest"
             },
@@ -9769,21 +9817,11 @@
                 "type": "object",
                 "properties": {
                     "tool_responses": {
-                        "oneOf": [
-                            {
-                                "type": "array",
-                                "items": {
-                                    "$ref": "#/components/schemas/ToolResponse"
-                                }
-                            },
-                            {
-                                "type": "array",
-                                "items": {
-                                    "$ref": "#/components/schemas/ToolResponseMessage"
-                                }
-                            }
-                        ],
-                        "description": "The tool call responses to resume the turn with. NOTE: ToolResponseMessage will be deprecated. Use ToolResponse."
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ToolResponse"
+                        },
+                        "description": "The tool call responses to resume the turn with."
                     },
                     "stream": {
                         "type": "boolean",

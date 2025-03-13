@@ -3115,7 +3115,7 @@ components:
         metrics:
           type: array
           items:
-            $ref: '#/components/schemas/MetricEvent'
+            $ref: '#/components/schemas/MetricInResponse'
         completion_message:
           $ref: '#/components/schemas/CompletionMessage'
           description: The complete response message
@@ -3130,29 +3130,9 @@ components:
         - completion_message
       title: ChatCompletionResponse
       description: Response from a chat completion request.
-    MetricEvent:
+    MetricInResponse:
       type: object
       properties:
-        trace_id:
-          type: string
-        span_id:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-        attributes:
-          type: object
-          additionalProperties:
-            oneOf:
-              - type: string
-              - type: integer
-              - type: number
-              - type: boolean
-              - type: 'null'
-        type:
-          type: string
-          const: metric
-          default: metric
         metric:
           type: string
         value:
@@ -3163,14 +3143,9 @@ components:
           type: string
       additionalProperties: false
       required:
-        - trace_id
-        - span_id
-        - timestamp
-        - type
         - metric
         - value
-        - unit
-      title: MetricEvent
+      title: MetricInResponse
     TokenLogProbs:
       type: object
       properties:
@@ -3227,6 +3202,10 @@ components:
     CompletionResponse:
       type: object
       properties:
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricInResponse'
         content:
           type: string
           description: The generated completion text
@@ -3426,7 +3405,7 @@ components:
         metrics:
           type: array
           items:
-            $ref: '#/components/schemas/MetricEvent'
+            $ref: '#/components/schemas/MetricInResponse'
         event:
           $ref: '#/components/schemas/ChatCompletionResponseEvent'
           description: The event containing the new content
@@ -3545,6 +3524,10 @@ components:
     CompletionResponseStreamChunk:
       type: object
       properties:
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricInResponse'
         delta:
           type: string
           description: >-
@@ -5008,14 +4991,15 @@ components:
           type: string
           const: dataset
           default: dataset
-        schema:
+        purpose:
           type: string
           enum:
-            - messages
-          title: Schema
+            - post-training/messages
+            - eval/question-answer
+          title: DatasetPurpose
           description: >-
-            Schema of the dataset. Each type has a different column format.
-        data_source:
+            Purpose of the dataset. Each type has a different column format.
+        source:
           $ref: '#/components/schemas/DataSource'
         metadata:
           type: object
@@ -5033,8 +5017,8 @@ components:
         - provider_resource_id
         - provider_id
         - type
-        - schema
-        - data_source
+        - purpose
+        - source
         - metadata
       title: Dataset
     HuggingfaceDataSource:
@@ -5044,8 +5028,10 @@ components:
           type: string
           const: huggingface
           default: huggingface
-        dataset_path:
+        path:
           type: string
+          description: >-
+            The path to the dataset in Huggingface. E.g. - "llamastack/simpleqa"
         params:
           type: object
           additionalProperties:
@@ -5056,12 +5042,14 @@ components:
               - type: string
               - type: array
               - type: object
+          description: The parameters for the dataset.
       additionalProperties: false
       required:
         - type
-        - dataset_path
+        - path
         - params
       title: HuggingfaceDataSource
+      description: A dataset stored in Huggingface.
     RowsDataSource:
       type: object
       properties:
@@ -5081,11 +5069,16 @@ components:
                 - type: string
                 - type: array
                 - type: object
+          description: >-
+            The dataset is stored in rows. E.g. - [ {"messages": [{"role": "user",
+            "content": "Hello, world!"}, {"role": "assistant", "content": "Hello,
+            world!"}]} ]
       additionalProperties: false
       required:
         - type
         - rows
       title: RowsDataSource
+      description: A dataset stored in rows.
     URIDataSource:
       type: object
       properties:
@@ -5095,11 +5088,16 @@ components:
           default: uri
         uri:
           type: string
+          description: >-
+            The dataset can be obtained from a URI. E.g. - "https://mywebsite.com/mydata.jsonl"
+            - "lsfs://mydata.jsonl" - "data:csv;base64,{base64_content}"
       additionalProperties: false
       required:
         - type
         - uri
       title: URIDataSource
+      description: >-
+        A dataset that can be obtained from a URI.
     Model:
       type: object
       properties:
@@ -5920,6 +5918,47 @@ components:
         - error
         - critical
       title: LogSeverity
+    MetricEvent:
+      type: object
+      properties:
+        trace_id:
+          type: string
+        span_id:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        attributes:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: string
+              - type: integer
+              - type: number
+              - type: boolean
+              - type: 'null'
+        type:
+          type: string
+          const: metric
+          default: metric
+        metric:
+          type: string
+        value:
+          oneOf:
+            - type: integer
+            - type: number
+        unit:
+          type: string
+      additionalProperties: false
+      required:
+        - trace_id
+        - span_id
+        - timestamp
+        - type
+        - metric
+        - value
+        - unit
+      title: MetricEvent
     SpanEndPayload:
       type: object
       properties:
@@ -6483,14 +6522,16 @@ components:
     RegisterDatasetRequest:
       type: object
       properties:
-        schema:
+        purpose:
           type: string
           enum:
-            - messages
+            - post-training/messages
+            - eval/question-answer
           description: >-
-            The schema format of the dataset. One of - messages: The dataset contains
-            a messages column with list of messages for post-training.
-        data_source:
+            The purpose of the dataset. One of - "post-training/messages": The dataset
+            contains a messages column with list of messages for post-training. -
+            "eval/question-answer": The dataset contains a question and answer column.
+        source:
           $ref: '#/components/schemas/DataSource'
           description: >-
             The data source of the dataset. Examples: - { "type": "uri", "uri": "https://mywebsite.com/mydata.jsonl"
@@ -6517,8 +6558,8 @@ components:
             The ID of the dataset. If not provided, a random ID will be generated.
       additionalProperties: false
       required:
-        - schema
-        - data_source
+        - purpose
+        - source
       title: RegisterDatasetRequest
     RegisterModelRequest:
       type: object
@@ -6643,16 +6684,11 @@ components:
       type: object
       properties:
         tool_responses:
-          oneOf:
-            - type: array
-              items:
-                $ref: '#/components/schemas/ToolResponse'
-            - type: array
-              items:
-                $ref: '#/components/schemas/ToolResponseMessage'
+          type: array
+          items:
+            $ref: '#/components/schemas/ToolResponse'
           description: >-
-            The tool call responses to resume the turn with. NOTE: ToolResponseMessage
-            will be deprecated. Use ToolResponse.
+            The tool call responses to resume the turn with.
         stream:
           type: boolean
           description: Whether to stream the response.

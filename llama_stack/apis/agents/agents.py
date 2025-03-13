@@ -370,7 +370,7 @@ class AgentTurnResumeRequest(BaseModel):
     agent_id: str
     session_id: str
     turn_id: str
-    tool_responses: Union[List[ToolResponse], List[ToolResponseMessage]]
+    tool_responses: List[ToolResponse]
     stream: Optional[bool] = False
 
 
@@ -449,7 +449,7 @@ class Agents(Protocol):
         agent_id: str,
         session_id: str,
         turn_id: str,
-        tool_responses: Union[List[ToolResponse], List[ToolResponseMessage]],
+        tool_responses: List[ToolResponse],
         stream: Optional[bool] = False,
     ) -> Union[Turn, AsyncIterator[AgentTurnResponseStreamChunk]]:
         """Resume an agent turn with executed tool call responses.
@@ -460,7 +460,6 @@ class Agents(Protocol):
         :param session_id: The ID of the session to resume.
         :param turn_id: The ID of the turn to resume.
         :param tool_responses: The tool call responses to resume the turn with.
-            NOTE: ToolResponseMessage will be deprecated. Use ToolResponse.
         :param stream: Whether to stream the response.
         :returns: A Turn object if stream is False, otherwise an AsyncIterator of AgentTurnResponseStreamChunk objects.
         """
