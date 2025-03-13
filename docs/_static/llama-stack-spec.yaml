@@ -4451,77 +4451,95 @@ components:
     AnswerCorrectnessScoringFnParams:
       type: object
       properties:
-        aggregation_functions:
-          type: array
-          items:
-            type: string
-            enum:
-              - average
-              - median
-              - categorical_count
-              - accuracy
-            title: AggregationFunctionType
-            description: A type of aggregation function.
-          description: >-
-            (Optional) Aggregation functions to apply to the scores of each row. If
-            not provided, no aggregation will be performed.
         type:
           type: string
           const: answer_correctness
           default: answer_correctness
+        answer_correctness:
+          type: object
+          properties:
+            aggregation_functions:
+              type: array
+              items:
+                type: string
+                enum:
+                  - average
+                  - median
+                  - categorical_count
+                  - accuracy
+                title: AggregationFunctionType
+                description: A type of aggregation function.
+              description: >-
+                (Optional) Aggregation functions to apply to the scores of each row.
+                If not provided, no aggregation will be performed.
+          additionalProperties: false
+          title: BasicScoringFnParamsFields
       additionalProperties: false
       required:
         - type
+        - answer_correctness
       title: AnswerCorrectnessScoringFnParams
     AnswerRelevancyScoringFnParams:
       type: object
       properties:
-        aggregation_functions:
-          type: array
-          items:
-            type: string
-            enum:
-              - average
-              - median
-              - categorical_count
-              - accuracy
-            title: AggregationFunctionType
-            description: A type of aggregation function.
-          description: >-
-            (Optional) Aggregation functions to apply to the scores of each row. If
-            not provided, no aggregation will be performed.
         type:
           type: string
           const: answer_relevancy
           default: answer_relevancy
+        answer_relevancy:
+          type: object
+          properties:
+            aggregation_functions:
+              type: array
+              items:
+                type: string
+                enum:
+                  - average
+                  - median
+                  - categorical_count
+                  - accuracy
+                title: AggregationFunctionType
+                description: A type of aggregation function.
+              description: >-
+                (Optional) Aggregation functions to apply to the scores of each row.
+                If not provided, no aggregation will be performed.
+          additionalProperties: false
+          title: BasicScoringFnParamsFields
       additionalProperties: false
       required:
         - type
+        - answer_relevancy
       title: AnswerRelevancyScoringFnParams
     AnswerSimilarityScoringFnParams:
       type: object
       properties:
-        aggregation_functions:
-          type: array
-          items:
-            type: string
-            enum:
-              - average
-              - median
-              - categorical_count
-              - accuracy
-            title: AggregationFunctionType
-            description: A type of aggregation function.
-          description: >-
-            (Optional) Aggregation functions to apply to the scores of each row. If
-            not provided, no aggregation will be performed.
         type:
           type: string
           const: answer_similarity
           default: answer_similarity
+        answer_similarity:
+          type: object
+          properties:
+            aggregation_functions:
+              type: array
+              items:
+                type: string
+                enum:
+                  - average
+                  - median
+                  - categorical_count
+                  - accuracy
+                title: AggregationFunctionType
+                description: A type of aggregation function.
+              description: >-
+                (Optional) Aggregation functions to apply to the scores of each row.
+                If not provided, no aggregation will be performed.
+          additionalProperties: false
+          title: BasicScoringFnParamsFields
       additionalProperties: false
       required:
         - type
+        - answer_similarity
       title: AnswerSimilarityScoringFnParams
     BenchmarkConfig:
       type: object
@@ -4551,127 +4569,189 @@ components:
     ContextEntityRecallScoringFnParams:
       type: object
       properties:
-        aggregation_functions:
-          type: array
-          items:
-            type: string
-            enum:
-              - average
-              - median
-              - categorical_count
-              - accuracy
-            title: AggregationFunctionType
-            description: A type of aggregation function.
-          description: >-
-            (Optional) Aggregation functions to apply to the scores of each row. If
-            not provided, no aggregation will be performed.
         type:
           type: string
           const: context_entity_recall
           default: context_entity_recall
+        context_entity_recall:
+          type: object
+          properties:
+            aggregation_functions:
+              type: array
+              items:
+                type: string
+                enum:
+                  - average
+                  - median
+                  - categorical_count
+                  - accuracy
+                title: AggregationFunctionType
+                description: A type of aggregation function.
+              description: >-
+                (Optional) Aggregation functions to apply to the scores of each row.
+                If not provided, no aggregation will be performed.
+          additionalProperties: false
+          title: BasicScoringFnParamsFields
       additionalProperties: false
       required:
         - type
+        - context_entity_recall
       title: ContextEntityRecallScoringFnParams
     ContextPrecisionScoringFnParams:
       type: object
       properties:
-        aggregation_functions:
-          type: array
-          items:
-            type: string
-            enum:
-              - average
-              - median
-              - categorical_count
-              - accuracy
-            title: AggregationFunctionType
-            description: A type of aggregation function.
-          description: >-
-            (Optional) Aggregation functions to apply to the scores of each row. If
-            not provided, no aggregation will be performed.
         type:
           type: string
           const: context_precision
           default: context_precision
+        context_precision:
+          type: object
+          properties:
+            aggregation_functions:
+              type: array
+              items:
+                type: string
+                enum:
+                  - average
+                  - median
+                  - categorical_count
+                  - accuracy
+                title: AggregationFunctionType
+                description: A type of aggregation function.
+              description: >-
+                (Optional) Aggregation functions to apply to the scores of each row.
+                If not provided, no aggregation will be performed.
+          additionalProperties: false
+          title: BasicScoringFnParamsFields
       additionalProperties: false
       required:
         - type
+        - context_precision
       title: ContextPrecisionScoringFnParams
     ContextRecallScoringFnParams:
       type: object
       properties:
-        aggregation_functions:
-          type: array
-          items:
-            type: string
-            enum:
-              - average
-              - median
-              - categorical_count
-              - accuracy
-            title: AggregationFunctionType
-            description: A type of aggregation function.
-          description: >-
-            (Optional) Aggregation functions to apply to the scores of each row. If
-            not provided, no aggregation will be performed.
         type:
           type: string
           const: context_recall
           default: context_recall
+        context_recall:
+          type: object
+          properties:
+            aggregation_functions:
+              type: array
+              items:
+                type: string
+                enum:
+                  - average
+                  - median
+                  - categorical_count
+                  - accuracy
+                title: AggregationFunctionType
+                description: A type of aggregation function.
+              description: >-
+                (Optional) Aggregation functions to apply to the scores of each row.
+                If not provided, no aggregation will be performed.
+          additionalProperties: false
+          title: BasicScoringFnParamsFields
       additionalProperties: false
       required:
         - type
+        - context_recall
       title: ContextRecallScoringFnParams
     ContextRelevancyScoringFnParams:
       type: object
       properties:
-        aggregation_functions:
-          type: array
-          items:
-            type: string
-            enum:
-              - average
-              - median
-              - categorical_count
-              - accuracy
-            title: AggregationFunctionType
-            description: A type of aggregation function.
-          description: >-
-            (Optional) Aggregation functions to apply to the scores of each row. If
-            not provided, no aggregation will be performed.
         type:
           type: string
           const: context_relevancy
           default: context_relevancy
+        context_relevancy:
+          type: object
+          properties:
+            aggregation_functions:
+              type: array
+              items:
+                type: string
+                enum:
+                  - average
+                  - median
+                  - categorical_count
+                  - accuracy
+                title: AggregationFunctionType
+                description: A type of aggregation function.
+              description: >-
+                (Optional) Aggregation functions to apply to the scores of each row.
+                If not provided, no aggregation will be performed.
+          additionalProperties: false
+          title: BasicScoringFnParamsFields
       additionalProperties: false
       required:
         - type
+        - context_relevancy
       title: ContextRelevancyScoringFnParams
+    CustomLLMAsJudgeScoringFnParams:
+      type: object
+      properties:
+        type:
+          type: string
+          const: custom_llm_as_judge
+          default: custom_llm_as_judge
+        custom_llm_as_judge:
+          type: object
+          properties:
+            type:
+              type: string
+              const: custom_llm_as_judge
+              default: custom_llm_as_judge
+            judge_model:
+              type: string
+            prompt_template:
+              type: string
+            judge_score_regexes:
+              type: array
+              items:
+                type: string
+          additionalProperties: false
+          required:
+            - type
+            - judge_model
+          title: CustomLLMAsJudgeScoringFnParamsFields
+      additionalProperties: false
+      required:
+        - type
+        - custom_llm_as_judge
+      title: CustomLLMAsJudgeScoringFnParams
     EqualityScoringFnParams:
       type: object
       properties:
-        aggregation_functions:
-          type: array
-          items:
-            type: string
-            enum:
-              - average
-              - median
-              - categorical_count
-              - accuracy
-            title: AggregationFunctionType
-            description: A type of aggregation function.
-          description: >-
-            (Optional) Aggregation functions to apply to the scores of each row. If
-            not provided, no aggregation will be performed.
         type:
           type: string
           const: equality
           default: equality
+        equality:
+          type: object
+          properties:
+            aggregation_functions:
+              type: array
+              items:
+                type: string
+                enum:
+                  - average
+                  - median
+                  - categorical_count
+                  - accuracy
+                title: AggregationFunctionType
+                description: A type of aggregation function.
+              description: >-
+                (Optional) Aggregation functions to apply to the scores of each row.
+                If not provided, no aggregation will be performed.
+          additionalProperties: false
+          title: BasicScoringFnParamsFields
       additionalProperties: false
       required:
         - type
+        - equality
       title: EqualityScoringFnParams
     EvalCandidate:
       oneOf:
@@ -4685,84 +4765,65 @@ components:
     FactualityScoringFnParams:
       type: object
       properties:
-        aggregation_functions:
-          type: array
-          items:
-            type: string
-            enum:
-              - average
-              - median
-              - categorical_count
-              - accuracy
-            title: AggregationFunctionType
-            description: A type of aggregation function.
-          description: >-
-            (Optional) Aggregation functions to apply to the scores of each row. If
-            not provided, no aggregation will be performed.
         type:
           type: string
           const: factuality
           default: factuality
+        factuality:
+          type: object
+          properties:
+            aggregation_functions:
+              type: array
+              items:
+                type: string
+                enum:
+                  - average
+                  - median
+                  - categorical_count
+                  - accuracy
+                title: AggregationFunctionType
+                description: A type of aggregation function.
+              description: >-
+                (Optional) Aggregation functions to apply to the scores of each row.
+                If not provided, no aggregation will be performed.
+          additionalProperties: false
+          title: BasicScoringFnParamsFields
       additionalProperties: false
       required:
         - type
+        - factuality
       title: FactualityScoringFnParams
     FaithfulnessScoringFnParams:
       type: object
       properties:
-        aggregation_functions:
-          type: array
-          items:
-            type: string
-            enum:
-              - average
-              - median
-              - categorical_count
-              - accuracy
-            title: AggregationFunctionType
-            description: A type of aggregation function.
-          description: >-
-            (Optional) Aggregation functions to apply to the scores of each row. If
-            not provided, no aggregation will be performed.
         type:
           type: string
           const: faithfulness
           default: faithfulness
+        faithfulness:
+          type: object
+          properties:
+            aggregation_functions:
+              type: array
+              items:
+                type: string
+                enum:
+                  - average
+                  - median
+                  - categorical_count
+                  - accuracy
+                title: AggregationFunctionType
+                description: A type of aggregation function.
+              description: >-
+                (Optional) Aggregation functions to apply to the scores of each row.
+                If not provided, no aggregation will be performed.
+          additionalProperties: false
+          title: BasicScoringFnParamsFields
       additionalProperties: false
       required:
         - type
+        - faithfulness
       title: FaithfulnessScoringFnParams
-    LLMAsJudgeScoringFnParams:
-      type: object
-      properties:
-        type:
-          type: string
-          const: custom_llm_as_judge
-          default: custom_llm_as_judge
-        judge_model:
-          type: string
-        prompt_template:
-          type: string
-        judge_score_regexes:
-          type: array
-          items:
-            type: string
-        aggregation_functions:
-          type: array
-          items:
-            type: string
-            enum:
-              - average
-              - median
-              - categorical_count
-              - accuracy
-            title: AggregationFunctionType
-            description: A type of aggregation function.
-      additionalProperties: false
-      required:
-        - type
-        - judge_model
-      title: LLMAsJudgeScoringFnParams
     ModelCandidate:
       type: object
       properties:
@@ -4791,70 +4852,84 @@ components:
     RegexParserMathScoringFnParams:
       type: object
       properties:
-        parsing_regexes:
-          type: array
-          items:
-            type: string
-          description: >-
-            (Optional) Regexes to extract the answer from generated response.
-        aggregation_functions:
-          type: array
-          items:
-            type: string
-            enum:
-              - average
-              - median
-              - categorical_count
-              - accuracy
-            title: AggregationFunctionType
-            description: A type of aggregation function.
-          description: >-
-            (Optional) Aggregation functions to apply to the scores of each row. If
-            not provided, no aggregation will be performed.
         type:
           type: string
           const: regex_parser_math_response
           default: regex_parser_math_response
+        regex_parser_math_response:
+          type: object
+          properties:
+            parsing_regexes:
+              type: array
+              items:
+                type: string
+              description: >-
+                (Optional) Regexes to extract the answer from generated response.
+            aggregation_functions:
+              type: array
+              items:
+                type: string
+                enum:
+                  - average
+                  - median
+                  - categorical_count
+                  - accuracy
+                title: AggregationFunctionType
+                description: A type of aggregation function.
+              description: >-
+                (Optional) Aggregation functions to apply to the scores of each row.
+                If not provided, no aggregation will be performed.
+          additionalProperties: false
+          required:
+            - parsing_regexes
+          title: RegexParserScoringFnParamsFields
       additionalProperties: false
       required:
-        - parsing_regexes
         - type
+        - regex_parser_math_response
       title: RegexParserMathScoringFnParams
     RegexParserScoringFnParams:
       type: object
       properties:
-        parsing_regexes:
-          type: array
-          items:
-            type: string
-          description: >-
-            (Optional) Regexes to extract the answer from generated response.
-        aggregation_functions:
-          type: array
-          items:
-            type: string
-            enum:
-              - average
-              - median
-              - categorical_count
-              - accuracy
-            title: AggregationFunctionType
-            description: A type of aggregation function.
-          description: >-
-            (Optional) Aggregation functions to apply to the scores of each row. If
-            not provided, no aggregation will be performed.
         type:
           type: string
           const: regex_parser
           default: regex_parser
+        regex_parser:
+          type: object
+          properties:
+            parsing_regexes:
+              type: array
+              items:
+                type: string
+              description: >-
+                (Optional) Regexes to extract the answer from generated response.
+            aggregation_functions:
+              type: array
+              items:
+                type: string
+                enum:
+                  - average
+                  - median
+                  - categorical_count
+                  - accuracy
+                title: AggregationFunctionType
+                description: A type of aggregation function.
+              description: >-
+                (Optional) Aggregation functions to apply to the scores of each row.
+                If not provided, no aggregation will be performed.
+          additionalProperties: false
+          required:
+            - parsing_regexes
+          title: RegexParserScoringFnParamsFields
       additionalProperties: false
       required:
-        - parsing_regexes
         - type
+        - regex_parser
       title: RegexParserScoringFnParams
     ScoringFnParams:
       oneOf:
-        - $ref: '#/components/schemas/LLMAsJudgeScoringFnParams'
+        - $ref: '#/components/schemas/CustomLLMAsJudgeScoringFnParams'
         - $ref: '#/components/schemas/RegexParserScoringFnParams'
         - $ref: '#/components/schemas/RegexParserMathScoringFnParams'
         - $ref: '#/components/schemas/EqualityScoringFnParams'
@@ -4871,7 +4946,7 @@ components:
       discriminator:
         propertyName: type
         mapping:
-          custom_llm_as_judge: '#/components/schemas/LLMAsJudgeScoringFnParams'
+          custom_llm_as_judge: '#/components/schemas/CustomLLMAsJudgeScoringFnParams'
           regex_parser: '#/components/schemas/RegexParserScoringFnParams'
           regex_parser_math_response: '#/components/schemas/RegexParserMathScoringFnParams'
           equality: '#/components/schemas/EqualityScoringFnParams'
@@ -4888,27 +4963,33 @@ components:
     SubsetOfcoringFnParams:
       type: object
       properties:
-        aggregation_functions:
-          type: array
-          items:
-            type: string
-            enum:
-              - average
-              - median
-              - categorical_count
-              - accuracy
-            title: AggregationFunctionType
-            description: A type of aggregation function.
-          description: >-
-            (Optional) Aggregation functions to apply to the scores of each row. If
-            not provided, no aggregation will be performed.
         type:
           type: string
           const: subset_of
           default: subset_of
+        subset_of:
+          type: object
+          properties:
+            aggregation_functions:
+              type: array
+              items:
+                type: string
+                enum:
+                  - average
+                  - median
+                  - categorical_count
+                  - accuracy
+                title: AggregationFunctionType
+                description: A type of aggregation function.
+              description: >-
+                (Optional) Aggregation functions to apply to the scores of each row.
+                If not provided, no aggregation will be performed.
+          additionalProperties: false
+          title: BasicScoringFnParamsFields
       additionalProperties: false
       required:
         - type
+        - subset_of
       title: SubsetOfcoringFnParams
     EvaluateRowsRequest:
       type: object

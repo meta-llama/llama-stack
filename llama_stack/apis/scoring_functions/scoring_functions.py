@@ -67,7 +67,7 @@ class AggregationFunctionType(Enum):
     accuracy = "accuracy"
 
 
-class BasicScoringFnParamsCommon(BaseModel):
+class BasicScoringFnParamsFields(BaseModel):
     """
     :param aggregation_functions: (Optional) Aggregation functions to apply to the scores of each row. If not provided, no aggregation will be performed.
     """
@@ -78,7 +78,7 @@ class BasicScoringFnParamsCommon(BaseModel):
     )
 
 
-class RegexParserScoringFnParamsCommon(BaseModel):
+class RegexParserScoringFnParamsFields(BaseModel):
     """
     :param parsing_regexes: (Optional) Regexes to extract the answer from generated response.
     :param aggregation_functions: (Optional) Aggregation functions to apply to the scores of each row. If not provided, no aggregation will be performed.
@@ -93,74 +93,7 @@ class RegexParserScoringFnParamsCommon(BaseModel):
         default_factory=list,
     )
 
-
-@json_schema_type
-class RegexParserScoringFnParams(RegexParserScoringFnParamsCommon):
-    type: Literal["regex_parser"] = "regex_parser"
-
-
-@json_schema_type
-class RegexParserMathScoringFnParams(RegexParserScoringFnParamsCommon):
-    type: Literal["regex_parser_math_response"] = "regex_parser_math_response"
-
-
-@json_schema_type
-class EqualityScoringFnParams(BasicScoringFnParamsCommon):
-    type: Literal["equality"] = "equality"
-
-
-@json_schema_type
-class SubsetOfcoringFnParams(BasicScoringFnParamsCommon):
-    type: Literal["subset_of"] = "subset_of"
-
-
-@json_schema_type
-class FactualityScoringFnParams(BasicScoringFnParamsCommon):
-    type: Literal["factuality"] = "factuality"
-
-
-@json_schema_type
-class FaithfulnessScoringFnParams(BasicScoringFnParamsCommon):
-    type: Literal["faithfulness"] = "faithfulness"
-
-
-@json_schema_type
-class AnswerCorrectnessScoringFnParams(BasicScoringFnParamsCommon):
-    type: Literal["answer_correctness"] = "answer_correctness"
-
-
-@json_schema_type
-class AnswerRelevancyScoringFnParams(BasicScoringFnParamsCommon):
-    type: Literal["answer_relevancy"] = "answer_relevancy"
-
-
-@json_schema_type
-class AnswerSimilarityScoringFnParams(BasicScoringFnParamsCommon):
-    type: Literal["answer_similarity"] = "answer_similarity"
-
-
-@json_schema_type
-class ContextEntityRecallScoringFnParams(BasicScoringFnParamsCommon):
-    type: Literal["context_entity_recall"] = "context_entity_recall"
-
-
-@json_schema_type
-class ContextPrecisionScoringFnParams(BasicScoringFnParamsCommon):
-    type: Literal["context_precision"] = "context_precision"
-
-
-@json_schema_type
-class ContextRecallScoringFnParams(BasicScoringFnParamsCommon):
-    type: Literal["context_recall"] = "context_recall"
-
-
-@json_schema_type
-class ContextRelevancyScoringFnParams(BasicScoringFnParamsCommon):
-    type: Literal["context_relevancy"] = "context_relevancy"
-
-
-@json_schema_type
-class LLMAsJudgeScoringFnParams(BaseModel):
+class CustomLLMAsJudgeScoringFnParamsFields(BaseModel):
     type: Literal["custom_llm_as_judge"] = "custom_llm_as_judge"
     judge_model: str
     prompt_template: Optional[str] = None
@@ -168,16 +101,84 @@ class LLMAsJudgeScoringFnParams(BaseModel):
         description="Regexes to extract the answer from generated response",
         default_factory=list,
     )
-    aggregation_functions: Optional[List[AggregationFunctionType]] = Field(
-        description="Aggregation functions to apply to the scores of each row",
-        default_factory=list,
-    )
+
+@json_schema_type
+class RegexParserScoringFnParams(BaseModel):
+    type: Literal["regex_parser"] = "regex_parser"
+    regex_parser: RegexParserScoringFnParamsFields
+
+
+@json_schema_type
+class RegexParserMathScoringFnParams(BaseModel):
+    type: Literal["regex_parser_math_response"] = "regex_parser_math_response"
+    regex_parser_math_response: RegexParserScoringFnParamsFields
+
+@json_schema_type
+class EqualityScoringFnParams(BaseModel):
+    type: Literal["equality"] = "equality"
+    equality: BasicScoringFnParamsFields
+
+@json_schema_type
+class SubsetOfcoringFnParams(BaseModel):
+    type: Literal["subset_of"] = "subset_of"
+    subset_of: BasicScoringFnParamsFields
+
+@json_schema_type
+class FactualityScoringFnParams(BaseModel):
+    type: Literal["factuality"] = "factuality"
+    factuality: BasicScoringFnParamsFields
+
+@json_schema_type
+class FaithfulnessScoringFnParams(BaseModel):
+    type: Literal["faithfulness"] = "faithfulness"
+    faithfulness: BasicScoringFnParamsFields
+
+@json_schema_type
+class AnswerCorrectnessScoringFnParams(BaseModel):
+    type: Literal["answer_correctness"] = "answer_correctness"
+    answer_correctness: BasicScoringFnParamsFields
+
+@json_schema_type
+class AnswerRelevancyScoringFnParams(BaseModel):
+    type: Literal["answer_relevancy"] = "answer_relevancy"
+    answer_relevancy: BasicScoringFnParamsFields
+
+@json_schema_type
+class AnswerSimilarityScoringFnParams(BaseModel):
+    type: Literal["answer_similarity"] = "answer_similarity"
+    answer_similarity: BasicScoringFnParamsFields
+
+@json_schema_type
+class ContextEntityRecallScoringFnParams(BaseModel):
+    type: Literal["context_entity_recall"] = "context_entity_recall"
+    context_entity_recall: BasicScoringFnParamsFields
+
+@json_schema_type
+class ContextPrecisionScoringFnParams(BaseModel):
+    type: Literal["context_precision"] = "context_precision"
+    context_precision: BasicScoringFnParamsFields
+
+@json_schema_type
+class ContextRecallScoringFnParams(BaseModel):
+    type: Literal["context_recall"] = "context_recall"
+    context_recall: BasicScoringFnParamsFields
+
+@json_schema_type
+class ContextRelevancyScoringFnParams(BaseModel):
+    type: Literal["context_relevancy"] = "context_relevancy"
+    context_relevancy: BasicScoringFnParamsFields
+
+
+@json_schema_type
+class CustomLLMAsJudgeScoringFnParams(BaseModel):
+    type: Literal["custom_llm_as_judge"] = "custom_llm_as_judge"
+    custom_llm_as_judge: CustomLLMAsJudgeScoringFnParamsFields
 
 
 ScoringFnParams = register_schema(
     Annotated[
         Union[
-            LLMAsJudgeScoringFnParams,
+            CustomLLMAsJudgeScoringFnParams,
             RegexParserScoringFnParams,
             RegexParserMathScoringFnParams,
             EqualityScoringFnParams,
