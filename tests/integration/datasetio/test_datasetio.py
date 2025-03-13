@@ -20,7 +20,7 @@ import pytest
 def dataset_for_test(llama_stack_client):
     dataset_id = "test_dataset"
     register_dataset(llama_stack_client, dataset_id=dataset_id)
-    yield 
+    yield
     # Teardown - this always runs, even if the test fails
     try:
         llama_stack_client.datasets.unregister(dataset_id)
