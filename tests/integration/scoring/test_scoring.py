@@ -11,6 +11,19 @@ from ..datasetio.test_datasetio import register_dataset
 
 
 @pytest.fixture
+def rag_dataset_for_test(llama_stack_client):
+    dataset_id = "test_dataset"
+    register_dataset(llama_stack_client, for_rag=True, dataset_id=dataset_id)
+    yield  # This is where the test function will run
+
+    # Teardown - this always runs, even if the test fails
+    try:
+        llama_stack_client.datasets.unregister(dataset_id)
+    except Exception as e:
+        print(f"Warning: Failed to unregister test_dataset: {e}")
+
+
+@pytest.fixture
 def sample_judge_prompt_template():
     return "Output a number response in the following format: Score: <number>, where <number> is the number between 0 and 9."
 
@@ -79,9 +92,7 @@ def test_scoring_functions_register(
     # TODO: add unregister api for scoring functions
 
 
-def test_scoring_score(llama_stack_client):
-    register_dataset(llama_stack_client, for_rag=True)
-
+def test_scoring_score(llama_stack_client, rag_dataset_for_test):
     # scoring individual rows
     rows = llama_stack_client.datasetio.get_rows_paginated(
         dataset_id="test_dataset",
@@ -115,9 +126,9 @@ def test_scoring_score(llama_stack_client):
         assert len(response.results[x].score_rows) == 5
 
 
-def test_scoring_score_with_params_llm_as_judge(llama_stack_client, sample_judge_prompt_template, judge_model_id):
-    register_dataset(llama_stack_client, for_rag=True)
-
+def test_scoring_score_with_params_llm_as_judge(
+    llama_stack_client, sample_judge_prompt_template, judge_model_id, rag_dataset_for_test
+):
     # scoring individual rows
     rows = llama_stack_client.datasetio.get_rows_paginated(
         dataset_id="test_dataset",
@@ -167,9 +178,8 @@ def test_scoring_score_with_params_llm_as_judge(llama_stack_client, sample_judge
     ],
 )
 def test_scoring_score_with_aggregation_functions(
-    llama_stack_client, sample_judge_prompt_template, judge_model_id, provider_id
+    llama_stack_client, sample_judge_prompt_template, judge_model_id, provider_id, rag_dataset_for_test
 ):
-    register_dataset(llama_stack_client, for_rag=True)
     rows = llama_stack_client.datasetio.get_rows_paginated(
         dataset_id="test_dataset",
         rows_in_page=3,
