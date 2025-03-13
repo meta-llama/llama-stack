@@ -4746,7 +4746,7 @@ components:
           title: DatasetPurpose
           description: >-
             Purpose of the dataset. Each type has a different column format.
-        data_source:
+        source:
           $ref: '#/components/schemas/DataSource'
         metadata:
           type: object
@@ -4765,7 +4765,7 @@ components:
         - provider_id
         - type
         - purpose
-        - data_source
+        - source
         - metadata
       title: Dataset
     HuggingfaceDataSource:
