@@ -13,6 +13,7 @@ from llama_stack.apis.resource import Resource, ResourceType
 from llama_stack.schema_utils import json_schema_type, register_schema, webmethod
 
 
+@json_schema_type
 class DatasetPurpose(Enum):
     """
     Purpose of the dataset. Each purpose has a required input data schema.
