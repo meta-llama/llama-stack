@@ -7,11 +7,9 @@
 from typing import List
 
 from llama_stack.providers.datatypes import (
-    AdapterSpec,
     Api,
     InlineProviderSpec,
     ProviderSpec,
-    remote_provider_spec,
 )
 
 
@@ -27,14 +25,5 @@ def available_providers() -> List[ProviderSpec]:
             optional_api_dependencies=[Api.datasetio],
             module="llama_stack.providers.inline.telemetry.meta_reference",
             config_class="llama_stack.providers.inline.telemetry.meta_reference.config.TelemetryConfig",
-        ),
-        remote_provider_spec(
-            api=Api.telemetry,
-            adapter=AdapterSpec(
-                adapter_type="sample",
-                pip_packages=[],
-                module="llama_stack.providers.remote.telemetry.sample",
-                config_class="llama_stack.providers.remote.telemetry.sample.SampleConfig",
-            ),
         ),
     ]

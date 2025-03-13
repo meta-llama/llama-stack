@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 from enum import Enum
+from typing import Any, Dict
 
 from pydantic import BaseModel, field_validator
 
@@ -23,3 +24,9 @@ class PromptGuardConfig(BaseModel):
         if v not in [t.value for t in PromptGuardType]:
             raise ValueError(f"Unknown prompt guard type: {v}")
         return v
+
+    @classmethod
+    def sample_run_config(cls, __distro_dir__: str, **kwargs: Any) -> Dict[str, Any]:
+        return {
+            "guard_type": "injection",
+        }

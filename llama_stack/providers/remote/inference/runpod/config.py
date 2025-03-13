@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, Field
 
@@ -21,3 +21,10 @@ class RunpodImplConfig(BaseModel):
         default=None,
         description="The API token",
     )
+
+    @classmethod
+    def sample_run_config(cls, **kwargs: Any) -> Dict[str, Any]:
+        return {
+            "url": "${env.RUNPOD_URL:}",
+            "api_token": "${env.RUNPOD_API_TOKEN:}",
+        }

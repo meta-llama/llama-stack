@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+from typing import Any, Dict
 
 from pydantic import BaseModel, Field
 
@@ -20,3 +21,15 @@ class DatabricksImplConfig(BaseModel):
         default=None,
         description="The Databricks API token",
     )
+
+    @classmethod
+    def sample_run_config(
+        cls,
+        url: str = "${env.DATABRICKS_URL}",
+        api_token: str = "${env.DATABRICKS_API_TOKEN}",
+        **kwargs: Any,
+    ) -> Dict[str, Any]:
+        return {
+            "url": url,
+            "api_token": api_token,
+        }

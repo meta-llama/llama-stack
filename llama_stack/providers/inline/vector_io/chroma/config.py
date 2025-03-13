@@ -13,5 +13,5 @@ class ChromaVectorIOConfig(BaseModel):
     db_path: str
 
     @classmethod
-    def sample_config(cls) -> Dict[str, Any]:
-        return {"db_path": "{env.CHROMADB_PATH}"}
+    def sample_run_config(cls, db_path: str = "${env.CHROMADB_PATH}", **kwargs: Any) -> Dict[str, Any]:
+        return {"db_path": db_path}
