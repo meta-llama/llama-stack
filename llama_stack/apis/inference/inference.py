@@ -117,13 +117,11 @@ class ToolResponseMessage(BaseModel):
 
     :param role: Must be "tool" to identify this as a tool response
     :param call_id: Unique identifier for the tool call this response is for
-    :param tool_name: Name of the tool that was called
     :param content: The response content from the tool
     """
 
     role: Literal["tool"] = "tool"
     call_id: str
-    tool_name: Union[BuiltinTool, str]
     content: InterleavedContent
 
 

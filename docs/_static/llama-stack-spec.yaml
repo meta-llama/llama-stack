@@ -2943,17 +2943,6 @@ components:
           type: string
           description: >-
             Unique identifier for the tool call this response is for
-        tool_name:
-          oneOf:
-            - type: string
-              enum:
-                - brave_search
-                - wolfram_alpha
-                - photogen
-                - code_interpreter
-              title: BuiltinTool
-            - type: string
-          description: Name of the tool that was called
         content:
           $ref: '#/components/schemas/InterleavedContent'
           description: The response content from the tool
@@ -2961,7 +2950,6 @@ components:
       required:
         - role
         - call_id
-        - tool_name
         - content
       title: ToolResponseMessage
       description: >-
@@ -3188,10 +3176,18 @@ components:
     CompletionResponse:
       type: object
       properties:
+<<<<<<< dest:   ed6caead724a - ehhuang: chore: simplify _get_tool_defs (#1384)
         metrics:
           type: array
           items:
             $ref: '#/components/schemas/MetricInResponse'
+||||||| base:   1311faf3f5e7 - ehhuang: fix: logging (#1598)
+=======
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
+>>>>>>> source: ad32270ad0d5 - erichuang: feat(api): remove tool_name from To...
         content:
           type: string
           description: The generated completion text
@@ -3510,10 +3506,18 @@ components:
     CompletionResponseStreamChunk:
       type: object
       properties:
+<<<<<<< dest:   ed6caead724a - ehhuang: chore: simplify _get_tool_defs (#1384)
         metrics:
           type: array
           items:
             $ref: '#/components/schemas/MetricInResponse'
+||||||| base:   1311faf3f5e7 - ehhuang: fix: logging (#1598)
+=======
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricEvent'
+>>>>>>> source: ad32270ad0d5 - erichuang: feat(api): remove tool_name from To...
         delta:
           type: string
           description: >-
