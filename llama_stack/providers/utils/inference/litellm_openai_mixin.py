@@ -192,7 +192,11 @@ class LiteLLMOpenAIMixin(
         if request.tools:
             input_dict["tools"] = [convert_tooldef_to_openai_tool(tool) for tool in request.tools]
             if request.tool_config.tool_choice:
-                input_dict["tool_choice"] = request.tool_config.tool_choice.value
+                input_dict["tool_choice"] = (
+                    request.tool_config.tool_choice.value
+                    if isinstance(request.tool_config.tool_choice, ToolChoice)
+                    else request.tool_config.tool_choice
+                )
 
         provider_data = self.get_request_provider_data()
         key_field = self.provider_data_api_key_field

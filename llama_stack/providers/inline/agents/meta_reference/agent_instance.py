@@ -891,16 +891,14 @@ class ChatAgent(ShieldRunnerMixin):
         if memory_tool and code_interpreter_tool:
             # if both memory and code_interpreter are available, we download the URLs
             # and attach the data to the last message.
-            msg = await attachment_message(self.tempdir, url_items)
-            input_messages.append(msg)
+            await attachment_message(self.tempdir, url_items, input_messages[-1])
             # Since memory is present, add all the data to the memory bank
             await self.add_to_session_vector_db(session_id, documents)
         elif code_interpreter_tool:
             # if only code_interpreter is available, we download the URLs to a tempdir
             # and attach the path to them as a message to inference with the
             # assumption that the model invokes the code_interpreter tool with the path
-            msg = await attachment_message(self.tempdir, url_items)
-            input_messages.append(msg)
+            await attachment_message(self.tempdir, url_items, input_messages[-1])
         elif memory_tool:
             # if only memory is available, we load the data from the URLs and content items to the memory bank
             await self.add_to_session_vector_db(session_id, documents)
@@ -967,8 +965,8 @@ async def load_data_from_urls(urls: List[URL]) -> List[str]:
     return data
 
 
-async def attachment_message(tempdir: str, urls: List[URL]) -> ToolResponseMessage:
-    content = []
+async def attachment_message(tempdir: str, urls: List[URL], message: UserMessage) -> None:
+    contents = []
 
     for url in urls:
         uri = url.uri
@@ -988,16 +986,19 @@ async def attachment_message(tempdir: str, urls: List[URL]) -> ToolResponseMessa
         else:
             raise ValueError(f"Unsupported URL {url}")
 
-        content.append(
+        contents.append(
             TextContentItem(
                 text=f'# User provided a file accessible to you at "{filepath}"\nYou can use code_interpreter to load and inspect it.'
             )
         )
 
-    return ToolResponseMessage(
-        call_id="",
-        content=content,
-    )
+    if isinstance(message.content, list):
+        message.content.extend(contents)
+    else:
+        if isinstance(message.content, str):
+            message.content = [TextContentItem(text=message.content)] + contents
+        else:
+            message.content = [message.content] + contents
 
 
 def _interpret_content_as_attachment(
