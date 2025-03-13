@@ -249,4 +249,18 @@ def available_providers() -> List[ProviderSpec]:
                 provider_data_validator="llama_stack.providers.remote.inference.passthrough.PassthroughProviderDataValidator",
             ),
         ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
+                adapter_type="centml",
+                pip_packages=[
+                    "openai",
+                ],
+                module="llama_stack.providers.remote.inference.centml",
+                config_class=
+                "llama_stack.providers.remote.inference.centml.CentMLImplConfig",
+                provider_data_validator=
+                "llama_stack.providers.remote.inference.centml.CentMLProviderDataValidator",
+            ),
+        ),
     ]
