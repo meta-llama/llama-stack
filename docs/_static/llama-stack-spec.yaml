@@ -3000,17 +3000,6 @@ components:
           type: string
           description: >-
             Unique identifier for the tool call this response is for
-        tool_name:
-          oneOf:
-            - type: string
-              enum:
-                - brave_search
-                - wolfram_alpha
-                - photogen
-                - code_interpreter
-              title: BuiltinTool
-            - type: string
-          description: Name of the tool that was called
         content:
           $ref: '#/components/schemas/InterleavedContent'
           description: The response content from the tool
@@ -3018,7 +3007,6 @@ components:
       required:
         - role
         - call_id
-        - tool_name
         - content
       title: ToolResponseMessage
       description: >-
