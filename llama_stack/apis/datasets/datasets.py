@@ -193,7 +193,7 @@ class Datasets(Protocol):
            }
         :param metadata: The metadata for the dataset.
            - E.g. {"description": "My dataset"}
-        :param dataset_id: The ID of the dataset. If not provided, a random ID will be generated.
+        :param dataset_id: The ID of the dataset. If not provided, an ID will be generated.
         """
         ...
 
