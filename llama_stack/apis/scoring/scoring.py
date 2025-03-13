@@ -106,7 +106,7 @@ class Scoring(Protocol):
         """
         ...
 
-    @webmethod(route="/scoring/job/{job_id}", method="GET")
+    @webmethod(route="/scoring/jobs/{job_id}", method="GET")
     async def get_scoring_job(self, job_id: str) -> Optional[ScoringJob]:
         """Get a job by id.
 
@@ -115,7 +115,7 @@ class Scoring(Protocol):
         """
         ...
 
-    @webmethod(route="/scoring/job/{job_id}", method="DELETE")
+    @webmethod(route="/scoring/jobs/{job_id}", method="DELETE")
     async def delete_scoring_job(self, job_id: str) -> Optional[ScoringJob]:
         """Delete a job.
 
@@ -123,7 +123,7 @@ class Scoring(Protocol):
         """
         ...
 
-    @webmethod(route="/scoring/job/{job_id}/cancel", method="POST")
+    @webmethod(route="/scoring/jobs/{job_id}/cancel", method="POST")
     async def cancel_scoring_job(self, job_id: str) -> Optional[ScoringJob]:
         """Cancel a job.
 

@@ -117,7 +117,7 @@ class Eval(Protocol):
         """
         ...
 
-    @webmethod(route="/eval/job/{job_id}", method="GET")
+    @webmethod(route="/eval/jobs/{job_id}", method="GET")
     async def get_eval_job(self, job_id: str) -> Optional[EvalJob]:
         """Get a job by id.
 
@@ -126,7 +126,7 @@ class Eval(Protocol):
         """
         ...
 
-    @webmethod(route="/eval/job/{job_id}", method="DELETE")
+    @webmethod(route="/eval/jobs/{job_id}", method="DELETE")
     async def delete_eval_job(self, job_id: str) -> Optional[EvalJob]:
         """Delete a job.
 
@@ -134,7 +134,7 @@ class Eval(Protocol):
         """
         ...
 
-    @webmethod(route="/eval/job/{job_id}/cancel", method="POST")
+    @webmethod(route="/eval/jobs/{job_id}/cancel", method="POST")
     async def cancel_eval_job(self, job_id: str) -> Optional[EvalJob]:
         """Cancel a job.
 
