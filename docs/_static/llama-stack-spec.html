@@ -6846,13 +6846,14 @@
                         "const": "dataset",
                         "default": "dataset"
                     },
-                    "schema": {
+                    "purpose": {
                         "type": "string",
                         "enum": [
-                            "messages"
+                            "post-training/messages",
+                            "eval/question-answer"
                         ],
-                        "title": "Schema",
-                        "description": "Schema of the dataset. Each type has a different column format."
+                        "title": "DatasetPurpose",
+                        "description": "Purpose of the dataset. Each type has a different column format."
                     },
                     "data_source": {
                         "$ref": "#/components/schemas/DataSource"
@@ -6889,7 +6890,7 @@
                     "provider_resource_id",
                     "provider_id",
                     "type",
-                    "schema",
+                    "purpose",
                     "data_source",
                     "metadata"
                 ],
@@ -6903,8 +6904,9 @@
                         "const": "huggingface",
                         "default": "huggingface"
                     },
-                    "dataset_path": {
-                        "type": "string"
+                    "path": {
+                        "type": "string",
+                        "description": "The path to the dataset in Huggingface. E.g. - \"llamastack/simpleqa\""
                     },
                     "params": {
                         "type": "object",
@@ -6929,16 +6931,18 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "The parameters for the dataset."
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "type",
-                    "dataset_path",
+                    "path",
                     "params"
                 ],
-                "title": "HuggingfaceDataSource"
+                "title": "HuggingfaceDataSource",
+                "description": "A dataset stored in Huggingface."
             },
             "RowsDataSource": {
                 "type": "object",
@@ -6974,7 +6978,8 @@
                                     }
                                 ]
                             }
-                        }
+                        },
+                        "description": "The dataset is stored in rows. E.g. - [ {\"messages\": [{\"role\": \"user\", \"content\": \"Hello, world!\"}, {\"role\": \"assistant\", \"content\": \"Hello, world!\"}]} ]"
                     }
                 },
                 "additionalProperties": false,
@@ -6982,7 +6987,8 @@
                     "type",
                     "rows"
                 ],
-                "title": "RowsDataSource"
+                "title": "RowsDataSource",
+                "description": "A dataset stored in rows."
             },
             "URIDataSource": {
                 "type": "object",
@@ -6993,7 +6999,8 @@
                         "default": "uri"
                     },
                     "uri": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The dataset can be obtained from a URI. E.g. - \"https://mywebsite.com/mydata.jsonl\" - \"lsfs://mydata.jsonl\" - \"data:csv;base64,{base64_content}\""
                     }
                 },
                 "additionalProperties": false,
@@ -7001,7 +7008,8 @@
                     "type",
                     "uri"
                 ],
-                "title": "URIDataSource"
+                "title": "URIDataSource",
+                "description": "A dataset that can be obtained from a URI."
             },
             "Model": {
                 "type": "object",
@@ -9419,14 +9427,15 @@
             "RegisterDatasetRequest": {
                 "type": "object",
                 "properties": {
-                    "schema": {
+                    "purpose": {
                         "type": "string",
                         "enum": [
-                            "messages"
+                            "post-training/messages",
+                            "eval/question-answer"
                         ],
-                        "description": "The schema format of the dataset. One of - messages: The dataset contains a messages column with list of messages for post-training."
+                        "description": "The purpose of the dataset. One of - \"post-training/messages\": The dataset contains a messages column with list of messages for post-training. - \"eval/question-answer\": The dataset contains a question and answer column."
                     },
-                    "data_source": {
+                    "source": {
                         "$ref": "#/components/schemas/DataSource",
                         "description": "The data source of the dataset. Examples: - { \"type\": \"uri\", \"uri\": \"https://mywebsite.com/mydata.jsonl\" } - { \"type\": \"uri\", \"uri\": \"lsfs://mydata.jsonl\" } - { \"type\": \"huggingface\", \"dataset_path\": \"tatsu-lab/alpaca\", \"params\": { \"split\": \"train\" } } - { \"type\": \"rows\", \"rows\": [ { \"messages\": [ {\"role\": \"user\", \"content\": \"Hello, world!\"}, {\"role\": \"assistant\", \"content\": \"Hello, world!\"}, ] } ] }"
                     },
@@ -9463,8 +9472,8 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "schema",
-                    "data_source"
+                    "purpose",
+                    "source"
                 ],
                 "title": "RegisterDatasetRequest"
             },
