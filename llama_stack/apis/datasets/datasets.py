@@ -55,16 +55,24 @@ class URIDataSource(BaseModel):
     uri: str
 
 
-@json_schema_type
-class HuggingfaceDataSource(BaseModel):
-    """A dataset stored in Huggingface.
+class HuggingfaceDataSourceFields(BaseModel):
+    """The fields for a Huggingface dataset.
     :param path: The path to the dataset in Huggingface. E.g.
         - "llamastack/simpleqa"
     :param params: The parameters for the dataset.
     """
-    type: Literal["huggingface"] = "huggingface"
     path: str
     params: Dict[str, Any]
+
+
+@json_schema_type
+class HuggingfaceDataSource(BaseModel):
+    """A dataset stored in Huggingface.
+    :param type: The type of the data source.
+    :param huggingface: The fields for a Huggingface dataset.
+    """
+    type: Literal["huggingface"] = "huggingface"
+    huggingface: HuggingfaceDataSourceFields
 
 
 @json_schema_type

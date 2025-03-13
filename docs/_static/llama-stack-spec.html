@@ -7496,44 +7496,55 @@
                     "type": {
                         "type": "string",
                         "const": "huggingface",
-                        "default": "huggingface"
+                        "default": "huggingface",
+                        "description": "The type of the data source."
                     },
-                    "path": {
-                        "type": "string",
-                        "description": "The path to the dataset in Huggingface. E.g. - \"llamastack/simpleqa\""
-                    },
-                    "params": {
+                    "huggingface": {
                         "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
+                        "properties": {
+                            "path": {
+                                "type": "string",
+                                "description": "The path to the dataset in Huggingface. E.g. - \"llamastack/simpleqa\""
+                            },
+                            "params": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "oneOf": [
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "type": "boolean"
+                                        },
+                                        {
+                                            "type": "number"
+                                        },
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "array"
+                                        },
+                                        {
+                                            "type": "object"
+                                        }
+                                    ]
                                 },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
+                                "description": "The parameters for the dataset."
+                            }
                         },
-                        "description": "The parameters for the dataset."
+                        "additionalProperties": false,
+                        "required": [
+                            "path",
+                            "params"
+                        ],
+                        "description": "The fields for a Huggingface dataset."
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "type",
-                    "path",
-                    "params"
+                    "huggingface"
                 ],
                 "title": "HuggingfaceDataSource",
                 "description": "A dataset stored in Huggingface."
