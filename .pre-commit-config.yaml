@@ -8,6 +8,7 @@ repos:
     rev: v5.0.0  # Latest stable version
     hooks:
     -   id: check-merge-conflict
+        args: ['--assume-in-merge']
     -   id: trailing-whitespace
         exclude: '\.py$'  # Exclude Python files as Ruff already handles them
     -   id: check-added-large-files
