@@ -1452,9 +1452,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/ProviderInfo'
-                  - type: 'null'
+                $ref: '#/components/schemas/ProviderInfo'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':

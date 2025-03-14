@@ -51,17 +51,10 @@ class ProviderImpl(Providers):
 
         return ListProvidersResponse(data=ret)
 
-    async def inspect_provider(self, provider_id: str) -> Optional[ProviderInfo]:
-        run_config = self.config.run_config
-        safe_config = StackRunConfig(**redact_sensitive_fields(run_config.model_dump()))
-        for api, providers in safe_config.providers.items():
-            for p in providers:
-                if p.provider_id == provider_id:
-                    return ProviderInfo(
-                        api=api,
-                        provider_id=p.provider_id,
-                        provider_type=p.provider_type,
-                        config=p.config,
-                    )
+    async def inspect_provider(self, provider_id: str) -> ProviderInfo:
+        all_providers = await self.list_providers()
+        for p in all_providers.data:
+            if p.provider_id == provider_id:
+                return p
 
-        return None
+        raise ValueError(f"Provider {provider_id} not found")
