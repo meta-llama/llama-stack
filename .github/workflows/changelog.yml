@@ -19,7 +19,8 @@ jobs:
         with:
           ref: main
           fetch-depth: 0
-      - run: python ./scripts/gen-changelog.py
+      - run: |
+          python ./scripts/gen-changelog.py
       - uses: peter-evans/create-pull-request@v7
         with:
           title: 'docs: update CHANGELOG.md for ${{ github.ref_name }}'
