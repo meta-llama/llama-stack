@@ -242,6 +242,19 @@ def get_distribution_template() -> DistributionTemplate:
                 "chat_completion_input": {"type": "string"},
             },
         ),
+        DatasetInput(
+            dataset_id="docvqa",
+            provider_id="huggingface",
+            url=URL(uri="https://huggingface.co/datasets/llamastack/docvqa"),
+            metadata={
+                "path": "llamastack/docvqa",
+                "split": "train",
+            },
+            dataset_schema={
+                "chat_completion_input": {"type": "string"},
+                "expected_answer": {"type": "string"},
+            },
+        ),
     ]
 
     default_benchmarks = [
@@ -269,6 +282,11 @@ def get_distribution_template() -> DistributionTemplate:
             benchmark_id="meta-reference-bfcl",
             dataset_id="bfcl",
             scoring_functions=["basic::bfcl"],
+        ),
+        BenchmarkInput(
+            benchmark_id="meta-reference-docvqa",
+            dataset_id="docvqa",
+            scoring_functions=["basic::docvqa"],
         ),
     ]
     return DistributionTemplate(
