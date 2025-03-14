@@ -200,7 +200,7 @@ datasets:
     uri: https://huggingface.co/datasets/llamastack/docvqa
   metadata:
     path: llamastack/docvqa
-    split: train
+    split: val
   dataset_id: docvqa
   provider_id: huggingface
 >>>>>>> 81df5a4e (add DocVQA scoring)

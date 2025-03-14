@@ -209,7 +209,7 @@ def get_distribution_template() -> DistributionTemplate:
             url=URL(uri="https://huggingface.co/datasets/llamastack/docvqa"),
             metadata={
                 "path": "llamastack/docvqa",
-                "split": "train",
+                "split": "val",
             },
             dataset_schema={
                 "chat_completion_input": {"type": "string"},
