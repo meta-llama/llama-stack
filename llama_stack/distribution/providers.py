@@ -4,14 +4,11 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+from typing import Optional
+
 from pydantic import BaseModel
 
-from llama_stack.apis.providers import (
-    GetProviderResponse,
-    ListProvidersResponse,
-    ProviderInfo,
-    Providers,
-)
+from llama_stack.apis.providers import ListProvidersResponse, ProviderInfo, Providers
 
 from .datatypes import StackRunConfig
 from .stack import redact_sensitive_fields
@@ -52,7 +49,7 @@ class ProviderImpl(Providers):
 
         return ListProvidersResponse(data=ret)
 
-    async def inspect_provider(self, provider_id: str) -> GetProviderResponse:
+    async def inspect_provider(self, provider_id: str) -> Optional[ProviderInfo]:
         run_config = self.config.run_config
         safe_config = StackRunConfig(**redact_sensitive_fields(run_config.model_dump()))
         for api, providers in safe_config.providers.items():
