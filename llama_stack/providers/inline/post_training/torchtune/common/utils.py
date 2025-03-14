@@ -10,7 +10,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Callable, Dict
+from typing import Callable, Dict
 
 import torch
 from pydantic import BaseModel
@@ -25,10 +25,13 @@ from llama_stack.apis.post_training import DatasetFormat
 from llama_stack.models.llama.datatypes import Model
 from llama_stack.models.llama.sku_list import resolve_model
 
+BuildLoraModelCallable = Callable[..., torch.nn.Module]
+BuildTokenizerCallable = Callable[..., Llama3Tokenizer]
+
 
 class ModelConfig(BaseModel):
-    model_definition: Any
-    tokenizer_type: Any
+    model_definition: BuildLoraModelCallable
+    tokenizer_type: BuildTokenizerCallable
     checkpoint_type: str
 
 
@@ -49,10 +52,6 @@ DATA_FORMATS: Dict[str, Transform] = {
     "instruct": InputOutputToMessages,
     "dialog": ShareGPTToMessages,
 }
-
-
-BuildLoraModelCallable = Callable[..., torch.nn.Module]
-BuildTokenizerCallable = Callable[..., Llama3Tokenizer]
 
 
 def _validate_model_id(model_id: str) -> Model:
