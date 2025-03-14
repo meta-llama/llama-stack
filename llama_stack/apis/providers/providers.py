@@ -8,7 +8,6 @@ from typing import List, Optional, Protocol, runtime_checkable
 
 from pydantic import BaseModel
 
-from llama_stack.distribution.datatypes import Provider
 from llama_stack.schema_utils import json_schema_type, webmethod
 
 
