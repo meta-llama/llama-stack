@@ -54,9 +54,6 @@ class LMStudioInferenceAdapter(Inference, ModelsProtocolPrivate):
         pass
 
     async def register_model(self, model):
-        is_model_present = await self.client.check_if_model_present_in_lmstudio(model.provider_model_id)
-        if not is_model_present:
-            raise ValueError(f"Model with provider_model_id {model.provider_model_id} not found in LM Studio")
         await self.register_helper.register_model(model)
         return model
 
@@ -96,7 +93,7 @@ class LMStudioInferenceAdapter(Inference, ModelsProtocolPrivate):
         llm = await self.client.get_llm(model.provider_model_id)
 
         if response_format is not None and response_format.type != ResponseFormatType.json_schema.value:
-            raise ValueError(f"Response format type {response_format.type} not supported for LM Studio")
+            raise ValueError(f"Response format type {response_format.type} not supported for LM Studio Provider")
         json_schema = response_format.json_schema if response_format else None
 
         return await self.client.llm_respond(
@@ -121,10 +118,10 @@ class LMStudioInferenceAdapter(Inference, ModelsProtocolPrivate):
         model = await self.model_store.get_model(model_id)
         llm = await self.client.get_llm(model.provider_model_id)
         if content_has_media(content):
-            raise NotImplementedError("Media content not supported in LM Studio")
+            raise NotImplementedError("Media content not supported in LM Studio Provider")
 
         if response_format is not None and response_format.type != ResponseFormatType.json_schema.value:
-            raise ValueError(f"Response format type {response_format.type} not supported for LM Studio")
+            raise ValueError(f"Response format type {response_format.type} not supported for LM Studio Provider")
         json_schema = response_format.json_schema if response_format else None
 
         return await self.client.llm_completion(llm, content, sampling_params, json_schema, stream)

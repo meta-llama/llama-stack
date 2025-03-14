@@ -279,7 +279,7 @@ class LMStudioClient:
             options.update(
                 {
                     "temperature": params.strategy.temperature,
-                    "top_p": params.strategy.top_p,
+                    "topPSampling": params.strategy.top_p,
                 }
             )
         elif isinstance(params.strategy, TopKSamplingStrategy):
