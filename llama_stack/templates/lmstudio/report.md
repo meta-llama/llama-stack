@@ -1,7 +1,7 @@
-# Report for cerebras distribution
+# Report for LM Studio distribution
 
 ## Supported Models
-| Model Descriptor | cerebras |
+| Model Descriptor | lmstudio |
 |:---|:---|
 | meta-llama/Llama-3-8B-Instruct | ✅ |
 | meta-llama/Llama-3-70B-Instruct | ✅ |
