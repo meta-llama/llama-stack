@@ -299,6 +299,10 @@ async def instantiate_providers(
             api = Api(api_str)
             impls[api] = impl
 
+    # Add the list of implementations to the "providers" endpoint, which will later be used to
+    # retrieve the health status of each provider
+    impls[Api("providers")].impls = impls
+
     return impls
 
 
