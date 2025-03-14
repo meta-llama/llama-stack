@@ -25,6 +25,10 @@ class VLLMInferenceAdapterConfig(BaseModel):
         default="fake",
         description="The API token",
     )
+    tls_verify: bool = Field(
+        default=True,
+        description="Whether to verify TLS certificates",
+    )
 
     @classmethod
     def sample_run_config(
@@ -36,4 +40,5 @@ class VLLMInferenceAdapterConfig(BaseModel):
             "url": url,
             "max_tokens": "${env.VLLM_MAX_TOKENS:4096}",
             "api_token": "${env.VLLM_API_TOKEN:fake}",
+            "tls_verify": "${env.VLLM_TLS_VERIFY:true}",
         }
