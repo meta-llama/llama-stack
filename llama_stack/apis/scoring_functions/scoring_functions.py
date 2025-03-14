@@ -12,41 +12,80 @@ from typing import (
     Literal,
     Optional,
     Protocol,
-    Union,
     runtime_checkable,
+    Union,
 )
 
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
-from llama_stack.apis.common.type_system import ParamType
+from llama_stack.apis.datasets import DatasetPurpose
+
 from llama_stack.apis.resource import Resource, ResourceType
 from llama_stack.schema_utils import json_schema_type, register_schema, webmethod
 
-
 # Perhaps more structure can be imposed on these functions. Maybe they could be associated
 # with standard metrics so they can be rolled up?
-@json_schema_type
-class ScoringFnParamsType(Enum):
-    llm_as_judge = "llm_as_judge"
+
+
+class ScoringFunctionType(Enum):
+    """
+    A type of scoring function. Each type is a criteria for evaluating answers.
+
+    :cvar llm_as_judge: Scoring function that uses a judge model to score the answer.
+    :cvar regex_parser: Scoring function that parses the answer from the generated response using regexes, and checks against the expected answer.
+    """
+
+    custom_llm_as_judge = "custom_llm_as_judge"
     regex_parser = "regex_parser"
-    basic = "basic"
+    regex_parser_math_response = "regex_parser_math_response"
+    equality = "equality"
+    subset_of = "subset_of"
+    factuality = "factuality"
+    faithfulness = "faithfulness"
+    answer_correctness = "answer_correctness"
+    answer_relevancy = "answer_relevancy"
+    answer_similarity = "answer_similarity"
+    context_entity_recall = "context_entity_recall"
+    context_precision = "context_precision"
+    context_recall = "context_recall"
+    context_relevancy = "context_relevancy"
 
 
-@json_schema_type
 class AggregationFunctionType(Enum):
+    """
+    A type of aggregation function.
+
+    :cvar average: Average the scores of each row.
+    :cvar median: Median the scores of each row.
+    :cvar categorical_count: Count the number of rows that match each category.
+    :cvar accuracy: Number of correct results over total results.
+    """
+
     average = "average"
     median = "median"
     categorical_count = "categorical_count"
     accuracy = "accuracy"
 
 
-@json_schema_type
-class LLMAsJudgeScoringFnParams(BaseModel):
-    type: Literal[ScoringFnParamsType.llm_as_judge.value] = ScoringFnParamsType.llm_as_judge.value
-    judge_model: str
-    prompt_template: Optional[str] = None
-    judge_score_regexes: Optional[List[str]] = Field(
+class BasicScoringFnParams(BaseModel):
+    """
+    :param aggregation_functions: (Optional) Aggregation functions to apply to the scores of each row. If not provided, no aggregation will be performed.
+    """
+
+    aggregation_functions: Optional[List[AggregationFunctionType]] = Field(
+        description="Aggregation functions to apply to the scores of each row",
+        default_factory=list,
+    )
+
+
+class RegexParserScoringFnParams(BaseModel):
+    """
+    :param parsing_regexes: (Optional) Regexes to extract the answer from generated response.
+    :param aggregation_functions: (Optional) Aggregation functions to apply to the scores of each row. If not provided, no aggregation will be performed.
+    """
+
+    parsing_regexes: List[str] = Field(
         description="Regexes to extract the answer from generated response",
         default_factory=list,
     )
@@ -56,59 +95,142 @@ class LLMAsJudgeScoringFnParams(BaseModel):
     )
 
 
-@json_schema_type
-class RegexParserScoringFnParams(BaseModel):
-    type: Literal[ScoringFnParamsType.regex_parser.value] = ScoringFnParamsType.regex_parser.value
-    parsing_regexes: Optional[List[str]] = Field(
-        description="Regex to extract the answer from generated response",
-        default_factory=list,
-    )
-    aggregation_functions: Optional[List[AggregationFunctionType]] = Field(
-        description="Aggregation functions to apply to the scores of each row",
+class CustomLLMAsJudgeScoringFnParams(BaseModel):
+    type: Literal["custom_llm_as_judge"] = "custom_llm_as_judge"
+    judge_model: str
+    prompt_template: Optional[str] = None
+    judge_score_regexes: Optional[List[str]] = Field(
+        description="Regexes to extract the answer from generated response",
         default_factory=list,
     )
 
 
 @json_schema_type
-class BasicScoringFnParams(BaseModel):
-    type: Literal[ScoringFnParamsType.basic.value] = ScoringFnParamsType.basic.value
-    aggregation_functions: Optional[List[AggregationFunctionType]] = Field(
-        description="Aggregation functions to apply to the scores of each row",
-        default_factory=list,
-    )
+class RegexParserScoringFn(BaseModel):
+    type: Literal["regex_parser"] = "regex_parser"
+    regex_parser: RegexParserScoringFnParams
 
 
-ScoringFnParams = register_schema(
+@json_schema_type
+class RegexParserMathScoringFn(BaseModel):
+    type: Literal["regex_parser_math_response"] = "regex_parser_math_response"
+    regex_parser_math_response: RegexParserScoringFnParams
+
+
+@json_schema_type
+class EqualityScoringFn(BaseModel):
+    type: Literal["equality"] = "equality"
+    equality: BasicScoringFnParams
+
+
+@json_schema_type
+class SubsetOfScoringFn(BaseModel):
+    type: Literal["subset_of"] = "subset_of"
+    subset_of: BasicScoringFnParams
+
+
+@json_schema_type
+class FactualityScoringFn(BaseModel):
+    type: Literal["factuality"] = "factuality"
+    factuality: BasicScoringFnParams
+
+
+@json_schema_type
+class FaithfulnessScoringFn(BaseModel):
+    type: Literal["faithfulness"] = "faithfulness"
+    faithfulness: BasicScoringFnParams
+
+
+@json_schema_type
+class AnswerCorrectnessScoringFn(BaseModel):
+    type: Literal["answer_correctness"] = "answer_correctness"
+    answer_correctness: BasicScoringFnParams
+
+
+@json_schema_type
+class AnswerRelevancyScoringFn(BaseModel):
+    type: Literal["answer_relevancy"] = "answer_relevancy"
+    answer_relevancy: BasicScoringFnParams
+
+
+@json_schema_type
+class AnswerSimilarityScoringFn(BaseModel):
+    type: Literal["answer_similarity"] = "answer_similarity"
+    answer_similarity: BasicScoringFnParams
+
+
+@json_schema_type
+class ContextEntityRecallScoringFn(BaseModel):
+    type: Literal["context_entity_recall"] = "context_entity_recall"
+    context_entity_recall: BasicScoringFnParams
+
+
+@json_schema_type
+class ContextPrecisionScoringFn(BaseModel):
+    type: Literal["context_precision"] = "context_precision"
+    context_precision: BasicScoringFnParams
+
+
+@json_schema_type
+class ContextRecallScoringFn(BaseModel):
+    type: Literal["context_recall"] = "context_recall"
+    context_recall: BasicScoringFnParams
+
+
+@json_schema_type
+class ContextRelevancyScoringFn(BaseModel):
+    type: Literal["context_relevancy"] = "context_relevancy"
+    context_relevancy: BasicScoringFnParams
+
+
+@json_schema_type
+class CustomLLMAsJudgeScoringFn(BaseModel):
+    type: Literal["custom_llm_as_judge"] = "custom_llm_as_judge"
+    custom_llm_as_judge: CustomLLMAsJudgeScoringFnParams
+
+
+ScoringFnDefinition = register_schema(
     Annotated[
         Union[
-            LLMAsJudgeScoringFnParams,
-            RegexParserScoringFnParams,
-            BasicScoringFnParams,
+            CustomLLMAsJudgeScoringFn,
+            RegexParserScoringFn,
+            RegexParserMathScoringFn,
+            EqualityScoringFn,
+            SubsetOfScoringFn,
+            FactualityScoringFn,
+            FaithfulnessScoringFn,
+            AnswerCorrectnessScoringFn,
+            AnswerRelevancyScoringFn,
+            AnswerSimilarityScoringFn,
+            ContextEntityRecallScoringFn,
+            ContextPrecisionScoringFn,
+            ContextRecallScoringFn,
+            ContextRelevancyScoringFn,
         ],
         Field(discriminator="type"),
     ],
-    name="ScoringFnParams",
+    name="ScoringFnDefinition",
 )
 
 
 class CommonScoringFnFields(BaseModel):
-    description: Optional[str] = None
+    """
+    :param fn: The scoring function type and parameters.
+    :param metadata: (Optional) Any additional metadata for this definition (e.g. description).
+    """
+
+    fn: ScoringFnDefinition
     metadata: Dict[str, Any] = Field(
         default_factory=dict,
-        description="Any additional metadata for this definition",
-    )
-    return_type: ParamType = Field(
-        description="The return type of the deterministic function",
-    )
-    params: Optional[ScoringFnParams] = Field(
-        description="The parameters for the scoring function for benchmark eval, these can be overridden for app eval",
-        default=None,
+        description="Any additional metadata for this definition (e.g. description)",
     )
 
 
 @json_schema_type
 class ScoringFn(CommonScoringFnFields, Resource):
-    type: Literal[ResourceType.scoring_function.value] = ResourceType.scoring_function.value
+    type: Literal[ResourceType.scoring_function.value] = (
+        ResourceType.scoring_function.value
+    )
 
     @property
     def scoring_fn_id(self) -> str:
@@ -117,6 +239,23 @@ class ScoringFn(CommonScoringFnFields, Resource):
     @property
     def provider_scoring_fn_id(self) -> str:
         return self.provider_resource_id
+
+
+@json_schema_type
+class ScoringFnTypeInfo(BaseModel):
+    """
+    :param type: The type of scoring function.
+    :param description: A description of the scoring function type.
+        - E.g. Write your custom judge prompt to score the answer.
+    :param supported_dataset_purposes: The purposes that this scoring function can be used for.
+    """
+
+    type: ScoringFunctionType
+    description: str
+    supported_dataset_purposes: List[DatasetPurpose] = Field(
+        description="The supported purposes (supported dataset schema) that this scoring function can be used for. E.g. eval/question-answer",
+        default_factory=list,
+    )
 
 
 class ScoringFnInput(CommonScoringFnFields, BaseModel):
@@ -129,21 +268,62 @@ class ListScoringFunctionsResponse(BaseModel):
     data: List[ScoringFn]
 
 
+class ListScoringFunctionTypesResponse(BaseModel):
+    data: List[ScoringFnTypeInfo]
+
+
 @runtime_checkable
 class ScoringFunctions(Protocol):
     @webmethod(route="/scoring-functions", method="GET")
-    async def list_scoring_functions(self) -> ListScoringFunctionsResponse: ...
+    async def list_scoring_functions(self) -> ListScoringFunctionsResponse:
+        """
+        List all registered scoring functions.
+        """
+        ...
+
+    @webmethod(route="/scoring-functions/types", method="GET")
+    async def list_scoring_function_types(self) -> ListScoringFunctionTypesResponse:
+        """
+        List all available scoring function types information and how to use them.
+        """
+        ...
 
     @webmethod(route="/scoring-functions/{scoring_fn_id:path}", method="GET")
-    async def get_scoring_function(self, scoring_fn_id: str, /) -> Optional[ScoringFn]: ...
+    async def get_scoring_function(
+        self,
+        scoring_fn_id: str,
+    ) -> Optional[ScoringFn]:
+        """
+        Get a scoring function by its ID.
+        :param scoring_fn_id: The ID of the scoring function to get.
+        """
+        ...
 
     @webmethod(route="/scoring-functions", method="POST")
     async def register_scoring_function(
         self,
+        fn: ScoringFnDefinition,
+        scoring_fn_id: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> ScoringFn:
+        """
+        Register a new scoring function with given parameters.
+        Only valid scoring function type that can be parameterized can be registered.
+
+        :param fn: The type and parameters for the scoring function.
+        :param scoring_fn_id: (Optional) The ID of the scoring function to register. If not provided, a random ID will be generated.
+        :param metadata: (Optional) Any additional metadata to be associated with the scoring function.
+            - E.g. {"description": "This scoring function is used for ..."}
+        """
+        ...
+
+    @webmethod(route="/scoring-functions/{scoring_fn_id:path}", method="DELETE")
+    async def unregister_scoring_function(
+        self,
         scoring_fn_id: str,
-        description: str,
-        return_type: ParamType,
-        provider_scoring_fn_id: Optional[str] = None,
-        provider_id: Optional[str] = None,
-        params: Optional[ScoringFnParams] = None,
-    ) -> None: ...
+    ) -> None:
+        """
+        Unregister a scoring function by its ID.
+        :param scoring_fn_id: The ID of the scoring function to unregister.
+        """
+        ...
