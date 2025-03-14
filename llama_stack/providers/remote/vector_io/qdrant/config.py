@@ -23,7 +23,6 @@ class QdrantVectorIOConfig(BaseModel):
     prefix: Optional[str] = None
     timeout: Optional[int] = None
     host: Optional[str] = None
-    path: Optional[str] = None
 
     @classmethod
     def sample_run_config(cls, **kwargs: Any) -> Dict[str, Any]:
