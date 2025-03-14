@@ -77,7 +77,7 @@ repos:
         name: Distribution Template Codegen
         additional_dependencies:
           - uv==0.6.0
-        entry: uv run --extra codegen python -m llama_stack.scripts.distro_codegen
+        entry: uv run --extra codegen ./scripts/distro_codegen.py
         language: python
         pass_filenames: false
         require_serial: true
