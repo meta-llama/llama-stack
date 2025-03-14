@@ -21,3 +21,4 @@ class JobStatus(Enum):
     in_progress = "in_progress"
     failed = "failed"
     scheduled = "scheduled"
+    cancelled = "cancelled"

@@ -62,8 +62,14 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
             self.headers["Authorization"] = f"Bearer {config.api_key}"
 
         self.timeout = aiohttp.ClientTimeout(total=config.timeout)
-        # TODO(mf): filter by available models
+        # TODO: filter by available models based on /config endpoint
         ModelRegistryHelper.__init__(self, model_entries=_MODEL_ENTRIES)
+        self.session = aiohttp.ClientSession(headers=self.headers, timeout=self.timeout)
+        self.customizer_url = config.customizer_url
+
+        if not self.customizer_url:
+            warnings.warn("Customizer URL is not set, using default value: http://nemo.test")
+            self.customizer_url = "http://nemo.test"
 
     async def _make_request(
         self,
@@ -75,8 +81,8 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
         **kwargs,
     ) -> Dict[str, Any]:
         """Helper method to make HTTP requests to the Customizer API."""
-        url = f"{self.config.customizer_url}{path}"
-        request_headers = self.headers.copy()  # Create a copy to avoid modifying the original
+        url = f"{self.customizer_url}{path}"
+        request_headers = self.headers.copy()
 
         if headers:
             request_headers.update(headers)
@@ -86,12 +92,11 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
             request_headers["Content-Type"] = "application/json"
 
         for _ in range(self.config.max_retries):
-            async with aiohttp.ClientSession(headers=request_headers, timeout=self.timeout) as session:
-                async with session.request(method, url, params=params, json=json, **kwargs) as response:
-                    if response.status >= 400:
-                        error_data = await response.json()
-                        raise Exception(f"API request failed: {error_data}")
-                    return await response.json()
+            async with self.session.request(method, url, params=params, json=json, **kwargs) as response:
+                if response.status >= 400:
+                    error_data = await response.json()
+                    raise Exception(f"API request failed: {error_data}")
+                return await response.json()
 
     @webmethod(route="/post-training/jobs", method="GET")
     async def get_training_jobs(
@@ -178,8 +183,8 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
         logger_config: Dict[str, Any],
         model: str,
         checkpoint_dir: Optional[str],
-        algorithm_config: Optional[AlgorithmConfig],
-    ) -> PostTrainingJob:
+        algorithm_config: Optional[AlgorithmConfig] = None,
+    ) -> NvidiaPostTrainingJob:
         """
         Fine-tunes a model on a dataset.
         Currently only supports Lora finetuning for standlone docker container.
@@ -223,12 +228,13 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
                 - batch_size
             - OptimizerConfig:
                 - lr
+                - weight_decay
             - LoRA config:
                 - adapter_dim
                 - adapter_dropout
             Note:
-                - checkpoint_dir, hyperparam_search_config, logger_config are not supported atm, will be ignored
-                - output_model_dir is set via environment variable NVIDIA_OUTPUT_MODEL_DIR
+                - checkpoint_dir, hyperparam_search_config, logger_config are not supported atm, will be ignored and users are informed via warnings.
+                - Some parameters from TrainingConfig, DataConfig, OptimizerConfig are not supported atm, will be ignored and users are informed via warnings.
 
             User is informed about unsupported parameters via warnings.
         """
@@ -247,7 +253,7 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
             """Helper function to warn about unsupported parameters in a config dictionary."""
             unsupported_params = [k for k in config_dict.keys() if k not in supported_keys]
             if unsupported_params:
-                warnings.warn(f"Parameters: {unsupported_params} in {config_name} not supported and will be ignored.")
+                warnings.warn(f"Parameters: {unsupported_params} in `{config_name}` not supported and will be ignored.")
 
         # Check for unsupported parameters
         warn_unsupported_params(training_config, ["n_epochs", "data_config", "optimizer_config"], "TrainingConfig")
@@ -269,9 +275,9 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
             "hyperparameters": {
                 "training_type": "sft",
                 "finetuning_type": "lora",
-                "epochs": training_config["n_epochs"],
-                "batch_size": training_config["data_config"]["batch_size"],
-                "learning_rate": training_config["optimizer_config"]["lr"],
+                "epochs": training_config.get("n_epochs", 1),
+                "batch_size": training_config["data_config"].get("batch_size", 8),
+                "learning_rate": training_config["optimizer_config"].get("lr", 0.0001),
             },
             "project": self.config.project_id,
             "ownership": {"created_by": self.config.user_id, "access_policies": self.config.access_policies},
@@ -283,7 +289,10 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
             if isinstance(algorithm_config, dict) and algorithm_config.get("type") == "LoRA":
                 # Extract LoRA-specific parameters
                 lora_config = {k: v for k, v in algorithm_config.items() if k != "type"}
-                job_config["hyperparameters"]["lora"] = lora_config
+                job_config["hyperparameters"]["lora"] = {
+                    "adapter_dim": lora_config.get("adapter_dim", 8),
+                    "adapter_dropout": lora_config.get("adapter_dropout", 1),
+                }
                 warn_unsupported_params(lora_config, ["adapter_dim", "adapter_dropout"], "LoRA config")
             else:
                 raise NotImplementedError(f"Unsupported algorithm config: {algorithm_config}")
@@ -297,7 +306,13 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
         )
 
         job_uuid = response["id"]
-        return PostTrainingJob(job_uuid=job_uuid)
+        status = STATUS_MAPPING.get(response["status"].lower(), "unknown")
+        created_at = datetime.fromisoformat(response["created_at"])
+        updated_at = datetime.fromisoformat(response["updated_at"])
+
+        return NvidiaPostTrainingJob(
+            job_uuid=job_uuid, status=JobStatus(status), created_at=created_at, updated_at=updated_at, **response
+        )
 
     async def preference_optimize(
         self,

@@ -4,16 +4,12 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Dict
-
-from llama_stack.distribution.datatypes import Api, ProviderSpec
-
 from .config import NvidiaPostTrainingConfig
 
 
 async def get_adapter_impl(
     config: NvidiaPostTrainingConfig,
-    deps: Dict[Api, ProviderSpec],
+    _deps,
 ):
     from .post_training import NvidiaPostTrainingAdapter
 
