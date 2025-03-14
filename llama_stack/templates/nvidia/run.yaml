@@ -26,18 +26,11 @@ providers:
         namespace: null
         db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/nvidia}/faiss_store.db
   safety:
-<<<<<<< HEAD
   - provider_id: nvidia
     provider_type: remote::nvidia
     config:
       guardrails_service_url: ${env.GUARDRAILS_SERVICE_URL:http://localhost:7331}
       config_id: self-check
-=======
-  - provider_id: llama-guard
-    provider_type: inline::llama-guard
-    config:
-      excluded_categories: []
->>>>>>> upstream/main
   agents:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -62,16 +55,6 @@ providers:
         namespace: null
         db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/nvidia}/meta_reference_eval.db
   datasetio:
-<<<<<<< HEAD
-=======
-  - provider_id: huggingface
-    provider_type: remote::huggingface
-    config:
-      kvstore:
-        type: sqlite
-        namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/nvidia}/huggingface_datasetio.db
->>>>>>> upstream/main
   - provider_id: localfs
     provider_type: inline::localfs
     config:

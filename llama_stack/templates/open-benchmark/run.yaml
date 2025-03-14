@@ -216,8 +216,6 @@ datasets:
     split: test
   dataset_id: math_500
   provider_id: huggingface
-<<<<<<< HEAD
-=======
 - dataset_schema:
     function:
       type: string
@@ -236,7 +234,6 @@ datasets:
     split: train
   dataset_id: bfcl
   provider_id: huggingface
->>>>>>> upstream/main
 scoring_fns: []
 benchmarks:
 - dataset_id: simpleqa
@@ -259,14 +256,11 @@ benchmarks:
   - basic::regex_parser_math_response
   metadata: {}
   benchmark_id: meta-reference-math-500
-<<<<<<< HEAD
-=======
 - dataset_id: bfcl
   scoring_functions:
   - basic::bfcl
   metadata: {}
   benchmark_id: meta-reference-bfcl
->>>>>>> upstream/main
 tool_groups:
 - toolgroup_id: builtin::websearch
   provider_id: tavily-search
