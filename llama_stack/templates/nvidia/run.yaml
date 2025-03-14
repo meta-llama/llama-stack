@@ -58,11 +58,11 @@ providers:
   datasetio:
   - provider_id: localfs
     provider_type: inline::localfs
-    config:
-      kvstore:
-        type: sqlite
-        namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/nvidia}/localfs_datasetio.db
+    config: {}
+  datasets:
+  - provider_id: nvidia
+    provider_type: remote::nvidia
+    config: {}
   scoring:
   - provider_id: basic
     provider_type: inline::basic
