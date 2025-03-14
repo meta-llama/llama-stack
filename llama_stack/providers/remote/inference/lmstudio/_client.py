@@ -116,12 +116,12 @@ class LMStudioClient:
                             delta=TextDelta(text=chunk.content),
                         )
                     )
-                    yield ChatCompletionResponseStreamChunk(
-                        event=ChatCompletionResponseEvent(
-                            event_type=ChatCompletionResponseEventType.complete,
-                            delta=TextDelta(text=""),
-                        )
+                yield ChatCompletionResponseStreamChunk(
+                    event=ChatCompletionResponseEvent(
+                        event_type=ChatCompletionResponseEventType.complete,
+                        delta=TextDelta(text=""),
                     )
+                )
 
             return stream_generator()
         else:
