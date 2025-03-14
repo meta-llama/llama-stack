@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import List, Optional, Protocol, runtime_checkable
+from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
 
 from pydantic import BaseModel
 
@@ -16,6 +16,7 @@ class ProviderInfo(BaseModel):
     api: str
     provider_id: str
     provider_type: str
+    config: Dict[str, Any]
 
 
 class ListProvidersResponse(BaseModel):

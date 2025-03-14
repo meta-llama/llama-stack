@@ -5448,11 +5448,22 @@ components:
           type: string
         provider_type:
           type: string
+        config:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
       additionalProperties: false
       required:
         - api
         - provider_id
         - provider_type
+        - config
       title: ProviderInfo
     InvokeToolRequest:
       type: object
