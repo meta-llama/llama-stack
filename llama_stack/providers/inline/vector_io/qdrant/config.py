@@ -5,6 +5,8 @@
 # the root directory of this source tree.
 
 
+from typing import Any, Dict
+
 from pydantic import BaseModel
 
 from llama_stack.schema_utils import json_schema_type
@@ -15,7 +17,7 @@ class QdrantVectorIOConfig(BaseModel):
     path: str
 
     @classmethod
-    def sample_run_config(cls, __distro_dir__: str) -> dict[str, any]:
+    def sample_run_config(cls, __distro_dir__: str) -> Dict[str, Any]:
         return {
             "path": "${env.QDRANT_PATH:~/.llama/" + __distro_dir__ + "}/" + "qdrant.db",
         }

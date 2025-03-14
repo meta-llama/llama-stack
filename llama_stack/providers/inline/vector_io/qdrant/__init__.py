@@ -11,7 +11,7 @@ from llama_stack.providers.datatypes import Api, ProviderSpec
 from .config import QdrantVectorIOConfig
 
 
-async def get_provider_impl(config: QdrantVectorIOConfig, deps: Dict[Api, ProviderSpec]):
+async def get_adapter_impl(config: QdrantVectorIOConfig, deps: Dict[Api, ProviderSpec]):
     from llama_stack.providers.remote.vector_io.qdrant.qdrant import QdrantVectorIOAdapter
 
     impl = QdrantVectorIOAdapter(config, deps[Api.inference])

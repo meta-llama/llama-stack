@@ -103,13 +103,17 @@ class QdrantVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
     def __init__(
         self, config: Union[RemoteQdrantVectorIOConfig, InlineQdrantVectorIOConfig], inference_api: Api.inference
     ) -> None:
+        # TODO: this is required otherwise the precommit hook fails with
+        # _init__.py:17: error: Cannot instantiate abstract class "QdrantVectorIOAdapter" with abstract attribute "vector_db_store"  [abstract]
+        # Will investigate further and remove it once fixed
+        self.vector_db_store = None
         self.config = config
-        self.client = AsyncQdrantClient(**self.config.model_dump(exclude_none=True))
+        self.client: AsyncQdrantClient = None
         self.cache = {}
         self.inference_api = inference_api
 
     async def initialize(self) -> None:
-        pass
+        self.client = AsyncQdrantClient(**self.config.model_dump(exclude_none=True))
 
     async def shutdown(self) -> None:
         self.client.close()
@@ -125,6 +129,11 @@ class QdrantVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
         )
 
         self.cache[vector_db.identifier] = index
+
+    async def unregister_vector_db(self, vector_db_id: str) -> None:
+        if vector_db_id in self.cache:
+            await self.cache[vector_db_id].index.delete()
+            del self.cache[vector_db_id]
 
     async def _get_and_cache_vector_db_index(self, vector_db_id: str) -> Optional[VectorDBWithIndex]:
         if vector_db_id in self.cache:
