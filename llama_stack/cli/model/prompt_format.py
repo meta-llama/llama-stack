@@ -50,12 +50,6 @@ class ModelPromptFormat(Subcommand):
             action="store_true",
             help="List all available models",
         )
-        self.parser.add_argument(
-            "-l",
-            "--list",
-            action="store_true",
-            help="List all available models",
-        )
 
     def _run_model_template_cmd(self, args: argparse.Namespace) -> None:
         import importlib.resources

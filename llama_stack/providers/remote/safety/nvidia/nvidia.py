@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 import logging
-from typing import Any, Dict, List
+from typing import Any, List, Optional
 
 import requests
 
@@ -42,10 +42,7 @@ class NVIDIASafetyAdapter(Safety, ShieldsProtocolPrivate):
             raise ValueError("Shield model not provided.")
 
     async def run_shield(
-        self,
-        shield_id: str,
-        messages: List[Message],
-        params: Dict[str, Any] = None,
+        self, shield_id: str, messages: List[Message], params: Optional[dict[str, Any]] = None
     ) -> RunShieldResponse:
         """
         Run a safety shield check against the provided messages.
@@ -53,6 +50,7 @@ class NVIDIASafetyAdapter(Safety, ShieldsProtocolPrivate):
         Args:
             shield_id (str): The unique identifier for the shield to be used.
             messages (List[Message]): A list of Message objects representing the conversation history.
+            params (Optional[dict[str, Any]]): Additional parameters for the shield check.
 
         Returns:
             RunShieldResponse: The response containing safety violation details if any.
