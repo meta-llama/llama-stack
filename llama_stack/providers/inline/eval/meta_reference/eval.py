@@ -12,7 +12,7 @@ from llama_stack.apis.agents import Agents, StepType
 from llama_stack.apis.benchmarks import Benchmark
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
-from llama_stack.apis.inference import Inference, UserMessage
+from llama_stack.apis.inference import Inference, SystemMessage, UserMessage
 from llama_stack.apis.scoring import Scoring
 from llama_stack.distribution.datatypes import Api
 from llama_stack.providers.datatypes import BenchmarksProtocolPrivate
@@ -118,7 +118,7 @@ class MetaReferenceEvalImpl(
         for i, x in tqdm(enumerate(input_rows)):
             assert ColumnName.chat_completion_input.value in x, "Invalid input row"
             input_messages = json.loads(x[ColumnName.chat_completion_input.value])
-            input_messages = [UserMessage(**x) for x in input_messages]
+            input_messages = [UserMessage(**x) for x in input_messages if x["role"] == "user"]
 
             # NOTE: only single-turn agent generation is supported. Create a new session for each input row
             session_create_response = await self.agents_api.create_agent_session(agent_id, f"session-{i}")
@@ -168,10 +168,11 @@ class MetaReferenceEvalImpl(
                 generations.append({ColumnName.generated_answer.value: response.completion_message.content})
             elif ColumnName.chat_completion_input.value in x:
                 chat_completion_input_json = json.loads(x[ColumnName.chat_completion_input.value])
-                input_messages = [UserMessage(**x) for x in chat_completion_input_json]
+                input_messages = [UserMessage(**x) for x in chat_completion_input_json if x["role"] == "user"]
                 messages = []
                 if candidate.system_message:
                     messages.append(candidate.system_message)
+                messages += [SystemMessage(**x) for x in chat_completion_input_json if x["role"] == "system"]
                 messages += input_messages
                 response = await self.inference_api.chat_completion(
                     model_id=candidate.model,
