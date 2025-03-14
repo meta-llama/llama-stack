@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, List, Literal, Optional, Protocol, runtime_checkable
+from typing import Any, Dict, Literal, Optional, Protocol, runtime_checkable
 
 from pydantic import BaseModel
 
@@ -38,18 +38,14 @@ class ShieldInput(CommonShieldFields):
     provider_shield_id: Optional[str] = None
 
 
-class ListShieldsResponse(BaseModel):
-    data: List[Shield]
-
-
 @runtime_checkable
 @trace_protocol
 class Shields(Protocol):
     @webmethod(route="/shields", method="GET")
-    async def list_shields(self) -> ListShieldsResponse: ...
+    async def list_shields(self) -> list[Shield]: ...
 
     @webmethod(route="/shields/{identifier:path}", method="GET")
-    async def get_shield(self, identifier: str) -> Optional[Shield]: ...
+    async def get_shield(self, identifier: str) -> Shield: ...
 
     @webmethod(route="/shields", method="POST")
     async def register_shield(

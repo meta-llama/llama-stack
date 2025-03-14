@@ -80,14 +80,6 @@ class ToolStore(Protocol):
     def get_tool_group(self, toolgroup_id: str) -> ToolGroup: ...
 
 
-class ListToolGroupsResponse(BaseModel):
-    data: List[ToolGroup]
-
-
-class ListToolsResponse(BaseModel):
-    data: List[Tool]
-
-
 @runtime_checkable
 @trace_protocol
 class ToolGroups(Protocol):
@@ -109,12 +101,12 @@ class ToolGroups(Protocol):
     ) -> ToolGroup: ...
 
     @webmethod(route="/toolgroups", method="GET")
-    async def list_tool_groups(self) -> ListToolGroupsResponse:
+    async def list_tool_groups(self) -> list[ToolGroup]:
         """List tool groups with optional provider"""
         ...
 
     @webmethod(route="/tools", method="GET")
-    async def list_tools(self, toolgroup_id: Optional[str] = None) -> ListToolsResponse:
+    async def list_tools(self, toolgroup_id: Optional[str] = None) -> list[Tool]:
         """List tools with optional tool group"""
         ...
 
@@ -148,7 +140,7 @@ class ToolRuntime(Protocol):
     @webmethod(route="/tool-runtime/list-tools", method="GET")
     async def list_runtime_tools(
         self, tool_group_id: Optional[str] = None, mcp_endpoint: Optional[URL] = None
-    ) -> List[ToolDef]: ...
+    ) -> list[ToolDef]: ...
 
     @webmethod(route="/tool-runtime/invoke", method="POST")
     async def invoke_tool(self, tool_name: str, kwargs: Dict[str, Any]) -> ToolInvocationResult:

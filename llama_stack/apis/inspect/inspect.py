@@ -31,26 +31,18 @@ class ProviderInfo(BaseModel):
     provider_type: str
 
 
-class ListProvidersResponse(BaseModel):
-    data: List[ProviderInfo]
-
-
 @json_schema_type
 class VersionInfo(BaseModel):
     version: str
 
 
-class ListRoutesResponse(BaseModel):
-    data: List[RouteInfo]
-
-
 @runtime_checkable
 class Inspect(Protocol):
     @webmethod(route="/inspect/providers", method="GET")
-    async def list_providers(self) -> ListProvidersResponse: ...
+    async def list_providers(self) -> list[ProviderInfo]: ...
 
     @webmethod(route="/inspect/routes", method="GET")
-    async def list_routes(self) -> ListRoutesResponse: ...
+    async def list_routes(self) -> list[RouteInfo]: ...
 
     @webmethod(route="/health", method="GET")
     async def health(self) -> HealthInfo: ...
