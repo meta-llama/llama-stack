@@ -540,7 +540,7 @@ class Agents(Protocol):
         session_id: str,
         agent_id: str,
     ) -> None:
-        """Delete an agent session by its ID.
+        """Delete an agent session by its ID and its associated turns.
 
         :param session_id: The ID of the session to delete.
         :param agent_id: The ID of the agent to delete the session for.
@@ -552,7 +552,7 @@ class Agents(Protocol):
         self,
         agent_id: str,
     ) -> None:
-        """Delete an agent by its ID.
+        """Delete an agent by its ID and its associated sessions and turns.
 
         :param agent_id: The ID of the agent to delete.
         """
