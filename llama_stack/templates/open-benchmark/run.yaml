@@ -186,6 +186,24 @@ datasets:
   metadata: {}
   dataset_id: math_500
   provider_id: huggingface
+- dataset_schema:
+    function:
+      type: string
+    language:
+      type: string
+    ground_truth:
+      type: string
+    id:
+      type: string
+    chat_completion_input:
+      type: string
+  url:
+    uri: https://huggingface.co/datasets/llamastack/bfcl_v3
+  metadata:
+    path: llamastack/bfcl_v3
+    split: train
+  dataset_id: bfcl
+  provider_id: huggingface
 scoring_fns: []
 benchmarks:
 - dataset_id: simpleqa
@@ -208,6 +226,11 @@ benchmarks:
   - basic::regex_parser_math_response
   metadata: {}
   benchmark_id: meta-reference-math-500
+- dataset_id: bfcl
+  scoring_functions:
+  - basic::bfcl
+  metadata: {}
+  benchmark_id: meta-reference-bfcl
 tool_groups:
 - toolgroup_id: builtin::websearch
   provider_id: tavily-search

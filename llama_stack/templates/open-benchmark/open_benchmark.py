@@ -200,6 +200,22 @@ def get_distribution_template() -> DistributionTemplate:
                 uri="huggingface://llamastack/math_500?split=test",
             ),
         ),
+        DatasetInput(
+            dataset_id="bfcl",
+            provider_id="huggingface",
+            url=URL(uri="https://huggingface.co/datasets/llamastack/bfcl_v3"),
+            metadata={
+                "path": "llamastack/bfcl_v3",
+                "split": "train",
+            },
+            dataset_schema={
+                "function": {"type": "string"},
+                "language": {"type": "string"},
+                "ground_truth": {"type": "string"},
+                "id": {"type": "string"},
+                "chat_completion_input": {"type": "string"},
+            },
+        ),
     ]
 
     default_benchmarks = [
@@ -222,6 +238,11 @@ def get_distribution_template() -> DistributionTemplate:
             benchmark_id="meta-reference-math-500",
             dataset_id="math_500",
             scoring_functions=["basic::regex_parser_math_response"],
+        ),
+        BenchmarkInput(
+            benchmark_id="meta-reference-bfcl",
+            dataset_id="bfcl",
+            scoring_functions=["basic::bfcl"],
         ),
     ]
     return DistributionTemplate(

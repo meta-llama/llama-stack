@@ -8,6 +8,7 @@ import itertools
 import os
 import platform
 import textwrap
+import time
 
 from dotenv import load_dotenv
 
@@ -16,6 +17,12 @@ from llama_stack.log import get_logger
 from .report import Report
 
 logger = get_logger(__name__, category="tests")
+
+
+def pytest_runtest_teardown(item):
+    interval_seconds = os.getenv("LLAMA_STACK_TEST_INTERVAL_SECONDS")
+    if interval_seconds:
+        time.sleep(float(interval_seconds))
 
 
 def pytest_configure(config):
