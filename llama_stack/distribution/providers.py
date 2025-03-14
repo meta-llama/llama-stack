@@ -34,14 +34,16 @@ class ProviderImpl(Providers):
 
     async def list_providers(self) -> ListProvidersResponse:
         run_config = self.config.run_config
+        safe_config = StackRunConfig(**redact_sensitive_fields(run_config.model_dump()))
         ret = []
-        for api, providers in run_config.providers.items():
+        for api, providers in safe_config.providers.items():
             ret.extend(
                 [
                     ProviderInfo(
                         api=api,
                         provider_id=p.provider_id,
                         provider_type=p.provider_type,
+                        config=p.config,
                     )
                     for p in providers
                 ]
@@ -59,6 +61,7 @@ class ProviderImpl(Providers):
                         api=api,
                         provider_id=p.provider_id,
                         provider_type=p.provider_type,
+                        config=p.config,
                     )
 
         return None
