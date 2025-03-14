@@ -2151,6 +2151,55 @@
                 }
             }
         },
+        "/v1/providers/{provider_id}": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/ProviderInfo"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Providers"
+                ],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "provider_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
         "/v1/tool-runtime/invoke": {
             "post": {
                 "responses": {
@@ -2643,80 +2692,6 @@
             }
         },
         "/v1/providers": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ListProvidersResponse"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest400"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/TooManyRequests429"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError500"
-                    },
-                    "default": {
-                        "$ref": "#/components/responses/DefaultError"
-                    }
-                },
-                "tags": [
-                    "Providers"
-                ],
-                "description": "",
-                "parameters": []
-            }
-        },
-        "/v1/providers/{provider_id}": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/GetProviderResponse"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest400"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/TooManyRequests429"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError500"
-                    },
-                    "default": {
-                        "$ref": "#/components/responses/DefaultError"
-                    }
-                },
-                "tags": [
-                    "Providers"
-                ],
-                "description": "",
-                "parameters": [
-                    {
-                        "name": "provider_id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
-            },
-            "/v1/inspect/providers": {
             "get": {
                 "responses": {
                     "200": {
@@ -7986,6 +7961,27 @@
                 ],
                 "title": "InsertChunksRequest"
             },
+            "ProviderInfo": {
+                "type": "object",
+                "properties": {
+                    "api": {
+                        "type": "string"
+                    },
+                    "provider_id": {
+                        "type": "string"
+                    },
+                    "provider_type": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "api",
+                    "provider_id",
+                    "provider_type"
+                ],
+                "title": "ProviderInfo"
+            },
             "InvokeToolRequest": {
                 "type": "object",
                 "properties": {
@@ -8197,27 +8193,6 @@
                     "data"
                 ],
                 "title": "ListModelsResponse"
-            },
-            "ProviderInfo": {
-                "type": "object",
-                "properties": {
-                    "api": {
-                        "type": "string"
-                    },
-                    "provider_id": {
-                        "type": "string"
-                    },
-                    "provider_type": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "api",
-                    "provider_id",
-                    "provider_type"
-                ],
-                "title": "ProviderInfo"
             },
             "ListProvidersResponse": {
                 "type": "object",
@@ -10220,6 +10195,10 @@
             "name": "PostTraining (Coming Soon)"
         },
         {
+            "name": "Providers",
+            "x-displayName": "Providers API for inspecting, listing, and modifying providers and their configurations."
+        },
+        {
             "name": "Safety"
         },
         {
@@ -10265,6 +10244,7 @@
                 "Inspect",
                 "Models",
                 "PostTraining (Coming Soon)",
+                "Providers",
                 "Safety",
                 "Scoring",
                 "ScoringFunctions",
