@@ -1,169 +1,127 @@
-# Evals
+# Evaluations
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/10CHyykee9j2OigaIcRv47BKG9mrNm0tJ?usp=sharing)
+The Llama Stack provides a set of APIs in Llama Stack for supporting running evaluations of LLM applications.
+- `/datasetio` + `/datasets` API
+- `/scoring` + `/scoring_functions` API
+- `/eval` + `/benchmarks` API
 
-Llama Stack provides the building blocks needed to run benchmark and application evaluations. This guide will walk you through how to use these components to run open benchmark evaluations. Visit our [Evaluation Concepts](../concepts/evaluation_concepts.md) guide for more details on how evaluations work in Llama Stack, and our [Evaluation Reference](../references/evals_reference/index.md) guide for a comprehensive reference on the APIs.
 
-### 1. Open Benchmark Model Evaluation
 
-This first example walks you through how to evaluate a model candidate served by Llama Stack on open benchmarks. We will use the following benchmark:
-- [MMMU](https://arxiv.org/abs/2311.16502) (A Massive Multi-discipline Multimodal Understanding and Reasoning Benchmark for Expert AGI): Benchmark designed to evaluate multimodal models.
-- [SimpleQA](https://openai.com/index/introducing-simpleqa/): Benchmark designed to access models to answer short, fact-seeking questions.
+This guides walks you through the process of evaluating an LLM application built using Llama Stack. Checkout the [Evaluation Reference](../references/evals_reference/index.md) guide goes over the sets of APIs and developer experience flow of using Llama Stack to run evaluations for benchmark and application use cases. Checkout our Colab notebook on working examples with evaluations [here](https://colab.research.google.com/drive/10CHyykee9j2OigaIcRv47BKG9mrNm0tJ?usp=sharing).
 
-#### 1.1 Running MMMU
-- We will use a pre-processed MMMU dataset from [llamastack/mmmu](https://huggingface.co/datasets/llamastack/mmmu). The preprocessing code is shown in in this [Github Gist](https://gist.github.com/yanxi0830/118e9c560227d27132a7fd10e2c92840). The dataset is obtained by transforming the original [MMMU/MMMU](https://huggingface.co/datasets/MMMU/MMMU) dataset into correct format by `inference/chat-completion` API.
 
+## Application Evaluation
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/meta-llama/llama-stack/blob/main/docs/getting_started.ipynb)
+
+Llama Stack offers a library of scoring functions and the `/scoring` API, allowing you to run evaluations on your pre-annotated AI application datasets.
+
+In this example, we will show you how to:
+1. Build an Agent with Llama Stack
+2. Query the agent's sessions, turns, and steps
+3. Evaluate the results.
+
+##### Building a Search Agent
 ```python
-import datasets
+from llama_stack_client import LlamaStackClient
+from llama_stack_client.lib.agents.agent import Agent
+from llama_stack_client.lib.agents.event_logger import EventLogger
 
-ds = datasets.load_dataset(path="llamastack/mmmu", name="Agriculture", split="dev")
-ds = ds.select_columns(["chat_completion_input", "input_query", "expected_answer"])
-eval_rows = ds.to_pandas().to_dict(orient="records")
-```
+client = LlamaStackClient(base_url=f"http://{HOST}:{PORT}")
 
-- Next, we will run evaluation on an model candidate, we will need to:
-  - Define a system prompt
-  - Define an EvalCandidate
-  - Run evaluate on the dataset
-
-```python
-SYSTEM_PROMPT_TEMPLATE = """
-You are an expert in Agriculture whose job is to answer questions from the user using images.
-First, reason about the correct answer.
-Then write the answer in the following format where X is exactly one of A,B,C,D:
-Answer: X
-Make sure X is one of A,B,C,D.
-If you are uncertain of the correct answer, guess the most likely one.
-"""
-
-system_message = {
-    "role": "system",
-    "content": SYSTEM_PROMPT_TEMPLATE,
-}
-
-client.benchmarks.register(
-    benchmark_id="meta-reference::mmmu",
-    dataset_id=f"mmmu-{subset}-{split}",
-    scoring_functions=["basic::regex_parser_multiple_choice_answer"],
+agent = Agent(
+    client,
+    model="meta-llama/Llama-3.3-70B-Instruct",
+    instructions="You are a helpful assistant. Use search tool to answer the questions. ",
+    tools=["builtin::websearch"],
 )
+user_prompts = [
+    "Which teams played in the NBA Western Conference Finals of 2024. Search the web for the answer.",
+    "In which episode and season of South Park does Bill Cosby (BSM-471) first appear? Give me the number and title. Search the web for the answer.",
+    "What is the British-American kickboxer Andrew Tate's kickboxing name? Search the web for the answer.",
+]
 
-response = client.eval.evaluate_rows(
-    benchmark_id="meta-reference::mmmu",
-    input_rows=eval_rows,
-    scoring_functions=["basic::regex_parser_multiple_choice_answer"],
-    task_config={
-        "type": "benchmark",
-        "eval_candidate": {
-            "type": "model",
-            "model": "meta-llama/Llama-3.2-90B-Vision-Instruct",
-            "sampling_params": {
-                "strategy": {
-                    "type": "greedy",
-                },
-                "max_tokens": 4096,
-                "repeat_penalty": 1.0,
-            },
-            "system_message": system_message,
-        },
-    },
-)
-```
+session_id = agent.create_session("test-session")
 
-#### 1.2. Running SimpleQA
-- We will use a pre-processed SimpleQA dataset from [llamastack/evals](https://huggingface.co/datasets/llamastack/evals/viewer/evals__simpleqa) which is obtained by transforming the input query into correct format accepted by `inference/chat-completion` API.
-- Since we will be using this same dataset in our next example for Agentic evaluation, we will register it using the `/datasets` API, and interact with it through `/datasetio` API.
+for prompt in user_prompts:
+    response = agent.create_turn(
+        messages=[
+            {
+                "role": "user",
+                "content": prompt,
+            }
+        ],
+        session_id=session_id,
+    )
 
-```python
-simpleqa_dataset_id = "huggingface::simpleqa"
-
-_ = client.datasets.register(
-    dataset_id=simpleqa_dataset_id,
-    provider_id="huggingface",
-    url={"uri": "https://huggingface.co/datasets/llamastack/evals"},
-    metadata={
-        "path": "llamastack/evals",
-        "name": "evals__simpleqa",
-        "split": "train",
-    },
-    dataset_schema={
-        "input_query": {"type": "string"},
-        "expected_answer": {"type": "string"},
-        "chat_completion_input": {"type": "chat_completion_input"},
-    },
-)
-
-eval_rows = client.datasetio.get_rows_paginated(
-    dataset_id=simpleqa_dataset_id,
-    rows_in_page=5,
-)
-```
-
-```python
-client.benchmarks.register(
-    benchmark_id="meta-reference::simpleqa",
-    dataset_id=simpleqa_dataset_id,
-    scoring_functions=["llm-as-judge::405b-simpleqa"],
-)
-
-response = client.eval.evaluate_rows(
-    benchmark_id="meta-reference::simpleqa",
-    input_rows=eval_rows.rows,
-    scoring_functions=["llm-as-judge::405b-simpleqa"],
-    task_config={
-        "type": "benchmark",
-        "eval_candidate": {
-            "type": "model",
-            "model": "meta-llama/Llama-3.2-90B-Vision-Instruct",
-            "sampling_params": {
-                "strategy": {
-                    "type": "greedy",
-                },
-                "max_tokens": 4096,
-                "repeat_penalty": 1.0,
-            },
-        },
-    },
-)
+    for log in EventLogger().log(response):
+        log.print()
 ```
 
 
-### 2. Agentic Evaluation
-- In this example, we will demonstrate how to evaluate a agent candidate served by Llama Stack via `/agent` API.
-- We will continue to use the SimpleQA dataset we used in previous example.
-- Instead of running evaluation on model, we will run the evaluation on a Search Agent with access to search tool. We will define our agent evaluation candidate through `AgentConfig`.
+##### Query Agent Execution Steps
+
+Now, let's look deeper into the agent's execution steps and see if how well our agent performs.
+```python
+# query the agents session
+from rich.pretty import pprint
+
+session_response = client.agents.session.retrieve(
+    session_id=session_id,
+    agent_id=agent.agent_id,
+)
+
+pprint(session_response)
+```
+
+As a sanity check, we will first check if all user prompts is followed by a tool call to `brave_search`.
+```python
+num_tool_call = 0
+for turn in session_response.turns:
+    for step in turn.steps:
+        if (
+            step.step_type == "tool_execution"
+            and step.tool_calls[0].tool_name == "brave_search"
+        ):
+            num_tool_call += 1
+
+print(
+    f"{num_tool_call}/{len(session_response.turns)} user prompts are followed by a tool call to `brave_search`"
+)
+```
+
+##### Evaluate Agent Responses
+Now, we want to evaluate the agent's responses to the user prompts.
+
+1. First, we will process the agent's execution history into a list of rows that can be used for evaluation.
+2. Next, we will label the rows with the expected answer.
+3. Finally, we will use the `/scoring` API to score the agent's responses.
 
 ```python
-agent_config = {
-    "model": "meta-llama/Llama-3.1-405B-Instruct",
-    "instructions": "You are a helpful assistant",
-    "sampling_params": {
-        "strategy": {
-            "type": "greedy",
-        },
-    },
-    "tools": [
+eval_rows = []
+
+expected_answers = [
+    "Dallas Mavericks and the Minnesota Timberwolves",
+    "Season 4, Episode 12",
+    "King Cobra",
+]
+
+for i, turn in enumerate(session_response.turns):
+    eval_rows.append(
         {
-            "type": "brave_search",
-            "engine": "tavily",
-            "api_key": userdata.get("TAVILY_SEARCH_API_KEY"),
+            "input_query": turn.input_messages[0].content,
+            "generated_answer": turn.output_message.content,
+            "expected_answer": expected_answers[i],
         }
-    ],
-    "tool_choice": "auto",
-    "input_shields": [],
-    "output_shields": [],
-    "enable_session_persistence": False,
-}
+    )
 
-response = client.eval.evaluate_rows(
-    benchmark_id="meta-reference::simpleqa",
-    input_rows=eval_rows.rows,
-    scoring_functions=["llm-as-judge::405b-simpleqa"],
-    task_config={
-        "type": "benchmark",
-        "eval_candidate": {
-            "type": "agent",
-            "config": agent_config,
-        },
-    },
+pprint(eval_rows)
+
+scoring_params = {
+    "basic::subset_of": None,
+}
+scoring_response = client.scoring.score(
+    input_rows=eval_rows, scoring_functions=scoring_params
 )
+pprint(scoring_response)
 ```

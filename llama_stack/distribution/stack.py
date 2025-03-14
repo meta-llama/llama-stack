@@ -7,12 +7,11 @@
 import importlib.resources
 import os
 import re
+import tempfile
 from typing import Any, Dict, Optional
 
 import yaml
-from termcolor import colored
 
-from llama_stack import logcat
 from llama_stack.apis.agents import Agents
 from llama_stack.apis.batch_inference import BatchInference
 from llama_stack.apis.benchmarks import Benchmarks
@@ -33,11 +32,15 @@ from llama_stack.apis.telemetry import Telemetry
 from llama_stack.apis.tools import RAGToolRuntime, ToolGroups, ToolRuntime
 from llama_stack.apis.vector_dbs import VectorDBs
 from llama_stack.apis.vector_io import VectorIO
-from llama_stack.distribution.datatypes import StackRunConfig
+from llama_stack.distribution.datatypes import Provider, StackRunConfig
 from llama_stack.distribution.distribution import get_provider_registry
 from llama_stack.distribution.resolver import ProviderRegistry, resolve_impls
 from llama_stack.distribution.store.registry import create_dist_registry
+from llama_stack.distribution.utils.dynamic import instantiate_class_type
+from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import Api
+
+logger = get_logger(name=__name__, category="core")
 
 
 class LlamaStack(
@@ -99,9 +102,8 @@ async def register_resources(run_config: StackRunConfig, impls: Dict[Api, Any]):
         objects_to_process = response.data if hasattr(response, "data") else response
 
         for obj in objects_to_process:
-            logcat.debug(
-                "core",
-                f"{rsrc.capitalize()}: {colored(obj.identifier, 'white', attrs=['bold'])} served by {colored(obj.provider_id, 'white', attrs=['bold'])}",
+            logger.debug(
+                f"{rsrc.capitalize()}: {obj.identifier} served by {obj.provider_id}",
             )
 
 
@@ -228,3 +230,53 @@ def get_stack_run_config_from_template(template: str) -> StackRunConfig:
         run_config = yaml.safe_load(path.open())
 
     return StackRunConfig(**replace_env_vars(run_config))
+
+
+def run_config_from_adhoc_config_spec(
+    adhoc_config_spec: str, provider_registry: Optional[ProviderRegistry] = None
+) -> StackRunConfig:
+    """
+    Create an adhoc distribution from a list of API providers.
+
+    The list should be of the form "api=provider", e.g. "inference=fireworks". If you have
+    multiple pairs, separate them with commas or semicolons, e.g. "inference=fireworks,safety=llama-guard,agents=meta-reference"
+    """
+
+    api_providers = adhoc_config_spec.replace(";", ",").split(",")
+    provider_registry = provider_registry or get_provider_registry()
+
+    distro_dir = tempfile.mkdtemp()
+    provider_configs_by_api = {}
+    for api_provider in api_providers:
+        api_str, provider = api_provider.split("=")
+        api = Api(api_str)
+
+        providers_by_type = provider_registry[api]
+        provider_spec = providers_by_type.get(provider)
+        if not provider_spec:
+            provider_spec = providers_by_type.get(f"inline::{provider}")
+        if not provider_spec:
+            provider_spec = providers_by_type.get(f"remote::{provider}")
+
+        if not provider_spec:
+            raise ValueError(
+                f"Provider {provider} (or remote::{provider} or inline::{provider}) not found for API {api}"
+            )
+
+        # call method "sample_run_config" on the provider spec config class
+        provider_config_type = instantiate_class_type(provider_spec.config_class)
+        provider_config = replace_env_vars(provider_config_type.sample_run_config(__distro_dir__=distro_dir))
+
+        provider_configs_by_api[api_str] = [
+            Provider(
+                provider_id=provider,
+                provider_type=provider_spec.provider_type,
+                config=provider_config,
+            )
+        ]
+    config = StackRunConfig(
+        image_name="distro-test",
+        apis=list(provider_configs_by_api.keys()),
+        providers=provider_configs_by_api,
+    )
+    return config

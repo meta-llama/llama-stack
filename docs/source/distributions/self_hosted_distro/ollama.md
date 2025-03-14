@@ -22,8 +22,8 @@ The `llamastack/distribution-ollama` distribution consists of the following prov
 | safety | `inline::llama-guard` |
 | scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |
 | telemetry | `inline::meta-reference` |
-| tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::code-interpreter`, `inline::rag-runtime`, `remote::model-context-protocol` |
-| vector_io | `inline::sqlite-vec`, `remote::chromadb`, `remote::pgvector` |
+| tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::code-interpreter`, `inline::rag-runtime`, `remote::model-context-protocol`, `remote::wolfram-alpha` |
+| vector_io | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
 
 
 You should use this distribution if you have a regular desktop machine without very powerful GPUs. Of course, if you have powerful GPUs, you can still continue using this distribution since Ollama supports GPU acceleration.
@@ -130,7 +130,7 @@ llama stack run ./run-with-safety.yaml \
 ### (Optional) Update Model Serving Configuration
 
 ```{note}
-Please check the [model_entries](https://github.com/meta-llama/llama-stack/blob/main/llama_stack/providers/remote/inference/ollama/ollama.py#L45) for the supported Ollama models.
+Please check the [model_entries](https://github.com/meta-llama/llama-stack/blob/main/llama_stack/providers/remote/inference/ollama/models.py) for the supported Ollama models.
 ```
 
 To serve a new model with `ollama`

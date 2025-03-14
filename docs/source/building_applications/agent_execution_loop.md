@@ -70,18 +70,18 @@ Each step in this process can be monitored and controlled through configurations
 from llama_stack_client import LlamaStackClient
 from llama_stack_client.lib.agents.agent import Agent
 from llama_stack_client.lib.agents.event_logger import EventLogger
-from llama_stack_client.types.agent_create_params import AgentConfig
 from rich.pretty import pprint
 
 # Replace host and port
 client = LlamaStackClient(base_url=f"http://{HOST}:{PORT}")
 
-agent_config = AgentConfig(
+agent = Agent(
+    client,
     # Check with `llama-stack-client models list`
     model="Llama3.2-3B-Instruct",
     instructions="You are a helpful assistant",
     # Enable both RAG and tool usage
-    toolgroups=[
+    tools=[
         {
             "name": "builtin::rag/knowledge_search",
             "args": {"vector_db_ids": ["my_docs"]},
@@ -98,8 +98,6 @@ agent_config = AgentConfig(
         "max_tokens": 2048,
     },
 )
-
-agent = Agent(client, agent_config)
 session_id = agent.create_session("monitored_session")
 
 # Stream the agent's execution steps

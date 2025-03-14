@@ -31,25 +31,32 @@ paths:
           $ref: '#/components/responses/DefaultError'
       tags:
         - DatasetIO
-      description: ''
+      description: >-
+        Get a paginated list of rows from a dataset.
       parameters:
         - name: dataset_id
           in: query
+          description: >-
+            The ID of the dataset to get the rows from.
           required: true
           schema:
             type: string
         - name: rows_in_page
           in: query
+          description: The number of rows to get per page.
           required: true
           schema:
             type: integer
         - name: page_token
           in: query
+          description: The token to get the next page of rows.
           required: false
           schema:
             type: string
         - name: filter_condition
           in: query
+          description: >-
+            (Optional) A condition to filter the rows by.
           required: false
           schema:
             type: string
@@ -231,10 +238,33 @@ paths:
               $ref: '#/components/schemas/CompletionRequest'
         required: true
   /v1/agents:
+    get:
+      responses:
+        '200':
+          description: A ListAgentsResponse.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListAgentsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Agents
+      description: List all agents.
+      parameters: []
     post:
       responses:
         '200':
-          description: OK
+          description: >-
+            An AgentCreateResponse with the agent ID.
           content:
             application/json:
               schema:
@@ -251,7 +281,8 @@ paths:
           $ref: '#/components/responses/DefaultError'
       tags:
         - Agents
-      description: ''
+      description: >-
+        Create an agent with the given configuration.
       parameters: []
       requestBody:
         content:
@@ -263,7 +294,7 @@ paths:
     post:
       responses:
         '200':
-          description: OK
+          description: An AgentSessionCreateResponse.
           content:
             application/json:
               schema:
@@ -280,10 +311,12 @@ paths:
           $ref: '#/components/responses/DefaultError'
       tags:
         - Agents
-      description: ''
+      description: Create a new session for an agent.
       parameters:
         - name: agent_id
           in: path
+          description: >-
+            The ID of the agent to create the session for.
           required: true
           schema:
             type: string
@@ -298,8 +331,8 @@ paths:
       responses:
         '200':
           description: >-
-            A single turn in an interaction with an Agentic System. **OR** streamed
-            agent turn completion response.
+            If stream=False, returns a Turn object. If stream=True, returns an SSE
+            event stream of AgentTurnResponseStreamChunk
           content:
             application/json:
               schema:
@@ -319,15 +352,19 @@ paths:
           $ref: '#/components/responses/DefaultError'
       tags:
         - Agents
-      description: ''
+      description: Create a new turn for an agent.
       parameters:
         - name: agent_id
           in: path
+          description: >-
+            The ID of the agent to create the turn for.
           required: true
           schema:
             type: string
         - name: session_id
           in: path
+          description: >-
+            The ID of the session to create the turn for.
           required: true
           schema:
             type: string
@@ -395,6 +432,34 @@ paths:
               $ref: '#/components/schemas/CreateUploadSessionRequest'
         required: true
   /v1/agents/{agent_id}:
+    get:
+      responses:
+        '200':
+          description: An Agent of the agent.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Agents
+      description: Describe an agent by its ID.
+      parameters:
+        - name: agent_id
+          in: path
+          description: ID of the agent.
+          required: true
+          schema:
+            type: string
     delete:
       responses:
         '200':
@@ -411,10 +476,11 @@ paths:
           $ref: '#/components/responses/DefaultError'
       tags:
         - Agents
-      description: ''
+      description: Delete an agent by its ID.
       parameters:
         - name: agent_id
           in: path
+          description: The ID of the agent to delete.
           required: true
           schema:
             type: string
@@ -439,20 +505,25 @@ paths:
           $ref: '#/components/responses/DefaultError'
       tags:
         - Agents
-      description: ''
+      description: Retrieve an agent session by its ID.
       parameters:
         - name: session_id
           in: path
+          description: The ID of the session to get.
           required: true
           schema:
             type: string
         - name: agent_id
           in: path
+          description: >-
+            The ID of the agent to get the session for.
           required: true
           schema:
             type: string
         - name: turn_ids
           in: query
+          description: >-
+            (Optional) List of turn IDs to filter the session by.
           required: false
           schema:
             type: array
@@ -474,15 +545,18 @@ paths:
           $ref: '#/components/responses/DefaultError'
       tags:
         - Agents
-      description: ''
+      description: Delete an agent session by its ID.
       parameters:
         - name: session_id
           in: path
+          description: The ID of the session to delete.
           required: true
           schema:
             type: string
         - name: agent_id
           in: path
+          description: >-
+            The ID of the agent to delete the session for.
           required: true
           schema:
             type: string
@@ -596,7 +670,8 @@ paths:
     post:
       responses:
         '200':
-          description: OK
+          description: >-
+            EvaluateResponse object containing generations and scores
           content:
             application/json:
               schema:
@@ -613,10 +688,12 @@ paths:
           $ref: '#/components/responses/DefaultError'
       tags:
         - Eval
-      description: ''
+      description: Evaluate a list of rows on a benchmark.
       parameters:
         - name: benchmark_id
           in: path
+          description: >-
+            The ID of the benchmark to run the evaluation on.
           required: true
           schema:
             type: string
@@ -630,7 +707,7 @@ paths:
     get:
       responses:
         '200':
-          description: OK
+          description: An AgentStepResponse.
           content:
             application/json:
               schema:
@@ -647,25 +724,30 @@ paths:
           $ref: '#/components/responses/DefaultError'
       tags:
         - Agents
-      description: ''
+      description: Retrieve an agent step by its ID.
       parameters:
         - name: agent_id
           in: path
+          description: The ID of the agent to get the step for.
           required: true
           schema:
             type: string
         - name: session_id
           in: path
+          description: >-
+            The ID of the session to get the step for.
           required: true
           schema:
             type: string
         - name: turn_id
           in: path
+          description: The ID of the turn to get the step for.
           required: true
           schema:
             type: string
         - name: step_id
           in: path
+          description: The ID of the step to get.
           required: true
           schema:
             type: string
@@ -673,7 +755,7 @@ paths:
     get:
       responses:
         '200':
-          description: OK
+          description: A Turn.
           content:
             application/json:
               schema:
@@ -690,20 +772,24 @@ paths:
           $ref: '#/components/responses/DefaultError'
       tags:
         - Agents
-      description: ''
+      description: Retrieve an agent turn by its ID.
       parameters:
         - name: agent_id
           in: path
+          description: The ID of the agent to get the turn for.
           required: true
           schema:
             type: string
         - name: session_id
           in: path
+          description: >-
+            The ID of the session to get the turn for.
           required: true
           schema:
             type: string
         - name: turn_id
           in: path
+          description: The ID of the turn to get.
           required: true
           schema:
             type: string
@@ -1391,7 +1477,7 @@ paths:
     get:
       responses:
         '200':
-          description: OK
+          description: The status of the evaluationjob.
           content:
             application/json:
               schema:
@@ -1410,15 +1496,18 @@ paths:
           $ref: '#/components/responses/DefaultError'
       tags:
         - Eval
-      description: ''
+      description: Get the status of a job.
       parameters:
         - name: benchmark_id
           in: path
+          description: >-
+            The ID of the benchmark to run the evaluation on.
           required: true
           schema:
             type: string
         - name: job_id
           in: path
+          description: The ID of the job to get the status of.
           required: true
           schema:
             type: string
@@ -1438,15 +1527,18 @@ paths:
           $ref: '#/components/responses/DefaultError'
       tags:
         - Eval
-      description: ''
+      description: Cancel a job.
       parameters:
         - name: benchmark_id
           in: path
+          description: >-
+            The ID of the benchmark to run the evaluation on.
           required: true
           schema:
             type: string
         - name: job_id
           in: path
+          description: The ID of the job to cancel.
           required: true
           schema:
             type: string
@@ -1454,7 +1546,7 @@ paths:
     get:
       responses:
         '200':
-          description: OK
+          description: The result of the job.
           content:
             application/json:
               schema:
@@ -1471,15 +1563,48 @@ paths:
           $ref: '#/components/responses/DefaultError'
       tags:
         - Eval
-      description: ''
+      description: Get the result of a job.
       parameters:
         - name: benchmark_id
           in: path
+          description: >-
+            The ID of the benchmark to run the evaluation on.
           required: true
           schema:
             type: string
         - name: job_id
           in: path
+          description: The ID of the job to get the result of.
+          required: true
+          schema:
+            type: string
+  /v1/agents/{agent_id}/sessions:
+    get:
+      responses:
+        '200':
+          description: A ListAgentSessionsResponse.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListAgentSessionsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Agents
+      description: List all session(s) of a given agent.
+      parameters:
+        - name: agent_id
+          in: path
+          description: >-
+            The ID of the agent to list sessions for.
           required: true
           schema:
             type: string
@@ -2192,7 +2317,8 @@ paths:
     post:
       responses:
         '200':
-          description: OK
+          description: >-
+            The job that was created to run the evaluation.
           content:
             application/json:
               schema:
@@ -2209,10 +2335,12 @@ paths:
           $ref: '#/components/responses/DefaultError'
       tags:
         - Eval
-      description: ''
+      description: Run an evaluation on a benchmark.
       parameters:
         - name: benchmark_id
           in: path
+          description: >-
+            The ID of the benchmark to run the evaluation on.
           required: true
           schema:
             type: string
@@ -2280,7 +2408,8 @@ paths:
     post:
       responses:
         '200':
-          description: OK
+          description: >-
+            ScoreResponse object containing rows and aggregated results
           content:
             application/json:
               schema:
@@ -2297,7 +2426,7 @@ paths:
           $ref: '#/components/responses/DefaultError'
       tags:
         - Scoring
-      description: ''
+      description: Score a list of rows.
       parameters: []
       requestBody:
         content:
@@ -2814,17 +2943,6 @@ components:
           type: string
           description: >-
             Unique identifier for the tool call this response is for
-        tool_name:
-          oneOf:
-            - type: string
-              enum:
-                - brave_search
-                - wolfram_alpha
-                - photogen
-                - code_interpreter
-              title: BuiltinTool
-            - type: string
-          description: Name of the tool that was called
         content:
           $ref: '#/components/schemas/InterleavedContent'
           description: The response content from the tool
@@ -2832,7 +2950,6 @@ components:
       required:
         - role
         - call_id
-        - tool_name
         - content
       title: ToolResponseMessage
       description: >-
@@ -2972,7 +3089,7 @@ components:
         metrics:
           type: array
           items:
-            $ref: '#/components/schemas/MetricEvent'
+            $ref: '#/components/schemas/MetricInResponse'
         completion_message:
           $ref: '#/components/schemas/CompletionMessage'
           description: The complete response message
@@ -2987,29 +3104,9 @@ components:
         - completion_message
       title: ChatCompletionResponse
       description: Response from a chat completion request.
-    MetricEvent:
+    MetricInResponse:
       type: object
       properties:
-        trace_id:
-          type: string
-        span_id:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-        attributes:
-          type: object
-          additionalProperties:
-            oneOf:
-              - type: string
-              - type: integer
-              - type: number
-              - type: boolean
-              - type: 'null'
-        type:
-          type: string
-          const: metric
-          default: metric
         metric:
           type: string
         value:
@@ -3020,14 +3117,9 @@ components:
           type: string
       additionalProperties: false
       required:
-        - trace_id
-        - span_id
-        - timestamp
-        - type
         - metric
         - value
-        - unit
-      title: MetricEvent
+      title: MetricInResponse
     TokenLogProbs:
       type: object
       properties:
@@ -3084,6 +3176,10 @@ components:
     CompletionResponse:
       type: object
       properties:
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricInResponse'
         content:
           type: string
           description: The generated completion text
@@ -3283,7 +3379,7 @@ components:
         metrics:
           type: array
           items:
-            $ref: '#/components/schemas/MetricEvent'
+            $ref: '#/components/schemas/MetricInResponse'
         event:
           $ref: '#/components/schemas/ChatCompletionResponseEvent'
           description: The event containing the new content
@@ -3402,6 +3498,10 @@ components:
     CompletionResponseStreamChunk:
       type: object
       properties:
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricInResponse'
         delta:
           type: string
           description: >-
@@ -3567,6 +3667,7 @@ components:
       properties:
         agent_config:
           $ref: '#/components/schemas/AgentConfig'
+          description: The configuration for the agent.
       additionalProperties: false
       required:
         - agent_config
@@ -3585,6 +3686,7 @@ components:
       properties:
         session_name:
           type: string
+          description: The name of the session to create.
       additionalProperties: false
       required:
         - session_name
@@ -3607,8 +3709,12 @@ components:
             oneOf:
               - $ref: '#/components/schemas/UserMessage'
               - $ref: '#/components/schemas/ToolResponseMessage'
+          description: List of messages to start the turn with.
         stream:
           type: boolean
+          description: >-
+            (Optional) If True, generate an SSE event stream of the response. Defaults
+            to False.
         documents:
           type: array
           items:
@@ -3622,21 +3728,30 @@ components:
                     items:
                       $ref: '#/components/schemas/InterleavedContentItem'
                   - $ref: '#/components/schemas/URL'
+                description: The content of the document.
               mime_type:
                 type: string
+                description: The MIME type of the document.
             additionalProperties: false
             required:
               - content
               - mime_type
             title: Document
+            description: A document to be used by an agent.
+          description: >-
+            (Optional) List of documents to create the turn with.
         toolgroups:
           type: array
           items:
             $ref: '#/components/schemas/AgentTool'
+          description: >-
+            (Optional) List of toolgroups to create the turn with, will be used in
+            addition to the agent's config toolgroups for the request.
         tool_config:
           $ref: '#/components/schemas/ToolConfig'
-        allow_turn_resume:
-          type: boolean
+          description: >-
+            (Optional) The tool configuration to create the turn with, will be used
+            to override the agent's tool_config.
       additionalProperties: false
       required:
         - messages
@@ -3646,20 +3761,25 @@ components:
       properties:
         turn_id:
           type: string
+          description: The ID of the turn.
         step_id:
           type: string
+          description: The ID of the step.
         started_at:
           type: string
           format: date-time
+          description: The time the step started.
         completed_at:
           type: string
           format: date-time
+          description: The time the step completed.
         step_type:
           type: string
           const: inference
           default: inference
         model_response:
           $ref: '#/components/schemas/CompletionMessage'
+          description: The response from the LLM.
       additionalProperties: false
       required:
         - turn_id
@@ -3667,27 +3787,36 @@ components:
         - step_type
         - model_response
       title: InferenceStep
+      description: An inference step in an agent turn.
     MemoryRetrievalStep:
       type: object
       properties:
         turn_id:
           type: string
+          description: The ID of the turn.
         step_id:
           type: string
+          description: The ID of the step.
         started_at:
           type: string
           format: date-time
+          description: The time the step started.
         completed_at:
           type: string
           format: date-time
+          description: The time the step completed.
         step_type:
           type: string
           const: memory_retrieval
           default: memory_retrieval
         vector_db_ids:
           type: string
+          description: >-
+            The IDs of the vector databases to retrieve context from.
         inserted_context:
           $ref: '#/components/schemas/InterleavedContent'
+          description: >-
+            The context retrieved from the vector databases.
       additionalProperties: false
       required:
         - turn_id
@@ -3696,6 +3825,8 @@ components:
         - vector_db_ids
         - inserted_context
       title: MemoryRetrievalStep
+      description: >-
+        A memory retrieval step in an agent turn.
     SafetyViolation:
       type: object
       properties:
@@ -3723,39 +3854,49 @@ components:
       properties:
         turn_id:
           type: string
+          description: The ID of the turn.
         step_id:
           type: string
+          description: The ID of the step.
         started_at:
           type: string
           format: date-time
+          description: The time the step started.
         completed_at:
           type: string
           format: date-time
+          description: The time the step completed.
         step_type:
           type: string
           const: shield_call
           default: shield_call
         violation:
           $ref: '#/components/schemas/SafetyViolation'
+          description: The violation from the shield call.
       additionalProperties: false
       required:
         - turn_id
         - step_id
         - step_type
       title: ShieldCallStep
+      description: A shield call step in an agent turn.
     ToolExecutionStep:
       type: object
       properties:
         turn_id:
           type: string
+          description: The ID of the turn.
         step_id:
           type: string
+          description: The ID of the step.
         started_at:
           type: string
           format: date-time
+          description: The time the step started.
         completed_at:
           type: string
           format: date-time
+          description: The time the step completed.
         step_type:
           type: string
           const: tool_execution
@@ -3764,10 +3905,12 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ToolCall'
+          description: The tool calls to execute.
         tool_responses:
           type: array
           items:
             $ref: '#/components/schemas/ToolResponse'
+          description: The tool responses from the tool calls.
       additionalProperties: false
       required:
         - turn_id
@@ -3776,6 +3919,7 @@ components:
         - tool_calls
         - tool_responses
       title: ToolExecutionStep
+      description: A tool execution step in an agent turn.
     ToolResponse:
       type: object
       properties:
@@ -3852,13 +3996,16 @@ components:
                     items:
                       $ref: '#/components/schemas/InterleavedContentItem'
                   - $ref: '#/components/schemas/URL'
+                description: The content of the attachment.
               mime_type:
                 type: string
+                description: The MIME type of the attachment.
             additionalProperties: false
             required:
               - content
               - mime_type
             title: Attachment
+            description: An attachment to an agent turn.
         started_at:
           type: string
           format: date-time
@@ -3924,6 +4071,7 @@ components:
             - shield_call
             - memory_retrieval
           title: StepType
+          description: Type of the step in an agent turn.
         step_id:
           type: string
         step_details:
@@ -3961,6 +4109,7 @@ components:
             - shield_call
             - memory_retrieval
           title: StepType
+          description: Type of the step in an agent turn.
         step_id:
           type: string
         delta:
@@ -3987,6 +4136,7 @@ components:
             - shield_call
             - memory_retrieval
           title: StepType
+          description: Type of the step in an agent turn.
         step_id:
           type: string
         metadata:
@@ -4214,11 +4364,14 @@ components:
           default: agent
         config:
           $ref: '#/components/schemas/AgentConfig'
+          description: >-
+            The configuration for the agent candidate.
       additionalProperties: false
       required:
         - type
         - config
       title: AgentCandidate
+      description: An agent candidate for evaluation.
     AggregationFunctionType:
       type: string
       enum:
@@ -4247,17 +4400,26 @@ components:
       properties:
         eval_candidate:
           $ref: '#/components/schemas/EvalCandidate'
+          description: The candidate to evaluate.
         scoring_params:
           type: object
           additionalProperties:
             $ref: '#/components/schemas/ScoringFnParams'
+          description: >-
+            Map between scoring function id and parameters for each scoring function
+            you want to run
         num_examples:
           type: integer
+          description: >-
+            (Optional) The number of examples to evaluate. If not provided, all examples
+            in the dataset will be evaluated
       additionalProperties: false
       required:
         - eval_candidate
         - scoring_params
       title: BenchmarkConfig
+      description: >-
+        A benchmark configuration for evaluation.
     EvalCandidate:
       oneOf:
         - $ref: '#/components/schemas/ModelCandidate'
@@ -4300,16 +4462,22 @@ components:
           default: model
         model:
           type: string
+          description: The model ID to evaluate.
         sampling_params:
           $ref: '#/components/schemas/SamplingParams'
+          description: The sampling parameters for the model.
         system_message:
           $ref: '#/components/schemas/SystemMessage'
+          description: >-
+            (Optional) The system message providing instructions or context to the
+            model.
       additionalProperties: false
       required:
         - type
         - model
         - sampling_params
       title: ModelCandidate
+      description: A model candidate for evaluation.
     RegexParserScoringFnParams:
       type: object
       properties:
@@ -4355,17 +4523,21 @@ components:
                 - type: string
                 - type: array
                 - type: object
+          description: The rows to evaluate.
         scoring_functions:
           type: array
           items:
             type: string
-        task_config:
+          description: >-
+            The scoring functions to use for the evaluation.
+        benchmark_config:
           $ref: '#/components/schemas/BenchmarkConfig'
+          description: The configuration for the benchmark.
       additionalProperties: false
       required:
         - input_rows
         - scoring_functions
-        - task_config
+        - benchmark_config
       title: EvaluateRowsRequest
     EvaluateResponse:
       type: object
@@ -4382,15 +4554,18 @@ components:
                 - type: string
                 - type: array
                 - type: object
+          description: The generations from the evaluation.
         scores:
           type: object
           additionalProperties:
             $ref: '#/components/schemas/ScoringResult'
+          description: The scores from the evaluation.
       additionalProperties: false
       required:
         - generations
         - scores
       title: EvaluateResponse
+      description: The response from an evaluation.
     ScoringResult:
       type: object
       properties:
@@ -4406,6 +4581,8 @@ components:
                 - type: string
                 - type: array
                 - type: object
+          description: >-
+            The scoring result for each row. Each row is a map of column name to value.
         aggregated_results:
           type: object
           additionalProperties:
@@ -4416,11 +4593,29 @@ components:
               - type: string
               - type: array
               - type: object
+          description: Map of metric name to aggregated value
       additionalProperties: false
       required:
         - score_rows
         - aggregated_results
       title: ScoringResult
+      description: A scoring result for a single row.
+    Agent:
+      type: object
+      properties:
+        agent_id:
+          type: string
+        agent_config:
+          $ref: '#/components/schemas/AgentConfig'
+        created_at:
+          type: string
+          format: date-time
+      additionalProperties: false
+      required:
+        - agent_id
+        - agent_config
+        - created_at
+      title: Agent
     Session:
       type: object
       properties:
@@ -4733,15 +4928,19 @@ components:
                 - type: string
                 - type: array
                 - type: object
+          description: The rows in the current page.
         total_count:
           type: integer
+          description: The total number of rows in the dataset.
         next_page_token:
           type: string
+          description: The token to get the next page of rows.
       additionalProperties: false
       required:
         - rows
         - total_count
       title: PaginatedRowsResult
+      description: A paginated list of rows from a dataset.
     ScoringFn:
       type: object
       properties:
@@ -5253,6 +5452,28 @@ components:
       required:
         - content
       title: ToolInvocationResult
+    ListAgentSessionsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Session'
+      additionalProperties: false
+      required:
+        - data
+      title: ListAgentSessionsResponse
+    ListAgentsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Agent'
+      additionalProperties: false
+      required:
+        - data
+      title: ListAgentsResponse
     BucketResponse:
       type: object
       properties:
@@ -5453,6 +5674,47 @@ components:
         - error
         - critical
       title: LogSeverity
+    MetricEvent:
+      type: object
+      properties:
+        trace_id:
+          type: string
+        span_id:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        attributes:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: string
+              - type: integer
+              - type: number
+              - type: boolean
+              - type: 'null'
+        type:
+          type: string
+          const: metric
+          default: metric
+        metric:
+          type: string
+        value:
+          oneOf:
+            - type: integer
+            - type: number
+        unit:
+          type: string
+      additionalProperties: false
+      required:
+        - trace_id
+        - span_id
+        - timestamp
+        - type
+        - metric
+        - value
+        - unit
+      title: MetricEvent
     SpanEndPayload:
       type: object
       properties:
@@ -6157,7 +6419,7 @@ components:
         tool_responses:
           type: array
           items:
-            $ref: '#/components/schemas/ToolResponseMessage'
+            $ref: '#/components/schemas/ToolResponse'
           description: >-
             The tool call responses to resume the turn with.
         stream:
@@ -6170,11 +6432,12 @@ components:
     RunEvalRequest:
       type: object
       properties:
-        task_config:
+        benchmark_config:
           $ref: '#/components/schemas/BenchmarkConfig'
+          description: The configuration for the benchmark.
       additionalProperties: false
       required:
-        - task_config
+        - benchmark_config
       title: RunEvalRequest
     Job:
       type: object
@@ -6253,12 +6516,15 @@ components:
                 - type: string
                 - type: array
                 - type: object
+          description: The rows to score.
         scoring_functions:
           type: object
           additionalProperties:
             oneOf:
               - $ref: '#/components/schemas/ScoringFnParams'
               - type: 'null'
+          description: >-
+            The scoring functions to use for the scoring.
       additionalProperties: false
       required:
         - input_rows
@@ -6271,10 +6537,13 @@ components:
           type: object
           additionalProperties:
             $ref: '#/components/schemas/ScoringResult'
+          description: >-
+            A map of scoring function name to ScoringResult.
       additionalProperties: false
       required:
         - results
       title: ScoreResponse
+      description: The response from scoring.
     ScoreBatchRequest:
       type: object
       properties:
@@ -6545,6 +6814,8 @@ tags:
   - name: DatasetIO
   - name: Datasets
   - name: Eval
+    x-displayName: >-
+      Llama Stack Evaluation API for running evaluations on model and agent candidates.
   - name: Files (Coming Soon)
   - name: Inference
     description: >-

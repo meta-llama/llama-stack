@@ -13,7 +13,7 @@ from llama_stack.distribution.datatypes import (
     ShieldInput,
     ToolGroupInput,
 )
-from llama_stack.providers.inline.vector_io.sqlite_vec.config import SQLiteVectorIOConfig
+from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOConfig
 from llama_stack.providers.remote.inference.ollama import OllamaImplConfig
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
@@ -21,7 +21,7 @@ from llama_stack.templates.template import DistributionTemplate, RunConfigSettin
 def get_distribution_template() -> DistributionTemplate:
     providers = {
         "inference": ["remote::ollama"],
-        "vector_io": ["inline::sqlite-vec", "remote::chromadb", "remote::pgvector"],
+        "vector_io": ["inline::faiss", "remote::chromadb", "remote::pgvector"],
         "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],
         "telemetry": ["inline::meta-reference"],
@@ -34,6 +34,7 @@ def get_distribution_template() -> DistributionTemplate:
             "inline::code-interpreter",
             "inline::rag-runtime",
             "remote::model-context-protocol",
+            "remote::wolfram-alpha",
         ],
     }
     name = "ollama"
@@ -42,10 +43,10 @@ def get_distribution_template() -> DistributionTemplate:
         provider_type="remote::ollama",
         config=OllamaImplConfig.sample_run_config(),
     )
-    vector_io_provider_sqlite = Provider(
-        provider_id="sqlite-vec",
-        provider_type="inline::sqlite-vec",
-        config=SQLiteVectorIOConfig.sample_run_config(f"distributions/{name}"),
+    vector_io_provider_faiss = Provider(
+        provider_id="faiss",
+        provider_type="inline::faiss",
+        config=FaissVectorIOConfig.sample_run_config(f"~/.llama/distributions/{name}"),
     )
 
     inference_model = ModelInput(
@@ -78,6 +79,10 @@ def get_distribution_template() -> DistributionTemplate:
             toolgroup_id="builtin::code_interpreter",
             provider_id="code-interpreter",
         ),
+        ToolGroupInput(
+            toolgroup_id="builtin::wolfram_alpha",
+            provider_id="wolfram-alpha",
+        ),
     ]
 
     return DistributionTemplate(
@@ -91,7 +96,7 @@ def get_distribution_template() -> DistributionTemplate:
             "run.yaml": RunConfigSettings(
                 provider_overrides={
                     "inference": [inference_provider],
-                    "vector_io": [vector_io_provider_sqlite],
+                    "vector_io": [vector_io_provider_faiss],
                 },
                 default_models=[inference_model, embedding_model],
                 default_tool_groups=default_tool_groups,
@@ -99,7 +104,7 @@ def get_distribution_template() -> DistributionTemplate:
             "run-with-safety.yaml": RunConfigSettings(
                 provider_overrides={
                     "inference": [inference_provider],
-                    "vector_io": [vector_io_provider_sqlite],
+                    "vector_io": [vector_io_provider_faiss],
                     "safety": [
                         Provider(
                             provider_id="llama-guard",

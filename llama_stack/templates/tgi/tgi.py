@@ -55,7 +55,7 @@ def get_distribution_template() -> DistributionTemplate:
     vector_io_provider = Provider(
         provider_id="faiss",
         provider_type="inline::faiss",
-        config=FaissVectorIOConfig.sample_run_config(f"distributions/{name}"),
+        config=FaissVectorIOConfig.sample_run_config(f"~/.llama/distributions/{name}"),
     )
 
     inference_model = ModelInput(
@@ -137,7 +137,7 @@ def get_distribution_template() -> DistributionTemplate:
                 "Inference model loaded into the TGI server",
             ),
             "TGI_URL": (
-                "http://127.0.0.1:8080}/v1",
+                "http://127.0.0.1:8080/v1",
                 "URL of the TGI server with the main inference model",
             ),
             "TGI_SAFETY_URL": (

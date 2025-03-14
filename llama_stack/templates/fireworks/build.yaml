@@ -27,6 +27,7 @@ distribution_spec:
     tool_runtime:
     - remote::brave-search
     - remote::tavily-search
+    - remote::wolfram-alpha
     - inline::code-interpreter
     - inline::rag-runtime
     - remote::model-context-protocol

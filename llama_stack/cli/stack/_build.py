@@ -39,7 +39,7 @@ from llama_stack.distribution.resolver import InvalidProviderError
 from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
 from llama_stack.distribution.utils.exec import formulate_run_args, run_with_pty
-from llama_stack.distribution.utils.image_types import ImageType
+from llama_stack.distribution.utils.image_types import LlamaStackImageType
 from llama_stack.providers.datatypes import Api
 
 TEMPLATES_PATH = Path(__file__).parent.parent.parent / "templates"
@@ -170,7 +170,7 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
                 )
                 sys.exit(1)
 
-        if build_config.image_type == ImageType.container.value and not args.image_name:
+        if build_config.image_type == LlamaStackImageType.CONTAINER.value and not args.image_name:
             cprint(
                 "Please specify --image-name when building a container from a config file",
                 color="red",
@@ -226,7 +226,7 @@ def _generate_run_config(
     """
     apis = list(build_config.distribution_spec.providers.keys())
     run_config = StackRunConfig(
-        container_image=(image_name if build_config.image_type == ImageType.container.value else None),
+        container_image=(image_name if build_config.image_type == LlamaStackImageType.CONTAINER.value else None),
         image_name=image_name,
         apis=apis,
         providers={},
@@ -248,7 +248,7 @@ def _generate_run_config(
 
             config_type = instantiate_class_type(provider_registry[Api(api)][provider_type].config_class)
             if hasattr(config_type, "sample_run_config"):
-                config = config_type.sample_run_config(__distro_dir__=f"distributions/{image_name}")
+                config = config_type.sample_run_config(__distro_dir__=f"~/.llama/distributions/{image_name}")
             else:
                 config = {}
 
@@ -279,16 +279,16 @@ def _run_stack_build_command_from_build_config(
     template_name: Optional[str] = None,
     config_path: Optional[str] = None,
 ) -> str:
-    if build_config.image_type == ImageType.container.value:
+    if build_config.image_type == LlamaStackImageType.CONTAINER.value:
         if template_name:
             image_name = f"distribution-{template_name}"
         else:
             if not image_name:
                 raise ValueError("Please specify an image name when building a container image without a template")
-    elif build_config.image_type == ImageType.conda.value:
+    elif build_config.image_type == LlamaStackImageType.CONDA.value:
         if not image_name:
             raise ValueError("Please specify an image name when building a conda image")
-    elif build_config.image_type == ImageType.venv.value:
+    elif build_config.image_type == LlamaStackImageType.VENV.value:
         if not image_name and os.environ.get("UV_SYSTEM_PYTHON"):
             image_name = "__system__"
         if not image_name:

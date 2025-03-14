@@ -14,18 +14,16 @@ Agents are configured using the `AgentConfig` class, which includes:
 - **Safety Shields**: Guardrails to ensure responsible AI behavior
 
 ```python
-from llama_stack_client.types.agent_create_params import AgentConfig
 from llama_stack_client.lib.agents.agent import Agent
 
-# Configure an agent
-agent_config = AgentConfig(
-    model="meta-llama/Llama-3-70b-chat",
-    instructions="You are a helpful assistant that can use tools to answer questions.",
-    toolgroups=["builtin::code_interpreter", "builtin::rag/knowledge_search"],
-)
 
 # Create the agent
-agent = Agent(llama_stack_client, agent_config)
+agent = Agent(
+    llama_stack_client,
+    model="meta-llama/Llama-3-70b-chat",
+    instructions="You are a helpful assistant that can use tools to answer questions.",
+    tools=["builtin::code_interpreter", "builtin::rag/knowledge_search"],
+)
 ```
 
 ### 2. Sessions

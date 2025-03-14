@@ -37,6 +37,7 @@ def get_distribution_template() -> DistributionTemplate:
             "inline::code-interpreter",
             "inline::rag-runtime",
             "remote::model-context-protocol",
+            "remote::wolfram-alpha",
         ],
     }
     name = "remote-vllm"
@@ -55,7 +56,7 @@ def get_distribution_template() -> DistributionTemplate:
     vector_io_provider = Provider(
         provider_id="faiss",
         provider_type="inline::faiss",
-        config=FaissVectorIOConfig.sample_run_config(f"distributions/{name}"),
+        config=FaissVectorIOConfig.sample_run_config(f"~/.llama/distributions/{name}"),
     )
 
     inference_model = ModelInput(
@@ -86,6 +87,10 @@ def get_distribution_template() -> DistributionTemplate:
         ToolGroupInput(
             toolgroup_id="builtin::code_interpreter",
             provider_id="code-interpreter",
+        ),
+        ToolGroupInput(
+            toolgroup_id="builtin::wolfram_alpha",
+            provider_id="wolfram-alpha",
         ),
     ]
 

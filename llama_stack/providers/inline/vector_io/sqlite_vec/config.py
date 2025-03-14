@@ -15,5 +15,5 @@ class SQLiteVectorIOConfig(BaseModel):
     @classmethod
     def sample_run_config(cls, __distro_dir__: str) -> Dict[str, Any]:
         return {
-            "db_path": "${env.SQLITE_STORE_DIR:~/.llama/" + __distro_dir__ + "}/" + "sqlite_vec.db",
+            "db_path": "${env.SQLITE_STORE_DIR:" + __distro_dir__ + "}/" + "sqlite_vec.db",
         }

@@ -17,14 +17,18 @@ providers:
     config:
       url: ${env.OLLAMA_URL:http://localhost:11434}
   vector_io:
-  - provider_id: sqlite-vec
-    provider_type: inline::sqlite-vec
+  - provider_id: faiss
+    provider_type: inline::faiss
     config:
-      db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/sqlite_vec.db
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/faiss_store.db
   safety:
   - provider_id: llama-guard
     provider_type: inline::llama-guard
-    config: {}
+    config:
+      excluded_categories: []
   agents:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -43,14 +47,26 @@ providers:
   eval:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
-    config: {}
+    config:
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/meta_reference_eval.db
   datasetio:
   - provider_id: huggingface
     provider_type: remote::huggingface
-    config: {}
+    config:
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/huggingface_datasetio.db
   - provider_id: localfs
     provider_type: inline::localfs
-    config: {}
+    config:
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/localfs_datasetio.db
   scoring:
   - provider_id: basic
     provider_type: inline::basic
@@ -82,6 +98,10 @@ providers:
   - provider_id: model-context-protocol
     provider_type: remote::model-context-protocol
     config: {}
+  - provider_id: wolfram-alpha
+    provider_type: remote::wolfram-alpha
+    config:
+      api_key: ${env.WOLFRAM_ALPHA_API_KEY:}
 metadata_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/registry.db
@@ -108,5 +128,7 @@ tool_groups:
   provider_id: rag-runtime
 - toolgroup_id: builtin::code_interpreter
   provider_id: code-interpreter
+- toolgroup_id: builtin::wolfram_alpha
+  provider_id: wolfram-alpha
 server:
   port: 8321

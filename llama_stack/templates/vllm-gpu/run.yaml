@@ -15,11 +15,12 @@ providers:
   - provider_id: vllm
     provider_type: inline::vllm
     config:
-      model: ${env.INFERENCE_MODEL:Llama3.2-3B-Instruct}
       tensor_parallel_size: ${env.TENSOR_PARALLEL_SIZE:1}
       max_tokens: ${env.MAX_TOKENS:4096}
+      max_model_len: ${env.MAX_MODEL_LEN:4096}
+      max_num_seqs: ${env.MAX_NUM_SEQS:4}
       enforce_eager: ${env.ENFORCE_EAGER:False}
-      gpu_memory_utilization: ${env.GPU_MEMORY_UTILIZATION:0.7}
+      gpu_memory_utilization: ${env.GPU_MEMORY_UTILIZATION:0.3}
   - provider_id: sentence-transformers
     provider_type: inline::sentence-transformers
     config: {}
@@ -34,7 +35,8 @@ providers:
   safety:
   - provider_id: llama-guard
     provider_type: inline::llama-guard
-    config: {}
+    config:
+      excluded_categories: []
   agents:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -53,14 +55,26 @@ providers:
   eval:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
-    config: {}
+    config:
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/vllm-gpu}/meta_reference_eval.db
   datasetio:
   - provider_id: huggingface
     provider_type: remote::huggingface
-    config: {}
+    config:
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/vllm-gpu}/huggingface_datasetio.db
   - provider_id: localfs
     provider_type: inline::localfs
-    config: {}
+    config:
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/vllm-gpu}/localfs_datasetio.db
   scoring:
   - provider_id: basic
     provider_type: inline::basic

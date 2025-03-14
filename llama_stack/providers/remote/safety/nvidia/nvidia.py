@@ -42,7 +42,10 @@ class NVIDIASafetyAdapter(Safety, ShieldsProtocolPrivate):
             raise ValueError("Shield model not provided.")
 
     async def run_shield(
-        self, shield_id: str, messages: List[Message], params: Dict[str, Any] = None
+        self,
+        shield_id: str,
+        messages: List[Message],
+        params: Dict[str, Any] = None,
     ) -> RunShieldResponse:
         """
         Run a safety shield check against the provided messages.
@@ -50,7 +53,6 @@ class NVIDIASafetyAdapter(Safety, ShieldsProtocolPrivate):
         Args:
             shield_id (str): The unique identifier for the shield to be used.
             messages (List[Message]): A list of Message objects representing the conversation history.
-            params (Dict[str, Any], optional): Additional parameters for the safety check.
 
         Returns:
             RunShieldResponse: The response containing safety violation details if any.
@@ -96,7 +98,7 @@ class NeMoGuardrails:
         """
         self.config_id = config.config_id
         self.model = model
-        assert self.config_id is not None("Must provide config id")
+        assert self.config_id is not None, "Must provide config id"
         if temperature <= 0:
             raise ValueError("Temperature must be greater than 0")
 

@@ -5,7 +5,7 @@ distribution_spec:
     inference:
     - remote::ollama
     vector_io:
-    - inline::sqlite-vec
+    - inline::faiss
     - remote::chromadb
     - remote::pgvector
     safety:
@@ -29,4 +29,5 @@ distribution_spec:
     - inline::code-interpreter
     - inline::rag-runtime
     - remote::model-context-protocol
+    - remote::wolfram-alpha
 image_type: conda
