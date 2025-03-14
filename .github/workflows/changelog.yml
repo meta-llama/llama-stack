@@ -1,0 +1,29 @@
+name: Update Changelog
+
+on:
+  release:
+    types: [published, unpublished, created, edited, deleted, released]
+
+permissions:
+  contents: read
+
+jobs:
+  generate_changelog:
+    name: Generate changelog
+    permissions:
+      contents: write  # for peter-evans/create-pull-request to create branch
+      pull-requests: write  # for peter-evans/create-pull-request to create a PR
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - run: |
+          python ./scripts/gen-changelog.py
+      - uses: peter-evans/create-pull-request@v7
+        with:
+          title: 'docs: update CHANGELOG.md for ${{ github.ref_name }}'
+          commit-message: 'docs: update CHANGELOG.md for ${{ github.ref_name }}'
+          branch: create-pull-request/changelog
+          signoff: true
