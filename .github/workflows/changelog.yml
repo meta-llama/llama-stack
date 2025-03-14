@@ -1,8 +1,8 @@
 name: Update Changelog
 
 on:
-  schedule:
-    - cron: "0 0 * * 6"
+  release:
+    types: [published, unpublished, created, edited, deleted, released]
 
 permissions:
   contents: read
