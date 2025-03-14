@@ -60,7 +60,6 @@ class ModelPromptFormat(Subcommand):
         ]
 
         model_list = [m.value for m in supported_model_ids]
-        model_str = "\n".join(model_list)
 
         if args.list:
             headers = ["Model(s)"]
