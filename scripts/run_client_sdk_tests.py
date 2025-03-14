@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 # All rights reserved.
 #
@@ -28,7 +29,7 @@ EXPORT FIREWORKS_API_KEY=<..>
 python llama_stack/scripts/run_client_sdk_tests.py --templates together fireworks --report
 """
 
-REPO_ROOT = Path(__file__).parent.parent.parent
+REPO_ROOT = Path(__file__).parent.parent
 CLIENT_SDK_TESTS_RELATIVE_PATH = "tests/api/"
 
 
