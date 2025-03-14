@@ -112,9 +112,9 @@ class LiteLLMOpenAIMixin(
 
         params = await self._get_params(request)
         logger.debug(f"params to litellm (openai compat): {params}")
-        # unfortunately, we need to use synchronous litellm.completion here because litellm
-        # caches various httpx.client objects in a non-eventloop aware manner
-        response = litellm.completion(**params)
+        # Litellm seems to have implemented an async completion method
+        # https://docs.litellm.ai/docs/completion/stream#async-completion
+        response = await litellm.acompletion(**params)
         if stream:
             return self._stream_chat_completion(response)
         else:
@@ -124,7 +124,7 @@ class LiteLLMOpenAIMixin(
         self, response: litellm.ModelResponse
     ) -> AsyncIterator[ChatCompletionResponseStreamChunk]:
         async def _stream_generator():
-            for chunk in response:
+            async for chunk in response:
                 yield chunk
 
         async for chunk in convert_openai_chat_completion_stream(
@@ -223,10 +223,10 @@ class LiteLLMOpenAIMixin(
     ) -> EmbeddingsResponse:
         model = await self.model_store.get_model(model_id)
 
-        response = litellm.embedding(
+        response = await litellm.embedding(
             model=model.provider_resource_id,
             input=[interleaved_content_as_str(content) for content in contents],
         )
 
-        embeddings = [data["embedding"] for data in response["data"]]
+        embeddings = await [data["embedding"] for data in response["data"]]
         return EmbeddingsResponse(embeddings=embeddings)

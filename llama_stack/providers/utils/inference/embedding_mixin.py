@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 import logging
+import asyncio
 from typing import TYPE_CHECKING, List, Optional
 
 if TYPE_CHECKING:
@@ -37,13 +38,12 @@ class SentenceTransformerEmbeddingMixin:
         task_type: Optional[EmbeddingTaskType] = None,
     ) -> EmbeddingsResponse:
         model = await self.model_store.get_model(model_id)
-        embedding_model = self._load_sentence_transformer_model(model.provider_resource_id)
-        embeddings = embedding_model.encode(
-            [interleaved_content_as_str(content) for content in contents], show_progress_bar=False
-        )
+        embedding_model = await self._load_sentence_transformer_model(model.provider_resource_id)
+        # Execute the synchronous encode method in an executor
+        embeddings = await self._run_in_executor(embedding_model.encode, [interleaved_content_as_str(content) for content in contents], show_progress_bar=False)
         return EmbeddingsResponse(embeddings=embeddings)
 
-    def _load_sentence_transformer_model(self, model: str) -> "SentenceTransformer":
+    async def _load_sentence_transformer_model(self, model: str) -> "SentenceTransformer":
         global EMBEDDING_MODELS
 
         loaded_model = EMBEDDING_MODELS.get(model)
@@ -53,6 +53,11 @@ class SentenceTransformerEmbeddingMixin:
         log.info(f"Loading sentence transformer for {model}...")
         from sentence_transformers import SentenceTransformer
 
-        loaded_model = SentenceTransformer(model)
+        # Execute the synchronous SentenceTransformer instantiation in an executor
+        loaded_model = await self._run_in_executor(SentenceTransformer, model)
         EMBEDDING_MODELS[model] = loaded_model
         return loaded_model
+
+    async def _run_in_executor(self, func, *args, **kwargs):
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(None, func, *args, **kwargs)
