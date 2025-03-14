@@ -30,7 +30,7 @@ class QueryChunksResponse(BaseModel):
 
 
 class VectorDBStore(Protocol):
-    def get_vector_db(self, vector_db_id: str) -> Optional[VectorDB]: ...
+    def get_vector_db(self, vector_db_id: str) -> VectorDB: ...
 
 
 @runtime_checkable

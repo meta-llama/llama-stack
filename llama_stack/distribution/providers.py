@@ -7,7 +7,7 @@
 
 from pydantic import BaseModel
 
-from llama_stack.apis.providers import ListProvidersResponse, ProviderInfo, Providers
+from llama_stack.apis.providers import ProviderInfo, Providers
 
 from .datatypes import StackRunConfig
 from .stack import redact_sensitive_fields
@@ -31,28 +31,23 @@ class ProviderImpl(Providers):
     async def initialize(self) -> None:
         pass
 
-    async def list_providers(self) -> ListProvidersResponse:
+    async def list_providers(self) -> list[ProviderInfo]:
         run_config = self.config.run_config
         safe_config = StackRunConfig(**redact_sensitive_fields(run_config.model_dump()))
-        ret = []
-        for api, providers in safe_config.providers.items():
-            ret.extend(
-                [
-                    ProviderInfo(
-                        api=api,
-                        provider_id=p.provider_id,
-                        provider_type=p.provider_type,
-                        config=p.config,
-                    )
-                    for p in providers
-                ]
+        return [
+            ProviderInfo(
+                api=api,
+                provider_id=p.provider_id,
+                provider_type=p.provider_type,
+                config=p.config,
             )
-
-        return ListProvidersResponse(data=ret)
+            for api, providers in safe_config.providers.items()
+            for p in providers
+        ]
 
     async def inspect_provider(self, provider_id: str) -> ProviderInfo:
         all_providers = await self.list_providers()
-        for p in all_providers.data:
+        for p in all_providers:
             if p.provider_id == provider_id:
                 return p
 

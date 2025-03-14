@@ -39,20 +39,16 @@ class BenchmarkInput(CommonBenchmarkFields, BaseModel):
     provider_benchmark_id: Optional[str] = None
 
 
-class ListBenchmarksResponse(BaseModel):
-    data: List[Benchmark]
-
-
 @runtime_checkable
 class Benchmarks(Protocol):
     @webmethod(route="/eval/benchmarks", method="GET")
-    async def list_benchmarks(self) -> ListBenchmarksResponse: ...
+    async def list_benchmarks(self) -> list[Benchmark]: ...
 
     @webmethod(route="/eval/benchmarks/{benchmark_id}", method="GET")
     async def get_benchmark(
         self,
         benchmark_id: str,
-    ) -> Optional[Benchmark]: ...
+    ) -> Benchmark: ...
 
     @webmethod(route="/eval/benchmarks", method="POST")
     async def register_benchmark(

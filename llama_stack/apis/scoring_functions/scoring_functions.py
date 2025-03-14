@@ -125,17 +125,13 @@ class ScoringFnInput(CommonScoringFnFields, BaseModel):
     provider_scoring_fn_id: Optional[str] = None
 
 
-class ListScoringFunctionsResponse(BaseModel):
-    data: List[ScoringFn]
-
-
 @runtime_checkable
 class ScoringFunctions(Protocol):
     @webmethod(route="/scoring-functions", method="GET")
-    async def list_scoring_functions(self) -> ListScoringFunctionsResponse: ...
+    async def list_scoring_functions(self) -> list[ScoringFn]: ...
 
     @webmethod(route="/scoring-functions/{scoring_fn_id:path}", method="GET")
-    async def get_scoring_function(self, scoring_fn_id: str, /) -> Optional[ScoringFn]: ...
+    async def get_scoring_function(self, scoring_fn_id: str, /) -> ScoringFn: ...
 
     @webmethod(route="/scoring-functions", method="POST")
     async def register_scoring_function(

@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import List, Literal, Optional, Protocol, runtime_checkable
+from typing import Literal, Optional, Protocol, runtime_checkable
 
 from pydantic import BaseModel
 
@@ -36,21 +36,17 @@ class VectorDBInput(BaseModel):
     provider_vector_db_id: Optional[str] = None
 
 
-class ListVectorDBsResponse(BaseModel):
-    data: List[VectorDB]
-
-
 @runtime_checkable
 @trace_protocol
 class VectorDBs(Protocol):
     @webmethod(route="/vector-dbs", method="GET")
-    async def list_vector_dbs(self) -> ListVectorDBsResponse: ...
+    async def list_vector_dbs(self) -> list[VectorDB]: ...
 
     @webmethod(route="/vector-dbs/{vector_db_id:path}", method="GET")
     async def get_vector_db(
         self,
         vector_db_id: str,
-    ) -> Optional[VectorDB]: ...
+    ) -> VectorDB: ...
 
     @webmethod(route="/vector-dbs", method="POST")
     async def register_vector_db(
@@ -60,7 +56,7 @@ class VectorDBs(Protocol):
         embedding_dimension: Optional[int] = 384,
         provider_id: Optional[str] = None,
         provider_vector_db_id: Optional[str] = None,
-    ) -> VectorDB: ...
+    ) -> None: ...
 
     @webmethod(route="/vector-dbs/{vector_db_id:path}", method="DELETE")
     async def unregister_vector_db(self, vector_db_id: str) -> None: ...

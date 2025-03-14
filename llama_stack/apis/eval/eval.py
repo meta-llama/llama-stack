@@ -117,7 +117,7 @@ class Eval(Protocol):
         """
 
     @webmethod(route="/eval/benchmarks/{benchmark_id}/jobs/{job_id}", method="GET")
-    async def job_status(self, benchmark_id: str, job_id: str) -> Optional[JobStatus]:
+    async def job_status(self, benchmark_id: str, job_id: str) -> JobStatus:
         """Get the status of a job.
 
         :param benchmark_id: The ID of the benchmark to run the evaluation on.

@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, List, Protocol, runtime_checkable
+from typing import Any, Dict, Protocol, runtime_checkable
 
 from pydantic import BaseModel
 
@@ -19,10 +19,6 @@ class ProviderInfo(BaseModel):
     config: Dict[str, Any]
 
 
-class ListProvidersResponse(BaseModel):
-    data: List[ProviderInfo]
-
-
 @runtime_checkable
 class Providers(Protocol):
     """
@@ -30,7 +26,7 @@ class Providers(Protocol):
     """
 
     @webmethod(route="/providers", method="GET")
-    async def list_providers(self) -> ListProvidersResponse: ...
+    async def list_providers(self) -> list[ProviderInfo]: ...
 
     @webmethod(route="/providers/{provider_id}", method="GET")
     async def inspect_provider(self, provider_id: str) -> ProviderInfo: ...

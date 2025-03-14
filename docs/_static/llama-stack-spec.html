@@ -150,9 +150,9 @@
                     "200": {
                         "description": "OK",
                         "content": {
-                            "application/json": {
+                            "application/jsonl": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/BatchChatCompletionResponse"
+                                    "$ref": "#/components/schemas/ChatCompletionResponse"
                                 }
                             }
                         }
@@ -193,9 +193,9 @@
                     "200": {
                         "description": "OK",
                         "content": {
-                            "application/json": {
+                            "application/jsonl": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/BatchCompletionResponse"
+                                    "$ref": "#/components/schemas/CompletionResponse"
                                 }
                             }
                         }
@@ -366,11 +366,11 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "A ListAgentsResponse.",
+                        "description": "a list of Agents.",
                         "content": {
-                            "application/json": {
+                            "application/jsonl": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ListAgentsResponse"
+                                    "$ref": "#/components/schemas/Agent"
                                 }
                             }
                         }
@@ -562,9 +562,9 @@
                     "200": {
                         "description": "OK",
                         "content": {
-                            "application/json": {
+                            "application/jsonl": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ListBucketResponse"
+                                    "$ref": "#/components/schemas/Bucket"
                                 }
                             }
                         }
@@ -604,7 +604,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/FileUploadResponse"
+                                    "$ref": "#/components/schemas/FileUpload"
                                 }
                             }
                         }
@@ -831,7 +831,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/FileResponse"
+                                    "$ref": "#/components/schemas/File"
                                 }
                             }
                         }
@@ -881,7 +881,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/FileResponse"
+                                    "$ref": "#/components/schemas/File"
                                 }
                             }
                         }
@@ -1160,14 +1160,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/Benchmark"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/Benchmark"
                                 }
                             }
                         }
@@ -1209,14 +1202,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/Dataset"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/Dataset"
                                 }
                             }
                         }
@@ -1291,14 +1277,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/Model"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/Model"
                                 }
                             }
                         }
@@ -1373,14 +1352,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/ScoringFn"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/ScoringFn"
                                 }
                             }
                         }
@@ -1422,14 +1394,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/Shield"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/Shield"
                                 }
                             }
                         }
@@ -1732,14 +1697,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/PostTrainingJobArtifactsResponse"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/PostTrainingJobArtifactsResponse"
                                 }
                             }
                         }
@@ -1781,14 +1739,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/PostTrainingJobStatusResponse"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/PostTrainingJobStatusResponse"
                                 }
                             }
                         }
@@ -1828,9 +1779,9 @@
                     "200": {
                         "description": "OK",
                         "content": {
-                            "application/json": {
+                            "application/jsonl": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ListPostTrainingJobsResponse"
+                                    "$ref": "#/components/schemas/PostTrainingJob"
                                 }
                             }
                         }
@@ -1863,14 +1814,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/FileUploadResponse"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/FileUpload"
                                 }
                             }
                         }
@@ -1911,14 +1855,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/FileResponse"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/File"
                                 }
                             }
                         }
@@ -1972,14 +1909,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/VectorDB"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/VectorDB"
                                 }
                             }
                         }
@@ -2244,14 +2174,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/JobStatus"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/JobStatus"
                                 }
                             }
                         }
@@ -2394,11 +2317,11 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "A ListAgentSessionsResponse.",
+                        "description": "A list of agent Sessions.",
                         "content": {
-                            "application/json": {
+                            "application/jsonl": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ListAgentSessionsResponse"
+                                    "$ref": "#/components/schemas/Session"
                                 }
                             }
                         }
@@ -2439,9 +2362,9 @@
                     "200": {
                         "description": "OK",
                         "content": {
-                            "application/json": {
+                            "application/jsonl": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ListBenchmarksResponse"
+                                    "$ref": "#/components/schemas/Benchmark"
                                 }
                             }
                         }
@@ -2506,9 +2429,9 @@
                     "200": {
                         "description": "OK",
                         "content": {
-                            "application/json": {
+                            "application/jsonl": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ListDatasetsResponse"
+                                    "$ref": "#/components/schemas/Dataset"
                                 }
                             }
                         }
@@ -2573,9 +2496,9 @@
                     "200": {
                         "description": "OK",
                         "content": {
-                            "application/json": {
+                            "application/jsonl": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ListFileResponse"
+                                    "$ref": "#/components/schemas/File"
                                 }
                             }
                         }
@@ -2616,9 +2539,9 @@
                     "200": {
                         "description": "OK",
                         "content": {
-                            "application/json": {
+                            "application/jsonl": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ListModelsResponse"
+                                    "$ref": "#/components/schemas/Model"
                                 }
                             }
                         }
@@ -2690,9 +2613,9 @@
                     "200": {
                         "description": "OK",
                         "content": {
-                            "application/json": {
+                            "application/jsonl": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ListProvidersResponse"
+                                    "$ref": "#/components/schemas/ProviderInfo"
                                 }
                             }
                         }
@@ -2723,9 +2646,9 @@
                     "200": {
                         "description": "OK",
                         "content": {
-                            "application/json": {
+                            "application/jsonl": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ListRoutesResponse"
+                                    "$ref": "#/components/schemas/RouteInfo"
                                 }
                             }
                         }
@@ -2806,9 +2729,9 @@
                     "200": {
                         "description": "OK",
                         "content": {
-                            "application/json": {
+                            "application/jsonl": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ListScoringFunctionsResponse"
+                                    "$ref": "#/components/schemas/ScoringFn"
                                 }
                             }
                         }
@@ -2873,9 +2796,9 @@
                     "200": {
                         "description": "OK",
                         "content": {
-                            "application/json": {
+                            "application/jsonl": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ListShieldsResponse"
+                                    "$ref": "#/components/schemas/Shield"
                                 }
                             }
                         }
@@ -2947,9 +2870,9 @@
                     "200": {
                         "description": "OK",
                         "content": {
-                            "application/json": {
+                            "application/jsonl": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ListToolGroupsResponse"
+                                    "$ref": "#/components/schemas/ToolGroup"
                                 }
                             }
                         }
@@ -3014,9 +2937,9 @@
                     "200": {
                         "description": "OK",
                         "content": {
-                            "application/json": {
+                            "application/jsonl": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ListToolsResponse"
+                                    "$ref": "#/components/schemas/Tool"
                                 }
                             }
                         }
@@ -3056,9 +2979,9 @@
                     "200": {
                         "description": "OK",
                         "content": {
-                            "application/json": {
+                            "application/jsonl": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ListVectorDBsResponse"
+                                    "$ref": "#/components/schemas/VectorDB"
                                 }
                             }
                         }
@@ -3085,14 +3008,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/VectorDB"
-                                }
-                            }
-                        }
+                        "description": "OK"
                     },
                     "400": {
                         "$ref": "#/components/responses/BadRequest400"
@@ -4550,22 +4466,6 @@
                 ],
                 "title": "BatchChatCompletionRequest"
             },
-            "BatchChatCompletionResponse": {
-                "type": "object",
-                "properties": {
-                    "batch": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/ChatCompletionResponse"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "batch"
-                ],
-                "title": "BatchChatCompletionResponse"
-            },
             "ChatCompletionResponse": {
                 "type": "object",
                 "properties": {
@@ -4676,22 +4576,6 @@
                     "content_batch"
                 ],
                 "title": "BatchCompletionRequest"
-            },
-            "BatchCompletionResponse": {
-                "type": "object",
-                "properties": {
-                    "batch": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/CompletionResponse"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "batch"
-                ],
-                "title": "BatchCompletionResponse"
             },
             "CompletionResponse": {
                 "type": "object",
@@ -6154,7 +6038,7 @@
                 ],
                 "title": "CreateUploadSessionRequest"
             },
-            "FileUploadResponse": {
+            "FileUpload": {
                 "type": "object",
                 "properties": {
                     "id": {
@@ -6181,10 +6065,10 @@
                     "offset",
                     "size"
                 ],
-                "title": "FileUploadResponse",
+                "title": "FileUpload",
                 "description": "Response after initiating a file upload session."
             },
-            "FileResponse": {
+            "File": {
                 "type": "object",
                 "properties": {
                     "bucket": {
@@ -6221,7 +6105,7 @@
                     "bytes",
                     "created_at"
                 ],
-                "title": "FileResponse",
+                "title": "File",
                 "description": "Response representing a file entry."
             },
             "EmbeddingsRequest": {
@@ -7735,31 +7619,18 @@
                 "title": "PostTrainingJobStatusResponse",
                 "description": "Status of a finetuning job."
             },
-            "ListPostTrainingJobsResponse": {
+            "PostTrainingJob": {
                 "type": "object",
                 "properties": {
-                    "data": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "job_uuid": {
-                                    "type": "string"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "job_uuid"
-                            ],
-                            "title": "PostTrainingJob"
-                        }
+                    "job_uuid": {
+                        "type": "string"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "data"
+                    "job_uuid"
                 ],
-                "title": "ListPostTrainingJobsResponse"
+                "title": "PostTrainingJob"
             },
             "VectorDB": {
                 "type": "object",
@@ -8084,39 +7955,7 @@
                 ],
                 "title": "ToolInvocationResult"
             },
-            "ListAgentSessionsResponse": {
-                "type": "object",
-                "properties": {
-                    "data": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/Session"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "data"
-                ],
-                "title": "ListAgentSessionsResponse"
-            },
-            "ListAgentsResponse": {
-                "type": "object",
-                "properties": {
-                    "data": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/Agent"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "data"
-                ],
-                "title": "ListAgentsResponse"
-            },
-            "BucketResponse": {
+            "Bucket": {
                 "type": "object",
                 "properties": {
                     "name": {
@@ -8127,107 +7966,7 @@
                 "required": [
                     "name"
                 ],
-                "title": "BucketResponse"
-            },
-            "ListBucketResponse": {
-                "type": "object",
-                "properties": {
-                    "data": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/BucketResponse"
-                        },
-                        "description": "List of FileResponse entries"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "data"
-                ],
-                "title": "ListBucketResponse",
-                "description": "Response representing a list of file entries."
-            },
-            "ListBenchmarksResponse": {
-                "type": "object",
-                "properties": {
-                    "data": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/Benchmark"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "data"
-                ],
-                "title": "ListBenchmarksResponse"
-            },
-            "ListDatasetsResponse": {
-                "type": "object",
-                "properties": {
-                    "data": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/Dataset"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "data"
-                ],
-                "title": "ListDatasetsResponse"
-            },
-            "ListFileResponse": {
-                "type": "object",
-                "properties": {
-                    "data": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/FileResponse"
-                        },
-                        "description": "List of FileResponse entries"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "data"
-                ],
-                "title": "ListFileResponse",
-                "description": "Response representing a list of file entries."
-            },
-            "ListModelsResponse": {
-                "type": "object",
-                "properties": {
-                    "data": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/Model"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "data"
-                ],
-                "title": "ListModelsResponse"
-            },
-            "ListProvidersResponse": {
-                "type": "object",
-                "properties": {
-                    "data": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/ProviderInfo"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "data"
-                ],
-                "title": "ListProvidersResponse"
+                "title": "Bucket"
             },
             "RouteInfo": {
                 "type": "object",
@@ -8252,102 +7991,6 @@
                     "provider_types"
                 ],
                 "title": "RouteInfo"
-            },
-            "ListRoutesResponse": {
-                "type": "object",
-                "properties": {
-                    "data": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/RouteInfo"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "data"
-                ],
-                "title": "ListRoutesResponse"
-            },
-            "ListScoringFunctionsResponse": {
-                "type": "object",
-                "properties": {
-                    "data": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/ScoringFn"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "data"
-                ],
-                "title": "ListScoringFunctionsResponse"
-            },
-            "ListShieldsResponse": {
-                "type": "object",
-                "properties": {
-                    "data": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/Shield"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "data"
-                ],
-                "title": "ListShieldsResponse"
-            },
-            "ListToolGroupsResponse": {
-                "type": "object",
-                "properties": {
-                    "data": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/ToolGroup"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "data"
-                ],
-                "title": "ListToolGroupsResponse"
-            },
-            "ListToolsResponse": {
-                "type": "object",
-                "properties": {
-                    "data": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/Tool"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "data"
-                ],
-                "title": "ListToolsResponse"
-            },
-            "ListVectorDBsResponse": {
-                "type": "object",
-                "properties": {
-                    "data": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/VectorDB"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "data"
-                ],
-                "title": "ListVectorDBsResponse"
             },
             "Event": {
                 "oneOf": [
@@ -8880,19 +8523,6 @@
                     "logger_config"
                 ],
                 "title": "PreferenceOptimizeRequest"
-            },
-            "PostTrainingJob": {
-                "type": "object",
-                "properties": {
-                    "job_uuid": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "job_uuid"
-                ],
-                "title": "PostTrainingJob"
             },
             "DefaultRAGQueryGeneratorConfig": {
                 "type": "object",

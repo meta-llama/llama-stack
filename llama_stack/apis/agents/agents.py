@@ -241,16 +241,6 @@ class Agent(BaseModel):
     created_at: datetime
 
 
-@json_schema_type
-class ListAgentsResponse(BaseModel):
-    data: List[Agent]
-
-
-@json_schema_type
-class ListAgentSessionsResponse(BaseModel):
-    data: List[Session]
-
-
 class AgentConfigOverridablePerTurn(AgentConfigCommon):
     instructions: Optional[str] = None
 
@@ -559,10 +549,10 @@ class Agents(Protocol):
         ...
 
     @webmethod(route="/agents", method="GET")
-    async def list_agents(self) -> ListAgentsResponse:
+    async def list_agents(self) -> list[Agent]:
         """List all agents.
 
-        :returns: A ListAgentsResponse.
+        :returns: a list of Agents.
         """
         ...
 
@@ -579,10 +569,10 @@ class Agents(Protocol):
     async def list_agent_sessions(
         self,
         agent_id: str,
-    ) -> ListAgentSessionsResponse:
+    ) -> list[Session]:
         """List all session(s) of a given agent.
 
         :param agent_id: The ID of the agent to list sessions for.
-        :returns: A ListAgentSessionsResponse.
+        :returns: A list of agent Sessions.
         """
         ...

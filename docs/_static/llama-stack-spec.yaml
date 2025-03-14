@@ -90,9 +90,9 @@ paths:
         '200':
           description: OK
           content:
-            application/json:
+            application/jsonl:
               schema:
-                $ref: '#/components/schemas/BatchChatCompletionResponse'
+                $ref: '#/components/schemas/ChatCompletionResponse'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -119,9 +119,9 @@ paths:
         '200':
           description: OK
           content:
-            application/json:
+            application/jsonl:
               schema:
-                $ref: '#/components/schemas/BatchCompletionResponse'
+                $ref: '#/components/schemas/CompletionResponse'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -241,11 +241,11 @@ paths:
     get:
       responses:
         '200':
-          description: A ListAgentsResponse.
+          description: a list of Agents.
           content:
-            application/json:
+            application/jsonl:
               schema:
-                $ref: '#/components/schemas/ListAgentsResponse'
+                $ref: '#/components/schemas/Agent'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -380,9 +380,9 @@ paths:
         '200':
           description: OK
           content:
-            application/json:
+            application/jsonl:
               schema:
-                $ref: '#/components/schemas/ListBucketResponse'
+                $ref: '#/components/schemas/Bucket'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -409,7 +409,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FileUploadResponse'
+                $ref: '#/components/schemas/FileUpload'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -568,7 +568,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FileResponse'
+                $ref: '#/components/schemas/File'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -604,7 +604,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FileResponse'
+                $ref: '#/components/schemas/File'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -801,9 +801,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/Benchmark'
-                  - type: 'null'
+                $ref: '#/components/schemas/Benchmark'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -831,9 +829,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/Dataset'
-                  - type: 'null'
+                $ref: '#/components/schemas/Dataset'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -884,9 +880,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/Model'
-                  - type: 'null'
+                $ref: '#/components/schemas/Model'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -937,9 +931,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/ScoringFn'
-                  - type: 'null'
+                $ref: '#/components/schemas/ScoringFn'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -967,9 +959,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/Shield'
-                  - type: 'null'
+                $ref: '#/components/schemas/Shield'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -1171,9 +1161,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/PostTrainingJobArtifactsResponse'
-                  - type: 'null'
+                $ref: '#/components/schemas/PostTrainingJobArtifactsResponse'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -1201,9 +1189,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/PostTrainingJobStatusResponse'
-                  - type: 'null'
+                $ref: '#/components/schemas/PostTrainingJobStatusResponse'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -1229,9 +1215,9 @@ paths:
         '200':
           description: OK
           content:
-            application/json:
+            application/jsonl:
               schema:
-                $ref: '#/components/schemas/ListPostTrainingJobsResponse'
+                $ref: '#/components/schemas/PostTrainingJob'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -1254,9 +1240,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/FileUploadResponse'
-                  - type: 'null'
+                $ref: '#/components/schemas/FileUpload'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -1285,9 +1269,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/FileResponse'
-                  - type: 'null'
+                $ref: '#/components/schemas/File'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -1325,9 +1307,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/VectorDB'
-                  - type: 'null'
+                $ref: '#/components/schemas/VectorDB'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -1509,9 +1489,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/JobStatus'
-                  - type: 'null'
+                $ref: '#/components/schemas/JobStatus'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -1610,11 +1588,11 @@ paths:
     get:
       responses:
         '200':
-          description: A ListAgentSessionsResponse.
+          description: A list of agent Sessions.
           content:
-            application/json:
+            application/jsonl:
               schema:
-                $ref: '#/components/schemas/ListAgentSessionsResponse'
+                $ref: '#/components/schemas/Session'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -1642,9 +1620,9 @@ paths:
         '200':
           description: OK
           content:
-            application/json:
+            application/jsonl:
               schema:
-                $ref: '#/components/schemas/ListBenchmarksResponse'
+                $ref: '#/components/schemas/Benchmark'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -1689,9 +1667,9 @@ paths:
         '200':
           description: OK
           content:
-            application/json:
+            application/jsonl:
               schema:
-                $ref: '#/components/schemas/ListDatasetsResponse'
+                $ref: '#/components/schemas/Dataset'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -1736,9 +1714,9 @@ paths:
         '200':
           description: OK
           content:
-            application/json:
+            application/jsonl:
               schema:
-                $ref: '#/components/schemas/ListFileResponse'
+                $ref: '#/components/schemas/File'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -1765,9 +1743,9 @@ paths:
         '200':
           description: OK
           content:
-            application/json:
+            application/jsonl:
               schema:
-                $ref: '#/components/schemas/ListModelsResponse'
+                $ref: '#/components/schemas/Model'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -1816,9 +1794,9 @@ paths:
         '200':
           description: OK
           content:
-            application/json:
+            application/jsonl:
               schema:
-                $ref: '#/components/schemas/ListProvidersResponse'
+                $ref: '#/components/schemas/ProviderInfo'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -1839,9 +1817,9 @@ paths:
         '200':
           description: OK
           content:
-            application/json:
+            application/jsonl:
               schema:
-                $ref: '#/components/schemas/ListRoutesResponse'
+                $ref: '#/components/schemas/RouteInfo'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -1895,9 +1873,9 @@ paths:
         '200':
           description: OK
           content:
-            application/json:
+            application/jsonl:
               schema:
-                $ref: '#/components/schemas/ListScoringFunctionsResponse'
+                $ref: '#/components/schemas/ScoringFn'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -1942,9 +1920,9 @@ paths:
         '200':
           description: OK
           content:
-            application/json:
+            application/jsonl:
               schema:
-                $ref: '#/components/schemas/ListShieldsResponse'
+                $ref: '#/components/schemas/Shield'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -1993,9 +1971,9 @@ paths:
         '200':
           description: OK
           content:
-            application/json:
+            application/jsonl:
               schema:
-                $ref: '#/components/schemas/ListToolGroupsResponse'
+                $ref: '#/components/schemas/ToolGroup'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -2040,9 +2018,9 @@ paths:
         '200':
           description: OK
           content:
-            application/json:
+            application/jsonl:
               schema:
-                $ref: '#/components/schemas/ListToolsResponse'
+                $ref: '#/components/schemas/Tool'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -2068,9 +2046,9 @@ paths:
         '200':
           description: OK
           content:
-            application/json:
+            application/jsonl:
               schema:
-                $ref: '#/components/schemas/ListVectorDBsResponse'
+                $ref: '#/components/schemas/VectorDB'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -2089,10 +2067,6 @@ paths:
       responses:
         '200':
           description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VectorDB'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -3100,17 +3074,6 @@ components:
         - model
         - messages_batch
       title: BatchChatCompletionRequest
-    BatchChatCompletionResponse:
-      type: object
-      properties:
-        batch:
-          type: array
-          items:
-            $ref: '#/components/schemas/ChatCompletionResponse'
-      additionalProperties: false
-      required:
-        - batch
-      title: BatchChatCompletionResponse
     ChatCompletionResponse:
       type: object
       properties:
@@ -3190,17 +3153,6 @@ components:
         - model
         - content_batch
       title: BatchCompletionRequest
-    BatchCompletionResponse:
-      type: object
-      properties:
-        batch:
-          type: array
-          items:
-            $ref: '#/components/schemas/CompletionResponse'
-      additionalProperties: false
-      required:
-        - batch
-      title: BatchCompletionResponse
     CompletionResponse:
       type: object
       properties:
@@ -4260,7 +4212,7 @@ components:
         - mime_type
         - size
       title: CreateUploadSessionRequest
-    FileUploadResponse:
+    FileUpload:
       type: object
       properties:
         id:
@@ -4281,10 +4233,10 @@ components:
         - url
         - offset
         - size
-      title: FileUploadResponse
+      title: FileUpload
       description: >-
         Response after initiating a file upload session.
-    FileResponse:
+    File:
       type: object
       properties:
         bucket:
@@ -4315,7 +4267,7 @@ components:
         - url
         - bytes
         - created_at
-      title: FileResponse
+      title: File
       description: Response representing a file entry.
     EmbeddingsRequest:
       type: object
@@ -5302,24 +5254,15 @@ components:
         - checkpoints
       title: PostTrainingJobStatusResponse
       description: Status of a finetuning job.
-    ListPostTrainingJobsResponse:
+    PostTrainingJob:
       type: object
       properties:
-        data:
-          type: array
-          items:
-            type: object
-            properties:
-              job_uuid:
-                type: string
-            additionalProperties: false
-            required:
-              - job_uuid
-            title: PostTrainingJob
+        job_uuid:
+          type: string
       additionalProperties: false
       required:
-        - data
-      title: ListPostTrainingJobsResponse
+        - job_uuid
+      title: PostTrainingJob
     VectorDB:
       type: object
       properties:
@@ -5506,29 +5449,7 @@ components:
       required:
         - content
       title: ToolInvocationResult
-    ListAgentSessionsResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/Session'
-      additionalProperties: false
-      required:
-        - data
-      title: ListAgentSessionsResponse
-    ListAgentsResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/Agent'
-      additionalProperties: false
-      required:
-        - data
-      title: ListAgentsResponse
-    BucketResponse:
+    Bucket:
       type: object
       properties:
         name:
@@ -5536,79 +5457,7 @@ components:
       additionalProperties: false
       required:
         - name
-      title: BucketResponse
-    ListBucketResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/BucketResponse'
-          description: List of FileResponse entries
-      additionalProperties: false
-      required:
-        - data
-      title: ListBucketResponse
-      description: >-
-        Response representing a list of file entries.
-    ListBenchmarksResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/Benchmark'
-      additionalProperties: false
-      required:
-        - data
-      title: ListBenchmarksResponse
-    ListDatasetsResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/Dataset'
-      additionalProperties: false
-      required:
-        - data
-      title: ListDatasetsResponse
-    ListFileResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/FileResponse'
-          description: List of FileResponse entries
-      additionalProperties: false
-      required:
-        - data
-      title: ListFileResponse
-      description: >-
-        Response representing a list of file entries.
-    ListModelsResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/Model'
-      additionalProperties: false
-      required:
-        - data
-      title: ListModelsResponse
-    ListProvidersResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/ProviderInfo'
-      additionalProperties: false
-      required:
-        - data
-      title: ListProvidersResponse
+      title: Bucket
     RouteInfo:
       type: object
       properties:
@@ -5626,72 +5475,6 @@ components:
         - method
         - provider_types
       title: RouteInfo
-    ListRoutesResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/RouteInfo'
-      additionalProperties: false
-      required:
-        - data
-      title: ListRoutesResponse
-    ListScoringFunctionsResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/ScoringFn'
-      additionalProperties: false
-      required:
-        - data
-      title: ListScoringFunctionsResponse
-    ListShieldsResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/Shield'
-      additionalProperties: false
-      required:
-        - data
-      title: ListShieldsResponse
-    ListToolGroupsResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/ToolGroup'
-      additionalProperties: false
-      required:
-        - data
-      title: ListToolGroupsResponse
-    ListToolsResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/Tool'
-      additionalProperties: false
-      required:
-        - data
-      title: ListToolsResponse
-    ListVectorDBsResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/VectorDB'
-      additionalProperties: false
-      required:
-        - data
-      title: ListVectorDBsResponse
     Event:
       oneOf:
         - $ref: '#/components/schemas/UnstructuredLogEvent'
@@ -6035,15 +5818,6 @@ components:
         - hyperparam_search_config
         - logger_config
       title: PreferenceOptimizeRequest
-    PostTrainingJob:
-      type: object
-      properties:
-        job_uuid:
-          type: string
-      additionalProperties: false
-      required:
-        - job_uuid
-      title: PostTrainingJob
     DefaultRAGQueryGeneratorConfig:
       type: object
       properties:

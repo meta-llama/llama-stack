@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import List, Optional, Protocol, runtime_checkable
+from typing import Protocol, runtime_checkable
 
 from pydantic import BaseModel
 
@@ -13,7 +13,7 @@ from llama_stack.schema_utils import json_schema_type, webmethod
 
 
 @json_schema_type
-class FileUploadResponse(BaseModel):
+class FileUpload(BaseModel):
     """
     Response after initiating a file upload session.
 
@@ -30,23 +30,12 @@ class FileUploadResponse(BaseModel):
 
 
 @json_schema_type
-class BucketResponse(BaseModel):
+class Bucket(BaseModel):
     name: str
 
 
 @json_schema_type
-class ListBucketResponse(BaseModel):
-    """
-    Response representing a list of file entries.
-
-    :param data: List of FileResponse entries
-    """
-
-    data: List[BucketResponse]
-
-
-@json_schema_type
-class FileResponse(BaseModel):
+class File(BaseModel):
     """
     Response representing a file entry.
 
@@ -66,17 +55,6 @@ class FileResponse(BaseModel):
     created_at: int
 
 
-@json_schema_type
-class ListFileResponse(BaseModel):
-    """
-    Response representing a list of file entries.
-
-    :param data: List of FileResponse entries
-    """
-
-    data: List[FileResponse]
-
-
 @runtime_checkable
 @trace_protocol
 class Files(Protocol):
@@ -87,7 +65,7 @@ class Files(Protocol):
         key: str,
         mime_type: str,
         size: int,
-    ) -> FileUploadResponse:
+    ) -> FileUpload:
         """
         Create a new upload session for a file identified by a bucket and key.
 
@@ -102,7 +80,7 @@ class Files(Protocol):
     async def upload_content_to_session(
         self,
         upload_id: str,
-    ) -> Optional[FileResponse]:
+    ) -> File:
         """
         Upload file content to an existing upload session.
         On the server, request body will have the raw bytes that are uploaded.
@@ -115,7 +93,7 @@ class Files(Protocol):
     async def get_upload_session_info(
         self,
         upload_id: str,
-    ) -> Optional[FileUploadResponse]:
+    ) -> FileUpload:
         """
         Returns information about an existsing upload session
 
@@ -127,7 +105,7 @@ class Files(Protocol):
     async def list_all_buckets(
         self,
         bucket: str,
-    ) -> ListBucketResponse:
+    ) -> list[Bucket]:
         """
         List all buckets.
         """
@@ -137,7 +115,7 @@ class Files(Protocol):
     async def list_files_in_bucket(
         self,
         bucket: str,
-    ) -> ListFileResponse:
+    ) -> list[File]:
         """
         List all files in a bucket.
 
@@ -150,7 +128,7 @@ class Files(Protocol):
         self,
         bucket: str,
         key: str,
-    ) -> FileResponse:
+    ) -> File:
         """
         Get a file info identified by a bucket and key.
 
@@ -164,7 +142,7 @@ class Files(Protocol):
         self,
         bucket: str,
         key: str,
-    ) -> FileResponse:
+    ) -> File:
         """
         Delete a file identified by a bucket and key.
 

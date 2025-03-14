@@ -6,8 +6,6 @@
 
 from typing import List, Optional, Protocol, runtime_checkable
 
-from pydantic import BaseModel
-
 from llama_stack.apis.inference import (
     ChatCompletionResponse,
     CompletionResponse,
@@ -20,17 +18,7 @@ from llama_stack.apis.inference import (
     ToolDefinition,
     ToolPromptFormat,
 )
-from llama_stack.schema_utils import json_schema_type, webmethod
-
-
-@json_schema_type
-class BatchCompletionResponse(BaseModel):
-    batch: List[CompletionResponse]
-
-
-@json_schema_type
-class BatchChatCompletionResponse(BaseModel):
-    batch: List[ChatCompletionResponse]
+from llama_stack.schema_utils import webmethod
 
 
 @runtime_checkable
@@ -43,7 +31,7 @@ class BatchInference(Protocol):
         sampling_params: Optional[SamplingParams] = None,
         response_format: Optional[ResponseFormat] = None,
         logprobs: Optional[LogProbConfig] = None,
-    ) -> BatchCompletionResponse: ...
+    ) -> list[CompletionResponse]: ...
 
     @webmethod(route="/batch-inference/chat-completion", method="POST")
     async def batch_chat_completion(
@@ -57,4 +45,4 @@ class BatchInference(Protocol):
         tool_prompt_format: Optional[ToolPromptFormat] = None,
         response_format: Optional[ResponseFormat] = None,
         logprobs: Optional[LogProbConfig] = None,
-    ) -> BatchChatCompletionResponse: ...
+    ) -> list[ChatCompletionResponse]: ...

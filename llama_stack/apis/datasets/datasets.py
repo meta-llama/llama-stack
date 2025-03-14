@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, List, Literal, Optional, Protocol
+from typing import Any, Dict, Literal, Optional, Protocol
 
 from pydantic import BaseModel, Field
 
@@ -42,10 +42,6 @@ class DatasetInput(CommonDatasetFields, BaseModel):
     provider_dataset_id: Optional[str] = None
 
 
-class ListDatasetsResponse(BaseModel):
-    data: List[Dataset]
-
-
 class Datasets(Protocol):
     @webmethod(route="/datasets", method="POST")
     async def register_dataset(
@@ -62,10 +58,10 @@ class Datasets(Protocol):
     async def get_dataset(
         self,
         dataset_id: str,
-    ) -> Optional[Dataset]: ...
+    ) -> Dataset: ...
 
     @webmethod(route="/datasets", method="GET")
-    async def list_datasets(self) -> ListDatasetsResponse: ...
+    async def list_datasets(self) -> list[Dataset]: ...
 
     @webmethod(route="/datasets/{dataset_id:path}", method="DELETE")
     async def unregister_dataset(

@@ -103,6 +103,7 @@ class MetricInResponse(BaseModel):
     unit: Optional[str] = None
 
 
+# TODO: check what this comment is about
 # This is a short term solution to allow inference API to return metrics
 # The ideal way to do this is to have a way for all response types to include metrics
 # and all metric events logged to the telemetry API to be inlcuded with the response

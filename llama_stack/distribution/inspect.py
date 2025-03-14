@@ -11,8 +11,6 @@ from pydantic import BaseModel
 from llama_stack.apis.inspect import (
     HealthInfo,
     Inspect,
-    ListProvidersResponse,
-    ListRoutesResponse,
     ProviderInfo,
     RouteInfo,
     VersionInfo,
@@ -39,43 +37,27 @@ class DistributionInspectImpl(Inspect):
     async def initialize(self) -> None:
         pass
 
-    async def list_providers(self) -> ListProvidersResponse:
-        run_config = self.config.run_config
-
-        ret = []
-        for api, providers in run_config.providers.items():
-            ret.extend(
-                [
-                    ProviderInfo(
-                        api=api,
-                        provider_id=p.provider_id,
-                        provider_type=p.provider_type,
-                    )
-                    for p in providers
-                ]
+    async def list_providers(self) -> list[ProviderInfo]:
+        return [
+            ProviderInfo(
+                api=api,
+                provider_id=p.provider_id,
+                provider_type=p.provider_type,
             )
+            for api, providers in self.config.run_config.providers.items()
+            for p in providers
+        ]
 
-        return ListProvidersResponse(data=ret)
-
-    async def list_routes(self) -> ListRoutesResponse:
-        run_config = self.config.run_config
-
-        ret = []
-        all_endpoints = get_all_api_endpoints()
-        for api, endpoints in all_endpoints.items():
-            providers = run_config.providers.get(api.value, [])
-            ret.extend(
-                [
-                    RouteInfo(
-                        route=e.route,
-                        method=e.method,
-                        provider_types=[p.provider_type for p in providers],
-                    )
-                    for e in endpoints
-                ]
+    async def list_routes(self) -> list[RouteInfo]:
+        return [
+            RouteInfo(
+                route=e.route,
+                method=e.method,
+                provider_types=[p.provider_type for p in self.config.run_config.providers.get(api.value, [])],
             )
-
-        return ListRoutesResponse(data=ret)
+            for api, endpoints in get_all_api_endpoints().items()
+            for e in endpoints
+        ]
 
     async def health(self) -> HealthInfo:
         return HealthInfo(status="OK")

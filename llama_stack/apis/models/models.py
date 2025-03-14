@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 from enum import Enum
-from typing import Any, Dict, List, Literal, Optional, Protocol, runtime_checkable
+from typing import Any, Dict, Literal, Optional, Protocol, runtime_checkable
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -52,21 +52,17 @@ class ModelInput(CommonModelFields):
     model_config = ConfigDict(protected_namespaces=())
 
 
-class ListModelsResponse(BaseModel):
-    data: List[Model]
-
-
 @runtime_checkable
 @trace_protocol
 class Models(Protocol):
     @webmethod(route="/models", method="GET")
-    async def list_models(self) -> ListModelsResponse: ...
+    async def list_models(self) -> list[Model]: ...
 
     @webmethod(route="/models/{model_id:path}", method="GET")
     async def get_model(
         self,
         model_id: str,
-    ) -> Optional[Model]: ...
+    ) -> Model: ...
 
     @webmethod(route="/models", method="POST")
     async def register_model(
