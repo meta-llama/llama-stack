@@ -63,8 +63,10 @@ class HFilabPostTrainingImpl:
         if self.current_job is None:
             return True
 
-        finalized_job_states = [JobStatus.completed.value, JobStatus.failed.value]
-        if self.current_job.status in finalized_job_states:
+        finalized_job_states = [JobStatus.completed, JobStatus.failed]
+
+        # check most recent status of job.
+        if self.current_job.status[-1] in finalized_job_states:
             return True
 
         return False
@@ -87,7 +89,8 @@ class HFilabPostTrainingImpl:
         checkpoint_dir: Optional[str],
         algorithm_config: Optional[AlgorithmConfig],
     ) -> JSONResponse:
-        if not self.can_schedule_new_job():
+        if not await self.can_schedule_new_job():
+            # TODO: this status code isn't making its way up to the user. User just getting 500 from SDK.
             raise fastapi.HTTPException(
                 status_code=503,  # service unavailable, try again later.
                 detail="A tuning job is currently running; this could take a while.",
