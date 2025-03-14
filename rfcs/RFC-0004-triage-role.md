@@ -42,23 +42,6 @@ And other important items outlined more in depth in the [GitHub documentation](h
 ## Nomination Process for Triage-role
 The process for nomination for the triage role should be simple and at the discretion of the maintainers.
 
-## Example
-
-We tested this functionality using the @feast-dev repository and have provided screenshots outlining how to make this change.
-
-Step 1:
-![Figure 1: Select Repository Settings](./_static/triage-role-config-1.png)
-
-Step 2:
-![Figure 2: Invite Outside Collaborator](./_static/triage-role-config-2.png)
-
-Step 3:
-![Figure 3: Select Triage Role](./_static/triage-role-config-3.png)
-
-Step 4:
-![Figure 4: User Receives Triage Role](./_static/triage-role-config-4.png)
-
-
 ## Thank you
 
 Thank you in advance for your feedback and support and we look forward to collaborating on this great project!
