@@ -10,8 +10,7 @@ from uuid import uuid4
 import pytest
 from llama_stack_client.lib.agents.agent import Agent
 from llama_stack_client.lib.agents.event_logger import EventLogger
-from llama_stack_client.types.agents.turn_create_params import Document as AgentDocument
-from llama_stack_client.types.memory_insert_params import Document
+from llama_stack_client.types.agents.turn_create_params import Document
 from llama_stack_client.types.shared_params.agent_config import AgentConfig, ToolConfig
 
 from llama_stack.apis.agents.agents import (
@@ -242,7 +241,7 @@ def test_code_interpreter_for_attachments(llama_stack_client_with_mocked_inferen
 
     codex_agent = Agent(llama_stack_client_with_mocked_inference, **agent_config)
     session_id = codex_agent.create_session(f"test-session-{uuid4()}")
-    inflation_doc = AgentDocument(
+    inflation_doc = Document(
         content="https://raw.githubusercontent.com/meta-llama/llama-stack-apps/main/examples/resources/inflation.csv",
         mime_type="text/csv",
     )

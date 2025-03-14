@@ -102,3 +102,4 @@ def pytest_generate_tests(metafunc):
             get_provider_fixture_overrides(metafunc.config, available_fixtures) or DEFAULT_PROVIDER_COMBINATIONS
         )
         metafunc.parametrize("safety_stack", combinations, indirect=True)
+

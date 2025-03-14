@@ -8,6 +8,7 @@ repos:
     rev: v5.0.0  # Latest stable version
     hooks:
     -   id: check-merge-conflict
+        args: ['--assume-in-merge']
     -   id: trailing-whitespace
         exclude: '\.py$'  # Exclude Python files as Ruff already handles them
     -   id: check-added-large-files
@@ -81,6 +82,17 @@ repos:
         pass_filenames: false
         require_serial: true
         files: ^llama_stack/templates/.*$|^llama_stack/providers/.*/inference/.*/models\.py$
+
+-   repo: local
+    hooks:
+      - id: openapi-codegen
+        name: API Spec Codegen
+        additional_dependencies:
+          - uv==0.6.2
+        entry: sh -c 'uv run --with ".[dev]" ./docs/openapi_generator/run_openapi_generator.sh > /dev/null 2>&1'
+        language: python
+        pass_filenames: false
+        require_serial: true
 
 ci:
     autofix_commit_msg: 🎨 [pre-commit.ci] Auto format from pre-commit.com hooks

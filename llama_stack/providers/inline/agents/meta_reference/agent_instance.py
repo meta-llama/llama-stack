@@ -11,7 +11,7 @@ import re
 import secrets
 import string
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import AsyncGenerator, List, Optional, Union
 from urllib.parse import urlparse
 
@@ -239,7 +239,7 @@ class ChatAgent(ShieldRunnerMixin):
             in_progress_tool_call_step = await self.storage.get_in_progress_tool_call_step(
                 request.session_id, request.turn_id
             )
-            now = datetime.now().astimezone().isoformat()
+            now = datetime.now(timezone.utc).isoformat()
             tool_execution_step = ToolExecutionStep(
                 step_id=(in_progress_tool_call_step.step_id if in_progress_tool_call_step else str(uuid.uuid4())),
                 turn_id=request.turn_id,
@@ -264,7 +264,7 @@ class ChatAgent(ShieldRunnerMixin):
             start_time = last_turn.started_at
         else:
             messages.extend(request.messages)
-            start_time = datetime.now().astimezone().isoformat()
+            start_time = datetime.now(timezone.utc).isoformat()
             input_messages = request.messages
 
         output_message = None
@@ -295,7 +295,7 @@ class ChatAgent(ShieldRunnerMixin):
             input_messages=input_messages,
             output_message=output_message,
             started_at=start_time,
-            completed_at=datetime.now().astimezone().isoformat(),
+            completed_at=datetime.now(timezone.utc).isoformat(),
             steps=steps,
         )
         await self.storage.add_turn_to_session(request.session_id, turn)
@@ -386,7 +386,7 @@ class ChatAgent(ShieldRunnerMixin):
                 return
 
             step_id = str(uuid.uuid4())
-            shield_call_start_time = datetime.now().astimezone().isoformat()
+            shield_call_start_time = datetime.now(timezone.utc).isoformat()
             try:
                 yield AgentTurnResponseStreamChunk(
                     event=AgentTurnResponseEvent(
@@ -410,7 +410,7 @@ class ChatAgent(ShieldRunnerMixin):
                                 turn_id=turn_id,
                                 violation=e.violation,
                                 started_at=shield_call_start_time,
-                                completed_at=datetime.now().astimezone().isoformat(),
+                                completed_at=datetime.now(timezone.utc).isoformat(),
                             ),
                         )
                     )
@@ -433,7 +433,7 @@ class ChatAgent(ShieldRunnerMixin):
                             turn_id=turn_id,
                             violation=None,
                             started_at=shield_call_start_time,
-                            completed_at=datetime.now().astimezone().isoformat(),
+                            completed_at=datetime.now(timezone.utc).isoformat(),
                         ),
                     )
                 )
@@ -472,7 +472,7 @@ class ChatAgent(ShieldRunnerMixin):
             client_tools[tool.name] = tool
         while True:
             step_id = str(uuid.uuid4())
-            inference_start_time = datetime.now().astimezone().isoformat()
+            inference_start_time = datetime.now(timezone.utc).isoformat()
             yield AgentTurnResponseStreamChunk(
                 event=AgentTurnResponseEvent(
                     payload=AgentTurnResponseStepStartPayload(
@@ -582,7 +582,7 @@ class ChatAgent(ShieldRunnerMixin):
                             turn_id=turn_id,
                             model_response=copy.deepcopy(message),
                             started_at=inference_start_time,
-                            completed_at=datetime.now().astimezone().isoformat(),
+                            completed_at=datetime.now(timezone.utc).isoformat(),
                         ),
                     )
                 )
@@ -653,7 +653,7 @@ class ChatAgent(ShieldRunnerMixin):
                             turn_id=turn_id,
                             tool_calls=[tool_call],
                             tool_responses=[],
-                            started_at=datetime.now().astimezone().isoformat(),
+                            started_at=datetime.now(timezone.utc).isoformat(),
                         ),
                     )
                     yield message
@@ -670,7 +670,7 @@ class ChatAgent(ShieldRunnerMixin):
                         "input": message.model_dump_json(),
                     },
                 ) as span:
-                    tool_execution_start_time = datetime.now().astimezone().isoformat()
+                    tool_execution_start_time = datetime.now(timezone.utc).isoformat()
                     tool_call = message.tool_calls[0]
                     tool_result = await self.execute_tool_call_maybe(
                         session_id,
@@ -708,7 +708,7 @@ class ChatAgent(ShieldRunnerMixin):
                                     )
                                 ],
                                 started_at=tool_execution_start_time,
-                                completed_at=datetime.now().astimezone().isoformat(),
+                                completed_at=datetime.now(timezone.utc).isoformat(),
                             ),
                         )
                     )
