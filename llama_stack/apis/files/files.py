@@ -115,7 +115,7 @@ class Files(Protocol):
     async def get_upload_session_info(
         self,
         upload_id: str,
-    ) -> Optional[FileUploadResponse]:
+    ) -> FileUploadResponse:
         """
         Returns information about an existsing upload session
 

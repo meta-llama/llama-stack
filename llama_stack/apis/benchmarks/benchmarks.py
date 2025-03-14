@@ -52,7 +52,7 @@ class Benchmarks(Protocol):
     async def get_benchmark(
         self,
         benchmark_id: str,
-    ) -> Optional[Benchmark]: ...
+    ) -> Benchmark: ...
 
     @webmethod(route="/eval/benchmarks", method="POST")
     async def register_benchmark(
