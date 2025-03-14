@@ -124,14 +124,15 @@ exclude = [
 
 [tool.ruff.lint]
 select = [
-    "B",  # flake8-bugbear
-    "B9", # flake8-bugbear subset
-    "C",  # comprehensions
-    "E",  # pycodestyle
-    "F",  # Pyflakes
-    "N",  # Naming
-    "W",  # Warnings
-    "I",  # isort
+    "B",   # flake8-bugbear
+    "B9",  # flake8-bugbear subset
+    "C",   # comprehensions
+    "E",   # pycodestyle
+    "F",   # Pyflakes
+    "N",   # Naming
+    "W",   # Warnings
+    "I",   # isort
+    "DTZ", # datetime rules
 ]
 ignore = [
     # The following ignores are desired by the project maintainers.
@@ -144,6 +145,10 @@ ignore = [
     # These are the additional ones we started ignoring after moving to ruff. We should look into each one of them later.
     "C901", # Complexity of the function is too high
 ]
+
+# Ignore the following errors for the following files
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["DTZ"] # Ignore datetime rules for tests
 
 [tool.mypy]
 mypy_path = ["llama_stack"]
@@ -170,6 +175,7 @@ exclude = [
     "^llama_stack/apis/inspect/inspect\\.py$",
     "^llama_stack/apis/models/models\\.py$",
     "^llama_stack/apis/post_training/post_training\\.py$",
+    "^llama_stack/apis/providers/providers\\.py$",
     "^llama_stack/apis/resource\\.py$",
     "^llama_stack/apis/safety/safety\\.py$",
     "^llama_stack/apis/scoring/scoring\\.py$",

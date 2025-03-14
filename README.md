@@ -51,6 +51,10 @@ Here is a list of the various API providers and available distributions that can
 |        PG Vector         |      Single Node       |            |               |     ✅      |            |               |
 |    PyTorch ExecuTorch    |     On-device iOS      |     ✅      |       ✅       |            |            |               |
 |           vLLM           | Hosted and Single Node |            |       ✅       |            |            |               |
+|          OpenAI          |         Hosted         |            |       ✅       |            |            |               |
+|        Anthropic         |         Hosted         |            |       ✅       |            |            |               |
+|          Gemini          |         Hosted         |            |       ✅       |            |            |               |
+
 
 ### Distributions
 

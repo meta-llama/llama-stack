@@ -61,6 +61,10 @@ A number of "adapters" are available for some popular Inference and Vector Store
 |  Groq  |  Hosted  |
 |  SambaNova  |  Hosted  |
 | PyTorch ExecuTorch | On-device iOS, Android |
+|  OpenAI  |  Hosted  |
+|  Anthropic  |  Hosted  |
+|  Gemini  |  Hosted  |
+
 
 **Vector IO API**
 |  **Provider** |  **Environments** |
