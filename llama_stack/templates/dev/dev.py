@@ -27,6 +27,8 @@ from llama_stack.providers.remote.inference.groq.config import GroqConfig
 from llama_stack.providers.remote.inference.groq.models import MODEL_ENTRIES as GROQ_MODEL_ENTRIES
 from llama_stack.providers.remote.inference.openai.config import OpenAIConfig
 from llama_stack.providers.remote.inference.openai.models import MODEL_ENTRIES as OPENAI_MODEL_ENTRIES
+from llama_stack.providers.remote.inference.sambanova.config import SambaNovaImplConfig
+from llama_stack.providers.remote.inference.sambanova.models import MODEL_ENTRIES as SAMBANOVA_MODEL_ENTRIES
 from llama_stack.providers.remote.vector_io.chroma.config import ChromaVectorIOConfig
 from llama_stack.providers.remote.vector_io.pgvector.config import PGVectorVectorIOConfig
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings, get_model_registry
@@ -59,6 +61,11 @@ def get_inference_providers() -> Tuple[List[Provider], List[ModelInput]]:
             "groq",
             GROQ_MODEL_ENTRIES,
             GroqConfig.sample_run_config(api_key="${env.GROQ_API_KEY:}"),
+        ),
+        (
+            "sambanova",
+            SAMBANOVA_MODEL_ENTRIES,
+            SambaNovaImplConfig.sample_run_config(api_key="${env.SAMBANOVA_API_KEY:}"),
         ),
     ]
     inference_providers = []
