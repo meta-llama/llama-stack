@@ -66,6 +66,17 @@ def data_url_from_file(file_path: str) -> str:
             "localfs",
             2,
         ),
+        (
+            "eval/messages-answer",
+            {
+                "type": "uri",
+                "uri": data_url_from_file(
+                    os.path.join(os.path.dirname(__file__), "test_dataset.csv")
+                ),
+            },
+            "localfs",
+            5,
+        ),
     ],
 )
 def test_register_and_iterrows(llama_stack_client, purpose, source, provider_id, limit):
@@ -86,19 +97,3 @@ def test_register_and_iterrows(llama_stack_client, purpose, source, provider_id,
     llama_stack_client.datasets.unregister(dataset.identifier)
     dataset_list = llama_stack_client.datasets.list()
     assert dataset.identifier not in [d.identifier for d in dataset_list]
-
-
-def test_register_and_iterrows_from_base64_data(llama_stack_client):
-    dataset = llama_stack_client.datasets.register(
-        purpose="eval/messages-answer",
-        source={
-            "type": "uri",
-            "uri": data_url_from_file(
-                os.path.join(os.path.dirname(__file__), "test_dataset.csv")
-            ),
-        },
-    )
-    assert dataset.identifier is not None
-    assert dataset.provider_id == "localfs"
-    iterrow_response = llama_stack_client.datasets.iterrows(dataset.identifier)
-    assert len(iterrow_response.data) == 5
