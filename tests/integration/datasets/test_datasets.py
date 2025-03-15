@@ -19,6 +19,15 @@ import pytest
 def test_register_dataset(llama_stack_client):
     dataset = llama_stack_client.datasets.register(
         purpose="eval/messages-answer",
-        source={"type": "uri", "uri": "huggingface://llamastack/simpleqa?split=train"},
+        source={
+            "type": "uri",
+            "uri": "huggingface://datasets/llamastack/simpleqa?split=train",
+        },
     )
-    print(dataset)
+    assert dataset.identifier is not None
+    assert dataset.provider_id == "huggingface"
+    iterrow_response = llama_stack_client.datasets.iterrows(
+        dataset.identifier, limit=10
+    )
+    assert len(iterrow_response.data) == 10
+    assert iterrow_response.next_index is not None
