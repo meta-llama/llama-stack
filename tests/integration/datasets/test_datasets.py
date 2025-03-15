@@ -13,7 +13,7 @@ import pytest
 
 
 @pytest.mark.parametrize(
-    "purpose, source, provider_id",
+    "purpose, source, provider_id, limit",
     [
         (
             "eval/messages-answer",
@@ -22,16 +22,48 @@ import pytest
                 "uri": "huggingface://datasets/llamastack/simpleqa?split=train",
             },
             "huggingface",
+            10,
+        ),
+        (
+            "eval/messages-answer",
+            {
+                "type": "rows",
+                "rows": [
+                    {
+                        "messages": [{"role": "user", "content": "Hello, world!"}],
+                        "answer": "Hello, world!",
+                    },
+                    {
+                        "messages": [
+                            {
+                                "role": "user",
+                                "content": "What is the capital of France?",
+                            }
+                        ],
+                        "answer": "Paris",
+                    },
+                ],
+            },
+            "localfs",
+            2,
         ),
     ],
 )
-def test_register_dataset(llama_stack_client, purpose, source, provider_id):
+def test_register_and_iterrows(llama_stack_client, purpose, source, provider_id, limit):
     dataset = llama_stack_client.datasets.register(
         purpose=purpose,
         source=source,
     )
     assert dataset.identifier is not None
     assert dataset.provider_id == provider_id
-    iterrow_response = llama_stack_client.datasets.iterrows(dataset.identifier, limit=10)
-    assert len(iterrow_response.data) == 10
-    assert iterrow_response.next_index is not None
+    iterrow_response = llama_stack_client.datasets.iterrows(
+        dataset.identifier, limit=limit
+    )
+    assert len(iterrow_response.data) == limit
+
+    dataset_list = llama_stack_client.datasets.list()
+    assert dataset.identifier in [d.identifier for d in dataset_list]
+
+    llama_stack_client.datasets.unregister(dataset.identifier)
+    dataset_list = llama_stack_client.datasets.list()
+    assert dataset.identifier not in [d.identifier for d in dataset_list]

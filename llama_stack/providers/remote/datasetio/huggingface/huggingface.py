@@ -52,12 +52,11 @@ class HuggingfaceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
         self,
         dataset_def: Dataset,
     ) -> None:
-        print("register_dataset")
         # Store in kvstore
         key = f"{DATASETS_PREFIX}{dataset_def.identifier}"
         await self.kvstore.set(
             key=key,
-            value=dataset_def.json(),
+            value=dataset_def.model_dump_json(),
         )
         self.dataset_infos[dataset_def.identifier] = dataset_def
 
