@@ -203,18 +203,10 @@ def get_distribution_template() -> DistributionTemplate:
         DatasetInput(
             dataset_id="bfcl",
             provider_id="huggingface",
-            url=URL(uri="https://huggingface.co/datasets/llamastack/bfcl_v3"),
-            metadata={
-                "path": "llamastack/bfcl_v3",
-                "split": "train",
-            },
-            dataset_schema={
-                "function": {"type": "string"},
-                "language": {"type": "string"},
-                "ground_truth": {"type": "string"},
-                "id": {"type": "string"},
-                "chat_completion_input": {"type": "string"},
-            },
+            purpose=DatasetPurpose.eval_messages_answer,
+            source=URIDataSource(
+                uri="huggingface://llamastack/bfcl_v3?split=train",
+            ),
         ),
     ]
 

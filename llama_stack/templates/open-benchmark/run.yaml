@@ -186,22 +186,11 @@ datasets:
   metadata: {}
   dataset_id: math_500
   provider_id: huggingface
-- dataset_schema:
-    function:
-      type: string
-    language:
-      type: string
-    ground_truth:
-      type: string
-    id:
-      type: string
-    chat_completion_input:
-      type: string
-  url:
-    uri: https://huggingface.co/datasets/llamastack/bfcl_v3
-  metadata:
-    path: llamastack/bfcl_v3
-    split: train
+- purpose: eval/messages-answer
+  source:
+    type: uri
+    uri: huggingface://llamastack/bfcl_v3?split=train
+  metadata: {}
   dataset_id: bfcl
   provider_id: huggingface
 scoring_fns: []
