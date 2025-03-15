@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 # All rights reserved.
 #
@@ -20,7 +21,7 @@ from llama_stack.distribution.build import (
     get_provider_dependencies,
 )
 
-REPO_ROOT = Path(__file__).parent.parent.parent
+REPO_ROOT = Path(__file__).parent.parent
 
 
 class ChangedPathTracker:
