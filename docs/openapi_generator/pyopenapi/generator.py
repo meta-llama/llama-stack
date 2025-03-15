@@ -552,8 +552,8 @@ class Generator:
             print(op.defining_class.__name__)
 
         # TODO (xiyan): temporary fix for datasetio inner impl + datasets api
-        if op.defining_class.__name__ in ["DatasetIO"]:
-            op.defining_class.__name__ = "Datasets"
+        # if op.defining_class.__name__ in ["DatasetIO"]:
+        #     op.defining_class.__name__ = "Datasets"
 
         doc_string = parse_type(op.func_ref)
         doc_params = dict(

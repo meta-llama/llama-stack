@@ -4,13 +4,13 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 from typing import Any, Dict, List, Optional
+from urllib.parse import parse_qs, urlparse
 
 import datasets as hf_datasets
 
 from llama_stack.apis.datasetio import DatasetIO, IterrowsResponse
 from llama_stack.apis.datasets import Dataset
 from llama_stack.providers.datatypes import DatasetsProtocolPrivate
-from llama_stack.providers.utils.datasetio.url_utils import get_dataframe_from_url
 from llama_stack.providers.utils.kvstore import kvstore_impl
 
 from .config import HuggingfaceDatasetIOConfig
@@ -18,22 +18,14 @@ from .config import HuggingfaceDatasetIOConfig
 DATASETS_PREFIX = "datasets:"
 
 
-def load_hf_dataset(dataset_def: Dataset):
-    if dataset_def.metadata.get("path", None):
-        dataset = hf_datasets.load_dataset(**dataset_def.metadata)
-    else:
-        df = get_dataframe_from_url(dataset_def.url)
+def parse_hf_params(dataset_def: Dataset):
+    uri = dataset_def.source.uri
+    parsed_uri = urlparse(uri)
+    params = parse_qs(parsed_uri.query)
+    params = {k: v[0] for k, v in params.items()}
+    path = parsed_uri.path.lstrip("/")
 
-        if df is None:
-            raise ValueError(f"Failed to load dataset from {dataset_def.url}")
-
-        dataset = hf_datasets.Dataset.from_pandas(df)
-
-    # drop columns not specified by schema
-    if dataset_def.dataset_schema:
-        dataset = dataset.select_columns(list(dataset_def.dataset_schema.keys()))
-
-    return dataset
+    return path, params
 
 
 class HuggingfaceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
@@ -64,7 +56,7 @@ class HuggingfaceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
         key = f"{DATASETS_PREFIX}{dataset_def.identifier}"
         await self.kvstore.set(
             key=key,
-            value=dataset_def.json(),
+            value=dataset_def.model_dump_json(),
         )
         self.dataset_infos[dataset_def.identifier] = dataset_def
 
@@ -80,7 +72,8 @@ class HuggingfaceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
         limit: Optional[int] = None,
     ) -> IterrowsResponse:
         dataset_def = self.dataset_infos[dataset_id]
-        loaded_dataset = load_hf_dataset(dataset_def)
+        path, params = parse_hf_params(dataset_def)
+        loaded_dataset = hf_datasets.load_dataset(path, **params)
 
         start_index = start_index or 0
 
@@ -98,7 +91,8 @@ class HuggingfaceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
 
     async def append_rows(self, dataset_id: str, rows: List[Dict[str, Any]]) -> None:
         dataset_def = self.dataset_infos[dataset_id]
-        loaded_dataset = load_hf_dataset(dataset_def)
+        path, params = parse_hf_params(dataset_def)
+        loaded_dataset = hf_datasets.load_dataset(path, **params)
 
         # Convert rows to HF Dataset format
         new_dataset = hf_datasets.Dataset.from_list(rows)

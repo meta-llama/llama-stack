@@ -371,9 +371,9 @@ class DatasetsRoutingTable(CommonRoutingTableImpl, Datasets):
         provider_dataset_id = dataset_id
 
         # infer provider from source
-        if source.type == DatasetType.rows:
+        if source.type == DatasetType.rows.value:
             provider_id = "localfs"
-        elif source.type == DatasetType.uri:
+        elif source.type == DatasetType.uri.value:
             # infer provider from uri
             if source.uri.startswith("huggingface"):
                 provider_id = "huggingface"

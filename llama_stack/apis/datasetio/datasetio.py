@@ -34,7 +34,8 @@ class DatasetIO(Protocol):
     # keeping for aligning with inference/safety, but this is not used
     dataset_store: DatasetStore
 
-    @webmethod(route="/datasets/{dataset_id}/iterrows", method="GET")
+    # TODO(xiyan): there's a flakiness here where setting route to "/datasets/" here will not result in proper routing
+    @webmethod(route="/datasetio/iterrows/{dataset_id:path}", method="GET")
     async def iterrows(
         self,
         dataset_id: str,
@@ -49,5 +50,5 @@ class DatasetIO(Protocol):
         """
         ...
 
-    @webmethod(route="/datasets/{dataset_id}/append-rows", method="POST")
+    @webmethod(route="/datasetio/append-rows/{dataset_id:path}", method="POST")
     async def append_rows(self, dataset_id: str, rows: List[Dict[str, Any]]) -> None: ...
