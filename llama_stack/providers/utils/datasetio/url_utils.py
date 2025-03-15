@@ -20,6 +20,8 @@ def get_dataframe_from_url(url: URL):
         df = pandas.read_csv(url.uri)
     elif url.uri.endswith(".xlsx"):
         df = pandas.read_excel(url.uri)
+    elif url.uri.endswith(".jsonl"):
+        df = pandas.read_json(url.uri, lines=True)
     elif url.uri.startswith("data:"):
         parts = parse_data_url(url.uri)
         data = parts["data"]
