@@ -95,14 +95,14 @@ class RunpodInferenceAdapter(ModelRegistryHelper, Inference):
         self, request: ChatCompletionRequest, client: OpenAI
     ) -> ChatCompletionResponse:
         params = self._get_params(request)
-        r = client.completions.create(**params)
+        r = await client.completions.create(**params)
         return process_chat_completion_response(r, request)
 
     async def _stream_chat_completion(self, request: ChatCompletionRequest, client: OpenAI) -> AsyncGenerator:
         params = self._get_params(request)
 
         async def _to_async_generator():
-            s = client.completions.create(**params)
+            s = await client.completions.create(**params)
             for chunk in s:
                 yield chunk
 
