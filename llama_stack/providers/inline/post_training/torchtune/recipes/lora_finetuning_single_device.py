@@ -328,7 +328,7 @@ class LoraFinetuningSingleDevice:
         batch_size: int,
     ) -> Tuple[DistributedSampler, DataLoader]:
         async def fetch_rows(dataset_id: str):
-            return await self.datasetio_api.get_rows_paginated(
+            return await self.datasetio_api.iterrows(
                 dataset_id=dataset_id,
                 rows_in_page=-1,
             )

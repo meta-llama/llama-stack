@@ -166,7 +166,7 @@ def run_evaluation_3():
     eval_candidate = st.session_state["eval_candidate"]
 
     dataset_id = benchmarks[selected_benchmark].dataset_id
-    rows = llama_stack_api.client.datasetio.get_rows_paginated(
+    rows = llama_stack_api.client.datasetio.iterrows(
         dataset_id=dataset_id,
         rows_in_page=-1,
     )

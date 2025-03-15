@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 import logging
+import uuid
 from typing import Any, Dict, List, Optional
 
 from pydantic import TypeAdapter
@@ -12,7 +13,14 @@ from pydantic import TypeAdapter
 from llama_stack.apis.benchmarks import Benchmark, Benchmarks, ListBenchmarksResponse
 from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.common.type_system import ParamType
-from llama_stack.apis.datasets import Dataset, Datasets, ListDatasetsResponse
+from llama_stack.apis.datasets import (
+    Dataset,
+    DatasetPurpose,
+    Datasets,
+    DatasetType,
+    DataSource,
+    ListDatasetsResponse,
+)
 from llama_stack.apis.models import ListModelsResponse, Model, Models, ModelType
 from llama_stack.apis.resource import ResourceType
 from llama_stack.apis.scoring_functions import (
@@ -352,34 +360,42 @@ class DatasetsRoutingTable(CommonRoutingTableImpl, Datasets):
 
     async def register_dataset(
         self,
-        dataset_id: str,
-        dataset_schema: Dict[str, ParamType],
-        url: URL,
-        provider_dataset_id: Optional[str] = None,
-        provider_id: Optional[str] = None,
+        purpose: DatasetPurpose,
+        source: DataSource,
         metadata: Optional[Dict[str, Any]] = None,
-    ) -> None:
-        if provider_dataset_id is None:
-            provider_dataset_id = dataset_id
-        if provider_id is None:
-            # If provider_id not specified, use the only provider if it supports this dataset
-            if len(self.impls_by_provider_id) == 1:
-                provider_id = list(self.impls_by_provider_id.keys())[0]
+        dataset_id: Optional[str] = None,
+    ) -> Dataset:
+        if not dataset_id:
+            dataset_id = f"dataset-{str(uuid.uuid4())}"
+
+        provider_dataset_id = dataset_id
+
+        # infer provider from source
+        if source.type == DatasetType.rows:
+            provider_id = "localfs"
+        elif source.type == DatasetType.uri:
+            # infer provider from uri
+            if source.uri.startswith("huggingface"):
+                provider_id = "huggingface"
             else:
-                raise ValueError(
-                    f"No provider specified and multiple providers available. Please specify a provider_id. Available providers: {self.impls_by_provider_id.keys()}"
-                )
+                provider_id = "localfs"
+        else:
+            raise ValueError(f"Unknown data source type: {source.type}")
+
         if metadata is None:
             metadata = {}
+
         dataset = Dataset(
             identifier=dataset_id,
             provider_resource_id=provider_dataset_id,
             provider_id=provider_id,
-            dataset_schema=dataset_schema,
-            url=url,
+            purpose=purpose,
+            source=source,
             metadata=metadata,
         )
+
         await self.register_object(dataset)
+        return dataset
 
     async def unregister_dataset(self, dataset_id: str) -> None:
         dataset = await self.get_dataset(dataset_id)
