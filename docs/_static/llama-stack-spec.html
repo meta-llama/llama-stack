@@ -40,7 +40,7 @@
         }
     ],
     "paths": {
-        "/v1/datasets/{dataset_id}/rows": {
+        "/v1/datasets/{dataset_id}/append-rows": {
             "post": {
                 "responses": {
                     "200": {
@@ -2185,7 +2185,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/PaginatedRowsResult"
+                                    "$ref": "#/components/schemas/IterrowsResponse"
                                 }
                             }
                         }
@@ -2206,7 +2206,7 @@
                 "tags": [
                     "DatasetIO"
                 ],
-                "description": "Get a paginated list of rows from a dataset.",
+                "description": "Get a paginated list of rows from a dataset. Uses cursor-based pagination.",
                 "parameters": [
                     {
                         "name": "dataset_id",
@@ -2218,30 +2218,21 @@
                         }
                     },
                     {
-                        "name": "rows_in_page",
+                        "name": "start_index",
                         "in": "query",
-                        "description": "The number of rows to get per page.",
-                        "required": true,
+                        "description": "Index into dataset for the first row to get. Get all rows if None.",
+                        "required": false,
                         "schema": {
                             "type": "integer"
                         }
                     },
                     {
-                        "name": "page_token",
+                        "name": "limit",
                         "in": "query",
-                        "description": "The token to get the next page of rows.",
+                        "description": "The number of rows to get per page.",
                         "required": false,
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "filter_condition",
-                        "in": "query",
-                        "description": "(Optional) A condition to filter the rows by.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
+                            "type": "integer"
                         }
                     }
                 ]
@@ -8137,10 +8128,10 @@
                 ],
                 "title": "ToolInvocationResult"
             },
-            "PaginatedRowsResult": {
+            "IterrowsResponse": {
                 "type": "object",
                 "properties": {
-                    "rows": {
+                    "data": {
                         "type": "array",
                         "items": {
                             "type": "object",
@@ -8169,21 +8160,16 @@
                         },
                         "description": "The rows in the current page."
                     },
-                    "total_count": {
+                    "next_index": {
                         "type": "integer",
-                        "description": "The total number of rows in the dataset."
-                    },
-                    "next_page_token": {
-                        "type": "string",
-                        "description": "The token to get the next page of rows."
+                        "description": "Index into dataset for the first row in the next page. None if there are no more rows."
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "rows",
-                    "total_count"
+                    "data"
                 ],
-                "title": "PaginatedRowsResult",
+                "title": "IterrowsResponse",
                 "description": "A paginated list of rows from a dataset."
             },
             "ListAgentSessionsResponse": {
