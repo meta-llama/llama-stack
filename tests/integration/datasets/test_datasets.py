@@ -5,11 +5,30 @@
 # the root directory of this source tree.
 
 
+import base64
+import mimetypes
+import os
+
 import pytest
 
 # How to run this test:
 #
 # LLAMA_STACK_CONFIG="template-name" pytest -v tests/integration/datasets
+
+
+def data_url_from_file(file_path: str) -> str:
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(f"File not found: {file_path}")
+
+    with open(file_path, "rb") as file:
+        file_content = file.read()
+
+    base64_content = base64.b64encode(file_content).decode("utf-8")
+    mime_type, _ = mimetypes.guess_type(file_path)
+
+    data_url = f"data:{mime_type};base64,{base64_content}"
+
+    return data_url
 
 
 @pytest.mark.parametrize(
@@ -67,3 +86,19 @@ def test_register_and_iterrows(llama_stack_client, purpose, source, provider_id,
     llama_stack_client.datasets.unregister(dataset.identifier)
     dataset_list = llama_stack_client.datasets.list()
     assert dataset.identifier not in [d.identifier for d in dataset_list]
+
+
+def test_register_and_iterrows_from_base64_data(llama_stack_client):
+    dataset = llama_stack_client.datasets.register(
+        purpose="eval/messages-answer",
+        source={
+            "type": "uri",
+            "uri": data_url_from_file(
+                os.path.join(os.path.dirname(__file__), "test_dataset.csv")
+            ),
+        },
+    )
+    assert dataset.identifier is not None
+    assert dataset.provider_id == "localfs"
+    iterrow_response = llama_stack_client.datasets.iterrows(dataset.identifier)
+    assert len(iterrow_response.data) == 5
