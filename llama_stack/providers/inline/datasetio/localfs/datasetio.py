@@ -128,7 +128,7 @@ class LocalFSDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
         await self.kvstore.delete(key=key)
         del self.dataset_infos[dataset_id]
 
-    async def get_rows_paginated(
+    async def iterrows(
         self,
         dataset_id: str,
         rows_in_page: int,

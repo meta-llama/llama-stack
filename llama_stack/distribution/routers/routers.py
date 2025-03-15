@@ -537,7 +537,7 @@ class DatasetIORouter(DatasetIO):
         logger.debug("DatasetIORouter.shutdown")
         pass
 
-    async def get_rows_paginated(
+    async def iterrows(
         self,
         dataset_id: str,
         rows_in_page: int,
@@ -545,11 +545,9 @@ class DatasetIORouter(DatasetIO):
         filter_condition: Optional[str] = None,
     ) -> IterrowsResponse:
         logger.debug(
-            f"DatasetIORouter.get_rows_paginated: {dataset_id}, rows_in_page={rows_in_page}",
+            f"DatasetIORouter.iterrows: {dataset_id}, rows_in_page={rows_in_page}",
         )
-        return await self.routing_table.get_provider_impl(
-            dataset_id
-        ).get_rows_paginated(
+        return await self.routing_table.get_provider_impl(dataset_id).iterrows(
             dataset_id=dataset_id,
             rows_in_page=rows_in_page,
             page_token=page_token,
