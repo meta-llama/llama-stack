@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 from typing import Any, Dict, List, Optional
-
 from urllib.parse import parse_qs, urlparse
 
 import datasets as hf_datasets
@@ -12,13 +11,11 @@ import datasets as hf_datasets
 from llama_stack.apis.datasetio import DatasetIO, IterrowsResponse
 from llama_stack.apis.datasets import Dataset
 from llama_stack.providers.datatypes import DatasetsProtocolPrivate
-from llama_stack.providers.utils.datasetio.url_utils import get_dataframe_from_url
 from llama_stack.providers.utils.kvstore import kvstore_impl
 
 from .config import HuggingfaceDatasetIOConfig
 
 DATASETS_PREFIX = "datasets:"
-from rich.pretty import pprint
 
 
 def parse_hf_params(dataset_def: Dataset):
@@ -102,13 +99,9 @@ class HuggingfaceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
         new_dataset = hf_datasets.Dataset.from_list(rows)
 
         # Concatenate the new rows with existing dataset
-        updated_dataset = hf_datasets.concatenate_datasets(
-            [loaded_dataset, new_dataset]
-        )
+        updated_dataset = hf_datasets.concatenate_datasets([loaded_dataset, new_dataset])
 
         if dataset_def.metadata.get("path", None):
             updated_dataset.push_to_hub(dataset_def.metadata["path"])
         else:
-            raise NotImplementedError(
-                "Uploading to URL-based datasets is not supported yet"
-            )
+            raise NotImplementedError("Uploading to URL-based datasets is not supported yet")
