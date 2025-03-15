@@ -70,9 +70,7 @@ def data_url_from_file(file_path: str) -> str:
             "eval/messages-answer",
             {
                 "type": "uri",
-                "uri": data_url_from_file(
-                    os.path.join(os.path.dirname(__file__), "test_dataset.csv")
-                ),
+                "uri": data_url_from_file(os.path.join(os.path.dirname(__file__), "test_dataset.csv")),
             },
             "localfs",
             5,
@@ -86,9 +84,7 @@ def test_register_and_iterrows(llama_stack_client, purpose, source, provider_id,
     )
     assert dataset.identifier is not None
     assert dataset.provider_id == provider_id
-    iterrow_response = llama_stack_client.datasets.iterrows(
-        dataset.identifier, limit=limit
-    )
+    iterrow_response = llama_stack_client.datasets.iterrows(dataset.identifier, limit=limit)
     assert len(iterrow_response.data) == limit
 
     dataset_list = llama_stack_client.datasets.list()
