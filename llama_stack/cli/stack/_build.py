@@ -38,7 +38,7 @@ from llama_stack.distribution.distribution import get_provider_registry
 from llama_stack.distribution.resolver import InvalidProviderError
 from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
-from llama_stack.distribution.utils.exec import formulate_run_args, run_with_pty
+from llama_stack.distribution.utils.exec import formulate_run_args, run_command
 from llama_stack.distribution.utils.image_types import LlamaStackImageType
 from llama_stack.providers.datatypes import Api
 
@@ -213,7 +213,7 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
         config = parse_and_maybe_upgrade_config(config_dict)
         run_args = formulate_run_args(args.image_type, args.image_name, config, args.template)
         run_args.extend([run_config, str(os.getenv("LLAMA_STACK_PORT", 8321))])
-        run_with_pty(run_args)
+        run_command(run_args)
 
 
 def _generate_run_config(

@@ -82,7 +82,7 @@ class StackRun(Subcommand):
 
         from llama_stack.distribution.configure import parse_and_maybe_upgrade_config
         from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
-        from llama_stack.distribution.utils.exec import formulate_run_args, run_with_pty
+        from llama_stack.distribution.utils.exec import formulate_run_args, run_command
 
         config_file = Path(args.config)
         has_yaml_suffix = args.config.endswith(".yaml")
@@ -136,4 +136,4 @@ class StackRun(Subcommand):
 
         if args.tls_keyfile and args.tls_certfile:
             run_args.extend(["--tls-keyfile", args.tls_keyfile, "--tls-certfile", args.tls_certfile])
-        run_with_pty(run_args)
+        run_command(run_args)
