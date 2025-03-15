@@ -13,6 +13,7 @@ from llama_stack.apis.common.content_types import (
     URL,
 )
 from llama_stack.apis.datasetio import DatasetIO, IterrowsResponse
+from llama_stack.apis.datasets import DatasetPurpose, DataSource
 from llama_stack.apis.eval import (
     BenchmarkConfig,
     Eval,
@@ -537,21 +538,36 @@ class DatasetIORouter(DatasetIO):
         logger.debug("DatasetIORouter.shutdown")
         pass
 
+    async def register_dataset(
+        self,
+        purpose: DatasetPurpose,
+        source: DataSource,
+        metadata: Optional[Dict[str, Any]] = None,
+        dataset_id: Optional[str] = None,
+    ) -> None:
+        logger.debug(
+            f"DatasetIORouter.register_dataset: {purpose=} {source=} {metadata=} {dataset_id=}",
+        )
+        await self.routing_table.register_dataset(
+            purpose=purpose,
+            source=source,
+            metadata=metadata,
+            dataset_id=dataset_id,
+        )
+
     async def iterrows(
         self,
         dataset_id: str,
-        rows_in_page: int,
-        page_token: Optional[str] = None,
-        filter_condition: Optional[str] = None,
+        start_index: Optional[int] = None,
+        limit: Optional[int] = None,
     ) -> IterrowsResponse:
         logger.debug(
-            f"DatasetIORouter.iterrows: {dataset_id}, rows_in_page={rows_in_page}",
+            f"DatasetIORouter.iterrows: {dataset_id}, {start_index=} {limit=}",
         )
         return await self.routing_table.get_provider_impl(dataset_id).iterrows(
             dataset_id=dataset_id,
-            rows_in_page=rows_in_page,
-            page_token=page_token,
-            filter_condition=filter_condition,
+            start_index=start_index,
+            limit=limit,
         )
 
     async def append_rows(self, dataset_id: str, rows: List[Dict[str, Any]]) -> None:
