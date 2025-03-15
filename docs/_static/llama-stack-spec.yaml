@@ -10,56 +10,7 @@ info:
 servers:
   - url: http://any-hosted-llama-stack.com
 paths:
-  /v1/datasetio/rows:
-    get:
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedRowsResult'
-        '400':
-          $ref: '#/components/responses/BadRequest400'
-        '429':
-          $ref: >-
-            #/components/responses/TooManyRequests429
-        '500':
-          $ref: >-
-            #/components/responses/InternalServerError500
-        default:
-          $ref: '#/components/responses/DefaultError'
-      tags:
-        - DatasetIO
-      description: >-
-        Get a paginated list of rows from a dataset.
-      parameters:
-        - name: dataset_id
-          in: query
-          description: >-
-            The ID of the dataset to get the rows from.
-          required: true
-          schema:
-            type: string
-        - name: rows_in_page
-          in: query
-          description: The number of rows to get per page.
-          required: true
-          schema:
-            type: integer
-        - name: page_token
-          in: query
-          description: The token to get the next page of rows.
-          required: false
-          schema:
-            type: string
-        - name: filter_condition
-          in: query
-          description: >-
-            (Optional) A condition to filter the rows by.
-          required: false
-          schema:
-            type: string
+  /v1/datasets/{dataset_id}/rows:
     post:
       responses:
         '200':
@@ -77,7 +28,12 @@ paths:
       tags:
         - DatasetIO
       description: ''
-      parameters: []
+      parameters:
+        - name: dataset_id
+          in: path
+          required: true
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -1501,6 +1457,56 @@ paths:
             schema:
               $ref: '#/components/schemas/InvokeToolRequest'
         required: true
+  /v1/datasets/{dataset_id}/iterrows:
+    get:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedRowsResult'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - DatasetIO
+      description: >-
+        Get a paginated list of rows from a dataset.
+      parameters:
+        - name: dataset_id
+          in: path
+          description: >-
+            The ID of the dataset to get the rows from.
+          required: true
+          schema:
+            type: string
+        - name: rows_in_page
+          in: query
+          description: The number of rows to get per page.
+          required: true
+          schema:
+            type: integer
+        - name: page_token
+          in: query
+          description: The token to get the next page of rows.
+          required: false
+          schema:
+            type: string
+        - name: filter_condition
+          in: query
+          description: >-
+            (Optional) A condition to filter the rows by.
+          required: false
+          schema:
+            type: string
   /v1/eval/benchmarks/{benchmark_id}/jobs/{job_id}:
     get:
       responses:
@@ -1710,6 +1716,10 @@ paths:
       responses:
         '200':
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dataset'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -1722,7 +1732,7 @@ paths:
           $ref: '#/components/responses/DefaultError'
       tags:
         - Datasets
-      description: ''
+      description: Register a new dataset.
       parameters: []
       requestBody:
         content:
@@ -2607,8 +2617,6 @@ components:
     AppendRowsRequest:
       type: object
       properties:
-        dataset_id:
-          type: string
         rows:
           type: array
           items:
@@ -2623,7 +2631,6 @@ components:
                 - type: object
       additionalProperties: false
       required:
-        - dataset_id
         - rows
       title: AppendRowsRequest
     CompletionMessage:
@@ -4726,6 +4733,148 @@ components:
         - scoring_functions
         - metadata
       title: Benchmark
+    DataSource:
+      oneOf:
+        - $ref: '#/components/schemas/URIDataSource'
+        - $ref: '#/components/schemas/RowsDataSource'
+      discriminator:
+        propertyName: type
+        mapping:
+          uri: '#/components/schemas/URIDataSource'
+          rows: '#/components/schemas/RowsDataSource'
+    Dataset:
+      type: object
+      properties:
+        identifier:
+          type: string
+        provider_resource_id:
+          type: string
+        provider_id:
+          type: string
+        type:
+          type: string
+          const: dataset
+          default: dataset
+        purpose:
+          type: string
+          enum:
+            - post-training/messages
+            - eval/question-answer
+            - eval/messages-answer
+          title: DatasetPurpose
+          description: >-
+            Purpose of the dataset. Each purpose has a required input data schema.
+        source:
+          $ref: '#/components/schemas/DataSource'
+        metadata:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+      additionalProperties: false
+      required:
+        - identifier
+        - provider_resource_id
+        - provider_id
+        - type
+        - purpose
+        - source
+        - metadata
+      title: Dataset
+    RowsDataSource:
+      type: object
+      properties:
+        type:
+          type: string
+          const: rows
+          default: rows
+        rows:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              oneOf:
+                - type: 'null'
+                - type: boolean
+                - type: number
+                - type: string
+                - type: array
+                - type: object
+          description: >-
+            The dataset is stored in rows. E.g. - [ {"messages": [{"role": "user",
+            "content": "Hello, world!"}, {"role": "assistant", "content": "Hello,
+            world!"}]} ]
+      additionalProperties: false
+      required:
+        - type
+        - rows
+      title: RowsDataSource
+      description: A dataset stored in rows.
+    URIDataSource:
+      type: object
+      properties:
+        type:
+          type: string
+          const: uri
+          default: uri
+        uri:
+          type: string
+          description: >-
+            The dataset can be obtained from a URI. E.g. - "https://mywebsite.com/mydata.jsonl"
+            - "lsfs://mydata.jsonl" - "data:csv;base64,{base64_content}"
+      additionalProperties: false
+      required:
+        - type
+        - uri
+      title: URIDataSource
+      description: >-
+        A dataset that can be obtained from a URI.
+    Model:
+      type: object
+      properties:
+        identifier:
+          type: string
+        provider_resource_id:
+          type: string
+        provider_id:
+          type: string
+        type:
+          type: string
+          const: model
+          default: model
+        metadata:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+        model_type:
+          $ref: '#/components/schemas/ModelType'
+          default: llm
+      additionalProperties: false
+      required:
+        - identifier
+        - provider_resource_id
+        - provider_id
+        - type
+        - metadata
+        - model_type
+      title: Model
+    ModelType:
+      type: string
+      enum:
+        - llm
+        - embedding
+      title: ModelType
     AgentTurnInputType:
       type: object
       properties:
@@ -4781,45 +4930,6 @@ components:
       required:
         - type
       title: CompletionInputType
-    Dataset:
-      type: object
-      properties:
-        identifier:
-          type: string
-        provider_resource_id:
-          type: string
-        provider_id:
-          type: string
-        type:
-          type: string
-          const: dataset
-          default: dataset
-        dataset_schema:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/ParamType'
-        url:
-          $ref: '#/components/schemas/URL'
-        metadata:
-          type: object
-          additionalProperties:
-            oneOf:
-              - type: 'null'
-              - type: boolean
-              - type: number
-              - type: string
-              - type: array
-              - type: object
-      additionalProperties: false
-      required:
-        - identifier
-        - provider_resource_id
-        - provider_id
-        - type
-        - dataset_schema
-        - url
-        - metadata
-      title: Dataset
     JsonType:
       type: object
       properties:
@@ -4878,97 +4988,6 @@ components:
           chat_completion_input: '#/components/schemas/ChatCompletionInputType'
           completion_input: '#/components/schemas/CompletionInputType'
           agent_turn_input: '#/components/schemas/AgentTurnInputType'
-    StringType:
-      type: object
-      properties:
-        type:
-          type: string
-          const: string
-          default: string
-      additionalProperties: false
-      required:
-        - type
-      title: StringType
-    UnionType:
-      type: object
-      properties:
-        type:
-          type: string
-          const: union
-          default: union
-      additionalProperties: false
-      required:
-        - type
-      title: UnionType
-    Model:
-      type: object
-      properties:
-        identifier:
-          type: string
-        provider_resource_id:
-          type: string
-        provider_id:
-          type: string
-        type:
-          type: string
-          const: model
-          default: model
-        metadata:
-          type: object
-          additionalProperties:
-            oneOf:
-              - type: 'null'
-              - type: boolean
-              - type: number
-              - type: string
-              - type: array
-              - type: object
-        model_type:
-          $ref: '#/components/schemas/ModelType'
-          default: llm
-      additionalProperties: false
-      required:
-        - identifier
-        - provider_resource_id
-        - provider_id
-        - type
-        - metadata
-        - model_type
-      title: Model
-    ModelType:
-      type: string
-      enum:
-        - llm
-        - embedding
-      title: ModelType
-    PaginatedRowsResult:
-      type: object
-      properties:
-        rows:
-          type: array
-          items:
-            type: object
-            additionalProperties:
-              oneOf:
-                - type: 'null'
-                - type: boolean
-                - type: number
-                - type: string
-                - type: array
-                - type: object
-          description: The rows in the current page.
-        total_count:
-          type: integer
-          description: The total number of rows in the dataset.
-        next_page_token:
-          type: string
-          description: The token to get the next page of rows.
-      additionalProperties: false
-      required:
-        - rows
-        - total_count
-      title: PaginatedRowsResult
-      description: A paginated list of rows from a dataset.
     ScoringFn:
       type: object
       properties:
@@ -5007,6 +5026,28 @@ components:
         - metadata
         - return_type
       title: ScoringFn
+    StringType:
+      type: object
+      properties:
+        type:
+          type: string
+          const: string
+          default: string
+      additionalProperties: false
+      required:
+        - type
+      title: StringType
+    UnionType:
+      type: object
+      properties:
+        type:
+          type: string
+          const: union
+          default: union
+      additionalProperties: false
+      required:
+        - type
+      title: UnionType
     Shield:
       type: object
       properties:
@@ -5506,6 +5547,34 @@ components:
       required:
         - content
       title: ToolInvocationResult
+    PaginatedRowsResult:
+      type: object
+      properties:
+        rows:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              oneOf:
+                - type: 'null'
+                - type: boolean
+                - type: number
+                - type: string
+                - type: array
+                - type: object
+          description: The rows in the current page.
+        total_count:
+          type: integer
+          description: The total number of rows in the dataset.
+        next_page_token:
+          type: string
+          description: The token to get the next page of rows.
+      additionalProperties: false
+      required:
+        - rows
+        - total_count
+      title: PaginatedRowsResult
+      description: A paginated list of rows from a dataset.
     ListAgentSessionsResponse:
       type: object
       properties:
@@ -6313,18 +6382,33 @@ components:
     RegisterDatasetRequest:
       type: object
       properties:
-        dataset_id:
+        purpose:
           type: string
-        dataset_schema:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/ParamType'
-        url:
-          $ref: '#/components/schemas/URL'
-        provider_dataset_id:
-          type: string
-        provider_id:
-          type: string
+          enum:
+            - post-training/messages
+            - eval/question-answer
+            - eval/messages-answer
+          description: >-
+            The purpose of the dataset. One of - "post-training/messages": The dataset
+            contains a messages column with list of messages for post-training. {
+            "messages": [ {"role": "user", "content": "Hello, world!"}, {"role": "assistant",
+            "content": "Hello, world!"}, ] } - "eval/question-answer": The dataset
+            contains a question column and an answer column for evaluation. { "question":
+            "What is the capital of France?", "answer": "Paris" } - "eval/messages-answer":
+            The dataset contains a messages column with list of messages and an answer
+            column for evaluation. { "messages": [ {"role": "user", "content": "Hello,
+            my name is John Doe."}, {"role": "assistant", "content": "Hello, John
+            Doe. How can I help you today?"}, {"role": "user", "content": "What's
+            my name?"}, ], "answer": "John Doe" }
+        source:
+          $ref: '#/components/schemas/DataSource'
+          description: >-
+            The data source of the dataset. Examples: - { "type": "uri", "uri": "https://mywebsite.com/mydata.jsonl"
+            } - { "type": "uri", "uri": "lsfs://mydata.jsonl" } - { "type": "uri",
+            "uri": "data:csv;base64,{base64_content}" } - { "type": "uri", "uri":
+            "huggingface://llamastack/simpleqa?split=train" } - { "type": "rows",
+            "rows": [ { "messages": [ {"role": "user", "content": "Hello, world!"},
+            {"role": "assistant", "content": "Hello, world!"}, ] } ] }
         metadata:
           type: object
           additionalProperties:
@@ -6335,11 +6419,16 @@ components:
               - type: string
               - type: array
               - type: object
+          description: >-
+            The metadata for the dataset. - E.g. {"description": "My dataset"}
+        dataset_id:
+          type: string
+          description: >-
+            The ID of the dataset. If not provided, an ID will be generated.
       additionalProperties: false
       required:
-        - dataset_id
-        - dataset_schema
-        - url
+        - purpose
+        - source
       title: RegisterDatasetRequest
     RegisterModelRequest:
       type: object
