@@ -84,7 +84,7 @@ class HuggingfaceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
 
         start_index = start_index or 0
 
-        if limit == -1:
+        if limit is None or limit == -1:
             end = len(loaded_dataset)
         else:
             end = min(start_index + limit, len(loaded_dataset))
@@ -93,7 +93,7 @@ class HuggingfaceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
 
         return IterrowsResponse(
             data=rows,
-            next_index=end,
+            next_index=end if end < len(loaded_dataset) else None,
         )
 
     async def append_rows(self, dataset_id: str, rows: List[Dict[str, Any]]) -> None:
