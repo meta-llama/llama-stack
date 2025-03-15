@@ -230,9 +230,7 @@ def run_evaluation_3():
                     output_res[scoring_fn] = []
                 output_res[scoring_fn].append(eval_res.scores[scoring_fn].score_rows[0])
 
-            progress_text_container.write(
-                f"Expand to see current processed result ({i + 1} / {len(rows)})"
-            )
+            progress_text_container.write(f"Expand to see current processed result ({i + 1} / {len(rows)})")
             results_container.json(eval_res, expanded=2)
 
         progress_bar.progress(1.0, text="Evaluation complete!")
