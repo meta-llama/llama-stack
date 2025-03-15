@@ -402,14 +402,6 @@ class DatasetsRoutingTable(CommonRoutingTableImpl, Datasets):
         else:
             raise ValueError(f"Unknown data source type: {source.type}")
 
-        if provider_id is None:
-            # If provider_id not specified, use the only provider if it supports this dataset
-            if len(self.impls_by_provider_id) == 1:
-                provider_id = list(self.impls_by_provider_id.keys())[0]
-            else:
-                raise ValueError(
-                    f"No provider specified and multiple providers available. Please specify a provider_id. Available providers: {self.impls_by_provider_id.keys()}"
-                )
         if metadata is None:
             metadata = {}
 
