@@ -1,9 +1,18 @@
 name: Integration tests
 
 on:
-  pull_request:
   push:
-    branches: [main]
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'distributions/**'
+      - 'llama_stack/**'
+      - 'tests/integration/**'
+      - 'uv.lock'
+      - 'pyproject.toml'
+      - 'requirements.txt'
+      - '.github/workflows/integration-tests.yml' # This workflow
 
 jobs:
   ollama:
