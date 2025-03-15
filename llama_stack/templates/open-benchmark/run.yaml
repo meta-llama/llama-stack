@@ -234,6 +234,18 @@ datasets:
     split: train
   dataset_id: bfcl
   provider_id: huggingface
+- dataset_schema:
+    chat_completion_input:
+      type: string
+    expected_answer:
+      type: string
+  url:
+    uri: https://huggingface.co/datasets/llamastack/docvqa
+  metadata:
+    path: llamastack/docvqa
+    split: val
+  dataset_id: docvqa
+  provider_id: huggingface
 scoring_fns: []
 benchmarks:
 - dataset_id: simpleqa
@@ -261,6 +273,11 @@ benchmarks:
   - basic::bfcl
   metadata: {}
   benchmark_id: meta-reference-bfcl
+- dataset_id: docvqa
+  scoring_functions:
+  - basic::docvqa
+  metadata: {}
+  benchmark_id: meta-reference-docvqa
 tool_groups:
 - toolgroup_id: builtin::websearch
   provider_id: tavily-search
