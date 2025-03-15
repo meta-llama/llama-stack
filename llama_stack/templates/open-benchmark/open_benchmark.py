@@ -173,7 +173,7 @@ def get_distribution_template() -> DistributionTemplate:
             provider_id="huggingface",
             purpose=DatasetPurpose.eval_messages_answer,
             source=URIDataSource(
-                uri="huggingface://llamastack/simpleqa?split=train",
+                uri="huggingface://datasets/llamastack/simpleqa?split=train",
             ),
         ),
         DatasetInput(
@@ -181,7 +181,7 @@ def get_distribution_template() -> DistributionTemplate:
             provider_id="huggingface",
             purpose=DatasetPurpose.eval_messages_answer,
             source=URIDataSource(
-                uri="huggingface://llamastack/mmlu_cot?split=test&name=all",
+                uri="huggingface://datasets/llamastack/mmlu_cot?split=test&name=all",
             ),
         ),
         DatasetInput(
@@ -189,7 +189,7 @@ def get_distribution_template() -> DistributionTemplate:
             provider_id="huggingface",
             purpose=DatasetPurpose.eval_messages_answer,
             source=URIDataSource(
-                uri="huggingface://llamastack/gpqa_0shot_cot?split=test&name=gpqa_main",
+                uri="huggingface://datasets/llamastack/gpqa_0shot_cot?split=test&name=gpqa_main",
             ),
         ),
         DatasetInput(
@@ -197,7 +197,7 @@ def get_distribution_template() -> DistributionTemplate:
             provider_id="huggingface",
             purpose=DatasetPurpose.eval_messages_answer,
             source=URIDataSource(
-                uri="huggingface://llamastack/math_500?split=test",
+                uri="huggingface://datasets/llamastack/math_500?split=test",
             ),
         ),
         DatasetInput(
@@ -205,7 +205,7 @@ def get_distribution_template() -> DistributionTemplate:
             provider_id="huggingface",
             purpose=DatasetPurpose.eval_messages_answer,
             source=URIDataSource(
-                uri="huggingface://llamastack/bfcl_v3?split=train",
+                uri="huggingface://datasets/llamastack/bfcl_v3?split=train",
             ),
         ),
     ]
