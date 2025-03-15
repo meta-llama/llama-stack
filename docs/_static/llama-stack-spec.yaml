@@ -26,7 +26,7 @@ paths:
         default:
           $ref: '#/components/responses/DefaultError'
       tags:
-        - DatasetIO
+        - Datasets
       description: ''
       parameters:
         - name: dataset_id
@@ -350,7 +350,7 @@ paths:
         default:
           $ref: '#/components/responses/DefaultError'
       tags:
-        - Files (Coming Soon)
+        - Files
       description: List all buckets.
       parameters:
         - name: bucket
@@ -377,7 +377,7 @@ paths:
         default:
           $ref: '#/components/responses/DefaultError'
       tags:
-        - Files (Coming Soon)
+        - Files
       description: >-
         Create a new upload session for a file identified by a bucket and key.
       parameters: []
@@ -536,7 +536,7 @@ paths:
         default:
           $ref: '#/components/responses/DefaultError'
       tags:
-        - Files (Coming Soon)
+        - Files
       description: >-
         Get a file info identified by a bucket and key.
       parameters:
@@ -572,7 +572,7 @@ paths:
         default:
           $ref: '#/components/responses/DefaultError'
       tags:
-        - Files (Coming Soon)
+        - Files
       description: >-
         Delete a file identified by a bucket and key.
       parameters:
@@ -1224,7 +1224,7 @@ paths:
         default:
           $ref: '#/components/responses/DefaultError'
       tags:
-        - Files (Coming Soon)
+        - Files
       description: >-
         Returns information about an existsing upload session
       parameters:
@@ -1255,7 +1255,7 @@ paths:
         default:
           $ref: '#/components/responses/DefaultError'
       tags:
-        - Files (Coming Soon)
+        - Files
       description: >-
         Upload file content to an existing upload session. On the server, request
         body will have the raw bytes that are uploaded.
@@ -1477,7 +1477,7 @@ paths:
         default:
           $ref: '#/components/responses/DefaultError'
       tags:
-        - DatasetIO
+        - Datasets
       description: >-
         Get a paginated list of rows from a dataset. Uses cursor-based pagination.
       parameters:
@@ -1754,7 +1754,7 @@ paths:
         default:
           $ref: '#/components/responses/DefaultError'
       tags:
-        - Files (Coming Soon)
+        - Files
       description: List all files in a bucket.
       parameters:
         - name: bucket
@@ -6931,12 +6931,12 @@ tags:
       Agents API for creating and interacting with agentic systems.
   - name: BatchInference (Coming Soon)
   - name: Benchmarks
-  - name: DatasetIO
+  - name: Datasets
   - name: Datasets
   - name: Eval
     x-displayName: >-
       Llama Stack Evaluation API for running evaluations on model and agent candidates.
-  - name: Files (Coming Soon)
+  - name: Files
   - name: Inference
     description: >-
       This API provides the raw interface to the underlying models. Two kinds of models
@@ -6971,10 +6971,10 @@ x-tagGroups:
       - Agents
       - BatchInference (Coming Soon)
       - Benchmarks
-      - DatasetIO
+      - Datasets
       - Datasets
       - Eval
-      - Files (Coming Soon)
+      - Files
       - Inference
       - Inspect
       - Models
