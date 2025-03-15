@@ -76,33 +76,24 @@ class HuggingfaceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
     async def iterrows(
         self,
         dataset_id: str,
-        rows_in_page: int,
-        page_token: Optional[str] = None,
-        filter_condition: Optional[str] = None,
+        start_index: Optional[int] = None,
+        limit: Optional[int] = None,
     ) -> IterrowsResponse:
         dataset_def = self.dataset_infos[dataset_id]
         loaded_dataset = load_hf_dataset(dataset_def)
 
-        if page_token and not page_token.isnumeric():
-            raise ValueError("Invalid page_token")
+        start_index = start_index or 0
 
-        if page_token is None or len(page_token) == 0:
-            next_page_token = 0
-        else:
-            next_page_token = int(page_token)
-
-        start = next_page_token
-        if rows_in_page == -1:
+        if limit == -1:
             end = len(loaded_dataset)
         else:
-            end = min(start + rows_in_page, len(loaded_dataset))
+            end = min(start_index + limit, len(loaded_dataset))
 
-        rows = [loaded_dataset[i] for i in range(start, end)]
+        rows = [loaded_dataset[i] for i in range(start_index, end)]
 
         return IterrowsResponse(
-            rows=rows,
-            total_count=len(rows),
-            next_page_token=str(end),
+            data=rows,
+            next_index=end,
         )
 
     async def append_rows(self, dataset_id: str, rows: List[Dict[str, Any]]) -> None:
