@@ -16,9 +16,7 @@ from ..datasetio.test_datasetio import register_dataset
 
 @pytest.mark.parametrize("scoring_fn_id", ["basic::equality"])
 def test_evaluate_rows(llama_stack_client, text_model_id, scoring_fn_id):
-    register_dataset(
-        llama_stack_client, for_generation=True, dataset_id="test_dataset_for_eval"
-    )
+    register_dataset(llama_stack_client, for_generation=True, dataset_id="test_dataset_for_eval")
     response = llama_stack_client.datasets.list()
     assert any(x.identifier == "test_dataset_for_eval" for x in response)
 
@@ -61,9 +59,7 @@ def test_evaluate_rows(llama_stack_client, text_model_id, scoring_fn_id):
 
 @pytest.mark.parametrize("scoring_fn_id", ["basic::subset_of"])
 def test_evaluate_benchmark(llama_stack_client, text_model_id, scoring_fn_id):
-    register_dataset(
-        llama_stack_client, for_generation=True, dataset_id="test_dataset_for_eval_2"
-    )
+    register_dataset(llama_stack_client, for_generation=True, dataset_id="test_dataset_for_eval_2")
     benchmark_id = str(uuid.uuid4())
     llama_stack_client.benchmarks.register(
         benchmark_id=benchmark_id,
@@ -84,14 +80,10 @@ def test_evaluate_benchmark(llama_stack_client, text_model_id, scoring_fn_id):
         },
     )
     assert response.job_id == "0"
-    job_status = llama_stack_client.eval.jobs.status(
-        job_id=response.job_id, benchmark_id=benchmark_id
-    )
+    job_status = llama_stack_client.eval.jobs.status(job_id=response.job_id, benchmark_id=benchmark_id)
     assert job_status and job_status == "completed"
 
-    eval_response = llama_stack_client.eval.jobs.retrieve(
-        job_id=response.job_id, benchmark_id=benchmark_id
-    )
+    eval_response = llama_stack_client.eval.jobs.retrieve(job_id=response.job_id, benchmark_id=benchmark_id)
     assert eval_response is not None
     assert len(eval_response.generations) == 5
     assert scoring_fn_id in eval_response.scores
