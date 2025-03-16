@@ -83,8 +83,10 @@ class MetaReferenceEvalImpl(
         task_def = self.benchmarks[benchmark_id]
         dataset_id = task_def.dataset_id
         scoring_functions = task_def.scoring_functions
-        dataset_def = await self.datasets_api.get_dataset(dataset_id=dataset_id)
-        # TODO: validate dataset schema
+
+        # TODO (xiyan): validate dataset schema
+        # dataset_def = await self.datasets_api.get_dataset(dataset_id=dataset_id)
+
         all_rows = await self.datasetio_api.iterrows(
             dataset_id=dataset_id,
             limit=(-1 if benchmark_config.num_examples is None else benchmark_config.num_examples),
