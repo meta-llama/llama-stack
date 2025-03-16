@@ -114,18 +114,12 @@ pprint(response)
 simpleqa_dataset_id = "huggingface::simpleqa"
 
 _ = client.datasets.register(
+    purpose="eval/messages-answer",
+    source={
+        "type": "uri",
+        "uri": "huggingface://datasets/llamastack/simpleqa?split=train",
+    },
     dataset_id=simpleqa_dataset_id,
-    provider_id="huggingface",
-    url={"uri": "https://huggingface.co/datasets/llamastack/simpleqa"},
-    metadata={
-        "path": "llamastack/simpleqa",
-        "split": "train",
-    },
-    dataset_schema={
-        "input_query": {"type": "string"},
-        "expected_answer": {"type": "string"},
-        "chat_completion_input": {"type": "chat_completion_input"},
-    },
 )
 
 eval_rows = client.datasets.iterrows(
