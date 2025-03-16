@@ -128,9 +128,9 @@ _ = client.datasets.register(
     },
 )
 
-eval_rows = client.datasetio.get_rows_paginated(
+eval_rows = client.datasets.iterrows(
     dataset_id=simpleqa_dataset_id,
-    rows_in_page=5,
+    limit=5,
 )
 ```
 
@@ -143,7 +143,7 @@ client.benchmarks.register(
 
 response = client.eval.evaluate_rows(
     benchmark_id="meta-reference::simpleqa",
-    input_rows=eval_rows.rows,
+    input_rows=eval_rows.data,
     scoring_functions=["llm-as-judge::405b-simpleqa"],
     benchmark_config={
         "eval_candidate": {
@@ -191,7 +191,7 @@ agent_config = {
 
 response = client.eval.evaluate_rows(
     benchmark_id="meta-reference::simpleqa",
-    input_rows=eval_rows.rows,
+    input_rows=eval_rows.data,
     scoring_functions=["llm-as-judge::405b-simpleqa"],
     benchmark_config={
         "eval_candidate": {
