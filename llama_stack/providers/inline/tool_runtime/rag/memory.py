@@ -142,7 +142,7 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
                 TextContentItem(
                     text=f"Result {i + 1}:\nDocument_id:{metadata['document_id'][:5]}\nContent: {c.content}\n",
                 )
-            )
+            )s
         picked.append(TextContentItem(text="END of knowledge_search tool results.\n"))
 
         return RAGQueryResult(
