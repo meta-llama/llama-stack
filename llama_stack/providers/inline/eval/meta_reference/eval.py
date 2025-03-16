@@ -92,11 +92,11 @@ class MetaReferenceEvalImpl(
         validate_dataset_schema(dataset_def.dataset_schema, get_valid_schemas(Api.eval.value))
         all_rows = await self.datasetio_api.iterrows(
             dataset_id=dataset_id,
-            rows_in_page=(-1 if benchmark_config.num_examples is None else benchmark_config.num_examples),
+            limit=(-1 if benchmark_config.num_examples is None else benchmark_config.num_examples),
         )
         res = await self.evaluate_rows(
             benchmark_id=benchmark_id,
-            input_rows=all_rows.rows,
+            input_rows=all_rows.data,
             scoring_functions=scoring_functions,
             benchmark_config=benchmark_config,
         )

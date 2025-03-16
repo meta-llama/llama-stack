@@ -330,11 +330,11 @@ class LoraFinetuningSingleDevice:
         async def fetch_rows(dataset_id: str):
             return await self.datasetio_api.iterrows(
                 dataset_id=dataset_id,
-                rows_in_page=-1,
+                limit=-1,
             )
 
         all_rows = await fetch_rows(dataset_id)
-        rows = all_rows.rows
+        rows = all_rows.data
 
         await validate_input_dataset_schema(
             datasets_api=self.datasets_api,

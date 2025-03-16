@@ -86,10 +86,10 @@ class BasicScoringImpl(
 
         all_rows = await self.datasetio_api.iterrows(
             dataset_id=dataset_id,
-            rows_in_page=-1,
+            limit=-1,
         )
         res = await self.score(
-            input_rows=all_rows.rows,
+            input_rows=all_rows.data,
             scoring_functions=scoring_functions,
         )
         if save_results_dataset:

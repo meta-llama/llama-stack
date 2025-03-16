@@ -20,11 +20,11 @@ def test_evaluate_rows(llama_stack_client, text_model_id, scoring_fn_id):
     response = llama_stack_client.datasets.list()
     assert any(x.identifier == "test_dataset_for_eval" for x in response)
 
-    rows = llama_stack_client.datasetio.get_rows_paginated(
+    rows = llama_stack_client.datasets.iterrows(
         dataset_id="test_dataset_for_eval",
-        rows_in_page=3,
+        limit=3,
     )
-    assert len(rows.rows) == 3
+    assert len(rows.data) == 3
 
     scoring_functions = [
         scoring_fn_id,
@@ -40,7 +40,7 @@ def test_evaluate_rows(llama_stack_client, text_model_id, scoring_fn_id):
 
     response = llama_stack_client.eval.evaluate_rows(
         benchmark_id=benchmark_id,
-        input_rows=rows.rows,
+        input_rows=rows.data,
         scoring_functions=scoring_functions,
         benchmark_config={
             "eval_candidate": {
