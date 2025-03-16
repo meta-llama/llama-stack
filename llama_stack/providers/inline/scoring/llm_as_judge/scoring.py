@@ -54,9 +54,9 @@ class LlmAsJudgeScoringImpl(
         scoring_fn_defs_list = self.llm_as_judge_fn.get_supported_scoring_fn_defs()
 
         for f in self.llm_as_judge_fn.get_supported_scoring_fn_defs():
-            assert f.identifier.startswith("llm-as-judge"), (
-                "All llm-as-judge scoring fn must have identifier prefixed with 'llm-as-judge'! "
-            )
+            assert f.identifier.startswith(
+                "llm-as-judge"
+            ), "All llm-as-judge scoring fn must have identifier prefixed with 'llm-as-judge'! "
 
         return scoring_fn_defs_list
 
@@ -70,14 +70,16 @@ class LlmAsJudgeScoringImpl(
         save_results_dataset: bool = False,
     ) -> ScoreBatchResponse:
         dataset_def = await self.datasets_api.get_dataset(dataset_id=dataset_id)
-        validate_dataset_schema(dataset_def.dataset_schema, get_valid_schemas(Api.scoring.value))
+        validate_dataset_schema(
+            dataset_def.dataset_schema, get_valid_schemas(Api.scoring.value)
+        )
 
         all_rows = await self.datasetio_api.iterrows(
             dataset_id=dataset_id,
-            rows_in_page=-1,
+            limit=-1,
         )
         res = await self.score(
-            input_rows=all_rows.rows,
+            input_rows=all_rows.data,
             scoring_functions=scoring_functions,
         )
         if save_results_dataset:
@@ -98,8 +100,12 @@ class LlmAsJudgeScoringImpl(
         for scoring_fn_id in scoring_functions.keys():
             scoring_fn = self.llm_as_judge_fn
             scoring_fn_params = scoring_functions.get(scoring_fn_id, None)
-            score_results = await scoring_fn.score(input_rows, scoring_fn_id, scoring_fn_params)
-            agg_results = await scoring_fn.aggregate(score_results, scoring_fn_id, scoring_fn_params)
+            score_results = await scoring_fn.score(
+                input_rows, scoring_fn_id, scoring_fn_params
+            )
+            agg_results = await scoring_fn.aggregate(
+                score_results, scoring_fn_id, scoring_fn_params
+            )
             res[scoring_fn_id] = ScoringResult(
                 score_rows=score_results,
                 aggregated_results=agg_results,

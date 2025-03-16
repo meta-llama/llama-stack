@@ -64,11 +64,15 @@ class BasicScoringImpl(
 
     async def list_scoring_functions(self) -> List[ScoringFn]:
         scoring_fn_defs_list = [
-            fn_def for impl in self.scoring_fn_id_impls.values() for fn_def in impl.get_supported_scoring_fn_defs()
+            fn_def
+            for impl in self.scoring_fn_id_impls.values()
+            for fn_def in impl.get_supported_scoring_fn_defs()
         ]
 
         for f in scoring_fn_defs_list:
-            assert f.identifier.startswith("basic"), "All basic scoring fn must have identifier prefixed with 'basic'! "
+            assert f.identifier.startswith(
+                "basic"
+            ), "All basic scoring fn must have identifier prefixed with 'basic'! "
 
         return scoring_fn_defs_list
 
@@ -82,14 +86,16 @@ class BasicScoringImpl(
         save_results_dataset: bool = False,
     ) -> ScoreBatchResponse:
         dataset_def = await self.datasets_api.get_dataset(dataset_id=dataset_id)
-        validate_dataset_schema(dataset_def.dataset_schema, get_valid_schemas(Api.scoring.value))
+        validate_dataset_schema(
+            dataset_def.dataset_schema, get_valid_schemas(Api.scoring.value)
+        )
 
         all_rows = await self.datasetio_api.iterrows(
             dataset_id=dataset_id,
-            rows_in_page=-1,
+            limit=-1,
         )
         res = await self.score(
-            input_rows=all_rows.rows,
+            input_rows=all_rows.data,
             scoring_functions=scoring_functions,
         )
         if save_results_dataset:
@@ -112,8 +118,12 @@ class BasicScoringImpl(
                 raise ValueError(f"Scoring function {scoring_fn_id} is not supported.")
             scoring_fn = self.scoring_fn_id_impls[scoring_fn_id]
             scoring_fn_params = scoring_functions.get(scoring_fn_id, None)
-            score_results = await scoring_fn.score(input_rows, scoring_fn_id, scoring_fn_params)
-            agg_results = await scoring_fn.aggregate(score_results, scoring_fn_id, scoring_fn_params)
+            score_results = await scoring_fn.score(
+                input_rows, scoring_fn_id, scoring_fn_params
+            )
+            agg_results = await scoring_fn.aggregate(
+                score_results, scoring_fn_id, scoring_fn_params
+            )
             res[scoring_fn_id] = ScoringResult(
                 score_rows=score_results,
                 aggregated_results=agg_results,
