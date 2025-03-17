@@ -179,6 +179,18 @@ datasets:
 - purpose: eval/messages-answer
   source:
     type: uri
+    uri: huggingface://datasets/llamastack/gpqa_0shot_cot?split=test&name=gpqa_diamond
+  metadata: {}
+  dataset_id: gpqa_cot_diamond
+- purpose: eval/messages-answer
+  source:
+    type: uri
+    uri: huggingface://datasets/llamastack/gpqa_0shot?split=test&name=gpqa_main
+  metadata: {}
+  dataset_id: gpqa
+- purpose: eval/messages-answer
+  source:
+    type: uri
     uri: huggingface://datasets/llamastack/math_500?split=test
   metadata: {}
   dataset_id: math_500
@@ -194,6 +206,30 @@ datasets:
     uri: huggingface://datasets/llamastack/docvqa?split=val
   metadata: {}
   dataset_id: docvqa
+- purpose: eval/messages-answer
+  source:
+    type: uri
+    uri: huggingface://datasets/llamastack/mmmu_v3?split=validation
+  metadata: {}
+  dataset_id: MMMU
+- purpose: eval/messages-answer
+  source:
+    type: uri
+    uri: huggingface://datasets/llamastack/MMMU_Pro?name=standard%20(10%20options)&split=test
+  metadata: {}
+  dataset_id: MMMU_Pro_standard
+- purpose: eval/messages-answer
+  source:
+    type: uri
+    uri: huggingface://datasets/llamastack/MMMU_Pro?name=vision&split=test
+  metadata: {}
+  dataset_id: MMMU_Pro_vision
+- purpose: eval/messages-answer
+  source:
+    type: uri
+    uri: huggingface://datasets/llamastack/ai2d?split=test
+  metadata: {}
+  dataset_id: ai2d
 scoring_fns: []
 benchmarks:
 - dataset_id: simpleqa
@@ -226,6 +262,16 @@ benchmarks:
   - basic::docvqa
   metadata: {}
   benchmark_id: meta-reference-docvqa
+- dataset_id: MMMU_Pro_standard
+  scoring_functions:
+  - basic::regex_parser_multiple_choice_answer
+  metadata: {}
+  benchmark_id: meta-reference-MMMU_Pro_standard
+- dataset_id: MMMU_Pro_vision
+  scoring_functions:
+  - basic::regex_parser_multiple_choice_answer
+  metadata: {}
+  benchmark_id: meta-reference-MMMU_Pro_vision
 tool_groups:
 - toolgroup_id: builtin::websearch
   provider_id: tavily-search

@@ -190,6 +190,20 @@ def get_distribution_template() -> DistributionTemplate:
             ),
         ),
         DatasetInput(
+            dataset_id="gpqa_cot_diamond",
+            purpose=DatasetPurpose.eval_messages_answer,
+            source=URIDataSource(
+                uri="huggingface://datasets/llamastack/gpqa_0shot_cot?split=test&name=gpqa_diamond",
+            ),
+        ),
+        DatasetInput(
+            dataset_id="gpqa",
+            purpose=DatasetPurpose.eval_messages_answer,
+            source=URIDataSource(
+                uri="huggingface://datasets/llamastack/gpqa_0shot?split=test&name=gpqa_main",
+            ),
+        ),
+        DatasetInput(
             dataset_id="math_500",
             purpose=DatasetPurpose.eval_messages_answer,
             source=URIDataSource(
@@ -208,6 +222,34 @@ def get_distribution_template() -> DistributionTemplate:
             purpose=DatasetPurpose.eval_messages_answer,
             source=URIDataSource(
                 uri="huggingface://datasets/llamastack/docvqa?split=val",
+            ),
+        ),
+        DatasetInput(
+            dataset_id="MMMU",
+            purpose=DatasetPurpose.eval_messages_answer,
+            source=URIDataSource(
+                uri="huggingface://datasets/llamastack/mmmu_v3?split=validation",
+            ),
+        ),
+        DatasetInput(
+            dataset_id="MMMU_Pro_standard",
+            purpose=DatasetPurpose.eval_messages_answer,
+            source=URIDataSource(
+                uri="huggingface://datasets/llamastack/MMMU_Pro?name=standard%20(10%20options)&split=test",
+            ),
+        ),
+        DatasetInput(
+            dataset_id="MMMU_Pro_vision",
+            purpose=DatasetPurpose.eval_messages_answer,
+            source=URIDataSource(
+                uri="huggingface://datasets/llamastack/MMMU_Pro?name=vision&split=test",
+            ),
+        ),
+        DatasetInput(
+            dataset_id="ai2d",
+            purpose=DatasetPurpose.eval_messages_answer,
+            source=URIDataSource(
+                uri="huggingface://datasets/llamastack/ai2d?split=test",
             ),
         ),
     ]
@@ -242,6 +284,16 @@ def get_distribution_template() -> DistributionTemplate:
             benchmark_id="meta-reference-docvqa",
             dataset_id="docvqa",
             scoring_functions=["basic::docvqa"],
+        ),
+        BenchmarkInput(
+            benchmark_id="meta-reference-MMMU_Pro_standard",
+            dataset_id="MMMU_Pro_standard",
+            scoring_functions=["basic::regex_parser_multiple_choice_answer"],
+        ),
+        BenchmarkInput(
+            benchmark_id="meta-reference-MMMU_Pro_vision",
+            dataset_id="MMMU_Pro_vision",
+            scoring_functions=["basic::regex_parser_multiple_choice_answer"],
         ),
     ]
     return DistributionTemplate(
