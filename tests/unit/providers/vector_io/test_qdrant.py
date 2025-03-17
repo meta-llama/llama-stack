@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import asyncio
 import os
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -39,7 +40,9 @@ def qdrant_config(tmp_path) -> InlineQdrantVectorIOConfig:
     return InlineQdrantVectorIOConfig(path=os.path.join(tmp_path, "qdrant.db"))
 
 
-import pytest
+@pytest.fixture(scope="session")
+def loop():
+    return asyncio.new_event_loop()
 
 
 @pytest.fixture
@@ -65,7 +68,7 @@ def mock_api_service(sample_embeddings):
 
 
 @pytest_asyncio.fixture
-async def qdrant_adapter(qdrant_config, mock_vector_db_store, mock_api_service) -> QdrantVectorIOAdapter:
+async def qdrant_adapter(qdrant_config, mock_vector_db_store, mock_api_service, loop) -> QdrantVectorIOAdapter:
     adapter = QdrantVectorIOAdapter(config=qdrant_config, inference_api=mock_api_service)
     adapter.vector_db_store = mock_vector_db_store
     await adapter.initialize()
