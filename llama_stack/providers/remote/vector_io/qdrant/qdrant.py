@@ -112,7 +112,7 @@ class QdrantVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
         self.client = AsyncQdrantClient(**self.config.model_dump(exclude_none=True))
 
     async def shutdown(self) -> None:
-        self.client.close()
+        await self.client.close()
 
     async def register_vector_db(
         self,
