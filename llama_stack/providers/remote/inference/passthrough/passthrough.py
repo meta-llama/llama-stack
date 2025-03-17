@@ -162,13 +162,13 @@ class PassthroughInferenceAdapter(Inference):
         response = await client.inference.chat_completion(**json_params)
 
         return ChatCompletionResponse(
-                completion_message=CompletionMessage(
-                    content=response.completion_message.content.text,
-                    stop_reason=response.completion_message.stop_reason,
-                    tool_calls=response.completion_message.tool_calls,
-                ),
-                logprobs=response.logprobs,
-            )
+            completion_message=CompletionMessage(
+                content=response.completion_message.content.text,
+                stop_reason=response.completion_message.stop_reason,
+                tool_calls=response.completion_message.tool_calls,
+            ),
+            logprobs=response.logprobs,
+        )
 
     async def _stream_chat_completion(self, json_params: Dict[str, Any]) -> AsyncGenerator:
         client = self._get_client()
