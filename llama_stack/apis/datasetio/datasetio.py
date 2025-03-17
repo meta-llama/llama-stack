@@ -18,11 +18,11 @@ class IterrowsResponse(BaseModel):
     A paginated list of rows from a dataset.
 
     :param data: The rows in the current page.
-    :param next_index: Index into dataset for the first row in the next page. None if there are no more rows.
+    :param next_start_index: Index into dataset for the first row in the next page. None if there are no more rows.
     """
 
     data: List[Dict[str, Any]]
-    next_index: Optional[int] = None
+    next_start_index: Optional[int] = None
 
 
 class DatasetStore(Protocol):
@@ -46,9 +46,11 @@ class DatasetIO(Protocol):
 
         :param dataset_id: The ID of the dataset to get the rows from.
         :param start_index: Index into dataset for the first row to get. Get all rows if None.
-        :param limit: The number of rows to get per page.
+        :param limit: The number of rows to get.
         """
         ...
 
     @webmethod(route="/datasetio/append-rows/{dataset_id:path}", method="POST")
-    async def append_rows(self, dataset_id: str, rows: List[Dict[str, Any]]) -> None: ...
+    async def append_rows(
+        self, dataset_id: str, rows: List[Dict[str, Any]]
+    ) -> None: ...
