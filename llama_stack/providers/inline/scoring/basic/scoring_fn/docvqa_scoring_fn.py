@@ -232,8 +232,6 @@ class DocVQAScoringFn(RegisteredBaseScoringFn):
         scoring_fn_identifier: Optional[str] = "docvqa",
         scoring_params: Optional[ScoringFnParams] = None,
     ) -> ScoringResultRow:
-        print("SCORE_ROW ======")
-        print(input_row)
         expected_answers = json.loads(input_row["expected_answer"])
         generated_answer = input_row["generated_answer"]
         score = 1.0 if normalize_answer(generated_answer) in [normalize_answer(s) for s in expected_answers] else 0.0
