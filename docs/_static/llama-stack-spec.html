@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>OpenAPI specification</title>
     <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700" rel="stylesheet">
-    <script type="module" src="https://unpkg.com/@stoplight/elements/web-components.min.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/@stoplight/elements/styles.min.css">
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@stoplight/elements/web-components.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@stoplight/elements/styles.min.css">
     <style>
         body {
             margin: 0;
@@ -2151,6 +2151,48 @@
                 }
             }
         },
+        "/v1/providers/{provider_id}": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProviderInfo"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Providers"
+                ],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "provider_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
         "/v1/tool-runtime/invoke": {
             "post": {
                 "responses": {
@@ -2642,7 +2684,7 @@
                 }
             }
         },
-        "/v1/inspect/providers": {
+        "/v1/providers": {
             "get": {
                 "responses": {
                     "200": {
@@ -4347,24 +4389,6 @@
                         "type": "string",
                         "description": "Unique identifier for the tool call this response is for"
                     },
-                    "tool_name": {
-                        "oneOf": [
-                            {
-                                "type": "string",
-                                "enum": [
-                                    "brave_search",
-                                    "wolfram_alpha",
-                                    "photogen",
-                                    "code_interpreter"
-                                ],
-                                "title": "BuiltinTool"
-                            },
-                            {
-                                "type": "string"
-                            }
-                        ],
-                        "description": "Name of the tool that was called"
-                    },
                     "content": {
                         "$ref": "#/components/schemas/InterleavedContent",
                         "description": "The response content from the tool"
@@ -4374,7 +4398,6 @@
                 "required": [
                     "role",
                     "call_id",
-                    "tool_name",
                     "content"
                 ],
                 "title": "ToolResponseMessage",
@@ -4549,7 +4572,7 @@
                     "metrics": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/MetricEvent"
+                            "$ref": "#/components/schemas/MetricInResponse"
                         }
                     },
                     "completion_message": {
@@ -4571,46 +4594,9 @@
                 "title": "ChatCompletionResponse",
                 "description": "Response from a chat completion request."
             },
-            "MetricEvent": {
+            "MetricInResponse": {
                 "type": "object",
                 "properties": {
-                    "trace_id": {
-                        "type": "string"
-                    },
-                    "span_id": {
-                        "type": "string"
-                    },
-                    "timestamp": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "attributes": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "integer"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "null"
-                                }
-                            ]
-                        }
-                    },
-                    "type": {
-                        "type": "string",
-                        "const": "metric",
-                        "default": "metric"
-                    },
                     "metric": {
                         "type": "string"
                     },
@@ -4630,15 +4616,10 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "trace_id",
-                    "span_id",
-                    "timestamp",
-                    "type",
                     "metric",
-                    "value",
-                    "unit"
+                    "value"
                 ],
-                "title": "MetricEvent"
+                "title": "MetricInResponse"
             },
             "TokenLogProbs": {
                 "type": "object",
@@ -4715,6 +4696,12 @@
             "CompletionResponse": {
                 "type": "object",
                 "properties": {
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricInResponse"
+                        }
+                    },
                     "content": {
                         "type": "string",
                         "description": "The generated completion text"
@@ -4924,7 +4911,7 @@
                     "metrics": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/MetricEvent"
+                            "$ref": "#/components/schemas/MetricInResponse"
                         }
                     },
                     "event": {
@@ -5082,6 +5069,12 @@
             "CompletionResponseStreamChunk": {
                 "type": "object",
                 "properties": {
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricInResponse"
+                        }
+                    },
                     "delta": {
                         "type": "string",
                         "description": "New content generated since last chunk. This can be one or more tokens."
@@ -7961,6 +7954,53 @@
                 ],
                 "title": "InsertChunksRequest"
             },
+            "ProviderInfo": {
+                "type": "object",
+                "properties": {
+                    "api": {
+                        "type": "string"
+                    },
+                    "provider_id": {
+                        "type": "string"
+                    },
+                    "provider_type": {
+                        "type": "string"
+                    },
+                    "config": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "api",
+                    "provider_id",
+                    "provider_type",
+                    "config"
+                ],
+                "title": "ProviderInfo"
+            },
             "InvokeToolRequest": {
                 "type": "object",
                 "properties": {
@@ -8173,27 +8213,6 @@
                 ],
                 "title": "ListModelsResponse"
             },
-            "ProviderInfo": {
-                "type": "object",
-                "properties": {
-                    "api": {
-                        "type": "string"
-                    },
-                    "provider_id": {
-                        "type": "string"
-                    },
-                    "provider_type": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "api",
-                    "provider_id",
-                    "provider_type"
-                ],
-                "title": "ProviderInfo"
-            },
             "ListProvidersResponse": {
                 "type": "object",
                 "properties": {
@@ -8362,6 +8381,75 @@
                     "critical"
                 ],
                 "title": "LogSeverity"
+            },
+            "MetricEvent": {
+                "type": "object",
+                "properties": {
+                    "trace_id": {
+                        "type": "string"
+                    },
+                    "span_id": {
+                        "type": "string"
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "attributes": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "integer"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ]
+                        }
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "metric",
+                        "default": "metric"
+                    },
+                    "metric": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "oneOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "number"
+                            }
+                        ]
+                    },
+                    "unit": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "trace_id",
+                    "span_id",
+                    "timestamp",
+                    "type",
+                    "metric",
+                    "value",
+                    "unit"
+                ],
+                "title": "MetricEvent"
             },
             "SpanEndPayload": {
                 "type": "object",
@@ -10126,6 +10214,10 @@
             "name": "PostTraining (Coming Soon)"
         },
         {
+            "name": "Providers",
+            "x-displayName": "Providers API for inspecting, listing, and modifying providers and their configurations."
+        },
+        {
             "name": "Safety"
         },
         {
@@ -10171,6 +10263,7 @@
                 "Inspect",
                 "Models",
                 "PostTraining (Coming Soon)",
+                "Providers",
                 "Safety",
                 "Scoring",
                 "ScoringFunctions",

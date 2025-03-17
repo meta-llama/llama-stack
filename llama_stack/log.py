@@ -7,12 +7,14 @@
 import logging
 import os
 from logging.config import dictConfig
-from typing import Dict
+from typing import Dict, Optional
 
 from rich.console import Console
 from rich.errors import MarkupError
 from rich.logging import RichHandler
 from termcolor import cprint
+
+from .distribution.datatypes import LoggingConfig
 
 # Default log level
 DEFAULT_LOG_LEVEL = logging.INFO
@@ -34,6 +36,56 @@ CATEGORIES = [
 _category_levels: Dict[str, int] = {category: DEFAULT_LOG_LEVEL for category in CATEGORIES}
 
 
+def config_to_category_levels(category: str, level: str):
+    """
+    Helper function to be called either by environment parsing or yaml parsing to go from a list of categories and levels to a dictionary ready to be
+    used by the logger dictConfig.
+
+    Parameters:
+        category (str): logging category to apply the level to
+        level (str): logging level to be used in the category
+
+    Returns:
+        Dict[str, int]: A dictionary mapping categories to their log levels.
+    """
+
+    category_levels: Dict[str, int] = {}
+    level_value = logging._nameToLevel.get(str(level).upper())
+    if level_value is None:
+        logging.warning(f"Unknown log level '{level}' for category '{category}'. Falling back to default 'INFO'.")
+        return category_levels
+
+    if category == "all":
+        # Apply the log level to all categories and the root logger
+        for cat in CATEGORIES:
+            category_levels[cat] = level_value
+        # Set the root logger's level to the specified level
+        category_levels["root"] = level_value
+    elif category in CATEGORIES:
+        category_levels[category] = level_value
+        logging.info(f"Setting '{category}' category to level '{level}'.")
+    else:
+        logging.warning(f"Unknown logging category: {category}. No changes made.")
+    return category_levels
+
+
+def parse_yaml_config(yaml_config: LoggingConfig) -> Dict[str, int]:
+    """
+    Helper function to parse a yaml logging configuration found in the run.yaml
+
+    Parameters:
+        yaml_config (Logging): the logger config object found in the run.yaml
+
+    Returns:
+        Dict[str, int]: A dictionary mapping categories to their log levels.
+    """
+    category_levels = {}
+    for category, level in yaml_config.category_levels.items():
+        category_levels.update(config_to_category_levels(category=category, level=level))
+
+    return category_levels
+
+
 def parse_environment_config(env_config: str) -> Dict[str, int]:
     """
     Parse the LLAMA_STACK_LOGGING environment variable and return a dictionary of category log levels.
@@ -53,25 +105,7 @@ def parse_environment_config(env_config: str) -> Dict[str, int]:
             category, level = pair.split("=", 1)
             category = category.strip().lower()
             level = level.strip().upper()  # Convert to uppercase for logging._nameToLevel
-
-            level_value = logging._nameToLevel.get(level)
-            if level_value is None:
-                logging.warning(
-                    f"Unknown log level '{level}' for category '{category}'. Falling back to default 'INFO'."
-                )
-                continue
-
-            if category == "all":
-                # Apply the log level to all categories and the root logger
-                for cat in CATEGORIES:
-                    category_levels[cat] = level_value
-                # Set the root logger's level to the specified level
-                category_levels["root"] = level_value
-            elif category in CATEGORIES:
-                category_levels[category] = level_value
-                logging.info(f"Setting '{category}' category to level '{level}'.")
-            else:
-                logging.warning(f"Unknown logging category: {category}. No changes made.")
+            category_levels.update(config_to_category_levels(category=category, level=level))
 
         except ValueError:
             logging.warning(f"Invalid logging configuration: '{pair}'. Expected format: 'category=level'.")
@@ -176,7 +210,9 @@ def setup_logging(category_levels: Dict[str, int], log_file: str | None) -> None
             logger.setLevel(root_level)
 
 
-def get_logger(name: str, category: str = "uncategorized") -> logging.LoggerAdapter:
+def get_logger(
+    name: str, category: str = "uncategorized", config: Optional[LoggingConfig] | None = None
+) -> logging.LoggerAdapter:
     """
     Returns a logger with the specified name and category.
     If no category is provided, defaults to 'uncategorized'.
@@ -184,10 +220,14 @@ def get_logger(name: str, category: str = "uncategorized") -> logging.LoggerAdap
     Parameters:
         name (str): The name of the logger (e.g., module or filename).
         category (str): The category of the logger (default 'uncategorized').
+        config (Logging): optional yaml config to override the existing logger configuration
 
     Returns:
         logging.LoggerAdapter: Configured logger with category support.
     """
+    if config:
+        _category_levels.update(parse_yaml_config(config))
+
     logger = logging.getLogger(name)
     logger.setLevel(_category_levels.get(category, DEFAULT_LOG_LEVEL))
     return logging.LoggerAdapter(logger, {"category": category})

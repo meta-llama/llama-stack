@@ -12,13 +12,6 @@ from llama_stack.schema_utils import json_schema_type, webmethod
 
 
 @json_schema_type
-class ProviderInfo(BaseModel):
-    api: str
-    provider_id: str
-    provider_type: str
-
-
-@json_schema_type
 class RouteInfo(BaseModel):
     route: str
     method: str
@@ -32,12 +25,19 @@ class HealthInfo(BaseModel):
 
 
 @json_schema_type
-class VersionInfo(BaseModel):
-    version: str
+class ProviderInfo(BaseModel):
+    api: str
+    provider_id: str
+    provider_type: str
 
 
 class ListProvidersResponse(BaseModel):
     data: List[ProviderInfo]
+
+
+@json_schema_type
+class VersionInfo(BaseModel):
+    version: str
 
 
 class ListRoutesResponse(BaseModel):

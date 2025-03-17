@@ -25,7 +25,7 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, ValidationError
 from typing_extensions import Annotated
 
-from llama_stack.distribution.datatypes import StackRunConfig
+from llama_stack.distribution.datatypes import LoggingConfig, StackRunConfig
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
 from llama_stack.distribution.request_headers import (
     PROVIDER_DATA_VAR,
@@ -306,33 +306,41 @@ def main():
 
     args = parser.parse_args()
 
-    if args.env:
-        for env_pair in args.env:
-            try:
-                key, value = validate_env_pair(env_pair)
-                logger.info(f"Setting CLI environment variable {key} => {value}")
-                os.environ[key] = value
-            except ValueError as e:
-                logger.error(f"Error: {str(e)}")
-                sys.exit(1)
-
+    log_line = ""
     if args.yaml_config:
         # if the user provided a config file, use it, even if template was specified
         config_file = Path(args.yaml_config)
         if not config_file.exists():
             raise ValueError(f"Config file {config_file} does not exist")
-        logger.info(f"Using config file: {config_file}")
+        log_line = f"Using config file: {config_file}"
     elif args.template:
         config_file = Path(REPO_ROOT) / "llama_stack" / "templates" / args.template / "run.yaml"
         if not config_file.exists():
             raise ValueError(f"Template {args.template} does not exist")
-        logger.info(f"Using template {args.template} config file: {config_file}")
+        log_line = f"Using template {args.template} config file: {config_file}"
     else:
         raise ValueError("Either --yaml-config or --template must be provided")
 
+    logger_config = None
     with open(config_file, "r") as fp:
-        config = replace_env_vars(yaml.safe_load(fp))
+        config_contents = yaml.safe_load(fp)
+        if isinstance(config_contents, dict) and (cfg := config_contents.get("logging_config")):
+            logger_config = LoggingConfig(**cfg)
+        logger = get_logger(name=__name__, category="server", config=logger_config)
+        if args.env:
+            for env_pair in args.env:
+                try:
+                    key, value = validate_env_pair(env_pair)
+                    logger.info(f"Setting CLI environment variable {key} => {value}")
+                    os.environ[key] = value
+                except ValueError as e:
+                    logger.error(f"Error: {str(e)}")
+                    sys.exit(1)
+        config = replace_env_vars(config_contents)
         config = StackRunConfig(**config)
+
+    # now that the logger is initialized, print the line about which type of config we are using.
+    logger.info(log_line)
 
     logger.info("Run configuration:")
     safe_config = redact_sensitive_fields(config.model_dump())
@@ -368,6 +376,7 @@ def main():
         apis_to_serve.add(inf.routing_table_api.value)
 
     apis_to_serve.add("inspect")
+    apis_to_serve.add("providers")
     for api_str in apis_to_serve:
         api = Api(api_str)
 

@@ -88,11 +88,19 @@ docker run -it \
 
 :::{dropdown} Installing the Llama Stack client CLI and SDK
 
-You can interact with the Llama Stack server using various client SDKs. We will use the Python SDK which you can install using the following command. Note that you must be using Python 3.10 or newer:
+You can interact with the Llama Stack server using various client SDKs.  Note that you must be using Python 3.10 or newer. We will use the Python SDK which you can install via `conda` or `virtualenv`.
+
+For `conda`:
 ```bash
 yes | conda create -n stack-client python=3.10
 conda activate stack-client
+pip install llama-stack-client
+```
 
+For `virtualenv`:
+```bash
+python -m venv stack-client
+source stack-client/bin/activate
 pip install llama-stack-client
 ```
 
@@ -171,6 +179,13 @@ response = client.inference.chat_completion(
     ],
 )
 print(response.completion_message.content)
+```
+
+To run the above example, put the code in a file called `inference.py`, ensure your `conda` or `virtualenv` environment is active, and run the following:
+```bash
+pip install llama_stack
+llama stack build --template ollama --image-type <conda|venv>
+python inference.py
 ```
 
 ### 4. Your first RAG agent
@@ -271,6 +286,13 @@ for prompt in user_prompts:
     )
     for log in EventLogger().log(response):
         log.print()
+```
+
+To run the above example, put the code in a file called `rag.py`, ensure your `conda` or `virtualenv` environment is active, and run the following:
+```bash
+pip install llama_stack
+llama stack build --template ollama --image-type <conda|venv>
+python rag.py
 ```
 
 ## Next Steps

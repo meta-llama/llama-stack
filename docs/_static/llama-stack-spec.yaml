@@ -1444,6 +1444,34 @@ paths:
             schema:
               $ref: '#/components/schemas/InsertChunksRequest'
         required: true
+  /v1/providers/{provider_id}:
+    get:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderInfo'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Providers
+      description: ''
+      parameters:
+        - name: provider_id
+          in: path
+          required: true
+          schema:
+            type: string
   /v1/tool-runtime/invoke:
     post:
       responses:
@@ -1782,7 +1810,7 @@ paths:
             schema:
               $ref: '#/components/schemas/RegisterModelRequest'
         required: true
-  /v1/inspect/providers:
+  /v1/providers:
     get:
       responses:
         '200':
@@ -2943,17 +2971,6 @@ components:
           type: string
           description: >-
             Unique identifier for the tool call this response is for
-        tool_name:
-          oneOf:
-            - type: string
-              enum:
-                - brave_search
-                - wolfram_alpha
-                - photogen
-                - code_interpreter
-              title: BuiltinTool
-            - type: string
-          description: Name of the tool that was called
         content:
           $ref: '#/components/schemas/InterleavedContent'
           description: The response content from the tool
@@ -2961,7 +2978,6 @@ components:
       required:
         - role
         - call_id
-        - tool_name
         - content
       title: ToolResponseMessage
       description: >-
@@ -3101,7 +3117,7 @@ components:
         metrics:
           type: array
           items:
-            $ref: '#/components/schemas/MetricEvent'
+            $ref: '#/components/schemas/MetricInResponse'
         completion_message:
           $ref: '#/components/schemas/CompletionMessage'
           description: The complete response message
@@ -3116,29 +3132,9 @@ components:
         - completion_message
       title: ChatCompletionResponse
       description: Response from a chat completion request.
-    MetricEvent:
+    MetricInResponse:
       type: object
       properties:
-        trace_id:
-          type: string
-        span_id:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-        attributes:
-          type: object
-          additionalProperties:
-            oneOf:
-              - type: string
-              - type: integer
-              - type: number
-              - type: boolean
-              - type: 'null'
-        type:
-          type: string
-          const: metric
-          default: metric
         metric:
           type: string
         value:
@@ -3149,14 +3145,9 @@ components:
           type: string
       additionalProperties: false
       required:
-        - trace_id
-        - span_id
-        - timestamp
-        - type
         - metric
         - value
-        - unit
-      title: MetricEvent
+      title: MetricInResponse
     TokenLogProbs:
       type: object
       properties:
@@ -3213,6 +3204,10 @@ components:
     CompletionResponse:
       type: object
       properties:
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricInResponse'
         content:
           type: string
           description: The generated completion text
@@ -3412,7 +3407,7 @@ components:
         metrics:
           type: array
           items:
-            $ref: '#/components/schemas/MetricEvent'
+            $ref: '#/components/schemas/MetricInResponse'
         event:
           $ref: '#/components/schemas/ChatCompletionResponseEvent'
           description: The event containing the new content
@@ -3531,6 +3526,10 @@ components:
     CompletionResponseStreamChunk:
       type: object
       properties:
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricInResponse'
         delta:
           type: string
           description: >-
@@ -5438,6 +5437,32 @@ components:
         - vector_db_id
         - chunks
       title: InsertChunksRequest
+    ProviderInfo:
+      type: object
+      properties:
+        api:
+          type: string
+        provider_id:
+          type: string
+        provider_type:
+          type: string
+        config:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+      additionalProperties: false
+      required:
+        - api
+        - provider_id
+        - provider_type
+        - config
+      title: ProviderInfo
     InvokeToolRequest:
       type: object
       properties:
@@ -5573,21 +5598,6 @@ components:
       required:
         - data
       title: ListModelsResponse
-    ProviderInfo:
-      type: object
-      properties:
-        api:
-          type: string
-        provider_id:
-          type: string
-        provider_type:
-          type: string
-      additionalProperties: false
-      required:
-        - api
-        - provider_id
-        - provider_type
-      title: ProviderInfo
     ListProvidersResponse:
       type: object
       properties:
@@ -5703,6 +5713,47 @@ components:
         - error
         - critical
       title: LogSeverity
+    MetricEvent:
+      type: object
+      properties:
+        trace_id:
+          type: string
+        span_id:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        attributes:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: string
+              - type: integer
+              - type: number
+              - type: boolean
+              - type: 'null'
+        type:
+          type: string
+          const: metric
+          default: metric
+        metric:
+          type: string
+        value:
+          oneOf:
+            - type: integer
+            - type: number
+        unit:
+          type: string
+      additionalProperties: false
+      required:
+        - trace_id
+        - span_id
+        - timestamp
+        - type
+        - metric
+        - value
+        - unit
+      title: MetricEvent
     SpanEndPayload:
       type: object
       properties:
@@ -6820,6 +6871,9 @@ tags:
   - name: Inspect
   - name: Models
   - name: PostTraining (Coming Soon)
+  - name: Providers
+    x-displayName: >-
+      Providers API for inspecting, listing, and modifying providers and their configurations.
   - name: Safety
   - name: Scoring
   - name: ScoringFunctions
@@ -6844,6 +6898,7 @@ x-tagGroups:
       - Inspect
       - Models
       - PostTraining (Coming Soon)
+      - Providers
       - Safety
       - Scoring
       - ScoringFunctions

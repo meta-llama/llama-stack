@@ -1,6 +1,8 @@
 name: Unit Tests
 
 on:
+  push:
+    branches: [ main ]
   pull_request:
     branches: [ main ]
   workflow_dispatch:
@@ -31,7 +33,7 @@ jobs:
 
       - name: Run unit tests
         run: |
-          uv run --python ${{ matrix.python }} --with-editable . --with-editable ".[dev]" --with-editable ".[unit]" pytest --cov=llama_stack -s -v tests/unit/ --junitxml=pytest-report-${{ matrix.python }}.xml
+          PYTHON_VERSION=${{ matrix.python }} ./scripts/unit-tests.sh --cov=llama_stack --junitxml=pytest-report-${{ matrix.python }}.xml --cov-report=html:htmlcov-${{ matrix.python }}
 
       - name: Upload test results
         if: always()
@@ -41,4 +43,5 @@ jobs:
           path: |
             .pytest_cache/
             pytest-report-${{ matrix.python }}.xml
+            htmlcov-${{ matrix.python }}/
           retention-days: 7
