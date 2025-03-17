@@ -4,13 +4,13 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 from typing import Any, Dict, List, Optional
+from urllib.parse import parse_qs, urlparse
 
 import datasets as hf_datasets
 
-from llama_stack.apis.datasetio import DatasetIO, PaginatedRowsResult
+from llama_stack.apis.datasetio import DatasetIO, IterrowsResponse
 from llama_stack.apis.datasets import Dataset
 from llama_stack.providers.datatypes import DatasetsProtocolPrivate
-from llama_stack.providers.utils.datasetio.url_utils import get_dataframe_from_url
 from llama_stack.providers.utils.kvstore import kvstore_impl
 
 from .config import HuggingfaceDatasetIOConfig
@@ -18,22 +18,14 @@ from .config import HuggingfaceDatasetIOConfig
 DATASETS_PREFIX = "datasets:"
 
 
-def load_hf_dataset(dataset_def: Dataset):
-    if dataset_def.metadata.get("path", None):
-        dataset = hf_datasets.load_dataset(**dataset_def.metadata)
-    else:
-        df = get_dataframe_from_url(dataset_def.url)
+def parse_hf_params(dataset_def: Dataset):
+    uri = dataset_def.source.uri
+    parsed_uri = urlparse(uri)
+    params = parse_qs(parsed_uri.query)
+    params = {k: v[0] for k, v in params.items()}
+    path = parsed_uri.path.lstrip("/")
 
-        if df is None:
-            raise ValueError(f"Failed to load dataset from {dataset_def.url}")
-
-        dataset = hf_datasets.Dataset.from_pandas(df)
-
-    # drop columns not specified by schema
-    if dataset_def.dataset_schema:
-        dataset = dataset.select_columns(list(dataset_def.dataset_schema.keys()))
-
-    return dataset
+    return path, params
 
 
 class HuggingfaceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
@@ -64,7 +56,7 @@ class HuggingfaceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
         key = f"{DATASETS_PREFIX}{dataset_def.identifier}"
         await self.kvstore.set(
             key=key,
-            value=dataset_def.json(),
+            value=dataset_def.model_dump_json(),
         )
         self.dataset_infos[dataset_def.identifier] = dataset_def
 
@@ -73,41 +65,34 @@ class HuggingfaceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
         await self.kvstore.delete(key=key)
         del self.dataset_infos[dataset_id]
 
-    async def get_rows_paginated(
+    async def iterrows(
         self,
         dataset_id: str,
-        rows_in_page: int,
-        page_token: Optional[str] = None,
-        filter_condition: Optional[str] = None,
-    ) -> PaginatedRowsResult:
+        start_index: Optional[int] = None,
+        limit: Optional[int] = None,
+    ) -> IterrowsResponse:
         dataset_def = self.dataset_infos[dataset_id]
-        loaded_dataset = load_hf_dataset(dataset_def)
+        path, params = parse_hf_params(dataset_def)
+        loaded_dataset = hf_datasets.load_dataset(path, **params)
 
-        if page_token and not page_token.isnumeric():
-            raise ValueError("Invalid page_token")
+        start_index = start_index or 0
 
-        if page_token is None or len(page_token) == 0:
-            next_page_token = 0
-        else:
-            next_page_token = int(page_token)
-
-        start = next_page_token
-        if rows_in_page == -1:
+        if limit is None or limit == -1:
             end = len(loaded_dataset)
         else:
-            end = min(start + rows_in_page, len(loaded_dataset))
+            end = min(start_index + limit, len(loaded_dataset))
 
-        rows = [loaded_dataset[i] for i in range(start, end)]
+        rows = [loaded_dataset[i] for i in range(start_index, end)]
 
-        return PaginatedRowsResult(
-            rows=rows,
-            total_count=len(rows),
-            next_page_token=str(end),
+        return IterrowsResponse(
+            data=rows,
+            next_start_index=end if end < len(loaded_dataset) else None,
         )
 
     async def append_rows(self, dataset_id: str, rows: List[Dict[str, Any]]) -> None:
         dataset_def = self.dataset_infos[dataset_id]
-        loaded_dataset = load_hf_dataset(dataset_def)
+        path, params = parse_hf_params(dataset_def)
+        loaded_dataset = hf_datasets.load_dataset(path, **params)
 
         # Convert rows to HF Dataset format
         new_dataset = hf_datasets.Dataset.from_list(rows)

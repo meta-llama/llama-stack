@@ -6,7 +6,7 @@
 
 from typing import Dict, List, Tuple
 
-from llama_stack.apis.common.content_types import URL
+from llama_stack.apis.datasets import DatasetPurpose, URIDataSource
 from llama_stack.apis.models.models import ModelType
 from llama_stack.distribution.datatypes import (
     BenchmarkInput,
@@ -171,76 +171,42 @@ def get_distribution_template() -> DistributionTemplate:
         DatasetInput(
             dataset_id="simpleqa",
             provider_id="huggingface",
-            url=URL(uri="https://huggingface.co/datasets/llamastack/simpleqa"),
-            metadata={
-                "path": "llamastack/simpleqa",
-                "split": "train",
-            },
-            dataset_schema={
-                "input_query": {"type": "string"},
-                "expected_answer": {"type": "string"},
-                "chat_completion_input": {"type": "string"},
-            },
+            purpose=DatasetPurpose.eval_messages_answer,
+            source=URIDataSource(
+                uri="huggingface://datasets/llamastack/simpleqa?split=train",
+            ),
         ),
         DatasetInput(
             dataset_id="mmlu_cot",
             provider_id="huggingface",
-            url=URL(uri="https://huggingface.co/datasets/llamastack/mmlu_cot"),
-            metadata={
-                "path": "llamastack/mmlu_cot",
-                "name": "all",
-                "split": "test",
-            },
-            dataset_schema={
-                "input_query": {"type": "string"},
-                "expected_answer": {"type": "string"},
-                "chat_completion_input": {"type": "string"},
-            },
+            purpose=DatasetPurpose.eval_messages_answer,
+            source=URIDataSource(
+                uri="huggingface://datasets/llamastack/mmlu_cot?split=test&name=all",
+            ),
         ),
         DatasetInput(
             dataset_id="gpqa_cot",
             provider_id="huggingface",
-            url=URL(uri="https://huggingface.co/datasets/llamastack/gpqa_0shot_cot"),
-            metadata={
-                "path": "llamastack/gpqa_0shot_cot",
-                "name": "gpqa_main",
-                "split": "train",
-            },
-            dataset_schema={
-                "input_query": {"type": "string"},
-                "expected_answer": {"type": "string"},
-                "chat_completion_input": {"type": "string"},
-            },
+            purpose=DatasetPurpose.eval_messages_answer,
+            source=URIDataSource(
+                uri="huggingface://datasets/llamastack/gpqa_0shot_cot?split=test&name=gpqa_main",
+            ),
         ),
         DatasetInput(
             dataset_id="math_500",
             provider_id="huggingface",
-            url=URL(uri="https://huggingface.co/datasets/llamastack/math_500"),
-            metadata={
-                "path": "llamastack/math_500",
-                "split": "test",
-            },
-            dataset_schema={
-                "input_query": {"type": "string"},
-                "expected_answer": {"type": "string"},
-                "chat_completion_input": {"type": "string"},
-            },
+            purpose=DatasetPurpose.eval_messages_answer,
+            source=URIDataSource(
+                uri="huggingface://datasets/llamastack/math_500?split=test",
+            ),
         ),
         DatasetInput(
             dataset_id="bfcl",
             provider_id="huggingface",
-            url=URL(uri="https://huggingface.co/datasets/llamastack/bfcl_v3"),
-            metadata={
-                "path": "llamastack/bfcl_v3",
-                "split": "train",
-            },
-            dataset_schema={
-                "function": {"type": "string"},
-                "language": {"type": "string"},
-                "ground_truth": {"type": "string"},
-                "id": {"type": "string"},
-                "chat_completion_input": {"type": "string"},
-            },
+            purpose=DatasetPurpose.eval_messages_answer,
+            source=URIDataSource(
+                uri="huggingface://datasets/llamastack/bfcl_v3?split=train",
+            ),
         ),
     ]
 

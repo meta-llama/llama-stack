@@ -11,6 +11,7 @@ import jinja2
 import yaml
 from pydantic import BaseModel, Field
 
+from llama_stack.apis.datasets import DatasetPurpose
 from llama_stack.apis.models.models import ModelType
 from llama_stack.distribution.datatypes import (
     Api,
@@ -214,7 +215,9 @@ class DistributionTemplate(BaseModel):
 
         # Register YAML representer for ModelType
         yaml.add_representer(ModelType, enum_representer)
+        yaml.add_representer(DatasetPurpose, enum_representer)
         yaml.SafeDumper.add_representer(ModelType, enum_representer)
+        yaml.SafeDumper.add_representer(DatasetPurpose, enum_representer)
 
         for output_dir in [yaml_output_dir, doc_output_dir]:
             output_dir.mkdir(parents=True, exist_ok=True)
