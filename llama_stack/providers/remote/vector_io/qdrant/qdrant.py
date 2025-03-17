@@ -103,10 +103,6 @@ class QdrantVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
     def __init__(
         self, config: Union[RemoteQdrantVectorIOConfig, InlineQdrantVectorIOConfig], inference_api: Api.inference
     ) -> None:
-        # TODO: this is required otherwise the precommit hook fails with
-        # _init__.py:17: error: Cannot instantiate abstract class "QdrantVectorIOAdapter" with abstract attribute "vector_db_store"  [abstract]
-        # Will investigate further and remove it once fixed
-        self.vector_db_store = None
         self.config = config
         self.client: AsyncQdrantClient = None
         self.cache = {}

@@ -248,6 +248,7 @@ exclude = [
     "^llama_stack/providers/inline/vector_io/chroma/",
     "^llama_stack/providers/inline/vector_io/faiss/",
     "^llama_stack/providers/inline/vector_io/milvus/",
+    "^llama_stack/providers/inline/vector_io/qdrant/",
     "^llama_stack/providers/inline/vector_io/sqlite_vec/",
     "^llama_stack/providers/remote/agents/sample/",
     "^llama_stack/providers/remote/datasetio/huggingface/",
