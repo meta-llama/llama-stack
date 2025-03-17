@@ -3,7 +3,7 @@ orphan: true
 ---
 # Qdrant
 
-[Qdrant](https://qdrant.tech/documentation/) is a inline and remote vector database provider for Llama Stack. It
+[Qdrant](https://qdrant.tech/documentation/) is an inline and remote vector database provider for Llama Stack. It
 allows you to store and query vectors directly in memory.
 That means you'll get fast and efficient vector retrieval.
 
