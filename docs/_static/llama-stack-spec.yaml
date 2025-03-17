@@ -765,7 +765,7 @@ paths:
           required: true
           schema:
             type: string
-  /v1/eval/benchmarks/{benchmark_id}:
+  /v1/benchmarks/{benchmark_id}:
     get:
       responses:
         '200':
@@ -1580,7 +1580,7 @@ paths:
           required: true
           schema:
             type: string
-  /v1/eval/benchmarks:
+  /v1/benchmarks:
     get:
       responses:
         '200':

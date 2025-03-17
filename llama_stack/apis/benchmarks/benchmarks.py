@@ -51,7 +51,7 @@ class ListBenchmarksResponse(BaseModel):
 
 @runtime_checkable
 class Benchmarks(Protocol):
-    @webmethod(route="/eval/benchmarks", method="POST")
+    @webmethod(route="/benchmarks", method="POST")
     async def register_benchmark(
         self,
         dataset_id: str,
@@ -69,14 +69,14 @@ class Benchmarks(Protocol):
         """
         ...
 
-    @webmethod(route="/eval/benchmarks", method="GET")
+    @webmethod(route="/benchmarks", method="GET")
     async def list_benchmarks(self) -> ListBenchmarksResponse:
         """
         List all benchmarks.
         """
         ...
 
-    @webmethod(route="/eval/benchmarks/{benchmark_id}", method="GET")
+    @webmethod(route="/benchmarks/{benchmark_id}", method="GET")
     async def get_benchmark(
         self,
         benchmark_id: str,
