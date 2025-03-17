@@ -14,6 +14,8 @@ class ResourceType(Enum):
     shield = "shield"
     vector_db = "vector_db"
     dataset = "dataset"
+    grader = "grader"
+    # TODO: migrate scoring_function -> grader
     scoring_function = "scoring_function"
     benchmark = "benchmark"
     tool = "tool"
@@ -23,7 +25,9 @@ class ResourceType(Enum):
 class Resource(BaseModel):
     """Base class for all Llama Stack resources"""
 
-    identifier: str = Field(description="Unique identifier for this resource in llama stack")
+    identifier: str = Field(
+        description="Unique identifier for this resource in llama stack"
+    )
 
     provider_resource_id: str = Field(
         description="Unique identifier for this resource in the provider",
@@ -32,4 +36,6 @@ class Resource(BaseModel):
 
     provider_id: str = Field(description="ID of the provider that owns this resource")
 
-    type: ResourceType = Field(description="Type of resource (e.g. 'model', 'shield', 'vector_db', etc.)")
+    type: ResourceType = Field(
+        description="Type of resource (e.g. 'model', 'shield', 'vector_db', etc.)"
+    )
