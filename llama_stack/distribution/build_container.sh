@@ -43,7 +43,7 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 CONTAINER_BINARY=${CONTAINER_BINARY:-docker}
-CONTAINER_OPTS=${CONTAINER_OPTS:-}
+CONTAINER_OPTS=${CONTAINER_OPTS:---progress=plain}
 
 TEMP_DIR=$(mktemp -d)
 
@@ -253,8 +253,7 @@ $CONTAINER_BINARY build \
   "${CLI_ARGS[@]}" \
   -t "$image_tag" \
   -f "$TEMP_DIR/Containerfile" \
-  "." \
-  --progress=plain
+  "."
 
 # clean up tmp/configs
 set +x
