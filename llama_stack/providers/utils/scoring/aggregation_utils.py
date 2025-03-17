@@ -28,6 +28,17 @@ def aggregate_average(scoring_results: List[ScoringResultRow]) -> Dict[str, Any]
     }
 
 
+def aggregate_weighted_average(scoring_results: List[ScoringResultRow]) -> Dict[str, Any]:
+    return {
+        "weighted_average": sum(
+            result["score"] * result["weight"]
+            for result in scoring_results
+            if result["score"] is not None and result["weight"] is not None
+        )
+        / sum(result["weight"] for result in scoring_results if result["weight"] is not None),
+    }
+
+
 def aggregate_categorical_count(
     scoring_results: List[ScoringResultRow],
 ) -> Dict[str, Any]:

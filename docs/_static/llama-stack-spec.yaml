@@ -4404,6 +4404,7 @@ components:
       type: string
       enum:
         - average
+        - weighted_average
         - median
         - categorical_count
         - accuracy
