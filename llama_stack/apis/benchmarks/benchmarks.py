@@ -12,11 +12,17 @@ from llama_stack.schema_utils import json_schema_type, webmethod
 
 
 class CommonBenchmarkFields(BaseModel):
+    """
+    :param dataset_id: The ID of the dataset to used to run the benchmark.
+    :param grader_ids: The grader ids to use for this benchmark.
+    :param metadata: Metadata for this benchmark for additional descriptions.
+    """
+
     dataset_id: str
-    scoring_functions: List[str]
+    grader_ids: List[str]
     metadata: Dict[str, Any] = Field(
         default_factory=dict,
-        description="Metadata for this evaluation task",
+        description="Metadata for this benchmark",
     )
 
 
@@ -45,22 +51,39 @@ class ListBenchmarksResponse(BaseModel):
 
 @runtime_checkable
 class Benchmarks(Protocol):
+    @webmethod(route="/eval/benchmarks", method="POST")
+    async def register_benchmark(
+        self,
+        dataset_id: str,
+        grader_ids: List[str],
+        benchmark_id: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> Benchmark:
+        """
+        Register a new benchmark.
+
+        :param dataset_id: The ID of the dataset to used to run the benchmark.
+        :param grader_ids: List of grader ids to use for this benchmark.
+        :param benchmark_id: (Optional) The ID of the benchmark to register. If not provided, an ID will be generated.
+        :param metadata: (Optional) Metadata for this benchmark for additional descriptions.
+        """
+        ...
+
     @webmethod(route="/eval/benchmarks", method="GET")
-    async def list_benchmarks(self) -> ListBenchmarksResponse: ...
+    async def list_benchmarks(self) -> ListBenchmarksResponse:
+        """
+        List all benchmarks.
+        """
+        ...
 
     @webmethod(route="/eval/benchmarks/{benchmark_id}", method="GET")
     async def get_benchmark(
         self,
         benchmark_id: str,
-    ) -> Optional[Benchmark]: ...
+    ) -> Benchmark:
+        """
+        Get a benchmark by ID.
 
-    @webmethod(route="/eval/benchmarks", method="POST")
-    async def register_benchmark(
-        self,
-        benchmark_id: str,
-        dataset_id: str,
-        scoring_functions: List[str],
-        provider_benchmark_id: Optional[str] = None,
-        provider_id: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-    ) -> None: ...
+        :param benchmark_id: The ID of the benchmark to get.
+        """
+        ...
