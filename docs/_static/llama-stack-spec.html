@@ -1999,7 +1999,7 @@
                 }
             }
         },
-        "/v1/evaluation/grade_inline": {
+        "/v1/evaluation/grade_sync": {
             "post": {
                 "responses": {
                     "200": {
@@ -2034,7 +2034,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/GradeInlineRequest"
+                                "$ref": "#/components/schemas/GradeSyncRequest"
                             }
                         }
                     },
@@ -3451,49 +3451,6 @@
                 }
             }
         },
-        "/v1/evaluation/run_inline": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/EvaluationResponse"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest400"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/TooManyRequests429"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError500"
-                    },
-                    "default": {
-                        "$ref": "#/components/responses/DefaultError"
-                    }
-                },
-                "tags": [
-                    "Evaluation"
-                ],
-                "description": "Run an evaluation job inline.",
-                "parameters": [],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/RunInlineRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
         "/v1/safety/run-shield": {
             "post": {
                 "responses": {
@@ -3530,6 +3487,49 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/RunShieldRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/v1/evaluation/run_sync": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EvaluationResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Evaluation"
+                ],
+                "description": "Run an evaluation job inline.",
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RunSyncRequest"
                             }
                         }
                     },
@@ -7682,7 +7682,7 @@
                 "title": "ModelCandidate",
                 "description": "A model candidate for evaluation."
             },
-            "GradeInlineRequest": {
+            "GradeSyncRequest": {
                 "type": "object",
                 "properties": {
                     "task": {
@@ -7694,7 +7694,7 @@
                 "required": [
                     "task"
                 ],
-                "title": "GradeInlineRequest"
+                "title": "GradeSyncRequest"
             },
             "EvaluationResponse": {
                 "type": "object",
@@ -9726,25 +9726,6 @@
                 ],
                 "title": "RunRequest"
             },
-            "RunInlineRequest": {
-                "type": "object",
-                "properties": {
-                    "task": {
-                        "$ref": "#/components/schemas/EvaluationTask",
-                        "description": "The task to evaluate. One of: - BenchmarkTask: Run evaluation task against a benchmark_id - DatasetGraderTask: Run evaluation task against a dataset_id and a list of grader_ids - DataSourceGraderTask: Run evaluation task against a data source (e.g. rows, uri, etc.) and a list of grader_ids"
-                    },
-                    "candidate": {
-                        "$ref": "#/components/schemas/EvaluationCandidate",
-                        "description": "The candidate to evaluate."
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "task",
-                    "candidate"
-                ],
-                "title": "RunInlineRequest"
-            },
             "RunShieldRequest": {
                 "type": "object",
                 "properties": {
@@ -9800,6 +9781,25 @@
                 },
                 "additionalProperties": false,
                 "title": "RunShieldResponse"
+            },
+            "RunSyncRequest": {
+                "type": "object",
+                "properties": {
+                    "task": {
+                        "$ref": "#/components/schemas/EvaluationTask",
+                        "description": "The task to evaluate. One of: - BenchmarkTask: Run evaluation task against a benchmark_id - DatasetGraderTask: Run evaluation task against a dataset_id and a list of grader_ids - DataSourceGraderTask: Run evaluation task against a data source (e.g. rows, uri, etc.) and a list of grader_ids"
+                    },
+                    "candidate": {
+                        "$ref": "#/components/schemas/EvaluationCandidate",
+                        "description": "The candidate to evaluate."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "task",
+                    "candidate"
+                ],
+                "title": "RunSyncRequest"
             },
             "SaveSpansToDatasetRequest": {
                 "type": "object",

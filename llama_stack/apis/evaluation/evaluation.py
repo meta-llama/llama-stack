@@ -129,8 +129,8 @@ class Evaluation(Protocol):
         """
         ...
 
-    @webmethod(route="/evaluation/run_inline", method="POST")
-    async def run_inline(
+    @webmethod(route="/evaluation/run_sync", method="POST")
+    async def run_sync(
         self,
         task: EvaluationTask,
         candidate: EvaluationCandidate,
@@ -160,8 +160,8 @@ class Evaluation(Protocol):
         """
         ...
 
-    @webmethod(route="/evaluation/grade_inline", method="POST")
-    async def grade_inline(self, task: EvaluationTask) -> EvaluationResponse:
+    @webmethod(route="/evaluation/grade_sync", method="POST")
+    async def grade_sync(self, task: EvaluationTask) -> EvaluationResponse:
         """
         Run an grading job with generated results inline.
 
