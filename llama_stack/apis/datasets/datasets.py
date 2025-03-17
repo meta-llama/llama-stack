@@ -163,7 +163,7 @@ class Datasets(Protocol):
                     ],
                     "answer": "John Doe"
                 }
-        :param source: The data source of the dataset. Examples:
+        :param source: The data source of the dataset. Ensure that the data source schema is compatible with the purpose of the dataset. Examples:
            - {
                "type": "uri",
                "uri": "https://mywebsite.com/mydata.jsonl"
