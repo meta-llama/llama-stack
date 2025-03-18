@@ -2688,9 +2688,9 @@
                     "200": {
                         "description": "OK",
                         "content": {
-                            "application/jsonl": {
+                            "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ToolDef"
+                                    "$ref": "#/components/schemas/ListToolsResponse"
                                 }
                             }
                         }
@@ -8280,6 +8280,22 @@
                 ],
                 "title": "ListRoutesResponse"
             },
+            "ListToolsResponse": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Tool"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "data"
+                ],
+                "title": "ListToolsResponse"
+            },
             "ListScoringFunctionsResponse": {
                 "type": "object",
                 "properties": {
@@ -8327,22 +8343,6 @@
                     "data"
                 ],
                 "title": "ListToolGroupsResponse"
-            },
-            "ListToolsResponse": {
-                "type": "object",
-                "properties": {
-                    "data": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/Tool"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "data"
-                ],
-                "title": "ListToolsResponse"
             },
             "ListVectorDBsResponse": {
                 "type": "object",

@@ -1842,9 +1842,9 @@ paths:
         '200':
           description: OK
           content:
-            application/jsonl:
+            application/json:
               schema:
-                $ref: '#/components/schemas/ToolDef'
+                $ref: '#/components/schemas/ListToolsResponse'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -5674,6 +5674,17 @@ components:
       required:
         - data
       title: ListRoutesResponse
+    ListToolsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tool'
+      additionalProperties: false
+      required:
+        - data
+      title: ListToolsResponse
     ListScoringFunctionsResponse:
       type: object
       properties:
@@ -5707,17 +5718,6 @@ components:
       required:
         - data
       title: ListToolGroupsResponse
-    ListToolsResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/Tool'
-      additionalProperties: false
-      required:
-        - data
-      title: ListToolsResponse
     ListVectorDBsResponse:
       type: object
       properties:
