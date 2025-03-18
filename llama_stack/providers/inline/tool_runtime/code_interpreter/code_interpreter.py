@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 
+import asyncio
 import logging
 import os
 import tempfile
@@ -37,7 +38,7 @@ class CodeInterpreterToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime):
     async def initialize(self):
         pass
 
-    async def register_tool(self, tool: Tool):
+    async def register_tool(self, tool: Tool) -> None:
         pass
 
     async def unregister_tool(self, tool_id: str) -> None:
@@ -65,7 +66,7 @@ class CodeInterpreterToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime):
         # Use environment variable to control bwrap usage
         force_disable_bwrap = os.environ.get("DISABLE_CODE_SANDBOX", "").lower() in ("1", "true", "yes")
         req = CodeExecutionRequest(scripts=[script], use_bwrap=not force_disable_bwrap)
-        res = self.code_executor.execute(req)
+        res = await asyncio.to_thread(self.code_executor.execute, req)
         pieces = [res["process_status"]]
         for out_type in ["stdout", "stderr"]:
             res_out = res[out_type]
