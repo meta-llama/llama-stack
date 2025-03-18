@@ -17,7 +17,7 @@ That means you'll get fast and efficient vector retrieval.
   [Keyword](https://qdrant.tech/articles/qdrant-introduces-full-text-filters-and-indexes/)
   and [Hybrid](https://qdrant.tech/articles/hybrid-search/#building-a-hybrid-search-system-in-qdrant) search
 - [Multilingual and Multimodal retrieval](https://qdrant.tech/documentation/multimodal-search/)
-- [Medatata filetring](https://qdrant.tech/articles/vector-search-filtering/)
+- [Medatata filtering](https://qdrant.tech/articles/vector-search-filtering/)
 - [GPU support](https://qdrant.tech/documentation/guides/running-with-gpu/)
 
 ## Usage
