@@ -86,7 +86,7 @@ LLAMA_STACK_CONFIG=
 
 And then use this dotenv file when running client SDK tests via the following:
 ```bash
-uv run --env-file .env -- pytest -v tests/api/inference/test_text_inference.py
+uv run --env-file .env -- pytest -v tests/integration/inference/test_text_inference.py
 ```
 
 ## Pre-commit Hooks
