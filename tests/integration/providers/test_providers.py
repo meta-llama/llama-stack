@@ -15,3 +15,8 @@ class TestProviders:
     def test_list(self, llama_stack_client: LlamaStackAsLibraryClient | LlamaStackClient):
         provider_list = llama_stack_client.providers.list()
         assert provider_list is not None
+
+    @pytest.mark.asyncio
+    def test_inspect(self, llama_stack_client: LlamaStackAsLibraryClient | LlamaStackClient):
+        provider_list = llama_stack_client.providers.retrieve("ollama")
+        assert provider_list is not None
