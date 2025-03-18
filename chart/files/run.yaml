@@ -1,0 +1,123 @@
+version: '2'
+image_name: vllm-gpu
+apis:
+- agents
+- datasetio
+- eval
+- inference
+- safety
+- scoring
+- telemetry
+- tool_runtime
+- vector_io
+providers:
+  inference:
+  - provider_id: vllm
+    provider_type: remote::vllm
+    config:
+      url: ${env.VLLM_URL:http://localhost:8000}
+      api_token: ${env.VLLM_API_TOKEN}
+      model: ${env.INFERENCE_MODEL:Llama3.2-3B-Instruct}
+      tensor_parallel_size: ${env.TENSOR_PARALLEL_SIZE:1}
+      max_tokens: ${env.MAX_TOKENS:4096}
+      enforce_eager: ${env.ENFORCE_EAGER:False}
+      gpu_memory_utilization: ${env.GPU_MEMORY_UTILIZATION:0.7}
+  - provider_id: sentence-transformers
+    provider_type: inline::sentence-transformers
+    config: {}
+  vector_io:
+  - provider_id: faiss
+    provider_type: inline::faiss
+    config:
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/vllm-gpu}/faiss_store.db
+  safety:
+  - provider_id: llama-guard
+    provider_type: inline::llama-guard
+    config: {}
+  agents:
+  - provider_id: meta-reference
+    provider_type: inline::meta-reference
+    config:
+      persistence_store:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/vllm-gpu}/agents_store.db
+  telemetry:
+  - provider_id: meta-reference
+    provider_type: inline::meta-reference
+    config:
+      service_name: ${env.OTEL_SERVICE_NAME:llama-stack}
+      sinks: ${env.TELEMETRY_SINKS:console,sqlite}
+      sqlite_db_path: ${env.SQLITE_DB_PATH:~/.llama/distributions/vllm-gpu/trace_store.db}
+  eval:
+  - provider_id: meta-reference
+    provider_type: inline::meta-reference
+    config: {}
+  datasetio:
+  - provider_id: huggingface
+    provider_type: remote::huggingface
+    config: {}
+  - provider_id: localfs
+    provider_type: inline::localfs
+    config: {}
+  scoring:
+  - provider_id: basic
+    provider_type: inline::basic
+    config: {}
+  - provider_id: llm-as-judge
+    provider_type: inline::llm-as-judge
+    config: {}
+  - provider_id: braintrust
+    provider_type: inline::braintrust
+    config:
+      openai_api_key: ${env.OPENAI_API_KEY:}
+  tool_runtime:
+  - provider_id: brave-search
+    provider_type: remote::brave-search
+    config:
+      api_key: ${env.BRAVE_SEARCH_API_KEY:}
+      max_results: 3
+  - provider_id: tavily-search
+    provider_type: remote::tavily-search
+    config:
+      api_key: ${env.TAVILY_SEARCH_API_KEY:}
+      max_results: 3
+  - provider_id: code-interpreter
+    provider_type: inline::code-interpreter
+    config: {}
+  - provider_id: rag-runtime
+    provider_type: inline::rag-runtime
+    config: {}
+  - provider_id: model-context-protocol
+    provider_type: remote::model-context-protocol
+    config: {}
+metadata_store:
+  type: sqlite
+  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/vllm-gpu}/registry.db
+models:
+- metadata: {}
+  model_id: ${env.INFERENCE_MODEL}
+  provider_id: vllm
+  model_type: llm
+- metadata:
+    embedding_dimension: 384
+  model_id: all-MiniLM-L6-v2
+  provider_id: sentence-transformers
+  model_type: embedding
+shields: []
+vector_dbs: []
+datasets: []
+scoring_fns: []
+benchmarks: []
+tool_groups:
+- toolgroup_id: builtin::websearch
+  provider_id: brave-search
+- toolgroup_id: builtin::rag
+  provider_id: rag-runtime
+- toolgroup_id: builtin::code_interpreter
+  provider_id: code-interpreter
+server:
+  port: 8321

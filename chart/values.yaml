@@ -1,0 +1,142 @@
+# yamlConfig: "/config/run.yaml"
+
+# TODO: Currently we are only working for vLLM this should be expanded in the future
+vllm:
+  url: "http://vllm-server"
+  inferenceModel: "llama2-7b-chat"
+  # This is the API key for the VLLM server. It can be set in two ways through a secret:
+  # TODO: Implement this
+  # secret:
+  #   name: vllm-secret
+  #   key: vll
+  # or directly with an api key (should be avoided in production)
+  # apiKey: "xxxxxxxxxxxx"
+
+# https://llama-stack.readthedocs.io/en/latest/distributions/selection.html
+distribution: distribution-remote-vllm
+
+runConfig:
+  enabled: false 
+  # customYaml:
+  # Your custom run.yaml configuration file can be pasted here
+  # If not set, the default run.yaml file in the `files/run.yaml` will be used
+
+telemetry:
+  enabled: false
+  serviceName: "otel-collector.openshift-opentelemetry-operator.svc.cluster.local:4318"
+  sinks: "console,sqlite,otel"
+  
+#  Use to allow for other env variables to be passed to the container
+# env:
+#   MY_CUSTOM_ENV_VAR: "my-custom-env-var-value"
+
+replicaCount: 1
+
+# This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+image:
+  repository: docker.io/llamastack/{{ $.Values.distribution }}
+  tag: 0.1.6
+  # This sets the pull policy for images.
+  pullPolicy: Always
+
+
+# This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: false
+  # Automatically mount a ServiceAccount's API credentials?
+  automount: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+# This is for setting Kubernetes Annotations to a Pod.
+# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+podAnnotations: {}
+# This is for setting Kubernetes Labels to a Pod.
+# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+podLabels: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+# This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
+service:
+  # This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
+  type: ClusterIP
+  # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
+  port: 5001
+
+
+# This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
+ingress:
+  enabled: true
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+
+# -- Enable creation of the OpenShift Route object (This should be used instead of ingress on OpenShift)
+route:
+  enabled: false
+  # Allow OCP to determine the host if left blank
+  # -- The hostname for the route
+  # @default -- Set by OpenShift
+  host: ""
+  # -- The path for the OpenShift route
+  path: ""
+  tls:
+    # -- Enable secure route settings
+    enabled: true
+    # -- Secure route termination policy
+    termination: edge
+    # -- Insecure route termination policy
+    insecureEdgeTerminationPolicy: Redirect
+  # -- Additional custom annotations for the route
+  annotations: {}
+
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 500Mi
+  requests:
+    cpu: 100m
+    memory: 500Mi
+
+# This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+livenessProbe:
+  httpGet:
+    path: /v1/health
+    port: 5001
+readinessProbe:
+  httpGet:
+    path: /v1/health
+    port: 5001
+startupProbe:
+  httpGet:
+    path: /v1/health
+    port: 5001
+  initialDelaySeconds: 40
+  periodSeconds: 10
+  failureThreshold: 30
+  
+# This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80

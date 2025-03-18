@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "llama-stack.fullname" . }}
+  labels:
+    {{- include "llama-stack.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "llama-stack.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "llama-stack.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "llama-stack.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ (tpl .Values.image.repository $) }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          args:
+            - "--yaml-config"
+            - "/config/run.yaml"
+          env:
+          {{- with .Values.vllm }}
+            - name: VLLM_URL
+              value: {{ .url | quote }}
+            - name: VLLM_API_TOKEN
+              value: {{ .apiKey | default "" | quote}}
+            - name: INFERENCE_MODEL
+              value: {{ .inferenceModel | quote }}
+          {{- end }}
+            - name: LLAMA_STACK_PORT
+              value: {{ .Values.service.port | quote }}
+            {{- if .Values.telemetry.enabled }}
+            - name: TELEMETRY_SINKS
+              value: {{ .Values.telemetry.sinks | quote }}
+            - name: OTEL_SERVICE_NAME
+              value: {{ .Values.telemetry.serviceName | quote }}
+            {{- end }}
+            {{- with .Values.env }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          livenessProbe:
+            {{- tpl (toYaml .Values.livenessProbe) $ | nindent 12 }}
+          readinessProbe:
+            {{- tpl (toYaml .Values.readinessProbe) $ | nindent 12 }}
+          startupProbe:
+            {{- tpl (toYaml .Values.startupProbe) $ | nindent 12 }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: config-volume
+              mountPath: /config
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ include "llama-stack.fullname" . }}-run-config
+            defaultMode: 0755
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
