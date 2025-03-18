@@ -66,7 +66,7 @@ class Models(Protocol):
     async def get_model(
         self,
         model_id: str,
-    ) -> Optional[Model]: ...
+    ) -> Model: ...
 
     @webmethod(route="/models", method="POST")
     async def register_model(

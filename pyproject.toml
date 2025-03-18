@@ -56,7 +56,7 @@ dev = [
     "ruamel.yaml",      # needed for openapi generator
 ]
 # These are the dependencies required for running unit tests.
-unit = ["sqlite-vec", "openai", "aiosqlite", "pypdf", "chardet"]
+unit = ["sqlite-vec", "openai", "aiosqlite", "pypdf", "chardet", "qdrant-client"]
 # These are the core dependencies required for running integration tests. They are shared across all
 # providers. If a provider requires additional dependencies, please add them to your environment
 # separately. If you are using "uv" to execute your tests, you can use the "--with" flag to specify extra
@@ -114,7 +114,6 @@ exclude = [
     "./.git",
     "./docs/*",
     "./build",
-    "./scripts",
     "./venv",
     "*.pyi",
     ".pre-commit-config.yaml",
@@ -248,6 +247,7 @@ exclude = [
     "^llama_stack/providers/inline/vector_io/chroma/",
     "^llama_stack/providers/inline/vector_io/faiss/",
     "^llama_stack/providers/inline/vector_io/milvus/",
+    "^llama_stack/providers/inline/vector_io/qdrant/",
     "^llama_stack/providers/inline/vector_io/sqlite_vec/",
     "^llama_stack/providers/remote/agents/sample/",
     "^llama_stack/providers/remote/datasetio/huggingface/",
