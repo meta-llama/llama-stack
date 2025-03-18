@@ -7,7 +7,6 @@
 import asyncio
 import contextlib
 import json
-import logging
 import threading
 import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
