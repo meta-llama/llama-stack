@@ -13,8 +13,8 @@ from typing import (
     Literal,
     Optional,
     Protocol,
-    Union,
     runtime_checkable,
+    Union,
 )
 
 from pydantic import BaseModel, Field
@@ -204,7 +204,7 @@ class Graders(Protocol):
         ...
 
     @webmethod(route="/graders", method="GET")
-    async def list_graders(self) -> List[Grader]:
+    async def list_graders(self) -> ListGradersResponse:
         """
         List all graders.
         :return: A list of graders.
