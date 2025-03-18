@@ -50,7 +50,7 @@ class VectorDBs(Protocol):
     async def get_vector_db(
         self,
         vector_db_id: str,
-    ) -> Optional[VectorDB]: ...
+    ) -> VectorDB: ...
 
     @webmethod(route="/vector-dbs", method="POST")
     async def register_vector_db(

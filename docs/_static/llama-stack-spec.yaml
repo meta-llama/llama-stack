@@ -757,9 +757,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/Benchmark'
-                  - type: 'null'
+                $ref: '#/components/schemas/Benchmark'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -787,9 +785,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/Dataset'
-                  - type: 'null'
+                $ref: '#/components/schemas/Dataset'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -840,9 +836,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/Model'
-                  - type: 'null'
+                $ref: '#/components/schemas/Model'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -893,9 +887,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/ScoringFn'
-                  - type: 'null'
+                $ref: '#/components/schemas/ScoringFn'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -923,9 +915,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/Shield'
-                  - type: 'null'
+                $ref: '#/components/schemas/Shield'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -1127,9 +1117,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/PostTrainingJobArtifactsResponse'
-                  - type: 'null'
+                $ref: '#/components/schemas/PostTrainingJobArtifactsResponse'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -1157,9 +1145,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/PostTrainingJobStatusResponse'
-                  - type: 'null'
+                $ref: '#/components/schemas/PostTrainingJobStatusResponse'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -1210,9 +1196,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/FileUploadResponse'
-                  - type: 'null'
+                $ref: '#/components/schemas/FileUploadResponse'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -1281,9 +1265,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/VectorDB'
-                  - type: 'null'
+                $ref: '#/components/schemas/VectorDB'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -1509,9 +1491,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/JobStatus'
-                  - type: 'null'
+                $ref: '#/components/schemas/JobStatus'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
