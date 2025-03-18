@@ -79,7 +79,8 @@ providers:
     config: {}
   - provider_id: wolfram-alpha
     provider_type: remote::wolfram-alpha
-    config: {}
+    config:
+      api_key: ${env.WOLFRAM_ALPHA_API_KEY:}
 metadata_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/sambanova}/registry.db
