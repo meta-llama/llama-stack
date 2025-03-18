@@ -9,8 +9,16 @@ That means you'll get fast and efficient vector retrieval.
 
 ## Features
 
-- Easy to use
+- Lightweight and easy to use
 - Fully integrated with Llama Stack
+- Apache 2.0 license terms
+- Store embeddings and their metadata
+- Supports search by
+  [Keyword](https://qdrant.tech/articles/qdrant-introduces-full-text-filters-and-indexes/)
+  and [Hybrid](https://qdrant.tech/articles/hybrid-search/#building-a-hybrid-search-system-in-qdrant) search
+- [Multilingual and Multimodal retrieval](https://qdrant.tech/documentation/multimodal-search/)
+- [Medatata filetring](https://qdrant.tech/articles/vector-search-filtering/)
+- [GPU support](https://qdrant.tech/documentation/guides/running-with-gpu/)
 
 ## Usage
 
