@@ -1,3 +1,4 @@
+{{- if .Values.customRunConfig }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -5,3 +6,4 @@ metadata:
 data:
   run.yaml: |-
     {{- .Files.Get "files/run.yaml" | nindent 4 }}
+{{- end }}

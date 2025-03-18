@@ -1,4 +1,6 @@
-# yamlConfig: "/config/run.yaml"
+
+# When set to true use the `run.yaml` file in the `files/run.yaml` directory
+customRunConfig: false
 
 # TODO: Currently we are only working for vLLM this should be expanded in the future
 vllm:
@@ -68,6 +70,19 @@ service:
   type: ClusterIP
   # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
   port: 5001
+
+# Additional volumes on the output Deployment definition.
+volumes: []
+# - name: foo
+#   secret:
+#     secretName: mysecret
+#     optional: false
+
+# Additional volumeMounts on the output Deployment definition.
+volumeMounts: []
+# - name: foo
+#   mountPath: "/etc/foo"
+#   readOnly: true
 
 
 # This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
