@@ -94,7 +94,6 @@ class LMStudioClient:
         chat = self._convert_message_list_to_lmstudio_chat(messages)
         config = self._get_completion_config_from_params(sampling_params)
         if stream:
-
             async def stream_generator():
                 prediction_stream = await asyncio.to_thread(
                     llm.respond_stream,
@@ -209,7 +208,6 @@ class LMStudioClient:
     ) -> Union[CompletionResponse, AsyncIterator[CompletionResponseStreamChunk]]:
         config = self._get_completion_config_from_params(sampling_params)
         if stream:
-
             async def stream_generator():
                 prediction_stream = await asyncio.to_thread(
                     llm.complete_stream,
@@ -308,11 +306,18 @@ class LMStudioClient:
 
     async def _async_iterate(self, iterable):
         iterator = iter(iterable)
-        while True:
+
+        def safe_next(it):
             try:
-                yield await asyncio.to_thread(next, iterator)
-            except:
+                return (next(it), False)
+            except StopIteration:
+                return (None, True)
+
+        while True:
+            item, done = await asyncio.to_thread(safe_next, iterator)
+            if done:
                 break
+            yield item
 
     async def _convert_request_to_rest_call(
         self, request: ChatCompletionRequest
