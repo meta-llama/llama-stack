@@ -114,7 +114,6 @@ exclude = [
     "./.git",
     "./docs/*",
     "./build",
-    "./scripts",
     "./venv",
     "*.pyi",
     ".pre-commit-config.yaml",
