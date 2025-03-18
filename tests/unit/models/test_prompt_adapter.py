@@ -165,7 +165,10 @@ class PrepareMessagesTests(unittest.IsolatedAsyncioTestCase):
         request.model = MODEL
         request.tool_config.tool_prompt_format = ToolPromptFormat.json
         prompt = await chat_completion_request_to_prompt(request, request.model)
-        self.assertIn('{"type": "function", "name": "custom1", "parameters": {"param1": "value1"}}', prompt)
+        self.assertIn(
+            '{"type": "function", "name": "custom1", "parameters": {"param1": "value1"}}',
+            prompt,
+        )
 
     async def test_user_provided_system_message(self):
         content = "Hello !"

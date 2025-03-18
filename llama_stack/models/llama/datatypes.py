@@ -47,7 +47,9 @@ RecursiveType = Union[Primitive, List[Primitive], Dict[str, Primitive]]
 class ToolCall(BaseModel):
     call_id: str
     tool_name: Union[BuiltinTool, str]
-    arguments: Dict[str, RecursiveType]
+    arguments: Union[str, Dict[str, RecursiveType]]
+    # Temporary field for backwards compatibility
+    arguments_json: Optional[str] = None
 
     @field_validator("tool_name", mode="before")
     @classmethod
