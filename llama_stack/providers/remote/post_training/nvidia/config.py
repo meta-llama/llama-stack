@@ -18,19 +18,9 @@ class NvidiaPostTrainingConfig(BaseModel):
         description="The NVIDIA API key.",
     )
 
-    user_id: Optional[str] = Field(
-        default_factory=lambda: os.getenv("NVIDIA_USER_ID", "llama-stack-user"),
-        description="The NVIDIA user ID.",
-    )
-
     dataset_namespace: Optional[str] = Field(
         default_factory=lambda: os.getenv("NVIDIA_DATASET_NAMESPACE", "default"),
         description="The NVIDIA dataset namespace.",
-    )
-
-    access_policies: Optional[dict] = Field(
-        default_factory=lambda: os.getenv("NVIDIA_ACCESS_POLICIES", {"arbitrary": "json"}),
-        description="The NVIDIA access policies.",
     )
 
     project_id: Optional[str] = Field(
@@ -64,7 +54,6 @@ class NvidiaPostTrainingConfig(BaseModel):
     def sample_run_config(cls, **kwargs) -> Dict[str, Any]:
         return {
             "api_key": "${env.NVIDIA_API_KEY:}",
-            "user_id": "${env.NVIDIA_USER_ID:llama-stack-user}",
             "dataset_namespace": "${env.NVIDIA_DATASET_NAMESPACE:default}",
             "project_id": "${env.NVIDIA_PROJECT_ID:test-project}",
             "customizer_url": "${env.NVIDIA_CUSTOMIZER_URL:http://nemo.test}",
