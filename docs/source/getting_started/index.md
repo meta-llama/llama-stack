@@ -197,9 +197,7 @@ import os
 import uuid
 from termcolor import cprint
 
-from llama_stack_client.lib.agents.agent import Agent
-from llama_stack_client.lib.agents.event_logger import EventLogger
-from llama_stack_client.types import Document
+from llama_stack_client import Agent, AgentEventLogger, RAGDocument
 
 
 def create_http_client():
@@ -225,7 +223,7 @@ client = (
 # Documents to be used for RAG
 urls = ["chat.rst", "llama3.rst", "memory_optimizations.rst", "lora_finetune.rst"]
 documents = [
-    Document(
+    RAGDocument(
         document_id=f"num-{i}",
         content=f"https://raw.githubusercontent.com/pytorch/torchtune/main/docs/source/tutorials/{url}",
         mime_type="text/plain",
@@ -284,7 +282,7 @@ for prompt in user_prompts:
         messages=[{"role": "user", "content": prompt}],
         session_id=session_id,
     )
-    for log in EventLogger().log(response):
+    for log in AgentEventLogger().log(response):
         log.print()
 ```
 

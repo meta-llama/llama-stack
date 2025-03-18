@@ -67,9 +67,7 @@ sequenceDiagram
 Each step in this process can be monitored and controlled through configurations. Here's an example that demonstrates monitoring the agent's execution:
 
 ```python
-from llama_stack_client import LlamaStackClient
-from llama_stack_client.lib.agents.agent import Agent
-from llama_stack_client.lib.agents.event_logger import EventLogger
+from llama_stack_client import LlamaStackClient, Agent, AgentEventLogger
 from rich.pretty import pprint
 
 # Replace host and port
@@ -113,7 +111,7 @@ response = agent.create_turn(
 )
 
 # Monitor each step of execution
-for log in EventLogger().log(response):
+for log in AgentEventLogger().log(response):
     log.print()
 
 # Using non-streaming API, the response contains input, steps, and output.
