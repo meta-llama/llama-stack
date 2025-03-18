@@ -206,15 +206,10 @@ def get_distribution_template() -> DistributionTemplate:
         DatasetInput(
             dataset_id="docvqa",
             provider_id="huggingface",
-            url=URL(uri="https://huggingface.co/datasets/llamastack/docvqa"),
-            metadata={
-                "path": "llamastack/docvqa",
-                "split": "val",
-            },
-            dataset_schema={
-                "chat_completion_input": {"type": "string"},
-                "expected_answer": {"type": "string"},
-            },
+            purpose=DatasetPurpose.eval_messages_answer,
+            source=URIDataSource(
+                uri="huggingface://datasets/llamastack/docvqa?split=val",
+            ),
         ),
     ]
 

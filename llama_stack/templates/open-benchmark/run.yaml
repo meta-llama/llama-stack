@@ -191,16 +191,11 @@ datasets:
 <<<<<<< HEAD
 =======
   provider_id: huggingface
-- dataset_schema:
-    chat_completion_input:
-      type: string
-    expected_answer:
-      type: string
-  url:
-    uri: https://huggingface.co/datasets/llamastack/docvqa
-  metadata:
-    path: llamastack/docvqa
-    split: val
+- purpose: eval/messages-answer
+  source:
+    type: uri
+    uri: huggingface://datasets/llamastack/docvqa?split=val
+  metadata: {}
   dataset_id: docvqa
   provider_id: huggingface
 >>>>>>> 81df5a4e (add DocVQA scoring)
