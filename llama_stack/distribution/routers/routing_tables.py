@@ -568,7 +568,7 @@ class ToolGroupsRoutingTable(CommonRoutingTableImpl, ToolGroups):
         tool_defs = await self.impls_by_provider_id[provider_id].list_runtime_tools(toolgroup_id, mcp_endpoint)
         tool_host = ToolHost.model_context_protocol if mcp_endpoint else ToolHost.distribution
 
-        for tool_def in tool_defs:
+        for tool_def in tool_defs.data:
             tools.append(
                 ToolWithACL(
                     identifier=tool_def.name,

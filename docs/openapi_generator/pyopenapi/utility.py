@@ -135,6 +135,17 @@ def _validate_api_method_return_type(method) -> str | None:
         return "returns Optional type"
 
 
+def _validate_api_method_doesnt_return_list(method) -> str | None:
+    hints = get_type_hints(method)
+
+    if 'return' not in hints:
+        return "has no return type annotation"
+
+    return_type = hints['return']
+    if get_origin(return_type) is list:
+        return "returns a list"
+
+
 def _validate_api_delete_method_returns_none(method) -> str | None:
     hints = get_type_hints(method)
 
@@ -167,6 +178,7 @@ _VALIDATORS = {
     "GET": [
         _validate_api_method_return_type,
         _validate_list_parameters_contain_data,
+        _validate_api_method_doesnt_return_list,
     ],
     "DELETE": [
         _validate_api_delete_method_returns_none,

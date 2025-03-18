@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 from urllib.parse import urlparse
 
 from mcp import ClientSession
@@ -12,6 +12,7 @@ from mcp.client.sse import sse_client
 
 from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.tools import (
+    ListToolDefsResponse,
     ToolDef,
     ToolInvocationResult,
     ToolParameter,
@@ -31,7 +32,7 @@ class ModelContextProtocolToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime):
 
     async def list_runtime_tools(
         self, tool_group_id: Optional[str] = None, mcp_endpoint: Optional[URL] = None
-    ) -> List[ToolDef]:
+    ) -> ListToolDefsResponse:
         if mcp_endpoint is None:
             raise ValueError("mcp_endpoint is required")
 
@@ -60,7 +61,7 @@ class ModelContextProtocolToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime):
                             },
                         )
                     )
-        return tools
+        return ListToolDefsResponse(data=tools)
 
     async def invoke_tool(self, tool_name: str, kwargs: Dict[str, Any]) -> ToolInvocationResult:
         tool = await self.tool_store.get_tool(tool_name)
