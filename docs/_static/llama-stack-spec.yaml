@@ -1855,9 +1855,9 @@ paths:
         '200':
           description: OK
           content:
-            application/jsonl:
+            application/json:
               schema:
-                $ref: '#/components/schemas/ToolDef'
+                $ref: '#/components/schemas/ListToolDefsResponse'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -5732,6 +5732,17 @@ components:
       required:
         - data
       title: ListRoutesResponse
+    ListToolDefsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ToolDef'
+      additionalProperties: false
+      required:
+        - data
+      title: ListToolDefsResponse
     ListScoringFunctionsResponse:
       type: object
       properties:
