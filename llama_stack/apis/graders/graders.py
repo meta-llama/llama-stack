@@ -29,6 +29,13 @@ from .graders import *  # noqa: F401 F403
 class GraderType(Enum):
     """
     A type of grader. Each type is a criteria for evaluating answers.
+
+    :cvar llm: Use an LLM to score the answer.
+    :cvar regex_parser: Use a regex parser to score the answer.
+    :cvar equality: Check if the answer is equal to the reference answer.
+    :cvar subset_of: Check if the answer is a subset of the reference answer.
+    :cvar factuality: Check if the answer is factually correct using LLM as judge.
+    :cvar faithfulness: Check if the answer is faithful to the reference answer using LLM as judge.
     """
 
     llm = "llm"
@@ -221,9 +228,9 @@ class Graders(Protocol):
         ...
 
     @webmethod(route="/graders/{grader_id:path}", method="DELETE")
-    async def delete_grader(self, grader_id: str) -> None:
+    async def unregister_grader(self, grader_id: str) -> None:
         """
-        Delete a grader by ID.
+        Unregister a grader by ID.
         :param grader_id: The ID of the grader.
         """
         ...

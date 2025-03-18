@@ -589,59 +589,6 @@ paths:
           required: true
           schema:
             type: string
-  /v1/graders/{grader_id}:
-    get:
-      responses:
-        '200':
-          description: The grader.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Grader'
-        '400':
-          $ref: '#/components/responses/BadRequest400'
-        '429':
-          $ref: >-
-            #/components/responses/TooManyRequests429
-        '500':
-          $ref: >-
-            #/components/responses/InternalServerError500
-        default:
-          $ref: '#/components/responses/DefaultError'
-      tags:
-        - Graders
-      description: Get a grader by ID.
-      parameters:
-        - name: grader_id
-          in: path
-          description: The ID of the grader.
-          required: true
-          schema:
-            type: string
-    delete:
-      responses:
-        '200':
-          description: OK
-        '400':
-          $ref: '#/components/responses/BadRequest400'
-        '429':
-          $ref: >-
-            #/components/responses/TooManyRequests429
-        '500':
-          $ref: >-
-            #/components/responses/InternalServerError500
-        default:
-          $ref: '#/components/responses/DefaultError'
-      tags:
-        - Graders
-      description: Delete a grader by ID.
-      parameters:
-        - name: grader_id
-          in: path
-          description: The ID of the grader.
-          required: true
-          schema:
-            type: string
   /v1/inference/embeddings:
     post:
       responses:
@@ -674,6 +621,43 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/EmbeddingsRequest'
+        required: true
+  /v1/eval/benchmarks/{benchmark_id}/evaluations:
+    post:
+      responses:
+        '200':
+          description: >-
+            EvaluateResponse object containing generations and scores
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvaluateResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Eval
+      description: Evaluate a list of rows on a benchmark.
+      parameters:
+        - name: benchmark_id
+          in: path
+          description: >-
+            The ID of the benchmark to run the evaluation on.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EvaluateRowsRequest'
         required: true
   /v1/agents/{agent_id}/session/{session_id}/turn/{turn_id}/step/{step_id}:
     get:
@@ -794,6 +778,29 @@ paths:
           required: true
           schema:
             type: string
+    delete:
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Benchmarks
+      description: Unregister a benchmark by ID.
+      parameters:
+        - name: benchmark_id
+          in: path
+          required: true
+          schema:
+            type: string
   /v1/datasets/{dataset_id}:
     get:
       responses:
@@ -845,6 +852,59 @@ paths:
           required: true
           schema:
             type: string
+  /v1/graders/{grader_id}:
+    get:
+      responses:
+        '200':
+          description: The grader.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Grader'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Graders
+      description: Get a grader by ID.
+      parameters:
+        - name: grader_id
+          in: path
+          description: The ID of the grader.
+          required: true
+          schema:
+            type: string
+    delete:
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Graders
+      description: Unregister a grader by ID.
+      parameters:
+        - name: grader_id
+          in: path
+          description: The ID of the grader.
+          required: true
+          schema:
+            type: string
   /v1/models/{model_id}:
     get:
       responses:
@@ -892,6 +952,34 @@ paths:
       description: ''
       parameters:
         - name: model_id
+          in: path
+          required: true
+          schema:
+            type: string
+  /v1/scoring-functions/{scoring_fn_id}:
+    get:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScoringFn'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - ScoringFunctions
+      description: ''
+      parameters:
+        - name: scoring_fn_id
           in: path
           required: true
           schema:
@@ -1536,6 +1624,109 @@ paths:
           required: false
           schema:
             type: integer
+  /v1/eval/benchmarks/{benchmark_id}/jobs/{job_id}:
+    get:
+      responses:
+        '200':
+          description: The status of the evaluationjob.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobStatus'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Eval
+      description: Get the status of a job.
+      parameters:
+        - name: benchmark_id
+          in: path
+          description: >-
+            The ID of the benchmark to run the evaluation on.
+          required: true
+          schema:
+            type: string
+        - name: job_id
+          in: path
+          description: The ID of the job to get the status of.
+          required: true
+          schema:
+            type: string
+    delete:
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Eval
+      description: Cancel a job.
+      parameters:
+        - name: benchmark_id
+          in: path
+          description: >-
+            The ID of the benchmark to run the evaluation on.
+          required: true
+          schema:
+            type: string
+        - name: job_id
+          in: path
+          description: The ID of the job to cancel.
+          required: true
+          schema:
+            type: string
+  /v1/eval/benchmarks/{benchmark_id}/jobs/{job_id}/result:
+    get:
+      responses:
+        '200':
+          description: The result of the job.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvaluateResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Eval
+      description: Get the result of a job.
+      parameters:
+        - name: benchmark_id
+          in: path
+          description: >-
+            The ID of the benchmark to run the evaluation on.
+          required: true
+          schema:
+            type: string
+        - name: job_id
+          in: path
+          description: The ID of the job to get the result of.
+          required: true
+          schema:
+            type: string
   /v1/agents/{agent_id}/sessions:
     get:
       responses:
@@ -1727,9 +1918,9 @@ paths:
         '200':
           description: A list of graders.
           content:
-            application/jsonl:
+            application/json:
               schema:
-                $ref: '#/components/schemas/Grader'
+                $ref: '#/components/schemas/ListGradersResponse'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -1902,6 +2093,53 @@ paths:
           required: false
           schema:
             $ref: '#/components/schemas/URL'
+  /v1/scoring-functions:
+    get:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListScoringFunctionsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - ScoringFunctions
+      description: ''
+      parameters: []
+    post:
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - ScoringFunctions
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterScoringFunctionRequest'
+        required: true
   /v1/shields:
     get:
       responses:
@@ -2336,6 +2574,43 @@ paths:
             schema:
               $ref: '#/components/schemas/RunRequest'
         required: true
+  /v1/eval/benchmarks/{benchmark_id}/jobs:
+    post:
+      responses:
+        '200':
+          description: >-
+            The job that was created to run the evaluation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Eval
+      description: Run an evaluation on a benchmark.
+      parameters:
+        - name: benchmark_id
+          in: path
+          description: >-
+            The ID of the benchmark to run the evaluation on.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RunEvalRequest'
+        required: true
   /v1/safety/run-shield:
     post:
       responses:
@@ -2418,6 +2693,65 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/SaveSpansToDatasetRequest'
+        required: true
+  /v1/scoring/score:
+    post:
+      responses:
+        '200':
+          description: >-
+            ScoreResponse object containing rows and aggregated results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScoreResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Scoring
+      description: Score a list of rows.
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScoreRequest'
+        required: true
+  /v1/scoring/score-batch:
+    post:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScoreBatchResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Scoring
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScoreBatchRequest'
         required: true
   /v1/post-training/supervised-fine-tune:
     post:
@@ -4308,6 +4642,251 @@ components:
       title: EmbeddingsResponse
       description: >-
         Response containing generated embeddings.
+    AgentCandidate:
+      type: object
+      properties:
+        type:
+          type: string
+          const: agent
+          default: agent
+        config:
+          $ref: '#/components/schemas/AgentConfig'
+          description: >-
+            The configuration for the agent candidate.
+      additionalProperties: false
+      required:
+        - type
+        - config
+      title: AgentCandidate
+      description: An agent candidate for evaluation.
+    AggregationFunctionType:
+      type: string
+      enum:
+        - average
+        - median
+        - categorical_count
+        - accuracy
+      title: AggregationFunctionType
+    BasicScoringFnParams:
+      type: object
+      properties:
+        type:
+          type: string
+          const: basic
+          default: basic
+        aggregation_functions:
+          type: array
+          items:
+            $ref: '#/components/schemas/AggregationFunctionType'
+      additionalProperties: false
+      required:
+        - type
+      title: BasicScoringFnParams
+    BenchmarkConfig:
+      type: object
+      properties:
+        eval_candidate:
+          $ref: '#/components/schemas/EvalCandidate'
+          description: The candidate to evaluate.
+        scoring_params:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ScoringFnParams'
+          description: >-
+            Map between scoring function id and parameters for each scoring function
+            you want to run
+        num_examples:
+          type: integer
+          description: >-
+            (Optional) The number of examples to evaluate. If not provided, all examples
+            in the dataset will be evaluated
+      additionalProperties: false
+      required:
+        - eval_candidate
+        - scoring_params
+      title: BenchmarkConfig
+      description: >-
+        A benchmark configuration for evaluation.
+    EvalCandidate:
+      oneOf:
+        - $ref: '#/components/schemas/ModelCandidate'
+        - $ref: '#/components/schemas/AgentCandidate'
+      discriminator:
+        propertyName: type
+        mapping:
+          model: '#/components/schemas/ModelCandidate'
+          agent: '#/components/schemas/AgentCandidate'
+    LLMAsJudgeScoringFnParams:
+      type: object
+      properties:
+        type:
+          type: string
+          const: llm_as_judge
+          default: llm_as_judge
+        judge_model:
+          type: string
+        prompt_template:
+          type: string
+        judge_score_regexes:
+          type: array
+          items:
+            type: string
+        aggregation_functions:
+          type: array
+          items:
+            $ref: '#/components/schemas/AggregationFunctionType'
+      additionalProperties: false
+      required:
+        - type
+        - judge_model
+      title: LLMAsJudgeScoringFnParams
+    ModelCandidate:
+      type: object
+      properties:
+        type:
+          type: string
+          const: model
+          default: model
+        model:
+          type: string
+          description: The model ID to evaluate.
+        sampling_params:
+          $ref: '#/components/schemas/SamplingParams'
+          description: The sampling parameters for the model.
+        system_message:
+          $ref: '#/components/schemas/SystemMessage'
+          description: >-
+            (Optional) The system message providing instructions or context to the
+            model.
+      additionalProperties: false
+      required:
+        - type
+        - model
+        - sampling_params
+      title: ModelCandidate
+      description: A model candidate for evaluation.
+    RegexParserScoringFnParams:
+      type: object
+      properties:
+        type:
+          type: string
+          const: regex_parser
+          default: regex_parser
+        parsing_regexes:
+          type: array
+          items:
+            type: string
+        aggregation_functions:
+          type: array
+          items:
+            $ref: '#/components/schemas/AggregationFunctionType'
+      additionalProperties: false
+      required:
+        - type
+      title: RegexParserScoringFnParams
+    ScoringFnParams:
+      oneOf:
+        - $ref: '#/components/schemas/LLMAsJudgeScoringFnParams'
+        - $ref: '#/components/schemas/RegexParserScoringFnParams'
+        - $ref: '#/components/schemas/BasicScoringFnParams'
+      discriminator:
+        propertyName: type
+        mapping:
+          llm_as_judge: '#/components/schemas/LLMAsJudgeScoringFnParams'
+          regex_parser: '#/components/schemas/RegexParserScoringFnParams'
+          basic: '#/components/schemas/BasicScoringFnParams'
+    EvaluateRowsRequest:
+      type: object
+      properties:
+        input_rows:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              oneOf:
+                - type: 'null'
+                - type: boolean
+                - type: number
+                - type: string
+                - type: array
+                - type: object
+          description: The rows to evaluate.
+        scoring_functions:
+          type: array
+          items:
+            type: string
+          description: >-
+            The scoring functions to use for the evaluation.
+        benchmark_config:
+          $ref: '#/components/schemas/BenchmarkConfig'
+          description: The configuration for the benchmark.
+      additionalProperties: false
+      required:
+        - input_rows
+        - scoring_functions
+        - benchmark_config
+      title: EvaluateRowsRequest
+    EvaluateResponse:
+      type: object
+      properties:
+        generations:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              oneOf:
+                - type: 'null'
+                - type: boolean
+                - type: number
+                - type: string
+                - type: array
+                - type: object
+          description: The generations from the evaluation.
+        scores:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ScoringResult'
+          description: The scores from the evaluation.
+      additionalProperties: false
+      required:
+        - generations
+        - scores
+      title: EvaluateResponse
+      description: The response from an evaluation.
+    ScoringResult:
+      type: object
+      properties:
+        score_rows:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              oneOf:
+                - type: 'null'
+                - type: boolean
+                - type: number
+                - type: string
+                - type: array
+                - type: object
+          description: >-
+            The scoring result for each row. Each row is a map of column name to value.
+        aggregated_results:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+          description: Map of metric name to aggregated value
+      additionalProperties: false
+      required:
+        - score_rows
+        - aggregated_results
+      title: ScoringResult
+      description: A scoring result for a single row.
     Agent:
       type: object
       properties:
@@ -4803,6 +5382,179 @@ components:
         - llm
         - embedding
       title: ModelType
+    AgentTurnInputType:
+      type: object
+      properties:
+        type:
+          type: string
+          const: agent_turn_input
+          default: agent_turn_input
+      additionalProperties: false
+      required:
+        - type
+      title: AgentTurnInputType
+    ArrayType:
+      type: object
+      properties:
+        type:
+          type: string
+          const: array
+          default: array
+      additionalProperties: false
+      required:
+        - type
+      title: ArrayType
+    BooleanType:
+      type: object
+      properties:
+        type:
+          type: string
+          const: boolean
+          default: boolean
+      additionalProperties: false
+      required:
+        - type
+      title: BooleanType
+    ChatCompletionInputType:
+      type: object
+      properties:
+        type:
+          type: string
+          const: chat_completion_input
+          default: chat_completion_input
+      additionalProperties: false
+      required:
+        - type
+      title: ChatCompletionInputType
+    CompletionInputType:
+      type: object
+      properties:
+        type:
+          type: string
+          const: completion_input
+          default: completion_input
+      additionalProperties: false
+      required:
+        - type
+      title: CompletionInputType
+    JsonType:
+      type: object
+      properties:
+        type:
+          type: string
+          const: json
+          default: json
+      additionalProperties: false
+      required:
+        - type
+      title: JsonType
+    NumberType:
+      type: object
+      properties:
+        type:
+          type: string
+          const: number
+          default: number
+      additionalProperties: false
+      required:
+        - type
+      title: NumberType
+    ObjectType:
+      type: object
+      properties:
+        type:
+          type: string
+          const: object
+          default: object
+      additionalProperties: false
+      required:
+        - type
+      title: ObjectType
+    ParamType:
+      oneOf:
+        - $ref: '#/components/schemas/StringType'
+        - $ref: '#/components/schemas/NumberType'
+        - $ref: '#/components/schemas/BooleanType'
+        - $ref: '#/components/schemas/ArrayType'
+        - $ref: '#/components/schemas/ObjectType'
+        - $ref: '#/components/schemas/JsonType'
+        - $ref: '#/components/schemas/UnionType'
+        - $ref: '#/components/schemas/ChatCompletionInputType'
+        - $ref: '#/components/schemas/CompletionInputType'
+        - $ref: '#/components/schemas/AgentTurnInputType'
+      discriminator:
+        propertyName: type
+        mapping:
+          string: '#/components/schemas/StringType'
+          number: '#/components/schemas/NumberType'
+          boolean: '#/components/schemas/BooleanType'
+          array: '#/components/schemas/ArrayType'
+          object: '#/components/schemas/ObjectType'
+          json: '#/components/schemas/JsonType'
+          union: '#/components/schemas/UnionType'
+          chat_completion_input: '#/components/schemas/ChatCompletionInputType'
+          completion_input: '#/components/schemas/CompletionInputType'
+          agent_turn_input: '#/components/schemas/AgentTurnInputType'
+    ScoringFn:
+      type: object
+      properties:
+        identifier:
+          type: string
+        provider_resource_id:
+          type: string
+        provider_id:
+          type: string
+        type:
+          type: string
+          const: scoring_function
+          default: scoring_function
+        description:
+          type: string
+        metadata:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+        return_type:
+          $ref: '#/components/schemas/ParamType'
+        params:
+          $ref: '#/components/schemas/ScoringFnParams'
+      additionalProperties: false
+      required:
+        - identifier
+        - provider_resource_id
+        - provider_id
+        - type
+        - metadata
+        - return_type
+      title: ScoringFn
+    StringType:
+      type: object
+      properties:
+        type:
+          type: string
+          const: string
+          default: string
+      additionalProperties: false
+      required:
+        - type
+      title: StringType
+    UnionType:
+      type: object
+      properties:
+        type:
+          type: string
+          const: union
+          default: union
+      additionalProperties: false
+      required:
+        - type
+      title: UnionType
     Shield:
       type: object
       properties:
@@ -5141,27 +5893,27 @@ components:
         - embedding_model
         - embedding_dimension
       title: VectorDB
-    BenchmarkTask:
+    BenchmarkEvaluationTask:
       type: object
       properties:
         type:
           type: string
-          const: benchmark_id
-          default: benchmark_id
+          const: benchmark
+          default: benchmark
         benchmark_id:
           type: string
       additionalProperties: false
       required:
         - type
         - benchmark_id
-      title: BenchmarkTask
-    DataSourceGraderTask:
+      title: BenchmarkEvaluationTask
+    DataEvaluationTask:
       type: object
       properties:
         type:
           type: string
-          const: data_source_grader
-          default: data_source_grader
+          const: data
+          default: data
         data_source:
           $ref: '#/components/schemas/DataSource'
         grader_ids:
@@ -5173,14 +5925,14 @@ components:
         - type
         - data_source
         - grader_ids
-      title: DataSourceGraderTask
-    DatasetGraderTask:
+      title: DataEvaluationTask
+    DatasetEvaluationTask:
       type: object
       properties:
         type:
           type: string
-          const: dataset_grader
-          default: dataset_grader
+          const: dataset
+          default: dataset
         dataset_id:
           type: string
         grader_ids:
@@ -5192,18 +5944,18 @@ components:
         - type
         - dataset_id
         - grader_ids
-      title: DatasetGraderTask
+      title: DatasetEvaluationTask
     EvaluationTask:
       oneOf:
-        - $ref: '#/components/schemas/BenchmarkTask'
-        - $ref: '#/components/schemas/DatasetGraderTask'
-        - $ref: '#/components/schemas/DataSourceGraderTask'
+        - $ref: '#/components/schemas/BenchmarkEvaluationTask'
+        - $ref: '#/components/schemas/DatasetEvaluationTask'
+        - $ref: '#/components/schemas/DataEvaluationTask'
       discriminator:
         propertyName: type
         mapping:
-          benchmark_id: '#/components/schemas/BenchmarkTask'
-          dataset_grader: '#/components/schemas/DatasetGraderTask'
-          data_source_grader: '#/components/schemas/DataSourceGraderTask'
+          benchmark: '#/components/schemas/BenchmarkEvaluationTask'
+          dataset: '#/components/schemas/DatasetEvaluationTask'
+          data: '#/components/schemas/DataEvaluationTask'
     GradeRequest:
       type: object
       properties:
@@ -5218,23 +5970,6 @@ components:
       required:
         - task
       title: GradeRequest
-    AgentCandidate:
-      type: object
-      properties:
-        type:
-          type: string
-          const: agent
-          default: agent
-        config:
-          $ref: '#/components/schemas/AgentConfig'
-          description: >-
-            The configuration for the agent candidate.
-      additionalProperties: false
-      required:
-        - type
-        - config
-      title: AgentCandidate
-      description: An agent candidate for evaluation.
     EvaluationCandidate:
       oneOf:
         - $ref: '#/components/schemas/ModelCandidate'
@@ -5263,10 +5998,10 @@ components:
           type: string
           format: date-time
           description: The time the job was created.
-        ended_at:
+        completed_at:
           type: string
           format: date-time
-          description: The time the job ended.
+          description: The time the job completed.
         error:
           type: string
           description: >-
@@ -5288,30 +6023,6 @@ components:
         - task
         - candidate
       title: EvaluationJob
-    ModelCandidate:
-      type: object
-      properties:
-        type:
-          type: string
-          const: model
-          default: model
-        model_id:
-          type: string
-        sampling_params:
-          $ref: '#/components/schemas/SamplingParams'
-          description: The sampling parameters for the model.
-        system_message:
-          $ref: '#/components/schemas/SystemMessage'
-          description: >-
-            (Optional) The system message providing instructions or context to the
-            model.
-      additionalProperties: false
-      required:
-        - type
-        - model_id
-        - sampling_params
-      title: ModelCandidate
-      description: A model candidate for evaluation.
     GradeSyncRequest:
       type: object
       properties:
@@ -5355,41 +6066,6 @@ components:
         - scores
       title: EvaluationResponse
       description: A response to an inline evaluation.
-    ScoringResult:
-      type: object
-      properties:
-        scores:
-          type: array
-          items:
-            type: object
-            additionalProperties:
-              oneOf:
-                - type: 'null'
-                - type: boolean
-                - type: number
-                - type: string
-                - type: array
-                - type: object
-          description: >-
-            The scoring result for each row. Each row is a map of grader column name
-            to value.
-        metrics:
-          type: object
-          additionalProperties:
-            oneOf:
-              - type: 'null'
-              - type: boolean
-              - type: number
-              - type: string
-              - type: array
-              - type: object
-          description: Map of metric name to aggregated value.
-      additionalProperties: false
-      required:
-        - scores
-        - metrics
-      title: ScoringResult
-      description: A scoring result for a single row.
     HealthInfo:
       type: object
       properties:
@@ -5576,6 +6252,15 @@ components:
         - data
       title: IterrowsResponse
       description: A paginated list of rows from a dataset.
+    JobStatus:
+      type: string
+      enum:
+        - completed
+        - in_progress
+        - failed
+        - scheduled
+        - cancelled
+      title: JobStatus
     ListAgentSessionsResponse:
       type: object
       properties:
@@ -5707,6 +6392,17 @@ components:
       required:
         - data
       title: ListGraderTypesResponse
+    ListGradersResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Grader'
+      additionalProperties: false
+      required:
+        - data
+      title: ListGradersResponse
     ListModelsResponse:
       type: object
       properties:
@@ -5757,6 +6453,17 @@ components:
       required:
         - data
       title: ListRoutesResponse
+    ListScoringFunctionsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScoringFn'
+      additionalProperties: false
+      required:
+        - data
+      title: ListScoringFunctionsResponse
     ListShieldsResponse:
       type: object
       properties:
@@ -6394,7 +7101,7 @@ components:
         dataset_id:
           type: string
           description: >-
-            The ID of the dataset to used to run the benchmark.
+            The ID of the dataset to be used to run the benchmark.
         grader_ids:
           type: array
           items:
@@ -6532,6 +7239,27 @@ components:
       required:
         - model_id
       title: RegisterModelRequest
+    RegisterScoringFunctionRequest:
+      type: object
+      properties:
+        scoring_fn_id:
+          type: string
+        description:
+          type: string
+        return_type:
+          $ref: '#/components/schemas/ParamType'
+        provider_scoring_fn_id:
+          type: string
+        provider_id:
+          type: string
+        params:
+          $ref: '#/components/schemas/ScoringFnParams'
+      additionalProperties: false
+      required:
+        - scoring_fn_id
+        - description
+        - return_type
+      title: RegisterScoringFunctionRequest
     RegisterShieldRequest:
       type: object
       properties:
@@ -6631,6 +7359,25 @@ components:
         - task
         - candidate
       title: RunRequest
+    RunEvalRequest:
+      type: object
+      properties:
+        benchmark_config:
+          $ref: '#/components/schemas/BenchmarkConfig'
+          description: The configuration for the benchmark.
+      additionalProperties: false
+      required:
+        - benchmark_config
+      title: RunEvalRequest
+    Job:
+      type: object
+      properties:
+        job_id:
+          type: string
+      additionalProperties: false
+      required:
+        - job_id
+      title: Job
     RunShieldRequest:
       type: object
       properties:
@@ -6702,6 +7449,81 @@ components:
         - attributes_to_save
         - dataset_id
       title: SaveSpansToDatasetRequest
+    ScoreRequest:
+      type: object
+      properties:
+        input_rows:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              oneOf:
+                - type: 'null'
+                - type: boolean
+                - type: number
+                - type: string
+                - type: array
+                - type: object
+          description: The rows to score.
+        scoring_functions:
+          type: object
+          additionalProperties:
+            oneOf:
+              - $ref: '#/components/schemas/ScoringFnParams'
+              - type: 'null'
+          description: >-
+            The scoring functions to use for the scoring.
+      additionalProperties: false
+      required:
+        - input_rows
+        - scoring_functions
+      title: ScoreRequest
+    ScoreResponse:
+      type: object
+      properties:
+        results:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ScoringResult'
+          description: >-
+            A map of scoring function name to ScoringResult.
+      additionalProperties: false
+      required:
+        - results
+      title: ScoreResponse
+      description: The response from scoring.
+    ScoreBatchRequest:
+      type: object
+      properties:
+        dataset_id:
+          type: string
+        scoring_functions:
+          type: object
+          additionalProperties:
+            oneOf:
+              - $ref: '#/components/schemas/ScoringFnParams'
+              - type: 'null'
+        save_results_dataset:
+          type: boolean
+      additionalProperties: false
+      required:
+        - dataset_id
+        - scoring_functions
+        - save_results_dataset
+      title: ScoreBatchRequest
+    ScoreBatchResponse:
+      type: object
+      properties:
+        dataset_id:
+          type: string
+        results:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ScoringResult'
+      additionalProperties: false
+      required:
+        - results
+      title: ScoreBatchResponse
     AlgorithmConfig:
       oneOf:
         - $ref: '#/components/schemas/LoraFinetuningConfig'
@@ -6939,6 +7761,9 @@ tags:
   - name: Benchmarks
   - name: DatasetIO
   - name: Datasets
+  - name: Eval
+    x-displayName: >-
+      Llama Stack Evaluation API for running evaluations on model and agent candidates.
   - name: Evaluation
   - name: Files
   - name: Graders
@@ -6961,6 +7786,8 @@ tags:
     x-displayName: >-
       Providers API for inspecting, listing, and modifying providers and their configurations.
   - name: Safety
+  - name: Scoring
+  - name: ScoringFunctions
   - name: Shields
   - name: SyntheticDataGeneration (Coming Soon)
   - name: Telemetry
@@ -6976,6 +7803,7 @@ x-tagGroups:
       - Benchmarks
       - DatasetIO
       - Datasets
+      - Eval
       - Evaluation
       - Files
       - Graders
@@ -6985,6 +7813,8 @@ x-tagGroups:
       - PostTraining (Coming Soon)
       - Providers
       - Safety
+      - Scoring
+      - ScoringFunctions
       - Shields
       - SyntheticDataGeneration (Coming Soon)
       - Telemetry

@@ -62,7 +62,7 @@ class Benchmarks(Protocol):
         """
         Register a new benchmark.
 
-        :param dataset_id: The ID of the dataset to used to run the benchmark.
+        :param dataset_id: The ID of the dataset to be used to run the benchmark.
         :param grader_ids: List of grader ids to use for this benchmark.
         :param benchmark_id: (Optional) The ID of the benchmark to register. If not provided, an ID will be generated.
         :param metadata: (Optional) Metadata for this benchmark for additional descriptions.
@@ -85,5 +85,12 @@ class Benchmarks(Protocol):
         Get a benchmark by ID.
 
         :param benchmark_id: The ID of the benchmark to get.
+        """
+        ...
+
+    @webmethod(route="/benchmarks/{benchmark_id}", method="DELETE")
+    async def unregister_benchmark(self, benchmark_id: str) -> None:
+        """
+        Unregister a benchmark by ID.
         """
         ...

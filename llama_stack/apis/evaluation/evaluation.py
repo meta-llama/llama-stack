@@ -48,28 +48,28 @@ EvaluationCandidate = register_schema(
 
 
 @json_schema_type
-class BenchmarkTask(BaseModel):
-    type: Literal["benchmark_id"] = "benchmark_id"
+class BenchmarkEvaluationTask(BaseModel):
+    type: Literal["benchmark"] = "benchmark"
     benchmark_id: str
 
 
 @json_schema_type
-class DatasetGraderTask(BaseModel):
-    type: Literal["dataset_grader"] = "dataset_grader"
+class DatasetEvaluationTask(BaseModel):
+    type: Literal["dataset"] = "dataset"
     dataset_id: str
     grader_ids: List[str]
 
 
 @json_schema_type
-class DataSourceGraderTask(BaseModel):
-    type: Literal["data_source_grader"] = "data_source_grader"
+class DataEvaluationTask(BaseModel):
+    type: Literal["data"] = "data"
     data_source: DataSource
     grader_ids: List[str]
 
 
 EvaluationTask = register_schema(
     Annotated[
-        Union[BenchmarkTask, DatasetGraderTask, DataSourceGraderTask],
+        Union[BenchmarkEvaluationTask, DatasetEvaluationTask, DataEvaluationTask],
         Field(discriminator="type"),
     ],
     name="EvaluationTask",
