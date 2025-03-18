@@ -17,17 +17,11 @@ vllm:
 # https://llama-stack.readthedocs.io/en/latest/distributions/selection.html
 distribution: distribution-remote-vllm
 
-runConfig:
-  enabled: false 
-  # customYaml:
-  # Your custom run.yaml configuration file can be pasted here
-  # If not set, the default run.yaml file in the `files/run.yaml` will be used
-
 telemetry:
   enabled: false
   serviceName: "otel-collector.openshift-opentelemetry-operator.svc.cluster.local:4318"
   sinks: "console,sqlite,otel"
-  
+
 #  Use to allow for other env variables to be passed to the container
 # env:
 #   MY_CUSTOM_ENV_VAR: "my-custom-env-var-value"
@@ -147,7 +141,7 @@ startupProbe:
   initialDelaySeconds: 40
   periodSeconds: 10
   failureThreshold: 30
-  
+
 # This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
 autoscaling:
   enabled: false
