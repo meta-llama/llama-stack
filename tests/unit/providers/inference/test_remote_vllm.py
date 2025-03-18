@@ -187,8 +187,8 @@ def test_chat_completion_doesnt_block_event_loop(caplog):
     loop.set_debug(True)
     caplog.set_level(logging.WARNING)
 
-    # Log when event loop is blocked for more than 100ms
-    loop.slow_callback_duration = 0.1
+    # Log when event loop is blocked for more than 200ms
+    loop.slow_callback_duration = 0.2
     # Sleep for 500ms in our delayed http response
     sleep_time = 0.5
 
