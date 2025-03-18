@@ -166,11 +166,10 @@ def run_evaluation_3():
     eval_candidate = st.session_state["eval_candidate"]
 
     dataset_id = benchmarks[selected_benchmark].dataset_id
-    rows = llama_stack_api.client.datasetio.get_rows_paginated(
+    rows = llama_stack_api.client.datasets.iterrows(
         dataset_id=dataset_id,
-        rows_in_page=-1,
     )
-    total_rows = len(rows.rows)
+    total_rows = len(rows.data)
     # Add number of examples control
     num_rows = st.number_input(
         "Number of Examples to Evaluate",
@@ -195,7 +194,7 @@ def run_evaluation_3():
     if st.button("Run Evaluation"):
         progress_text = "Running evaluation..."
         progress_bar = st.progress(0, text=progress_text)
-        rows = rows.rows
+        rows = rows.data
         if num_rows < total_rows:
             rows = rows[:num_rows]
 

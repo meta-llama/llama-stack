@@ -12,6 +12,7 @@ from llama_stack.apis.common.content_types import InterleavedContent
 from llama_stack.apis.inference import (
     ChatCompletionResponse,
     ChatCompletionResponseStreamChunk,
+    CompletionMessage,
     EmbeddingsResponse,
     EmbeddingTaskType,
     Inference,
@@ -160,12 +161,14 @@ class PassthroughInferenceAdapter(Inference):
         client = self._get_client()
         response = await client.inference.chat_completion(**json_params)
 
-        response = response.to_dict()
-
-        # temporary hack to remove the metrics from the response
-        response["metrics"] = []
-
-        return convert_to_pydantic(ChatCompletionResponse, response)
+        return ChatCompletionResponse(
+            completion_message=CompletionMessage(
+                content=response.completion_message.content.text,
+                stop_reason=response.completion_message.stop_reason,
+                tool_calls=response.completion_message.tool_calls,
+            ),
+            logprobs=response.logprobs,
+        )
 
     async def _stream_chat_completion(self, json_params: Dict[str, Any]) -> AsyncGenerator:
         client = self._get_client()

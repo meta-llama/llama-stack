@@ -10,18 +10,17 @@ from urllib.parse import unquote
 
 import pandas
 
-from llama_stack.apis.common.content_types import URL
 from llama_stack.providers.utils.memory.vector_store import parse_data_url
 
 
-def get_dataframe_from_url(url: URL):
+def get_dataframe_from_uri(uri: str):
     df = None
-    if url.uri.endswith(".csv"):
-        df = pandas.read_csv(url.uri)
-    elif url.uri.endswith(".xlsx"):
-        df = pandas.read_excel(url.uri)
-    elif url.uri.startswith("data:"):
-        parts = parse_data_url(url.uri)
+    if uri.endswith(".csv"):
+        df = pandas.read_csv(uri)
+    elif uri.endswith(".xlsx"):
+        df = pandas.read_excel(uri)
+    elif uri.startswith("data:"):
+        parts = parse_data_url(uri)
         data = parts["data"]
         if parts["is_base64"]:
             data = base64.b64decode(data)
@@ -39,6 +38,6 @@ def get_dataframe_from_url(url: URL):
         else:
             df = pandas.read_excel(data_bytes)
     else:
-        raise ValueError(f"Unsupported file type: {url}")
+        raise ValueError(f"Unsupported file type: {uri}")
 
     return df

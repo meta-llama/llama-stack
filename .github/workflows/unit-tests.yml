@@ -5,6 +5,14 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+    paths:
+      - 'distributions/**'
+      - 'llama_stack/**'
+      - 'tests/unit/**'
+      - 'uv.lock'
+      - 'pyproject.toml'
+      - 'requirements.txt'
+      - '.github/workflows/unit-tests.yml' # This workflow
   workflow_dispatch:
 
 jobs:

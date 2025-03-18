@@ -7,6 +7,7 @@ import json
 import logging
 from typing import AsyncGenerator, List, Optional, Union
 
+import httpx
 from openai import AsyncOpenAI
 from openai.types.chat.chat_completion_chunk import (
     ChatCompletionChunk as OpenAIChatCompletionChunk,
@@ -229,7 +230,11 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
 
     async def initialize(self) -> None:
         log.info(f"Initializing VLLM client with base_url={self.config.url}")
-        self.client = AsyncOpenAI(base_url=self.config.url, api_key=self.config.api_token)
+        self.client = AsyncOpenAI(
+            base_url=self.config.url,
+            api_key=self.config.api_token,
+            http_client=None if self.config.tls_verify else httpx.AsyncClient(verify=False),
+        )
 
     async def shutdown(self) -> None:
         pass

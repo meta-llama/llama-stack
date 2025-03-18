@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 # All rights reserved.
 #
@@ -18,7 +19,7 @@ import fire
 
 from llama_stack.models.llama.sku_list import resolve_model
 from llama_stack.providers.inline.inference.meta_reference.config import MetaReferenceInferenceConfig
-from llama_stack.providers.inline.inference.meta_reference.generation import Llama
+from llama_stack.providers.inline.inference.meta_reference.llama3.generation import Llama3
 
 THIS_DIR = Path(__file__).parent.resolve()
 
@@ -41,7 +42,7 @@ def run_main(
     llama_model = resolve_model(model_id)
     if not llama_model:
         raise ValueError(f"Model {model_id} not found")
-    generator = Llama.build(
+    generator = Llama3.build(
         config=config,
         model_id=model_id,
         llama_model=llama_model,
