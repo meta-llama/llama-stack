@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
 from llama_stack.apis.agents import AgentConfig
-from llama_stack.apis.common.job_types import CommonJobFields, JobStatus
+from llama_stack.apis.common.job_types import Job, JobStatus
 from llama_stack.apis.inference import SamplingParams, SystemMessage
 from llama_stack.apis.scoring import ScoringResult
 from llama_stack.apis.scoring_functions import ScoringFnParams
@@ -91,7 +91,7 @@ class Eval(Protocol):
         self,
         benchmark_id: str,
         benchmark_config: BenchmarkConfig,
-    ) -> CommonJobFields:
+    ) -> Job:
         """Run an evaluation on a benchmark.
 
         :param benchmark_id: The ID of the benchmark to run the evaluation on.
@@ -135,7 +135,9 @@ class Eval(Protocol):
         """
         ...
 
-    @webmethod(route="/eval/benchmarks/{benchmark_id}/jobs/{job_id}/result", method="GET")
+    @webmethod(
+        route="/eval/benchmarks/{benchmark_id}/jobs/{job_id}/result", method="GET"
+    )
     async def job_result(self, benchmark_id: str, job_id: str) -> EvaluateResponse:
         """Get the result of a job.
 

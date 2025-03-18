@@ -12,6 +12,12 @@ from pydantic import BaseModel
 from llama_stack.schema_utils import json_schema_type
 
 
+@json_schema_type
+class Job(BaseModel):
+    # NOTE: this will be DEPRECATED in favour of CommonJobFields
+    job_id: str
+
+
 class JobType(Enum):
     batch_inference = "batch_inference"
     evaluation = "evaluation"
@@ -24,14 +30,6 @@ class JobStatus(Enum):
     failed = "failed"
     scheduled = "scheduled"
     cancelled = "cancelled"
-
-
-class JobArtifact(BaseModel):
-    """
-    A job artifact is a file or directory that is produced by a job.
-    """
-
-    path: str
 
 
 @json_schema_type
