@@ -44,7 +44,9 @@ class PandasDataframeDataset:
         elif self.dataset_def.source.type == "rows":
             self.df = pandas.DataFrame(self.dataset_def.source.rows)
         else:
-            raise ValueError(f"Unsupported dataset source type: {self.dataset_def.source.type}")
+            raise ValueError(
+                f"Unsupported dataset source type: {self.dataset_def.source.type}"
+            )
 
         if self.df is None:
             raise ValueError(f"Failed to load dataset from {self.dataset_def.url}")
@@ -108,7 +110,7 @@ class LocalFSDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
 
         return IterrowsResponse(
             data=rows,
-            next_index=end if end < len(dataset_impl) else None,
+            next_start_index=end if end < len(dataset_impl) else None,
         )
 
     async def append_rows(self, dataset_id: str, rows: List[Dict[str, Any]]) -> None:
@@ -117,4 +119,6 @@ class LocalFSDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
         dataset_impl.load()
 
         new_rows_df = pandas.DataFrame(rows)
-        dataset_impl.df = pandas.concat([dataset_impl.df, new_rows_df], ignore_index=True)
+        dataset_impl.df = pandas.concat(
+            [dataset_impl.df, new_rows_df], ignore_index=True
+        )

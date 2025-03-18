@@ -2284,6 +2284,67 @@
                     {
                         "name": "limit",
                         "in": "query",
+                        "description": "The number of rows to get.",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ]
+            }
+        },
+        "/v1/eval/benchmarks/{benchmark_id}/jobs/{job_id}": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/IterrowsResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "DatasetIO"
+                ],
+                "description": "Get a paginated list of rows from a dataset. Uses cursor-based pagination.",
+                "parameters": [
+                    {
+                        "name": "dataset_id",
+                        "in": "path",
+                        "description": "The ID of the dataset to get the rows from.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "start_index",
+                        "in": "query",
+                        "description": "Index into dataset for the first row to get. Get all rows if None.",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
                         "description": "The number of rows to get per page.",
                         "required": false,
                         "schema": {
@@ -6552,100 +6613,14 @@
                         "const": "factuality",
                         "default": "factuality"
                     },
-                    "factuality": {
-                        "type": "object",
-                        "properties": {
-                            "aggregation_functions": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string",
-                                    "enum": [
-                                        "average",
-                                        "median",
-                                        "categorical_count",
-                                        "accuracy"
-                                    ],
-                                    "title": "AggregationFunctionType",
-                                    "description": "A type of aggregation function."
-                                }
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "aggregation_functions"
-                        ],
-                        "title": "BasicGraderParams"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type",
-                    "factuality"
-                ],
-                "title": "FactualityGrader"
-            },
-            "FaithfulnessGrader": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "faithfulness",
-                        "default": "faithfulness"
-                    },
-                    "faithfulness": {
-                        "type": "object",
-                        "properties": {
-                            "aggregation_functions": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string",
-                                    "enum": [
-                                        "average",
-                                        "median",
-                                        "categorical_count",
-                                        "accuracy"
-                                    ],
-                                    "title": "AggregationFunctionType",
-                                    "description": "A type of aggregation function."
-                                }
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "aggregation_functions"
-                        ],
-                        "title": "BasicGraderParams"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type",
-                    "faithfulness"
-                ],
-                "title": "FaithfulnessGrader"
-            },
-            "Grader": {
-                "type": "object",
-                "properties": {
-                    "identifier": {
+                    "dataset_id": {
                         "type": "string"
                     },
-                    "provider_resource_id": {
-                        "type": "string"
-                    },
-                    "provider_id": {
-                        "type": "string"
-                    },
-                    "type": {
-                        "type": "string",
-                        "const": "grader",
-                        "default": "grader"
-                    },
-                    "grader": {
-                        "$ref": "#/components/schemas/GraderDefinition"
-                    },
-                    "description": {
-                        "type": "string"
+                    "scoring_functions": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
                     },
                     "metadata": {
                         "type": "object",
@@ -6679,98 +6654,163 @@
                     "provider_resource_id",
                     "provider_id",
                     "type",
-                    "grader",
+                    "dataset_id",
+                    "scoring_functions",
                     "metadata"
                 ],
-                "title": "Grader"
+                "title": "Benchmark"
             },
-            "GraderDefinition": {
+            "DataSource": {
                 "oneOf": [
                     {
-                        "$ref": "#/components/schemas/LlmGrader"
+                        "$ref": "#/components/schemas/URIDataSource"
                     },
                     {
-                        "$ref": "#/components/schemas/RegexParserGrader"
-                    },
-                    {
-                        "$ref": "#/components/schemas/EqualityGrader"
-                    },
-                    {
-                        "$ref": "#/components/schemas/SubsetOfGrader"
-                    },
-                    {
-                        "$ref": "#/components/schemas/FactualityGrader"
-                    },
-                    {
-                        "$ref": "#/components/schemas/FaithfulnessGrader"
+                        "$ref": "#/components/schemas/RowsDataSource"
                     }
                 ],
                 "discriminator": {
                     "propertyName": "type",
                     "mapping": {
-                        "llm": "#/components/schemas/LlmGrader",
-                        "regex_parser": "#/components/schemas/RegexParserGrader",
-                        "equality": "#/components/schemas/EqualityGrader",
-                        "subset_of": "#/components/schemas/SubsetOfGrader",
-                        "factuality": "#/components/schemas/FactualityGrader",
-                        "faithfulness": "#/components/schemas/FaithfulnessGrader"
+                        "uri": "#/components/schemas/URIDataSource",
+                        "rows": "#/components/schemas/RowsDataSource"
                     }
                 }
             },
-            "LlmGrader": {
+            "Grader": {
+                "type": "object",
+                "properties": {
+                    "identifier": {
+                        "type": "string"
+                    },
+                    "provider_resource_id": {
+                        "type": "string"
+                    },
+                    "provider_id": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "grader",
+                        "default": "grader"
+                    },
+                    "purpose": {
+                        "type": "string",
+                        "enum": [
+                            "post-training/messages",
+                            "eval/question-answer",
+                            "eval/messages-answer"
+                        ],
+                        "title": "DatasetPurpose",
+                        "description": "Purpose of the dataset. Each purpose has a required input data schema."
+                    },
+                    "source": {
+                        "$ref": "#/components/schemas/DataSource"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "identifier",
+                    "provider_resource_id",
+                    "provider_id",
+                    "type",
+                    "purpose",
+                    "source",
+                    "metadata"
+                ],
+                "title": "Dataset"
+            },
+            "RowsDataSource": {
                 "type": "object",
                 "properties": {
                     "type": {
                         "type": "string",
-                        "const": "llm",
-                        "default": "llm"
+                        "const": "rows",
+                        "default": "rows"
                     },
-                    "llm": {
-                        "type": "object",
-                        "properties": {
-                            "model": {
-                                "type": "string"
-                            },
-                            "prompt": {
-                                "type": "string"
-                            },
-                            "score_regexes": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
-                                }
-                            },
-                            "aggregation_functions": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string",
-                                    "enum": [
-                                        "average",
-                                        "median",
-                                        "categorical_count",
-                                        "accuracy"
-                                    ],
-                                    "title": "AggregationFunctionType",
-                                    "description": "A type of aggregation function."
-                                }
+                    "rows": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "oneOf": [
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "type": "boolean"
+                                    },
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array"
+                                    },
+                                    {
+                                        "type": "object"
+                                    }
+                                ]
                             }
                         },
-                        "additionalProperties": false,
-                        "required": [
-                            "model",
-                            "prompt",
-                            "score_regexes",
-                            "aggregation_functions"
-                        ],
-                        "title": "LlmGraderParams"
+                        "description": "The dataset is stored in rows. E.g. - [ {\"messages\": [{\"role\": \"user\", \"content\": \"Hello, world!\"}, {\"role\": \"assistant\", \"content\": \"Hello, world!\"}]} ]"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "type",
-                    "llm"
+                    "rows"
                 ],
-                "title": "LlmGrader"
+                "title": "RowsDataSource",
+                "description": "A dataset stored in rows."
+            },
+            "URIDataSource": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "uri",
+                        "default": "uri"
+                    },
+                    "uri": {
+                        "type": "string",
+                        "description": "The dataset can be obtained from a URI. E.g. - \"https://mywebsite.com/mydata.jsonl\" - \"lsfs://mydata.jsonl\" - \"data:csv;base64,{base64_content}\""
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "uri"
+                ],
+                "title": "URIDataSource",
+                "description": "A dataset that can be obtained from a URI."
             },
             "RegexParserGrader": {
                 "type": "object",
@@ -6819,45 +6859,182 @@
                 ],
                 "title": "RegexParserGrader"
             },
-            "SubsetOfGrader": {
+            "ModelType": {
+                "type": "string",
+                "enum": [
+                    "llm",
+                    "embedding"
+                ],
+                "title": "ModelType"
+            },
+            "AgentTurnInputType": {
                 "type": "object",
                 "properties": {
                     "type": {
                         "type": "string",
-                        "const": "subset_of",
-                        "default": "subset_of"
-                    },
-                    "subset_of": {
-                        "type": "object",
-                        "properties": {
-                            "aggregation_functions": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string",
-                                    "enum": [
-                                        "average",
-                                        "median",
-                                        "categorical_count",
-                                        "accuracy"
-                                    ],
-                                    "title": "AggregationFunctionType",
-                                    "description": "A type of aggregation function."
-                                }
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "aggregation_functions"
-                        ],
-                        "title": "BasicGraderParams"
+                        "const": "agent_turn_input",
+                        "default": "agent_turn_input"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "type",
-                    "subset_of"
+                    "type"
                 ],
-                "title": "SubsetOfGrader"
+                "title": "AgentTurnInputType"
+            },
+            "ArrayType": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "array",
+                        "default": "array"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ],
+                "title": "ArrayType"
+            },
+            "BooleanType": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "boolean",
+                        "default": "boolean"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ],
+                "title": "BooleanType"
+            },
+            "ChatCompletionInputType": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "chat_completion_input",
+                        "default": "chat_completion_input"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ],
+                "title": "ChatCompletionInputType"
+            },
+            "CompletionInputType": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "completion_input",
+                        "default": "completion_input"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ],
+                "title": "CompletionInputType"
+            },
+            "JsonType": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "json",
+                        "default": "json"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ],
+                "title": "JsonType"
+            },
+            "NumberType": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "number",
+                        "default": "number"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ],
+                "title": "NumberType"
+            },
+            "ObjectType": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "object",
+                        "default": "object"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ],
+                "title": "ObjectType"
+            },
+            "ParamType": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/StringType"
+                    },
+                    {
+                        "$ref": "#/components/schemas/NumberType"
+                    },
+                    {
+                        "$ref": "#/components/schemas/BooleanType"
+                    },
+                    {
+                        "$ref": "#/components/schemas/ArrayType"
+                    },
+                    {
+                        "$ref": "#/components/schemas/ObjectType"
+                    },
+                    {
+                        "$ref": "#/components/schemas/JsonType"
+                    },
+                    {
+                        "$ref": "#/components/schemas/UnionType"
+                    },
+                    {
+                        "$ref": "#/components/schemas/ChatCompletionInputType"
+                    },
+                    {
+                        "$ref": "#/components/schemas/CompletionInputType"
+                    },
+                    {
+                        "$ref": "#/components/schemas/AgentTurnInputType"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "string": "#/components/schemas/StringType",
+                        "number": "#/components/schemas/NumberType",
+                        "boolean": "#/components/schemas/BooleanType",
+                        "array": "#/components/schemas/ArrayType",
+                        "object": "#/components/schemas/ObjectType",
+                        "json": "#/components/schemas/JsonType",
+                        "union": "#/components/schemas/UnionType",
+                        "chat_completion_input": "#/components/schemas/ChatCompletionInputType",
+                        "completion_input": "#/components/schemas/CompletionInputType",
+                        "agent_turn_input": "#/components/schemas/AgentTurnInputType"
+                    }
+                }
             },
             "Model": {
                 "type": "object",
@@ -6913,17 +7090,39 @@
                     "provider_id",
                     "type",
                     "metadata",
-                    "model_type"
+                    "return_type"
                 ],
-                "title": "Model"
+                "title": "ScoringFn"
             },
-            "ModelType": {
-                "type": "string",
-                "enum": [
-                    "llm",
-                    "embedding"
+            "StringType": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "string",
+                        "default": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
                 ],
-                "title": "ModelType"
+                "title": "StringType"
+            },
+            "UnionType": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "union",
+                        "default": "union"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ],
+                "title": "UnionType"
             },
             "Shield": {
                 "type": "object",
@@ -8131,7 +8330,7 @@
                         },
                         "description": "The rows in the current page."
                     },
-                    "next_index": {
+                    "next_start_index": {
                         "type": "integer",
                         "description": "Index into dataset for the first row in the next page. None if there are no more rows."
                     }
@@ -9440,7 +9639,7 @@
                     },
                     "source": {
                         "$ref": "#/components/schemas/DataSource",
-                        "description": "The data source of the dataset. Examples: - { \"type\": \"uri\", \"uri\": \"https://mywebsite.com/mydata.jsonl\" } - { \"type\": \"uri\", \"uri\": \"lsfs://mydata.jsonl\" } - { \"type\": \"uri\", \"uri\": \"data:csv;base64,{base64_content}\" } - { \"type\": \"uri\", \"uri\": \"huggingface://llamastack/simpleqa?split=train\" } - { \"type\": \"rows\", \"rows\": [ { \"messages\": [ {\"role\": \"user\", \"content\": \"Hello, world!\"}, {\"role\": \"assistant\", \"content\": \"Hello, world!\"}, ] } ] }"
+                        "description": "The data source of the dataset. Ensure that the data source schema is compatible with the purpose of the dataset. Examples: - { \"type\": \"uri\", \"uri\": \"https://mywebsite.com/mydata.jsonl\" } - { \"type\": \"uri\", \"uri\": \"lsfs://mydata.jsonl\" } - { \"type\": \"uri\", \"uri\": \"data:csv;base64,{base64_content}\" } - { \"type\": \"uri\", \"uri\": \"huggingface://llamastack/simpleqa?split=train\" } - { \"type\": \"rows\", \"rows\": [ { \"messages\": [ {\"role\": \"user\", \"content\": \"Hello, world!\"}, {\"role\": \"assistant\", \"content\": \"Hello, world!\"}, ] } ] }"
                     },
                     "metadata": {
                         "type": "object",
@@ -9477,50 +9676,6 @@
                 "required": [
                     "purpose",
                     "source"
-                ],
-                "title": "RegisterDatasetRequest"
-            },
-            "RegisterGraderRequest": {
-                "type": "object",
-                "properties": {
-                    "grader": {
-                        "$ref": "#/components/schemas/GraderDefinition",
-                        "description": "The grader definition, E.g. - { \"type\": \"llm\", \"llm\": { \"model\": \"llama-405b\", \"prompt\": \"You are a judge. Score the answer based on the question. {question} {answer}\", } }"
-                    },
-                    "grader_id": {
-                        "type": "string",
-                        "description": "(Optional) The ID of the grader. If not provided, a random ID will be generated."
-                    },
-                    "metadata": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        },
-                        "description": "(Optional) Any additional metadata for this grader. - E.g. { \"description\": \"A grader that scores the answer based on the question.\", }"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "grader"
                 ],
                 "title": "RegisterGraderRequest"
             },
@@ -10200,9 +10355,6 @@
             "name": "Files"
         },
         {
-            "name": "Graders"
-        },
-        {
             "name": "Inference",
             "description": "This API provides the raw interface to the underlying models. Two kinds of models are supported:\n- LLM models: these models generate \"raw\" and \"chat\" (conversational) completions.\n- Embedding models: these models generate embeddings to be used for semantic search.",
             "x-displayName": "Llama Stack Inference API for generating completions, chat completions, and embeddings."
@@ -10254,9 +10406,8 @@
                 "Benchmarks",
                 "DatasetIO",
                 "Datasets",
-                "Evaluation",
+                "Eval",
                 "Files",
-                "Graders",
                 "Inference",
                 "Inspect",
                 "Models",
