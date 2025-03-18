@@ -227,13 +227,6 @@ class LlamaGuardShield:
         if len(messages) >= 2 and (messages[0].role == Role.user.value and messages[1].role == Role.user.value):
             messages = messages[1:]
 
-        for i in range(1, len(messages)):
-            if messages[i].role == messages[i - 1].role:
-                for i, m in enumerate(messages):
-                    print(f"{i}: {m.role}: {m.content}")
-                raise ValueError(
-                    f"Messages must alternate between user and assistant. Message {i} has the same role as message {i - 1}"
-                )
         return messages
 
     async def run(self, messages: List[Message]) -> RunShieldResponse:

@@ -24,7 +24,9 @@ from llama_stack.providers.utils.common.data_schema_validator import (
 from .config import BasicScoringConfig
 from .scoring_fn.bfcl_scoring_fn import BFCLScoringFn
 from .scoring_fn.equality_scoring_fn import EqualityScoringFn
-from .scoring_fn.regex_parser_math_response_scoring_fn import RegexParserMathResponseScoringFn
+from .scoring_fn.regex_parser_math_response_scoring_fn import (
+    RegexParserMathResponseScoringFn,
+)
 from .scoring_fn.regex_parser_scoring_fn import RegexParserScoringFn
 from .scoring_fn.subset_of_scoring_fn import SubsetOfScoringFn
 
@@ -82,12 +84,12 @@ class BasicScoringImpl(
         dataset_def = await self.datasets_api.get_dataset(dataset_id=dataset_id)
         validate_dataset_schema(dataset_def.dataset_schema, get_valid_schemas(Api.scoring.value))
 
-        all_rows = await self.datasetio_api.get_rows_paginated(
+        all_rows = await self.datasetio_api.iterrows(
             dataset_id=dataset_id,
-            rows_in_page=-1,
+            limit=-1,
         )
         res = await self.score(
-            input_rows=all_rows.rows,
+            input_rows=all_rows.data,
             scoring_functions=scoring_functions,
         )
         if save_results_dataset:

@@ -114,23 +114,17 @@ pprint(response)
 simpleqa_dataset_id = "huggingface::simpleqa"
 
 _ = client.datasets.register(
+    purpose="eval/messages-answer",
+    source={
+        "type": "uri",
+        "uri": "huggingface://datasets/llamastack/simpleqa?split=train",
+    },
     dataset_id=simpleqa_dataset_id,
-    provider_id="huggingface",
-    url={"uri": "https://huggingface.co/datasets/llamastack/simpleqa"},
-    metadata={
-        "path": "llamastack/simpleqa",
-        "split": "train",
-    },
-    dataset_schema={
-        "input_query": {"type": "string"},
-        "expected_answer": {"type": "string"},
-        "chat_completion_input": {"type": "chat_completion_input"},
-    },
 )
 
-eval_rows = client.datasetio.get_rows_paginated(
+eval_rows = client.datasets.iterrows(
     dataset_id=simpleqa_dataset_id,
-    rows_in_page=5,
+    limit=5,
 )
 ```
 
@@ -143,7 +137,7 @@ client.benchmarks.register(
 
 response = client.eval.evaluate_rows(
     benchmark_id="meta-reference::simpleqa",
-    input_rows=eval_rows.rows,
+    input_rows=eval_rows.data,
     scoring_functions=["llm-as-judge::405b-simpleqa"],
     benchmark_config={
         "eval_candidate": {
@@ -191,7 +185,7 @@ agent_config = {
 
 response = client.eval.evaluate_rows(
     benchmark_id="meta-reference::simpleqa",
-    input_rows=eval_rows.rows,
+    input_rows=eval_rows.data,
     scoring_functions=["llm-as-judge::405b-simpleqa"],
     benchmark_config={
         "eval_candidate": {

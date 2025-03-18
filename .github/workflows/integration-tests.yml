@@ -1,9 +1,18 @@
 name: Integration tests
 
 on:
-  pull_request:
   push:
-    branches: [main]
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'distributions/**'
+      - 'llama_stack/**'
+      - 'tests/integration/**'
+      - 'uv.lock'
+      - 'pyproject.toml'
+      - 'requirements.txt'
+      - '.github/workflows/integration-tests.yml' # This workflow
 
 jobs:
   ollama:
@@ -56,8 +65,7 @@ jobs:
           INFERENCE_MODEL: "meta-llama/Llama-3.2-3B-Instruct"
         run: |
           source .venv/bin/activate
-          # TODO: use "llama stack run"
-          nohup uv run python -m llama_stack.distribution.server.server --yaml-config ./llama_stack/templates/ollama/run.yaml > server.log 2>&1 &
+          nohup uv run llama stack run ./llama_stack/templates/ollama/run.yaml --image-type venv > server.log 2>&1 &
 
       - name: Wait for Llama Stack server to be ready
         run: |

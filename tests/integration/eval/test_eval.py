@@ -4,10 +4,11 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 import uuid
+from pathlib import Path
 
 import pytest
 
-from ..datasetio.test_datasetio import register_dataset
+from ..datasets.test_datasets import data_url_from_file
 
 # How to run this test:
 #
@@ -16,15 +17,21 @@ from ..datasetio.test_datasetio import register_dataset
 
 @pytest.mark.parametrize("scoring_fn_id", ["basic::equality"])
 def test_evaluate_rows(llama_stack_client, text_model_id, scoring_fn_id):
-    register_dataset(llama_stack_client, for_generation=True, dataset_id="test_dataset_for_eval")
-    response = llama_stack_client.datasets.list()
-    assert any(x.identifier == "test_dataset_for_eval" for x in response)
-
-    rows = llama_stack_client.datasetio.get_rows_paginated(
-        dataset_id="test_dataset_for_eval",
-        rows_in_page=3,
+    dataset = llama_stack_client.datasets.register(
+        purpose="eval/messages-answer",
+        source={
+            "type": "uri",
+            "uri": data_url_from_file(Path(__file__).parent.parent / "datasets" / "test_dataset.csv"),
+        },
     )
-    assert len(rows.rows) == 3
+    response = llama_stack_client.datasets.list()
+    assert any(x.identifier == dataset.identifier for x in response)
+
+    rows = llama_stack_client.datasets.iterrows(
+        dataset_id=dataset.identifier,
+        limit=3,
+    )
+    assert len(rows.data) == 3
 
     scoring_functions = [
         scoring_fn_id,
@@ -32,7 +39,7 @@ def test_evaluate_rows(llama_stack_client, text_model_id, scoring_fn_id):
     benchmark_id = str(uuid.uuid4())
     llama_stack_client.benchmarks.register(
         benchmark_id=benchmark_id,
-        dataset_id="test_dataset_for_eval",
+        dataset_id=dataset.identifier,
         scoring_functions=scoring_functions,
     )
     list_benchmarks = llama_stack_client.benchmarks.list()
@@ -40,7 +47,7 @@ def test_evaluate_rows(llama_stack_client, text_model_id, scoring_fn_id):
 
     response = llama_stack_client.eval.evaluate_rows(
         benchmark_id=benchmark_id,
-        input_rows=rows.rows,
+        input_rows=rows.data,
         scoring_functions=scoring_functions,
         benchmark_config={
             "eval_candidate": {
@@ -59,11 +66,17 @@ def test_evaluate_rows(llama_stack_client, text_model_id, scoring_fn_id):
 
 @pytest.mark.parametrize("scoring_fn_id", ["basic::subset_of"])
 def test_evaluate_benchmark(llama_stack_client, text_model_id, scoring_fn_id):
-    register_dataset(llama_stack_client, for_generation=True, dataset_id="test_dataset_for_eval_2")
+    dataset = llama_stack_client.datasets.register(
+        purpose="eval/messages-answer",
+        source={
+            "type": "uri",
+            "uri": data_url_from_file(Path(__file__).parent.parent / "datasets" / "test_dataset.csv"),
+        },
+    )
     benchmark_id = str(uuid.uuid4())
     llama_stack_client.benchmarks.register(
         benchmark_id=benchmark_id,
-        dataset_id="test_dataset_for_eval_2",
+        dataset_id=dataset.identifier,
         scoring_functions=[scoring_fn_id],
     )
 

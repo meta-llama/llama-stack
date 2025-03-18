@@ -527,26 +527,30 @@ async def convert_message_to_openai_dict_new(
     async def _convert_message_content(
         content: InterleavedContent,
     ) -> Union[str, Iterable[OpenAIChatCompletionContentPartParam]]:
-        async def impl():
+        async def impl(
+            content_: InterleavedContent,
+        ) -> Union[str, OpenAIChatCompletionContentPartParam, List[OpenAIChatCompletionContentPartParam]]:
             # Llama Stack and OpenAI spec match for str and text input
-            if isinstance(content, str):
-                return content
-            elif isinstance(content, TextContentItem):
+            if isinstance(content_, str):
+                return content_
+            elif isinstance(content_, TextContentItem):
                 return OpenAIChatCompletionContentPartTextParam(
                     type="text",
-                    text=content.text,
+                    text=content_.text,
                 )
-            elif isinstance(content, ImageContentItem):
+            elif isinstance(content_, ImageContentItem):
                 return OpenAIChatCompletionContentPartImageParam(
                     type="image_url",
-                    image_url=OpenAIImageURL(url=await convert_image_content_to_url(content)),
+                    image_url=OpenAIImageURL(url=await convert_image_content_to_url(content_)),
                 )
-            elif isinstance(content, list):
-                return [await _convert_message_content(item) for item in content]
+            elif isinstance(content_, list):
+                return [await impl(item) for item in content_]
             else:
-                raise ValueError(f"Unsupported content type: {type(content)}")
+                raise ValueError(f"Unsupported content type: {type(content_)}")
 
-        ret = await impl()
+        ret = await impl(content)
+
+        # OpenAI*Message expects a str or list
         if isinstance(ret, str) or isinstance(ret, list):
             return ret
         else:
@@ -566,13 +570,14 @@ async def convert_message_to_openai_dict_new(
                 OpenAIChatCompletionMessageToolCall(
                     id=tool.call_id,
                     function=OpenAIFunction(
-                        name=tool.tool_name,
+                        name=tool.tool_name if not isinstance(tool.tool_name, BuiltinTool) else tool.tool_name.value,
                         arguments=json.dumps(tool.arguments),
                     ),
                     type="function",
                 )
                 for tool in message.tool_calls
-            ],
+            ]
+            or None,
         )
     elif isinstance(message, ToolResponseMessage):
         out = OpenAIChatCompletionToolMessage(
@@ -858,7 +863,8 @@ async def convert_openai_chat_completion_stream(
     event_type = ChatCompletionResponseEventType.progress
 
     stop_reason = None
-    toolcall_buffer = {}
+    tool_call_idx_to_buffer = {}
+
     async for chunk in stream:
         choice = chunk.choices[0]  # assuming only one choice per chunk
 
@@ -868,7 +874,6 @@ async def convert_openai_chat_completion_stream(
 
         # if there's a tool call, emit an event for each tool in the list
         # if tool call and content, emit both separately
-
         if choice.delta.tool_calls:
             # the call may have content and a tool call. ChatCompletionResponseEvent
             # does not support both, so we emit the content first
@@ -889,44 +894,53 @@ async def convert_openai_chat_completion_stream(
                 )
 
             if not enable_incremental_tool_calls:
-                yield ChatCompletionResponseStreamChunk(
-                    event=ChatCompletionResponseEvent(
-                        event_type=next(event_type),
-                        delta=ToolCallDelta(
-                            tool_call=_convert_openai_tool_calls(choice.delta.tool_calls)[0],
-                            parse_status=ToolCallParseStatus.succeeded,
-                        ),
-                        logprobs=_convert_openai_logprobs(logprobs),
+                for tool_call in choice.delta.tool_calls:
+                    yield ChatCompletionResponseStreamChunk(
+                        event=ChatCompletionResponseEvent(
+                            event_type=event_type,
+                            delta=ToolCallDelta(
+                                tool_call=_convert_openai_tool_calls([tool_call])[0],
+                                parse_status=ToolCallParseStatus.succeeded,
+                            ),
+                            logprobs=_convert_openai_logprobs(logprobs),
+                        )
                     )
-                )
             else:
-                tool_call = choice.delta.tool_calls[0]
-                if "name" not in toolcall_buffer:
-                    toolcall_buffer["call_id"] = tool_call.id
-                    toolcall_buffer["name"] = None
-                    toolcall_buffer["content"] = ""
-                if "arguments" not in toolcall_buffer:
-                    toolcall_buffer["arguments"] = ""
+                for tool_call in choice.delta.tool_calls:
+                    idx = tool_call.index if hasattr(tool_call, "index") else 0
 
-                if tool_call.function.name:
-                    toolcall_buffer["name"] = tool_call.function.name
-                    delta = f"{toolcall_buffer['name']}("
-                if tool_call.function.arguments:
-                    toolcall_buffer["arguments"] += tool_call.function.arguments
-                    delta = toolcall_buffer["arguments"]
+                    if idx not in tool_call_idx_to_buffer:
+                        tool_call_idx_to_buffer[idx] = {
+                            "call_id": tool_call.id,
+                            "name": None,
+                            "arguments": "",
+                            "content": "",
+                        }
 
-                toolcall_buffer["content"] += delta
-                yield ChatCompletionResponseStreamChunk(
-                    event=ChatCompletionResponseEvent(
-                        event_type=event_type,
-                        delta=ToolCallDelta(
-                            tool_call=delta,
-                            parse_status=ToolCallParseStatus.in_progress,
-                        ),
-                        logprobs=_convert_openai_logprobs(logprobs),
-                    )
-                )
-        else:
+                    buffer = tool_call_idx_to_buffer[idx]
+
+                    if tool_call.function:
+                        if tool_call.function.name:
+                            buffer["name"] = tool_call.function.name
+                            delta = f"{buffer['name']}("
+                            buffer["content"] += delta
+
+                        if tool_call.function.arguments:
+                            delta = tool_call.function.arguments
+                            buffer["arguments"] += delta
+                            buffer["content"] += delta
+
+                        yield ChatCompletionResponseStreamChunk(
+                            event=ChatCompletionResponseEvent(
+                                event_type=event_type,
+                                delta=ToolCallDelta(
+                                    tool_call=delta,
+                                    parse_status=ToolCallParseStatus.in_progress,
+                                ),
+                                logprobs=_convert_openai_logprobs(logprobs),
+                            )
+                        )
+        elif choice.delta.content:
             yield ChatCompletionResponseStreamChunk(
                 event=ChatCompletionResponseEvent(
                     event_type=event_type,
@@ -935,47 +949,51 @@ async def convert_openai_chat_completion_stream(
                 )
             )
 
-    if toolcall_buffer:
-        delta = ")"
-        toolcall_buffer["content"] += delta
-        yield ChatCompletionResponseStreamChunk(
-            event=ChatCompletionResponseEvent(
-                event_type=event_type,
-                delta=ToolCallDelta(
-                    tool_call=delta,
-                    parse_status=ToolCallParseStatus.in_progress,
-                ),
-                logprobs=_convert_openai_logprobs(logprobs),
-            )
-        )
-        try:
-            arguments = json.loads(toolcall_buffer["arguments"])
-            tool_call = ToolCall(
-                call_id=toolcall_buffer["call_id"],
-                tool_name=toolcall_buffer["name"],
-                arguments=arguments,
-            )
+    for idx, buffer in tool_call_idx_to_buffer.items():
+        logger.debug(f"toolcall_buffer[{idx}]: {buffer}")
+        if buffer["name"]:
+            delta = ")"
+            buffer["content"] += delta
             yield ChatCompletionResponseStreamChunk(
                 event=ChatCompletionResponseEvent(
-                    event_type=ChatCompletionResponseEventType.progress,
+                    event_type=event_type,
                     delta=ToolCallDelta(
-                        tool_call=tool_call,
-                        parse_status=ToolCallParseStatus.succeeded,
+                        tool_call=delta,
+                        parse_status=ToolCallParseStatus.in_progress,
                     ),
-                    stop_reason=stop_reason,
+                    logprobs=None,
                 )
             )
-        except json.JSONDecodeError:
-            yield ChatCompletionResponseStreamChunk(
-                event=ChatCompletionResponseEvent(
-                    event_type=ChatCompletionResponseEventType.complete,
-                    delta=ToolCallDelta(
-                        tool_call=toolcall_buffer["content"],
-                        parse_status=ToolCallParseStatus.failed,
-                    ),
-                    stop_reason=stop_reason,
+
+            try:
+                arguments = json.loads(buffer["arguments"])
+                tool_call = ToolCall(
+                    call_id=buffer["call_id"],
+                    tool_name=buffer["name"],
+                    arguments=arguments,
                 )
-            )
+                yield ChatCompletionResponseStreamChunk(
+                    event=ChatCompletionResponseEvent(
+                        event_type=ChatCompletionResponseEventType.progress,
+                        delta=ToolCallDelta(
+                            tool_call=tool_call,
+                            parse_status=ToolCallParseStatus.succeeded,
+                        ),
+                        stop_reason=stop_reason,
+                    )
+                )
+            except json.JSONDecodeError as e:
+                print(f"Failed to parse arguments: {e}")
+                yield ChatCompletionResponseStreamChunk(
+                    event=ChatCompletionResponseEvent(
+                        event_type=ChatCompletionResponseEventType.progress,
+                        delta=ToolCallDelta(
+                            tool_call=buffer["content"],
+                            parse_status=ToolCallParseStatus.failed,
+                        ),
+                        stop_reason=stop_reason,
+                    )
+                )
 
     yield ChatCompletionResponseStreamChunk(
         event=ChatCompletionResponseEvent(
