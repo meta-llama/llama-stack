@@ -1550,50 +1550,6 @@ paths:
           required: false
           schema:
             type: integer
-  /v1/eval/benchmarks/{benchmark_id}/jobs/{job_id}:
-    get:
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/IterrowsResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest400'
-        '429':
-          $ref: >-
-            #/components/responses/TooManyRequests429
-        '500':
-          $ref: >-
-            #/components/responses/InternalServerError500
-        default:
-          $ref: '#/components/responses/DefaultError'
-      tags:
-        - DatasetIO
-      description: >-
-        Get a paginated list of rows from a dataset. Uses cursor-based pagination.
-      parameters:
-        - name: dataset_id
-          in: path
-          description: >-
-            The ID of the dataset to get the rows from.
-          required: true
-          schema:
-            type: string
-        - name: start_index
-          in: query
-          description: >-
-            Index into dataset for the first row to get. Get all rows if None.
-          required: false
-          schema:
-            type: integer
-        - name: limit
-          in: query
-          description: The number of rows to get per page.
-          required: false
-          schema:
-            type: integer
   /v1/agents/{agent_id}/sessions:
     get:
       responses:
@@ -4571,6 +4527,255 @@ components:
       title: URIDataSource
       description: >-
         A dataset that can be obtained from a URI.
+    EqualityGrader:
+      type: object
+      properties:
+        type:
+          type: string
+          const: equality
+          default: equality
+        equality:
+          type: object
+          properties:
+            aggregation_functions:
+              type: array
+              items:
+                type: string
+                enum:
+                  - average
+                  - median
+                  - categorical_count
+                  - accuracy
+                title: AggregationFunctionType
+                description: A type of aggregation function.
+          additionalProperties: false
+          required:
+            - aggregation_functions
+          title: BasicGraderParams
+      additionalProperties: false
+      required:
+        - type
+        - equality
+      title: EqualityGrader
+    FactualityGrader:
+      type: object
+      properties:
+        type:
+          type: string
+          const: factuality
+          default: factuality
+        factuality:
+          type: object
+          properties:
+            aggregation_functions:
+              type: array
+              items:
+                type: string
+                enum:
+                  - average
+                  - median
+                  - categorical_count
+                  - accuracy
+                title: AggregationFunctionType
+                description: A type of aggregation function.
+          additionalProperties: false
+          required:
+            - aggregation_functions
+          title: BasicGraderParams
+      additionalProperties: false
+      required:
+        - type
+        - factuality
+      title: FactualityGrader
+    FaithfulnessGrader:
+      type: object
+      properties:
+        type:
+          type: string
+          const: faithfulness
+          default: faithfulness
+        faithfulness:
+          type: object
+          properties:
+            aggregation_functions:
+              type: array
+              items:
+                type: string
+                enum:
+                  - average
+                  - median
+                  - categorical_count
+                  - accuracy
+                title: AggregationFunctionType
+                description: A type of aggregation function.
+          additionalProperties: false
+          required:
+            - aggregation_functions
+          title: BasicGraderParams
+      additionalProperties: false
+      required:
+        - type
+        - faithfulness
+      title: FaithfulnessGrader
+    Grader:
+      type: object
+      properties:
+        identifier:
+          type: string
+        provider_resource_id:
+          type: string
+        provider_id:
+          type: string
+        type:
+          type: string
+          const: grader
+          default: grader
+        grader:
+          $ref: '#/components/schemas/GraderDefinition'
+        description:
+          type: string
+        metadata:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+      additionalProperties: false
+      required:
+        - identifier
+        - provider_resource_id
+        - provider_id
+        - type
+        - grader
+        - metadata
+      title: Grader
+    GraderDefinition:
+      oneOf:
+        - $ref: '#/components/schemas/LlmGrader'
+        - $ref: '#/components/schemas/RegexParserGrader'
+        - $ref: '#/components/schemas/EqualityGrader'
+        - $ref: '#/components/schemas/SubsetOfGrader'
+        - $ref: '#/components/schemas/FactualityGrader'
+        - $ref: '#/components/schemas/FaithfulnessGrader'
+      discriminator:
+        propertyName: type
+        mapping:
+          llm: '#/components/schemas/LlmGrader'
+          regex_parser: '#/components/schemas/RegexParserGrader'
+          equality: '#/components/schemas/EqualityGrader'
+          subset_of: '#/components/schemas/SubsetOfGrader'
+          factuality: '#/components/schemas/FactualityGrader'
+          faithfulness: '#/components/schemas/FaithfulnessGrader'
+    LlmGrader:
+      type: object
+      properties:
+        type:
+          type: string
+          const: llm
+          default: llm
+        llm:
+          type: object
+          properties:
+            model:
+              type: string
+            prompt:
+              type: string
+            score_regexes:
+              type: array
+              items:
+                type: string
+            aggregation_functions:
+              type: array
+              items:
+                type: string
+                enum:
+                  - average
+                  - median
+                  - categorical_count
+                  - accuracy
+                title: AggregationFunctionType
+                description: A type of aggregation function.
+          additionalProperties: false
+          required:
+            - model
+            - prompt
+            - score_regexes
+            - aggregation_functions
+          title: LlmGraderParams
+      additionalProperties: false
+      required:
+        - type
+        - llm
+      title: LlmGrader
+    RegexParserGrader:
+      type: object
+      properties:
+        type:
+          type: string
+          const: regex_parser
+          default: regex_parser
+        regex_parser:
+          type: object
+          properties:
+            parsing_regexes:
+              type: array
+              items:
+                type: string
+            aggregation_functions:
+              type: array
+              items:
+                type: string
+                enum:
+                  - average
+                  - median
+                  - categorical_count
+                  - accuracy
+                title: AggregationFunctionType
+                description: A type of aggregation function.
+          additionalProperties: false
+          required:
+            - parsing_regexes
+            - aggregation_functions
+          title: RegexParserGraderParams
+      additionalProperties: false
+      required:
+        - type
+        - regex_parser
+      title: RegexParserGrader
+    SubsetOfGrader:
+      type: object
+      properties:
+        type:
+          type: string
+          const: subset_of
+          default: subset_of
+        subset_of:
+          type: object
+          properties:
+            aggregation_functions:
+              type: array
+              items:
+                type: string
+                enum:
+                  - average
+                  - median
+                  - categorical_count
+                  - accuracy
+                title: AggregationFunctionType
+                description: A type of aggregation function.
+          additionalProperties: false
+          required:
+            - aggregation_functions
+          title: BasicGraderParams
+      additionalProperties: false
+      required:
+        - type
+        - subset_of
+      title: SubsetOfGrader
     Model:
       type: object
       properties:
@@ -4612,224 +4817,6 @@ components:
         - llm
         - embedding
       title: ModelType
-    AgentTurnInputType:
-      type: object
-      properties:
-        type:
-          type: string
-          const: agent_turn_input
-          default: agent_turn_input
-      additionalProperties: false
-      required:
-        - type
-      title: AgentTurnInputType
-    ArrayType:
-      type: object
-      properties:
-        type:
-          type: string
-          const: array
-          default: array
-      additionalProperties: false
-      required:
-        - type
-      title: ArrayType
-    BooleanType:
-      type: object
-      properties:
-        type:
-          type: string
-          const: boolean
-          default: boolean
-      additionalProperties: false
-      required:
-        - type
-      title: BooleanType
-    ChatCompletionInputType:
-      type: object
-      properties:
-        type:
-          type: string
-          const: chat_completion_input
-          default: chat_completion_input
-      additionalProperties: false
-      required:
-        - type
-      title: ChatCompletionInputType
-    CompletionInputType:
-      type: object
-      properties:
-        type:
-          type: string
-          const: completion_input
-          default: completion_input
-      additionalProperties: false
-      required:
-        - type
-      title: CompletionInputType
-    JsonType:
-      type: object
-      properties:
-        type:
-          type: string
-          const: rows
-          default: rows
-        rows:
-          type: array
-          items:
-            type: object
-            additionalProperties:
-              oneOf:
-                - type: 'null'
-                - type: boolean
-                - type: number
-                - type: string
-                - type: array
-                - type: object
-          description: >-
-            The dataset is stored in rows. E.g. - [ {"messages": [{"role": "user",
-            "content": "Hello, world!"}, {"role": "assistant", "content": "Hello,
-            world!"}]} ]
-      additionalProperties: false
-      required:
-        - type
-        - rows
-      title: RowsDataSource
-      description: A dataset stored in rows.
-    URIDataSource:
-      type: object
-      properties:
-        type:
-          type: string
-          const: uri
-          default: uri
-        uri:
-          type: string
-          description: >-
-            The dataset can be obtained from a URI. E.g. - "https://mywebsite.com/mydata.jsonl"
-            - "lsfs://mydata.jsonl" - "data:csv;base64,{base64_content}"
-      additionalProperties: false
-      required:
-        - type
-        - uri
-      title: URIDataSource
-      description: >-
-        A dataset that can be obtained from a URI.
-    EqualityGrader:
-      type: object
-      properties:
-        type:
-          type: string
-          const: equality
-          default: equality
-        equality:
-          type: object
-          properties:
-            aggregation_functions:
-              type: array
-              items:
-                type: string
-                enum:
-                  - average
-                  - median
-                  - categorical_count
-                  - accuracy
-                title: AggregationFunctionType
-                description: A type of aggregation function.
-          additionalProperties: false
-          required:
-            - aggregation_functions
-          title: BasicGraderParams
-      additionalProperties: false
-      required:
-        - type
-      title: ObjectType
-    ParamType:
-      oneOf:
-        - $ref: '#/components/schemas/StringType'
-        - $ref: '#/components/schemas/NumberType'
-        - $ref: '#/components/schemas/BooleanType'
-        - $ref: '#/components/schemas/ArrayType'
-        - $ref: '#/components/schemas/ObjectType'
-        - $ref: '#/components/schemas/JsonType'
-        - $ref: '#/components/schemas/UnionType'
-        - $ref: '#/components/schemas/ChatCompletionInputType'
-        - $ref: '#/components/schemas/CompletionInputType'
-        - $ref: '#/components/schemas/AgentTurnInputType'
-      discriminator:
-        propertyName: type
-        mapping:
-          string: '#/components/schemas/StringType'
-          number: '#/components/schemas/NumberType'
-          boolean: '#/components/schemas/BooleanType'
-          array: '#/components/schemas/ArrayType'
-          object: '#/components/schemas/ObjectType'
-          json: '#/components/schemas/JsonType'
-          union: '#/components/schemas/UnionType'
-          chat_completion_input: '#/components/schemas/ChatCompletionInputType'
-          completion_input: '#/components/schemas/CompletionInputType'
-          agent_turn_input: '#/components/schemas/AgentTurnInputType'
-    ScoringFn:
-      type: object
-      properties:
-        identifier:
-          type: string
-        provider_resource_id:
-          type: string
-        provider_id:
-          type: string
-        type:
-          type: string
-          const: scoring_function
-          default: scoring_function
-        description:
-          type: string
-        metadata:
-          type: object
-          additionalProperties:
-            oneOf:
-              - type: 'null'
-              - type: boolean
-              - type: number
-              - type: string
-              - type: array
-              - type: object
-        return_type:
-          $ref: '#/components/schemas/ParamType'
-        params:
-          $ref: '#/components/schemas/ScoringFnParams'
-      additionalProperties: false
-      required:
-        - identifier
-        - provider_resource_id
-        - provider_id
-        - type
-        - grader
-        - metadata
-        - return_type
-      title: ScoringFn
-    StringType:
-      type: object
-      properties:
-        type:
-          type: string
-          const: string
-          default: string
-      additionalProperties: false
-      required:
-        - type
-      title: StringType
-    UnionType:
-      type: object
-      properties:
-        type:
-          type: string
-          const: union
-          default: union
-      additionalProperties: false
-      required:
-        - type
-      title: UnionType
     Shield:
       type: object
       properties:
@@ -6503,6 +6490,37 @@ components:
         - purpose
         - source
       title: RegisterDatasetRequest
+    RegisterGraderRequest:
+      type: object
+      properties:
+        grader:
+          $ref: '#/components/schemas/GraderDefinition'
+          description: >-
+            The grader definition, E.g. - { "type": "llm", "llm": { "model": "llama-405b",
+            "prompt": "You are a judge. Score the answer based on the question. {question}
+            {answer}", } }
+        grader_id:
+          type: string
+          description: >-
+            (Optional) The ID of the grader. If not provided, a random ID will be
+            generated.
+        metadata:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+          description: >-
+            (Optional) Any additional metadata for this grader. - E.g. { "description":
+            "A grader that scores the answer based on the question.", }
+      additionalProperties: false
+      required:
+        - grader
+      title: RegisterGraderRequest
     RegisterModelRequest:
       type: object
       properties:
@@ -6935,10 +6953,9 @@ tags:
   - name: Benchmarks
   - name: DatasetIO
   - name: Datasets
-  - name: Eval
-    x-displayName: >-
-      Llama Stack Evaluation API for running evaluations on model and agent candidates.
+  - name: Evaluation
   - name: Files
+  - name: Graders
   - name: Inference
     description: >-
       This API provides the raw interface to the underlying models. Two kinds of models
@@ -6973,8 +6990,9 @@ x-tagGroups:
       - Benchmarks
       - DatasetIO
       - Datasets
-      - Eval
+      - Evaluation
       - Files
+      - Graders
       - Inference
       - Inspect
       - Models
