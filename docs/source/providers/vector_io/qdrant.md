@@ -7,6 +7,13 @@ orphan: true
 allows you to store and query vectors directly in memory.
 That means you'll get fast and efficient vector retrieval.
 
+> By default, Qdrant stores vectors in RAM, delivering incredibly fast access for datasets that fit comfortably in
+> memory. But when your dataset exceeds RAM capacity, Qdrant offers Memmap as an alternative.
+>
+> \[[An Introduction to Vector Databases](https://qdrant.tech/articles/what-is-a-vector-database/)\]
+
+
+
 ## Features
 
 - Lightweight and easy to use
