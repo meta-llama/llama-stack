@@ -29,7 +29,6 @@ from llama_stack.providers.inline.vector_io.sqlite_vec.sqlite_vec import (
 # -v -s --tb=short --disable-warnings --asyncio-mode=auto
 
 SQLITE_VEC_PROVIDER = "sqlite_vec"
-EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 
 
 @pytest.fixture(scope="session")
