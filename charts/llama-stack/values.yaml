@@ -15,6 +15,7 @@ vllm:
   # apiKey: "xxxxxxxxxxxx"
 
 # https://llama-stack.readthedocs.io/en/latest/distributions/selection.html
+#  Note this is only used if the `image.repository` is not overridden
 distribution: distribution-remote-vllm
 
 telemetry:
@@ -31,7 +32,7 @@ replicaCount: 1
 # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
 image:
   repository: docker.io/llamastack/{{ $.Values.distribution }}
-  tag: 0.1.6
+  # tag: latest
   # This sets the pull policy for images.
   pullPolicy: Always
 

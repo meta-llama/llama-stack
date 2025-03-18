@@ -4,6 +4,8 @@ metadata:
   name: {{ include "llama-stack.fullname" . }}
   labels:
     {{- include "llama-stack.labels" . | nindent 4 }}
+  annotations:
+    checksum/run-config: {{ include (print $.Template.BasePath "/config.yaml") . | sha256sum }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:

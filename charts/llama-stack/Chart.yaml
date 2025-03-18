@@ -1,5 +1,6 @@
 apiVersion: v2
 name: llama-stack
+icon: https://helm.sh/img/helm.svg
 description: Basic chart for deploying llama-stack
 
 # A chart can be either an 'application' or a 'library' chart.
@@ -21,4 +22,4 @@ version: 0.1.0
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "1.16.0"
+appVersion: "0.1.6"

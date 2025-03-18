@@ -1,4 +1,3 @@
-
 # Llama Stack Helm Chart
 
 This Helm chart is designed to install the Llama Stack, a comprehensive platform for llama-related tasks.
@@ -27,8 +26,11 @@ vllm:
 Login to Kubernetes through the CLI and run:
 
 ```sh
-helm upgrade -i ollama-stack . -f local-values.yaml
+helm upgrade -i llama-stack . -f local-values.yaml
 ```
+
+> [!TIP]
+> Can be installed on [minikube](https://minikube.sigs.k8s.io/docs/start/?arch=%2Flinux%2Fx86-64%2Fstable%2Fbinary+download) to for local validation.
 
 ## Custom Configuration
 
