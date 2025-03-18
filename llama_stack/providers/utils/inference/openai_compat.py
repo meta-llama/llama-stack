@@ -547,7 +547,7 @@ async def convert_message_to_openai_dict_new(
                 raise ValueError(f"Unsupported content type: {type(content)}")
 
         ret = await impl()
-        if isinstance(ret, str) or isinstance(ret, list):
+        if isinstance(ret, str) or isinstance(ret, list) or isinstance(ret, dict):
             return ret
         else:
             return [ret]
