@@ -57,6 +57,7 @@ def aggregate_median(scoring_results: List[ScoringResultRow]) -> Dict[str, Any]:
 AGGREGATION_FUNCTIONS = {
     AggregationFunctionType.accuracy: aggregate_accuracy,
     AggregationFunctionType.average: aggregate_average,
+    AggregationFunctionType.weighted_average: aggregate_weighted_average,
     AggregationFunctionType.categorical_count: aggregate_categorical_count,
     AggregationFunctionType.median: aggregate_median,
 }

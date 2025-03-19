@@ -204,8 +204,7 @@ def get_distribution_template() -> DistributionTemplate:
             ),
         ),
         DatasetInput(
-            dataset_id="IfEval",
-            provider_id="huggingface",
+            dataset_id="ifeval",
             purpose=DatasetPurpose.eval_messages_answer,
             source=URIDataSource(
                 uri="huggingface://datasets/llamastack/IfEval?split=train",
@@ -240,9 +239,9 @@ def get_distribution_template() -> DistributionTemplate:
             scoring_functions=["basic::bfcl"],
         ),
         BenchmarkInput(
-            benchmark_id="meta-reference-IfEval",
-            dataset_id="IfEval",
-            scoring_functions=["basic::IfEval"],
+            benchmark_id="meta-reference-ifeval",
+            dataset_id="ifeval",
+            scoring_functions=["basic::ifeval"],
         ),
     ]
     return DistributionTemplate(

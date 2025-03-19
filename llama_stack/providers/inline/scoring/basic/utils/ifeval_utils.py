@@ -3147,7 +3147,7 @@ class LowercaseLettersEnglishChecker(Instruction):
 class CommaChecker(Instruction):
     """Checks the response for no commas."""
 
-    def build_description(self):
+    def build_description(self, **kwargs):
         """Build the instruction description."""
         self._description_pattern = "In your entire response, refrain from the use of any commas."
         return self._description_pattern
@@ -3216,6 +3216,7 @@ class CapitalWordFrequencyChecker(Instruction):
     def check_following(self, value):
         """Checks the frequency of words with all capital letters."""
         # Hyphenated words will count as one word
+        nltk.download("punkt_tab")
         words = nltk.word_tokenize(value)
         capital_words = [word for word in words if word.isupper()]
 

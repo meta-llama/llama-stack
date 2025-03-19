@@ -6,7 +6,7 @@
 from typing import Any, Dict, Optional
 
 from llama_stack.apis.scoring import ScoringResultRow
-from llama_stack.apis.scoring_functions import ScoringFnParams, ScoringFnParamsType
+from llama_stack.apis.scoring_functions import ScoringFnParams
 from llama_stack.providers.utils.scoring.base_scoring_fn import RegisteredBaseScoringFn
 
 from ..utils.ifeval_utils import INSTRUCTION_DICT, INSTRUCTION_LIST
@@ -37,10 +37,6 @@ class IfEvalScoringFn(RegisteredBaseScoringFn):
         if scoring_params is not None:
             fn_def.params = scoring_params
 
-        assert fn_def.params is not None and fn_def.params.type == ScoringFnParamsType.regex_parser.value, (
-            f"RegexParserScoringFnParams not found for {fn_def}."
-        )
-
         instruction_list = input_row["instruction_id_list"]
         generated_answer = input_row["generated_answer"].strip()
 
@@ -56,7 +52,9 @@ class IfEvalScoringFn(RegisteredBaseScoringFn):
             results[instruction_id + "_total"] += 1.0
             results[instruction_id.split(":")[0] + "_total"] += 1.0
 
-            instruction.build_description(**input_row["kwargs"][index])
+            clean_input_row = {k: v for k, v in input_row["kwargs"][index].items() if v is not None}
+            print(clean_input_row)
+            instruction.build_description(**clean_input_row)
             args = instruction.get_instruction_args()
             if args and "prompt" in args:
                 instruction.build_description(prompt=input_row["prompt"])
