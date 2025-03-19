@@ -215,8 +215,8 @@ def get_distribution_template() -> DistributionTemplate:
             purpose=DatasetPurpose.eval_messages_answer,
             source=URIDataSource(
                 uri="huggingface://datasets/llamastack/docvqa?split=val",
-            )
-        )
+            ),
+        ),
     ]
 
     default_benchmarks = [
@@ -254,7 +254,7 @@ def get_distribution_template() -> DistributionTemplate:
             benchmark_id="meta-reference-docvqa",
             dataset_id="docvqa",
             scoring_functions=["basic::docvqa"],
-        )
+        ),
     ]
     return DistributionTemplate(
         name=name,
