@@ -3,10 +3,8 @@ image_name: open-benchmark
 apis:
 - agents
 - datasetio
-- eval
 - inference
 - safety
-- scoring
 - telemetry
 - tool_runtime
 - vector_io
@@ -71,14 +69,6 @@ providers:
       service_name: ${env.OTEL_SERVICE_NAME:llama-stack}
       sinks: ${env.TELEMETRY_SINKS:console,sqlite}
       sqlite_db_path: ${env.SQLITE_DB_PATH:~/.llama/distributions/open-benchmark/trace_store.db}
-  eval:
-  - provider_id: meta-reference
-    provider_type: inline::meta-reference
-    config:
-      kvstore:
-        type: sqlite
-        namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/open-benchmark}/meta_reference_eval.db
   datasetio:
   - provider_id: huggingface
     provider_type: remote::huggingface
@@ -94,17 +84,6 @@ providers:
         type: sqlite
         namespace: null
         db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/open-benchmark}/localfs_datasetio.db
-  scoring:
-  - provider_id: basic
-    provider_type: inline::basic
-    config: {}
-  - provider_id: llm-as-judge
-    provider_type: inline::llm-as-judge
-    config: {}
-  - provider_id: braintrust
-    provider_type: inline::braintrust
-    config:
-      openai_api_key: ${env.OPENAI_API_KEY:}
   tool_runtime:
   - provider_id: brave-search
     provider_type: remote::brave-search
@@ -193,33 +172,7 @@ datasets:
   metadata: {}
   dataset_id: bfcl
   provider_id: huggingface
-scoring_fns: []
-benchmarks:
-- dataset_id: simpleqa
-  grader_ids:
-  - llm-as-judge::405b-simpleqa
-  metadata: {}
-  benchmark_id: meta-reference-simpleqa
-- dataset_id: mmlu_cot
-  grader_ids:
-  - basic::regex_parser_multiple_choice_answer
-  metadata: {}
-  benchmark_id: meta-reference-mmlu-cot
-- dataset_id: gpqa_cot
-  grader_ids:
-  - basic::regex_parser_multiple_choice_answer
-  metadata: {}
-  benchmark_id: meta-reference-gpqa-cot
-- dataset_id: math_500
-  grader_ids:
-  - basic::regex_parser_math_response
-  metadata: {}
-  benchmark_id: meta-reference-math-500
-- dataset_id: bfcl
-  grader_ids:
-  - basic::bfcl
-  metadata: {}
-  benchmark_id: meta-reference-bfcl
+benchmarks: []
 tool_groups:
 - toolgroup_id: builtin::websearch
   provider_id: tavily-search
