@@ -188,17 +188,12 @@ datasets:
     uri: huggingface://datasets/llamastack/bfcl_v3?split=train
   metadata: {}
   dataset_id: bfcl
-<<<<<<< HEAD
-=======
-  provider_id: huggingface
 - purpose: eval/messages-answer
   source:
     type: uri
     uri: huggingface://datasets/llamastack/docvqa?split=val
   metadata: {}
   dataset_id: docvqa
-  provider_id: huggingface
->>>>>>> 81df5a4e (add DocVQA scoring)
 scoring_fns: []
 benchmarks:
 - dataset_id: simpleqa

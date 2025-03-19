@@ -205,7 +205,6 @@ def get_distribution_template() -> DistributionTemplate:
         ),
         DatasetInput(
             dataset_id="docvqa",
-            provider_id="huggingface",
             purpose=DatasetPurpose.eval_messages_answer,
             source=URIDataSource(
                 uri="huggingface://datasets/llamastack/docvqa?split=val",
