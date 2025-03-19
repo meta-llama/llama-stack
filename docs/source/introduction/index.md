@@ -48,7 +48,7 @@ Llama Stack addresses these challenges through a service-oriented, API-first app
 
 **Robust Ecosystem**
 - Llama Stack is already integrated with distribution partners (cloud providers, hardware vendors, and AI-focused companies).
-- Ecosystem offers tailored infrastructure, software, and services for deploying Llama models.
+- Ecosystem offers tailored infrastructure, software, and services for deploying a variety of models.
 
 
 ### Our Philosophy
@@ -57,7 +57,6 @@ Llama Stack addresses these challenges through a service-oriented, API-first app
 - **Composability**: Every component is independent but works together seamlessly
 - **Production Ready**: Built for real-world applications, not just demos
 - **Turnkey Solutions**: Easy to deploy built in solutions for popular deployment scenarios
-- **Llama First**: Explicit focus on Meta's Llama models and partnering ecosystem
 
 
 With Llama Stack, you can focus on building your application while we handle the infrastructure complexity, essential capabilities, and provider integrations.

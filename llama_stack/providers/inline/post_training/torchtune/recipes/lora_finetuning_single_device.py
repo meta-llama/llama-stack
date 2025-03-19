@@ -37,10 +37,10 @@ from llama_stack.apis.common.training_types import PostTrainingMetric
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
 from llama_stack.apis.post_training import (
-    AlgorithmConfig,
     Checkpoint,
     LoraFinetuningConfig,
     OptimizerConfig,
+    QATFinetuningConfig,
     TrainingConfig,
 )
 from llama_stack.distribution.utils.config_dirs import DEFAULT_CHECKPOINT_DIR
@@ -73,6 +73,9 @@ class LoraFinetuningSingleDevice:
 
     # Currently logging only logs limited training metrics to local disk
     # will figure out more loggings and how it works with telemetry in future PRs
+
+    _checkpointer: TorchtuneCheckpointer
+
     def __init__(
         self,
         config: TorchtunePostTrainingConfig,
@@ -82,7 +85,7 @@ class LoraFinetuningSingleDevice:
         logger_config: Dict[str, Any],
         model: str,
         checkpoint_dir: Optional[str],
-        algorithm_config: Optional[AlgorithmConfig],
+        algorithm_config: LoraFinetuningConfig | QATFinetuningConfig | None,
         datasetio_api: DatasetIO,
         datasets_api: Datasets,
     ) -> None:
@@ -109,12 +112,12 @@ class LoraFinetuningSingleDevice:
             return str(checkpoint_dir)
 
         if checkpoint_dir and checkpoint_dir != "null":
-            self.checkpoint_dir = config.checkpoint_dir
+            self.checkpoint_dir = checkpoint_dir
         else:
-            model = resolve_model(self.model_id)
-            if model is None:
+            model_obj = resolve_model(self.model_id)
+            if model_obj is None:
                 raise ValueError(f"{self.model_id} not found. Your model id should be in the llama models SKU list")
-            self.checkpoint_dir = model_checkpoint_dir(model)
+            self.checkpoint_dir = model_checkpoint_dir(model_obj)
 
         self._output_dir = str(DEFAULT_CHECKPOINT_DIR)
         self._checkpoint_format = config.checkpoint_format
@@ -135,16 +138,16 @@ class LoraFinetuningSingleDevice:
         self.max_validation_steps = training_config.max_validation_steps
 
         self._clip_grad_norm = 1.0
-        self._enable_activation_checkpointing = (
-            (training_config.efficiency_config.enable_activation_checkpointing)
-            if training_config.efficiency_config
-            else False
-        )
-        self._enable_activation_offloading = (
-            (training_config.efficiency_config.enable_activation_offloading)
-            if training_config.efficiency_config
-            else False
-        )
+
+        self._enable_activation_checkpointing = False
+        self._enable_activation_offloading = False
+        if training_config.efficiency_config:
+            if training_config.efficiency_config.enable_activation_checkpointing:
+                self._enable_activation_checkpointing = (
+                    training_config.efficiency_config.enable_activation_checkpointing
+                )
+            if training_config.efficiency_config.enable_activation_offloading:
+                self._enable_activation_offloading = training_config.efficiency_config.enable_activation_offloading
 
         self.datasetio_api = datasetio_api
         self.datasets_api = datasets_api
@@ -328,13 +331,13 @@ class LoraFinetuningSingleDevice:
         batch_size: int,
     ) -> Tuple[DistributedSampler, DataLoader]:
         async def fetch_rows(dataset_id: str):
-            return await self.datasetio_api.get_rows_paginated(
+            return await self.datasetio_api.iterrows(
                 dataset_id=dataset_id,
-                rows_in_page=-1,
+                limit=-1,
             )
 
         all_rows = await fetch_rows(dataset_id)
-        rows = all_rows.rows
+        rows = all_rows.data
 
         await validate_input_dataset_schema(
             datasets_api=self.datasets_api,
@@ -451,12 +454,12 @@ class LoraFinetuningSingleDevice:
         """
         # Initialize tokens count and running loss (for grad accumulation)
         t0 = time.perf_counter()
-        running_loss = 0
+        running_loss: float = 0.0
         num_tokens = 0
 
         # training artifacts
         checkpoints = []
-        memory_stats = {}
+        memory_stats: Dict[str, Any] = {}
 
         # self.epochs_run should be non-zero when we're resuming from a checkpoint
         for curr_epoch in range(self.epochs_run, self.total_epochs):
@@ -484,7 +487,7 @@ class LoraFinetuningSingleDevice:
                 # Loss is normalized by default so we multiply by the number of tokens
                 # This way we can normalize by the total number of tokens if we're accumulating gradients
                 current_loss = await self._loss_step(batch) * current_num_tokens
-                running_loss += current_loss
+                running_loss += current_loss.detach().item()
                 current_loss.backward()
 
                 # Step with optimizer
@@ -500,7 +503,7 @@ class LoraFinetuningSingleDevice:
                     # Update the number of steps when the weights are updated
                     self.global_step += 1
 
-                    loss_to_log = running_loss.item() / num_tokens
+                    loss_to_log = running_loss / num_tokens
 
                     pbar.update(1)
                     pbar.set_description(f"{curr_epoch + 1}|{self.global_step}|Loss: {loss_to_log}")
@@ -523,7 +526,7 @@ class LoraFinetuningSingleDevice:
                     )
 
                     # Reset running stats for the next step
-                    running_loss = 0
+                    running_loss = 0.0
                     num_tokens = 0
                     t0 = time.perf_counter()
 

@@ -8,9 +8,12 @@
 from pydantic import BaseModel
 
 from llama_stack.apis.providers import ListProvidersResponse, ProviderInfo, Providers
+from llama_stack.log import get_logger
 
 from .datatypes import StackRunConfig
 from .stack import redact_sensitive_fields
+
+logger = get_logger(name=__name__, category="core")
 
 
 class ProviderImplConfig(BaseModel):
@@ -29,6 +32,10 @@ class ProviderImpl(Providers):
         self.deps = deps
 
     async def initialize(self) -> None:
+        pass
+
+    async def shutdown(self) -> None:
+        logger.debug("ProviderImpl.shutdown")
         pass
 
     async def list_providers(self) -> ListProvidersResponse:

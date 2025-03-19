@@ -14,16 +14,11 @@ from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
 from llama_stack.apis.inference import Inference, SystemMessage, UserMessage
 from llama_stack.apis.scoring import Scoring
-from llama_stack.distribution.datatypes import Api
 from llama_stack.providers.datatypes import BenchmarksProtocolPrivate
 from llama_stack.providers.inline.agents.meta_reference.agent_instance import (
     MEMORY_QUERY_TOOL,
 )
-from llama_stack.providers.utils.common.data_schema_validator import (
-    ColumnName,
-    get_valid_schemas,
-    validate_dataset_schema,
-)
+from llama_stack.providers.utils.common.data_schema_validator import ColumnName
 from llama_stack.providers.utils.kvstore import kvstore_impl
 
 from .....apis.common.job_types import Job
@@ -88,15 +83,17 @@ class MetaReferenceEvalImpl(
         task_def = self.benchmarks[benchmark_id]
         dataset_id = task_def.dataset_id
         scoring_functions = task_def.scoring_functions
-        dataset_def = await self.datasets_api.get_dataset(dataset_id=dataset_id)
-        validate_dataset_schema(dataset_def.dataset_schema, get_valid_schemas(Api.eval.value))
-        all_rows = await self.datasetio_api.get_rows_paginated(
+
+        # TODO (xiyan): validate dataset schema
+        # dataset_def = await self.datasets_api.get_dataset(dataset_id=dataset_id)
+
+        all_rows = await self.datasetio_api.iterrows(
             dataset_id=dataset_id,
-            rows_in_page=(-1 if benchmark_config.num_examples is None else benchmark_config.num_examples),
+            limit=(-1 if benchmark_config.num_examples is None else benchmark_config.num_examples),
         )
         res = await self.evaluate_rows(
             benchmark_id=benchmark_id,
-            input_rows=all_rows.rows,
+            input_rows=all_rows.data,
             scoring_functions=scoring_functions,
             benchmark_config=benchmark_config,
         )

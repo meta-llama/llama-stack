@@ -6,15 +6,18 @@
 
 import json
 import typing
+import inspect
+import os
 from pathlib import Path
 from typing import TextIO
+from typing import Any, Dict, List, Optional, Protocol, Type, Union, get_type_hints, get_origin, get_args
 
 from llama_stack.strong_typing.schema import object_to_json, StrictJsonType
+from llama_stack.distribution.resolver import api_protocol_map
 
 from .generator import Generator
 from .options import Options
 from .specification import Document
-
 
 THIS_DIR = Path(__file__).parent
 
@@ -114,3 +117,37 @@ class Specification:
         )
 
         f.write(html)
+
+def is_optional_type(type_: Any) -> bool:
+    """Check if a type is Optional."""
+    origin = get_origin(type_)
+    args = get_args(type_)
+    return origin is Optional or (origin is Union and type(None) in args)
+
+
+def validate_api_method_return_types() -> List[str]:
+    """Validate that all API methods have proper return types."""
+    errors = []
+    protocols = api_protocol_map()
+
+    for protocol_name, protocol in protocols.items():
+        methods = inspect.getmembers(protocol, predicate=inspect.isfunction)
+
+        for method_name, method in methods:
+            if not hasattr(method, '__webmethod__'):
+                continue
+
+            # Only check GET methods
+            if method.__webmethod__.method != "GET":
+                continue
+
+            hints = get_type_hints(method)
+
+            if 'return' not in hints:
+                errors.append(f"Method {protocol_name}.{method_name} has no return type annotation")
+            else:
+                return_type = hints['return']
+                if is_optional_type(return_type):
+                    errors.append(f"Method {protocol_name}.{method_name} returns Optional type")
+
+    return errors

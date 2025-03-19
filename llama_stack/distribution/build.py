@@ -6,7 +6,6 @@
 
 import importlib.resources
 import logging
-import sys
 from pathlib import Path
 from typing import Dict, List
 
@@ -15,7 +14,7 @@ from termcolor import cprint
 
 from llama_stack.distribution.datatypes import BuildConfig, Provider
 from llama_stack.distribution.distribution import get_provider_registry
-from llama_stack.distribution.utils.exec import run_command, run_with_pty
+from llama_stack.distribution.utils.exec import run_command
 from llama_stack.distribution.utils.image_types import LlamaStackImageType
 from llama_stack.providers.datatypes import Api
 
@@ -123,11 +122,7 @@ def build_image(
     if special_deps:
         args.append("#".join(special_deps))
 
-    is_terminal = sys.stdin.isatty()
-    if is_terminal:
-        return_code = run_with_pty(args)
-    else:
-        return_code = run_command(args)
+    return_code = run_command(args)
 
     if return_code != 0:
         log.error(

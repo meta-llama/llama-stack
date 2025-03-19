@@ -185,8 +185,12 @@ llama stack build --config llama_stack/templates/ollama/build.yaml
 :::
 
 :::{tab-item} Building Container
-> [!TIP]
-> Podman is supported as an alternative to Docker. Set `CONTAINER_BINARY` to `podman` in your environment to use Podman.
+
+```{admonition} Podman Alternative
+:class: tip
+
+Podman is supported as an alternative to Docker. Set `CONTAINER_BINARY` to `podman` in your environment to use Podman.
+```
 
 To build a container image, you may start off from a template and use the `--image-type container` flag to specify `container` as the build image type.
 

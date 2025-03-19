@@ -6,17 +6,32 @@ The `llama-stack-client` CLI allows you to query information about the distribut
 
 ### `llama-stack-client`
 ```bash
-llama-stack-client -h
+llama-stack-client
+Usage: llama-stack-client [OPTIONS] COMMAND [ARGS]...
 
-usage: llama-stack-client [-h] {models,memory_banks,shields} ...
+  Welcome to the LlamaStackClient CLI
 
-Welcome to the LlamaStackClient CLI
+Options:
+  --version        Show the version and exit.
+  --endpoint TEXT  Llama Stack distribution endpoint
+  --api-key TEXT   Llama Stack distribution API key
+  --config TEXT    Path to config file
+  --help           Show this message and exit.
 
-options:
-  -h, --help            show this help message and exit
-
-subcommands:
-  {models,memory_banks,shields}
+Commands:
+  configure          Configure Llama Stack Client CLI.
+  datasets           Manage datasets.
+  eval               Run evaluation tasks.
+  eval_tasks         Manage evaluation tasks.
+  inference          Inference (chat).
+  inspect            Inspect server configuration.
+  models             Manage GenAI models.
+  post_training      Post-training.
+  providers          Manage API providers.
+  scoring_functions  Manage scoring functions.
+  shields            Manage safety shield services.
+  toolgroups         Manage available tool groups.
+  vector_dbs         Manage vector databases.
 ```
 
 ### `llama-stack-client configure`
@@ -127,11 +142,11 @@ llama-stack-client vector_dbs list
 llama-stack-client vector_dbs register <vector-db-id> [--provider-id <provider-id>] [--provider-vector-db-id <provider-vector-db-id>] [--embedding-model <embedding-model>] [--embedding-dimension <embedding-dimension>]
 ```
 
-Options:
-- `--provider-id`: Optional. Provider ID for the vector db
-- `--provider-vector-db-id`: Optional. Provider's vector db ID
-- `--embedding-model`: Optional. Embedding model to use. Default: "all-MiniLM-L6-v2"
-- `--embedding-dimension`: Optional. Dimension of embeddings. Default: 384
+Optional arguments:
+- `--provider-id`: Provider ID for the vector db
+- `--provider-vector-db-id`: Provider's vector db ID
+- `--embedding-model`: Embedding model to use. Default: "all-MiniLM-L6-v2"
+- `--embedding-dimension`: Dimension of embeddings. Default: 384
 
 ### `llama-stack-client vector_dbs unregister`
 ```bash
@@ -157,11 +172,13 @@ llama-stack-client shields list
 llama-stack-client shields register --shield-id <shield-id> [--provider-id <provider-id>] [--provider-shield-id <provider-shield-id>] [--params <params>]
 ```
 
-Options:
-- `--shield-id`: Required. ID of the shield
-- `--provider-id`: Optional. Provider ID for the shield
-- `--provider-shield-id`: Optional. Provider's shield ID
-- `--params`: Optional. JSON configuration parameters for the shield
+Required arguments:
+- `--shield-id`: ID of the shield
+
+Optional arguments:
+- `--provider-id`: Provider ID for the shield
+- `--provider-shield-id`: Provider's shield ID
+- `--params`: JSON configuration parameters for the shield
 
 ## Eval Task Management
 
@@ -175,13 +192,15 @@ llama-stack-client benchmarks list
 llama-stack-client benchmarks register --eval-task-id <eval-task-id> --dataset-id <dataset-id> --scoring-functions <function1> [<function2> ...] [--provider-id <provider-id>] [--provider-eval-task-id <provider-eval-task-id>] [--metadata <metadata>]
 ```
 
-Options:
-- `--eval-task-id`: Required. ID of the eval task
-- `--dataset-id`: Required. ID of the dataset to evaluate
-- `--scoring-functions`: Required. One or more scoring functions to use for evaluation
-- `--provider-id`: Optional. Provider ID for the eval task
-- `--provider-eval-task-id`: Optional. Provider's eval task ID
-- `--metadata`: Optional. Metadata for the eval task in JSON format
+Required arguments:
+- `--eval-task-id`: ID of the eval task
+- `--dataset-id`: ID of the dataset to evaluate
+- `--scoring-functions`: One or more scoring functions to use for evaluation
+
+Optional arguments:
+- `--provider-id`: Provider ID for the eval task
+- `--provider-eval-task-id`: Provider's eval task ID
+- `--metadata`: Metadata for the eval task in JSON format
 
 ## Eval execution
 ### `llama-stack-client eval run-benchmark`
@@ -189,11 +208,13 @@ Options:
 llama-stack-client eval run-benchmark <eval-task-id1> [<eval-task-id2> ...] --eval-task-config <config-file> --output-dir <output-dir> [--num-examples <num>] [--visualize]
 ```
 
-Options:
-- `--eval-task-config`: Required. Path to the eval task config file in JSON format
-- `--output-dir`: Required. Path to the directory where evaluation results will be saved
-- `--num-examples`: Optional. Number of examples to evaluate (useful for debugging)
-- `--visualize`: Optional flag. If set, visualizes evaluation results after completion
+Required arguments:
+- `--eval-task-config`: Path to the eval task config file in JSON format
+- `--output-dir`: Path to the directory where evaluation results will be saved
+
+Optional arguments:
+- `--num-examples`: Number of examples to evaluate (useful for debugging)
+- `--visualize`: If set, visualizes evaluation results after completion
 
 Example benchmark_config.json:
 ```json
@@ -214,11 +235,13 @@ Example benchmark_config.json:
 llama-stack-client eval run-scoring <eval-task-id> --eval-task-config <config-file> --output-dir <output-dir> [--num-examples <num>] [--visualize]
 ```
 
-Options:
-- `--eval-task-config`: Required. Path to the eval task config file in JSON format
-- `--output-dir`: Required. Path to the directory where scoring results will be saved
-- `--num-examples`: Optional. Number of examples to evaluate (useful for debugging)
-- `--visualize`: Optional flag. If set, visualizes scoring results after completion
+Required arguments:
+- `--eval-task-config`: Path to the eval task config file in JSON format
+- `--output-dir`: Path to the directory where scoring results will be saved
+
+Optional arguments:
+- `--num-examples`: Number of examples to evaluate (useful for debugging)
+- `--visualize`: If set, visualizes scoring results after completion
 
 ## Tool Group Management
 
@@ -230,11 +253,11 @@ llama-stack-client toolgroups list
 +---------------------------+------------------+------+---------------+
 | identifier                | provider_id      | args | mcp_endpoint  |
 +===========================+==================+======+===============+
-| builtin::code_interpreter | code-interpreter | None | None         |
+| builtin::code_interpreter | code-interpreter | None | None          |
 +---------------------------+------------------+------+---------------+
-| builtin::rag             | rag-runtime      | None | None         |
+| builtin::rag              | rag-runtime      | None | None          |
 +---------------------------+------------------+------+---------------+
-| builtin::websearch       | tavily-search    | None | None         |
+| builtin::websearch        | tavily-search    | None | None          |
 +---------------------------+------------------+------+---------------+
 ```
 
@@ -250,11 +273,11 @@ Shows detailed information about a specific toolgroup. If the toolgroup is not f
 llama-stack-client toolgroups register <toolgroup_id> [--provider-id <provider-id>] [--provider-toolgroup-id <provider-toolgroup-id>] [--mcp-config <mcp-config>] [--args <args>]
 ```
 
-Options:
-- `--provider-id`: Optional. Provider ID for the toolgroup
-- `--provider-toolgroup-id`: Optional. Provider's toolgroup ID
-- `--mcp-config`: Optional. JSON configuration for the MCP endpoint
-- `--args`: Optional. JSON arguments for the toolgroup
+Optional arguments:
+- `--provider-id`: Provider ID for the toolgroup
+- `--provider-toolgroup-id`: Provider's toolgroup ID
+- `--mcp-config`: JSON configuration for the MCP endpoint
+- `--args`: JSON arguments for the toolgroup
 
 ### `llama-stack-client toolgroups unregister`
 ```bash

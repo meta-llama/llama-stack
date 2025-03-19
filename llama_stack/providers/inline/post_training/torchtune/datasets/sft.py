@@ -55,7 +55,7 @@ class SFTDataset(Dataset):
         if "messages" in transformed_sample:
             validate_messages(transformed_sample["messages"])
 
-        tokenized_dict = self._model_transform(transformed_sample)
+        tokenized_dict: dict[str, Any] = self._model_transform(transformed_sample)
 
         if not ("tokens" in tokenized_dict and "mask" in tokenized_dict):
             keys_str = ", ".join(tokenized_dict.keys())
