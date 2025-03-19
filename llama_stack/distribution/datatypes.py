@@ -142,14 +142,14 @@ class ToolGroupWithACL(ToolGroup, ResourceWithACL):
 
 
 RoutableObject = Union[
-    ModelWithACL,
-    ShieldWithACL,
-    VectorDBWithACL,
-    DatasetWithACL,
-    ScoringFnWithACL,
-    BenchmarkWithACL,
-    ToolWithACL,
-    ToolGroupWithACL,
+    Model,
+    Shield,
+    VectorDB,
+    Dataset,
+    ScoringFn,
+    Benchmark,
+    Tool,
+    ToolGroup,
 ]
 
 
