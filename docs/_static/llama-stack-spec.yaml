@@ -1385,38 +1385,6 @@ paths:
           required: true
           schema:
             type: string
-  /v1/evaluation/grade:
-    post:
-      responses:
-        '200':
-          description: >-
-            The evaluation job containing grader scores.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EvaluationJob'
-        '400':
-          $ref: '#/components/responses/BadRequest400'
-        '429':
-          $ref: >-
-            #/components/responses/TooManyRequests429
-        '500':
-          $ref: >-
-            #/components/responses/InternalServerError500
-        default:
-          $ref: '#/components/responses/DefaultError'
-      tags:
-        - Evaluation
-      description: >-
-        Run an grading job with generated results. Use this when you have generated
-        results from inference in a dataset.
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/GradeRequest'
-        required: true
   /v1/evaluation/grade_sync:
     post:
       responses:
@@ -1441,13 +1409,48 @@ paths:
       tags:
         - Evaluation
       description: >-
-        Run an grading job with generated results inline.
+        Run grading synchronously on generated results, i.e., without scheduling a
+        job. You should use this for quick testing, or when the number of rows is
+        limited. Some implementations may have stricter restrictions on inputs which
+        will be accepted.
       parameters: []
       requestBody:
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/GradeSyncRequest'
+        required: true
+  /v1/evaluation/grading:
+    post:
+      responses:
+        '200':
+          description: >-
+            The evaluation job containing grader scores.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvaluationJob'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Evaluation
+      description: >-
+        Schedule a grading job, by grading generated results. The generated results
+        are expected to be in the dataset.
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GradingRequest'
         required: true
   /v1/health:
     get:
@@ -1800,7 +1803,9 @@ paths:
           $ref: '#/components/responses/DefaultError'
       tags:
         - Benchmarks
-      description: Register a new benchmark.
+      description: >-
+        Register a new benchmark. A benchmark consists of a dataset id and a list
+        of grader ids.
       parameters: []
       requestBody:
         content:
@@ -2566,7 +2571,9 @@ paths:
           $ref: '#/components/responses/DefaultError'
       tags:
         - Evaluation
-      description: Run an evaluation job.
+      description: >-
+        Schedule a full evaluation job, by generating results using candidate and
+        grading them.
       parameters: []
       requestBody:
         content:
@@ -2661,7 +2668,10 @@ paths:
           $ref: '#/components/responses/DefaultError'
       tags:
         - Evaluation
-      description: Run an evaluation job inline.
+      description: >-
+        Run an evaluation synchronously, i.e., without scheduling a job". You should
+        use this for quick testing, or when the number of rows is limited. Some implementations
+        may have stricter restrictions on inputs which will be accepted.
       parameters: []
       requestBody:
         content:
@@ -5956,20 +5966,65 @@ components:
           benchmark: '#/components/schemas/BenchmarkEvaluationTask'
           dataset: '#/components/schemas/DatasetEvaluationTask'
           data: '#/components/schemas/DataEvaluationTask'
-    GradeRequest:
+    GradeSyncRequest:
       type: object
       properties:
         task:
           $ref: '#/components/schemas/EvaluationTask'
           description: >-
-            The task to evaluate. One of: - BenchmarkTask: Run evaluation task against
-            a benchmark_id - DatasetGraderTask: Run evaluation task against a dataset_id
-            and a list of grader_ids - DataSourceGraderTask: Run evaluation task against
-            a data source (e.g. rows, uri, etc.) and a list of grader_ids
+            The task to evaluate. One of: - BenchmarkEvaluationTask: Run evaluation
+            task against a benchmark_id - DatasetEvaluationTask: Run evaluation task
+            against a dataset_id and a list of grader_ids - DataEvaluationTask: Run
+            evaluation task against a data source (e.g. rows, uri, etc.) and a list
+            of grader_ids
       additionalProperties: false
       required:
         - task
-      title: GradeRequest
+      title: GradeSyncRequest
+    EvaluationResponse:
+      type: object
+      properties:
+        generations:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              oneOf:
+                - type: 'null'
+                - type: boolean
+                - type: number
+                - type: string
+                - type: array
+                - type: object
+          description: >-
+            The generations in rows for the evaluation.
+        scores:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ScoringResult'
+          description: >-
+            The scores for the evaluation. Map of grader id to ScoringResult.
+      additionalProperties: false
+      required:
+        - generations
+        - scores
+      title: EvaluationResponse
+      description: A response to an inline evaluation.
+    GradingRequest:
+      type: object
+      properties:
+        task:
+          $ref: '#/components/schemas/EvaluationTask'
+          description: >-
+            The task to evaluate. One of: - BenchmarkEvaluationTask: Run evaluation
+            task against a benchmark_id - DatasetEvaluationTask: Run evaluation task
+            against a dataset_id and a list of grader_ids - DataEvaluationTask: Run
+            evaluation task against a data source (e.g. rows, uri, etc.) and a list
+            of grader_ids
+      additionalProperties: false
+      required:
+        - task
+      title: GradingRequest
     EvaluationCandidate:
       oneOf:
         - $ref: '#/components/schemas/ModelCandidate'
@@ -6023,49 +6078,6 @@ components:
         - task
         - candidate
       title: EvaluationJob
-    GradeSyncRequest:
-      type: object
-      properties:
-        task:
-          $ref: '#/components/schemas/EvaluationTask'
-          description: >-
-            The task to evaluate. One of: - BenchmarkTask: Run evaluation task against
-            a benchmark_id - DatasetGraderTask: Run evaluation task against a dataset_id
-            and a list of grader_ids - DataSourceGraderTask: Run evaluation task against
-            a data source (e.g. rows, uri, etc.) and a list of grader_ids
-      additionalProperties: false
-      required:
-        - task
-      title: GradeSyncRequest
-    EvaluationResponse:
-      type: object
-      properties:
-        generations:
-          type: array
-          items:
-            type: object
-            additionalProperties:
-              oneOf:
-                - type: 'null'
-                - type: boolean
-                - type: number
-                - type: string
-                - type: array
-                - type: object
-          description: >-
-            The generations in rows for the evaluation.
-        scores:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/ScoringResult'
-          description: >-
-            The scores for the evaluation. Map of grader id to ScoringResult.
-      additionalProperties: false
-      required:
-        - generations
-        - scores
-      title: EvaluationResponse
-      description: A response to an inline evaluation.
     HealthInfo:
       type: object
       properties:
@@ -7347,10 +7359,11 @@ components:
         task:
           $ref: '#/components/schemas/EvaluationTask'
           description: >-
-            The task to evaluate. One of: - BenchmarkTask: Run evaluation task against
-            a benchmark_id - DatasetGraderTask: Run evaluation task against a dataset_id
-            and a list of grader_ids - DataSourceGraderTask: Run evaluation task against
-            a data source (e.g. rows, uri, etc.) and a list of grader_ids
+            The task to evaluate. One of: - BenchmarkEvaluationTask: Run evaluation
+            task against a benchmark_id - DatasetEvaluationTask: Run evaluation task
+            against a dataset_id and a list of grader_ids - DataEvaluationTask: Run
+            evaluation task against a data source (e.g. rows, uri, etc.) and a list
+            of grader_ids
         candidate:
           $ref: '#/components/schemas/EvaluationCandidate'
           description: The candidate to evaluate.
@@ -7416,10 +7429,11 @@ components:
         task:
           $ref: '#/components/schemas/EvaluationTask'
           description: >-
-            The task to evaluate. One of: - BenchmarkTask: Run evaluation task against
-            a benchmark_id - DatasetGraderTask: Run evaluation task against a dataset_id
-            and a list of grader_ids - DataSourceGraderTask: Run evaluation task against
-            a data source (e.g. rows, uri, etc.) and a list of grader_ids
+            The task to evaluate. One of: - BenchmarkEvaluationTask: Run evaluation
+            task against a benchmark_id - DatasetEvaluationTask: Run evaluation task
+            against a dataset_id and a list of grader_ids - DataEvaluationTask: Run
+            evaluation task against a data source (e.g. rows, uri, etc.) and a list
+            of grader_ids
         candidate:
           $ref: '#/components/schemas/EvaluationCandidate'
           description: The candidate to evaluate.
