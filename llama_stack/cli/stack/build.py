@@ -6,6 +6,7 @@
 import argparse
 import textwrap
 
+from llama_stack.cli.stack.utils import ImageType
 from llama_stack.cli.subcommand import Subcommand
 
 
@@ -46,16 +47,16 @@ class StackBuild(Subcommand):
         self.parser.add_argument(
             "--image-type",
             type=str,
-            help="Image Type to use for the build. This can be either conda or container or venv. If not specified, will use the image type from the template config.",
-            choices=["conda", "container", "venv"],
-            default="conda",
+            help="Image Type to use for the build. If not specified, will use the image type from the template config.",
+            choices=[e.value for e in ImageType],
+            default=ImageType.CONDA.value,
         )
 
         self.parser.add_argument(
             "--image-name",
             type=str,
             help=textwrap.dedent(
-                """[for image-type=conda|venv] Name of the conda or virtual environment to use for
+                f"""[for image-type={"|".join(e.value for e in ImageType)}] Name of the conda or virtual environment to use for
 the build. If not specified, currently active Conda environment will be used if found.
             """
             ),
