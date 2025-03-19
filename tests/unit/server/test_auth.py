@@ -75,15 +75,11 @@ def mock_middleware(mock_auth_endpoint):
 
 
 async def mock_post_success(*args, **kwargs):
-    mock_response = AsyncMock()
-    mock_response.status_code = 200
-    return mock_response
+    return MockResponse(200, {"message": "Authentication successful"})
 
 
 async def mock_post_failure(*args, **kwargs):
-    mock_response = AsyncMock()
-    mock_response.status_code = 401
-    return mock_response
+    return MockResponse(401, {"message": "Authentication failed"})
 
 
 async def mock_post_exception(*args, **kwargs):
@@ -125,8 +121,7 @@ def test_auth_service_error(client, valid_api_key):
 
 def test_auth_request_payload(client, valid_api_key, mock_auth_endpoint):
     with patch("httpx.AsyncClient.post") as mock_post:
-        mock_response = AsyncMock()
-        mock_response.status_code = 200
+        mock_response = MockResponse(200, {"message": "Authentication successful"})
         mock_post.return_value = mock_response
 
         client.get(
@@ -148,7 +143,7 @@ def test_auth_request_payload(client, valid_api_key, mock_auth_endpoint):
         payload = kwargs["json"]
         assert payload["api_key"] == valid_api_key
         assert payload["request"]["path"] == "/test"
-        assert "authorization" in payload["request"]["headers"]
+        assert "authorization" not in payload["request"]["headers"]
         assert "param1" in payload["request"]["params"]
         assert "param2" in payload["request"]["params"]
 

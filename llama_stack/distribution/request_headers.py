@@ -23,10 +23,7 @@ class RequestProviderDataContext(ContextManager):
     def __init__(
         self, provider_data: Optional[Dict[str, Any]] = None, auth_attributes: Optional[Dict[str, List[str]]] = None
     ):
-        # Initialize with either provider_data or create a new dict
         self.provider_data = provider_data or {}
-
-        # Add auth attributes under a special key if provided
         if auth_attributes:
             self.provider_data["__auth_attributes"] = auth_attributes
 

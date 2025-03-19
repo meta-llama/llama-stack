@@ -274,17 +274,14 @@ class CommonRoutingTableImpl(RoutingTable):
         if not hasattr(obj, "access_attributes") or not obj.access_attributes:
             return True
 
-        # Get user attributes from context
+        # Get user attributes from request context
         user_attributes = get_auth_attributes()
 
         # If no user attributes, deny access to objects with access control
         if not user_attributes:
             return False
 
-        # Convert AccessAttributes to dictionary for checking
         obj_attributes = obj.access_attributes.model_dump(exclude_none=True)
-
-        # If the model_dump is empty (all fields are None), allow access
         if not obj_attributes:
             return True
 
@@ -292,14 +289,12 @@ class CommonRoutingTableImpl(RoutingTable):
         for attr_key, required_values in obj_attributes.items():
             user_values = user_attributes.get(attr_key, [])
 
-            # No values for this category in user attributes
             if not user_values:
                 logger.debug(
                     f"Access denied to {obj.type} '{obj.identifier}': missing required attribute category '{attr_key}'"
                 )
                 return False
 
-            # None of the values in this category match (need at least one match per category)
             if not any(val in user_values for val in required_values):
                 logger.debug(
                     f"Access denied to {obj.type} '{obj.identifier}': "

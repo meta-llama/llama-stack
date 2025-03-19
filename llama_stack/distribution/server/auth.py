@@ -166,18 +166,16 @@ class AuthenticationMiddleware:
                     # Parse and validate the auth response
                     try:
                         response_data = response.json()
-
                         auth_response = AuthResponse(**response_data)
 
                         # Store attributes in request scope for access control
                         if auth_response.access_attributes:
                             user_attributes = auth_response.access_attributes.model_dump(exclude_none=True)
-                            scope["user_attributes"] = user_attributes
                         else:
                             logger.warning("Authentication response did not contain any attributes")
-                            scope["user_attributes"] = {}
+                            user_attributes = {}
 
-                        # Log authentication success with attribute details
+                        scope["user_attributes"] = user_attributes
                         logger.debug(f"Authentication successful: {len(user_attributes)} attributes")
                     except Exception:
                         logger.exception("Error parsing authentication response")

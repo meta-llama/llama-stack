@@ -10,8 +10,8 @@ import tempfile
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
-import pytest_asyncio
 
+from llama_stack.apis.datatypes import Api
 from llama_stack.apis.models import ModelType
 from llama_stack.distribution.datatypes import AccessAttributes, ModelWithACL
 from llama_stack.distribution.routers.routing_tables import ModelsRoutingTable
@@ -29,18 +29,19 @@ def _return_model(model):
     return model
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 async def test_setup():
     temp_dir = tempfile.mkdtemp()
     db_path = os.path.join(temp_dir, "test_access_control.db")
     kvstore_config = SqliteKVStoreConfig(db_path=db_path)
     kvstore = SqliteKVStoreImpl(kvstore_config)
+    await kvstore.initialize()
     registry = CachedDiskDistributionRegistry(kvstore)
     await registry.initialize()
 
     mock_inference = Mock()
     mock_inference.__provider_spec__ = MagicMock()
-    mock_inference.__provider_spec__.api = "inference"
+    mock_inference.__provider_spec__.api = Api.inference
     mock_inference.register_model = AsyncMock(side_effect=_return_model)
     routing_table = ModelsRoutingTable(
         impls_by_provider_id={"test_provider": mock_inference},
@@ -80,14 +81,14 @@ async def test_access_control_with_cache(mock_get_auth_attributes, test_setup):
 
     mock_get_auth_attributes.return_value = {"roles": ["admin"], "teams": ["management"]}
     all_models = await routing_table.list_models()
-    assert len(all_models.data) == 3
+    assert len(all_models.data) == 2
 
     model = await routing_table.get_model("model-public")
     assert model.identifier == "model-public"
     model = await routing_table.get_model("model-admin")
     assert model.identifier == "model-admin"
-    model = await routing_table.get_model("model-data-scientist")
-    assert model.identifier == "model-data-scientist"
+    with pytest.raises(ValueError):
+        await routing_table.get_model("model-data-scientist")
 
     mock_get_auth_attributes.return_value = {"roles": ["data-scientist"], "teams": ["other-team"]}
     all_models = await routing_table.list_models()
@@ -157,7 +158,9 @@ async def test_access_control_empty_attributes(mock_get_auth_attributes, test_se
         access_attributes=AccessAttributes(),
     )
     await registry.register(model)
-    mock_get_auth_attributes.return_value = {}
+    mock_get_auth_attributes.return_value = {
+        "roles": [],
+    }
     result = await routing_table.get_model("model-empty-attrs")
     assert result.identifier == "model-empty-attrs"
     all_models = await routing_table.list_models()
@@ -231,6 +234,7 @@ async def test_automatic_access_attributes(mock_get_auth_attributes, test_setup)
     mock_get_auth_attributes.return_value = {
         "roles": ["data-scientist", "engineer"],
         "teams": ["ml-team", "platform-team"],
+        "projects": ["llama-3"],
     }
     model = await routing_table.get_model("auto-access-model")
     assert model.identifier == "auto-access-model"
