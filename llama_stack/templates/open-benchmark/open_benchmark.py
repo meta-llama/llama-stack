@@ -30,12 +30,14 @@ from llama_stack.providers.remote.vector_io.pgvector.config import (
 from llama_stack.providers.utils.inference.model_registry import ProviderModelEntry
 from llama_stack.templates.template import (
     DistributionTemplate,
-    RunConfigSettings,
     get_model_registry,
+    RunConfigSettings,
 )
 
 
-def get_inference_providers() -> Tuple[List[Provider], Dict[str, List[ProviderModelEntry]]]:
+def get_inference_providers() -> (
+    Tuple[List[Provider], Dict[str, List[ProviderModelEntry]]]
+):
     # in this template, we allow each API key to be optional
     providers = [
         (
@@ -116,7 +118,9 @@ def get_distribution_template() -> DistributionTemplate:
         Provider(
             provider_id="sqlite-vec",
             provider_type="inline::sqlite-vec",
-            config=SQLiteVectorIOConfig.sample_run_config(f"~/.llama/distributions/{name}"),
+            config=SQLiteVectorIOConfig.sample_run_config(
+                f"~/.llama/distributions/{name}"
+            ),
         ),
         Provider(
             provider_id="${env.ENABLE_CHROMADB+chromadb}",
@@ -208,7 +212,6 @@ def get_distribution_template() -> DistributionTemplate:
     ]
 
     # TODO(xiyan): fix this back as registerable resources
-    default_benchmarks = []
     # default_benchmarks = [
     #     BenchmarkInput(
     #         benchmark_id="meta-reference-simpleqa",
@@ -255,7 +258,6 @@ def get_distribution_template() -> DistributionTemplate:
                 default_tool_groups=default_tool_groups,
                 default_shields=[ShieldInput(shield_id="meta-llama/Llama-Guard-3-8B")],
                 default_datasets=default_datasets,
-                default_benchmarks=default_benchmarks,
             ),
         },
         run_config_env_vars={

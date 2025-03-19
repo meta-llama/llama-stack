@@ -20,7 +20,6 @@ async def get_provider_impl(
         config,
         deps[Api.datasetio],
         deps[Api.datasets],
-        deps[Api.scoring],
         deps[Api.inference],
         deps[Api.agents],
     )

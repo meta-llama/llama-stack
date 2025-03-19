@@ -5,14 +5,12 @@
 # the root directory of this source tree.
 
 from enum import Enum
-from typing import Any, Dict, List
 
 from llama_stack.apis.common.type_system import (
     ChatCompletionInputType,
     CompletionInputType,
     StringType,
 )
-from llama_stack.distribution.datatypes import Api
 
 
 class ColumnName(Enum):

@@ -14,7 +14,6 @@ from .routing_tables import (
     BenchmarksRoutingTable,
     DatasetsRoutingTable,
     ModelsRoutingTable,
-    ScoringFunctionsRoutingTable,
     ShieldsRoutingTable,
     ToolGroupsRoutingTable,
     VectorDBsRoutingTable,
@@ -47,10 +46,8 @@ async def get_routing_table_impl(
 async def get_auto_router_impl(api: Api, routing_table: RoutingTable, deps: Dict[str, Any]) -> Any:
     from .routers import (
         DatasetIORouter,
-        EvalRouter,
         InferenceRouter,
         SafetyRouter,
-        ScoringRouter,
         ToolRuntimeRouter,
         VectorIORouter,
     )
@@ -60,8 +57,6 @@ async def get_auto_router_impl(api: Api, routing_table: RoutingTable, deps: Dict
         "inference": InferenceRouter,
         "safety": SafetyRouter,
         "datasetio": DatasetIORouter,
-        "scoring": ScoringRouter,
-        "eval": EvalRouter,
         "tool_runtime": ToolRuntimeRouter,
     }
     api_to_deps = {
