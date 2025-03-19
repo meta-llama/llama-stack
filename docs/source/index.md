@@ -15,8 +15,6 @@ Llama Stack defines and standardizes the core building blocks needed to bring ge
 - **Multiple developer interfaces** like CLI and SDKs for Python, Node, iOS, and Android
 - **Standalone applications** as examples for how to build production-grade AI applications with Llama Stack
 
-We focus on making it easy to build production applications with the Llama model family - from the latest Llama 3.3 to specialized models like Llama Guard for safety.
-
 ```{image} ../_static/llama-stack.png
 :alt: Llama Stack
 :width: 400px
