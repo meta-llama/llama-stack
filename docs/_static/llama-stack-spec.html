@@ -8548,7 +8548,7 @@
                 },
                 "additionalProperties": false,
                 "title": "EvaluationTask",
-                "description": "A task for evaluation. To specify a task, one of the following must be provided: - `benchmark_id`: Run evaluation task against a benchmark_id - `dataset_id` and `grader_ids`: Run evaluation task against a dataset_id and a list of grader_ids - `data_source` and `grader_ids`: Run evaluation task against a data source (e.g. rows, uri, etc.) and a list of grader_ids"
+                "description": "A task for evaluation. To specify a task, one of the following must be provided: - `benchmark_id`: Run evaluation task against a benchmark_id. Use this when you have a curated dataset and have settled on the graders. - `dataset_id` and `grader_ids`: Run evaluation task against a dataset_id and a list of grader_ids. Use this when you have datasets and / or are iterating on your graders.  - `data_source` and `grader_ids`: Run evaluation task against a data source (e.g. rows, uri, etc.) and a list of grader_ids. Prefer this when you are early in your evaluation cycle and experimenting much more with your data and graders."
             },
             "GradeRequest": {
                 "type": "object",
