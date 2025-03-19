@@ -17,13 +17,6 @@ on:
 jobs:
   test-matrix:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        # Listing tests manually since some of them currently fail
-        # TODO: generate matrix list from tests/integration when fixed
-        test-type: [inference, datasets, inspect, scoring, post_training, providers]
-      fail-fast: false # we want to run all tests regardless of failure
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -93,4 +86,9 @@ jobs:
         env:
           INFERENCE_MODEL: "meta-llama/Llama-3.2-3B-Instruct"
         run: |
-          uv run pytest -v tests/integration/${{ matrix.test-type }} --stack-config=ollama --text-model="meta-llama/Llama-3.2-3B-Instruct" --embedding-model=all-MiniLM-L6-v2
+          for test in inference datasets inspect scoring post_training providers; do
+            uv run pytest -v tests/integration/${test} \
+              --stack-config=ollama \
+              --text-model="meta-llama/Llama-3.2-3B-Instruct" \
+              --embedding-model=all-MiniLM-L6-v2
+          done
