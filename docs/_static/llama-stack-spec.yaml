@@ -6018,7 +6018,7 @@ components:
     EvaluationResponse:
       type: object
       properties:
-        result_data:
+        result_rows:
           type: array
           items:
             type: object
@@ -6031,8 +6031,8 @@ components:
                 - type: array
                 - type: object
           description: >-
-            The result data containing generations and grades in each row.
-        metrics:
+            The result data containing inputs, generations and grades in each row.
+        grades:
           type: object
           additionalProperties:
             oneOf:
@@ -6042,11 +6042,11 @@ components:
               - type: string
               - type: array
               - type: object
-          description: Map of metric name to aggregated value.
+          description: Map of grader id to aggregated value.
       additionalProperties: false
       required:
-        - result_data
-        - metrics
+        - result_rows
+        - grades
       title: EvaluationResponse
       description: A response to an inline evaluation.
     HealthInfo:

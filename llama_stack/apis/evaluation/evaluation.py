@@ -81,12 +81,12 @@ class EvaluationResponse(BaseModel):
     """
     A response to an inline evaluation.
 
-    :param result_data: The result data containing generations and grades in each row.
-    :param metrics: Map of metric name to aggregated value.
+    :param result_rows: The result data containing inputs, generations and grades in each row.
+    :param grades: Map of grader id to aggregated value.
     """
 
-    result_data: List[Dict[str, Any]]
-    metrics: Dict[str, Any]
+    result_rows: List[Dict[str, Any]]
+    grades: Dict[str, Any]
 
 
 class Evaluation(Protocol):
