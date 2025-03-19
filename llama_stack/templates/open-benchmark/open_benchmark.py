@@ -170,7 +170,6 @@ def get_distribution_template() -> DistributionTemplate:
     default_datasets = [
         DatasetInput(
             dataset_id="simpleqa",
-            provider_id="huggingface",
             purpose=DatasetPurpose.eval_messages_answer,
             source=URIDataSource(
                 uri="huggingface://datasets/llamastack/simpleqa?split=train",
@@ -178,7 +177,6 @@ def get_distribution_template() -> DistributionTemplate:
         ),
         DatasetInput(
             dataset_id="mmlu_cot",
-            provider_id="huggingface",
             purpose=DatasetPurpose.eval_messages_answer,
             source=URIDataSource(
                 uri="huggingface://datasets/llamastack/mmlu_cot?split=test&name=all",
@@ -186,7 +184,6 @@ def get_distribution_template() -> DistributionTemplate:
         ),
         DatasetInput(
             dataset_id="gpqa_cot",
-            provider_id="huggingface",
             purpose=DatasetPurpose.eval_messages_answer,
             source=URIDataSource(
                 uri="huggingface://datasets/llamastack/gpqa_0shot_cot?split=test&name=gpqa_main",
@@ -194,7 +191,6 @@ def get_distribution_template() -> DistributionTemplate:
         ),
         DatasetInput(
             dataset_id="math_500",
-            provider_id="huggingface",
             purpose=DatasetPurpose.eval_messages_answer,
             source=URIDataSource(
                 uri="huggingface://datasets/llamastack/math_500?split=test",
@@ -202,7 +198,6 @@ def get_distribution_template() -> DistributionTemplate:
         ),
         DatasetInput(
             dataset_id="bfcl",
-            provider_id="huggingface",
             purpose=DatasetPurpose.eval_messages_answer,
             source=URIDataSource(
                 uri="huggingface://datasets/llamastack/bfcl_v3?split=train",
