@@ -196,27 +196,27 @@ datasets:
 scoring_fns: []
 benchmarks:
 - dataset_id: simpleqa
-  scoring_functions:
+  grader_ids:
   - llm-as-judge::405b-simpleqa
   metadata: {}
   benchmark_id: meta-reference-simpleqa
 - dataset_id: mmlu_cot
-  scoring_functions:
+  grader_ids:
   - basic::regex_parser_multiple_choice_answer
   metadata: {}
   benchmark_id: meta-reference-mmlu-cot
 - dataset_id: gpqa_cot
-  scoring_functions:
+  grader_ids:
   - basic::regex_parser_multiple_choice_answer
   metadata: {}
   benchmark_id: meta-reference-gpqa-cot
 - dataset_id: math_500
-  scoring_functions:
+  grader_ids:
   - basic::regex_parser_math_response
   metadata: {}
   benchmark_id: meta-reference-math-500
 - dataset_id: bfcl
-  scoring_functions:
+  grader_ids:
   - basic::bfcl
   metadata: {}
   benchmark_id: meta-reference-bfcl
