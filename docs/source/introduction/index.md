@@ -48,7 +48,7 @@ Llama Stack addresses these challenges through a service-oriented, API-first app
 
 **Robust Ecosystem**
 - Llama Stack is already integrated with distribution partners (cloud providers, hardware vendors, and AI-focused companies).
-- Ecosystem offers tailored infrastructure, software, and services for deploying with a variety of models.
+- Ecosystem offers tailored infrastructure, software, and services for deploying a variety of models.
 
 
 ### Our Philosophy
