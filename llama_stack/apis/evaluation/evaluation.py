@@ -38,7 +38,7 @@ class AgentCandidate(BaseModel):
     """
 
     type: Literal["agent"] = "agent"
-    config: AgentConfig
+    agent_config: AgentConfig
 
 
 EvaluationCandidate = register_schema(
