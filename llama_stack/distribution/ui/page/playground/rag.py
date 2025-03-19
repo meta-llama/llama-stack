@@ -7,9 +7,10 @@
 import streamlit as st
 from llama_stack_client.lib.agents.agent import Agent
 from llama_stack_client.lib.agents.event_logger import EventLogger
-from llama_stack_client.types.memory_insert_params import Document
-from modules.api import llama_stack_api
-from modules.utils import data_url_from_file
+from llama_stack_client.types.shared.document import Document
+
+from llama_stack.distribution.ui.modules.api import llama_stack_api
+from llama_stack.distribution.ui.modules.utils import data_url_from_file
 
 
 def rag_chat_page():
