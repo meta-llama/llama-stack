@@ -481,15 +481,12 @@ class BenchmarksRoutingTable(CommonRoutingTableImpl, Benchmarks):
     ) -> Benchmark:
         if metadata is None:
             metadata = {}
-        if provider_id is None:
-            if len(self.impls_by_provider_id) == 1:
-                provider_id = list(self.impls_by_provider_id.keys())[0]
-            else:
-                raise ValueError(
-                    "No provider specified and multiple providers available. Please specify a provider_id."
-                )
-        if provider_benchmark_id is None:
-            provider_benchmark_id = benchmark_id
+
+        # TODO (xiyan): we will need a way to infer provider_id for evaluation
+        # keep it as meta-reference for now
+        if len(self.impls_by_provider_id) == 0:
+            raise ValueError("No evaluation providers available. Please configure an evaluation provider.")
+        provider_id = list(self.impls_by_provider_id.keys())[0]
 
         benchmark = Benchmark(
             identifier=benchmark_id,
@@ -497,7 +494,7 @@ class BenchmarksRoutingTable(CommonRoutingTableImpl, Benchmarks):
             grader_ids=grader_ids,
             metadata=metadata,
             provider_id=provider_id,
-            provider_resource_id=provider_benchmark_id,
+            provider_resource_id=benchmark_id,
         )
         await self.register_object(benchmark)
         return benchmark
