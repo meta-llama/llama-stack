@@ -2864,30 +2864,34 @@ components:
               title: BuiltinTool
             - type: string
         arguments:
-          type: object
-          additionalProperties:
-            oneOf:
-              - type: string
-              - type: integer
-              - type: number
-              - type: boolean
-              - type: 'null'
-              - type: array
-                items:
-                  oneOf:
-                    - type: string
-                    - type: integer
-                    - type: number
-                    - type: boolean
-                    - type: 'null'
-              - type: object
-                additionalProperties:
-                  oneOf:
-                    - type: string
-                    - type: integer
-                    - type: number
-                    - type: boolean
-                    - type: 'null'
+          oneOf:
+            - type: string
+            - type: object
+              additionalProperties:
+                oneOf:
+                  - type: string
+                  - type: integer
+                  - type: number
+                  - type: boolean
+                  - type: 'null'
+                  - type: array
+                    items:
+                      oneOf:
+                        - type: string
+                        - type: integer
+                        - type: number
+                        - type: boolean
+                        - type: 'null'
+                  - type: object
+                    additionalProperties:
+                      oneOf:
+                        - type: string
+                        - type: integer
+                        - type: number
+                        - type: boolean
+                        - type: 'null'
+        arguments_json:
+          type: string
       additionalProperties: false
       required:
         - call_id
