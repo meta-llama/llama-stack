@@ -8,6 +8,7 @@ import hashlib
 import logging
 import sqlite3
 import struct
+import threading
 import uuid
 from typing import Any, Dict, List, Optional
 
@@ -158,15 +159,25 @@ class SQLiteVecVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
         self.config = config
         self.inference_api = inference_api
         self.cache: Dict[str, VectorDBWithIndex] = {}
-        self.connection: Optional[sqlite3.Connection] = None
+        self._local = threading.local()
+
+    def _get_connection(self):
+        """Get a thread-local database connection."""
+        if not hasattr(self._local, "conn"):
+            try:
+                self._local.conn = sqlite3.connect(self.config.db_path)
+            except Exception as e:
+                print(f"Error connecting to SQLite database: {e}")
+                raise e
+        return self._local.conn
 
     async def initialize(self) -> None:
         # Open a connection to the SQLite database (the file is specified in the config).
-        self.connection = sqlite3.connect(self.config.db_path)
-        self.connection.enable_load_extension(True)
-        sqlite_vec.load(self.connection)
-        self.connection.enable_load_extension(False)
-        cur = self.connection.cursor()
+        connection = self._get_connection()
+        connection.enable_load_extension(True)
+        sqlite_vec.load(connection)
+        connection.enable_load_extension(False)
+        cur = connection.cursor()
         # Create a table to persist vector DB registrations.
         cur.execute("""
             CREATE TABLE IF NOT EXISTS vector_dbs (
@@ -174,47 +185,50 @@ class SQLiteVecVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
                 metadata TEXT
             );
         """)
-        self.connection.commit()
+        connection.commit()
         # Load any existing vector DB registrations.
         cur.execute("SELECT metadata FROM vector_dbs")
         rows = cur.fetchall()
         for row in rows:
             vector_db_data = row[0]
             vector_db = VectorDB.model_validate_json(vector_db_data)
-            index = await SQLiteVecIndex.create(vector_db.embedding_dimension, self.connection, vector_db.identifier)
+            index = await SQLiteVecIndex.create(vector_db.embedding_dimension, connection, vector_db.identifier)
             self.cache[vector_db.identifier] = VectorDBWithIndex(vector_db, index, self.inference_api)
 
     async def shutdown(self) -> None:
-        if self.connection:
-            self.connection.close()
-            self.connection = None
+        # We can't access other threads' connections, so we just close our own
+        if hasattr(self._local, "conn"):
+            try:
+                self._local.conn.close()
+            except Exception as e:
+                print(f"Error closing SQLite connection: {e}")
+            finally:
+                del self._local.conn
 
     async def register_vector_db(self, vector_db: VectorDB) -> None:
-        if self.connection is None:
-            raise RuntimeError("SQLite connection not initialized")
-        cur = self.connection.cursor()
+        connection = self._get_connection()
+        cur = connection.cursor()
         cur.execute(
             "INSERT OR REPLACE INTO vector_dbs (id, metadata) VALUES (?, ?)",
             (vector_db.identifier, vector_db.model_dump_json()),
         )
-        self.connection.commit()
-        index = await SQLiteVecIndex.create(vector_db.embedding_dimension, self.connection, vector_db.identifier)
+        connection.commit()
+        index = await SQLiteVecIndex.create(vector_db.embedding_dimension, connection, vector_db.identifier)
         self.cache[vector_db.identifier] = VectorDBWithIndex(vector_db, index, self.inference_api)
 
     async def list_vector_dbs(self) -> List[VectorDB]:
         return [v.vector_db for v in self.cache.values()]
 
     async def unregister_vector_db(self, vector_db_id: str) -> None:
-        if self.connection is None:
-            raise RuntimeError("SQLite connection not initialized")
+        connection = self._get_connection()
         if vector_db_id not in self.cache:
             logger.warning(f"Vector DB {vector_db_id} not found")
             return
         await self.cache[vector_db_id].index.delete()
         del self.cache[vector_db_id]
-        cur = self.connection.cursor()
+        cur = connection.cursor()
         cur.execute("DELETE FROM vector_dbs WHERE id = ?", (vector_db_id,))
-        self.connection.commit()
+        connection.commit()
 
     async def insert_chunks(self, vector_db_id: str, chunks: List[Chunk], ttl_seconds: Optional[int] = None) -> None:
         if vector_db_id not in self.cache:
