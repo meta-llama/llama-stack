@@ -121,8 +121,6 @@ class Dataset(CommonDatasetFields, Resource):
 
 class DatasetInput(CommonDatasetFields, BaseModel):
     dataset_id: str
-    provider_id: Optional[str] = None
-    provider_dataset_id: Optional[str] = None
 
 
 class ListDatasetsResponse(BaseModel):
@@ -201,7 +199,7 @@ class Datasets(Protocol):
     async def get_dataset(
         self,
         dataset_id: str,
-    ) -> Optional[Dataset]: ...
+    ) -> Dataset: ...
 
     @webmethod(route="/datasets", method="GET")
     async def list_datasets(self) -> ListDatasetsResponse: ...

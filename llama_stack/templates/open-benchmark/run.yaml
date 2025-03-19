@@ -164,35 +164,30 @@ datasets:
     uri: huggingface://datasets/llamastack/simpleqa?split=train
   metadata: {}
   dataset_id: simpleqa
-  provider_id: huggingface
 - purpose: eval/messages-answer
   source:
     type: uri
     uri: huggingface://datasets/llamastack/mmlu_cot?split=test&name=all
   metadata: {}
   dataset_id: mmlu_cot
-  provider_id: huggingface
 - purpose: eval/messages-answer
   source:
     type: uri
     uri: huggingface://datasets/llamastack/gpqa_0shot_cot?split=test&name=gpqa_main
   metadata: {}
   dataset_id: gpqa_cot
-  provider_id: huggingface
 - purpose: eval/messages-answer
   source:
     type: uri
     uri: huggingface://datasets/llamastack/math_500?split=test
   metadata: {}
   dataset_id: math_500
-  provider_id: huggingface
 - purpose: eval/messages-answer
   source:
     type: uri
     uri: huggingface://datasets/llamastack/bfcl_v3?split=train
   metadata: {}
   dataset_id: bfcl
-  provider_id: huggingface
 scoring_fns: []
 benchmarks:
 - dataset_id: simpleqa

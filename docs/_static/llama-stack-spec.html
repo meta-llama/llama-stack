@@ -1101,14 +1101,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/Benchmark"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/Benchmark"
                                 }
                             }
                         }
@@ -1150,14 +1143,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/Dataset"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/Dataset"
                                 }
                             }
                         }
@@ -1232,14 +1218,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/Model"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/Model"
                                 }
                             }
                         }
@@ -1314,14 +1293,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/ScoringFn"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/ScoringFn"
                                 }
                             }
                         }
@@ -1363,14 +1335,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/Shield"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/Shield"
                                 }
                             }
                         }
@@ -1673,14 +1638,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/PostTrainingJobArtifactsResponse"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/PostTrainingJobArtifactsResponse"
                                 }
                             }
                         }
@@ -1722,14 +1680,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/PostTrainingJobStatusResponse"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/PostTrainingJobStatusResponse"
                                 }
                             }
                         }
@@ -1804,14 +1755,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/FileUploadResponse"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/FileUploadResponse"
                                 }
                             }
                         }
@@ -1913,14 +1857,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/VectorDB"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/VectorDB"
                                 }
                             }
                         }
@@ -2246,14 +2183,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/JobStatus"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/JobStatus"
                                 }
                             }
                         }
@@ -4229,70 +4159,80 @@
                         ]
                     },
                     "arguments": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "integer"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "array",
-                                    "items": {
-                                        "oneOf": [
-                                            {
-                                                "type": "string"
-                                            },
-                                            {
-                                                "type": "integer"
-                                            },
-                                            {
-                                                "type": "number"
-                                            },
-                                            {
-                                                "type": "boolean"
-                                            },
-                                            {
-                                                "type": "null"
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "integer"
+                                        },
+                                        {
+                                            "type": "number"
+                                        },
+                                        {
+                                            "type": "boolean"
+                                        },
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "type": "array",
+                                            "items": {
+                                                "oneOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "integer"
+                                                    },
+                                                    {
+                                                        "type": "number"
+                                                    },
+                                                    {
+                                                        "type": "boolean"
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
                                             }
-                                        ]
-                                    }
-                                },
-                                {
-                                    "type": "object",
-                                    "additionalProperties": {
-                                        "oneOf": [
-                                            {
-                                                "type": "string"
-                                            },
-                                            {
-                                                "type": "integer"
-                                            },
-                                            {
-                                                "type": "number"
-                                            },
-                                            {
-                                                "type": "boolean"
-                                            },
-                                            {
-                                                "type": "null"
+                                        },
+                                        {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "oneOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "integer"
+                                                    },
+                                                    {
+                                                        "type": "number"
+                                                    },
+                                                    {
+                                                        "type": "boolean"
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
                                             }
-                                        ]
-                                    }
+                                        }
+                                    ]
                                 }
-                            ]
-                        }
+                            }
+                        ]
+                    },
+                    "arguments_json": {
+                        "type": "string"
                     }
                 },
                 "additionalProperties": false,
@@ -7857,7 +7797,8 @@
                 "type": "object",
                 "properties": {
                     "document_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The unique identifier for the document."
                     },
                     "content": {
                         "oneOf": [
@@ -7876,10 +7817,12 @@
                             {
                                 "$ref": "#/components/schemas/URL"
                             }
-                        ]
+                        ],
+                        "description": "The content of the document."
                     },
                     "mime_type": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The MIME type of the document."
                     },
                     "metadata": {
                         "type": "object",
@@ -7904,7 +7847,8 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "Additional metadata for the document."
                     }
                 },
                 "additionalProperties": false,
@@ -7913,7 +7857,8 @@
                     "content",
                     "metadata"
                 ],
-                "title": "RAGDocument"
+                "title": "RAGDocument",
+                "description": "A document to be used for document ingestion in the RAG Tool."
             },
             "InsertRequest": {
                 "type": "object",
@@ -9917,23 +9862,6 @@
                 ],
                 "title": "ScoreBatchResponse"
             },
-            "AlgorithmConfig": {
-                "oneOf": [
-                    {
-                        "$ref": "#/components/schemas/LoraFinetuningConfig"
-                    },
-                    {
-                        "$ref": "#/components/schemas/QATFinetuningConfig"
-                    }
-                ],
-                "discriminator": {
-                    "propertyName": "type",
-                    "mapping": {
-                        "LoRA": "#/components/schemas/LoraFinetuningConfig",
-                        "QAT": "#/components/schemas/QATFinetuningConfig"
-                    }
-                }
-            },
             "LoraFinetuningConfig": {
                 "type": "object",
                 "properties": {
@@ -10069,7 +9997,14 @@
                         "type": "string"
                     },
                     "algorithm_config": {
-                        "$ref": "#/components/schemas/AlgorithmConfig"
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/LoraFinetuningConfig"
+                            },
+                            {
+                                "$ref": "#/components/schemas/QATFinetuningConfig"
+                            }
+                        ]
                     }
                 },
                 "additionalProperties": false,

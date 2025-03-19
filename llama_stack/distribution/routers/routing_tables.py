@@ -20,6 +20,8 @@ from llama_stack.apis.datasets import (
     DatasetType,
     DataSource,
     ListDatasetsResponse,
+    RowsDataSource,
+    URIDataSource,
 )
 from llama_stack.apis.models import ListModelsResponse, Model, Models, ModelType
 from llama_stack.apis.resource import ResourceType
@@ -219,8 +221,11 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
     async def list_models(self) -> ListModelsResponse:
         return ListModelsResponse(data=await self.get_all_with_type("model"))
 
-    async def get_model(self, model_id: str) -> Optional[Model]:
-        return await self.get_object_by_identifier("model", model_id)
+    async def get_model(self, model_id: str) -> Model:
+        model = await self.get_object_by_identifier("model", model_id)
+        if model is None:
+            raise ValueError(f"Model '{model_id}' not found")
+        return model
 
     async def register_model(
         self,
@@ -267,8 +272,11 @@ class ShieldsRoutingTable(CommonRoutingTableImpl, Shields):
     async def list_shields(self) -> ListShieldsResponse:
         return ListShieldsResponse(data=await self.get_all_with_type(ResourceType.shield.value))
 
-    async def get_shield(self, identifier: str) -> Optional[Shield]:
-        return await self.get_object_by_identifier("shield", identifier)
+    async def get_shield(self, identifier: str) -> Shield:
+        shield = await self.get_object_by_identifier("shield", identifier)
+        if shield is None:
+            raise ValueError(f"Shield '{identifier}' not found")
+        return shield
 
     async def register_shield(
         self,
@@ -303,8 +311,11 @@ class VectorDBsRoutingTable(CommonRoutingTableImpl, VectorDBs):
     async def list_vector_dbs(self) -> ListVectorDBsResponse:
         return ListVectorDBsResponse(data=await self.get_all_with_type("vector_db"))
 
-    async def get_vector_db(self, vector_db_id: str) -> Optional[VectorDB]:
-        return await self.get_object_by_identifier("vector_db", vector_db_id)
+    async def get_vector_db(self, vector_db_id: str) -> VectorDB:
+        vector_db = await self.get_object_by_identifier("vector_db", vector_db_id)
+        if vector_db is None:
+            raise ValueError(f"Vector DB '{vector_db_id}' not found")
+        return vector_db
 
     async def register_vector_db(
         self,
@@ -355,8 +366,11 @@ class DatasetsRoutingTable(CommonRoutingTableImpl, Datasets):
     async def list_datasets(self) -> ListDatasetsResponse:
         return ListDatasetsResponse(data=await self.get_all_with_type(ResourceType.dataset.value))
 
-    async def get_dataset(self, dataset_id: str) -> Optional[Dataset]:
-        return await self.get_object_by_identifier("dataset", dataset_id)
+    async def get_dataset(self, dataset_id: str) -> Dataset:
+        dataset = await self.get_object_by_identifier("dataset", dataset_id)
+        if dataset is None:
+            raise ValueError(f"Dataset '{dataset_id}' not found")
+        return dataset
 
     async def register_dataset(
         self,
@@ -365,6 +379,12 @@ class DatasetsRoutingTable(CommonRoutingTableImpl, Datasets):
         metadata: Optional[Dict[str, Any]] = None,
         dataset_id: Optional[str] = None,
     ) -> Dataset:
+        if isinstance(source, dict):
+            if source["type"] == "uri":
+                source = URIDataSource.parse_obj(source)
+            elif source["type"] == "rows":
+                source = RowsDataSource.parse_obj(source)
+
         if not dataset_id:
             dataset_id = f"dataset-{str(uuid.uuid4())}"
 
@@ -408,8 +428,11 @@ class ScoringFunctionsRoutingTable(CommonRoutingTableImpl, ScoringFunctions):
     async def list_scoring_functions(self) -> ListScoringFunctionsResponse:
         return ListScoringFunctionsResponse(data=await self.get_all_with_type(ResourceType.scoring_function.value))
 
-    async def get_scoring_function(self, scoring_fn_id: str) -> Optional[ScoringFn]:
-        return await self.get_object_by_identifier("scoring_function", scoring_fn_id)
+    async def get_scoring_function(self, scoring_fn_id: str) -> ScoringFn:
+        scoring_fn = await self.get_object_by_identifier("scoring_function", scoring_fn_id)
+        if scoring_fn is None:
+            raise ValueError(f"Scoring function '{scoring_fn_id}' not found")
+        return scoring_fn
 
     async def register_scoring_function(
         self,
@@ -445,8 +468,11 @@ class BenchmarksRoutingTable(CommonRoutingTableImpl, Benchmarks):
     async def list_benchmarks(self) -> ListBenchmarksResponse:
         return ListBenchmarksResponse(data=await self.get_all_with_type("benchmark"))
 
-    async def get_benchmark(self, benchmark_id: str) -> Optional[Benchmark]:
-        return await self.get_object_by_identifier("benchmark", benchmark_id)
+    async def get_benchmark(self, benchmark_id: str) -> Benchmark:
+        benchmark = await self.get_object_by_identifier("benchmark", benchmark_id)
+        if benchmark is None:
+            raise ValueError(f"Benchmark '{benchmark_id}' not found")
+        return benchmark
 
     async def register_benchmark(
         self,
@@ -490,7 +516,10 @@ class ToolGroupsRoutingTable(CommonRoutingTableImpl, ToolGroups):
         return ListToolGroupsResponse(data=await self.get_all_with_type("tool_group"))
 
     async def get_tool_group(self, toolgroup_id: str) -> ToolGroup:
-        return await self.get_object_by_identifier("tool_group", toolgroup_id)
+        tool_group = await self.get_object_by_identifier("tool_group", toolgroup_id)
+        if tool_group is None:
+            raise ValueError(f"Tool group '{toolgroup_id}' not found")
+        return tool_group
 
     async def get_tool(self, tool_name: str) -> Tool:
         return await self.get_object_by_identifier("tool", tool_name)

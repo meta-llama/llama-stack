@@ -52,6 +52,7 @@ from llama_stack.providers.utils.telemetry.tracing import (
     start_trace,
 )
 
+from .auth import AuthenticationMiddleware
 from .endpoints import get_all_api_endpoints
 
 REPO_ROOT = Path(__file__).parent.parent.parent.parent
@@ -350,6 +351,11 @@ def main():
     app.add_middleware(TracingMiddleware)
     if not os.environ.get("LLAMA_STACK_DISABLE_VERSION_CHECK"):
         app.add_middleware(ClientVersionMiddleware)
+
+    # Add authentication middleware if configured
+    if config.server.auth and config.server.auth.endpoint:
+        logger.info(f"Enabling authentication with endpoint: {config.server.auth.endpoint}")
+        app.add_middleware(AuthenticationMiddleware, auth_endpoint=config.server.auth.endpoint)
 
     try:
         impls = asyncio.run(construct_stack(config))

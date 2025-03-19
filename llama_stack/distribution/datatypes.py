@@ -125,6 +125,13 @@ class LoggingConfig(BaseModel):
     )
 
 
+class AuthenticationConfig(BaseModel):
+    endpoint: str = Field(
+        ...,
+        description="Endpoint URL to validate authentication tokens",
+    )
+
+
 class ServerConfig(BaseModel):
     port: int = Field(
         default=8321,
@@ -139,6 +146,10 @@ class ServerConfig(BaseModel):
     tls_keyfile: Optional[str] = Field(
         default=None,
         description="Path to TLS key file for HTTPS",
+    )
+    auth: Optional[AuthenticationConfig] = Field(
+        default=None,
+        description="Authentication configuration for the server",
     )
 
 
