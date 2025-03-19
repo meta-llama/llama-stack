@@ -42,6 +42,9 @@ And other important items outlined more in depth in the [GitHub documentation](h
 ## Nomination Process for Triage-role
 The process for nomination for the triage role should be simple and at the discretion of the maintainers.
 
+## Location of Triage List
+The list of chosen triage members will be publicly maintained in the `llama-stack` repository under `./github/TRIAGERS.md` and updated based on the nomination process described above.
+
 ## Thank you
 
 Thank you in advance for your feedback and support and we look forward to collaborating on this great project!
