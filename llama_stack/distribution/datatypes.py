@@ -11,12 +11,9 @@ from pydantic import BaseModel, Field
 from llama_stack.apis.benchmarks import Benchmark, BenchmarkInput
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Dataset, DatasetInput
-from llama_stack.apis.eval import Eval
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.models import Model, ModelInput
 from llama_stack.apis.safety import Safety
-from llama_stack.apis.scoring import Scoring
-from llama_stack.apis.scoring_functions import ScoringFn, ScoringFnInput
 from llama_stack.apis.shields import Shield, ShieldInput
 from llama_stack.apis.tools import Tool, ToolGroup, ToolGroupInput, ToolRuntime
 from llama_stack.apis.vector_dbs import VectorDB, VectorDBInput
@@ -36,7 +33,6 @@ RoutableObject = Union[
     Shield,
     VectorDB,
     Dataset,
-    ScoringFn,
     Benchmark,
     Tool,
     ToolGroup,
@@ -49,7 +45,6 @@ RoutableObjectWithProvider = Annotated[
         Shield,
         VectorDB,
         Dataset,
-        ScoringFn,
         Benchmark,
         Tool,
         ToolGroup,
@@ -62,8 +57,6 @@ RoutedProtocol = Union[
     Safety,
     VectorIO,
     DatasetIO,
-    Scoring,
-    Eval,
     ToolRuntime,
 ]
 
@@ -195,7 +188,9 @@ a default SQLite store will be used.""",
     benchmarks: List[BenchmarkInput] = Field(default_factory=list)
     tool_groups: List[ToolGroupInput] = Field(default_factory=list)
 
-    logging: Optional[LoggingConfig] = Field(default=None, description="Configuration for Llama Stack Logging")
+    logging: Optional[LoggingConfig] = Field(
+        default=None, description="Configuration for Llama Stack Logging"
+    )
 
     server: ServerConfig = Field(
         default_factory=ServerConfig,
@@ -206,7 +201,9 @@ a default SQLite store will be used.""",
 class BuildConfig(BaseModel):
     version: str = LLAMA_STACK_BUILD_CONFIG_VERSION
 
-    distribution_spec: DistributionSpec = Field(description="The distribution spec to build including API providers. ")
+    distribution_spec: DistributionSpec = Field(
+        description="The distribution spec to build including API providers. "
+    )
     image_type: str = Field(
         default="conda",
         description="Type of package to build (conda | container | venv)",

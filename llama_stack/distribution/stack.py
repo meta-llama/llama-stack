@@ -78,12 +78,6 @@ RESOURCES = [
     ("shields", Api.shields, "register_shield", "list_shields"),
     ("vector_dbs", Api.vector_dbs, "register_vector_db", "list_vector_dbs"),
     ("datasets", Api.datasets, "register_dataset", "list_datasets"),
-    (
-        "scoring_fns",
-        Api.scoring_functions,
-        "register_scoring_function",
-        "list_scoring_functions",
-    ),
     ("benchmarks", Api.benchmarks, "register_benchmark", "list_benchmarks"),
     ("tool_groups", Api.tool_groups, "register_tool_group", "list_tool_groups"),
 ]

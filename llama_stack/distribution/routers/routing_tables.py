@@ -418,50 +418,6 @@ class DatasetsRoutingTable(CommonRoutingTableImpl, Datasets):
         await self.unregister_object(dataset)
 
 
-class ScoringFunctionsRoutingTable(CommonRoutingTableImpl, ScoringFunctions):
-    async def list_scoring_functions(self) -> ListScoringFunctionsResponse:
-        return ListScoringFunctionsResponse(
-            data=await self.get_all_with_type(ResourceType.scoring_function.value)
-        )
-
-    async def get_scoring_function(self, scoring_fn_id: str) -> ScoringFn:
-        scoring_fn = await self.get_object_by_identifier(
-            "scoring_function", scoring_fn_id
-        )
-        if scoring_fn is None:
-            raise ValueError(f"Scoring function '{scoring_fn_id}' not found")
-        return scoring_fn
-
-    async def register_scoring_function(
-        self,
-        scoring_fn_id: str,
-        description: str,
-        return_type: ParamType,
-        provider_scoring_fn_id: Optional[str] = None,
-        provider_id: Optional[str] = None,
-        params: Optional[ScoringFnParams] = None,
-    ) -> None:
-        if provider_scoring_fn_id is None:
-            provider_scoring_fn_id = scoring_fn_id
-        if provider_id is None:
-            if len(self.impls_by_provider_id) == 1:
-                provider_id = list(self.impls_by_provider_id.keys())[0]
-            else:
-                raise ValueError(
-                    "No provider specified and multiple providers available. Please specify a provider_id."
-                )
-        scoring_fn = ScoringFn(
-            identifier=scoring_fn_id,
-            description=description,
-            return_type=return_type,
-            provider_resource_id=provider_scoring_fn_id,
-            provider_id=provider_id,
-            params=params,
-        )
-        scoring_fn.provider_id = provider_id
-        await self.register_object(scoring_fn)
-
-
 class BenchmarksRoutingTable(CommonRoutingTableImpl, Benchmarks):
     async def list_benchmarks(self) -> ListBenchmarksResponse:
         return ListBenchmarksResponse(data=await self.get_all_with_type("benchmark"))

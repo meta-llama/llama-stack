@@ -22,11 +22,16 @@ class LlamaStackApi:
             },
         )
 
-    def run_scoring(self, row, scoring_function_ids: list[str], scoring_params: Optional[dict]):
+    def run_scoring(
+        self, row, scoring_function_ids: list[str], scoring_params: Optional[dict]
+    ):
         """Run scoring on a single row"""
         if not scoring_params:
             scoring_params = {fn_id: None for fn_id in scoring_function_ids}
-        return self.client.scoring.score(input_rows=[row], scoring_functions=scoring_params)
+
+        # TODO(xiyan): fix this
+        # return self.client.scoring.score(input_rows=[row], scoring_functions=scoring_params)
+        raise NotImplementedError("Scoring is not implemented")
 
 
 llama_stack_api = LlamaStackApi()

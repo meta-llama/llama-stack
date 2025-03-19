@@ -11,15 +11,12 @@ from llama_stack.apis.agents import Agents
 from llama_stack.apis.benchmarks import Benchmarks
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
-from llama_stack.apis.eval import Eval
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.inspect import Inspect
 from llama_stack.apis.models import Models
 from llama_stack.apis.post_training import PostTraining
 from llama_stack.apis.providers import Providers as ProvidersAPI
 from llama_stack.apis.safety import Safety
-from llama_stack.apis.scoring import Scoring
-from llama_stack.apis.scoring_functions import ScoringFunctions
 from llama_stack.apis.shields import Shields
 from llama_stack.apis.telemetry import Telemetry
 from llama_stack.apis.tools import ToolGroups, ToolRuntime
@@ -72,9 +69,6 @@ def api_protocol_map() -> Dict[Api, Any]:
         Api.telemetry: Telemetry,
         Api.datasetio: DatasetIO,
         Api.datasets: Datasets,
-        Api.scoring: Scoring,
-        Api.scoring_functions: ScoringFunctions,
-        Api.eval: Eval,
         Api.benchmarks: Benchmarks,
         Api.post_training: PostTraining,
         Api.tool_groups: ToolGroups,
@@ -89,12 +83,6 @@ def additional_protocols_map() -> Dict[Api, Any]:
         Api.vector_io: (VectorDBsProtocolPrivate, VectorDBs, Api.vector_dbs),
         Api.safety: (ShieldsProtocolPrivate, Shields, Api.shields),
         Api.datasetio: (DatasetsProtocolPrivate, Datasets, Api.datasets),
-        Api.scoring: (
-            ScoringFunctionsProtocolPrivate,
-            ScoringFunctions,
-            Api.scoring_functions,
-        ),
-        Api.eval: (BenchmarksProtocolPrivate, Benchmarks, Api.benchmarks),
     }
 
 
@@ -117,7 +105,9 @@ async def resolve_impls(
     2. Sorting them in dependency order.
     3. Instantiating them with required dependencies.
     """
-    routing_table_apis = {x.routing_table_api for x in builtin_automatically_routed_apis()}
+    routing_table_apis = {
+        x.routing_table_api for x in builtin_automatically_routed_apis()
+    }
     router_apis = {x.router_api for x in builtin_automatically_routed_apis()}
 
     providers_with_specs = validate_and_prepare_providers(
@@ -125,7 +115,9 @@ async def resolve_impls(
     )
 
     apis_to_serve = run_config.apis or set(
-        list(providers_with_specs.keys()) + [x.value for x in routing_table_apis] + [x.value for x in router_apis]
+        list(providers_with_specs.keys())
+        + [x.value for x in routing_table_apis]
+        + [x.value for x in router_apis]
     )
 
     providers_with_specs.update(specs_for_autorouted_apis(apis_to_serve))
@@ -135,7 +127,9 @@ async def resolve_impls(
     return await instantiate_providers(sorted_providers, router_apis, dist_registry)
 
 
-def specs_for_autorouted_apis(apis_to_serve: List[str] | Set[str]) -> Dict[str, Dict[str, ProviderWithSpec]]:
+def specs_for_autorouted_apis(
+    apis_to_serve: List[str] | Set[str],
+) -> Dict[str, Dict[str, ProviderWithSpec]]:
     """Generates specifications for automatically routed APIs."""
     specs = {}
     for info in builtin_automatically_routed_apis():
@@ -177,7 +171,10 @@ def specs_for_autorouted_apis(apis_to_serve: List[str] | Set[str]) -> Dict[str, 
 
 
 def validate_and_prepare_providers(
-    run_config: StackRunConfig, provider_registry: ProviderRegistry, routing_table_apis: Set[Api], router_apis: Set[Api]
+    run_config: StackRunConfig,
+    provider_registry: ProviderRegistry,
+    routing_table_apis: Set[Api],
+    router_apis: Set[Api],
 ) -> Dict[str, Dict[str, ProviderWithSpec]]:
     """Validates providers, handles deprecations, and organizes them into a spec dictionary."""
     providers_with_specs: Dict[str, Dict[str, ProviderWithSpec]] = {}
@@ -185,17 +182,23 @@ def validate_and_prepare_providers(
     for api_str, providers in run_config.providers.items():
         api = Api(api_str)
         if api in routing_table_apis:
-            raise ValueError(f"Provider for `{api_str}` is automatically provided and cannot be overridden")
+            raise ValueError(
+                f"Provider for `{api_str}` is automatically provided and cannot be overridden"
+            )
 
         specs = {}
         for provider in providers:
             if not provider.provider_id or provider.provider_id == "__disabled__":
-                logger.warning(f"Provider `{provider.provider_type}` for API `{api}` is disabled")
+                logger.warning(
+                    f"Provider `{provider.provider_type}` for API `{api}` is disabled"
+                )
                 continue
 
             validate_provider(provider, api, provider_registry)
             p = provider_registry[api][provider.provider_type]
-            p.deps__ = [a.value for a in p.api_dependencies] + [a.value for a in p.optional_api_dependencies]
+            p.deps__ = [a.value for a in p.api_dependencies] + [
+                a.value for a in p.optional_api_dependencies
+            ]
             spec = ProviderWithSpec(spec=p, **provider.model_dump())
             specs[provider.provider_id] = spec
 
@@ -205,10 +208,14 @@ def validate_and_prepare_providers(
     return providers_with_specs
 
 
-def validate_provider(provider: Provider, api: Api, provider_registry: ProviderRegistry):
+def validate_provider(
+    provider: Provider, api: Api, provider_registry: ProviderRegistry
+):
     """Validates if the provider is allowed and handles deprecations."""
     if provider.provider_type not in provider_registry[api]:
-        raise ValueError(f"Provider `{provider.provider_type}` is not available for API `{api}`")
+        raise ValueError(
+            f"Provider `{provider.provider_type}` is not available for API `{api}`"
+        )
 
     p = provider_registry[api][provider.provider_type]
     if p.deprecation_error:
@@ -221,7 +228,8 @@ def validate_provider(provider: Provider, api: Api, provider_registry: ProviderR
 
 
 def sort_providers_by_deps(
-    providers_with_specs: Dict[str, Dict[str, ProviderWithSpec]], run_config: StackRunConfig
+    providers_with_specs: Dict[str, Dict[str, ProviderWithSpec]],
+    run_config: StackRunConfig,
 ) -> List[Tuple[str, ProviderWithSpec]]:
     """Sorts providers based on their dependencies."""
     sorted_providers: List[Tuple[str, ProviderWithSpec]] = topological_sort(
@@ -276,11 +284,15 @@ def sort_providers_by_deps(
 
 
 async def instantiate_providers(
-    sorted_providers: List[Tuple[str, ProviderWithSpec]], router_apis: Set[Api], dist_registry: DistributionRegistry
+    sorted_providers: List[Tuple[str, ProviderWithSpec]],
+    router_apis: Set[Api],
+    dist_registry: DistributionRegistry,
 ) -> Dict:
     """Instantiates providers asynchronously while managing dependencies."""
     impls: Dict[Api, Any] = {}
-    inner_impls_by_provider_id: Dict[str, Dict[str, Any]] = {f"inner-{x.value}": {} for x in router_apis}
+    inner_impls_by_provider_id: Dict[str, Dict[str, Any]] = {
+        f"inner-{x.value}": {} for x in router_apis
+    }
     for api_str, provider in sorted_providers:
         deps = {a: impls[a] for a in provider.spec.api_dependencies}
         for a in provider.spec.optional_api_dependencies:
@@ -289,7 +301,9 @@ async def instantiate_providers(
 
         inner_impls = {}
         if isinstance(provider.spec, RoutingTableProviderSpec):
-            inner_impls = inner_impls_by_provider_id[f"inner-{provider.spec.router_api.value}"]
+            inner_impls = inner_impls_by_provider_id[
+                f"inner-{provider.spec.router_api.value}"
+            ]
 
         impl = await instantiate_provider(provider, deps, inner_impls, dist_registry)
 
@@ -347,7 +361,9 @@ async def instantiate_provider(
 
     provider_spec = provider.spec
     if not hasattr(provider_spec, "module"):
-        raise AttributeError(f"ProviderSpec of type {type(provider_spec)} does not have a 'module' attribute")
+        raise AttributeError(
+            f"ProviderSpec of type {type(provider_spec)} does not have a 'module' attribute"
+        )
 
     module = importlib.import_module(provider_spec.module)
     args = []
@@ -384,7 +400,10 @@ async def instantiate_provider(
     # TODO: check compliance for special tool groups
     # the impl should be for Api.tool_runtime, the name should be the special tool group, the protocol should be the special tool group protocol
     check_protocol_compliance(impl, protocols[provider_spec.api])
-    if not isinstance(provider_spec, AutoRoutedProviderSpec) and provider_spec.api in additional_protocols:
+    if (
+        not isinstance(provider_spec, AutoRoutedProviderSpec)
+        and provider_spec.api in additional_protocols
+    ):
         additional_api, _, _ = additional_protocols[provider_spec.api]
         check_protocol_compliance(impl, additional_api)
 
@@ -412,12 +431,19 @@ def check_protocol_compliance(obj: Any, protocol: Any) -> None:
                 obj_params = set(obj_sig.parameters)
                 obj_params.discard("self")
                 if not (proto_params <= obj_params):
-                    logger.error(f"Method {name} incompatible proto: {proto_params} vs. obj: {obj_params}")
+                    logger.error(
+                        f"Method {name} incompatible proto: {proto_params} vs. obj: {obj_params}"
+                    )
                     missing_methods.append((name, "signature_mismatch"))
                 else:
                     # Check if the method is actually implemented in the class
-                    method_owner = next((cls for cls in mro if name in cls.__dict__), None)
-                    if method_owner is None or method_owner.__name__ == protocol.__name__:
+                    method_owner = next(
+                        (cls for cls in mro if name in cls.__dict__), None
+                    )
+                    if (
+                        method_owner is None
+                        or method_owner.__name__ == protocol.__name__
+                    ):
                         missing_methods.append((name, "not_actually_implemented"))
 
     if missing_methods:
