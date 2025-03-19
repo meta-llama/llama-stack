@@ -148,9 +148,9 @@ class Evaluation(Protocol):
         ...
 
     @webmethod(route="/evaluation/grading", method="POST")
-    async def grading(self, task: EvaluationTask) -> EvaluationJob:
+    async def grade(self, task: EvaluationTask) -> EvaluationJob:
         """
-        Schedule a grading job, by grading generated results. The generated results are expected to be in the dataset.
+        Schedule a grading job, by grading generated (model or agent) results. The generated results are expected to be in the dataset.
 
         :param task: The task to evaluate. One of:
          - BenchmarkEvaluationTask: Run evaluation task against a benchmark_id

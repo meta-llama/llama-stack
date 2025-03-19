@@ -2035,6 +2035,49 @@
                 ]
             }
         },
+        "/v1/evaluation/grading": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "The evaluation job containing grader scores.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EvaluationJob"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Evaluation"
+                ],
+                "description": "Schedule a grading job, by grading generated (model or agent) results. The generated results are expected to be in the dataset.",
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/GradeRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/v1/evaluation/grade_sync": {
             "post": {
                 "responses": {
@@ -2071,49 +2114,6 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/GradeSyncRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/v1/evaluation/grading": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "The evaluation job containing grader scores.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/EvaluationJob"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest400"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/TooManyRequests429"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError500"
-                    },
-                    "default": {
-                        "$ref": "#/components/responses/DefaultError"
-                    }
-                },
-                "tags": [
-                    "Evaluation"
-                ],
-                "description": "Schedule a grading job, by grading generated results. The generated results are expected to be in the dataset.",
-                "parameters": [],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/GradingRequest"
                             }
                         }
                     },
@@ -8615,7 +8615,7 @@
                     }
                 }
             },
-            "GradeSyncRequest": {
+            "GradeRequest": {
                 "type": "object",
                 "properties": {
                     "task": {
@@ -8627,69 +8627,7 @@
                 "required": [
                     "task"
                 ],
-                "title": "GradeSyncRequest"
-            },
-            "EvaluationResponse": {
-                "type": "object",
-                "properties": {
-                    "generations": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "oneOf": [
-                                    {
-                                        "type": "null"
-                                    },
-                                    {
-                                        "type": "boolean"
-                                    },
-                                    {
-                                        "type": "number"
-                                    },
-                                    {
-                                        "type": "string"
-                                    },
-                                    {
-                                        "type": "array"
-                                    },
-                                    {
-                                        "type": "object"
-                                    }
-                                ]
-                            }
-                        },
-                        "description": "The generations in rows for the evaluation."
-                    },
-                    "scores": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "$ref": "#/components/schemas/ScoringResult"
-                        },
-                        "description": "The scores for the evaluation. Map of grader id to ScoringResult."
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "generations",
-                    "scores"
-                ],
-                "title": "EvaluationResponse",
-                "description": "A response to an inline evaluation."
-            },
-            "GradingRequest": {
-                "type": "object",
-                "properties": {
-                    "task": {
-                        "$ref": "#/components/schemas/EvaluationTask",
-                        "description": "The task to evaluate. One of: - BenchmarkEvaluationTask: Run evaluation task against a benchmark_id - DatasetEvaluationTask: Run evaluation task against a dataset_id and a list of grader_ids - DataEvaluationTask: Run evaluation task against a data source (e.g. rows, uri, etc.) and a list of grader_ids"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "task"
-                ],
-                "title": "GradingRequest"
+                "title": "GradeRequest"
             },
             "EvaluationCandidate": {
                 "oneOf": [
@@ -8762,6 +8700,68 @@
                     "candidate"
                 ],
                 "title": "EvaluationJob"
+            },
+            "GradeSyncRequest": {
+                "type": "object",
+                "properties": {
+                    "task": {
+                        "$ref": "#/components/schemas/EvaluationTask",
+                        "description": "The task to evaluate. One of: - BenchmarkEvaluationTask: Run evaluation task against a benchmark_id - DatasetEvaluationTask: Run evaluation task against a dataset_id and a list of grader_ids - DataEvaluationTask: Run evaluation task against a data source (e.g. rows, uri, etc.) and a list of grader_ids"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "task"
+                ],
+                "title": "GradeSyncRequest"
+            },
+            "EvaluationResponse": {
+                "type": "object",
+                "properties": {
+                    "generations": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "oneOf": [
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "type": "boolean"
+                                    },
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array"
+                                    },
+                                    {
+                                        "type": "object"
+                                    }
+                                ]
+                            }
+                        },
+                        "description": "The generations in rows for the evaluation."
+                    },
+                    "scores": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/ScoringResult"
+                        },
+                        "description": "The scores for the evaluation. Map of grader id to ScoringResult."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "generations",
+                    "scores"
+                ],
+                "title": "EvaluationResponse",
+                "description": "A response to an inline evaluation."
             },
             "HealthInfo": {
                 "type": "object",
