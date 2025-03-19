@@ -17,10 +17,8 @@ The `llamastack/distribution-ollama` distribution consists of the following prov
 |-----|-------------|
 | agents | `inline::meta-reference` |
 | datasetio | `remote::huggingface`, `inline::localfs` |
-| eval | `inline::meta-reference` |
 | inference | `remote::ollama` |
 | safety | `inline::llama-guard` |
-| scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |
 | telemetry | `inline::meta-reference` |
 | tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::code-interpreter`, `inline::rag-runtime`, `remote::model-context-protocol`, `remote::wolfram-alpha` |
 | vector_io | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |

@@ -14,6 +14,8 @@ class ResourceType(Enum):
     shield = "shield"
     vector_db = "vector_db"
     dataset = "dataset"
+    grader = "grader"
+    # TODO: migrate scoring_function -> grader
     scoring_function = "scoring_function"
     benchmark = "benchmark"
     tool = "tool"

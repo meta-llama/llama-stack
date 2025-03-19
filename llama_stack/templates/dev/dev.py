@@ -16,20 +16,38 @@ from llama_stack.distribution.datatypes import (
 from llama_stack.providers.inline.inference.sentence_transformers import (
     SentenceTransformersInferenceConfig,
 )
-from llama_stack.providers.inline.vector_io.sqlite_vec.config import SQLiteVectorIOConfig
+from llama_stack.providers.inline.vector_io.sqlite_vec.config import (
+    SQLiteVectorIOConfig,
+)
 from llama_stack.providers.remote.inference.anthropic.config import AnthropicConfig
-from llama_stack.providers.remote.inference.anthropic.models import MODEL_ENTRIES as ANTHROPIC_MODEL_ENTRIES
+from llama_stack.providers.remote.inference.anthropic.models import (
+    MODEL_ENTRIES as ANTHROPIC_MODEL_ENTRIES,
+)
 from llama_stack.providers.remote.inference.fireworks.config import FireworksImplConfig
-from llama_stack.providers.remote.inference.fireworks.models import MODEL_ENTRIES as FIREWORKS_MODEL_ENTRIES
+from llama_stack.providers.remote.inference.fireworks.models import (
+    MODEL_ENTRIES as FIREWORKS_MODEL_ENTRIES,
+)
 from llama_stack.providers.remote.inference.gemini.config import GeminiConfig
-from llama_stack.providers.remote.inference.gemini.models import MODEL_ENTRIES as GEMINI_MODEL_ENTRIES
+from llama_stack.providers.remote.inference.gemini.models import (
+    MODEL_ENTRIES as GEMINI_MODEL_ENTRIES,
+)
 from llama_stack.providers.remote.inference.groq.config import GroqConfig
-from llama_stack.providers.remote.inference.groq.models import MODEL_ENTRIES as GROQ_MODEL_ENTRIES
+from llama_stack.providers.remote.inference.groq.models import (
+    MODEL_ENTRIES as GROQ_MODEL_ENTRIES,
+)
 from llama_stack.providers.remote.inference.openai.config import OpenAIConfig
-from llama_stack.providers.remote.inference.openai.models import MODEL_ENTRIES as OPENAI_MODEL_ENTRIES
+from llama_stack.providers.remote.inference.openai.models import (
+    MODEL_ENTRIES as OPENAI_MODEL_ENTRIES,
+)
 from llama_stack.providers.remote.vector_io.chroma.config import ChromaVectorIOConfig
-from llama_stack.providers.remote.vector_io.pgvector.config import PGVectorVectorIOConfig
-from llama_stack.templates.template import DistributionTemplate, RunConfigSettings, get_model_registry
+from llama_stack.providers.remote.vector_io.pgvector.config import (
+    PGVectorVectorIOConfig,
+)
+from llama_stack.templates.template import (
+    DistributionTemplate,
+    RunConfigSettings,
+    get_model_registry,
+)
 
 
 def get_inference_providers() -> Tuple[List[Provider], List[ModelInput]]:
@@ -83,9 +101,7 @@ def get_distribution_template() -> DistributionTemplate:
         "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],
         "telemetry": ["inline::meta-reference"],
-        "eval": ["inline::meta-reference"],
         "datasetio": ["remote::huggingface", "inline::localfs"],
-        "scoring": ["inline::basic", "inline::llm-as-judge", "inline::braintrust"],
         "tool_runtime": [
             "remote::brave-search",
             "remote::tavily-search",
