@@ -19,7 +19,11 @@ from llama_stack.providers.inline.inference.sentence_transformers import (
 from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOConfig
 from llama_stack.providers.remote.inference.together import TogetherImplConfig
 from llama_stack.providers.remote.inference.together.models import MODEL_ENTRIES
-from llama_stack.templates.template import DistributionTemplate, RunConfigSettings, get_model_registry
+from llama_stack.templates.template import (
+    DistributionTemplate,
+    get_model_registry,
+    RunConfigSettings,
+)
 
 
 def get_distribution_template() -> DistributionTemplate:
@@ -29,9 +33,7 @@ def get_distribution_template() -> DistributionTemplate:
         "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],
         "telemetry": ["inline::meta-reference"],
-        "eval": ["inline::meta-reference"],
         "datasetio": ["remote::huggingface", "inline::localfs"],
-        "scoring": ["inline::basic", "inline::llm-as-judge", "inline::braintrust"],
         "tool_runtime": [
             "remote::brave-search",
             "remote::tavily-search",

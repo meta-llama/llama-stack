@@ -53,7 +53,8 @@ def providable_apis() -> List[Api]:
     return [
         api
         for api in Api
-        if api not in routing_table_apis and api != Api.inspect and api != Api.providers
+        if api not in routing_table_apis
+        and api not in [Api.inspect, Api.providers, Api.benchmarks]
     ]
 
 

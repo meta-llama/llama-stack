@@ -21,10 +21,7 @@ from llama_stack.providers.remote.inference.passthrough.config import (
     PassthroughImplConfig,
 )
 from llama_stack.providers.utils.inference.model_registry import ProviderModelEntry
-from llama_stack.templates.template import (
-    DistributionTemplate,
-    RunConfigSettings,
-)
+from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
 
 def get_distribution_template() -> DistributionTemplate:
@@ -34,9 +31,7 @@ def get_distribution_template() -> DistributionTemplate:
         "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],
         "telemetry": ["inline::meta-reference"],
-        "eval": ["inline::meta-reference"],
         "datasetio": ["remote::huggingface", "inline::localfs"],
-        "scoring": ["inline::basic", "inline::llm-as-judge", "inline::braintrust"],
         "tool_runtime": [
             "remote::brave-search",
             "remote::tavily-search",

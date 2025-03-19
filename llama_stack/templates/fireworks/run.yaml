@@ -3,10 +3,8 @@ image_name: fireworks
 apis:
 - agents
 - datasetio
-- eval
 - inference
 - safety
-- scoring
 - telemetry
 - tool_runtime
 - vector_io
@@ -48,14 +46,6 @@ providers:
       service_name: ${env.OTEL_SERVICE_NAME:llama-stack}
       sinks: ${env.TELEMETRY_SINKS:console,sqlite}
       sqlite_db_path: ${env.SQLITE_DB_PATH:~/.llama/distributions/fireworks/trace_store.db}
-  eval:
-  - provider_id: meta-reference
-    provider_type: inline::meta-reference
-    config:
-      kvstore:
-        type: sqlite
-        namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/fireworks}/meta_reference_eval.db
   datasetio:
   - provider_id: huggingface
     provider_type: remote::huggingface
@@ -71,17 +61,6 @@ providers:
         type: sqlite
         namespace: null
         db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/fireworks}/localfs_datasetio.db
-  scoring:
-  - provider_id: basic
-    provider_type: inline::basic
-    config: {}
-  - provider_id: llm-as-judge
-    provider_type: inline::llm-as-judge
-    config: {}
-  - provider_id: braintrust
-    provider_type: inline::braintrust
-    config:
-      openai_api_key: ${env.OPENAI_API_KEY:}
   tool_runtime:
   - provider_id: brave-search
     provider_type: remote::brave-search
@@ -216,7 +195,6 @@ shields:
 - shield_id: meta-llama/Llama-Guard-3-8B
 vector_dbs: []
 datasets: []
-scoring_fns: []
 benchmarks: []
 tool_groups:
 - toolgroup_id: builtin::websearch

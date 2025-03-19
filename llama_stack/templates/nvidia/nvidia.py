@@ -6,11 +6,20 @@
 
 from pathlib import Path
 
-from llama_stack.distribution.datatypes import ModelInput, Provider, ShieldInput, ToolGroupInput
+from llama_stack.distribution.datatypes import (
+    ModelInput,
+    Provider,
+    ShieldInput,
+    ToolGroupInput,
+)
 from llama_stack.providers.remote.inference.nvidia import NVIDIAConfig
 from llama_stack.providers.remote.inference.nvidia.models import MODEL_ENTRIES
 from llama_stack.providers.remote.safety.nvidia import NVIDIASafetyConfig
-from llama_stack.templates.template import DistributionTemplate, RunConfigSettings, get_model_registry
+from llama_stack.templates.template import (
+    DistributionTemplate,
+    get_model_registry,
+    RunConfigSettings,
+)
 
 
 def get_distribution_template() -> DistributionTemplate:
@@ -20,9 +29,7 @@ def get_distribution_template() -> DistributionTemplate:
         "safety": ["remote::nvidia"],
         "agents": ["inline::meta-reference"],
         "telemetry": ["inline::meta-reference"],
-        "eval": ["inline::meta-reference"],
         "datasetio": ["inline::localfs"],
-        "scoring": ["inline::basic"],
         "tool_runtime": ["inline::rag-runtime"],
     }
 
@@ -80,7 +87,9 @@ def get_distribution_template() -> DistributionTemplate:
                     ]
                 },
                 default_models=[inference_model, safety_model],
-                default_shields=[ShieldInput(shield_id="${env.SAFETY_MODEL}", provider_id="nvidia")],
+                default_shields=[
+                    ShieldInput(shield_id="${env.SAFETY_MODEL}", provider_id="nvidia")
+                ],
                 default_tool_groups=default_tool_groups,
             ),
         },
