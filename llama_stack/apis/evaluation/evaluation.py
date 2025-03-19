@@ -53,7 +53,7 @@ class EvaluationTask(BaseModel):
     A task for evaluation. To specify a task, one of the following must be provided:
     - `benchmark_id`: Run evaluation task against a benchmark_id. Use this when you have a curated dataset and have settled on the graders.
     - `dataset_id` and `grader_ids`: Run evaluation task against a dataset_id and a list of grader_ids
-    - `data_source` and `grader_ids`: Run evaluation task against a data source (e.g. rows, uri, etc.) and a list of grader_ids
+    - `data_source` and `grader_ids`: Run evaluation task against a data source (e.g. rows, uri, etc.) and a list of grader_ids. Prefer this when you are early in your evaluation cycle and experimenting much more with your data and graders.
 
     :param benchmark_id: The benchmark ID to evaluate.
     :param dataset_id: The dataset ID to evaluate.
