@@ -25,6 +25,7 @@ from .config import BasicScoringConfig
 from .scoring_fn.bfcl_scoring_fn import BFCLScoringFn
 from .scoring_fn.docvqa_scoring_fn import DocVQAScoringFn
 from .scoring_fn.equality_scoring_fn import EqualityScoringFn
+from .scoring_fn.ifeval_scoring_fn import IfEvalScoringFn
 from .scoring_fn.regex_parser_math_response_scoring_fn import (
     RegexParserMathResponseScoringFn,
 )
@@ -37,6 +38,7 @@ FIXED_FNS = [
     RegexParserScoringFn,
     RegexParserMathResponseScoringFn,
     BFCLScoringFn,
+    IfEvalScoringFn,
     DocVQAScoringFn,
 ]
 

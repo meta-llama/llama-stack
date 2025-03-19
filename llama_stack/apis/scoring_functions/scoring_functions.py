@@ -36,6 +36,7 @@ class ScoringFnParamsType(Enum):
 @json_schema_type
 class AggregationFunctionType(Enum):
     average = "average"
+    weighted_average = "weighted_average"
     median = "median"
     categorical_count = "categorical_count"
     accuracy = "accuracy"

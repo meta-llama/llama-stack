@@ -191,6 +191,12 @@ datasets:
 - purpose: eval/messages-answer
   source:
     type: uri
+    uri: huggingface://datasets/llamastack/IfEval?split=train
+  metadata: {}
+  dataset_id: ifeval
+- purpose: eval/messages-answer
+  source:
+    type: uri
     uri: huggingface://datasets/llamastack/docvqa?split=val
   metadata: {}
   dataset_id: docvqa
@@ -221,6 +227,11 @@ benchmarks:
   - basic::bfcl
   metadata: {}
   benchmark_id: meta-reference-bfcl
+- dataset_id: ifeval
+  scoring_functions:
+  - basic::ifeval
+  metadata: {}
+  benchmark_id: meta-reference-ifeval
 - dataset_id: docvqa
   scoring_functions:
   - basic::docvqa
