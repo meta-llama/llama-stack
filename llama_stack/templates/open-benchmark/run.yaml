@@ -247,6 +247,16 @@ benchmarks:
   - basic::regex_parser_multiple_choice_answer
   metadata: {}
   benchmark_id: meta-reference-gpqa-cot
+- dataset_id: gpqa_cot_diamond
+  scoring_functions:
+  - basic::regex_parser_multiple_choice_answer
+  metadata: {}
+  benchmark_id: meta-reference-gpqa-cot-diamond
+- dataset_id: gpqa
+  scoring_functions:
+  - basic::regex_parser_multiple_choice_answer
+  metadata: {}
+  benchmark_id: meta-reference-gpqa
 - dataset_id: math_500
   scoring_functions:
   - basic::regex_parser_math_response
@@ -262,6 +272,11 @@ benchmarks:
   - basic::docvqa
   metadata: {}
   benchmark_id: meta-reference-docvqa
+- dataset_id: MMMU
+  scoring_functions:
+  - basic::regex_parser_multiple_choice_answer
+  metadata: {}
+  benchmark_id: meta-reference-MMMU
 - dataset_id: MMMU_Pro_standard
   scoring_functions:
   - basic::regex_parser_multiple_choice_answer
@@ -272,6 +287,11 @@ benchmarks:
   - basic::regex_parser_multiple_choice_answer
   metadata: {}
   benchmark_id: meta-reference-MMMU_Pro_vision
+- dataset_id: ai2d
+  scoring_functions:
+  - basic::regex_parser_multiple_choice_answer
+  metadata: {}
+  benchmark_id: meta-reference-ai2d
 tool_groups:
 - toolgroup_id: builtin::websearch
   provider_id: tavily-search

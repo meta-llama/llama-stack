@@ -271,6 +271,16 @@ def get_distribution_template() -> DistributionTemplate:
             scoring_functions=["basic::regex_parser_multiple_choice_answer"],
         ),
         BenchmarkInput(
+            benchmark_id="meta-reference-gpqa-cot-diamond",
+            dataset_id="gpqa_cot_diamond",
+            scoring_functions=["basic::regex_parser_multiple_choice_answer"],
+        ),
+        BenchmarkInput(
+            benchmark_id="meta-reference-gpqa",
+            dataset_id="gpqa",
+            scoring_functions=["basic::regex_parser_multiple_choice_answer"],
+        ),
+        BenchmarkInput(
             benchmark_id="meta-reference-math-500",
             dataset_id="math_500",
             scoring_functions=["basic::regex_parser_math_response"],
@@ -286,6 +296,11 @@ def get_distribution_template() -> DistributionTemplate:
             scoring_functions=["basic::docvqa"],
         ),
         BenchmarkInput(
+            benchmark_id="meta-reference-MMMU",
+            dataset_id="MMMU",
+            scoring_functions=["basic::regex_parser_multiple_choice_answer"],
+        ),
+        BenchmarkInput(
             benchmark_id="meta-reference-MMMU_Pro_standard",
             dataset_id="MMMU_Pro_standard",
             scoring_functions=["basic::regex_parser_multiple_choice_answer"],
@@ -293,6 +308,11 @@ def get_distribution_template() -> DistributionTemplate:
         BenchmarkInput(
             benchmark_id="meta-reference-MMMU_Pro_vision",
             dataset_id="MMMU_Pro_vision",
+            scoring_functions=["basic::regex_parser_multiple_choice_answer"],
+        ),
+        BenchmarkInput(
+            benchmark_id="meta-reference-ai2d",
+            dataset_id="ai2d",
             scoring_functions=["basic::regex_parser_multiple_choice_answer"],
         ),
     ]
