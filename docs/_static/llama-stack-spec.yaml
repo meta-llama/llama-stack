@@ -1385,7 +1385,7 @@ paths:
           required: true
           schema:
             type: string
-  /v1/evaluation/grading:
+  /v1/evaluation/grade:
     post:
       responses:
         '200':
@@ -5903,27 +5903,13 @@ components:
         - embedding_model
         - embedding_dimension
       title: VectorDB
-    BenchmarkEvaluationTask:
+    EvaluationTask:
       type: object
       properties:
-        type:
-          type: string
-          const: benchmark
-          default: benchmark
         benchmark_id:
           type: string
-      additionalProperties: false
-      required:
-        - type
-        - benchmark_id
-      title: BenchmarkEvaluationTask
-    DataEvaluationTask:
-      type: object
-      properties:
-        type:
+        dataset_id:
           type: string
-          const: data
-          default: data
         data_source:
           $ref: '#/components/schemas/DataSource'
         grader_ids:
@@ -5931,52 +5917,18 @@ components:
           items:
             type: string
       additionalProperties: false
-      required:
-        - type
-        - data_source
-        - grader_ids
-      title: DataEvaluationTask
-    DatasetEvaluationTask:
-      type: object
-      properties:
-        type:
-          type: string
-          const: dataset
-          default: dataset
-        dataset_id:
-          type: string
-        grader_ids:
-          type: array
-          items:
-            type: string
-      additionalProperties: false
-      required:
-        - type
-        - dataset_id
-        - grader_ids
-      title: DatasetEvaluationTask
-    EvaluationTask:
-      oneOf:
-        - $ref: '#/components/schemas/BenchmarkEvaluationTask'
-        - $ref: '#/components/schemas/DatasetEvaluationTask'
-        - $ref: '#/components/schemas/DataEvaluationTask'
-      discriminator:
-        propertyName: type
-        mapping:
-          benchmark: '#/components/schemas/BenchmarkEvaluationTask'
-          dataset: '#/components/schemas/DatasetEvaluationTask'
-          data: '#/components/schemas/DataEvaluationTask'
+      title: EvaluationTask
     GradeRequest:
       type: object
       properties:
         task:
           $ref: '#/components/schemas/EvaluationTask'
           description: >-
-            The task to evaluate. One of: - BenchmarkEvaluationTask: Run evaluation
-            task against a benchmark_id - DatasetEvaluationTask: Run evaluation task
-            against a dataset_id and a list of grader_ids - DataEvaluationTask: Run
-            evaluation task against a data source (e.g. rows, uri, etc.) and a list
-            of grader_ids
+            The task to evaluate. To specify a task, one of the following must be
+            provided: - `benchmark_id`: Run evaluation task against a benchmark_id
+            - `dataset_id` and `grader_ids`: Run evaluation task against a dataset_id
+            and a list of grader_ids - `data_source` and `grader_ids`: Run evaluation
+            task against a data source (e.g. rows, uri, etc.) and a list of grader_ids
       additionalProperties: false
       required:
         - task
@@ -6040,11 +5992,11 @@ components:
         task:
           $ref: '#/components/schemas/EvaluationTask'
           description: >-
-            The task to evaluate. One of: - BenchmarkEvaluationTask: Run evaluation
-            task against a benchmark_id - DatasetEvaluationTask: Run evaluation task
-            against a dataset_id and a list of grader_ids - DataEvaluationTask: Run
-            evaluation task against a data source (e.g. rows, uri, etc.) and a list
-            of grader_ids
+            The task to evaluate. To specify a task, one of the following must be
+            provided: - `benchmark_id`: Run evaluation task against a benchmark_id
+            - `dataset_id` and `grader_ids`: Run evaluation task against a dataset_id
+            and a list of grader_ids - `data_source` and `grader_ids`: Run evaluation
+            task against a data source (e.g. rows, uri, etc.) and a list of grader_ids
       additionalProperties: false
       required:
         - task
@@ -7359,11 +7311,11 @@ components:
         task:
           $ref: '#/components/schemas/EvaluationTask'
           description: >-
-            The task to evaluate. One of: - BenchmarkEvaluationTask: Run evaluation
-            task against a benchmark_id - DatasetEvaluationTask: Run evaluation task
-            against a dataset_id and a list of grader_ids - DataEvaluationTask: Run
-            evaluation task against a data source (e.g. rows, uri, etc.) and a list
-            of grader_ids
+            The task to evaluate. To specify a task, one of the following must be
+            provided: - `benchmark_id`: Run evaluation task against a benchmark_id
+            - `dataset_id` and `grader_ids`: Run evaluation task against a dataset_id
+            and a list of grader_ids - `data_source` and `grader_ids`: Run evaluation
+            task against a data source (e.g. rows, uri, etc.) and a list of grader_ids
         candidate:
           $ref: '#/components/schemas/EvaluationCandidate'
           description: The candidate to evaluate.
@@ -7429,11 +7381,11 @@ components:
         task:
           $ref: '#/components/schemas/EvaluationTask'
           description: >-
-            The task to evaluate. One of: - BenchmarkEvaluationTask: Run evaluation
-            task against a benchmark_id - DatasetEvaluationTask: Run evaluation task
-            against a dataset_id and a list of grader_ids - DataEvaluationTask: Run
-            evaluation task against a data source (e.g. rows, uri, etc.) and a list
-            of grader_ids
+            The task to evaluate. To specify a task, one of the following must be
+            provided: - `benchmark_id`: Run evaluation task against a benchmark_id
+            - `dataset_id` and `grader_ids`: Run evaluation task against a dataset_id
+            and a list of grader_ids - `data_source` and `grader_ids`: Run evaluation
+            task against a data source (e.g. rows, uri, etc.) and a list of grader_ids
         candidate:
           $ref: '#/components/schemas/EvaluationCandidate'
           description: The candidate to evaluate.
