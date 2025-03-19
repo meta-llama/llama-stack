@@ -77,29 +77,16 @@ class EvaluationJob(CommonJobFields):
 
 
 @json_schema_type
-class ScoringResult(BaseModel):
-    """
-    A scoring result for a single row.
-
-    :param scores: The scoring result for each row. Each row is a map of grader column name to value.
-    :param metrics: Map of metric name to aggregated value.
-    """
-
-    scores: List[Dict[str, Any]]
-    metrics: Dict[str, Any]
-
-
-@json_schema_type
 class EvaluationResponse(BaseModel):
     """
     A response to an inline evaluation.
 
-    :param generations: The generations in rows for the evaluation.
-    :param scores: The scores for the evaluation. Map of grader id to ScoringResult.
+    :param result_data: The result data containing generations and grades in each row.
+    :param metrics: Map of metric name to aggregated value.
     """
 
-    generations: List[Dict[str, Any]]
-    scores: Dict[str, ScoringResult]
+    result_data: List[Dict[str, Any]]
+    metrics: Dict[str, Any]
 
 
 class Evaluation(Protocol):

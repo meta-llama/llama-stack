@@ -8653,7 +8653,7 @@
             "EvaluationResponse": {
                 "type": "object",
                 "properties": {
-                    "generations": {
+                    "result_data": {
                         "type": "array",
                         "items": {
                             "type": "object",
@@ -8680,20 +8680,39 @@
                                 ]
                             }
                         },
-                        "description": "The generations in rows for the evaluation."
+                        "description": "The result data containing generations and grades in each row."
                     },
-                    "scores": {
+                    "metrics": {
                         "type": "object",
                         "additionalProperties": {
-                            "$ref": "#/components/schemas/ScoringResult"
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
                         },
-                        "description": "The scores for the evaluation. Map of grader id to ScoringResult."
+                        "description": "Map of metric name to aggregated value."
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "generations",
-                    "scores"
+                    "result_data",
+                    "metrics"
                 ],
                 "title": "EvaluationResponse",
                 "description": "A response to an inline evaluation."
