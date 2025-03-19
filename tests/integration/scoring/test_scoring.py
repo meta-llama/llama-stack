@@ -154,11 +154,7 @@ def test_scoring_score_with_aggregation_functions(
     df = pd.read_csv(Path(__file__).parent.parent / "datasets" / "test_dataset.csv")
     rows = df.to_dict(orient="records")
 
-    scoring_fns_list = [
-        x
-        for x in llama_stack_client.scoring_functions.list()
-        if x.provider_id == provider_id
-    ]
+    scoring_fns_list = [x for x in llama_stack_client.scoring_functions.list() if x.provider_id == provider_id]
     if len(scoring_fns_list) == 0:
         pytest.skip(f"No scoring functions found for provider {provider_id}, skipping")
 

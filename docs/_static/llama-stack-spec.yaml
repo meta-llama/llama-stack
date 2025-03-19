@@ -5359,41 +5359,6 @@ components:
         - grades
       title: EvaluationResponse
       description: A response to an inline evaluation.
-    ScoringResult:
-      type: object
-      properties:
-        scores:
-          type: array
-          items:
-            type: object
-            additionalProperties:
-              oneOf:
-                - type: 'null'
-                - type: boolean
-                - type: number
-                - type: string
-                - type: array
-                - type: object
-          description: >-
-            The scoring result for each row. Each row is a map of grader column name
-            to value.
-        metrics:
-          type: object
-          additionalProperties:
-            oneOf:
-              - type: 'null'
-              - type: boolean
-              - type: number
-              - type: string
-              - type: array
-              - type: object
-          description: Map of metric name to aggregated value.
-      additionalProperties: false
-      required:
-        - scores
-        - metrics
-      title: ScoringResult
-      description: A scoring result for a single row.
     HealthInfo:
       type: object
       properties:

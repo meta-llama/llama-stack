@@ -51,14 +51,8 @@ def builtin_automatically_routed_apis() -> List[AutoRoutedApiInfo]:
 
 
 def providable_apis() -> List[Api]:
-    routing_table_apis = {
-        x.routing_table_api for x in builtin_automatically_routed_apis()
-    }
-    return [
-        api
-        for api in Api
-        if api not in routing_table_apis and api not in [Api.inspect, Api.providers]
-    ]
+    routing_table_apis = {x.routing_table_api for x in builtin_automatically_routed_apis()}
+    return [api for api in Api if api not in routing_table_apis and api not in [Api.inspect, Api.providers]]
 
 
 def get_provider_registry() -> Dict[Api, Dict[str, ProviderSpec]]:
