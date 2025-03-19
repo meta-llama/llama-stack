@@ -210,6 +210,13 @@ def get_distribution_template() -> DistributionTemplate:
                 uri="huggingface://datasets/llamastack/IfEval?split=train",
             ),
         ),
+        DatasetInput(
+            dataset_id="docvqa",
+            purpose=DatasetPurpose.eval_messages_answer,
+            source=URIDataSource(
+                uri="huggingface://datasets/llamastack/docvqa?split=val",
+            )
+        )
     ]
 
     default_benchmarks = [
@@ -243,6 +250,11 @@ def get_distribution_template() -> DistributionTemplate:
             dataset_id="ifeval",
             scoring_functions=["basic::ifeval"],
         ),
+        BenchmarkInput(
+            benchmark_id="meta-reference-docvqa",
+            dataset_id="docvqa",
+            scoring_functions=["basic::docvqa"],
+        )
     ]
     return DistributionTemplate(
         name=name,
