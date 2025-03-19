@@ -15,6 +15,7 @@ from pydantic import TypeAdapter
 from llama_stack.apis.common.content_types import (
     URL,
     InterleavedContent,
+    InterleavedContentItem,
     TextContentItem,
 )
 from llama_stack.apis.inference import Inference
@@ -23,6 +24,7 @@ from llama_stack.apis.tools import (
     RAGQueryConfig,
     RAGQueryResult,
     RAGToolRuntime,
+    Tool,
     ToolDef,
     ToolInvocationResult,
     ToolParameter,
@@ -61,6 +63,12 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
 
     async def shutdown(self):
         pass
+
+    async def register_tool(self, tool: Tool) -> None:
+        pass
+
+    async def unregister_tool(self, tool_id: str) -> None:
+        return
 
     async def insert(
         self,
@@ -121,11 +129,11 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
             return RAGQueryResult(content=None)
 
         # sort by score
-        chunks, scores = zip(*sorted(zip(chunks, scores, strict=False), key=lambda x: x[1], reverse=True), strict=False)
+        chunks, scores = zip(*sorted(zip(chunks, scores, strict=False), key=lambda x: x[1], reverse=True), strict=False)  # type: ignore
         chunks = chunks[: query_config.max_chunks]
 
         tokens = 0
-        picked = [
+        picked: list[InterleavedContentItem] = [
             TextContentItem(
                 text=f"knowledge_search tool found {len(chunks)} chunks:\nBEGIN of knowledge_search tool results.\n"
             )
