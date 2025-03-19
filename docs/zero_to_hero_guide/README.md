@@ -86,11 +86,11 @@ If you're looking for more specific topics, we have a [Zero to Hero Guide](#next
    llama stack build --template ollama --image-type conda
    ```
    **Expected Output:**
-   ```
+   ```bash
    ...
-   Build Successful! Next steps:
-   1. Set the environment variables: LLAMA_STACK_PORT, OLLAMA_URL, INFERENCE_MODEL, SAFETY_MODEL
-   2. `llama stack run /Users/<username>/.llama/distributions/llamastack-ollama/ollama-run.yaml
+   Build Successful!
+   You can find the newly-built template here: ~/.llama/distributions/ollama/ollama-run.yaml
+   You can run the new Llama Stack Distro via: llama stack run ~/.llama/distributions/ollama/ollama-run.yaml --image-type conda
    ```
 
 3. **Set the ENV variables by exporting them to the terminal**:
