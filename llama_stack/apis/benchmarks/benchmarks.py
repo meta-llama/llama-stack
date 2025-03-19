@@ -62,8 +62,8 @@ class Benchmarks(Protocol):
         """
         Register a new benchmark. A benchmark consists of a dataset id and a list of grader ids.
 
-        :param dataset_id: The ID of the dataset to be used to run the benchmark.
-        :param grader_ids: List of grader ids to use for this benchmark.
+        :param dataset_id: The ID of the dataset to be used to run the benchmark. ID obtained through `datasets.register()`
+        :param grader_ids: List of grader ids to use for this benchmark. ID obtained through `graders.register()`
         :param benchmark_id: (Optional) The ID of the benchmark to register. If not provided, an ID will be generated.
         :param metadata: (Optional) Metadata for this benchmark for additional descriptions.
         """

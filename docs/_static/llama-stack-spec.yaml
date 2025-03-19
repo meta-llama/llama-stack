@@ -5328,7 +5328,7 @@ components:
     EvaluationResponse:
       type: object
       properties:
-        generations:
+        result_rows:
           type: array
           items:
             type: object
@@ -5341,17 +5341,22 @@ components:
                 - type: array
                 - type: object
           description: >-
-            The generations in rows for the evaluation.
-        scores:
+            The result data containing inputs, generations and grades in each row.
+        grades:
           type: object
           additionalProperties:
-            $ref: '#/components/schemas/ScoringResult'
-          description: >-
-            The scores for the evaluation. Map of grader id to ScoringResult.
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+          description: Map of grader id to aggregated value.
       additionalProperties: false
       required:
-        - generations
-        - scores
+        - result_rows
+        - grades
       title: EvaluationResponse
       description: A response to an inline evaluation.
     ScoringResult:
@@ -6404,13 +6409,14 @@ components:
         dataset_id:
           type: string
           description: >-
-            The ID of the dataset to be used to run the benchmark.
+            The ID of the dataset to be used to run the benchmark. ID obtained through
+            `datasets.register()`
         grader_ids:
           type: array
           items:
             type: string
           description: >-
-            List of grader ids to use for this benchmark.
+            List of grader ids to use for this benchmark. ID obtained through `graders.register()`
         benchmark_id:
           type: string
           description: >-

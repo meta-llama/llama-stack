@@ -7617,7 +7617,7 @@
             "EvaluationResponse": {
                 "type": "object",
                 "properties": {
-                    "generations": {
+                    "result_rows": {
                         "type": "array",
                         "items": {
                             "type": "object",
@@ -7644,20 +7644,39 @@
                                 ]
                             }
                         },
-                        "description": "The generations in rows for the evaluation."
+                        "description": "The result data containing inputs, generations and grades in each row."
                     },
-                    "scores": {
+                    "grades": {
                         "type": "object",
                         "additionalProperties": {
-                            "$ref": "#/components/schemas/ScoringResult"
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
                         },
-                        "description": "The scores for the evaluation. Map of grader id to ScoringResult."
+                        "description": "Map of grader id to aggregated value."
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "generations",
-                    "scores"
+                    "result_rows",
+                    "grades"
                 ],
                 "title": "EvaluationResponse",
                 "description": "A response to an inline evaluation."
@@ -9313,14 +9332,14 @@
                 "properties": {
                     "dataset_id": {
                         "type": "string",
-                        "description": "The ID of the dataset to be used to run the benchmark."
+                        "description": "The ID of the dataset to be used to run the benchmark. ID obtained through `datasets.register()`"
                     },
                     "grader_ids": {
                         "type": "array",
                         "items": {
                             "type": "string"
                         },
-                        "description": "List of grader ids to use for this benchmark."
+                        "description": "List of grader ids to use for this benchmark. ID obtained through `graders.register()`"
                     },
                     "benchmark_id": {
                         "type": "string",
