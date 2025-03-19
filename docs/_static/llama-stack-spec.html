@@ -7787,7 +7787,8 @@
                 "type": "object",
                 "properties": {
                     "document_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The unique identifier for the document."
                     },
                     "content": {
                         "oneOf": [
@@ -7806,10 +7807,12 @@
                             {
                                 "$ref": "#/components/schemas/URL"
                             }
-                        ]
+                        ],
+                        "description": "The content of the document."
                     },
                     "mime_type": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The MIME type of the document."
                     },
                     "metadata": {
                         "type": "object",
@@ -7834,7 +7837,8 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "Additional metadata for the document."
                     }
                 },
                 "additionalProperties": false,
@@ -7843,7 +7847,8 @@
                     "content",
                     "metadata"
                 ],
-                "title": "RAGDocument"
+                "title": "RAGDocument",
+                "description": "A document to be used for document ingestion in the RAG Tool."
             },
             "InsertRequest": {
                 "type": "object",
