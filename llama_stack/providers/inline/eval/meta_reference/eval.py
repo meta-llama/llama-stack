@@ -13,7 +13,6 @@ from llama_stack.apis.benchmarks import Benchmark
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
 from llama_stack.apis.inference import Inference, SystemMessage, UserMessage
-from llama_stack.apis.scoring import Scoring
 from llama_stack.providers.datatypes import BenchmarksProtocolPrivate
 from llama_stack.providers.inline.agents.meta_reference.agent_instance import (
     MEMORY_QUERY_TOOL,
@@ -37,14 +36,14 @@ class MetaReferenceEvalImpl(
         config: MetaReferenceEvalConfig,
         datasetio_api: DatasetIO,
         datasets_api: Datasets,
-        scoring_api: Scoring,
         inference_api: Inference,
         agents_api: Agents,
     ) -> None:
         self.config = config
         self.datasetio_api = datasetio_api
         self.datasets_api = datasets_api
-        self.scoring_api = scoring_api
+        # TODO(xiyan): this implementation will be refactored
+        self.scoring_api = None
         self.inference_api = inference_api
         self.agents_api = agents_api
 
