@@ -2864,30 +2864,34 @@ components:
               title: BuiltinTool
             - type: string
         arguments:
-          type: object
-          additionalProperties:
-            oneOf:
-              - type: string
-              - type: integer
-              - type: number
-              - type: boolean
-              - type: 'null'
-              - type: array
-                items:
-                  oneOf:
-                    - type: string
-                    - type: integer
-                    - type: number
-                    - type: boolean
-                    - type: 'null'
-              - type: object
-                additionalProperties:
-                  oneOf:
-                    - type: string
-                    - type: integer
-                    - type: number
-                    - type: boolean
-                    - type: 'null'
+          oneOf:
+            - type: string
+            - type: object
+              additionalProperties:
+                oneOf:
+                  - type: string
+                  - type: integer
+                  - type: number
+                  - type: boolean
+                  - type: 'null'
+                  - type: array
+                    items:
+                      oneOf:
+                        - type: string
+                        - type: integer
+                        - type: number
+                        - type: boolean
+                        - type: 'null'
+                  - type: object
+                    additionalProperties:
+                      oneOf:
+                        - type: string
+                        - type: integer
+                        - type: number
+                        - type: boolean
+                        - type: 'null'
+        arguments_json:
+          type: string
       additionalProperties: false
       required:
         - call_id
@@ -5376,6 +5380,7 @@ components:
       properties:
         document_id:
           type: string
+          description: The unique identifier for the document.
         content:
           oneOf:
             - type: string
@@ -5384,8 +5389,10 @@ components:
               items:
                 $ref: '#/components/schemas/InterleavedContentItem'
             - $ref: '#/components/schemas/URL'
+          description: The content of the document.
         mime_type:
           type: string
+          description: The MIME type of the document.
         metadata:
           type: object
           additionalProperties:
@@ -5396,12 +5403,15 @@ components:
               - type: string
               - type: array
               - type: object
+          description: Additional metadata for the document.
       additionalProperties: false
       required:
         - document_id
         - content
         - metadata
       title: RAGDocument
+      description: >-
+        A document to be used for document ingestion in the RAG Tool.
     InsertRequest:
       type: object
       properties:
