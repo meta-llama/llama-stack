@@ -47,8 +47,13 @@ RecursiveType = Union[Primitive, List[Primitive], Dict[str, Primitive]]
 class ToolCall(BaseModel):
     call_id: str
     tool_name: Union[BuiltinTool, str]
+    # Plan is to deprecate the Dict in favor of a JSON string
+    # that is parsed on the client side instead of trying to manage
+    # the recursive type here.
+    # Making this a union so that client side can start prepping for this change.
+    # Eventually, we will remove both the Dict and arguments_json field,
+    # and arguments will just be a str
     arguments: Union[str, Dict[str, RecursiveType]]
-    # Temporary field for backwards compatibility
     arguments_json: Optional[str] = None
 
     @field_validator("tool_name", mode="before")
