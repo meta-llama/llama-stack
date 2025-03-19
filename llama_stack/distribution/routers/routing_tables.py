@@ -20,6 +20,8 @@ from llama_stack.apis.datasets import (
     DatasetType,
     DataSource,
     ListDatasetsResponse,
+    RowsDataSource,
+    URIDataSource,
 )
 from llama_stack.apis.models import ListModelsResponse, Model, Models, ModelType
 from llama_stack.apis.resource import ResourceType
@@ -377,6 +379,12 @@ class DatasetsRoutingTable(CommonRoutingTableImpl, Datasets):
         metadata: Optional[Dict[str, Any]] = None,
         dataset_id: Optional[str] = None,
     ) -> Dataset:
+        if isinstance(source, dict):
+            if source["type"] == "uri":
+                source = URIDataSource.parse_obj(source)
+            elif source["type"] == "rows":
+                source = RowsDataSource.parse_obj(source)
+
         if not dataset_id:
             dataset_id = f"dataset-{str(uuid.uuid4())}"
 
