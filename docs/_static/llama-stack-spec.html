@@ -8527,23 +8527,28 @@
                 "type": "object",
                 "properties": {
                     "benchmark_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The benchmark ID to evaluate."
                     },
                     "dataset_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The dataset ID to evaluate."
                     },
                     "data_source": {
-                        "$ref": "#/components/schemas/DataSource"
+                        "$ref": "#/components/schemas/DataSource",
+                        "description": "The data source to evaluate."
                     },
                     "grader_ids": {
                         "type": "array",
                         "items": {
                             "type": "string"
-                        }
+                        },
+                        "description": "The grader IDs to evaluate."
                     }
                 },
                 "additionalProperties": false,
-                "title": "EvaluationTask"
+                "title": "EvaluationTask",
+                "description": "A task for evaluation. To specify a task, one of the following must be provided: - `benchmark_id`: Run evaluation task against a benchmark_id - `dataset_id` and `grader_ids`: Run evaluation task against a dataset_id and a list of grader_ids - `data_source` and `grader_ids`: Run evaluation task against a data source (e.g. rows, uri, etc.) and a list of grader_ids"
             },
             "GradeRequest": {
                 "type": "object",
