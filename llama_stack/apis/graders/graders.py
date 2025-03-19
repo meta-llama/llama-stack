@@ -20,7 +20,7 @@ from typing import (
 from pydantic import BaseModel, Field
 
 from llama_stack.apis.datasets import DatasetPurpose
-from llama_stack.apis.resource import Resource, ResourceType
+from llama_stack.apis.resource import Resource
 from llama_stack.schema_utils import json_schema_type, register_schema, webmethod
 
 from .graders import *  # noqa: F401 F403
@@ -96,37 +96,37 @@ class RegexParserGraderParams(BaseModel):
 
 @json_schema_type
 class LlmGrader(BaseModel):
-    type: Literal[GraderType.llm.value] = GraderType.llm.value
+    type: Literal["llm"] = "llm"
     llm: LlmGraderParams
 
 
 @json_schema_type
 class RegexParserGrader(BaseModel):
-    type: Literal[GraderType.regex_parser.value] = GraderType.regex_parser.value
+    type: Literal["regex_parser"] = "regex_parser"
     regex_parser: RegexParserGraderParams
 
 
 @json_schema_type
 class EqualityGrader(BaseModel):
-    type: Literal[GraderType.equality.value] = GraderType.equality.value
+    type: Literal["equality"] = "equality"
     equality: BasicGraderParams
 
 
 @json_schema_type
 class SubsetOfGrader(BaseModel):
-    type: Literal[GraderType.subset_of.value] = GraderType.subset_of.value
+    type: Literal["subset_of"] = "subset_of"
     subset_of: BasicGraderParams
 
 
 @json_schema_type
 class FactualityGrader(BaseModel):
-    type: Literal[GraderType.factuality.value] = GraderType.factuality.value
+    type: Literal["factuality"] = "factuality"
     factuality: BasicGraderParams
 
 
 @json_schema_type
 class FaithfulnessGrader(BaseModel):
-    type: Literal[GraderType.faithfulness.value] = GraderType.faithfulness.value
+    type: Literal["faithfulness"] = "faithfulness"
     faithfulness: BasicGraderParams
 
 
@@ -157,7 +157,7 @@ class CommonGraderFields(BaseModel):
 
 @json_schema_type
 class Grader(CommonGraderFields, Resource):
-    type: Literal[ResourceType.grader.value] = ResourceType.grader.value
+    type: Literal["grader"] = "grader"
 
     @property
     def grader_id(self) -> str:
