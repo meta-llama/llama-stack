@@ -9,7 +9,6 @@ from typing import Dict, List, Tuple
 from llama_stack.apis.datasets import DatasetPurpose, URIDataSource
 from llama_stack.apis.models.models import ModelType
 from llama_stack.distribution.datatypes import (
-    BenchmarkInput,
     DatasetInput,
     ModelInput,
     Provider,
@@ -102,9 +101,7 @@ def get_distribution_template() -> DistributionTemplate:
         "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],
         "telemetry": ["inline::meta-reference"],
-        "eval": ["inline::meta-reference"],
         "datasetio": ["remote::huggingface", "inline::localfs"],
-        "scoring": ["inline::basic", "inline::llm-as-judge", "inline::braintrust"],
         "tool_runtime": [
             "remote::brave-search",
             "remote::tavily-search",
@@ -210,33 +207,35 @@ def get_distribution_template() -> DistributionTemplate:
         ),
     ]
 
-    default_benchmarks = [
-        BenchmarkInput(
-            benchmark_id="meta-reference-simpleqa",
-            dataset_id="simpleqa",
-            grader_ids=["llm-as-judge::405b-simpleqa"],
-        ),
-        BenchmarkInput(
-            benchmark_id="meta-reference-mmlu-cot",
-            dataset_id="mmlu_cot",
-            grader_ids=["basic::regex_parser_multiple_choice_answer"],
-        ),
-        BenchmarkInput(
-            benchmark_id="meta-reference-gpqa-cot",
-            dataset_id="gpqa_cot",
-            grader_ids=["basic::regex_parser_multiple_choice_answer"],
-        ),
-        BenchmarkInput(
-            benchmark_id="meta-reference-math-500",
-            dataset_id="math_500",
-            grader_ids=["basic::regex_parser_math_response"],
-        ),
-        BenchmarkInput(
-            benchmark_id="meta-reference-bfcl",
-            dataset_id="bfcl",
-            grader_ids=["basic::bfcl"],
-        ),
-    ]
+    # TODO(xiyan): fix this back as registerable resources
+    # default_benchmarks = [
+    #     BenchmarkInput(
+    #         benchmark_id="meta-reference-simpleqa",
+    #         dataset_id="simpleqa",
+    #         grader_ids=["llm-as-judge::405b-simpleqa"],
+    #     ),
+    #     BenchmarkInput(
+    #         benchmark_id="meta-reference-mmlu-cot",
+    #         dataset_id="mmlu_cot",
+    #         grader_ids=["basic::regex_parser_multiple_choice_answer"],
+    #     ),
+    #     BenchmarkInput(
+    #         benchmark_id="meta-reference-gpqa-cot",
+    #         dataset_id="gpqa_cot",
+    #         grader_ids=["basic::regex_parser_multiple_choice_answer"],
+    #     ),
+    #     BenchmarkInput(
+    #         benchmark_id="meta-reference-math-500",
+    #         dataset_id="math_500",
+    #         grader_ids=["basic::regex_parser_math_response"],
+    #     ),
+    #     BenchmarkInput(
+    #         benchmark_id="meta-reference-bfcl",
+    #         dataset_id="bfcl",
+    #         grader_ids=["basic::bfcl"],
+    #     ),
+    # ]
+
     return DistributionTemplate(
         name=name,
         distro_type="self_hosted",
@@ -255,7 +254,6 @@ def get_distribution_template() -> DistributionTemplate:
                 default_tool_groups=default_tool_groups,
                 default_shields=[ShieldInput(shield_id="meta-llama/Llama-Guard-3-8B")],
                 default_datasets=default_datasets,
-                default_benchmarks=default_benchmarks,
             ),
         },
         run_config_env_vars={

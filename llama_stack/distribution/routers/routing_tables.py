@@ -12,7 +12,6 @@ from pydantic import TypeAdapter
 
 from llama_stack.apis.benchmarks import Benchmark, Benchmarks, ListBenchmarksResponse
 from llama_stack.apis.common.content_types import URL
-from llama_stack.apis.common.type_system import ParamType
 from llama_stack.apis.datasets import (
     Dataset,
     DatasetPurpose,
@@ -23,12 +22,6 @@ from llama_stack.apis.datasets import (
 )
 from llama_stack.apis.models import ListModelsResponse, Model, Models, ModelType
 from llama_stack.apis.resource import ResourceType
-from llama_stack.apis.scoring_functions import (
-    ListScoringFunctionsResponse,
-    ScoringFn,
-    ScoringFnParams,
-    ScoringFunctions,
-)
 from llama_stack.apis.shields import ListShieldsResponse, Shield, Shields
 from llama_stack.apis.tools import (
     ListToolGroupsResponse,
@@ -68,10 +61,6 @@ async def register_object_with_provider(obj: RoutableObject, p: Any) -> Routable
         return await p.register_vector_db(obj)
     elif api == Api.datasetio:
         return await p.register_dataset(obj)
-    elif api == Api.scoring:
-        return await p.register_scoring_function(obj)
-    elif api == Api.eval:
-        return await p.register_benchmark(obj)
     elif api == Api.tool_runtime:
         return await p.register_tool(obj)
     else:
@@ -117,7 +106,7 @@ class CommonRoutingTableImpl(RoutingTable):
                 await self.dist_registry.register(obj)
 
         # Register all objects from providers
-        for pid, p in self.impls_by_provider_id.items():
+        for _pid, p in self.impls_by_provider_id.items():
             api = get_impl_api(p)
             if api == Api.inference:
                 p.model_store = self
@@ -127,12 +116,6 @@ class CommonRoutingTableImpl(RoutingTable):
                 p.vector_db_store = self
             elif api == Api.datasetio:
                 p.dataset_store = self
-            elif api == Api.scoring:
-                p.scoring_function_store = self
-                scoring_functions = await p.list_scoring_functions()
-                await add_objects(scoring_functions, pid, ScoringFn)
-            elif api == Api.eval:
-                p.benchmark_store = self
             elif api == Api.tool_runtime:
                 p.tool_store = self
 
@@ -150,8 +133,6 @@ class CommonRoutingTableImpl(RoutingTable):
                 return ("VectorIO", "vector_db")
             elif isinstance(self, DatasetsRoutingTable):
                 return ("DatasetIO", "dataset")
-            elif isinstance(self, ScoringFunctionsRoutingTable):
-                return ("Scoring", "scoring_function")
             elif isinstance(self, BenchmarksRoutingTable):
                 return ("Eval", "benchmark")
             elif isinstance(self, ToolGroupsRoutingTable):
@@ -414,46 +395,6 @@ class DatasetsRoutingTable(CommonRoutingTableImpl, Datasets):
         if dataset is None:
             raise ValueError(f"Dataset {dataset_id} not found")
         await self.unregister_object(dataset)
-
-
-class ScoringFunctionsRoutingTable(CommonRoutingTableImpl, ScoringFunctions):
-    async def list_scoring_functions(self) -> ListScoringFunctionsResponse:
-        return ListScoringFunctionsResponse(data=await self.get_all_with_type(ResourceType.scoring_function.value))
-
-    async def get_scoring_function(self, scoring_fn_id: str) -> ScoringFn:
-        scoring_fn = await self.get_object_by_identifier("scoring_function", scoring_fn_id)
-        if scoring_fn is None:
-            raise ValueError(f"Scoring function '{scoring_fn_id}' not found")
-        return scoring_fn
-
-    async def register_scoring_function(
-        self,
-        scoring_fn_id: str,
-        description: str,
-        return_type: ParamType,
-        provider_scoring_fn_id: Optional[str] = None,
-        provider_id: Optional[str] = None,
-        params: Optional[ScoringFnParams] = None,
-    ) -> None:
-        if provider_scoring_fn_id is None:
-            provider_scoring_fn_id = scoring_fn_id
-        if provider_id is None:
-            if len(self.impls_by_provider_id) == 1:
-                provider_id = list(self.impls_by_provider_id.keys())[0]
-            else:
-                raise ValueError(
-                    "No provider specified and multiple providers available. Please specify a provider_id."
-                )
-        scoring_fn = ScoringFn(
-            identifier=scoring_fn_id,
-            description=description,
-            return_type=return_type,
-            provider_resource_id=provider_scoring_fn_id,
-            provider_id=provider_id,
-            params=params,
-        )
-        scoring_fn.provider_id = provider_id
-        await self.register_object(scoring_fn)
 
 
 class BenchmarksRoutingTable(CommonRoutingTableImpl, Benchmarks):

@@ -13,7 +13,6 @@ from llama_stack.apis.benchmarks import Benchmark
 from llama_stack.apis.datasets import Dataset
 from llama_stack.apis.datatypes import Api
 from llama_stack.apis.models import Model
-from llama_stack.apis.scoring_functions import ScoringFn
 from llama_stack.apis.shields import Shield
 from llama_stack.apis.tools import Tool
 from llama_stack.apis.vector_dbs import VectorDB
@@ -40,12 +39,6 @@ class DatasetsProtocolPrivate(Protocol):
     async def register_dataset(self, dataset: Dataset) -> None: ...
 
     async def unregister_dataset(self, dataset_id: str) -> None: ...
-
-
-class ScoringFunctionsProtocolPrivate(Protocol):
-    async def list_scoring_functions(self) -> List[ScoringFn]: ...
-
-    async def register_scoring_function(self, scoring_fn: ScoringFn) -> None: ...
 
 
 class BenchmarksProtocolPrivate(Protocol):

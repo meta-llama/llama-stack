@@ -27,9 +27,7 @@ def get_distribution_template() -> DistributionTemplate:
         "vector_io": ["inline::faiss", "remote::chromadb", "remote::pgvector"],
         "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],
-        "eval": ["inline::meta-reference"],
         "datasetio": ["remote::huggingface", "inline::localfs"],
-        "scoring": ["inline::basic", "inline::llm-as-judge", "inline::braintrust"],
         "telemetry": ["inline::meta-reference"],
         "tool_runtime": [
             "remote::brave-search",

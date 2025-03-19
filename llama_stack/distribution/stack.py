@@ -17,7 +17,6 @@ from llama_stack.apis.batch_inference import BatchInference
 from llama_stack.apis.benchmarks import Benchmarks
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
-from llama_stack.apis.eval import Eval
 from llama_stack.apis.evaluation import Evaluation
 from llama_stack.apis.files import Files
 from llama_stack.apis.graders import Graders
@@ -27,8 +26,6 @@ from llama_stack.apis.models import Models
 from llama_stack.apis.post_training import PostTraining
 from llama_stack.apis.providers import Providers
 from llama_stack.apis.safety import Safety
-from llama_stack.apis.scoring import Scoring
-from llama_stack.apis.scoring_functions import ScoringFunctions
 from llama_stack.apis.shields import Shields
 from llama_stack.apis.synthetic_data_generation import SyntheticDataGeneration
 from llama_stack.apis.telemetry import Telemetry
@@ -69,9 +66,6 @@ class LlamaStack(
     Files,
     Graders,
     Evaluation,
-    Eval,
-    ScoringFunctions,
-    Scoring,
 ):
     pass
 
@@ -81,12 +75,6 @@ RESOURCES = [
     ("shields", Api.shields, "register_shield", "list_shields"),
     ("vector_dbs", Api.vector_dbs, "register_vector_db", "list_vector_dbs"),
     ("datasets", Api.datasets, "register_dataset", "list_datasets"),
-    (
-        "scoring_fns",
-        Api.scoring_functions,
-        "register_scoring_function",
-        "list_scoring_functions",
-    ),
     ("benchmarks", Api.benchmarks, "register_benchmark", "list_benchmarks"),
     ("tool_groups", Api.tool_groups, "register_tool_group", "list_tool_groups"),
 ]

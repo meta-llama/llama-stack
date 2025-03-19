@@ -9,7 +9,6 @@ from streamlit_option_menu import option_menu
 from llama_stack.distribution.ui.page.distribution.datasets import datasets
 from llama_stack.distribution.ui.page.distribution.eval_tasks import benchmarks
 from llama_stack.distribution.ui.page.distribution.models import models
-from llama_stack.distribution.ui.page.distribution.scoring_functions import scoring_functions
 from llama_stack.distribution.ui.page.distribution.shields import shields
 from llama_stack.distribution.ui.page.distribution.vector_dbs import vector_dbs
 
@@ -43,8 +42,9 @@ def resources_page():
         datasets()
     elif selected_resource == "Models":
         models()
-    elif selected_resource == "Scoring Functions":
-        scoring_functions()
+    # TODO(xiyan): fix this
+    # elif selected_resource == "Scoring Functions":
+    #     scoring_functions()
     elif selected_resource == "Shields":
         shields()
 

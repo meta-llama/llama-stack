@@ -14,7 +14,11 @@ from llama_stack.providers.inline.inference.sentence_transformers import (
 from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOConfig
 from llama_stack.providers.remote.inference.cerebras import CerebrasImplConfig
 from llama_stack.providers.remote.inference.cerebras.models import MODEL_ENTRIES
-from llama_stack.templates.template import DistributionTemplate, RunConfigSettings, get_model_registry
+from llama_stack.templates.template import (
+    DistributionTemplate,
+    RunConfigSettings,
+    get_model_registry,
+)
 
 
 def get_distribution_template() -> DistributionTemplate:
@@ -23,9 +27,7 @@ def get_distribution_template() -> DistributionTemplate:
         "safety": ["inline::llama-guard"],
         "vector_io": ["inline::faiss", "remote::chromadb", "remote::pgvector"],
         "agents": ["inline::meta-reference"],
-        "eval": ["inline::meta-reference"],
         "datasetio": ["remote::huggingface", "inline::localfs"],
-        "scoring": ["inline::basic", "inline::llm-as-judge", "inline::braintrust"],
         "telemetry": ["inline::meta-reference"],
         "tool_runtime": [
             "remote::brave-search",

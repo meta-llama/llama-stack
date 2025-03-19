@@ -7,17 +7,17 @@
 from pathlib import Path
 
 from llama_stack.apis.models.models import ModelType
-from llama_stack.distribution.datatypes import (
-    ModelInput,
-    Provider,
-    ToolGroupInput,
-)
+from llama_stack.distribution.datatypes import ModelInput, Provider, ToolGroupInput
 from llama_stack.providers.inline.inference.sentence_transformers import (
     SentenceTransformersInferenceConfig,
 )
 from llama_stack.providers.remote.inference.groq import GroqConfig
 from llama_stack.providers.remote.inference.groq.models import MODEL_ENTRIES
-from llama_stack.templates.template import DistributionTemplate, RunConfigSettings, get_model_registry
+from llama_stack.templates.template import (
+    DistributionTemplate,
+    RunConfigSettings,
+    get_model_registry,
+)
 
 
 def get_distribution_template() -> DistributionTemplate:
@@ -27,9 +27,7 @@ def get_distribution_template() -> DistributionTemplate:
         "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],
         "telemetry": ["inline::meta-reference"],
-        "eval": ["inline::meta-reference"],
         "datasetio": ["remote::huggingface", "inline::localfs"],
-        "scoring": ["inline::basic", "inline::llm-as-judge", "inline::braintrust"],
         "tool_runtime": [
             "remote::brave-search",
             "remote::tavily-search",

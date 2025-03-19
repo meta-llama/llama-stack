@@ -11,15 +11,12 @@ from llama_stack.apis.agents import Agents
 from llama_stack.apis.benchmarks import Benchmarks
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
-from llama_stack.apis.eval import Eval
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.inspect import Inspect
 from llama_stack.apis.models import Models
 from llama_stack.apis.post_training import PostTraining
 from llama_stack.apis.providers import Providers as ProvidersAPI
 from llama_stack.apis.safety import Safety
-from llama_stack.apis.scoring import Scoring
-from llama_stack.apis.scoring_functions import ScoringFunctions
 from llama_stack.apis.shields import Shields
 from llama_stack.apis.telemetry import Telemetry
 from llama_stack.apis.tools import ToolGroups, ToolRuntime
@@ -38,14 +35,12 @@ from llama_stack.distribution.utils.dynamic import instantiate_class_type
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import (
     Api,
-    BenchmarksProtocolPrivate,
     DatasetsProtocolPrivate,
     InlineProviderSpec,
     ModelsProtocolPrivate,
     ProviderSpec,
     RemoteProviderConfig,
     RemoteProviderSpec,
-    ScoringFunctionsProtocolPrivate,
     ShieldsProtocolPrivate,
     ToolsProtocolPrivate,
     VectorDBsProtocolPrivate,
@@ -72,9 +67,6 @@ def api_protocol_map() -> Dict[Api, Any]:
         Api.telemetry: Telemetry,
         Api.datasetio: DatasetIO,
         Api.datasets: Datasets,
-        Api.scoring: Scoring,
-        Api.scoring_functions: ScoringFunctions,
-        Api.eval: Eval,
         Api.benchmarks: Benchmarks,
         Api.post_training: PostTraining,
         Api.tool_groups: ToolGroups,
@@ -89,12 +81,6 @@ def additional_protocols_map() -> Dict[Api, Any]:
         Api.vector_io: (VectorDBsProtocolPrivate, VectorDBs, Api.vector_dbs),
         Api.safety: (ShieldsProtocolPrivate, Shields, Api.shields),
         Api.datasetio: (DatasetsProtocolPrivate, Datasets, Api.datasets),
-        Api.scoring: (
-            ScoringFunctionsProtocolPrivate,
-            ScoringFunctions,
-            Api.scoring_functions,
-        ),
-        Api.eval: (BenchmarksProtocolPrivate, Benchmarks, Api.benchmarks),
     }
 
 
@@ -135,7 +121,9 @@ async def resolve_impls(
     return await instantiate_providers(sorted_providers, router_apis, dist_registry)
 
 
-def specs_for_autorouted_apis(apis_to_serve: List[str] | Set[str]) -> Dict[str, Dict[str, ProviderWithSpec]]:
+def specs_for_autorouted_apis(
+    apis_to_serve: List[str] | Set[str],
+) -> Dict[str, Dict[str, ProviderWithSpec]]:
     """Generates specifications for automatically routed APIs."""
     specs = {}
     for info in builtin_automatically_routed_apis():
@@ -177,7 +165,10 @@ def specs_for_autorouted_apis(apis_to_serve: List[str] | Set[str]) -> Dict[str, 
 
 
 def validate_and_prepare_providers(
-    run_config: StackRunConfig, provider_registry: ProviderRegistry, routing_table_apis: Set[Api], router_apis: Set[Api]
+    run_config: StackRunConfig,
+    provider_registry: ProviderRegistry,
+    routing_table_apis: Set[Api],
+    router_apis: Set[Api],
 ) -> Dict[str, Dict[str, ProviderWithSpec]]:
     """Validates providers, handles deprecations, and organizes them into a spec dictionary."""
     providers_with_specs: Dict[str, Dict[str, ProviderWithSpec]] = {}
@@ -221,7 +212,8 @@ def validate_provider(provider: Provider, api: Api, provider_registry: ProviderR
 
 
 def sort_providers_by_deps(
-    providers_with_specs: Dict[str, Dict[str, ProviderWithSpec]], run_config: StackRunConfig
+    providers_with_specs: Dict[str, Dict[str, ProviderWithSpec]],
+    run_config: StackRunConfig,
 ) -> List[Tuple[str, ProviderWithSpec]]:
     """Sorts providers based on their dependencies."""
     sorted_providers: List[Tuple[str, ProviderWithSpec]] = topological_sort(
@@ -276,7 +268,9 @@ def sort_providers_by_deps(
 
 
 async def instantiate_providers(
-    sorted_providers: List[Tuple[str, ProviderWithSpec]], router_apis: Set[Api], dist_registry: DistributionRegistry
+    sorted_providers: List[Tuple[str, ProviderWithSpec]],
+    router_apis: Set[Api],
+    dist_registry: DistributionRegistry,
 ) -> Dict:
     """Instantiates providers asynchronously while managing dependencies."""
     impls: Dict[Api, Any] = {}

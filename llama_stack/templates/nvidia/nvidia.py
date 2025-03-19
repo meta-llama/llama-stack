@@ -6,11 +6,20 @@
 
 from pathlib import Path
 
-from llama_stack.distribution.datatypes import ModelInput, Provider, ShieldInput, ToolGroupInput
+from llama_stack.distribution.datatypes import (
+    ModelInput,
+    Provider,
+    ShieldInput,
+    ToolGroupInput,
+)
 from llama_stack.providers.remote.inference.nvidia import NVIDIAConfig
 from llama_stack.providers.remote.inference.nvidia.models import MODEL_ENTRIES
 from llama_stack.providers.remote.safety.nvidia import NVIDIASafetyConfig
-from llama_stack.templates.template import DistributionTemplate, RunConfigSettings, get_model_registry
+from llama_stack.templates.template import (
+    DistributionTemplate,
+    RunConfigSettings,
+    get_model_registry,
+)
 
 
 def get_distribution_template() -> DistributionTemplate:
@@ -20,9 +29,7 @@ def get_distribution_template() -> DistributionTemplate:
         "safety": ["remote::nvidia"],
         "agents": ["inline::meta-reference"],
         "telemetry": ["inline::meta-reference"],
-        "eval": ["inline::meta-reference"],
         "datasetio": ["inline::localfs"],
-        "scoring": ["inline::basic"],
         "tool_runtime": ["inline::rag-runtime"],
     }
 

@@ -20,10 +20,9 @@ class Api(Enum):
     agents = "agents"
     vector_io = "vector_io"
     datasetio = "datasetio"
-    scoring = "scoring"
-    eval = "eval"
     post_training = "post_training"
     tool_runtime = "tool_runtime"
+    evaluation = "evaluation"
 
     telemetry = "telemetry"
 
@@ -31,7 +30,6 @@ class Api(Enum):
     shields = "shields"
     vector_dbs = "vector_dbs"
     datasets = "datasets"
-    scoring_functions = "scoring_functions"
     benchmarks = "benchmarks"
     tool_groups = "tool_groups"
 

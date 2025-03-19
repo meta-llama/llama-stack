@@ -12,12 +12,8 @@ distribution_spec:
     - inline::meta-reference
     telemetry:
     - inline::meta-reference
-    eval:
-    - inline::meta-reference
     datasetio:
     - inline::localfs
-    scoring:
-    - inline::basic
     tool_runtime:
     - inline::rag-runtime
 image_type: conda
