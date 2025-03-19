@@ -466,35 +466,38 @@ class BenchmarksRoutingTable(CommonRoutingTableImpl, Benchmarks):
             raise ValueError(f"Benchmark '{benchmark_id}' not found")
         return benchmark
 
+    async def unregister_benchmark(self, benchmark_id: str) -> None:
+        benchmark = await self.get_benchmark(benchmark_id)
+        if benchmark is None:
+            raise ValueError(f"Benchmark {benchmark_id} not found")
+        await self.unregister_object(benchmark)
+
     async def register_benchmark(
         self,
-        benchmark_id: str,
         dataset_id: str,
-        scoring_functions: List[str],
+        grader_ids: List[str],
+        benchmark_id: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None,
-        provider_benchmark_id: Optional[str] = None,
-        provider_id: Optional[str] = None,
-    ) -> None:
+    ) -> Benchmark:
         if metadata is None:
             metadata = {}
-        if provider_id is None:
-            if len(self.impls_by_provider_id) == 1:
-                provider_id = list(self.impls_by_provider_id.keys())[0]
-            else:
-                raise ValueError(
-                    "No provider specified and multiple providers available. Please specify a provider_id."
-                )
-        if provider_benchmark_id is None:
-            provider_benchmark_id = benchmark_id
+
+        # TODO (xiyan): we will need a way to infer provider_id for evaluation
+        # keep it as meta-reference for now
+        if len(self.impls_by_provider_id) == 0:
+            raise ValueError("No evaluation providers available. Please configure an evaluation provider.")
+        provider_id = list(self.impls_by_provider_id.keys())[0]
+
         benchmark = Benchmark(
             identifier=benchmark_id,
             dataset_id=dataset_id,
-            scoring_functions=scoring_functions,
+            grader_ids=grader_ids,
             metadata=metadata,
             provider_id=provider_id,
-            provider_resource_id=provider_benchmark_id,
+            provider_resource_id=benchmark_id,
         )
         await self.register_object(benchmark)
+        return benchmark
 
 
 class ToolGroupsRoutingTable(CommonRoutingTableImpl, ToolGroups):

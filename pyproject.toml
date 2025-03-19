@@ -186,6 +186,8 @@ exclude = [
     "^llama_stack/apis/tools/tools\\.py$",
     "^llama_stack/apis/vector_dbs/vector_dbs\\.py$",
     "^llama_stack/apis/vector_io/vector_io\\.py$",
+    "^llama_stack/apis/graders/graders\\.py$",
+    "^llama_stack/apis/evaluation/evaluation\\.py$",
     "^llama_stack/cli/download\\.py$",
     "^llama_stack/cli/llama\\.py$",
     "^llama_stack/cli/stack/_build\\.py$",

@@ -214,27 +214,27 @@ def get_distribution_template() -> DistributionTemplate:
         BenchmarkInput(
             benchmark_id="meta-reference-simpleqa",
             dataset_id="simpleqa",
-            scoring_functions=["llm-as-judge::405b-simpleqa"],
+            grader_ids=["llm-as-judge::405b-simpleqa"],
         ),
         BenchmarkInput(
             benchmark_id="meta-reference-mmlu-cot",
             dataset_id="mmlu_cot",
-            scoring_functions=["basic::regex_parser_multiple_choice_answer"],
+            grader_ids=["basic::regex_parser_multiple_choice_answer"],
         ),
         BenchmarkInput(
             benchmark_id="meta-reference-gpqa-cot",
             dataset_id="gpqa_cot",
-            scoring_functions=["basic::regex_parser_multiple_choice_answer"],
+            grader_ids=["basic::regex_parser_multiple_choice_answer"],
         ),
         BenchmarkInput(
             benchmark_id="meta-reference-math-500",
             dataset_id="math_500",
-            scoring_functions=["basic::regex_parser_math_response"],
+            grader_ids=["basic::regex_parser_math_response"],
         ),
         BenchmarkInput(
             benchmark_id="meta-reference-bfcl",
             dataset_id="bfcl",
-            scoring_functions=["basic::bfcl"],
+            grader_ids=["basic::bfcl"],
         ),
     ]
     return DistributionTemplate(
