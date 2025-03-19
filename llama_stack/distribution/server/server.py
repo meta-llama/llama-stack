@@ -28,9 +28,7 @@ from typing_extensions import Annotated
 from llama_stack.distribution.datatypes import LoggingConfig, StackRunConfig
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
 from llama_stack.distribution.request_headers import (
-    AUTH_ATTRIBUTES_VAR,
     PROVIDER_DATA_VAR,
-    auth_attributes_context,
     request_provider_data_context,
 )
 from llama_stack.distribution.resolver import InvalidProviderError
