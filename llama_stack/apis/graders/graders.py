@@ -13,8 +13,8 @@ from typing import (
     Literal,
     Optional,
     Protocol,
-    runtime_checkable,
     Union,
+    runtime_checkable,
 )
 
 from pydantic import BaseModel, Field

@@ -135,9 +135,7 @@ class Eval(Protocol):
         """
         ...
 
-    @webmethod(
-        route="/eval/benchmarks/{benchmark_id}/jobs/{job_id}/result", method="GET"
-    )
+    @webmethod(route="/eval/benchmarks/{benchmark_id}/jobs/{job_id}/result", method="GET")
     async def job_result(self, benchmark_id: str, job_id: str) -> EvaluateResponse:
         """Get the result of a job.
 
