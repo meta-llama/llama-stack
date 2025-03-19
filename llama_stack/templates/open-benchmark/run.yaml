@@ -193,6 +193,13 @@ datasets:
   metadata: {}
   dataset_id: bfcl
   provider_id: huggingface
+- purpose: eval/messages-answer
+  source:
+    type: uri
+    uri: huggingface://datasets/llamastack/IfEval?split=train
+  metadata: {}
+  dataset_id: IfEval
+  provider_id: huggingface
 scoring_fns: []
 benchmarks:
 - dataset_id: simpleqa
@@ -220,6 +227,11 @@ benchmarks:
   - basic::bfcl
   metadata: {}
   benchmark_id: meta-reference-bfcl
+- dataset_id: IfEval
+  scoring_functions:
+  - basic::IfEval
+  metadata: {}
+  benchmark_id: meta-reference-IfEval
 tool_groups:
 - toolgroup_id: builtin::websearch
   provider_id: tavily-search

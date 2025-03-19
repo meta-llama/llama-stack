@@ -208,6 +208,14 @@ def get_distribution_template() -> DistributionTemplate:
                 uri="huggingface://datasets/llamastack/bfcl_v3?split=train",
             ),
         ),
+        DatasetInput(
+            dataset_id="IfEval",
+            provider_id="huggingface",
+            purpose=DatasetPurpose.eval_messages_answer,
+            source=URIDataSource(
+                uri="huggingface://datasets/llamastack/IfEval?split=train",
+            ),
+        ),
     ]
 
     default_benchmarks = [
@@ -235,6 +243,11 @@ def get_distribution_template() -> DistributionTemplate:
             benchmark_id="meta-reference-bfcl",
             dataset_id="bfcl",
             scoring_functions=["basic::bfcl"],
+        ),
+        BenchmarkInput(
+            benchmark_id="meta-reference-IfEval",
+            dataset_id="IfEval",
+            scoring_functions=["basic::IfEval"],
         ),
     ]
     return DistributionTemplate(
