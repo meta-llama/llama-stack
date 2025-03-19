@@ -10328,14 +10328,14 @@
                 "properties": {
                     "dataset_id": {
                         "type": "string",
-                        "description": "The ID of the dataset to be used to run the benchmark."
+                        "description": "The ID of the dataset to be used to run the benchmark. ID obtained through `datasets.register()`"
                     },
                     "grader_ids": {
                         "type": "array",
                         "items": {
                             "type": "string"
                         },
-                        "description": "List of grader ids to use for this benchmark."
+                        "description": "List of grader ids to use for this benchmark. ID obtained through `graders.register()`"
                     },
                     "benchmark_id": {
                         "type": "string",
