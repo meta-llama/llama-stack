@@ -184,7 +184,6 @@ a default SQLite store will be used.""",
     shields: List[ShieldInput] = Field(default_factory=list)
     vector_dbs: List[VectorDBInput] = Field(default_factory=list)
     datasets: List[DatasetInput] = Field(default_factory=list)
-    scoring_fns: List[ScoringFnInput] = Field(default_factory=list)
     benchmarks: List[BenchmarkInput] = Field(default_factory=list)
     tool_groups: List[ToolGroupInput] = Field(default_factory=list)
 

@@ -66,9 +66,6 @@ class LlamaStack(
     Files,
     Graders,
     Evaluation,
-    Eval,
-    ScoringFunctions,
-    Scoring,
 ):
     pass
 

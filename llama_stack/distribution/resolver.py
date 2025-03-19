@@ -35,14 +35,12 @@ from llama_stack.distribution.utils.dynamic import instantiate_class_type
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import (
     Api,
-    BenchmarksProtocolPrivate,
     DatasetsProtocolPrivate,
     InlineProviderSpec,
     ModelsProtocolPrivate,
     ProviderSpec,
     RemoteProviderConfig,
     RemoteProviderSpec,
-    ScoringFunctionsProtocolPrivate,
     ShieldsProtocolPrivate,
     ToolsProtocolPrivate,
     VectorDBsProtocolPrivate,
