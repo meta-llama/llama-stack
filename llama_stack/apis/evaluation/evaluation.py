@@ -119,12 +119,12 @@ class Evaluation(Protocol):
         candidate: EvaluationCandidate,
     ) -> EvaluationJob:
         """
-        Run an evaluation job.
+        Schedule a full evaluation job, by generating results using candidate and grading them.
 
         :param task: The task to evaluate. One of:
-         - BenchmarkTask: Run evaluation task against a benchmark_id
-         - DatasetGraderTask: Run evaluation task against a dataset_id and a list of grader_ids
-         - DataSourceGraderTask: Run evaluation task against a data source (e.g. rows, uri, etc.) and a list of grader_ids
+         - BenchmarkEvaluationTask: Run evaluation task against a benchmark_id
+         - DatasetEvaluationTask: Run evaluation task against a dataset_id and a list of grader_ids
+         - DataEvaluationTask: Run evaluation task against a data source (e.g. rows, uri, etc.) and a list of grader_ids
         :param candidate: The candidate to evaluate.
         """
         ...
@@ -136,25 +136,26 @@ class Evaluation(Protocol):
         candidate: EvaluationCandidate,
     ) -> EvaluationResponse:
         """
-        Run an evaluation job inline.
+        Run an evaluation synchronously, i.e., without scheduling a job".
+        You should use this for quick testing, or when the number of rows is limited. Some implementations may have stricter restrictions on inputs which will be accepted.
 
         :param task: The task to evaluate. One of:
-         - BenchmarkTask: Run evaluation task against a benchmark_id
-         - DatasetGraderTask: Run evaluation task against a dataset_id and a list of grader_ids
-         - DataSourceGraderTask: Run evaluation task against a data source (e.g. rows, uri, etc.) and a list of grader_ids
+        - BenchmarkEvaluationTask: Run evaluation task against a benchmark_id
+        - DatasetEvaluationTask: Run evaluation task against a dataset_id and a list of grader_ids
+        - DataEvaluationTask: Run evaluation task against a data source (e.g. rows, uri, etc.) and a list of grader_ids
         :param candidate: The candidate to evaluate.
         """
         ...
 
-    @webmethod(route="/evaluation/grade", method="POST")
-    async def grade(self, task: EvaluationTask) -> EvaluationJob:
+    @webmethod(route="/evaluation/grading", method="POST")
+    async def grading(self, task: EvaluationTask) -> EvaluationJob:
         """
-        Run an grading job with generated results. Use this when you have generated results from inference in a dataset.
+        Schedule a grading job, by grading generated results. The generated results are expected to be in the dataset.
 
         :param task: The task to evaluate. One of:
-         - BenchmarkTask: Run evaluation task against a benchmark_id
-         - DatasetGraderTask: Run evaluation task against a dataset_id and a list of grader_ids
-         - DataSourceGraderTask: Run evaluation task against a data source (e.g. rows, uri, etc.) and a list of grader_ids
+         - BenchmarkEvaluationTask: Run evaluation task against a benchmark_id
+         - DatasetEvaluationTask: Run evaluation task against a dataset_id and a list of grader_ids
+         - DataEvaluationTask: Run evaluation task against a data source (e.g. rows, uri, etc.) and a list of grader_ids
 
         :return: The evaluation job containing grader scores.
         """
@@ -163,12 +164,13 @@ class Evaluation(Protocol):
     @webmethod(route="/evaluation/grade_sync", method="POST")
     async def grade_sync(self, task: EvaluationTask) -> EvaluationResponse:
         """
-        Run an grading job with generated results inline.
+        Run grading synchronously on generated results, i.e., without scheduling a job.
+        You should use this for quick testing, or when the number of rows is limited. Some implementations may have stricter restrictions on inputs which will be accepted.
 
         :param task: The task to evaluate. One of:
-         - BenchmarkTask: Run evaluation task against a benchmark_id
-         - DatasetGraderTask: Run evaluation task against a dataset_id and a list of grader_ids
-         - DataSourceGraderTask: Run evaluation task against a data source (e.g. rows, uri, etc.) and a list of grader_ids
+         - BenchmarkEvaluationTask: Run evaluation task against a benchmark_id
+         - DatasetEvaluationTask: Run evaluation task against a dataset_id and a list of grader_ids
+         - DataEvaluationTask: Run evaluation task against a data source (e.g. rows, uri, etc.) and a list of grader_ids
 
         :return: The evaluation job containing grader scores. "generations" is not populated in the response.
         """

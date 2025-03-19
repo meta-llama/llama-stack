@@ -60,7 +60,7 @@ class Benchmarks(Protocol):
         metadata: Optional[Dict[str, Any]] = None,
     ) -> Benchmark:
         """
-        Register a new benchmark.
+        Register a new benchmark. A benchmark consists of a dataset id and a list of grader ids.
 
         :param dataset_id: The ID of the dataset to be used to run the benchmark.
         :param grader_ids: List of grader ids to use for this benchmark.
