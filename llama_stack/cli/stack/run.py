@@ -30,7 +30,7 @@ class StackRun(Subcommand):
 
     def _add_arguments(self):
         self.parser.add_argument(
-            "config",
+            "--config",
             type=str,
             help="Path to config file to use for the run",
         )
