@@ -5,12 +5,12 @@
 # the root directory of this source tree.
 from typing import Any, Dict
 
+from pydantic import BaseModel
+
 from llama_stack.providers.utils.kvstore.config import (
     KVStoreConfig,
     SqliteKVStoreConfig,
 )
-
-from pydantic import BaseModel
 
 
 class MetaReferenceEvaluationConfig(BaseModel):

@@ -3,8 +3,6 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-import json
-from typing import Any, Dict, List, Optional
 
 from llama_stack.apis.agents import Agents
 from llama_stack.apis.datasetio import DatasetIO
@@ -12,11 +10,7 @@ from llama_stack.apis.datasets import Datasets
 from llama_stack.apis.inference import Inference
 from llama_stack.providers.datatypes import BenchmarksProtocolPrivate
 
-from tqdm import tqdm
-
 from .....apis.benchmarks import Benchmark
-
-from .....apis.common.job_types import Job
 from .....apis.evaluation.evaluation import (
     Evaluation,
     EvaluationCandidate,
