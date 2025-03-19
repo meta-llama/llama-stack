@@ -16,8 +16,8 @@ from llama_stack.providers.remote.inference.cerebras import CerebrasImplConfig
 from llama_stack.providers.remote.inference.cerebras.models import MODEL_ENTRIES
 from llama_stack.templates.template import (
     DistributionTemplate,
-    get_model_registry,
     RunConfigSettings,
+    get_model_registry,
 )
 
 

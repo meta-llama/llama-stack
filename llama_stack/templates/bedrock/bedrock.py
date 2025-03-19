@@ -11,8 +11,8 @@ from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOCon
 from llama_stack.providers.remote.inference.bedrock.models import MODEL_ENTRIES
 from llama_stack.templates.template import (
     DistributionTemplate,
-    get_model_registry,
     RunConfigSettings,
+    get_model_registry,
 )
 
 

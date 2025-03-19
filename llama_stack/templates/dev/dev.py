@@ -45,8 +45,8 @@ from llama_stack.providers.remote.vector_io.pgvector.config import (
 )
 from llama_stack.templates.template import (
     DistributionTemplate,
-    get_model_registry,
     RunConfigSettings,
+    get_model_registry,
 )
 
 
@@ -96,10 +96,7 @@ def get_inference_providers() -> Tuple[List[Provider], List[ModelInput]]:
 def get_distribution_template() -> DistributionTemplate:
     inference_providers, available_models = get_inference_providers()
     providers = {
-        "inference": (
-            [p.provider_type for p in inference_providers]
-            + ["inline::sentence-transformers"]
-        ),
+        "inference": ([p.provider_type for p in inference_providers] + ["inline::sentence-transformers"]),
         "vector_io": ["inline::sqlite-vec", "remote::chromadb", "remote::pgvector"],
         "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],
@@ -119,9 +116,7 @@ def get_distribution_template() -> DistributionTemplate:
         Provider(
             provider_id="sqlite-vec",
             provider_type="inline::sqlite-vec",
-            config=SQLiteVectorIOConfig.sample_run_config(
-                f"~/.llama/distributions/{name}"
-            ),
+            config=SQLiteVectorIOConfig.sample_run_config(f"~/.llama/distributions/{name}"),
         ),
         Provider(
             provider_id="${env.ENABLE_CHROMADB+chromadb}",

@@ -44,9 +44,7 @@ async def get_routing_table_impl(
     return impl
 
 
-async def get_auto_router_impl(
-    api: Api, routing_table: RoutingTable, deps: Dict[str, Any]
-) -> Any:
+async def get_auto_router_impl(api: Api, routing_table: RoutingTable, deps: Dict[str, Any]) -> Any:
     from .routers import (
         DatasetIORouter,
         EvalRouter,

@@ -21,8 +21,8 @@ from llama_stack.providers.remote.inference.together import TogetherImplConfig
 from llama_stack.providers.remote.inference.together.models import MODEL_ENTRIES
 from llama_stack.templates.template import (
     DistributionTemplate,
-    get_model_registry,
     RunConfigSettings,
+    get_model_registry,
 )
 
 

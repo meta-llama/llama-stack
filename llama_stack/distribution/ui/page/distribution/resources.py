@@ -4,12 +4,13 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+from streamlit_option_menu import option_menu
+
 from llama_stack.distribution.ui.page.distribution.datasets import datasets
 from llama_stack.distribution.ui.page.distribution.eval_tasks import benchmarks
 from llama_stack.distribution.ui.page.distribution.models import models
 from llama_stack.distribution.ui.page.distribution.shields import shields
 from llama_stack.distribution.ui.page.distribution.vector_dbs import vector_dbs
-from streamlit_option_menu import option_menu
 
 
 def resources_page():

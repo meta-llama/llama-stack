@@ -22,9 +22,7 @@ class LlamaStackApi:
             },
         )
 
-    def run_scoring(
-        self, row, scoring_function_ids: list[str], scoring_params: Optional[dict]
-    ):
+    def run_scoring(self, row, scoring_function_ids: list[str], scoring_params: Optional[dict]):
         """Run scoring on a single row"""
         if not scoring_params:
             scoring_params = {fn_id: None for fn_id in scoring_function_ids}
