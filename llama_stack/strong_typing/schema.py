@@ -17,6 +17,7 @@ import enum
 import functools
 import inspect
 import json
+import types
 import typing
 import uuid
 from copy import deepcopy
@@ -455,7 +456,7 @@ class JsonSchemaGenerator:
                 "maxItems": len(args),
                 "prefixItems": [self.type_to_schema(member_type) for member_type in args],
             }
-        elif origin_type is Union:
+        elif origin_type in (Union, types.UnionType):
             discriminator = None
             if typing.get_origin(data_type) is Annotated:
                 discriminator = typing.get_args(data_type)[1].discriminator
