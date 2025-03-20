@@ -179,8 +179,11 @@ async def sse_generator(event_gen):
 
 def create_dynamic_typed_route(func: Any, method: str, route: str):
     async def endpoint(request: Request, **kwargs):
-        # Use context manager for request provider data
-        with request_provider_data_context(request.headers):
+        # Get auth attributes from the request scope
+        user_attributes = request.scope.get("user_attributes", {})
+
+        # Use context manager with both provider data and auth attributes
+        with request_provider_data_context(request.headers, user_attributes):
             is_streaming = is_streaming_request(func.__name__, request, **kwargs)
 
             try:
