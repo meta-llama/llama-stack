@@ -2793,6 +2793,10 @@ components:
         repetition_penalty:
           type: number
           default: 1.0
+        stop:
+          type: array
+          items:
+            type: string
       additionalProperties: false
       required:
         - strategy
