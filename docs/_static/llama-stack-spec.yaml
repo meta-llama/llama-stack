@@ -1814,7 +1814,7 @@ paths:
         default:
           $ref: '#/components/responses/DefaultError'
       tags:
-        - Inspect
+        - Providers
       description: ''
       parameters: []
   /v1/inspect/routes:
