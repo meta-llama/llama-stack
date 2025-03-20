@@ -12,7 +12,7 @@
     },
     "stop_sequence": {
         "data": {
-            "content": "Return the exact same sentence: Michael Jordan was born in 1963"
+            "content": "Return the exact same sentence and don't add additional words): Michael Jordan was born in the year of 1963"
         }
     },
     "streaming": {
