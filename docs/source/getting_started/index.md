@@ -54,6 +54,7 @@ mkdir -p ~/.llama
 Then you can start the server using the container tool of your choice.  For example, if you are running Docker you can use the following command:
 ```bash
 docker run -it \
+  --pull always \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ~/.llama:/root/.llama \
   llamastack/distribution-ollama \
@@ -74,6 +75,7 @@ Docker containers run in their own isolated network namespaces on Linux. To allo
 Linux users having issues running the above command should instead try the following:
 ```bash
 docker run -it \
+  --pull always \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ~/.llama:/root/.llama \
   --network=host \

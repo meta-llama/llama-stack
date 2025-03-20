@@ -63,6 +63,7 @@ This method allows you to get started quickly without having to build the distri
 export LLAMA_STACK_PORT=5001
 docker run \
   -it \
+  --pull always \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ~/.llama:/root/.llama \
   llamastack/distribution-{{ name }} \
@@ -80,6 +81,7 @@ cd /path/to/llama-stack
 
 docker run \
   -it \
+  --pull always \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ~/.llama:/root/.llama \
   -v ./llama_stack/templates/ollama/run-with-safety.yaml:/root/my-run.yaml \
