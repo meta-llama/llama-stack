@@ -91,15 +91,16 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
             provider = TracerProvider(resource=resource)
             trace.set_tracer_provider(provider)
             _TRACER_PROVIDER = provider
-            if TelemetrySink.OTEL in self.config.sinks:
-                otlp_exporter = OTLPSpanExporter(
-                    endpoint=self.config.otel_endpoint,
+            if TelemetrySink.OTEL_TRACE in self.config.sinks:
+                span_exporter = OTLPSpanExporter(
+                    endpoint=self.config.otel_trace_endpoint,
                 )
-                span_processor = BatchSpanProcessor(otlp_exporter)
+                span_processor = BatchSpanProcessor(span_exporter)
                 trace.get_tracer_provider().add_span_processor(span_processor)
+            if TelemetrySink.OTEL_METRIC in self.config.sinks:
                 metric_reader = PeriodicExportingMetricReader(
                     OTLPMetricExporter(
-                        endpoint=self.config.otel_endpoint,
+                        endpoint=self.config.otel_metric_endpoint,
                     )
                 )
                 metric_provider = MeterProvider(resource=resource, metric_readers=[metric_reader])
@@ -109,7 +110,7 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
             if TelemetrySink.CONSOLE in self.config.sinks:
                 trace.get_tracer_provider().add_span_processor(ConsoleSpanProcessor())
 
-        if TelemetrySink.OTEL in self.config.sinks:
+        if TelemetrySink.OTEL_METRIC in self.config.sinks:
             self.meter = metrics.get_meter(__name__)
         if TelemetrySink.SQLITE in self.config.sinks:
             self.trace_store = SQLiteTraceStore(self.config.sqlite_db_path)

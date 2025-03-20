@@ -13,15 +13,20 @@ from llama_stack.distribution.utils.config_dirs import RUNTIME_BASE_DIR
 
 
 class TelemetrySink(str, Enum):
-    OTEL = "otel"
+    OTEL_TRACE = "otel_trace"
+    OTEL_METRIC = "otel_metric"
     SQLITE = "sqlite"
     CONSOLE = "console"
 
 
 class TelemetryConfig(BaseModel):
-    otel_endpoint: str = Field(
+    otel_trace_endpoint: str = Field(
         default="http://localhost:4318/v1/traces",
-        description="The OpenTelemetry collector endpoint URL",
+        description="The OpenTelemetry collector endpoint URL for traces",
+    )
+    otel_metric_endpoint: str = Field(
+        default="http://localhost:4318/v1/metrics",
+        description="The OpenTelemetry collector endpoint URL for metrics",
     )
     service_name: str = Field(
         default="llama-stack",
