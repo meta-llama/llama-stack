@@ -29,8 +29,6 @@ from llama_stack.providers.inline.vector_io.sqlite_vec.sqlite_vec import (
 # -v -s --tb=short --disable-warnings --asyncio-mode=auto
 
 SQLITE_VEC_PROVIDER = "sqlite_vec"
-EMBEDDING_DIMENSION = 384
-EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 
 
 @pytest.fixture(scope="session")
@@ -50,26 +48,8 @@ def sqlite_connection(loop):
 
 
 @pytest_asyncio.fixture(scope="session", autouse=True)
-async def sqlite_vec_index(sqlite_connection):
-    return await SQLiteVecIndex.create(dimension=EMBEDDING_DIMENSION, connection=sqlite_connection, bank_id="test_bank")
-
-
-@pytest.fixture(scope="session")
-def sample_chunks():
-    """Generates chunks that force multiple batches for a single document to expose ID conflicts."""
-    n, k = 10, 3
-    sample = [
-        Chunk(content=f"Sentence {i} from document {j}", metadata={"document_id": f"document-{j}"})
-        for j in range(k)
-        for i in range(n)
-    ]
-    return sample
-
-
-@pytest.fixture(scope="session")
-def sample_embeddings(sample_chunks):
-    np.random.seed(42)
-    return np.array([np.random.rand(EMBEDDING_DIMENSION).astype(np.float32) for _ in sample_chunks])
+async def sqlite_vec_index(sqlite_connection, embedding_dimension):
+    return await SQLiteVecIndex.create(dimension=embedding_dimension, connection=sqlite_connection, bank_id="test_bank")
 
 
 @pytest.mark.asyncio
@@ -82,21 +62,21 @@ async def test_add_chunks(sqlite_vec_index, sample_chunks, sample_embeddings):
 
 
 @pytest.mark.asyncio
-async def test_query_chunks(sqlite_vec_index, sample_chunks, sample_embeddings):
+async def test_query_chunks(sqlite_vec_index, sample_chunks, sample_embeddings, embedding_dimension):
     await sqlite_vec_index.add_chunks(sample_chunks, sample_embeddings)
-    query_embedding = np.random.rand(EMBEDDING_DIMENSION).astype(np.float32)
+    query_embedding = np.random.rand(embedding_dimension).astype(np.float32)
     response = await sqlite_vec_index.query(query_embedding, k=2, score_threshold=0.0)
     assert isinstance(response, QueryChunksResponse)
     assert len(response.chunks) == 2
 
 
 @pytest.mark.asyncio
-async def test_chunk_id_conflict(sqlite_vec_index, sample_chunks):
+async def test_chunk_id_conflict(sqlite_vec_index, sample_chunks, embedding_dimension):
     """Test that chunk IDs do not conflict across batches when inserting chunks."""
     # Reduce batch size to force multiple batches for same document
     # since there are 10 chunks per document and batch size is 2
     batch_size = 2
-    sample_embeddings = np.random.rand(len(sample_chunks), EMBEDDING_DIMENSION).astype(np.float32)
+    sample_embeddings = np.random.rand(len(sample_chunks), embedding_dimension).astype(np.float32)
 
     await sqlite_vec_index.add_chunks(sample_chunks, sample_embeddings, batch_size=batch_size)
 

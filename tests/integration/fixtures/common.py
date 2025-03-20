@@ -52,6 +52,8 @@ def llama_stack_client_with_mocked_inference(llama_stack_client, request):
 
     If --record-responses is passed, it will call the real APIs and record the responses.
     """
+    # TODO: will rework this to be more stable
+    return llama_stack_client
     if not isinstance(llama_stack_client, LlamaStackAsLibraryClient):
         logging.warning(
             "llama_stack_client_with_mocked_inference is not supported for this client, returning original client without mocking"

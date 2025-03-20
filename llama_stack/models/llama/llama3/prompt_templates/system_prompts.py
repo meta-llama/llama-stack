@@ -34,7 +34,9 @@ class SystemDefaultGenerator(PromptTemplateGeneratorBase):
         )
         return PromptTemplate(
             template_str.lstrip("\n"),
-            {"today": datetime.now().strftime("%d %B %Y")},
+            {
+                "today": datetime.now().strftime("%d %B %Y")  # noqa: DTZ005 - we don't care about timezones here since we are displaying the date
+            },
         )
 
     def data_examples(self) -> List[Any]:

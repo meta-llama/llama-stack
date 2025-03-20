@@ -435,7 +435,7 @@ class Generator:
         )
         self.schema_builder = SchemaBuilder(schema_generator)
         self.responses = {}
-        
+
         # Create standard error responses
         self._create_standard_error_responses()
 
@@ -446,7 +446,7 @@ class Generator:
         """
         # Get the Error schema
         error_schema = self.schema_builder.classdef_to_ref(Error)
-        
+
         # Create standard error responses
         self.responses["BadRequest400"] = Response(
             description="The request was invalid or malformed",
@@ -457,11 +457,11 @@ class Generator:
                         "status": 400,
                         "title": "Bad Request",
                         "detail": "The request was invalid or malformed",
-                    }
+                    },
                 )
-            }
+            },
         )
-        
+
         self.responses["TooManyRequests429"] = Response(
             description="The client has sent too many requests in a given amount of time",
             content={
@@ -471,11 +471,11 @@ class Generator:
                         "status": 429,
                         "title": "Too Many Requests",
                         "detail": "You have exceeded the rate limit. Please try again later.",
-                    }
+                    },
                 )
-            }
+            },
         )
-        
+
         self.responses["InternalServerError500"] = Response(
             description="The server encountered an unexpected error",
             content={
@@ -485,11 +485,11 @@ class Generator:
                         "status": 500,
                         "title": "Internal Server Error",
                         "detail": "An unexpected error occurred. Our team has been notified.",
-                    }
+                    },
                 )
-            }
+            },
         )
-        
+
         # Add a default error response for any unhandled error cases
         self.responses["DefaultError"] = Response(
             description="An unexpected error occurred",
@@ -500,9 +500,9 @@ class Generator:
                         "status": 0,
                         "title": "Error",
                         "detail": "An unexpected error occurred",
-                    }
+                    },
                 )
-            }
+            },
         )
 
     def _build_type_tag(self, ref: str, schema: Schema) -> Tag:
@@ -547,10 +547,13 @@ class Generator:
             "SyntheticDataGeneration",
             "PostTraining",
             "BatchInference",
-            "Files",
         ]:
             op.defining_class.__name__ = f"{op.defining_class.__name__} (Coming Soon)"
             print(op.defining_class.__name__)
+
+        # TODO (xiyan): temporary fix for datasetio inner impl + datasets api
+        # if op.defining_class.__name__ in ["DatasetIO"]:
+        #     op.defining_class.__name__ = "Datasets"
 
         doc_string = parse_type(op.func_ref)
         doc_params = dict(
@@ -598,7 +601,9 @@ class Generator:
 
         # data passed in request body as raw bytes cannot have request parameters
         if raw_bytes_request_body and op.request_params:
-            raise ValueError("Cannot have both raw bytes request body and request parameters")
+            raise ValueError(
+                "Cannot have both raw bytes request body and request parameters"
+            )
 
         # data passed in request body as raw bytes
         if raw_bytes_request_body:
@@ -719,7 +724,7 @@ class Generator:
             responses.update(response_builder.build_response(response_options))
 
         assert len(responses.keys()) > 0, f"No responses found for {op.name}"
-        
+
         # Add standard error response references
         if self.options.include_standard_error_responses:
             if "400" not in responses:
@@ -730,7 +735,7 @@ class Generator:
                 responses["500"] = ResponseRef("InternalServerError500")
             if "default" not in responses:
                 responses["default"] = ResponseRef("DefaultError")
-        
+
         if op.event_type is not None:
             builder = ContentBuilder(self.schema_builder)
             callbacks = {

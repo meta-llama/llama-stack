@@ -7,6 +7,7 @@ import json
 import logging
 from typing import AsyncGenerator, List, Optional, Union
 
+import httpx
 from openai import AsyncOpenAI
 from openai.types.chat.chat_completion_chunk import (
     ChatCompletionChunk as OpenAIChatCompletionChunk,
@@ -89,15 +90,12 @@ def _convert_to_vllm_tool_calls_in_response(
     if not tool_calls:
         return []
 
-    call_function_arguments = None
-    for call in tool_calls:
-        call_function_arguments = json.loads(call.function.arguments)
-
     return [
         ToolCall(
             call_id=call.id,
             tool_name=call.function.name,
-            arguments=call_function_arguments,
+            arguments=json.loads(call.function.arguments),
+            arguments_json=call.function.arguments,
         )
         for call in tool_calls
     ]
@@ -182,6 +180,7 @@ async def _process_vllm_chat_completion_stream_response(
                                 call_id=tool_call_buf.call_id,
                                 tool_name=tool_call_buf.tool_name,
                                 arguments=args,
+                                arguments_json=args_str,
                             ),
                             parse_status=ToolCallParseStatus.succeeded,
                         ),
@@ -229,7 +228,11 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
 
     async def initialize(self) -> None:
         log.info(f"Initializing VLLM client with base_url={self.config.url}")
-        self.client = AsyncOpenAI(base_url=self.config.url, api_key=self.config.api_token)
+        self.client = AsyncOpenAI(
+            base_url=self.config.url,
+            api_key=self.config.api_token,
+            http_client=None if self.config.tls_verify else httpx.AsyncClient(verify=False),
+        )
 
     async def shutdown(self) -> None:
         pass

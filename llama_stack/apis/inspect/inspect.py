@@ -12,13 +12,6 @@ from llama_stack.schema_utils import json_schema_type, webmethod
 
 
 @json_schema_type
-class ProviderInfo(BaseModel):
-    api: str
-    provider_id: str
-    provider_type: str
-
-
-@json_schema_type
 class RouteInfo(BaseModel):
     route: str
     method: str
@@ -36,19 +29,12 @@ class VersionInfo(BaseModel):
     version: str
 
 
-class ListProvidersResponse(BaseModel):
-    data: List[ProviderInfo]
-
-
 class ListRoutesResponse(BaseModel):
     data: List[RouteInfo]
 
 
 @runtime_checkable
 class Inspect(Protocol):
-    @webmethod(route="/inspect/providers", method="GET")
-    async def list_providers(self) -> ListProvidersResponse: ...
-
     @webmethod(route="/inspect/routes", method="GET")
     async def list_routes(self) -> ListRoutesResponse: ...
 

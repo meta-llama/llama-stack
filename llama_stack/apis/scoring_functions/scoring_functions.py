@@ -36,6 +36,7 @@ class ScoringFnParamsType(Enum):
 @json_schema_type
 class AggregationFunctionType(Enum):
     average = "average"
+    weighted_average = "weighted_average"
     median = "median"
     categorical_count = "categorical_count"
     accuracy = "accuracy"
@@ -78,17 +79,15 @@ class BasicScoringFnParams(BaseModel):
     )
 
 
-ScoringFnParams = register_schema(
-    Annotated[
-        Union[
-            LLMAsJudgeScoringFnParams,
-            RegexParserScoringFnParams,
-            BasicScoringFnParams,
-        ],
-        Field(discriminator="type"),
+ScoringFnParams = Annotated[
+    Union[
+        LLMAsJudgeScoringFnParams,
+        RegexParserScoringFnParams,
+        BasicScoringFnParams,
     ],
-    name="ScoringFnParams",
-)
+    Field(discriminator="type"),
+]
+register_schema(ScoringFnParams, name="ScoringFnParams")
 
 
 class CommonScoringFnFields(BaseModel):
@@ -135,7 +134,7 @@ class ScoringFunctions(Protocol):
     async def list_scoring_functions(self) -> ListScoringFunctionsResponse: ...
 
     @webmethod(route="/scoring-functions/{scoring_fn_id:path}", method="GET")
-    async def get_scoring_function(self, scoring_fn_id: str, /) -> Optional[ScoringFn]: ...
+    async def get_scoring_function(self, scoring_fn_id: str, /) -> ScoringFn: ...
 
     @webmethod(route="/scoring-functions", method="POST")
     async def register_scoring_function(

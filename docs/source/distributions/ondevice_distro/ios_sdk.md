@@ -1,9 +1,8 @@
 # iOS SDK
 
-We offer both remote and on-device use of Llama Stack in Swift via two components:
-
-1. [llama-stack-client-swift](https://github.com/meta-llama/llama-stack-client-swift/)
-2. [LocalInferenceImpl](https://github.com/meta-llama/llama-stack/tree/main/llama_stack/providers/inline/ios/inference)
+We offer both remote and on-device use of Llama Stack in Swift via a single SDK [llama-stack-client-swift](https://github.com/meta-llama/llama-stack-client-swift/) that contains two components:
+1. LlamaStackClient for remote
+2. Local Inference for on-device
 
 ```{image} ../../../_static/remote_or_local.gif
 :alt: Seamlessly switching between local, on-device inference and remote hosted inference
@@ -42,7 +41,7 @@ let request = Components.Schemas.CreateAgentTurnRequest(
       // ...
 ```
 
-Check out [iOSCalendarAssistant](https://github.com/meta-llama/llama-stack-apps/tree/main/examples/ios_calendar_assistant) for a complete app demo.
+Check out [iOSCalendarAssistant](https://github.com/meta-llama/llama-stack-client-swift/tree/main/examples/ios_calendar_assistant) for a complete app demo.
 
 ## LocalInference
 
@@ -58,7 +57,7 @@ let inference = LocalInference(queue: runnerQueue)
 let agents = LocalAgents(inference: self.inference)
 ```
 
-Check out [iOSCalendarAssistantWithLocalInf](https://github.com/meta-llama/llama-stack-apps/tree/main/examples/ios_calendar_assistant) for a complete app demo.
+Check out [iOSCalendarAssistantWithLocalInf](https://github.com/meta-llama/llama-stack-client-swift/tree/main/examples/ios_calendar_assistant) for a complete app demo.
 
 ### Installation
 
@@ -68,47 +67,6 @@ We're working on making LocalInference easier to set up. For now, you'll need t
 1. Install [Cmake](https://cmake.org/) for the executorch build`
 1. Drag `LocalInference.xcodeproj` into your project
 1. Add `LocalInference` as a framework in your app target
-1. Add a package dependency on https://github.com/pytorch/executorch (branch latest)
-1. Add all the kernels / backends from executorch (but not exectuorch itself!) as frameworks in your app target:
-    - backend_coreml
-    - backend_mps
-    - backend_xnnpack
-    - kernels_custom
-    - kernels_optimized
-    - kernels_portable
-    - kernels_quantized
-1. In "Build Settings" > "Other Linker Flags" > "Any iOS Simulator SDK", add:
-    ```
-    -force_load
-    $(BUILT_PRODUCTS_DIR)/libkernels_optimized-simulator-release.a
-    -force_load
-    $(BUILT_PRODUCTS_DIR)/libkernels_custom-simulator-release.a
-    -force_load
-    $(BUILT_PRODUCTS_DIR)/libkernels_quantized-simulator-release.a
-    -force_load
-    $(BUILT_PRODUCTS_DIR)/libbackend_xnnpack-simulator-release.a
-    -force_load
-    $(BUILT_PRODUCTS_DIR)/libbackend_coreml-simulator-release.a
-    -force_load
-    $(BUILT_PRODUCTS_DIR)/libbackend_mps-simulator-release.a
-    ```
-
-1. In "Build Settings" > "Other Linker Flags" > "Any iOS SDK", add:
-
-    ```
-    -force_load
-    $(BUILT_PRODUCTS_DIR)/libkernels_optimized-simulator-release.a
-    -force_load
-    $(BUILT_PRODUCTS_DIR)/libkernels_custom-simulator-release.a
-    -force_load
-    $(BUILT_PRODUCTS_DIR)/libkernels_quantized-simulator-release.a
-    -force_load
-    $(BUILT_PRODUCTS_DIR)/libbackend_xnnpack-simulator-release.a
-    -force_load
-    $(BUILT_PRODUCTS_DIR)/libbackend_coreml-simulator-release.a
-    -force_load
-    $(BUILT_PRODUCTS_DIR)/libbackend_mps-simulator-release.a
-    ```
 
 ### Preparing a model
 

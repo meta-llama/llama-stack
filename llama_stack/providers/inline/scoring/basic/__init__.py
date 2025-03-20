@@ -3,16 +3,16 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from typing import Dict
+from typing import Any, Dict
 
-from llama_stack.distribution.datatypes import Api, ProviderSpec
+from llama_stack.distribution.datatypes import Api
 
 from .config import BasicScoringConfig
 
 
 async def get_provider_impl(
     config: BasicScoringConfig,
-    deps: Dict[Api, ProviderSpec],
+    deps: Dict[Api, Any],
 ):
     from .scoring import BasicScoringImpl
 

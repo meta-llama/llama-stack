@@ -582,6 +582,7 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
                     tool_name=t.function.name,
                     # vLLM function args come back as a string. Llama Stack expects JSON.
                     arguments=json.loads(t.function.arguments),
+                    arguments_json=t.function.arguments,
                 )
                 for t in vllm_message.tool_calls
             ],

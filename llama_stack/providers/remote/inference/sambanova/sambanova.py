@@ -42,9 +42,7 @@ from llama_stack.models.llama.datatypes import (
     TopKSamplingStrategy,
     TopPSamplingStrategy,
 )
-from llama_stack.providers.utils.inference.model_registry import (
-    ModelRegistryHelper,
-)
+from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
 from llama_stack.providers.utils.inference.openai_compat import (
     process_chat_completion_stream_response,
 )
@@ -293,14 +291,12 @@ class SambaNovaInferenceAdapter(ModelRegistryHelper, Inference):
         if not tool_calls:
             return []
 
-        for call in tool_calls:
-            call_function_arguments = json.loads(call.function.arguments)
-
         compitable_tool_calls = [
             ToolCall(
                 call_id=call.id,
                 tool_name=call.function.name,
-                arguments=call_function_arguments,
+                arguments=json.loads(call.function.arguments),
+                arguments_json=call.function.arguments,
             )
             for call in tool_calls
         ]

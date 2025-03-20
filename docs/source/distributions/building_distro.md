@@ -33,6 +33,8 @@ Can be set to any of the following log levels:
 
 The default global log level is `info`. `all` sets the log level for all components.
 
+A user can also set `LLAMA_STACK_LOG_FILE` which will pipe the logs to the specified path as well as to the terminal. An example would be: `export LLAMA_STACK_LOG_FILE=server.log`
+
 ### Llama Stack Build
 
 In order to build your own distribution, we recommend you clone the `llama-stack` repository.
@@ -183,8 +185,12 @@ llama stack build --config llama_stack/templates/ollama/build.yaml
 :::
 
 :::{tab-item} Building Container
-> [!TIP]
-> Podman is supported as an alternative to Docker. Set `CONTAINER_BINARY` to `podman` in your environment to use Podman.
+
+```{admonition} Podman Alternative
+:class: tip
+
+Podman is supported as an alternative to Docker. Set `CONTAINER_BINARY` to `podman` in your environment to use Podman.
+```
 
 To build a container image, you may start off from a template and use the `--image-type container` flag to specify `container` as the build image type.
 

@@ -43,10 +43,8 @@ class AgentCandidate(BaseModel):
     config: AgentConfig
 
 
-EvalCandidate = register_schema(
-    Annotated[Union[ModelCandidate, AgentCandidate], Field(discriminator="type")],
-    name="EvalCandidate",
-)
+EvalCandidate = Annotated[Union[ModelCandidate, AgentCandidate], Field(discriminator="type")]
+register_schema(EvalCandidate, name="EvalCandidate")
 
 
 @json_schema_type
@@ -117,7 +115,7 @@ class Eval(Protocol):
         """
 
     @webmethod(route="/eval/benchmarks/{benchmark_id}/jobs/{job_id}", method="GET")
-    async def job_status(self, benchmark_id: str, job_id: str) -> Optional[JobStatus]:
+    async def job_status(self, benchmark_id: str, job_id: str) -> JobStatus:
         """Get the status of a job.
 
         :param benchmark_id: The ID of the benchmark to run the evaluation on.

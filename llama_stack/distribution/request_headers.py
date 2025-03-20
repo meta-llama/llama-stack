@@ -7,59 +7,37 @@
 import contextvars
 import json
 import logging
-from typing import Any, AsyncGenerator, ContextManager, Dict, Optional, TypeVar
+from typing import Any, ContextManager, Dict, List, Optional
 
 from .utils.dynamic import instantiate_class_type
 
 log = logging.getLogger(__name__)
 
-# Context variable for request provider data
-_provider_data_var = contextvars.ContextVar("provider_data", default=None)
+# Context variable for request provider data and auth attributes
+PROVIDER_DATA_VAR = contextvars.ContextVar("provider_data", default=None)
 
 
 class RequestProviderDataContext(ContextManager):
     """Context manager for request provider data"""
 
-    def __init__(self, provider_data: Optional[Dict[str, Any]] = None):
-        self.provider_data = provider_data
+    def __init__(
+        self, provider_data: Optional[Dict[str, Any]] = None, auth_attributes: Optional[Dict[str, List[str]]] = None
+    ):
+        self.provider_data = provider_data or {}
+        if auth_attributes:
+            self.provider_data["__auth_attributes"] = auth_attributes
+
         self.token = None
 
     def __enter__(self):
         # Save the current value and set the new one
-        self.token = _provider_data_var.set(self.provider_data)
+        self.token = PROVIDER_DATA_VAR.set(self.provider_data)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         # Restore the previous value
         if self.token is not None:
-            _provider_data_var.reset(self.token)
-
-
-T = TypeVar("T")
-
-
-def preserve_headers_context_async_generator(gen: AsyncGenerator[T, None]) -> AsyncGenerator[T, None]:
-    """
-    Wraps an async generator to preserve request headers context variables across iterations.
-
-    This ensures that context variables set during generator creation are
-    available during each iteration of the generator, even if the original
-    context manager has exited.
-    """
-    # Capture the current context value right now
-    context_value = _provider_data_var.get()
-
-    async def wrapper():
-        while True:
-            # Set context before each anext() call
-            _ = _provider_data_var.set(context_value)
-            try:
-                item = await gen.__anext__()
-                yield item
-            except StopAsyncIteration:
-                break
-
-    return wrapper()
+            PROVIDER_DATA_VAR.reset(self.token)
 
 
 class NeedsRequestProviderData:
@@ -72,7 +50,7 @@ class NeedsRequestProviderData:
         if not validator_class:
             raise ValueError(f"Provider {provider_type} does not have a validator")
 
-        val = _provider_data_var.get()
+        val = PROVIDER_DATA_VAR.get()
         if not val:
             return None
 
@@ -107,7 +85,17 @@ def parse_request_provider_data(headers: Dict[str, str]) -> Optional[Dict[str, A
         return None
 
 
-def request_provider_data_context(headers: Dict[str, str]) -> ContextManager:
-    """Context manager that sets request provider data from headers for the duration of the context"""
+def request_provider_data_context(
+    headers: Dict[str, str], auth_attributes: Optional[Dict[str, List[str]]] = None
+) -> ContextManager:
+    """Context manager that sets request provider data from headers and auth attributes for the duration of the context"""
     provider_data = parse_request_provider_data(headers)
-    return RequestProviderDataContext(provider_data)
+    return RequestProviderDataContext(provider_data, auth_attributes)
+
+
+def get_auth_attributes() -> Optional[Dict[str, List[str]]]:
+    """Helper to retrieve auth attributes from the provider data context"""
+    provider_data = PROVIDER_DATA_VAR.get()
+    if not provider_data:
+        return None
+    return provider_data.get("__auth_attributes")
