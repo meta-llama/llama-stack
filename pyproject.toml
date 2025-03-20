@@ -272,6 +272,7 @@ exclude = [
     "^llama_stack/providers/remote/tool_runtime/model_context_protocol/",
     "^llama_stack/providers/remote/tool_runtime/tavily_search/",
     "^llama_stack/providers/remote/tool_runtime/wolfram_alpha/",
+    "^llama_stack/providers/remote/post_training/nvidia/",
     "^llama_stack/providers/remote/vector_io/chroma/",
     "^llama_stack/providers/remote/vector_io/milvus/",
     "^llama_stack/providers/remote/vector_io/pgvector/",

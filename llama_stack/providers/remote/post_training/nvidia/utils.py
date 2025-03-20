@@ -22,7 +22,9 @@ def warn_unsupported_params(config_dict: Any, supported_keys: Set[str], config_n
     keys = set(config_dict.__annotations__.keys()) if isinstance(config_dict, BaseModel) else config_dict.keys()
     unsupported_params = [k for k in keys if k not in supported_keys]
     if unsupported_params:
-        warnings.warn(f"Parameters: {unsupported_params} in `{config_name}` not supported and will be ignored.")
+        warnings.warn(
+            f"Parameters: {unsupported_params} in `{config_name}` not supported and will be ignored.", stacklevel=2
+        )
 
 
 def validate_training_params(
@@ -49,7 +51,9 @@ def validate_training_params(
                 unsupported_params.append(key)
 
     if unsupported_params:
-        warnings.warn(f"Parameters: {unsupported_params} in `{config_name}` are not supported and will be ignored.")
+        warnings.warn(
+            f"Parameters: {unsupported_params} in `{config_name}` are not supported and will be ignored.", stacklevel=2
+        )
 
 
 # ToDo: implement post health checks for customizer are enabled

@@ -67,7 +67,7 @@ class NvidiaPostTrainingAdapter(PostTraining, ModelRegistryHelper):
         self.customizer_url = config.customizer_url
 
         if not self.customizer_url:
-            warnings.warn("Customizer URL is not set, using default value: http://nemo.test")
+            warnings.warn("Customizer URL is not set, using default value: http://nemo.test", stacklevel=2)
             self.customizer_url = "http://nemo.test"
 
     async def _make_request(
@@ -122,8 +122,16 @@ class NvidiaPostTrainingAdapter(PostTraining, ModelRegistryHelper):
             mapped_status = STATUS_MAPPING.get(job_status, "unknown")
 
             # Convert string timestamps to datetime objects
-            created_at = datetime.fromisoformat(job.pop("created_at")) if "created_at" in job else datetime.now()
-            updated_at = datetime.fromisoformat(job.pop("updated_at")) if "updated_at" in job else datetime.now()
+            created_at = (
+                datetime.fromisoformat(job.pop("created_at"))
+                if "created_at" in job
+                else datetime.now(tz=datetime.timezone.utc)
+            )
+            updated_at = (
+                datetime.fromisoformat(job.pop("updated_at"))
+                if "updated_at" in job
+                else datetime.now(tz=datetime.timezone.utc)
+            )
 
             # Create NvidiaPostTrainingJob instance
             jobs.append(
@@ -302,7 +310,10 @@ class NvidiaPostTrainingAdapter(PostTraining, ModelRegistryHelper):
             unsupported_method_params.append("logger_config")
 
         if unsupported_method_params:
-            warnings.warn(f"Parameters: {', '.join(unsupported_method_params)} are not supported and will be ignored")
+            warnings.warn(
+                f"Parameters: {', '.join(unsupported_method_params)} are not supported and will be ignored",
+                stacklevel=2,
+            )
 
         # Define all supported parameters
         supported_params = {
