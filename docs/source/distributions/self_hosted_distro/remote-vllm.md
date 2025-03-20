@@ -31,7 +31,7 @@ You can use this distribution if you have GPUs and want to run an independent vL
 
 The following environment variables can be configured:
 
-- `LLAMA_STACK_PORT`: Port for the Llama Stack distribution server (default: `5001`)
+- `LLAMA_STACK_PORT`: Port for the Llama Stack distribution server (default: `8321`)
 - `INFERENCE_MODEL`: Inference model loaded into the vLLM server (default: `meta-llama/Llama-3.2-3B-Instruct`)
 - `VLLM_URL`: URL of the vLLM server with the main inference model (default: `http://host.docker.internal:5100/v1`)
 - `MAX_TOKENS`: Maximum number of tokens for generation (default: `4096`)
@@ -96,7 +96,7 @@ This method allows you to get started quickly without having to build the distri
 ```bash
 export INFERENCE_PORT=8000
 export INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct
-export LLAMA_STACK_PORT=5001
+export LLAMA_STACK_PORT=8321
 
 docker run \
   -it \
@@ -143,7 +143,7 @@ Make sure you have done `uv pip install llama-stack` and have the Llama Stack CL
 ```bash
 export INFERENCE_PORT=8000
 export INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct
-export LLAMA_STACK_PORT=5001
+export LLAMA_STACK_PORT=8321
 
 cd distributions/remote-vllm
 llama stack build --template remote-vllm --image-type conda

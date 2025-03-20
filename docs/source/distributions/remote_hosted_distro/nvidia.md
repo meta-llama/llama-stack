@@ -58,7 +58,7 @@ You can do this via Conda (build code) or Docker which has a pre-built image.
 This method allows you to get started quickly without having to build the distribution code.
 
 ```bash
-LLAMA_STACK_PORT=5001
+LLAMA_STACK_PORT=8321
 docker run \
   -it \
   --pull always \
@@ -75,7 +75,7 @@ docker run \
 ```bash
 llama stack build --template nvidia --image-type conda
 llama stack run ./run.yaml \
-  --port 5001 \
+  --port 8321 \
   --env NVIDIA_API_KEY=$NVIDIA_API_KEY
   --env INFERENCE_MODEL=$INFERENCE_MODEL
 ```

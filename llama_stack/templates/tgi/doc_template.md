@@ -80,7 +80,7 @@ Now you are ready to run Llama Stack with TGI as the inference provider. You can
 This method allows you to get started quickly without having to build the distribution code.
 
 ```bash
-LLAMA_STACK_PORT=5001
+LLAMA_STACK_PORT=8321
 docker run \
   -it \
   --pull always \

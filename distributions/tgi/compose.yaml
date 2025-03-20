@@ -83,7 +83,7 @@ services:
       - ~/.llama:/root/.llama
       - ./run${TGI_SAFETY_MODEL:+-with-safety}.yaml:/root/my-run.yaml
     ports:
-      - "${LLAMA_STACK_PORT:-5001}:${LLAMA_STACK_PORT:-5001}"
+      - "${LLAMA_STACK_PORT:-8321}:${LLAMA_STACK_PORT:-8321}"
     # Hack: wait for TGI server to start before starting docker
     entrypoint: bash -c "sleep 60; python -m llama_stack.distribution.server.server --yaml_config /root/my-run.yaml"
     restart_policy:

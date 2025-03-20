@@ -83,7 +83,7 @@ This method allows you to get started quickly without having to build the distri
 ```bash
 export INFERENCE_PORT=8000
 export INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct
-export LLAMA_STACK_PORT=5001
+export LLAMA_STACK_PORT=8321
 
 docker run \
   -it \
@@ -130,7 +130,7 @@ Make sure you have done `uv pip install llama-stack` and have the Llama Stack CL
 ```bash
 export INFERENCE_PORT=8000
 export INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct
-export LLAMA_STACK_PORT=5001
+export LLAMA_STACK_PORT=8321
 
 cd distributions/remote-vllm
 llama stack build --template remote-vllm --image-type conda

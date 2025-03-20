@@ -47,7 +47,7 @@ You can do this via Conda (build code) or Docker which has a pre-built image.
 This method allows you to get started quickly without having to build the distribution code.
 
 ```bash
-LLAMA_STACK_PORT=5001
+LLAMA_STACK_PORT=8321
 docker run \
   -it \
   --pull always \
