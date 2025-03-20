@@ -27,6 +27,27 @@ MODEL_ENTRIES = [
     build_hf_repo_model_entry(
         "meta-llama/llama-3-2-11b-vision-instruct",
         CoreModelId.llama3_2_11b_vision_instruct.value,
+    ),
+    build_hf_repo_model_entry(
+        "meta-llama/llama-3-2-1b-instruct",
+        CoreModelId.llama3_2_1b_instruct.value,
+    ),
+    build_hf_repo_model_entry(
+        "meta-llama/llama-3-2-3b-instruct",
+        CoreModelId.llama3_2_3b_instruct.value,
+    ),
+    build_hf_repo_model_entry(
+        "meta-llama/llama-3-2-90b-vision-instruct",
+        CoreModelId.llama3_2_90b_vision_instruct.value,
+    ),
+    # build_hf_repo_model_entry(
+    #     "meta-llama/llama-3-405b-instruct",
+    #     CoreModelId.llama3_405b_instruct.value,
+    # ),
+    build_hf_repo_model_entry(
+        "meta-llama/llama-guard-3-11b-vision",
+        CoreModelId.llama_guard_3_11b_vision.value,
     )
+    
 ]
 

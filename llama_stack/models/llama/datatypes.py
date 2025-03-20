@@ -194,6 +194,7 @@ class SamplingParams(BaseModel):
 
     max_tokens: Optional[int] = 0
     repetition_penalty: Optional[float] = 1.0
+    additional_params: Optional[dict] = {}
 
 
 class CheckpointQuantizationFormat(Enum):
@@ -233,6 +234,7 @@ class CoreModelId(Enum):
     llama3_70b = "Llama-3-70B"
     llama3_8b_instruct = "Llama-3-8B-Instruct"
     llama3_70b_instruct = "Llama-3-70B-Instruct"
+    llama3_405b_instruct = "llama-3-405b-instruct"
 
     # Llama 3.1 family
     llama3_1_8b = "Llama3.1-8B"
@@ -289,6 +291,7 @@ def model_family(model_id) -> ModelFamily:
         CoreModelId.llama3_70b,
         CoreModelId.llama3_8b_instruct,
         CoreModelId.llama3_70b_instruct,
+        CoreModelId.llama3_405b_instruct,
     ]:
         return ModelFamily.llama3
     elif model_id in [

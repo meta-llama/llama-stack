@@ -61,10 +61,6 @@ class WatsonXInferenceAdapter(Inference, ModelRegistryHelper):
         self._config = config
 
         self._project_id = self._config.project_id
-        self.params = {
-            GenParams.MAX_NEW_TOKENS: 4096,
-            GenParams.STOP_SEQUENCES: ["<|endoftext|>"]
-        }
 
     async def initialize(self) -> None:
         pass
@@ -210,17 +206,41 @@ class WatsonXInferenceAdapter(Inference, ModelRegistryHelper):
             yield chunk
 
     async def _get_params(self, request: Union[ChatCompletionRequest, CompletionRequest]) -> dict:
-        input_dict = {}
+        input_dict = {"params": {}}
         media_present = request_has_media(request)
         llama_model = self.get_llama_model(request.model)
         if isinstance(request, ChatCompletionRequest):
-            if media_present or not llama_model:
-                input_dict["messages"] = [await convert_message_to_openai_dict(m) for m in request.messages]
-            else:
-                input_dict["prompt"] = await chat_completion_request_to_prompt(request, llama_model)
+            input_dict["prompt"] = await chat_completion_request_to_prompt(request, llama_model)
         else:
             assert not media_present, "Together does not support media for Completion requests"
             input_dict["prompt"] = await completion_request_to_prompt(request)
+        if request.sampling_params:
+            if request.sampling_params.strategy:
+                input_dict["params"][GenParams.DECODING_METHOD] = request.sampling_params.strategy.type
+            if request.sampling_params.max_tokens:
+                input_dict["params"][GenParams.MAX_NEW_TOKENS] = request.sampling_params.max_tokens
+            if request.sampling_params.repetition_penalty:
+                input_dict["params"][GenParams.REPETITION_PENALTY] = request.sampling_params.repetition_penalty
+            if request.sampling_params.additional_params.get("top_p"):
+                input_dict["params"][GenParams.TOP_P] = request.sampling_params.additional_params["top_p"]
+            if request.sampling_params.additional_params.get("top_k"):
+                input_dict["params"][GenParams.TOP_K] = request.sampling_params.additional_params["top_k"]
+            if request.sampling_params.additional_params.get("temperature"):
+                input_dict["params"][GenParams.TEMPERATURE] = request.sampling_params.additional_params["temperature"]
+            if request.sampling_params.additional_params.get("length_penalty"):
+                input_dict["params"][GenParams.LENGTH_PENALTY] = request.sampling_params.additional_params["length_penalty"]
+            if request.sampling_params.additional_params.get("random_seed"):
+                input_dict["params"][GenParams.RANDOM_SEED] = request.sampling_params.additional_params["random_seed"]
+            if request.sampling_params.additional_params.get("min_new_tokens"):
+                input_dict["params"][GenParams.MIN_NEW_TOKENS] = request.sampling_params.additional_params["min_new_tokens"]
+            if request.sampling_params.additional_params.get("stop_sequences"):
+                input_dict["params"][GenParams.STOP_SEQUENCES] = request.sampling_params.additional_params["stop_sequences"]
+            if request.sampling_params.additional_params.get("time_limit"):
+                input_dict["params"][GenParams.TIME_LIMIT] = request.sampling_params.additional_params["time_limit"]
+            if request.sampling_params.additional_params.get("truncate_input_tokens"):
+                input_dict["params"][GenParams.TRUNCATE_INPUT_TOKENS] = request.sampling_params.additional_params["truncate_input_tokens"]
+            if request.sampling_params.additional_params.get("return_options"):
+                input_dict["params"][GenParams.RETURN_OPTIONS] = request.sampling_params.additional_params["return_options"]
 
         params = {
             **input_dict,

@@ -95,6 +95,30 @@ models:
   provider_id: watsonx
   provider_model_id: meta-llama/llama-3-2-11b-vision-instruct
   model_type: llm
+- metadata: {}
+  model_id: meta-llama/llama-3-2-1b-instruct
+  provider_id: watsonx
+  provider_model_id: meta-llama/llama-3-2-1b-instruct
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/llama-3-2-3b-instruct
+  provider_id: watsonx
+  provider_model_id: meta-llama/llama-3-2-3b-instruct
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/llama-3-2-90b-vision-instruct
+  provider_id: watsonx
+  provider_model_id: meta-llama/llama-3-2-90b-vision-instruct
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/llama-3-405b-instruct
+  provider_id: watsonx
+  provider_model_id: meta-llama/llama-3-405b-instruct
+- metadata: {}
+  model_id: meta-llama/llama-guard-3-11b-vision
+  provider_id: watsonx
+  provider_model_id: meta-llama/llama-guard-3-11b-vision
+  model_type: llm
 shields: []
 vector_dbs: []
 datasets: []
