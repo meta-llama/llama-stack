@@ -102,6 +102,30 @@ def test_text_completion_streaming(client_with_models, text_model_id, test_case)
 @pytest.mark.parametrize(
     "test_case",
     [
+        "inference:completion:stop_sequence",
+    ],
+)
+def test_text_completion_stop_sequence(client_with_models, text_model_id, test_case):
+    skip_if_model_doesnt_support_completion(client_with_models, text_model_id)
+    tc = TestCase(test_case)
+
+    response = client_with_models.inference.completion(
+        content=tc["content"],
+        stream=True,
+        model_id=text_model_id,
+        sampling_params={
+            "max_tokens": 50,
+            "stop": ["1963"],
+        },
+    )
+    streamed_content = [chunk.delta for chunk in response]
+    content_str = "".join(streamed_content).lower().strip()
+    assert "1963" not in content_str
+
+
+@pytest.mark.parametrize(
+    "test_case",
+    [
         "inference:completion:log_probs",
     ],
 )

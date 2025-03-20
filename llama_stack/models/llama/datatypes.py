@@ -201,6 +201,7 @@ class SamplingParams(BaseModel):
 
     max_tokens: Optional[int] = 0
     repetition_penalty: Optional[float] = 1.0
+    stop: Optional[List[str]] = None
 
 
 class CheckpointQuantizationFormat(Enum):
