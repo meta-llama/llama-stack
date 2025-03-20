@@ -77,7 +77,7 @@ def typeannotation(
     """
 
     def wrap(cls: Type[T]) -> Type[T]:
-        cls.__repr__ = _compact_dataclass_repr
+        cls.__repr__ = _compact_dataclass_repr  # type: ignore
         if not dataclasses.is_dataclass(cls):
             cls = dataclasses.dataclass(  # type: ignore[call-overload]
                 cls,
