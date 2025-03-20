@@ -189,13 +189,11 @@ class AgentToolGroupWithArgs(BaseModel):
     args: Dict[str, Any]
 
 
-AgentToolGroup = register_schema(
-    Union[
-        str,
-        AgentToolGroupWithArgs,
-    ],
-    name="AgentTool",
-)
+AgentToolGroup = Union[
+    str,
+    AgentToolGroupWithArgs,
+]
+register_schema(AgentToolGroup, name="AgentTool")
 
 
 class AgentConfigCommon(BaseModel):
@@ -312,20 +310,18 @@ class AgentTurnResponseTurnAwaitingInputPayload(BaseModel):
     turn: Turn
 
 
-AgentTurnResponseEventPayload = register_schema(
-    Annotated[
-        Union[
-            AgentTurnResponseStepStartPayload,
-            AgentTurnResponseStepProgressPayload,
-            AgentTurnResponseStepCompletePayload,
-            AgentTurnResponseTurnStartPayload,
-            AgentTurnResponseTurnCompletePayload,
-            AgentTurnResponseTurnAwaitingInputPayload,
-        ],
-        Field(discriminator="event_type"),
+AgentTurnResponseEventPayload = Annotated[
+    Union[
+        AgentTurnResponseStepStartPayload,
+        AgentTurnResponseStepProgressPayload,
+        AgentTurnResponseStepCompletePayload,
+        AgentTurnResponseTurnStartPayload,
+        AgentTurnResponseTurnCompletePayload,
+        AgentTurnResponseTurnAwaitingInputPayload,
     ],
-    name="AgentTurnResponseEventPayload",
-)
+    Field(discriminator="event_type"),
+]
+register_schema(AgentTurnResponseEventPayload, name="AgentTurnResponseEventPayload")
 
 
 @json_schema_type

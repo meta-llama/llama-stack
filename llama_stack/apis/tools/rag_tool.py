@@ -58,16 +58,14 @@ class LLMRAGQueryGeneratorConfig(BaseModel):
     template: str
 
 
-RAGQueryGeneratorConfig = register_schema(
-    Annotated[
-        Union[
-            DefaultRAGQueryGeneratorConfig,
-            LLMRAGQueryGeneratorConfig,
-        ],
-        Field(discriminator="type"),
+RAGQueryGeneratorConfig = Annotated[
+    Union[
+        DefaultRAGQueryGeneratorConfig,
+        LLMRAGQueryGeneratorConfig,
     ],
-    name="RAGQueryGeneratorConfig",
-)
+    Field(discriminator="type"),
+]
+register_schema(RAGQueryGeneratorConfig, name="RAGQueryGeneratorConfig")
 
 
 @json_schema_type
