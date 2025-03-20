@@ -8,6 +8,7 @@ import argparse
 import os
 from pathlib import Path
 
+from llama_stack.cli.stack.utils import ImageType
 from llama_stack.cli.subcommand import Subcommand
 from llama_stack.log import get_logger
 
@@ -56,7 +57,6 @@ class StackRun(Subcommand):
             "--env",
             action="append",
             help="Environment variables to pass to the server in KEY=VALUE format. Can be specified multiple times.",
-            default=[],
             metavar="KEY=VALUE",
         )
         self.parser.add_argument(
@@ -73,9 +73,23 @@ class StackRun(Subcommand):
             "--image-type",
             type=str,
             help="Image Type used during the build. This can be either conda or container or venv.",
-            choices=["conda", "container", "venv"],
-            default="conda",
+            choices=[e.value for e in ImageType],
         )
+
+    # If neither image type nor image name is provided, but at the same time
+    # the current environment has conda breadcrumbs, then assume what the user
+    # wants to use conda mode and not the usual default mode (using
+    # pre-installed system packages).
+    #
+    # Note: yes, this is hacky. It's implemented this way to keep the existing
+    # conda users unaffected by the switch of the default behavior to using
+    # system packages.
+    def _get_image_type_and_name(self, args: argparse.Namespace) -> tuple[str, str]:
+        conda_env = os.environ.get("CONDA_DEFAULT_ENV")
+        if conda_env and args.image_name == conda_env:
+            logger.warning(f"Conda detected. Using conda environment {conda_env} for the run.")
+            return ImageType.CONDA.value, args.image_name
+        return args.image_type, args.image_name
 
     def _run_stack_run_cmd(self, args: argparse.Namespace) -> None:
         import yaml
@@ -120,20 +134,44 @@ class StackRun(Subcommand):
         except AttributeError as e:
             self.parser.error(f"failed to parse config file '{config_file}':\n {e}")
 
-        run_args = formulate_run_args(args.image_type, args.image_name, config, template_name)
+        image_type, image_name = self._get_image_type_and_name(args)
 
-        run_args.extend([str(config_file), str(args.port)])
-        if args.disable_ipv6:
-            run_args.append("--disable-ipv6")
+        # If neither image type nor image name is provided, assume the server should be run directly
+        # using the current environment packages.
+        if not image_type and not image_name:
+            logger.info("No image type or image name provided. Assuming environment packages.")
+            from llama_stack.distribution.server.server import main as server_main
 
-        for env_var in args.env:
-            if "=" not in env_var:
-                self.parser.error(f"Environment variable '{env_var}' must be in KEY=VALUE format")
-            key, value = env_var.split("=", 1)  # split on first = only
-            if not key:
-                self.parser.error(f"Environment variable '{env_var}' has empty key")
-            run_args.extend(["--env", f"{key}={value}"])
+            # Build the server args from the current args passed to the CLI
+            server_args = argparse.Namespace()
+            for arg in vars(args):
+                # If this is a function, avoid passing it
+                # "args" contains:
+                # func=<bound method StackRun._run_stack_run_cmd of <llama_stack.cli.stack.run.StackRun object at 0x10484b010>>
+                if callable(getattr(args, arg)):
+                    continue
+                setattr(server_args, arg, getattr(args, arg))
 
-        if args.tls_keyfile and args.tls_certfile:
-            run_args.extend(["--tls-keyfile", args.tls_keyfile, "--tls-certfile", args.tls_certfile])
-        run_command(run_args)
+            # Run the server
+            server_main(server_args)
+        else:
+            run_args = formulate_run_args(image_type, image_name, config, template_name)
+
+            run_args.extend([str(config_file), str(args.port)])
+            if args.disable_ipv6:
+                run_args.append("--disable-ipv6")
+
+            if args.env:
+                for env_var in args.env:
+                    if "=" not in env_var:
+                        self.parser.error(f"Environment variable '{env_var}' must be in KEY=VALUE format")
+                        return
+                    key, value = env_var.split("=", 1)  # split on first = only
+                    if not key:
+                        self.parser.error(f"Environment variable '{env_var}' has empty key")
+                        return
+                    run_args.extend(["--env", f"{key}={value}"])
+
+            if args.tls_keyfile and args.tls_certfile:
+                run_args.extend(["--tls-keyfile", args.tls_keyfile, "--tls-certfile", args.tls_certfile])
+            run_command(run_args)
