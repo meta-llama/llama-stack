@@ -12,8 +12,11 @@ import pydantic
 
 from llama_stack.distribution.datatypes import KVStoreConfig, RoutableObjectWithProvider
 from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
+from llama_stack.log import get_logger
 from llama_stack.providers.utils.kvstore import KVStore, kvstore_impl
 from llama_stack.providers.utils.kvstore.config import SqliteKVStoreConfig
+
+logger = get_logger(__name__, category="core")
 
 
 class DistributionRegistry(Protocol):
@@ -47,8 +50,13 @@ def _parse_registry_values(values: List[str]) -> List[RoutableObjectWithProvider
     """Utility function to parse registry values into RoutableObjectWithProvider objects."""
     all_objects = []
     for value in values:
-        obj = pydantic.TypeAdapter(RoutableObjectWithProvider).validate_json(value)
-        all_objects.append(obj)
+        try:
+            obj = pydantic.TypeAdapter(RoutableObjectWithProvider).validate_json(value)
+            all_objects.append(obj)
+        except pydantic.ValidationError as e:
+            logger.error(f"Error parsing registry value, raw value: {value}. Error: {e}")
+            continue
+
     return all_objects
 
 
@@ -73,7 +81,11 @@ class DiskDistributionRegistry(DistributionRegistry):
         if not json_str:
             return None
 
-        return pydantic.TypeAdapter(RoutableObjectWithProvider).validate_json(json_str)
+        try:
+            return pydantic.TypeAdapter(RoutableObjectWithProvider).validate_json(json_str)
+        except pydantic.ValidationError as e:
+            logger.error(f"Error parsing registry value for {type}:{identifier}, raw value: {json_str}. Error: {e}")
+            return None
 
     async def update(self, obj: RoutableObjectWithProvider) -> None:
         await self.kvstore.set(
