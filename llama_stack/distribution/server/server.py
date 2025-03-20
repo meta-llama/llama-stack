@@ -366,7 +366,7 @@ def main():
     if Api.telemetry in impls:
         setup_logger(impls[Api.telemetry])
     else:
-        setup_logger(TelemetryAdapter(TelemetryConfig()))
+        setup_logger(TelemetryAdapter(TelemetryConfig(), {}))
 
     all_endpoints = get_all_api_endpoints()
 
