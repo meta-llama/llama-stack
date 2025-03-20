@@ -130,7 +130,6 @@ select = [
     "F",   # Pyflakes
     "N",   # Naming
     "W",   # Warnings
-    "I",   # isort
     "DTZ", # datetime rules
 ]
 ignore = [
