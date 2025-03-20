@@ -15,7 +15,10 @@ import json
 import re
 from typing import Optional, Tuple
 
+from llama_stack.log import get_logger
 from llama_stack.models.llama.datatypes import BuiltinTool, RecursiveType, ToolCall, ToolPromptFormat
+
+logger = get_logger(name=__name__, category="inference")
 
 BUILTIN_TOOL_PATTERN = r'\b(?P<tool_name>\w+)\.call\(query="(?P<query>[^"]*)"\)'
 CUSTOM_TOOL_CALL_PATTERN = re.compile(r"<function=(?P<function_name>[^}]+)>(?P<args>{.*?})")
@@ -92,7 +95,15 @@ def parse_python_list_for_function_calls(input_string):
 
             # Extract keyword arguments
             for keyword in node.keywords:
-                function_args[keyword.arg] = ast.literal_eval(keyword.value)
+                try:
+                    function_args[keyword.arg] = ast.literal_eval(keyword.value)
+                except ValueError as e:
+                    logger.error(
+                        f"Error parsing tool call argument '{keyword.arg}': {e}, full input string: '{input_string}'"
+                    )
+                    raise ValueError(
+                        f"Error parsing tool call argument '{keyword.arg}', full input string: '{input_string}'"
+                    ) from e
 
             result.append((function_name, function_args))
 
