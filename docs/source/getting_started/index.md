@@ -38,7 +38,7 @@ The API is **exactly identical** for both clients.
 :::{dropdown} Starting up the Llama Stack server
 The Llama Stack server can be configured flexibly so you can mix-and-match various providers for its individual API components -- beyond Inference, these include Vector IO, Agents, Telemetry, Evals, Post Training, etc.
 
-To get started quickly, we provide various container images for the server component that work with different inference providers out of the box. For this guide, we will use `llamastack/distribution-ollama` as the container image.
+To get started quickly, we provide various container images for the server component that work with different inference providers out of the box. For this guide, we will use `llamastack/distribution-ollama` as the container image. If you'd like to build your own image or customize the configurations, please check out [this guide](../references/index.md).
 
 Lets setup some environment variables that we will use in the rest of the guide.
 ```bash
@@ -88,11 +88,19 @@ docker run -it \
 
 :::{dropdown} Installing the Llama Stack client CLI and SDK
 
-You can interact with the Llama Stack server using various client SDKs. We will use the Python SDK which you can install using the following command. Note that you must be using Python 3.10 or newer:
+You can interact with the Llama Stack server using various client SDKs.  Note that you must be using Python 3.10 or newer. We will use the Python SDK which you can install via `conda` or `virtualenv`.
+
+For `conda`:
 ```bash
 yes | conda create -n stack-client python=3.10
 conda activate stack-client
+pip install llama-stack-client
+```
 
+For `virtualenv`:
+```bash
+python -m venv stack-client
+source stack-client/bin/activate
 pip install llama-stack-client
 ```
 
@@ -102,12 +110,18 @@ Let's use the `llama-stack-client` CLI to check the connectivity to the server.
 $ llama-stack-client configure --endpoint http://localhost:$LLAMA_STACK_PORT
 > Enter the API key (leave empty if no key is needed):
 Done! You can now use the Llama Stack Client CLI with endpoint http://localhost:8321
+
 $ llama-stack-client models list
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━┓
-┃ identifier                       ┃ provider_id ┃ provider_resource_id      ┃ metadata ┃
-┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━┩
-│ meta-llama/Llama-3.2-3B-Instruct │ ollama      │ llama3.2:3b-instruct-fp16 │          │
-└──────────────────────────────────┴─────────────┴───────────────────────────┴──────────┘
+
+Available Models
+
+┏━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━━┓
+┃ model_type   ┃ identifier                           ┃ provider_resource_id         ┃ metadata  ┃ provider_id ┃
+┡━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━━┩
+│ llm          │ meta-llama/Llama-3.2-3B-Instruct     │ llama3.2:3b-instruct-fp16    │           │ ollama      │
+└──────────────┴──────────────────────────────────────┴──────────────────────────────┴───────────┴─────────────┘
+
+Total models: 1
 ```
 
 You can test basic Llama inference completion using the CLI too.
@@ -167,6 +181,13 @@ response = client.inference.chat_completion(
 print(response.completion_message.content)
 ```
 
+To run the above example, put the code in a file called `inference.py`, ensure your `conda` or `virtualenv` environment is active, and run the following:
+```bash
+pip install llama_stack
+llama stack build --template ollama --image-type <conda|venv>
+python inference.py
+```
+
 ### 4. Your first RAG agent
 
 Here is an example of a simple RAG (Retrieval Augmented Generation) chatbot agent which can answer questions about TorchTune documentation.
@@ -178,7 +199,6 @@ from termcolor import cprint
 
 from llama_stack_client.lib.agents.agent import Agent
 from llama_stack_client.lib.agents.event_logger import EventLogger
-from llama_stack_client.types.agent_create_params import AgentConfig
 from llama_stack_client.types import Document
 
 
@@ -235,27 +255,26 @@ client.tool_runtime.rag_tool.insert(
     chunk_size_in_tokens=512,
 )
 
-agent_config = AgentConfig(
+rag_agent = Agent(
+    client,
     model=os.environ["INFERENCE_MODEL"],
     # Define instructions for the agent ( aka system prompt)
     instructions="You are a helpful assistant",
     enable_session_persistence=False,
     # Define tools available to the agent
-    toolgroups=[
+    tools=[
         {
-            "name": "builtin::rag",
+            "name": "builtin::rag/knowledge_search",
             "args": {
                 "vector_db_ids": [vector_db_id],
             },
         }
     ],
 )
-
-rag_agent = Agent(client, agent_config)
 session_id = rag_agent.create_session("test-session")
 
 user_prompts = [
-    "What are the top 5 topics that were explained? Only list succinct bullet points.",
+    "How to optimize memory usage in torchtune? use the knowledge_search tool to get information.",
 ]
 
 # Run the agent loop by calling the `create_turn` method
@@ -267,6 +286,13 @@ for prompt in user_prompts:
     )
     for log in EventLogger().log(response):
         log.print()
+```
+
+To run the above example, put the code in a file called `rag.py`, ensure your `conda` or `virtualenv` environment is active, and run the following:
+```bash
+pip install llama_stack
+llama stack build --template ollama --image-type <conda|venv>
+python rag.py
 ```
 
 ## Next Steps

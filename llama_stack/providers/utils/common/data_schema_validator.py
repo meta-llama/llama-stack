@@ -23,6 +23,10 @@ class ColumnName(Enum):
     generated_answer = "generated_answer"
     context = "context"
     dialog = "dialog"
+    function = "function"
+    language = "language"
+    id = "id"
+    ground_truth = "ground_truth"
 
 
 VALID_SCHEMAS_FOR_SCORING = [
@@ -37,6 +41,15 @@ VALID_SCHEMAS_FOR_SCORING = [
         ColumnName.generated_answer.value: StringType(),
         ColumnName.context.value: StringType(),
     },
+    {
+        ColumnName.input_query.value: StringType(),
+        ColumnName.expected_answer.value: StringType(),
+        ColumnName.generated_answer.value: StringType(),
+        ColumnName.function.value: StringType(),
+        ColumnName.language.value: StringType(),
+        ColumnName.id.value: StringType(),
+        ColumnName.ground_truth.value: StringType(),
+    },
 ]
 
 VALID_SCHEMAS_FOR_EVAL = [
@@ -49,6 +62,15 @@ VALID_SCHEMAS_FOR_EVAL = [
         ColumnName.input_query.value: StringType(),
         ColumnName.expected_answer.value: StringType(),
         ColumnName.completion_input.value: CompletionInputType(),
+    },
+    {
+        ColumnName.input_query.value: StringType(),
+        ColumnName.expected_answer.value: StringType(),
+        ColumnName.generated_answer.value: StringType(),
+        ColumnName.function.value: StringType(),
+        ColumnName.language.value: StringType(),
+        ColumnName.id.value: StringType(),
+        ColumnName.ground_truth.value: StringType(),
     },
 ]
 

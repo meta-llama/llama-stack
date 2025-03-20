@@ -10,7 +10,7 @@ import json
 import os
 import shutil
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from functools import partial
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -343,7 +343,7 @@ def _hf_download(
             "You can find your token by visiting https://huggingface.co/settings/tokens"
         )
     except RepositoryNotFoundError:
-        parser.error(f"Repository '{repo_id}' not found on the Hugging Face Hub.")
+        parser.error(f"Repository '{repo_id}' not found on the Hugging Face Hub or incorrect Hugging Face token.")
     except Exception as e:
         parser.error(e)
 
@@ -404,7 +404,7 @@ def _download_from_manifest(manifest_file: str, max_concurrent_downloads: int):
         d = json.load(f)
         manifest = Manifest(**d)
 
-    if datetime.now() > manifest.expires_on:
+    if datetime.now(timezone.utc) > manifest.expires_on:
         raise ValueError(f"Manifest URLs have expired on {manifest.expires_on}")
 
     console = Console()

@@ -10,6 +10,7 @@ import typing
 from dataclasses import make_dataclass
 from typing import Any, Dict, Set, Union
 
+from llama_stack.apis.datatypes import Error
 from llama_stack.strong_typing.core import JsonType
 from llama_stack.strong_typing.docstring import Docstring, parse_type
 from llama_stack.strong_typing.inspection import (
@@ -435,6 +436,75 @@ class Generator:
         self.schema_builder = SchemaBuilder(schema_generator)
         self.responses = {}
 
+        # Create standard error responses
+        self._create_standard_error_responses()
+
+    def _create_standard_error_responses(self) -> None:
+        """
+        Creates standard error responses that can be reused across operations.
+        These will be added to the components.responses section of the OpenAPI document.
+        """
+        # Get the Error schema
+        error_schema = self.schema_builder.classdef_to_ref(Error)
+
+        # Create standard error responses
+        self.responses["BadRequest400"] = Response(
+            description="The request was invalid or malformed",
+            content={
+                "application/json": MediaType(
+                    schema=error_schema,
+                    example={
+                        "status": 400,
+                        "title": "Bad Request",
+                        "detail": "The request was invalid or malformed",
+                    },
+                )
+            },
+        )
+
+        self.responses["TooManyRequests429"] = Response(
+            description="The client has sent too many requests in a given amount of time",
+            content={
+                "application/json": MediaType(
+                    schema=error_schema,
+                    example={
+                        "status": 429,
+                        "title": "Too Many Requests",
+                        "detail": "You have exceeded the rate limit. Please try again later.",
+                    },
+                )
+            },
+        )
+
+        self.responses["InternalServerError500"] = Response(
+            description="The server encountered an unexpected error",
+            content={
+                "application/json": MediaType(
+                    schema=error_schema,
+                    example={
+                        "status": 500,
+                        "title": "Internal Server Error",
+                        "detail": "An unexpected error occurred. Our team has been notified.",
+                    },
+                )
+            },
+        )
+
+        # Add a default error response for any unhandled error cases
+        self.responses["DefaultError"] = Response(
+            description="An unexpected error occurred",
+            content={
+                "application/json": MediaType(
+                    schema=error_schema,
+                    example={
+                        "status": 0,
+                        "title": "Error",
+                        "detail": "An unexpected error occurred",
+                    },
+                )
+            },
+        )
+
     def _build_type_tag(self, ref: str, schema: Schema) -> Tag:
         # Don't include schema definition in the tag description because for one,
         # it is not very valuable and for another, it causes string formatting
@@ -477,10 +547,13 @@ class Generator:
             "SyntheticDataGeneration",
             "PostTraining",
             "BatchInference",
-            "Files",
         ]:
             op.defining_class.__name__ = f"{op.defining_class.__name__} (Coming Soon)"
             print(op.defining_class.__name__)
+
+        # TODO (xiyan): temporary fix for datasetio inner impl + datasets api
+        # if op.defining_class.__name__ in ["DatasetIO"]:
+        #     op.defining_class.__name__ = "Datasets"
 
         doc_string = parse_type(op.func_ref)
         doc_params = dict(
@@ -528,7 +601,9 @@ class Generator:
 
         # data passed in request body as raw bytes cannot have request parameters
         if raw_bytes_request_body and op.request_params:
-            raise ValueError("Cannot have both raw bytes request body and request parameters")
+            raise ValueError(
+                "Cannot have both raw bytes request body and request parameters"
+            )
 
         # data passed in request body as raw bytes
         if raw_bytes_request_body:
@@ -649,6 +724,18 @@ class Generator:
             responses.update(response_builder.build_response(response_options))
 
         assert len(responses.keys()) > 0, f"No responses found for {op.name}"
+
+        # Add standard error response references
+        if self.options.include_standard_error_responses:
+            if "400" not in responses:
+                responses["400"] = ResponseRef("BadRequest400")
+            if "429" not in responses:
+                responses["429"] = ResponseRef("TooManyRequests429")
+            if "500" not in responses:
+                responses["500"] = ResponseRef("InternalServerError500")
+            if "default" not in responses:
+                responses["default"] = ResponseRef("DefaultError")
+
         if op.event_type is not None:
             builder = ContentBuilder(self.schema_builder)
             callbacks = {

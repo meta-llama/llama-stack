@@ -30,7 +30,7 @@ The following environment variables can be configured:
 The following models are available by default:
 
 {% for model in default_models %}
-- `{{ model.model_id }}`
+- `{{ model.model_id }} {{ model.doc_string }}`
 {% endfor %}
 {% endif %}
 

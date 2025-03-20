@@ -8,14 +8,13 @@ repos:
     rev: v5.0.0  # Latest stable version
     hooks:
     -   id: check-merge-conflict
+        args: ['--assume-in-merge']
+    -   id: trailing-whitespace
+        exclude: '\.py$'  # Exclude Python files as Ruff already handles them
     -   id: check-added-large-files
         args: ['--maxkb=1000']
     -   id: end-of-file-fixer
         exclude: '^(.*\.svg)$'
-
-# Temporarily disabling this
-#    -   id: no-commit-to-branch
-#        args: ['--branch=main']
 
 -   repo: https://github.com/Lucas-C/pre-commit-hooks
     rev: v1.5.4
@@ -42,8 +41,9 @@ repos:
         - black==24.3.0
 
 -   repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.5.26
+    rev: 0.6.3
     hooks:
+    -   id: uv-lock
     -   id: uv-export
         args: [
             "--frozen",
@@ -51,8 +51,6 @@ repos:
             "--no-emit-project",
             "--output-file=requirements.txt"
         ]
-        files: ^pyproject\.toml$
-    -   id: uv-sync
 
 -   repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.15.0
@@ -67,12 +65,6 @@ repos:
           - pydantic
         pass_filenames: false
 
-# - repo: https://github.com/jsh9/pydoclint
-#   rev: d88180a8632bb1602a4d81344085cf320f288c5a
-#   hooks:
-#     - id: pydoclint
-#       args: [--config=pyproject.toml]
-
 # - repo: https://github.com/tcort/markdown-link-check
 #   rev: v3.11.2
 #   hooks:
@@ -84,15 +76,23 @@ repos:
       - id: distro-codegen
         name: Distribution Template Codegen
         additional_dependencies:
-          - rich
-          - pydantic
           - uv==0.6.0
-        entry: uv run python -m llama_stack.scripts.distro_codegen
+        entry: uv run --extra codegen ./scripts/distro_codegen.py
         language: python
         pass_filenames: false
         require_serial: true
-        files: ^llama_stack/templates/.*$
-        files: ^llama_stack/providers/.*/inference/.*/models\.py$
+        files: ^llama_stack/templates/.*$|^llama_stack/providers/.*/inference/.*/models\.py$
+
+-   repo: local
+    hooks:
+      - id: openapi-codegen
+        name: API Spec Codegen
+        additional_dependencies:
+          - uv==0.6.2
+        entry: sh -c 'uv run --with ".[dev]" ./docs/openapi_generator/run_openapi_generator.sh > /dev/null 2>&1'
+        language: python
+        pass_filenames: false
+        require_serial: true
 
 ci:
     autofix_commit_msg: 🎨 [pre-commit.ci] Auto format from pre-commit.com hooks

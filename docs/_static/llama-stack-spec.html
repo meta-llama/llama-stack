@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>OpenAPI specification</title>
     <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700" rel="stylesheet">
-    <script type="module" src="https://unpkg.com/@stoplight/elements/web-components.min.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/@stoplight/elements/styles.min.css">
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@stoplight/elements/web-components.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@stoplight/elements/styles.min.css">
     <style>
         body {
             margin: 0;
@@ -40,18 +40,23 @@
         }
     ],
     "paths": {
-        "/v1/datasetio/rows": {
-            "get": {
+        "/v1/datasetio/append-rows/{dataset_id}": {
+            "post": {
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PaginatedRowsResult"
-                                }
-                            }
-                        }
+                        "description": "OK"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -61,49 +66,13 @@
                 "parameters": [
                     {
                         "name": "dataset_id",
-                        "in": "query",
+                        "in": "path",
                         "required": true,
                         "schema": {
                             "type": "string"
                         }
-                    },
-                    {
-                        "name": "rows_in_page",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "page_token",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "filter_condition",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
                     }
-                ]
-            },
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                },
-                "tags": [
-                    "DatasetIO"
                 ],
-                "description": "",
-                "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -128,6 +97,18 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -159,6 +140,18 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -183,6 +176,18 @@
                 "responses": {
                     "200": {
                         "description": "OK"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -219,6 +224,18 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -255,6 +272,18 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -275,10 +304,41 @@
             }
         },
         "/v1/agents": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "A ListAgentsResponse.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ListAgentsResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Agents"
+                ],
+                "description": "List all agents.",
+                "parameters": []
+            },
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "An AgentCreateResponse with the agent ID.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -286,12 +346,24 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
                     "Agents"
                 ],
-                "description": "",
+                "description": "Create an agent with the given configuration.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -309,7 +381,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "An AgentSessionCreateResponse.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -317,16 +389,29 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
                     "Agents"
                 ],
-                "description": "",
+                "description": "Create a new session for an agent.",
                 "parameters": [
                     {
                         "name": "agent_id",
                         "in": "path",
+                        "description": "The ID of the agent to create the session for.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -349,7 +434,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "A single turn in an interaction with an Agentic System. **OR** streamed agent turn completion response.",
+                        "description": "If stream=False, returns a Turn object. If stream=True, returns an SSE event stream of AgentTurnResponseStreamChunk",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -362,16 +447,29 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
                     "Agents"
                 ],
-                "description": "",
+                "description": "Create a new turn for an agent.",
                 "parameters": [
                     {
                         "name": "agent_id",
                         "in": "path",
+                        "description": "The ID of the agent to create the turn for.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -380,6 +478,7 @@
                     {
                         "name": "session_id",
                         "in": "path",
+                        "description": "The ID of the session to create the turn for.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -410,10 +509,22 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
-                    "Files (Coming Soon)"
+                    "Files"
                 ],
                 "description": "List all buckets.",
                 "parameters": [
@@ -438,10 +549,22 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
-                    "Files (Coming Soon)"
+                    "Files"
                 ],
                 "description": "Create a new upload session for a file identified by a bucket and key.",
                 "parameters": [],
@@ -458,20 +581,74 @@
             }
         },
         "/v1/agents/{agent_id}": {
-            "delete": {
+            "get": {
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "An Agent of the agent.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Agent"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
                     "Agents"
                 ],
-                "description": "",
+                "description": "Describe an agent by its ID.",
                 "parameters": [
                     {
                         "name": "agent_id",
                         "in": "path",
+                        "description": "ID of the agent.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            },
+            "delete": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Agents"
+                ],
+                "description": "Delete an agent by its ID.",
+                "parameters": [
+                    {
+                        "name": "agent_id",
+                        "in": "path",
+                        "description": "The ID of the agent to delete.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -492,16 +669,29 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
                     "Agents"
                 ],
-                "description": "",
+                "description": "Retrieve an agent session by its ID.",
                 "parameters": [
                     {
                         "name": "session_id",
                         "in": "path",
+                        "description": "The ID of the session to get.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -510,6 +700,7 @@
                     {
                         "name": "agent_id",
                         "in": "path",
+                        "description": "The ID of the agent to get the session for.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -518,6 +709,7 @@
                     {
                         "name": "turn_ids",
                         "in": "query",
+                        "description": "(Optional) List of turn IDs to filter the session by.",
                         "required": false,
                         "schema": {
                             "type": "array",
@@ -532,16 +724,29 @@
                 "responses": {
                     "200": {
                         "description": "OK"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
                     "Agents"
                 ],
-                "description": "",
+                "description": "Delete an agent session by its ID.",
                 "parameters": [
                     {
                         "name": "session_id",
                         "in": "path",
+                        "description": "The ID of the session to delete.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -550,6 +755,7 @@
                     {
                         "name": "agent_id",
                         "in": "path",
+                        "description": "The ID of the agent to delete the session for.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -570,10 +776,22 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
-                    "Files (Coming Soon)"
+                    "Files"
                 ],
                 "description": "Get a file info identified by a bucket and key.",
                 "parameters": [
@@ -608,10 +826,22 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
-                    "Files (Coming Soon)"
+                    "Files"
                 ],
                 "description": "Delete a file identified by a bucket and key.",
                 "parameters": [
@@ -648,6 +878,18 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -671,7 +913,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "EvaluateResponse object containing generations and scores",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -679,16 +921,29 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
                     "Eval"
                 ],
-                "description": "",
+                "description": "Evaluate a list of rows on a benchmark.",
                 "parameters": [
                     {
                         "name": "benchmark_id",
                         "in": "path",
+                        "description": "The ID of the benchmark to run the evaluation on.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -711,7 +966,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "An AgentStepResponse.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -719,16 +974,29 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
                     "Agents"
                 ],
-                "description": "",
+                "description": "Retrieve an agent step by its ID.",
                 "parameters": [
                     {
                         "name": "agent_id",
                         "in": "path",
+                        "description": "The ID of the agent to get the step for.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -737,6 +1005,7 @@
                     {
                         "name": "session_id",
                         "in": "path",
+                        "description": "The ID of the session to get the step for.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -745,6 +1014,7 @@
                     {
                         "name": "turn_id",
                         "in": "path",
+                        "description": "The ID of the turn to get the step for.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -753,6 +1023,7 @@
                     {
                         "name": "step_id",
                         "in": "path",
+                        "description": "The ID of the step to get.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -765,7 +1036,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A Turn.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -773,16 +1044,29 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
                     "Agents"
                 ],
-                "description": "",
+                "description": "Retrieve an agent turn by its ID.",
                 "parameters": [
                     {
                         "name": "agent_id",
                         "in": "path",
+                        "description": "The ID of the agent to get the turn for.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -791,6 +1075,7 @@
                     {
                         "name": "session_id",
                         "in": "path",
+                        "description": "The ID of the session to get the turn for.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -799,6 +1084,7 @@
                     {
                         "name": "turn_id",
                         "in": "path",
+                        "description": "The ID of the turn to get.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -815,17 +1101,22 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/Benchmark"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/Benchmark"
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -852,17 +1143,22 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/Dataset"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/Dataset"
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -884,6 +1180,18 @@
                 "responses": {
                     "200": {
                         "description": "OK"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -910,17 +1218,22 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/Model"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/Model"
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -942,6 +1255,18 @@
                 "responses": {
                     "200": {
                         "description": "OK"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -968,17 +1293,22 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/ScoringFn"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/ScoringFn"
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -1005,17 +1335,22 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/Shield"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/Shield"
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -1046,6 +1381,18 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -1084,6 +1431,18 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -1124,6 +1483,18 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -1154,6 +1525,18 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -1175,6 +1558,18 @@
                 "responses": {
                     "200": {
                         "description": "OK"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -1205,6 +1600,18 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -1231,17 +1638,22 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/PostTrainingJobArtifactsResponse"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/PostTrainingJobArtifactsResponse"
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -1268,17 +1680,22 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/PostTrainingJobStatusResponse"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/PostTrainingJobStatusResponse"
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -1309,6 +1726,18 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -1326,21 +1755,26 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/FileUploadResponse"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/FileUploadResponse"
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
-                    "Files (Coming Soon)"
+                    "Files"
                 ],
                 "description": "Returns information about an existsing upload session",
                 "parameters": [
@@ -1373,10 +1807,22 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
-                    "Files (Coming Soon)"
+                    "Files"
                 ],
                 "description": "Upload file content to an existing upload session. On the server, request body will have the raw bytes that are uploaded.",
                 "parameters": [
@@ -1411,17 +1857,22 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/VectorDB"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/VectorDB"
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -1443,6 +1894,18 @@
                 "responses": {
                     "200": {
                         "description": "OK"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -1473,6 +1936,18 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -1487,6 +1962,18 @@
                 "responses": {
                     "200": {
                         "description": "OK"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -1511,6 +1998,18 @@
                 "responses": {
                     "200": {
                         "description": "OK"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -1530,6 +2029,48 @@
                 }
             }
         },
+        "/v1/providers/{provider_id}": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProviderInfo"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Providers"
+                ],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "provider_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
         "/v1/tool-runtime/invoke": {
             "post": {
                 "responses": {
@@ -1542,6 +2083,18 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -1561,7 +2114,7 @@
                 }
             }
         },
-        "/v1/eval/benchmarks/{benchmark_id}/jobs/{job_id}": {
+        "/v1/datasetio/iterrows/{dataset_id}": {
             "get": {
                 "responses": {
                     "200": {
@@ -1569,27 +2122,94 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/JobStatus"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/IterrowsResponse"
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "DatasetIO"
+                ],
+                "description": "Get a paginated list of rows from a dataset. Uses cursor-based pagination.",
+                "parameters": [
+                    {
+                        "name": "dataset_id",
+                        "in": "path",
+                        "description": "The ID of the dataset to get the rows from.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "start_index",
+                        "in": "query",
+                        "description": "Index into dataset for the first row to get. Get all rows if None.",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "The number of rows to get.",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ]
+            }
+        },
+        "/v1/eval/benchmarks/{benchmark_id}/jobs/{job_id}": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "The status of the evaluationjob.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/JobStatus"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
                     "Eval"
                 ],
-                "description": "",
+                "description": "Get the status of a job.",
                 "parameters": [
                     {
                         "name": "benchmark_id",
                         "in": "path",
+                        "description": "The ID of the benchmark to run the evaluation on.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1598,6 +2218,7 @@
                     {
                         "name": "job_id",
                         "in": "path",
+                        "description": "The ID of the job to get the status of.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1609,16 +2230,29 @@
                 "responses": {
                     "200": {
                         "description": "OK"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
                     "Eval"
                 ],
-                "description": "",
+                "description": "Cancel a job.",
                 "parameters": [
                     {
                         "name": "benchmark_id",
                         "in": "path",
+                        "description": "The ID of the benchmark to run the evaluation on.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1627,6 +2261,7 @@
                     {
                         "name": "job_id",
                         "in": "path",
+                        "description": "The ID of the job to cancel.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1639,7 +2274,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "The result of the job.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1647,16 +2282,29 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
                     "Eval"
                 ],
-                "description": "",
+                "description": "Get the result of a job.",
                 "parameters": [
                     {
                         "name": "benchmark_id",
                         "in": "path",
+                        "description": "The ID of the benchmark to run the evaluation on.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1665,6 +2313,50 @@
                     {
                         "name": "job_id",
                         "in": "path",
+                        "description": "The ID of the job to get the result of.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/v1/agents/{agent_id}/sessions": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "A ListAgentSessionsResponse.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ListAgentSessionsResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Agents"
+                ],
+                "description": "List all session(s) of a given agent.",
+                "parameters": [
+                    {
+                        "name": "agent_id",
+                        "in": "path",
+                        "description": "The ID of the agent to list sessions for.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1685,6 +2377,18 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -1697,6 +2401,18 @@
                 "responses": {
                     "200": {
                         "description": "OK"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -1728,6 +2444,18 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -1739,13 +2467,32 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Dataset"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
                     "Datasets"
                 ],
-                "description": "",
+                "description": "Register a new dataset.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -1771,10 +2518,22 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
-                    "Files (Coming Soon)"
+                    "Files"
                 ],
                 "description": "List all files in a bucket.",
                 "parameters": [
@@ -1802,6 +2561,18 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -1821,6 +2592,18 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -1840,7 +2623,7 @@
                 }
             }
         },
-        "/v1/inspect/providers": {
+        "/v1/providers": {
             "get": {
                 "responses": {
                     "200": {
@@ -1852,10 +2635,22 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
-                    "Inspect"
+                    "Providers"
                 ],
                 "description": "",
                 "parameters": []
@@ -1873,6 +2668,18 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -1894,6 +2701,18 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -1932,6 +2751,18 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -1944,6 +2775,18 @@
                 "responses": {
                     "200": {
                         "description": "OK"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -1975,6 +2818,18 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -1994,6 +2849,18 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -2025,6 +2892,18 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -2037,6 +2916,18 @@
                 "responses": {
                     "200": {
                         "description": "OK"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -2068,6 +2959,18 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -2098,6 +3001,18 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -2117,6 +3032,18 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -2141,6 +3068,18 @@
                 "responses": {
                     "200": {
                         "description": "OK"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -2172,6 +3111,18 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -2203,6 +3154,18 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -2234,6 +3197,18 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -2265,6 +3240,18 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -2296,6 +3283,18 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -2332,6 +3331,18 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -2383,7 +3394,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "The job that was created to run the evaluation.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2391,16 +3402,29 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
                     "Eval"
                 ],
-                "description": "",
+                "description": "Run an evaluation on a benchmark.",
                 "parameters": [
                     {
                         "name": "benchmark_id",
                         "in": "path",
+                        "description": "The ID of the benchmark to run the evaluation on.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -2431,6 +3455,18 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -2455,6 +3491,18 @@
                 "responses": {
                     "200": {
                         "description": "OK"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -2478,7 +3526,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "ScoreResponse object containing rows and aggregated results",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2486,12 +3534,24 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
                     "Scoring"
                 ],
-                "description": "",
+                "description": "Score a list of rows.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -2517,6 +3577,18 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -2548,6 +3620,18 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -2579,6 +3663,18 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -2610,6 +3706,18 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 },
                 "tags": [
@@ -2623,12 +3731,38 @@
     "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
     "components": {
         "schemas": {
+            "Error": {
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "type": "integer",
+                        "description": "HTTP status code"
+                    },
+                    "title": {
+                        "type": "string",
+                        "description": "Error title, a short summary of the error which is invariant for an error type"
+                    },
+                    "detail": {
+                        "type": "string",
+                        "description": "Error detail, a longer human-readable description of the error"
+                    },
+                    "instance": {
+                        "type": "string",
+                        "description": "(Optional) A URL which can be used to retrieve more information about the specific occurrence of the error"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "status",
+                    "title",
+                    "detail"
+                ],
+                "title": "Error",
+                "description": "Error response from the API. Roughly follows RFC 7807."
+            },
             "AppendRowsRequest": {
                 "type": "object",
                 "properties": {
-                    "dataset_id": {
-                        "type": "string"
-                    },
                     "rows": {
                         "type": "array",
                         "items": {
@@ -2660,7 +3794,6 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "dataset_id",
                     "rows"
                 ],
                 "title": "AppendRowsRequest"
@@ -3026,70 +4159,80 @@
                         ]
                     },
                     "arguments": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "integer"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "array",
-                                    "items": {
-                                        "oneOf": [
-                                            {
-                                                "type": "string"
-                                            },
-                                            {
-                                                "type": "integer"
-                                            },
-                                            {
-                                                "type": "number"
-                                            },
-                                            {
-                                                "type": "boolean"
-                                            },
-                                            {
-                                                "type": "null"
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "integer"
+                                        },
+                                        {
+                                            "type": "number"
+                                        },
+                                        {
+                                            "type": "boolean"
+                                        },
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "type": "array",
+                                            "items": {
+                                                "oneOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "integer"
+                                                    },
+                                                    {
+                                                        "type": "number"
+                                                    },
+                                                    {
+                                                        "type": "boolean"
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
                                             }
-                                        ]
-                                    }
-                                },
-                                {
-                                    "type": "object",
-                                    "additionalProperties": {
-                                        "oneOf": [
-                                            {
-                                                "type": "string"
-                                            },
-                                            {
-                                                "type": "integer"
-                                            },
-                                            {
-                                                "type": "number"
-                                            },
-                                            {
-                                                "type": "boolean"
-                                            },
-                                            {
-                                                "type": "null"
+                                        },
+                                        {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "oneOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "integer"
+                                                    },
+                                                    {
+                                                        "type": "number"
+                                                    },
+                                                    {
+                                                        "type": "boolean"
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
                                             }
-                                        ]
-                                    }
+                                        }
+                                    ]
                                 }
-                            ]
-                        }
+                            }
+                        ]
+                    },
+                    "arguments_json": {
+                        "type": "string"
                     }
                 },
                 "additionalProperties": false,
@@ -3191,24 +4334,6 @@
                         "type": "string",
                         "description": "Unique identifier for the tool call this response is for"
                     },
-                    "tool_name": {
-                        "oneOf": [
-                            {
-                                "type": "string",
-                                "enum": [
-                                    "brave_search",
-                                    "wolfram_alpha",
-                                    "photogen",
-                                    "code_interpreter"
-                                ],
-                                "title": "BuiltinTool"
-                            },
-                            {
-                                "type": "string"
-                            }
-                        ],
-                        "description": "Name of the tool that was called"
-                    },
                     "content": {
                         "$ref": "#/components/schemas/InterleavedContent",
                         "description": "The response content from the tool"
@@ -3218,7 +4343,6 @@
                 "required": [
                     "role",
                     "call_id",
-                    "tool_name",
                     "content"
                 ],
                 "title": "ToolResponseMessage",
@@ -3393,7 +4517,7 @@
                     "metrics": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/MetricEvent"
+                            "$ref": "#/components/schemas/MetricInResponse"
                         }
                     },
                     "completion_message": {
@@ -3415,46 +4539,9 @@
                 "title": "ChatCompletionResponse",
                 "description": "Response from a chat completion request."
             },
-            "MetricEvent": {
+            "MetricInResponse": {
                 "type": "object",
                 "properties": {
-                    "trace_id": {
-                        "type": "string"
-                    },
-                    "span_id": {
-                        "type": "string"
-                    },
-                    "timestamp": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "attributes": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "integer"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "null"
-                                }
-                            ]
-                        }
-                    },
-                    "type": {
-                        "type": "string",
-                        "const": "metric",
-                        "default": "metric"
-                    },
                     "metric": {
                         "type": "string"
                     },
@@ -3474,15 +4561,10 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "trace_id",
-                    "span_id",
-                    "timestamp",
-                    "type",
                     "metric",
-                    "value",
-                    "unit"
+                    "value"
                 ],
-                "title": "MetricEvent"
+                "title": "MetricInResponse"
             },
             "TokenLogProbs": {
                 "type": "object",
@@ -3559,6 +4641,12 @@
             "CompletionResponse": {
                 "type": "object",
                 "properties": {
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricInResponse"
+                        }
+                    },
                     "content": {
                         "type": "string",
                         "description": "The generated completion text"
@@ -3768,7 +4856,7 @@
                     "metrics": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/MetricEvent"
+                            "$ref": "#/components/schemas/MetricInResponse"
                         }
                     },
                     "event": {
@@ -3926,6 +5014,12 @@
             "CompletionResponseStreamChunk": {
                 "type": "object",
                 "properties": {
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetricInResponse"
+                        }
+                    },
                     "delta": {
                         "type": "string",
                         "description": "New content generated since last chunk. This can be one or more tokens."
@@ -4179,7 +5273,8 @@
                 "type": "object",
                 "properties": {
                     "agent_config": {
-                        "$ref": "#/components/schemas/AgentConfig"
+                        "$ref": "#/components/schemas/AgentConfig",
+                        "description": "The configuration for the agent."
                     }
                 },
                 "additionalProperties": false,
@@ -4205,7 +5300,8 @@
                 "type": "object",
                 "properties": {
                     "session_name": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The name of the session to create."
                     }
                 },
                 "additionalProperties": false,
@@ -4241,10 +5337,12 @@
                                     "$ref": "#/components/schemas/ToolResponseMessage"
                                 }
                             ]
-                        }
+                        },
+                        "description": "List of messages to start the turn with."
                     },
                     "stream": {
-                        "type": "boolean"
+                        "type": "boolean",
+                        "description": "(Optional) If True, generate an SSE event stream of the response. Defaults to False."
                     },
                     "documents": {
                         "type": "array",
@@ -4268,10 +5366,12 @@
                                         {
                                             "$ref": "#/components/schemas/URL"
                                         }
-                                    ]
+                                    ],
+                                    "description": "The content of the document."
                                 },
                                 "mime_type": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "description": "The MIME type of the document."
                                 }
                             },
                             "additionalProperties": false,
@@ -4279,20 +5379,21 @@
                                 "content",
                                 "mime_type"
                             ],
-                            "title": "Document"
-                        }
+                            "title": "Document",
+                            "description": "A document to be used by an agent."
+                        },
+                        "description": "(Optional) List of documents to create the turn with."
                     },
                     "toolgroups": {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/AgentTool"
-                        }
+                        },
+                        "description": "(Optional) List of toolgroups to create the turn with, will be used in addition to the agent's config toolgroups for the request."
                     },
                     "tool_config": {
-                        "$ref": "#/components/schemas/ToolConfig"
-                    },
-                    "allow_turn_resume": {
-                        "type": "boolean"
+                        "$ref": "#/components/schemas/ToolConfig",
+                        "description": "(Optional) The tool configuration to create the turn with, will be used to override the agent's tool_config."
                     }
                 },
                 "additionalProperties": false,
@@ -4305,18 +5406,22 @@
                 "type": "object",
                 "properties": {
                     "turn_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The ID of the turn."
                     },
                     "step_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The ID of the step."
                     },
                     "started_at": {
                         "type": "string",
-                        "format": "date-time"
+                        "format": "date-time",
+                        "description": "The time the step started."
                     },
                     "completed_at": {
                         "type": "string",
-                        "format": "date-time"
+                        "format": "date-time",
+                        "description": "The time the step completed."
                     },
                     "step_type": {
                         "type": "string",
@@ -4324,7 +5429,8 @@
                         "default": "inference"
                     },
                     "model_response": {
-                        "$ref": "#/components/schemas/CompletionMessage"
+                        "$ref": "#/components/schemas/CompletionMessage",
+                        "description": "The response from the LLM."
                     }
                 },
                 "additionalProperties": false,
@@ -4334,24 +5440,29 @@
                     "step_type",
                     "model_response"
                 ],
-                "title": "InferenceStep"
+                "title": "InferenceStep",
+                "description": "An inference step in an agent turn."
             },
             "MemoryRetrievalStep": {
                 "type": "object",
                 "properties": {
                     "turn_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The ID of the turn."
                     },
                     "step_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The ID of the step."
                     },
                     "started_at": {
                         "type": "string",
-                        "format": "date-time"
+                        "format": "date-time",
+                        "description": "The time the step started."
                     },
                     "completed_at": {
                         "type": "string",
-                        "format": "date-time"
+                        "format": "date-time",
+                        "description": "The time the step completed."
                     },
                     "step_type": {
                         "type": "string",
@@ -4359,10 +5470,12 @@
                         "default": "memory_retrieval"
                     },
                     "vector_db_ids": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The IDs of the vector databases to retrieve context from."
                     },
                     "inserted_context": {
-                        "$ref": "#/components/schemas/InterleavedContent"
+                        "$ref": "#/components/schemas/InterleavedContent",
+                        "description": "The context retrieved from the vector databases."
                     }
                 },
                 "additionalProperties": false,
@@ -4373,7 +5486,8 @@
                     "vector_db_ids",
                     "inserted_context"
                 ],
-                "title": "MemoryRetrievalStep"
+                "title": "MemoryRetrievalStep",
+                "description": "A memory retrieval step in an agent turn."
             },
             "SafetyViolation": {
                 "type": "object",
@@ -4421,18 +5535,22 @@
                 "type": "object",
                 "properties": {
                     "turn_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The ID of the turn."
                     },
                     "step_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The ID of the step."
                     },
                     "started_at": {
                         "type": "string",
-                        "format": "date-time"
+                        "format": "date-time",
+                        "description": "The time the step started."
                     },
                     "completed_at": {
                         "type": "string",
-                        "format": "date-time"
+                        "format": "date-time",
+                        "description": "The time the step completed."
                     },
                     "step_type": {
                         "type": "string",
@@ -4440,7 +5558,8 @@
                         "default": "shield_call"
                     },
                     "violation": {
-                        "$ref": "#/components/schemas/SafetyViolation"
+                        "$ref": "#/components/schemas/SafetyViolation",
+                        "description": "The violation from the shield call."
                     }
                 },
                 "additionalProperties": false,
@@ -4449,24 +5568,29 @@
                     "step_id",
                     "step_type"
                 ],
-                "title": "ShieldCallStep"
+                "title": "ShieldCallStep",
+                "description": "A shield call step in an agent turn."
             },
             "ToolExecutionStep": {
                 "type": "object",
                 "properties": {
                     "turn_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The ID of the turn."
                     },
                     "step_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The ID of the step."
                     },
                     "started_at": {
                         "type": "string",
-                        "format": "date-time"
+                        "format": "date-time",
+                        "description": "The time the step started."
                     },
                     "completed_at": {
                         "type": "string",
-                        "format": "date-time"
+                        "format": "date-time",
+                        "description": "The time the step completed."
                     },
                     "step_type": {
                         "type": "string",
@@ -4477,13 +5601,15 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/ToolCall"
-                        }
+                        },
+                        "description": "The tool calls to execute."
                     },
                     "tool_responses": {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/ToolResponse"
-                        }
+                        },
+                        "description": "The tool responses from the tool calls."
                     }
                 },
                 "additionalProperties": false,
@@ -4494,7 +5620,8 @@
                     "tool_calls",
                     "tool_responses"
                 ],
-                "title": "ToolExecutionStep"
+                "title": "ToolExecutionStep",
+                "description": "A tool execution step in an agent turn."
             },
             "ToolResponse": {
                 "type": "object",
@@ -4631,10 +5758,12 @@
                                         {
                                             "$ref": "#/components/schemas/URL"
                                         }
-                                    ]
+                                    ],
+                                    "description": "The content of the attachment."
                                 },
                                 "mime_type": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "description": "The MIME type of the attachment."
                                 }
                             },
                             "additionalProperties": false,
@@ -4642,7 +5771,8 @@
                                 "content",
                                 "mime_type"
                             ],
-                            "title": "Attachment"
+                            "title": "Attachment",
+                            "description": "An attachment to an agent turn."
                         }
                     },
                     "started_at": {
@@ -4737,7 +5867,8 @@
                             "shield_call",
                             "memory_retrieval"
                         ],
-                        "title": "StepType"
+                        "title": "StepType",
+                        "description": "Type of the step in an agent turn."
                     },
                     "step_id": {
                         "type": "string"
@@ -4793,7 +5924,8 @@
                             "shield_call",
                             "memory_retrieval"
                         ],
-                        "title": "StepType"
+                        "title": "StepType",
+                        "description": "Type of the step in an agent turn."
                     },
                     "step_id": {
                         "type": "string"
@@ -4827,7 +5959,8 @@
                             "shield_call",
                             "memory_retrieval"
                         ],
-                        "title": "StepType"
+                        "title": "StepType",
+                        "description": "Type of the step in an agent turn."
                     },
                     "step_id": {
                         "type": "string"
@@ -5119,7 +6252,8 @@
                         "default": "agent"
                     },
                     "config": {
-                        "$ref": "#/components/schemas/AgentConfig"
+                        "$ref": "#/components/schemas/AgentConfig",
+                        "description": "The configuration for the agent candidate."
                     }
                 },
                 "additionalProperties": false,
@@ -5127,12 +6261,14 @@
                     "type",
                     "config"
                 ],
-                "title": "AgentCandidate"
+                "title": "AgentCandidate",
+                "description": "An agent candidate for evaluation."
             },
             "AggregationFunctionType": {
                 "type": "string",
                 "enum": [
                     "average",
+                    "weighted_average",
                     "median",
                     "categorical_count",
                     "accuracy"
@@ -5164,16 +6300,19 @@
                 "type": "object",
                 "properties": {
                     "eval_candidate": {
-                        "$ref": "#/components/schemas/EvalCandidate"
+                        "$ref": "#/components/schemas/EvalCandidate",
+                        "description": "The candidate to evaluate."
                     },
                     "scoring_params": {
                         "type": "object",
                         "additionalProperties": {
                             "$ref": "#/components/schemas/ScoringFnParams"
-                        }
+                        },
+                        "description": "Map between scoring function id and parameters for each scoring function you want to run"
                     },
                     "num_examples": {
-                        "type": "integer"
+                        "type": "integer",
+                        "description": "(Optional) The number of examples to evaluate. If not provided, all examples in the dataset will be evaluated"
                     }
                 },
                 "additionalProperties": false,
@@ -5181,7 +6320,8 @@
                     "eval_candidate",
                     "scoring_params"
                 ],
-                "title": "BenchmarkConfig"
+                "title": "BenchmarkConfig",
+                "description": "A benchmark configuration for evaluation."
             },
             "EvalCandidate": {
                 "oneOf": [
@@ -5243,13 +6383,16 @@
                         "default": "model"
                     },
                     "model": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The model ID to evaluate."
                     },
                     "sampling_params": {
-                        "$ref": "#/components/schemas/SamplingParams"
+                        "$ref": "#/components/schemas/SamplingParams",
+                        "description": "The sampling parameters for the model."
                     },
                     "system_message": {
-                        "$ref": "#/components/schemas/SystemMessage"
+                        "$ref": "#/components/schemas/SystemMessage",
+                        "description": "(Optional) The system message providing instructions or context to the model."
                     }
                 },
                 "additionalProperties": false,
@@ -5258,7 +6401,8 @@
                     "model",
                     "sampling_params"
                 ],
-                "title": "ModelCandidate"
+                "title": "ModelCandidate",
+                "description": "A model candidate for evaluation."
             },
             "RegexParserScoringFnParams": {
                 "type": "object",
@@ -5337,23 +6481,26 @@
                                     }
                                 ]
                             }
-                        }
+                        },
+                        "description": "The rows to evaluate."
                     },
                     "scoring_functions": {
                         "type": "array",
                         "items": {
                             "type": "string"
-                        }
+                        },
+                        "description": "The scoring functions to use for the evaluation."
                     },
-                    "task_config": {
-                        "$ref": "#/components/schemas/BenchmarkConfig"
+                    "benchmark_config": {
+                        "$ref": "#/components/schemas/BenchmarkConfig",
+                        "description": "The configuration for the benchmark."
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "input_rows",
                     "scoring_functions",
-                    "task_config"
+                    "benchmark_config"
                 ],
                 "title": "EvaluateRowsRequest"
             },
@@ -5386,13 +6533,15 @@
                                     }
                                 ]
                             }
-                        }
+                        },
+                        "description": "The generations from the evaluation."
                     },
                     "scores": {
                         "type": "object",
                         "additionalProperties": {
                             "$ref": "#/components/schemas/ScoringResult"
-                        }
+                        },
+                        "description": "The scores from the evaluation."
                     }
                 },
                 "additionalProperties": false,
@@ -5400,7 +6549,8 @@
                     "generations",
                     "scores"
                 ],
-                "title": "EvaluateResponse"
+                "title": "EvaluateResponse",
+                "description": "The response from an evaluation."
             },
             "ScoringResult": {
                 "type": "object",
@@ -5431,7 +6581,8 @@
                                     }
                                 ]
                             }
-                        }
+                        },
+                        "description": "The scoring result for each row. Each row is a map of column name to value."
                     },
                     "aggregated_results": {
                         "type": "object",
@@ -5456,7 +6607,8 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "Map of metric name to aggregated value"
                     }
                 },
                 "additionalProperties": false,
@@ -5464,7 +6616,30 @@
                     "score_rows",
                     "aggregated_results"
                 ],
-                "title": "ScoringResult"
+                "title": "ScoringResult",
+                "description": "A scoring result for a single row."
+            },
+            "Agent": {
+                "type": "object",
+                "properties": {
+                    "agent_id": {
+                        "type": "string"
+                    },
+                    "agent_config": {
+                        "$ref": "#/components/schemas/AgentConfig"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "agent_id",
+                    "agent_config",
+                    "created_at"
+                ],
+                "title": "Agent"
             },
             "Session": {
                 "type": "object",
@@ -5595,6 +6770,224 @@
                 ],
                 "title": "Benchmark"
             },
+            "DataSource": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/URIDataSource"
+                    },
+                    {
+                        "$ref": "#/components/schemas/RowsDataSource"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "uri": "#/components/schemas/URIDataSource",
+                        "rows": "#/components/schemas/RowsDataSource"
+                    }
+                }
+            },
+            "Dataset": {
+                "type": "object",
+                "properties": {
+                    "identifier": {
+                        "type": "string"
+                    },
+                    "provider_resource_id": {
+                        "type": "string"
+                    },
+                    "provider_id": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "dataset",
+                        "default": "dataset"
+                    },
+                    "purpose": {
+                        "type": "string",
+                        "enum": [
+                            "post-training/messages",
+                            "eval/question-answer",
+                            "eval/messages-answer"
+                        ],
+                        "title": "DatasetPurpose",
+                        "description": "Purpose of the dataset. Each purpose has a required input data schema."
+                    },
+                    "source": {
+                        "$ref": "#/components/schemas/DataSource"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "identifier",
+                    "provider_resource_id",
+                    "provider_id",
+                    "type",
+                    "purpose",
+                    "source",
+                    "metadata"
+                ],
+                "title": "Dataset"
+            },
+            "RowsDataSource": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "rows",
+                        "default": "rows"
+                    },
+                    "rows": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "oneOf": [
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "type": "boolean"
+                                    },
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array"
+                                    },
+                                    {
+                                        "type": "object"
+                                    }
+                                ]
+                            }
+                        },
+                        "description": "The dataset is stored in rows. E.g. - [ {\"messages\": [{\"role\": \"user\", \"content\": \"Hello, world!\"}, {\"role\": \"assistant\", \"content\": \"Hello, world!\"}]} ]"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "rows"
+                ],
+                "title": "RowsDataSource",
+                "description": "A dataset stored in rows."
+            },
+            "URIDataSource": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "uri",
+                        "default": "uri"
+                    },
+                    "uri": {
+                        "type": "string",
+                        "description": "The dataset can be obtained from a URI. E.g. - \"https://mywebsite.com/mydata.jsonl\" - \"lsfs://mydata.jsonl\" - \"data:csv;base64,{base64_content}\""
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "uri"
+                ],
+                "title": "URIDataSource",
+                "description": "A dataset that can be obtained from a URI."
+            },
+            "Model": {
+                "type": "object",
+                "properties": {
+                    "identifier": {
+                        "type": "string"
+                    },
+                    "provider_resource_id": {
+                        "type": "string"
+                    },
+                    "provider_id": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "model",
+                        "default": "model"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    },
+                    "model_type": {
+                        "$ref": "#/components/schemas/ModelType",
+                        "default": "llm"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "identifier",
+                    "provider_resource_id",
+                    "provider_id",
+                    "type",
+                    "metadata",
+                    "model_type"
+                ],
+                "title": "Model"
+            },
+            "ModelType": {
+                "type": "string",
+                "enum": [
+                    "llm",
+                    "embedding"
+                ],
+                "title": "ModelType"
+            },
             "AgentTurnInputType": {
                 "type": "object",
                 "properties": {
@@ -5669,70 +7062,6 @@
                     "type"
                 ],
                 "title": "CompletionInputType"
-            },
-            "Dataset": {
-                "type": "object",
-                "properties": {
-                    "identifier": {
-                        "type": "string"
-                    },
-                    "provider_resource_id": {
-                        "type": "string"
-                    },
-                    "provider_id": {
-                        "type": "string"
-                    },
-                    "type": {
-                        "type": "string",
-                        "const": "dataset",
-                        "default": "dataset"
-                    },
-                    "dataset_schema": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "$ref": "#/components/schemas/ParamType"
-                        }
-                    },
-                    "url": {
-                        "$ref": "#/components/schemas/URL"
-                    },
-                    "metadata": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "identifier",
-                    "provider_resource_id",
-                    "provider_id",
-                    "type",
-                    "dataset_schema",
-                    "url",
-                    "metadata"
-                ],
-                "title": "Dataset"
             },
             "JsonType": {
                 "type": "object",
@@ -5828,147 +7157,6 @@
                     }
                 }
             },
-            "StringType": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "string",
-                        "default": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type"
-                ],
-                "title": "StringType"
-            },
-            "UnionType": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "union",
-                        "default": "union"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type"
-                ],
-                "title": "UnionType"
-            },
-            "Model": {
-                "type": "object",
-                "properties": {
-                    "identifier": {
-                        "type": "string"
-                    },
-                    "provider_resource_id": {
-                        "type": "string"
-                    },
-                    "provider_id": {
-                        "type": "string"
-                    },
-                    "type": {
-                        "type": "string",
-                        "const": "model",
-                        "default": "model"
-                    },
-                    "metadata": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    },
-                    "model_type": {
-                        "$ref": "#/components/schemas/ModelType",
-                        "default": "llm"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "identifier",
-                    "provider_resource_id",
-                    "provider_id",
-                    "type",
-                    "metadata",
-                    "model_type"
-                ],
-                "title": "Model"
-            },
-            "ModelType": {
-                "type": "string",
-                "enum": [
-                    "llm",
-                    "embedding"
-                ],
-                "title": "ModelType"
-            },
-            "PaginatedRowsResult": {
-                "type": "object",
-                "properties": {
-                    "rows": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "oneOf": [
-                                    {
-                                        "type": "null"
-                                    },
-                                    {
-                                        "type": "boolean"
-                                    },
-                                    {
-                                        "type": "number"
-                                    },
-                                    {
-                                        "type": "string"
-                                    },
-                                    {
-                                        "type": "array"
-                                    },
-                                    {
-                                        "type": "object"
-                                    }
-                                ]
-                            }
-                        }
-                    },
-                    "total_count": {
-                        "type": "integer"
-                    },
-                    "next_page_token": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "rows",
-                    "total_count"
-                ],
-                "title": "PaginatedRowsResult"
-            },
             "ScoringFn": {
                 "type": "object",
                 "properties": {
@@ -6031,6 +7219,36 @@
                     "return_type"
                 ],
                 "title": "ScoringFn"
+            },
+            "StringType": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "string",
+                        "default": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ],
+                "title": "StringType"
+            },
+            "UnionType": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "union",
+                        "default": "union"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ],
+                "title": "UnionType"
             },
             "Shield": {
                 "type": "object",
@@ -6436,7 +7654,8 @@
                     "completed",
                     "in_progress",
                     "failed",
-                    "scheduled"
+                    "scheduled",
+                    "cancelled"
                 ],
                 "title": "JobStatus"
             },
@@ -6580,7 +7799,8 @@
                 "type": "object",
                 "properties": {
                     "document_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The unique identifier for the document."
                     },
                     "content": {
                         "oneOf": [
@@ -6599,10 +7819,12 @@
                             {
                                 "$ref": "#/components/schemas/URL"
                             }
-                        ]
+                        ],
+                        "description": "The content of the document."
                     },
                     "mime_type": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The MIME type of the document."
                     },
                     "metadata": {
                         "type": "object",
@@ -6627,7 +7849,8 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "Additional metadata for the document."
                     }
                 },
                 "additionalProperties": false,
@@ -6636,7 +7859,8 @@
                     "content",
                     "metadata"
                 ],
-                "title": "RAGDocument"
+                "title": "RAGDocument",
+                "description": "A document to be used for document ingestion in the RAG Tool."
             },
             "InsertRequest": {
                 "type": "object",
@@ -6721,6 +7945,53 @@
                 ],
                 "title": "InsertChunksRequest"
             },
+            "ProviderInfo": {
+                "type": "object",
+                "properties": {
+                    "api": {
+                        "type": "string"
+                    },
+                    "provider_id": {
+                        "type": "string"
+                    },
+                    "provider_type": {
+                        "type": "string"
+                    },
+                    "config": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "api",
+                    "provider_id",
+                    "provider_type",
+                    "config"
+                ],
+                "title": "ProviderInfo"
+            },
             "InvokeToolRequest": {
                 "type": "object",
                 "properties": {
@@ -6803,6 +8074,82 @@
                     "content"
                 ],
                 "title": "ToolInvocationResult"
+            },
+            "IterrowsResponse": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "oneOf": [
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "type": "boolean"
+                                    },
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array"
+                                    },
+                                    {
+                                        "type": "object"
+                                    }
+                                ]
+                            }
+                        },
+                        "description": "The rows in the current page."
+                    },
+                    "next_start_index": {
+                        "type": "integer",
+                        "description": "Index into dataset for the first row in the next page. None if there are no more rows."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "data"
+                ],
+                "title": "IterrowsResponse",
+                "description": "A paginated list of rows from a dataset."
+            },
+            "ListAgentSessionsResponse": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Session"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "data"
+                ],
+                "title": "ListAgentSessionsResponse"
+            },
+            "ListAgentsResponse": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Agent"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "data"
+                ],
+                "title": "ListAgentsResponse"
             },
             "BucketResponse": {
                 "type": "object",
@@ -6900,27 +8247,6 @@
                     "data"
                 ],
                 "title": "ListModelsResponse"
-            },
-            "ProviderInfo": {
-                "type": "object",
-                "properties": {
-                    "api": {
-                        "type": "string"
-                    },
-                    "provider_id": {
-                        "type": "string"
-                    },
-                    "provider_type": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "api",
-                    "provider_id",
-                    "provider_type"
-                ],
-                "title": "ProviderInfo"
             },
             "ListProvidersResponse": {
                 "type": "object",
@@ -7090,6 +8416,75 @@
                     "critical"
                 ],
                 "title": "LogSeverity"
+            },
+            "MetricEvent": {
+                "type": "object",
+                "properties": {
+                    "trace_id": {
+                        "type": "string"
+                    },
+                    "span_id": {
+                        "type": "string"
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "attributes": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "integer"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ]
+                        }
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "metric",
+                        "default": "metric"
+                    },
+                    "metric": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "oneOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "number"
+                            }
+                        ]
+                    },
+                    "unit": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "trace_id",
+                    "span_id",
+                    "timestamp",
+                    "type",
+                    "metric",
+                    "value",
+                    "unit"
+                ],
+                "title": "MetricEvent"
             },
             "SpanEndPayload": {
                 "type": "object",
@@ -7970,23 +9365,18 @@
             "RegisterDatasetRequest": {
                 "type": "object",
                 "properties": {
-                    "dataset_id": {
-                        "type": "string"
+                    "purpose": {
+                        "type": "string",
+                        "enum": [
+                            "post-training/messages",
+                            "eval/question-answer",
+                            "eval/messages-answer"
+                        ],
+                        "description": "The purpose of the dataset. One of - \"post-training/messages\": The dataset contains a messages column with list of messages for post-training. { \"messages\": [ {\"role\": \"user\", \"content\": \"Hello, world!\"}, {\"role\": \"assistant\", \"content\": \"Hello, world!\"}, ] } - \"eval/question-answer\": The dataset contains a question column and an answer column for evaluation. { \"question\": \"What is the capital of France?\", \"answer\": \"Paris\" } - \"eval/messages-answer\": The dataset contains a messages column with list of messages and an answer column for evaluation. { \"messages\": [ {\"role\": \"user\", \"content\": \"Hello, my name is John Doe.\"}, {\"role\": \"assistant\", \"content\": \"Hello, John Doe. How can I help you today?\"}, {\"role\": \"user\", \"content\": \"What's my name?\"}, ], \"answer\": \"John Doe\" }"
                     },
-                    "dataset_schema": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "$ref": "#/components/schemas/ParamType"
-                        }
-                    },
-                    "url": {
-                        "$ref": "#/components/schemas/URL"
-                    },
-                    "provider_dataset_id": {
-                        "type": "string"
-                    },
-                    "provider_id": {
-                        "type": "string"
+                    "source": {
+                        "$ref": "#/components/schemas/DataSource",
+                        "description": "The data source of the dataset. Ensure that the data source schema is compatible with the purpose of the dataset. Examples: - { \"type\": \"uri\", \"uri\": \"https://mywebsite.com/mydata.jsonl\" } - { \"type\": \"uri\", \"uri\": \"lsfs://mydata.jsonl\" } - { \"type\": \"uri\", \"uri\": \"data:csv;base64,{base64_content}\" } - { \"type\": \"uri\", \"uri\": \"huggingface://llamastack/simpleqa?split=train\" } - { \"type\": \"rows\", \"rows\": [ { \"messages\": [ {\"role\": \"user\", \"content\": \"Hello, world!\"}, {\"role\": \"assistant\", \"content\": \"Hello, world!\"}, ] } ] }"
                     },
                     "metadata": {
                         "type": "object",
@@ -8011,14 +9401,18 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "The metadata for the dataset. - E.g. {\"description\": \"My dataset\"}"
+                    },
+                    "dataset_id": {
+                        "type": "string",
+                        "description": "The ID of the dataset. If not provided, an ID will be generated."
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "dataset_id",
-                    "dataset_schema",
-                    "url"
+                    "purpose",
+                    "source"
                 ],
                 "title": "RegisterDatasetRequest"
             },
@@ -8220,7 +9614,7 @@
                     "tool_responses": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/ToolResponseMessage"
+                            "$ref": "#/components/schemas/ToolResponse"
                         },
                         "description": "The tool call responses to resume the turn with."
                     },
@@ -8238,13 +9632,14 @@
             "RunEvalRequest": {
                 "type": "object",
                 "properties": {
-                    "task_config": {
-                        "$ref": "#/components/schemas/BenchmarkConfig"
+                    "benchmark_config": {
+                        "$ref": "#/components/schemas/BenchmarkConfig",
+                        "description": "The configuration for the benchmark."
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "task_config"
+                    "benchmark_config"
                 ],
                 "title": "RunEvalRequest"
             },
@@ -8376,7 +9771,8 @@
                                     }
                                 ]
                             }
-                        }
+                        },
+                        "description": "The rows to score."
                     },
                     "scoring_functions": {
                         "type": "object",
@@ -8389,7 +9785,8 @@
                                     "type": "null"
                                 }
                             ]
-                        }
+                        },
+                        "description": "The scoring functions to use for the scoring."
                     }
                 },
                 "additionalProperties": false,
@@ -8406,14 +9803,16 @@
                         "type": "object",
                         "additionalProperties": {
                             "$ref": "#/components/schemas/ScoringResult"
-                        }
+                        },
+                        "description": "A map of scoring function name to ScoringResult."
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "results"
                 ],
-                "title": "ScoreResponse"
+                "title": "ScoreResponse",
+                "description": "The response from scoring."
             },
             "ScoreBatchRequest": {
                 "type": "object",
@@ -8464,23 +9863,6 @@
                     "results"
                 ],
                 "title": "ScoreBatchResponse"
-            },
-            "AlgorithmConfig": {
-                "oneOf": [
-                    {
-                        "$ref": "#/components/schemas/LoraFinetuningConfig"
-                    },
-                    {
-                        "$ref": "#/components/schemas/QATFinetuningConfig"
-                    }
-                ],
-                "discriminator": {
-                    "propertyName": "type",
-                    "mapping": {
-                        "LoRA": "#/components/schemas/LoraFinetuningConfig",
-                        "QAT": "#/components/schemas/QATFinetuningConfig"
-                    }
-                }
             },
             "LoraFinetuningConfig": {
                 "type": "object",
@@ -8617,7 +9999,14 @@
                         "type": "string"
                     },
                     "algorithm_config": {
-                        "$ref": "#/components/schemas/AlgorithmConfig"
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/LoraFinetuningConfig"
+                            },
+                            {
+                                "$ref": "#/components/schemas/QATFinetuningConfig"
+                            }
+                        ]
                     }
                 },
                 "additionalProperties": false,
@@ -8741,7 +10130,68 @@
                 "title": "VersionInfo"
             }
         },
-        "responses": {}
+        "responses": {
+            "BadRequest400": {
+                "description": "The request was invalid or malformed",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/Error"
+                        },
+                        "example": {
+                            "status": 400,
+                            "title": "Bad Request",
+                            "detail": "The request was invalid or malformed"
+                        }
+                    }
+                }
+            },
+            "TooManyRequests429": {
+                "description": "The client has sent too many requests in a given amount of time",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/Error"
+                        },
+                        "example": {
+                            "status": 429,
+                            "title": "Too Many Requests",
+                            "detail": "You have exceeded the rate limit. Please try again later."
+                        }
+                    }
+                }
+            },
+            "InternalServerError500": {
+                "description": "The server encountered an unexpected error",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/Error"
+                        },
+                        "example": {
+                            "status": 500,
+                            "title": "Internal Server Error",
+                            "detail": "An unexpected error occurred. Our team has been notified."
+                        }
+                    }
+                }
+            },
+            "DefaultError": {
+                "description": "An unexpected error occurred",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/Error"
+                        },
+                        "example": {
+                            "status": 0,
+                            "title": "Error",
+                            "detail": "An unexpected error occurred"
+                        }
+                    }
+                }
+            }
+        }
     },
     "security": [
         {
@@ -8767,10 +10217,11 @@
             "name": "Datasets"
         },
         {
-            "name": "Eval"
+            "name": "Eval",
+            "x-displayName": "Llama Stack Evaluation API for running evaluations on model and agent candidates."
         },
         {
-            "name": "Files (Coming Soon)"
+            "name": "Files"
         },
         {
             "name": "Inference",
@@ -8785,6 +10236,10 @@
         },
         {
             "name": "PostTraining (Coming Soon)"
+        },
+        {
+            "name": "Providers",
+            "x-displayName": "Providers API for inspecting, listing, and modifying providers and their configurations."
         },
         {
             "name": "Safety"
@@ -8827,11 +10282,12 @@
                 "DatasetIO",
                 "Datasets",
                 "Eval",
-                "Files (Coming Soon)",
+                "Files",
                 "Inference",
                 "Inspect",
                 "Models",
                 "PostTraining (Coming Soon)",
+                "Providers",
                 "Safety",
                 "Scoring",
                 "ScoringFunctions",

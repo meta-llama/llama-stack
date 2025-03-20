@@ -24,19 +24,9 @@ The Evaluation APIs are associated with a set of Resources as shown in the follo
   - Associated with `Benchmark` resource.
 
 
-Use the following decision tree to decide how to use LlamaStack Evaluation flow.
-![Eval Flow](./resources/eval-flow.png)
-
-
-```{admonition} Note on Benchmark v.s. Application Evaluation
-:class: tip
-- **Benchmark Evaluation** is a well-defined eval-task consisting of `dataset` and `scoring_function`. The generation (inference or agent) will be done as part of evaluation.
-- **Application Evaluation** assumes users already have app inputs & generated outputs. Evaluation will purely focus on scoring the generated outputs via scoring functions (e.g. LLM-as-judge).
-```
-
 ## Evaluation Examples Walkthrough
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/10CHyykee9j2OigaIcRv47BKG9mrNm0tJ?usp=sharing)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/meta-llama/llama-stack/blob/main/docs/notebooks/Llama_Stack_Benchmark_Evals.ipynb)
 
 It is best to open this notebook in Colab to follow along with the examples.
 
@@ -63,20 +53,29 @@ eval_rows = ds.to_pandas().to_dict(orient="records")
   - Run evaluate on the dataset
 
 ```python
+from rich.pretty import pprint
+from tqdm import tqdm
+
 SYSTEM_PROMPT_TEMPLATE = """
-You are an expert in Agriculture whose job is to answer questions from the user using images.
+You are an expert in {subject} whose job is to answer questions from the user using images.
+
 First, reason about the correct answer.
+
 Then write the answer in the following format where X is exactly one of A,B,C,D:
+
 Answer: X
+
 Make sure X is one of A,B,C,D.
+
 If you are uncertain of the correct answer, guess the most likely one.
 """
 
 system_message = {
     "role": "system",
-    "content": SYSTEM_PROMPT_TEMPLATE,
+    "content": SYSTEM_PROMPT_TEMPLATE.format(subject=subset),
 }
 
+# register the evaluation benchmark task with the dataset and scoring function
 client.benchmarks.register(
     benchmark_id="meta-reference::mmmu",
     dataset_id=f"mmmu-{subset}-{split}",
@@ -87,14 +86,15 @@ response = client.eval.evaluate_rows(
     benchmark_id="meta-reference::mmmu",
     input_rows=eval_rows,
     scoring_functions=["basic::regex_parser_multiple_choice_answer"],
-    task_config={
-        "type": "benchmark",
+    benchmark_config={
         "eval_candidate": {
             "type": "model",
             "model": "meta-llama/Llama-3.2-90B-Vision-Instruct",
             "sampling_params": {
                 "strategy": {
-                    "type": "greedy",
+                    "type": "top_p",
+                    "temperature": 1.0,
+                    "top_p": 0.95,
                 },
                 "max_tokens": 4096,
                 "repeat_penalty": 1.0,
@@ -103,6 +103,7 @@ response = client.eval.evaluate_rows(
         },
     },
 )
+pprint(response)
 ```
 
 #### 1.2. Running SimpleQA
@@ -113,24 +114,17 @@ response = client.eval.evaluate_rows(
 simpleqa_dataset_id = "huggingface::simpleqa"
 
 _ = client.datasets.register(
+    purpose="eval/messages-answer",
+    source={
+        "type": "uri",
+        "uri": "huggingface://datasets/llamastack/simpleqa?split=train",
+    },
     dataset_id=simpleqa_dataset_id,
-    provider_id="huggingface",
-    url={"uri": "https://huggingface.co/datasets/llamastack/evals"},
-    metadata={
-        "path": "llamastack/evals",
-        "name": "evals__simpleqa",
-        "split": "train",
-    },
-    dataset_schema={
-        "input_query": {"type": "string"},
-        "expected_answer": {"type": "string"},
-        "chat_completion_input": {"type": "chat_completion_input"},
-    },
 )
 
-eval_rows = client.datasetio.get_rows_paginated(
+eval_rows = client.datasets.iterrows(
     dataset_id=simpleqa_dataset_id,
-    rows_in_page=5,
+    limit=5,
 )
 ```
 
@@ -143,10 +137,9 @@ client.benchmarks.register(
 
 response = client.eval.evaluate_rows(
     benchmark_id="meta-reference::simpleqa",
-    input_rows=eval_rows.rows,
+    input_rows=eval_rows.data,
     scoring_functions=["llm-as-judge::405b-simpleqa"],
-    task_config={
-        "type": "benchmark",
+    benchmark_config={
         "eval_candidate": {
             "type": "model",
             "model": "meta-llama/Llama-3.2-90B-Vision-Instruct",
@@ -160,6 +153,7 @@ response = client.eval.evaluate_rows(
         },
     },
 )
+pprint(response)
 ```
 
 
@@ -170,19 +164,17 @@ response = client.eval.evaluate_rows(
 
 ```python
 agent_config = {
-    "model": "meta-llama/Llama-3.1-405B-Instruct",
-    "instructions": "You are a helpful assistant",
+    "model": "meta-llama/Llama-3.3-70B-Instruct",
+    "instructions": "You are a helpful assistant that have access to tool to search the web. ",
     "sampling_params": {
         "strategy": {
-            "type": "greedy",
-        },
-    },
-    "tools": [
-        {
-            "type": "brave_search",
-            "engine": "tavily",
-            "api_key": userdata.get("TAVILY_SEARCH_API_KEY"),
+            "type": "top_p",
+            "temperature": 0.5,
+            "top_p": 0.9,
         }
+    },
+    "toolgroups": [
+        "builtin::websearch",
     ],
     "tool_choice": "auto",
     "tool_prompt_format": "json",
@@ -193,27 +185,24 @@ agent_config = {
 
 response = client.eval.evaluate_rows(
     benchmark_id="meta-reference::simpleqa",
-    input_rows=eval_rows.rows,
+    input_rows=eval_rows.data,
     scoring_functions=["llm-as-judge::405b-simpleqa"],
-    task_config={
-        "type": "benchmark",
+    benchmark_config={
         "eval_candidate": {
             "type": "agent",
             "config": agent_config,
         },
     },
 )
+pprint(response)
 ```
 
 ### 3. Agentic Application Dataset Scoring
-- Llama Stack offers a library of scoring functions and the `/scoring` API, allowing you to run evaluations on your pre-annotated AI application datasets.
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/meta-llama/llama-stack/blob/main/docs/getting_started.ipynb)
 
-- In this example, we will work with an example RAG dataset and couple of scoring functions for evaluation.
-  - `llm-as-judge::base`: LLM-As-Judge with custom judge prompt & model.
-  - `braintrust::factuality`: Factuality scorer from [braintrust](https://github.com/braintrustdata/autoevals).
-  - `basic::subset_of`: Basic checking if generated answer is a subset of expected answer.
+Llama Stack offers a library of scoring functions and the `/scoring` API, allowing you to run evaluations on your pre-annotated AI application datasets.
 
-- Please checkout our [Llama Stack Playground](https://llama-stack.readthedocs.io/en/latest/playground/index.html) for an interactive interface to upload datasets and run scorings.
+In this example, we will work with an example RAG dataset you have built previously, label with an annotation, and use LLM-As-Judge with custom judge prompt for scoring. Please checkout our [Llama Stack Playground](https://llama-stack.readthedocs.io/en/latest/playground/index.html) for an interactive interface to upload datasets and run scorings.
 
 ```python
 judge_model_id = "meta-llama/Llama-3.1-405B-Instruct-FP8"
@@ -280,18 +269,25 @@ response = client.scoring.score(
 The following examples give the quick steps to start running evaluations using the llama-stack-client CLI.
 
 #### Benchmark Evaluation CLI
-Usage: There are 2 inputs necessary for running a benchmark eval
-- `eval-task-id`: the identifier associated with the eval task. Each `Benchmark` is parametrized by
-  - `dataset_id`: the identifier associated with the dataset.
-  - `List[scoring_function_id]`: list of scoring function identifiers.
-- `eval-task-config`: specifies the configuration of the model / agent to evaluate on.
+There are 3 necessary input for running a benchmark eval
+- `list of benchmark_ids`: The list of benchmark ids to run evaluation on
+- `model-id`: The model id to evaluate on
+- `utput_dir`: Path to store the evaluate results
+```
+llama-stack-client eval run-benchmark <benchmark_id_1> <benchmark_id_2> ... \
+--model_id <model id to evaluate on> \
+--output_dir <directory to store the evaluate results> \
+```
+
+You can run
+```
+llama-stack-client eval run-benchmark help
+```
+to see the description of all the flags to run benckmark eval
 
 
-```
-llama-stack-client eval run_benchmark <eval-task-id> \
---eval-task-config ~/benchmark_config.json \
---visualize
-```
+In the output log, you can find the path to the file that has your evaluation results. Open that file and you can see you aggrgate
+evaluation results over there.
 
 
 #### Application Evaluation CLI
@@ -317,28 +313,9 @@ The `BenchmarkConfig` are user specified config to define:
 2. Optionally scoring function params to allow customization of scoring function behaviour. This is useful to parameterize generic scoring functions such as LLMAsJudge with custom `judge_model` / `judge_prompt`.
 
 
-**Example Benchmark BenchmarkConfig**
+**Example BenchmarkConfig**
 ```json
 {
-    "type": "benchmark",
-    "eval_candidate": {
-        "type": "model",
-        "model": "Llama3.2-3B-Instruct",
-        "sampling_params": {
-            "strategy": {
-                "type": "greedy",
-            },
-            "max_tokens": 0,
-            "repetition_penalty": 1.0
-        }
-    }
-}
-```
-
-**Example Application BenchmarkConfig**
-```json
-{
-    "type": "app",
     "eval_candidate": {
         "type": "model",
         "model": "Llama3.1-405B-Instruct",
@@ -361,4 +338,53 @@ The `BenchmarkConfig` are user specified config to define:
         }
     }
 }
+```
+
+
+## Open-benchmark Contributing Guide
+
+### Create the new dataset for your new benchmark
+An eval open-benchmark essentially contains 2 parts:
+- `raw data`: The raw dataset associated with the benchmark. You typically need to search the original paper that introduces the benchmark and find the canonical dataset (usually hosted on huggingface)
+- `prompt template`: How to ask the candidate model to generate the answer (prompt template plays a critical role to the evaluation results). Tyically, you can find the reference prompt template associated with the benchmark in benchmarks author's repo ([exmaple](https://github.com/idavidrein/gpqa/blob/main/prompts/chain_of_thought.txt)) or some other popular open source repos ([example](https://github.com/openai/simple-evals/blob/0a6e8f62e52bc5ae915f752466be3af596caf392/common.py#L14))
+
+To create new open-benmark in llama stack, you need to combine the prompt template and the raw data into the `chat_completion_input` column in the evaluation dataset.
+
+Llama stack enforeces the evaluate dataset schema to contain at least 3 columns:
+- `chat_completion_input`: The actual input to the model to run the generation for eval
+- `input_query`: The raw input from the raw dataset without the prompt template
+- `expected_answer`: The ground truth for scoring functions to calcalate the score from.
+
+
+You need to write a script [example convert script](https://gist.github.com/yanxi0830/118e9c560227d27132a7fd10e2c92840) to convert the benchmark raw dataset to llama stack format eval dataset and update the dataset to huggingface [example benchmark dataset](https://huggingface.co/datasets/llamastack/mmmu)
+
+
+### Find scoring function for your new benchmark
+The purpose of scoring function is to calculate the score for each example based on candidate model generation result and expected_answer. It also aggregates the scores from all the examples and generate the final evaluate results.
+
+
+Firstly, you can see if the existing [llama stack scoring functions](https://github.com/meta-llama/llama-stack/tree/main/llama_stack/providers/inline/scoring) can fulfill your need. If not, you need to write a new scoring function based on what benchmark author / other open source repo describe.
+
+### Add new benchmark into template
+Firstly, you need to add the evaluation dataset associated with your benchmark under `datasets` resource in the [open-benchmark](https://github.com/meta-llama/llama-stack/blob/main/llama_stack/templates/open-benchmark/run.yaml)
+
+Secondly, you need to add the new benchmark you just created under the `benchmarks` resource in the same template. To add the new benchmark, you need to have
+- `benchmark_id`: identifier of the benchmark
+- `dataset_id`: identifier of the dataset associated with your benchmark
+- `scoring_functions`: scoring function to calculate the score based on generation results and expected_answer
+
+
+### Test the new benchmark
+
+Spin up llama stack server with 'open-benchmark' templates
+```
+llama stack run llama_stack/templates/open-benchmark/run.yaml
+
+```
+
+Run eval benchmark CLI with your new benchmark id
+```
+llama-stack-client eval run-benchmark <new_benchmark_id> \
+--model_id <model id to evaluate on> \
+--output_dir <directory to store the evaluate results> \
 ```

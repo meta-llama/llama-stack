@@ -13,14 +13,13 @@ from llama_stack.distribution.datatypes import (
     ShieldInput,
     ToolGroupInput,
 )
-from llama_stack.models.llama.sku_list import all_registered_models
 from llama_stack.providers.inline.inference.sentence_transformers import (
     SentenceTransformersInferenceConfig,
 )
 from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOConfig
 from llama_stack.providers.remote.inference.fireworks.config import FireworksImplConfig
 from llama_stack.providers.remote.inference.fireworks.models import MODEL_ENTRIES
-from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
+from llama_stack.templates.template import DistributionTemplate, RunConfigSettings, get_model_registry
 
 
 def get_distribution_template() -> DistributionTemplate:
@@ -36,6 +35,7 @@ def get_distribution_template() -> DistributionTemplate:
         "tool_runtime": [
             "remote::brave-search",
             "remote::tavily-search",
+            "remote::wolfram-alpha",
             "inline::code-interpreter",
             "inline::rag-runtime",
             "remote::model-context-protocol",
@@ -57,20 +57,14 @@ def get_distribution_template() -> DistributionTemplate:
     vector_io_provider = Provider(
         provider_id="faiss",
         provider_type="inline::faiss",
-        config=FaissVectorIOConfig.sample_run_config(f"distributions/{name}"),
+        config=FaissVectorIOConfig.sample_run_config(f"~/.llama/distributions/{name}"),
     )
 
-    core_model_to_hf_repo = {m.descriptor(): m.huggingface_repo for m in all_registered_models()}
-    default_models = [
-        ModelInput(
-            model_id=core_model_to_hf_repo[m.llama_model] if m.llama_model else m.provider_model_id,
-            provider_model_id=m.provider_model_id,
-            provider_id="fireworks",
-            metadata=m.metadata,
-            model_type=m.model_type,
-        )
-        for m in MODEL_ENTRIES
-    ]
+    available_models = {
+        "fireworks": MODEL_ENTRIES,
+    }
+    default_models = get_model_registry(available_models)
+
     embedding_model = ModelInput(
         model_id="all-MiniLM-L6-v2",
         provider_id="sentence-transformers",
@@ -83,6 +77,10 @@ def get_distribution_template() -> DistributionTemplate:
         ToolGroupInput(
             toolgroup_id="builtin::websearch",
             provider_id="tavily-search",
+        ),
+        ToolGroupInput(
+            toolgroup_id="builtin::wolfram_alpha",
+            provider_id="wolfram-alpha",
         ),
         ToolGroupInput(
             toolgroup_id="builtin::rag",
@@ -101,7 +99,7 @@ def get_distribution_template() -> DistributionTemplate:
         container_image=None,
         template_path=Path(__file__).parent / "doc_template.md",
         providers=providers,
-        default_models=default_models,
+        available_models_by_provider=available_models,
         run_configs={
             "run.yaml": RunConfigSettings(
                 provider_overrides={

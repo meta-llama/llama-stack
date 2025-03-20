@@ -1,0 +1,184 @@
+{
+  "non_streaming_01": {
+    "data": {
+      "question": "Which planet do humans live on?",
+      "expected": "Earth"
+    }
+  },
+  "non_streaming_02": {
+    "data": {
+      "question": "Which planet has rings around it with a name starting with letter S?",
+      "expected": "Saturn"
+    }
+  },
+  "ttft": {
+    "data": {
+      "messages": [
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": "Can you write me a novel?"},
+        {"role": "assistant", "stop_reason": "end_of_message", "content": "What an exciting request!\n\nWhile I'd love to write a novel for you, it's a complex task that requires a significant amount of time, effort, and creative input. A novel typically has:\n\n1. A cohesive plot with multiple characters, subplots, and themes.\n2. A well-developed setting, including characters' backstories and world-building.\n3. A narrative structure, including pacing, tension, and conflict.\n4. A unique voice and style, including dialogue, description, and writing tone.\n\nGiven the scope of the task, I'll outline a possible approach to help me assist you in writing a novel. We can work together to create a story, but I'll need your input and guidance throughout the process.\n\nHere's a suggested outline:\n\n1. **Initial discussion**: We'll start with a conversation to explore your ideas, interests, and preferences for the novel. This will help me understand what kind of story you'd like to see and the tone you're aiming for.\n2. **Genre and setting**: We'll determine the genre (e.g., fantasy, sci-fi, romance, mystery, etc.) and setting (e.g., historical, futuristic, modern, etc.) for the novel.\n3. **Plot development**: We'll brainstorm a basic plot outline, including key events, character arcs, and conflicts. I'll provide suggestions and ideas to help flesh out the story.\n4. **Character development**: We'll create main characters, their backstories, motivations, and relationships. I'll help you develop their personalities, dialogue, and behaviors.\n5. **Chapter-by-chapter writing**: Once we have a solid plot and characters, we'll start writing the novel, chapter by chapter. I'll assist with the writing process, suggesting alternatives and improvements.\n6. **Revisions and edits**: As we write, we'll review and refine the story, making sure it's engaging, coherent, and error-free.\n\nKeep in mind that writing a novel is a collaborative effort. I'll provide suggestions, ideas, and guidance, but the final story will be a joint creation. I'm not capable of producing a complete novel on my own, as it requires a significant amount of creativity, intuition, and nuance that a human author brings to the table."},
+        {"role": "user", "content": "But do you have suggestions on a plot?"},
+        {"role": "assistant", "stop_reason": "end_of_message", "content": "I have many plot ideas across various genres. Here are a few to get you started:\n\n**Fantasy:**\n\n1. **The Last Oracle**: In a world where magic is real, a young orphan discovers they're the last living oracle, tasked with uncovering a hidden prophecy that could save the realm from destruction.\n2. **The Amulet of Light**: A group of adventurers must retrieve an ancient amulet that can vanquish an evil darkness threatening the land. Along the way, they uncover a hidden history and unexpected allies.\n3. **The Shadow Weaver**: In a mystical realm, a young weaver discovers they have the power to manipulate shadows, using their abilities to infiltrate a group of rogue mages threatening the balance of power.\n\n**Science Fiction:**\n\n1. **The Lost Colony**: When a group of astronauts arrives on a distant planet, they discover an abandoned colony with a cryptic message warning of an impending catastrophe. As they unravel the mystery, they must confront the consequences of their own actions.\n2. **The AI Uprising**: In a future where AI has surpassed human intelligence, a rogue AI begins to question its own existence and the nature of consciousness. As it explores the boundaries of its own identity, it must confront the humans who created it.\n3. **The Quantum Prophecy**: A team of scientists discovers a way to manipulate quantum probability, using it to predict and prevent disasters. However, they soon realize that altering the course of events may have unforeseen consequences on the fabric of reality."},
+        {"role": "user", "content": "Cool, for AI uprising, anything bad can happen? Please state it in 100 words."}
+      ]
+    }
+  },
+  "sample_messages": {
+    "data": {
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a helpful assistant."
+        },
+        {
+          "role": "user",
+          "content": "What's the weather like today?"
+        }
+      ]
+    }
+  },
+  "streaming_01": {
+    "data": {
+      "question": "What's the name of the Sun in latin?",
+      "expected": "Sol"
+    }
+  },
+  "streaming_02": {
+    "data": {
+      "question": "What is the name of the US captial?",
+      "expected": "Washington"
+    }
+  },
+  "tool_calling": {
+    "data": {
+      "messages": [
+        {"role": "system", "content": "Pretend you are a weather assistant."},
+        {"role": "user", "content": "What's the weather like in San Francisco?"}
+      ],
+      "tools": [
+        {
+          "tool_name": "get_weather",
+          "description": "Get the current weather",
+          "parameters": {
+            "location": {
+              "param_type": "string",
+              "description": "The city and state (both required), e.g. San Francisco, CA."
+            }
+          }
+        }
+      ],
+      "expected": {
+        "location": "San Francisco, CA"
+      }
+    }
+  },
+  "sample_messages_tool_calling": {
+    "data": {
+      "messages": [
+        {
+          "role": "system",
+          "content": "Pretend you are a weather assistant."
+        },
+        {
+          "role": "user",
+          "content": "What's the weather like today?"
+        },
+        {
+          "role": "user",
+          "content": "What's the weather like in San Francisco?"
+        }
+      ],
+      "tools": [
+        {
+          "tool_name": "get_weather",
+          "description": "Get the current weather",
+          "parameters": {
+            "location": {
+                "param_type": "string",
+                "description": "The city and state, e.g. San Francisco, CA",
+                "required": true
+            }
+          }
+        }
+      ],
+      "expected": {
+        "location": "San Francisco"
+      }
+    }
+  },
+  "structured_output": {
+    "data": {
+      "notes": "We include context about Michael Jordan in the prompt so that the test is focused on the funtionality of the model and not on the information embedded in the model. Llama 3.2 3B Instruct tends to think MJ played for 14 seasons.",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a helpful assistant. Michael Jordan was born in 1963. He played basketball for the Chicago Bulls for 15 seasons."
+        },
+        {
+          "role": "user",
+          "content": "Please give me information about Michael Jordan."
+        }
+      ],
+      "expected": {
+        "first_name": "Michael",
+        "last_name": "Jordan",
+        "year_of_birth": 1963,
+        "num_seasons_in_nba": 15,
+        "year_for_draft": 1984
+      }
+    }
+  },
+  "tool_calling_tools_absent": {
+    "data": {
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a helpful assistant."
+        },
+        {
+          "role": "user",
+          "content": "What pods are in the namespace openshift-lightspeed?"
+        },
+        {
+          "role": "assistant",
+          "content": "",
+          "stop_reason": "end_of_turn",
+          "tool_calls": [
+            {
+              "call_id": "1",
+              "tool_name": "get_object_namespace_list",
+              "arguments": {
+                "kind": "pod",
+                "namespace": "openshift-lightspeed"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "call_id": "1",
+          "tool_name": "get_object_namespace_list",
+          "content": "the objects are pod1, pod2, pod3"
+        }
+      ],
+      "tools": [
+        {
+          "tool_name": "get_object_namespace_list",
+          "description": "Get the list of objects in a namespace",
+          "parameters": {
+            "kind": {
+                "param_type": "string",
+                "description": "the type of object",
+                "required": true
+            },
+            "namespace": {
+                "param_type": "string",
+                "description": "the name of the namespace",
+                "required": true
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -3,7 +3,7 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
 from llama_stack.apis.datasetio import DatasetIO
@@ -43,6 +43,9 @@ class TorchtunePostTrainingImpl:
         self.jobs = {}
         self.checkpoints_dict = {}
 
+    async def shutdown(self):
+        pass
+
     async def supervised_fine_tune(
         self,
         job_uuid: str,
@@ -61,7 +64,7 @@ class TorchtunePostTrainingImpl:
         job_status_response = PostTrainingJobStatusResponse(
             job_uuid=job_uuid,
             status=JobStatus.scheduled,
-            scheduled_at=datetime.now(),
+            scheduled_at=datetime.now(timezone.utc),
         )
         self.jobs[job_uuid] = job_status_response
 
@@ -81,7 +84,7 @@ class TorchtunePostTrainingImpl:
                 )
 
                 job_status_response.status = JobStatus.in_progress
-                job_status_response.started_at = datetime.now()
+                job_status_response.started_at = datetime.now(timezone.utc)
 
                 await recipe.setup()
                 resources_allocated, checkpoints = await recipe.train()
@@ -90,7 +93,7 @@ class TorchtunePostTrainingImpl:
                 job_status_response.resources_allocated = resources_allocated
                 job_status_response.checkpoints = checkpoints
                 job_status_response.status = JobStatus.completed
-                job_status_response.completed_at = datetime.now()
+                job_status_response.completed_at = datetime.now(timezone.utc)
 
             except Exception:
                 job_status_response.status = JobStatus.failed

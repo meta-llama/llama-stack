@@ -18,54 +18,48 @@ from llama_stack.models.llama.sku_list import all_registered_models
 INFERENCE_APIS = ["chat_completion"]
 FUNCTIONALITIES = ["streaming", "structured_output", "tool_calling"]
 SUPPORTED_MODELS = {
-    "ollama": set(
-        [
-            CoreModelId.llama3_1_8b_instruct.value,
-            CoreModelId.llama3_1_8b_instruct.value,
-            CoreModelId.llama3_1_70b_instruct.value,
-            CoreModelId.llama3_1_70b_instruct.value,
-            CoreModelId.llama3_1_405b_instruct.value,
-            CoreModelId.llama3_1_405b_instruct.value,
-            CoreModelId.llama3_2_1b_instruct.value,
-            CoreModelId.llama3_2_1b_instruct.value,
-            CoreModelId.llama3_2_3b_instruct.value,
-            CoreModelId.llama3_2_3b_instruct.value,
-            CoreModelId.llama3_2_11b_vision_instruct.value,
-            CoreModelId.llama3_2_11b_vision_instruct.value,
-            CoreModelId.llama3_2_90b_vision_instruct.value,
-            CoreModelId.llama3_2_90b_vision_instruct.value,
-            CoreModelId.llama3_3_70b_instruct.value,
-            CoreModelId.llama_guard_3_8b.value,
-            CoreModelId.llama_guard_3_1b.value,
-        ]
-    ),
-    "fireworks": set(
-        [
-            CoreModelId.llama3_1_8b_instruct.value,
-            CoreModelId.llama3_1_70b_instruct.value,
-            CoreModelId.llama3_1_405b_instruct.value,
-            CoreModelId.llama3_2_1b_instruct.value,
-            CoreModelId.llama3_2_3b_instruct.value,
-            CoreModelId.llama3_2_11b_vision_instruct.value,
-            CoreModelId.llama3_2_90b_vision_instruct.value,
-            CoreModelId.llama3_3_70b_instruct.value,
-            CoreModelId.llama_guard_3_8b.value,
-            CoreModelId.llama_guard_3_11b_vision.value,
-        ]
-    ),
-    "together": set(
-        [
-            CoreModelId.llama3_1_8b_instruct.value,
-            CoreModelId.llama3_1_70b_instruct.value,
-            CoreModelId.llama3_1_405b_instruct.value,
-            CoreModelId.llama3_2_3b_instruct.value,
-            CoreModelId.llama3_2_11b_vision_instruct.value,
-            CoreModelId.llama3_2_90b_vision_instruct.value,
-            CoreModelId.llama3_3_70b_instruct.value,
-            CoreModelId.llama_guard_3_8b.value,
-            CoreModelId.llama_guard_3_11b_vision.value,
-        ]
-    ),
+    "ollama": {
+        CoreModelId.llama3_1_8b_instruct.value,
+        CoreModelId.llama3_1_8b_instruct.value,
+        CoreModelId.llama3_1_70b_instruct.value,
+        CoreModelId.llama3_1_70b_instruct.value,
+        CoreModelId.llama3_1_405b_instruct.value,
+        CoreModelId.llama3_1_405b_instruct.value,
+        CoreModelId.llama3_2_1b_instruct.value,
+        CoreModelId.llama3_2_1b_instruct.value,
+        CoreModelId.llama3_2_3b_instruct.value,
+        CoreModelId.llama3_2_3b_instruct.value,
+        CoreModelId.llama3_2_11b_vision_instruct.value,
+        CoreModelId.llama3_2_11b_vision_instruct.value,
+        CoreModelId.llama3_2_90b_vision_instruct.value,
+        CoreModelId.llama3_2_90b_vision_instruct.value,
+        CoreModelId.llama3_3_70b_instruct.value,
+        CoreModelId.llama_guard_3_8b.value,
+        CoreModelId.llama_guard_3_1b.value,
+    },
+    "fireworks": {
+        CoreModelId.llama3_1_8b_instruct.value,
+        CoreModelId.llama3_1_70b_instruct.value,
+        CoreModelId.llama3_1_405b_instruct.value,
+        CoreModelId.llama3_2_1b_instruct.value,
+        CoreModelId.llama3_2_3b_instruct.value,
+        CoreModelId.llama3_2_11b_vision_instruct.value,
+        CoreModelId.llama3_2_90b_vision_instruct.value,
+        CoreModelId.llama3_3_70b_instruct.value,
+        CoreModelId.llama_guard_3_8b.value,
+        CoreModelId.llama_guard_3_11b_vision.value,
+    },
+    "together": {
+        CoreModelId.llama3_1_8b_instruct.value,
+        CoreModelId.llama3_1_70b_instruct.value,
+        CoreModelId.llama3_1_405b_instruct.value,
+        CoreModelId.llama3_2_3b_instruct.value,
+        CoreModelId.llama3_2_11b_vision_instruct.value,
+        CoreModelId.llama3_2_90b_vision_instruct.value,
+        CoreModelId.llama3_3_70b_instruct.value,
+        CoreModelId.llama_guard_3_8b.value,
+        CoreModelId.llama_guard_3_11b_vision.value,
+    },
 }
 
 

@@ -11,15 +11,134 @@
 # top-level folder for each specific model found within the models/ directory at
 # the top-level of this source tree.
 
+import base64
 from enum import Enum
-from typing import Any, Dict, Literal, Optional, Union
+from io import BytesIO
+from typing import Any, Dict, List, Literal, Optional, Union
 
-# import all for backwards compatibility
-from llama_models.datatypes import *  # noqa: F403
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_serializer, field_validator
 from typing_extensions import Annotated
 
 from llama_stack.schema_utils import json_schema_type, register_schema
+
+# The goal is that these set of types are relevant for all Llama models.
+# That isn't the current state yet -- e.g., BuiltinTool is somewhat specific to
+# the llama3 series of models.
+
+
+class Role(Enum):
+    system = "system"
+    user = "user"
+    assistant = "assistant"
+    tool = "tool"
+
+
+class BuiltinTool(Enum):
+    brave_search = "brave_search"
+    wolfram_alpha = "wolfram_alpha"
+    photogen = "photogen"
+    code_interpreter = "code_interpreter"
+
+
+Primitive = Union[str, int, float, bool, None]
+RecursiveType = Union[Primitive, List[Primitive], Dict[str, Primitive]]
+
+
+class ToolCall(BaseModel):
+    call_id: str
+    tool_name: Union[BuiltinTool, str]
+    # Plan is to deprecate the Dict in favor of a JSON string
+    # that is parsed on the client side instead of trying to manage
+    # the recursive type here.
+    # Making this a union so that client side can start prepping for this change.
+    # Eventually, we will remove both the Dict and arguments_json field,
+    # and arguments will just be a str
+    arguments: Union[str, Dict[str, RecursiveType]]
+    arguments_json: Optional[str] = None
+
+    @field_validator("tool_name", mode="before")
+    @classmethod
+    def validate_field(cls, v):
+        if isinstance(v, str):
+            try:
+                return BuiltinTool(v)
+            except ValueError:
+                return v
+        return v
+
+
+class ToolPromptFormat(Enum):
+    """Prompt format for calling custom / zero shot tools.
+
+    :cvar json: JSON format for calling tools. It takes the form:
+        {
+            "type": "function",
+            "function" : {
+                "name": "function_name",
+                "description": "function_description",
+                "parameters": {...}
+            }
+        }
+    :cvar function_tag: Function tag format, pseudo-XML. This looks like:
+        <function=function_name>(parameters)</function>
+
+    :cvar python_list: Python list. The output is a valid Python expression that can be
+        evaluated to a list. Each element in the list is a function call. Example:
+        ["function_name(param1, param2)", "function_name(param1, param2)"]
+    """
+
+    json = "json"
+    function_tag = "function_tag"
+    python_list = "python_list"
+
+
+class StopReason(Enum):
+    end_of_turn = "end_of_turn"
+    end_of_message = "end_of_message"
+    out_of_tokens = "out_of_tokens"
+
+
+class RawMediaItem(BaseModel):
+    type: Literal["image"] = "image"
+    data: bytes | BytesIO
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    @field_serializer("data")
+    def serialize_data(self, data: Optional[bytes], _info):
+        if data is None:
+            return None
+        return base64.b64encode(data).decode("utf-8")
+
+    @field_validator("data", mode="before")
+    @classmethod
+    def validate_data(cls, v):
+        if isinstance(v, str):
+            return base64.b64decode(v)
+        return v
+
+
+class RawTextItem(BaseModel):
+    type: Literal["text"] = "text"
+    text: str
+
+
+RawContentItem = Annotated[Union[RawTextItem, RawMediaItem], Field(discriminator="type")]
+
+RawContent = str | RawContentItem | List[RawContentItem]
+
+
+class RawMessage(BaseModel):
+    role: Literal["user"] | Literal["system"] | Literal["tool"] | Literal["assistant"]
+    content: RawContent
+
+    # This is for RAG but likely should be absorbed into content
+    context: Optional[RawContent] = None
+
+    # These are for the output message coming from the assistant
+    stop_reason: Optional[StopReason] = None
+    tool_calls: List[ToolCall] = Field(default_factory=list)
+
 
 register_schema(ToolCall)
 
@@ -67,13 +186,11 @@ class TopKSamplingStrategy(BaseModel):
     top_k: int = Field(..., ge=1)
 
 
-SamplingStrategy = register_schema(
-    Annotated[
-        Union[GreedySamplingStrategy, TopPSamplingStrategy, TopKSamplingStrategy],
-        Field(discriminator="type"),
-    ],
-    name="SamplingStrategy",
-)
+SamplingStrategy = Annotated[
+    Union[GreedySamplingStrategy, TopPSamplingStrategy, TopKSamplingStrategy],
+    Field(discriminator="type"),
+]
+register_schema(SamplingStrategy, name="SamplingStrategy")
 
 
 @json_schema_type

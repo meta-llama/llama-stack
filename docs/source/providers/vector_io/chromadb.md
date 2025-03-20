@@ -1,10 +1,10 @@
 ---
 orphan: true
 ---
-# Chroma 
+# Chroma
 
-[Chroma](https://www.trychroma.com/) is an inline and remote vector 
-database provider for Llama Stack. It allows you to store and query vectors directly within a Chroma database. 
+[Chroma](https://www.trychroma.com/) is an inline and remote vector
+database provider for Llama Stack. It allows you to store and query vectors directly within a Chroma database.
 That means you're not limited to storing vectors in memory or in a separate service.
 
 ## Features

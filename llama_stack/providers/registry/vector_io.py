@@ -34,6 +34,8 @@ def available_providers() -> List[ProviderSpec]:
             config_class="llama_stack.providers.inline.vector_io.faiss.FaissVectorIOConfig",
             api_dependencies=[Api.inference],
         ),
+        # NOTE: sqlite-vec cannot be bundled into the container image because it does not have a
+        # source distribution and the wheels are not available for all platforms.
         InlineProviderSpec(
             api=Api.vector_io,
             provider_type="inline::sqlite-vec",
@@ -90,15 +92,13 @@ def available_providers() -> List[ProviderSpec]:
             ),
             api_dependencies=[Api.inference],
         ),
-        remote_provider_spec(
+        InlineProviderSpec(
             api=Api.vector_io,
-            adapter=AdapterSpec(
-                adapter_type="sample",
-                pip_packages=[],
-                module="llama_stack.providers.remote.vector_io.sample",
-                config_class="llama_stack.providers.remote.vector_io.sample.SampleVectorIOConfig",
-            ),
-            api_dependencies=[],
+            provider_type="inline::qdrant",
+            pip_packages=["qdrant-client"],
+            module="llama_stack.providers.inline.vector_io.qdrant",
+            config_class="llama_stack.providers.inline.vector_io.qdrant.QdrantVectorIOConfig",
+            api_dependencies=[Api.inference],
         ),
         remote_provider_spec(
             Api.vector_io,
@@ -108,6 +108,24 @@ def available_providers() -> List[ProviderSpec]:
                 module="llama_stack.providers.remote.vector_io.qdrant",
                 config_class="llama_stack.providers.remote.vector_io.qdrant.QdrantVectorIOConfig",
             ),
+            api_dependencies=[Api.inference],
+        ),
+        remote_provider_spec(
+            Api.vector_io,
+            AdapterSpec(
+                adapter_type="milvus",
+                pip_packages=["pymilvus"],
+                module="llama_stack.providers.remote.vector_io.milvus",
+                config_class="llama_stack.providers.remote.vector_io.milvus.MilvusVectorIOConfig",
+            ),
+            api_dependencies=[Api.inference],
+        ),
+        InlineProviderSpec(
+            api=Api.vector_io,
+            provider_type="inline::milvus",
+            pip_packages=["pymilvus"],
+            module="llama_stack.providers.inline.vector_io.milvus",
+            config_class="llama_stack.providers.inline.vector_io.milvus.MilvusVectorIOConfig",
             api_dependencies=[Api.inference],
         ),
     ]

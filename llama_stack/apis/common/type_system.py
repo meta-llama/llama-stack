@@ -72,24 +72,22 @@ class DialogType(BaseModel):
     type: Literal["dialog"] = "dialog"
 
 
-ParamType = register_schema(
-    Annotated[
-        Union[
-            StringType,
-            NumberType,
-            BooleanType,
-            ArrayType,
-            ObjectType,
-            JsonType,
-            UnionType,
-            ChatCompletionInputType,
-            CompletionInputType,
-            AgentTurnInputType,
-        ],
-        Field(discriminator="type"),
+ParamType = Annotated[
+    Union[
+        StringType,
+        NumberType,
+        BooleanType,
+        ArrayType,
+        ObjectType,
+        JsonType,
+        UnionType,
+        ChatCompletionInputType,
+        CompletionInputType,
+        AgentTurnInputType,
     ],
-    name="ParamType",
-)
+    Field(discriminator="type"),
+]
+register_schema(ParamType, name="ParamType")
 
 """
 # TODO: recursive definition of ParamType in these containers

@@ -12,7 +12,7 @@
 
 from datetime import datetime
 from pathlib import Path
-
+import sys
 import fire
 import ruamel.yaml as yaml
 
@@ -21,7 +21,7 @@ from llama_stack.distribution.stack import LlamaStack  # noqa: E402
 
 from .pyopenapi.options import Options  # noqa: E402
 from .pyopenapi.specification import Info, Server  # noqa: E402
-from .pyopenapi.utility import Specification  # noqa: E402
+from .pyopenapi.utility import Specification, validate_api_method_return_types  # noqa: E402
 
 
 def str_presenter(dumper, data):
@@ -39,6 +39,14 @@ def main(output_dir: str):
     if not output_dir.exists():
         raise ValueError(f"Directory {output_dir} does not exist")
 
+    # Validate API protocols before generating spec
+    print("Validating API method return types...")
+    return_type_errors = validate_api_method_return_types()
+    if return_type_errors:
+        print("\nAPI Method Return Type Validation Errors:\n")
+        for error in return_type_errors:
+            print(error)
+        sys.exit(1)
     now = str(datetime.now())
     print(
         "Converting the spec to YAML (openapi.yaml) and HTML (openapi.html) at " + now
@@ -55,6 +63,7 @@ def main(output_dir: str):
                 a set of endpoints and their corresponding interfaces that are tailored to
                 best leverage Llama Models.""",
             ),
+            include_standard_error_responses=True,
         ),
     )
 

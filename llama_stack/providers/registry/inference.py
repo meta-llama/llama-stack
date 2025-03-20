@@ -71,15 +71,6 @@ def available_providers() -> List[ProviderSpec]:
         remote_provider_spec(
             api=Api.inference,
             adapter=AdapterSpec(
-                adapter_type="sample",
-                pip_packages=[],
-                module="llama_stack.providers.remote.inference.sample",
-                config_class="llama_stack.providers.remote.inference.sample.SampleConfig",
-            ),
-        ),
-        remote_provider_spec(
-            api=Api.inference,
-            adapter=AdapterSpec(
                 adapter_type="cerebras",
                 pip_packages=[
                     "cerebras_cloud_sdk",
@@ -160,16 +151,6 @@ def available_providers() -> List[ProviderSpec]:
         remote_provider_spec(
             api=Api.inference,
             adapter=AdapterSpec(
-                adapter_type="groq",
-                pip_packages=["groq"],
-                module="llama_stack.providers.remote.inference.groq",
-                config_class="llama_stack.providers.remote.inference.groq.GroqConfig",
-                provider_data_validator="llama_stack.providers.remote.inference.groq.GroqProviderDataValidator",
-            ),
-        ),
-        remote_provider_spec(
-            api=Api.inference,
-            adapter=AdapterSpec(
                 adapter_type="bedrock",
                 pip_packages=["boto3"],
                 module="llama_stack.providers.remote.inference.bedrock",
@@ -205,6 +186,46 @@ def available_providers() -> List[ProviderSpec]:
                 pip_packages=["openai"],
                 module="llama_stack.providers.remote.inference.runpod",
                 config_class="llama_stack.providers.remote.inference.runpod.RunpodImplConfig",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
+                adapter_type="openai",
+                pip_packages=["litellm"],
+                module="llama_stack.providers.remote.inference.openai",
+                config_class="llama_stack.providers.remote.inference.openai.OpenAIConfig",
+                provider_data_validator="llama_stack.providers.remote.inference.openai.config.OpenAIProviderDataValidator",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
+                adapter_type="anthropic",
+                pip_packages=["litellm"],
+                module="llama_stack.providers.remote.inference.anthropic",
+                config_class="llama_stack.providers.remote.inference.anthropic.AnthropicConfig",
+                provider_data_validator="llama_stack.providers.remote.inference.anthropic.config.AnthropicProviderDataValidator",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
+                adapter_type="gemini",
+                pip_packages=["litellm"],
+                module="llama_stack.providers.remote.inference.gemini",
+                config_class="llama_stack.providers.remote.inference.gemini.GeminiConfig",
+                provider_data_validator="llama_stack.providers.remote.inference.gemini.config.GeminiProviderDataValidator",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
+                adapter_type="groq",
+                pip_packages=["litellm"],
+                module="llama_stack.providers.remote.inference.groq",
+                config_class="llama_stack.providers.remote.inference.groq.GroqConfig",
+                provider_data_validator="llama_stack.providers.remote.inference.groq.config.GroqProviderDataValidator",
             ),
         ),
         remote_provider_spec(

@@ -13,11 +13,16 @@ from llama_stack.schema_utils import json_schema_type, webmethod
 
 
 @json_schema_type
-class PaginatedRowsResult(BaseModel):
-    # the rows obey the DatasetSchema for the given dataset
-    rows: List[Dict[str, Any]]
-    total_count: int
-    next_page_token: Optional[str] = None
+class IterrowsResponse(BaseModel):
+    """
+    A paginated list of rows from a dataset.
+
+    :param data: The rows in the current page.
+    :param next_start_index: Index into dataset for the first row in the next page. None if there are no more rows.
+    """
+
+    data: List[Dict[str, Any]]
+    next_start_index: Optional[int] = None
 
 
 class DatasetStore(Protocol):
@@ -29,14 +34,21 @@ class DatasetIO(Protocol):
     # keeping for aligning with inference/safety, but this is not used
     dataset_store: DatasetStore
 
-    @webmethod(route="/datasetio/rows", method="GET")
-    async def get_rows_paginated(
+    # TODO(xiyan): there's a flakiness here where setting route to "/datasets/" here will not result in proper routing
+    @webmethod(route="/datasetio/iterrows/{dataset_id:path}", method="GET")
+    async def iterrows(
         self,
         dataset_id: str,
-        rows_in_page: int,
-        page_token: Optional[str] = None,
-        filter_condition: Optional[str] = None,
-    ) -> PaginatedRowsResult: ...
+        start_index: Optional[int] = None,
+        limit: Optional[int] = None,
+    ) -> IterrowsResponse:
+        """Get a paginated list of rows from a dataset. Uses cursor-based pagination.
 
-    @webmethod(route="/datasetio/rows", method="POST")
+        :param dataset_id: The ID of the dataset to get the rows from.
+        :param start_index: Index into dataset for the first row to get. Get all rows if None.
+        :param limit: The number of rows to get.
+        """
+        ...
+
+    @webmethod(route="/datasetio/append-rows/{dataset_id:path}", method="POST")
     async def append_rows(self, dataset_id: str, rows: List[Dict[str, Any]]) -> None: ...

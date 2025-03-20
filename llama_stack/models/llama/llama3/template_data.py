@@ -11,11 +11,8 @@
 # top-level folder for each specific model found within the models/ directory at
 # the top-level of this source tree.
 
-from llama_models.datatypes import (
-    BuiltinTool,
-    StopReason,
-    ToolCall,
-)
+
+from llama_stack.models.llama.datatypes import BuiltinTool, StopReason, ToolCall
 
 from .prompt_templates import (
     BuiltinToolGenerator,

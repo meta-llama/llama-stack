@@ -17,7 +17,7 @@ llama stack run together
 2. (Optional) Register datasets and eval tasks as resources. If you want to run pre-configured evaluation flows (e.g. Evaluations (Generation + Scoring) Page).
 
 ```bash
-$ llama-stack-client datasets register \
+llama-stack-client datasets register \
 --dataset-id "mmlu" \
 --provider-id "huggingface" \
 --url "https://huggingface.co/datasets/llamastack/evals" \
@@ -26,7 +26,7 @@ $ llama-stack-client datasets register \
 ```
 
 ```bash
-$ llama-stack-client benchmarks register \
+llama-stack-client benchmarks register \
 --eval-task-id meta-reference-mmlu \
 --provider-id meta-reference \
 --dataset-id mmlu \
@@ -40,3 +40,13 @@ cd llama_stack/distribution/ui
 pip install -r requirements.txt
 streamlit run app.py
 ```
+
+## Environment Variables
+
+| Environment Variable       | Description                        | Default Value             |
+|----------------------------|------------------------------------|---------------------------|
+| LLAMA_STACK_ENDPOINT       | The endpoint for the Llama Stack   | http://localhost:8321     |
+| FIREWORKS_API_KEY          | API key for Fireworks provider     | (empty string)            |
+| TOGETHER_API_KEY           | API key for Together provider      | (empty string)            |
+| SAMBANOVA_API_KEY          | API key for SambaNova provider     | (empty string)            |
+| OPENAI_API_KEY             | API key for OpenAI provider        | (empty string)            |

@@ -7,6 +7,7 @@
 import argparse
 from importlib.metadata import version
 
+from llama_stack.cli.stack.utils import print_subcommand_description
 from llama_stack.cli.subcommand import Subcommand
 
 from .build import StackBuild
@@ -22,6 +23,7 @@ class StackParser(Subcommand):
             "stack",
             prog="llama stack",
             description="Operations for the Llama Stack / Distributions",
+            formatter_class=argparse.RawTextHelpFormatter,
         )
 
         self.parser.add_argument(
@@ -39,3 +41,5 @@ class StackParser(Subcommand):
         StackListApis.create(subparsers)
         StackListProviders.create(subparsers)
         StackRun.create(subparsers)
+
+        print_subcommand_description(self.parser, subparsers)

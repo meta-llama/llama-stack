@@ -6,7 +6,7 @@
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Literal, Optional, Protocol, Union
+from typing import Any, Dict, List, Literal, Optional, Protocol
 
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
@@ -88,10 +88,8 @@ class QATFinetuningConfig(BaseModel):
     group_size: int
 
 
-AlgorithmConfig = register_schema(
-    Annotated[Union[LoraFinetuningConfig, QATFinetuningConfig], Field(discriminator="type")],
-    name="AlgorithmConfig",
-)
+AlgorithmConfig = Annotated[LoraFinetuningConfig | QATFinetuningConfig, Field(discriminator="type")]
+register_schema(AlgorithmConfig, name="AlgorithmConfig")
 
 
 @json_schema_type
@@ -184,7 +182,7 @@ class PostTraining(Protocol):
             description="Model descriptor from `llama model list`",
         ),
         checkpoint_dir: Optional[str] = None,
-        algorithm_config: Optional[AlgorithmConfig] = None,
+        algorithm_config: Optional[LoraFinetuningConfig | QATFinetuningConfig] = None,
     ) -> PostTrainingJob: ...
 
     @webmethod(route="/post-training/preference-optimize", method="POST")
@@ -202,10 +200,10 @@ class PostTraining(Protocol):
     async def get_training_jobs(self) -> ListPostTrainingJobsResponse: ...
 
     @webmethod(route="/post-training/job/status", method="GET")
-    async def get_training_job_status(self, job_uuid: str) -> Optional[PostTrainingJobStatusResponse]: ...
+    async def get_training_job_status(self, job_uuid: str) -> PostTrainingJobStatusResponse: ...
 
     @webmethod(route="/post-training/job/cancel", method="POST")
     async def cancel_training_job(self, job_uuid: str) -> None: ...
 
     @webmethod(route="/post-training/job/artifacts", method="GET")
-    async def get_training_job_artifacts(self, job_uuid: str) -> Optional[PostTrainingJobArtifactsResponse]: ...
+    async def get_training_job_artifacts(self, job_uuid: str) -> PostTrainingJobArtifactsResponse: ...

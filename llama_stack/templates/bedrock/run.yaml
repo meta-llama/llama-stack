@@ -45,14 +45,26 @@ providers:
   eval:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
-    config: {}
+    config:
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/bedrock}/meta_reference_eval.db
   datasetio:
   - provider_id: huggingface
     provider_type: remote::huggingface
-    config: {}
+    config:
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/bedrock}/huggingface_datasetio.db
   - provider_id: localfs
     provider_type: inline::localfs
-    config: {}
+    config:
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/bedrock}/localfs_datasetio.db
   scoring:
   - provider_id: basic
     provider_type: inline::basic
@@ -89,14 +101,29 @@ metadata_store:
   db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/bedrock}/registry.db
 models:
 - metadata: {}
+  model_id: meta.llama3-1-8b-instruct-v1:0
+  provider_id: bedrock
+  provider_model_id: meta.llama3-1-8b-instruct-v1:0
+  model_type: llm
+- metadata: {}
   model_id: meta-llama/Llama-3.1-8B-Instruct
   provider_id: bedrock
   provider_model_id: meta.llama3-1-8b-instruct-v1:0
   model_type: llm
 - metadata: {}
+  model_id: meta.llama3-1-70b-instruct-v1:0
+  provider_id: bedrock
+  provider_model_id: meta.llama3-1-70b-instruct-v1:0
+  model_type: llm
+- metadata: {}
   model_id: meta-llama/Llama-3.1-70B-Instruct
   provider_id: bedrock
   provider_model_id: meta.llama3-1-70b-instruct-v1:0
+  model_type: llm
+- metadata: {}
+  model_id: meta.llama3-1-405b-instruct-v1:0
+  provider_id: bedrock
+  provider_model_id: meta.llama3-1-405b-instruct-v1:0
   model_type: llm
 - metadata: {}
   model_id: meta-llama/Llama-3.1-405B-Instruct-FP8

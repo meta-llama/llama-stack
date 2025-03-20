@@ -1,8 +1,7 @@
-
 ```{admonition} News
 :class: tip
 
-Llama Stack 0.1.3 is now available! See the [release notes](https://github.com/meta-llama/llama-stack/releases/tag/v0.1.3) for more details.
+Llama Stack {{ llama_stack_version }} is now available! See the {{ llama_stack_version_link }} for more details.
 ```
 
 # Llama Stack
@@ -15,8 +14,6 @@ Llama Stack defines and standardizes the core building blocks needed to bring ge
 - **Prepackaged verified distributions** which offer a one-stop solution for developers to get started quickly and reliably in any environment
 - **Multiple developer interfaces** like CLI and SDKs for Python, Node, iOS, and Android
 - **Standalone applications** as examples for how to build production-grade AI applications with Llama Stack
-
-We focus on making it easy to build production applications with the Llama model family - from the latest Llama 3.3 to specialized models like Llama Guard for safety.
 
 ```{image} ../_static/llama-stack.png
 :alt: Llama Stack
@@ -39,9 +36,9 @@ We have a number of client-side SDKs available for different languages.
 |  **Language** |  **Client SDK** | **Package** |
 | :----: | :----: | :----: |
 | Python |  [llama-stack-client-python](https://github.com/meta-llama/llama-stack-client-python) | [![PyPI version](https://img.shields.io/pypi/v/llama_stack_client.svg)](https://pypi.org/project/llama_stack_client/)
-| Swift  | [llama-stack-client-swift](https://github.com/meta-llama/llama-stack-client-swift) | [![Swift Package Index](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fmeta-llama%2Fllama-stack-client-swift%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/meta-llama/llama-stack-client-swift)
+| Swift  | [llama-stack-client-swift](https://github.com/meta-llama/llama-stack-client-swift/tree/latest-release) | [![Swift Package Index](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fmeta-llama%2Fllama-stack-client-swift%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/meta-llama/llama-stack-client-swift)
 | Node   | [llama-stack-client-node](https://github.com/meta-llama/llama-stack-client-node) | [![NPM version](https://img.shields.io/npm/v/llama-stack-client.svg)](https://npmjs.org/package/llama-stack-client)
-| Kotlin | [llama-stack-client-kotlin](https://github.com/meta-llama/llama-stack-client-kotlin) | [![Maven version](https://img.shields.io/maven-central/v/com.llama.llamastack/llama-stack-client-kotlin)](https://central.sonatype.com/artifact/com.llama.llamastack/llama-stack-client-kotlin)
+| Kotlin | [llama-stack-client-kotlin](https://github.com/meta-llama/llama-stack-client-kotlin/tree/latest-release) | [![Maven version](https://img.shields.io/maven-central/v/com.llama.llamastack/llama-stack-client-kotlin)](https://central.sonatype.com/artifact/com.llama.llamastack/llama-stack-client-kotlin)
 
 ## Supported Llama Stack Implementations
 
@@ -62,6 +59,10 @@ A number of "adapters" are available for some popular Inference and Vector Store
 |  Groq  |  Hosted  |
 |  SambaNova  |  Hosted  |
 | PyTorch ExecuTorch | On-device iOS, Android |
+|  OpenAI  |  Hosted  |
+|  Anthropic  |  Hosted  |
+|  Gemini  |  Hosted  |
+
 
 **Vector IO API**
 |  **Provider** |  **Environments** |
@@ -69,6 +70,7 @@ A number of "adapters" are available for some popular Inference and Vector Store
 |  FAISS | Single Node |
 |  SQLite-Vec| Single Node |
 |  Chroma | Hosted and Single Node |
+|  Milvus | Hosted and Single Node |
 |  Postgres (PGVector) | Hosted and Single Node |
 |  Weaviate | Hosted |
 

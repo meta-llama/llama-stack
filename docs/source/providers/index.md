@@ -2,7 +2,7 @@
 
 The goal of Llama Stack is to build an ecosystem where users can easily swap out different implementations for the same API. Examples for these include:
 - LLM inference providers (e.g., Fireworks, Together, AWS Bedrock, Groq, Cerebras, SambaNova, vLLM, etc.),
-- Vector databases (e.g., ChromaDB, Weaviate, Qdrant, FAISS, PGVector, etc.),
+- Vector databases (e.g., ChromaDB, Weaviate, Qdrant, Milvus, FAISS, PGVector, etc.),
 - Safety providers (e.g., Meta's Llama Guard, AWS Bedrock Guardrails, etc.)
 
 Providers come in two flavors:
@@ -36,7 +36,7 @@ Evaluates the outputs of the system.
 Collects telemetry data from the system.
 
 ## Tool Runtime
-Is associated with the ToolGroup resouces. 
+Is associated with the ToolGroup resouces.
 
 ## Vector IO
 
@@ -55,5 +55,6 @@ vector_io/sqlite-vec
 vector_io/chromadb
 vector_io/pgvector
 vector_io/qdrant
+vector_io/milvus
 vector_io/weaviate
 ```

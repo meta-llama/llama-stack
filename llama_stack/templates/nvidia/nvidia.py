@@ -6,32 +6,26 @@
 
 from pathlib import Path
 
-from llama_stack.distribution.datatypes import ModelInput, Provider, ToolGroupInput
-from llama_stack.models.llama.sku_list import all_registered_models
+from llama_stack.distribution.datatypes import ModelInput, Provider, ShieldInput, ToolGroupInput
 from llama_stack.providers.remote.inference.nvidia import NVIDIAConfig
-from llama_stack.providers.remote.inference.nvidia.models import _MODEL_ENTRIES
+from llama_stack.providers.remote.inference.nvidia.models import MODEL_ENTRIES
 from llama_stack.providers.remote.post_training.nvidia import NvidiaPostTrainingConfig
-from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
+from llama_stack.providers.remote.safety.nvidia import NVIDIASafetyConfig
+from llama_stack.templates.template import DistributionTemplate, RunConfigSettings, get_model_registry
 
 
 def get_distribution_template() -> DistributionTemplate:
     providers = {
         "inference": ["remote::nvidia"],
         "vector_io": ["inline::faiss"],
-        "safety": ["inline::llama-guard"],
+        "safety": ["remote::nvidia"],
         "post_training": ["remote::nvidia"],
         "agents": ["inline::meta-reference"],
         "telemetry": ["inline::meta-reference"],
         "eval": ["inline::meta-reference"],
-        "datasetio": ["remote::huggingface", "inline::localfs"],
-        "scoring": ["inline::basic", "inline::llm-as-judge", "inline::braintrust"],
-        "tool_runtime": [
-            "remote::brave-search",
-            "remote::tavily-search",
-            "inline::code-interpreter",
-            "inline::rag-runtime",
-            "remote::model-context-protocol",
-        ],
+        "datasetio": ["inline::localfs"],
+        "scoring": ["inline::basic"],
+        "tool_runtime": ["inline::rag-runtime"],
     }
 
     inference_provider = Provider(
@@ -45,55 +39,61 @@ def get_distribution_template() -> DistributionTemplate:
         provider_type="remote::nvidia",
         config=NvidiaPostTrainingConfig.sample_run_config(),
     )
+    safety_provider = Provider(
+        provider_id="nvidia",
+        provider_type="remote::nvidia",
+        config=NVIDIASafetyConfig.sample_run_config(),
+    )
+    inference_model = ModelInput(
+        model_id="${env.INFERENCE_MODEL}",
+        provider_id="nvidia",
+    )
+    safety_model = ModelInput(
+        model_id="${env.SAFETY_MODEL}",
+        provider_id="nvidia",
+    )
 
-    core_model_to_hf_repo = {m.descriptor(): m.huggingface_repo for m in all_registered_models()}
-    default_models = [
-        ModelInput(
-            model_id=core_model_to_hf_repo[m.llama_model] if m.llama_model else m.provider_model_id,
-            provider_model_id=m.provider_model_id,
-            provider_id="nvidia",
-            model_type=m.model_type,
-            metadata=m.metadata,
-        )
-        for m in _MODEL_ENTRIES
-    ]
+    available_models = {
+        "nvidia": MODEL_ENTRIES,
+    }
     default_tool_groups = [
-        ToolGroupInput(
-            toolgroup_id="builtin::websearch",
-            provider_id="tavily-search",
-        ),
         ToolGroupInput(
             toolgroup_id="builtin::rag",
             provider_id="rag-runtime",
         ),
-        ToolGroupInput(
-            toolgroup_id="builtin::code_interpreter",
-            provider_id="code-interpreter",
-        ),
     ]
 
+    default_models = get_model_registry(available_models)
     return DistributionTemplate(
         name="nvidia",
         distro_type="remote_hosted",
-        description="Use NVIDIA NIM for running LLM inference",
+        description="Use NVIDIA NIM for running LLM inference and safety",
         container_image=None,
         template_path=Path(__file__).parent / "doc_template.md",
         providers=providers,
-        default_models=default_models,
+        available_models_by_provider=available_models,
         run_configs={
             "run.yaml": RunConfigSettings(
                 provider_overrides={
                     "inference": [inference_provider],
+                    "post_training": [post_training_provider],
                 },
                 default_models=default_models,
                 default_tool_groups=default_tool_groups,
             ),
+            "run-with-safety.yaml": RunConfigSettings(
+                provider_overrides={
+                    "inference": [
+                        inference_provider,
+                        safety_provider,
+                    ]
+                },
+                default_models=[inference_model, safety_model],
+                default_shields=[ShieldInput(shield_id="${env.SAFETY_MODEL}", provider_id="nvidia")],
+                default_tool_groups=default_tool_groups,
+            ),
         },
         run_config_env_vars={
-            "LLAMASTACK_PORT": (
-                "5001",
-                "Port for the Llama Stack distribution server",
-            ),
             "NVIDIA_API_KEY": (
                 "",
                 "NVIDIA API Key",
@@ -122,6 +122,18 @@ def get_distribution_template() -> DistributionTemplate:
             "NVIDIA_OUTPUT_MODEL_DIR": (
                 "test-example-model@v1",
                 "NVIDIA Output Model Directory",
+            ),
+            "GUARDRAILS_SERVICE_URL": (
+                "http://0.0.0.0:7331",
+                "URL for the NeMo Guardrails Service",
+            ),
+            "INFERENCE_MODEL": (
+                "Llama3.1-8B-Instruct",
+                "Inference model",
+            ),
+            "SAFETY_MODEL": (
+                "meta/llama-3.1-8b-instruct",
+                "Name of the model to use for safety",
             ),
         },
     )

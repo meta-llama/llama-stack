@@ -8,7 +8,6 @@ from typing import AsyncGenerator
 from openai import OpenAI
 
 from llama_stack.apis.inference import *  # noqa: F403
-from llama_stack.models.llama.datatypes import Message
 
 # from llama_stack.providers.datatypes import ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
@@ -54,7 +53,7 @@ class RunpodInferenceAdapter(ModelRegistryHelper, Inference):
         self,
         model: str,
         content: InterleavedContent,
-        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        sampling_params: Optional[SamplingParams] = None,
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
@@ -65,7 +64,7 @@ class RunpodInferenceAdapter(ModelRegistryHelper, Inference):
         self,
         model: str,
         messages: List[Message],
-        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        sampling_params: Optional[SamplingParams] = None,
         response_format: Optional[ResponseFormat] = None,
         tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
@@ -74,6 +73,8 @@ class RunpodInferenceAdapter(ModelRegistryHelper, Inference):
         logprobs: Optional[LogProbConfig] = None,
         tool_config: Optional[ToolConfig] = None,
     ) -> AsyncGenerator:
+        if sampling_params is None:
+            sampling_params = SamplingParams()
         request = ChatCompletionRequest(
             model=model,
             messages=messages,

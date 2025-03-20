@@ -73,7 +73,10 @@ def show():
         image_data.append({"image_base64": image_base64})
         buf.close()
 
-    req_con, resp_con = _open_connections()
+    # The _open_connections method is dynamically made available to
+    # the interpreter by bundling code from "code_env_prefix.py" -- by literally prefixing it -- and
+    # then "eval"ing it within a sandboxed interpreter.
+    req_con, resp_con = _open_connections()  # noqa: F821
 
     _json_dump = _json.dumps(
         {

@@ -13,7 +13,7 @@ from llama_stack.providers.datatypes import Api, ProviderSpec
 
 
 def stack_apis() -> List[Api]:
-    return [v for v in Api]
+    return list(Api)
 
 
 class AutoRoutedApiInfo(BaseModel):
@@ -55,8 +55,8 @@ def builtin_automatically_routed_apis() -> List[AutoRoutedApiInfo]:
 
 
 def providable_apis() -> List[Api]:
-    routing_table_apis = set(x.routing_table_api for x in builtin_automatically_routed_apis())
-    return [api for api in Api if api not in routing_table_apis and api != Api.inspect]
+    routing_table_apis = {x.routing_table_api for x in builtin_automatically_routed_apis()}
+    return [api for api in Api if api not in routing_table_apis and api != Api.inspect and api != Api.providers]
 
 
 def get_provider_registry() -> Dict[Api, Dict[str, ProviderSpec]]:

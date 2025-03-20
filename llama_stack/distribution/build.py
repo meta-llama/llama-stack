@@ -6,7 +6,6 @@
 
 import importlib.resources
 import logging
-import sys
 from pathlib import Path
 from typing import Dict, List
 
@@ -15,9 +14,8 @@ from termcolor import cprint
 
 from llama_stack.distribution.datatypes import BuildConfig, Provider
 from llama_stack.distribution.distribution import get_provider_registry
-from llama_stack.distribution.utils.config_dirs import BUILDS_BASE_DIR
-from llama_stack.distribution.utils.exec import run_command, run_with_pty
-from llama_stack.distribution.utils.image_types import ImageType
+from llama_stack.distribution.utils.exec import run_command
+from llama_stack.distribution.utils.image_types import LlamaStackImageType
 from llama_stack.providers.datatypes import Api
 
 log = logging.getLogger(__name__)
@@ -96,18 +94,16 @@ def build_image(
     normal_deps, special_deps = get_provider_dependencies(build_config.distribution_spec.providers)
     normal_deps += SERVER_DEPENDENCIES
 
-    if build_config.image_type == ImageType.container.value:
+    if build_config.image_type == LlamaStackImageType.CONTAINER.value:
         script = str(importlib.resources.files("llama_stack") / "distribution/build_container.sh")
         args = [
             script,
             template_or_config,
             image_name,
             container_base,
-            str(build_file_path),
-            str(BUILDS_BASE_DIR / ImageType.container.value),
             " ".join(normal_deps),
         ]
-    elif build_config.image_type == ImageType.conda.value:
+    elif build_config.image_type == LlamaStackImageType.CONDA.value:
         script = str(importlib.resources.files("llama_stack") / "distribution/build_conda_env.sh")
         args = [
             script,
@@ -115,7 +111,7 @@ def build_image(
             str(build_file_path),
             " ".join(normal_deps),
         ]
-    elif build_config.image_type == ImageType.venv.value:
+    elif build_config.image_type == LlamaStackImageType.VENV.value:
         script = str(importlib.resources.files("llama_stack") / "distribution/build_venv.sh")
         args = [
             script,
@@ -126,11 +122,7 @@ def build_image(
     if special_deps:
         args.append("#".join(special_deps))
 
-    is_terminal = sys.stdin.isatty()
-    if is_terminal:
-        return_code = run_with_pty(args)
-    else:
-        return_code = run_command(args)
+    return_code = run_command(args)
 
     if return_code != 0:
         log.error(

@@ -35,6 +35,7 @@ class Options:
     :param error_wrapper: True if errors are encapsulated in an error object wrapper.
     :param property_description_fun: Custom transformation function to apply to class property documentation strings.
     :param captions: User-defined captions for sections such as "Operations" or "Types", and (if applicable) groups of extra types.
+    :param include_standard_error_responses: Whether to include standard error responses (400, 429, 500, 503) in all operations.
     """
 
     server: Server
@@ -52,6 +53,7 @@ class Options:
     error_wrapper: bool = False
     property_description_fun: Optional[Callable[[type, str, str], str]] = None
     captions: Optional[Dict[str, str]] = None
+    include_standard_error_responses: bool = True
 
     default_captions: ClassVar[Dict[str, str]] = {
         "Operations": "Operations",

@@ -1,6 +1,6 @@
 # llama (server-side) CLI Reference
 
-The `llama` CLI tool helps you setup and use the Llama Stack. It should be available on your path after installing the `llama-stack` package.
+The `llama` CLI tool helps you set up and use the Llama Stack. The CLI is available on your path after installing the `llama-stack` package.
 
 ## Installation
 
@@ -27,9 +27,9 @@ You have two ways to install Llama Stack:
 
 
 ## `llama` subcommands
-1. `download`: `llama` cli tools supports downloading the model from Meta or Hugging Face.
-2. `model`: Lists available models and their properties.
-3. `stack`: Allows you to build and run a Llama Stack server. You can read more about this [here](../../distributions/building_distro).
+1. `download`: Supports downloading models from Meta or Hugging Face.  [Downloading models](#downloading-models)
+2. `model`: Lists available models and their properties. [Understanding models](#understand-the-models)
+3. `stack`: Allows you to build a stack using the `llama stack` distribution and run a Llama Stack server. You can read more about how to build a Llama Stack distribution in the [Build your own Distribution](../../distributions/building_distro) documentation.
 
 ### Sample Usage
 
@@ -117,7 +117,7 @@ You should see a table like this:
 +----------------------------------+------------------------------------------+----------------+
 ```
 
-To download models, you can use the llama download command.
+To download models, you can use the `llama download` command.
 
 ### Downloading from [Meta](https://llama.meta.com/llama-downloads/)
 
@@ -154,12 +154,44 @@ llama download --source huggingface --model-id Prompt-Guard-86M --ignore-pattern
 
 > **Tip:** Default for `llama download` is to run with `--ignore-patterns *.safetensors` since we use the `.pth` files in the `original` folder. For Llama Guard and Prompt Guard, however, we need safetensors. Hence, please run with `--ignore-patterns original` so that safetensors are downloaded and `.pth` files are ignored.
 
+## List the downloaded models
+
+To list the downloaded models with the following command:
+```
+llama model list --downloaded
+```
+
+You should see a table like this:
+```
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┓
+┃ Model                                   ┃ Size     ┃ Modified Time       ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━┩
+│ Llama3.2-1B-Instruct:int4-qlora-eo8     │ 1.53 GB  │ 2025-02-26 11:22:28 │
+├─────────────────────────────────────────┼──────────┼─────────────────────┤
+│ Llama3.2-1B                             │ 2.31 GB  │ 2025-02-18 21:48:52 │
+├─────────────────────────────────────────┼──────────┼─────────────────────┤
+│ Prompt-Guard-86M                        │ 0.02 GB  │ 2025-02-26 11:29:28 │
+├─────────────────────────────────────────┼──────────┼─────────────────────┤
+│ Llama3.2-3B-Instruct:int4-spinquant-eo8 │ 3.69 GB  │ 2025-02-26 11:37:41 │
+├─────────────────────────────────────────┼──────────┼─────────────────────┤
+│ Llama3.2-3B                             │ 5.99 GB  │ 2025-02-18 21:51:26 │
+├─────────────────────────────────────────┼──────────┼─────────────────────┤
+│ Llama3.1-8B                             │ 14.97 GB │ 2025-02-16 10:36:37 │
+├─────────────────────────────────────────┼──────────┼─────────────────────┤
+│ Llama3.2-1B-Instruct:int4-spinquant-eo8 │ 1.51 GB  │ 2025-02-26 11:35:02 │
+├─────────────────────────────────────────┼──────────┼─────────────────────┤
+│ Llama-Guard-3-1B                        │ 2.80 GB  │ 2025-02-26 11:20:46 │
+├─────────────────────────────────────────┼──────────┼─────────────────────┤
+│ Llama-Guard-3-1B:int4                   │ 0.43 GB  │ 2025-02-26 11:33:33 │
+└─────────────────────────────────────────┴──────────┴─────────────────────┘
+```
+
 
 ## Understand the models
 The `llama model` command helps you explore the model’s interface.
 
 1. `download`: Download the model from different sources. (meta, huggingface)
-2. `list`: Lists all the models available for download with hardware requirements to deploy the models.
+2. `list`: Lists all the models available for download with hardware requirements for deploying the models.
 3. `prompt-format`: Show llama model message formats.
 4. `describe`: Describes all the properties of the model.
 
@@ -230,13 +262,12 @@ llama model prompt-format -m Llama3.2-3B-Instruct
 ![alt text](../../../resources/prompt-format.png)
 
 
-
 You will be shown a Markdown formatted description of the model interface and how prompts / messages are formatted for various scenarios.
 
 **NOTE**: Outputs in terminal are color printed to show special tokens.
 
 ### Remove model
-You can run `llama model remove` to remove unecessary model:
+You can run `llama model remove` to remove an unnecessary model:
 
 ```
 llama model remove -m Llama-Guard-3-8B-int8

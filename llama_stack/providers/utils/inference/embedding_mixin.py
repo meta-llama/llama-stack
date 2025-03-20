@@ -5,7 +5,10 @@
 # the root directory of this source tree.
 
 import logging
-from typing import List, Optional
+from typing import TYPE_CHECKING, List, Optional
+
+if TYPE_CHECKING:
+    from sentence_transformers import SentenceTransformer
 
 from llama_stack.apis.inference import (
     EmbeddingsResponse,

@@ -38,10 +38,10 @@ func encodeMessage(message: Components.Schemas.Message) -> String {
 
   switch (message) {
   case .assistant(let m):
-    if (m.tool_calls.count > 0) {
+    if (m.tool_calls?.count ?? 0 > 0) {
       prompt += "<|python_tag|>"
     }
-  default:
+  default:0
     break
   }
 
@@ -91,7 +91,7 @@ func encodeMessage(message: Components.Schemas.Message) -> String {
     // for t in m.tool_calls {
     //  _processContent(t.)
     //}
-    eom = m.stop_reason == Components.Schemas.StopReason.end_of_message
+    eom = m.stop_reason == Components.Schemas.CompletionMessage.stop_reasonPayload.end_of_message
   case .system(_):
     break
   case .tool(_):
@@ -124,8 +124,9 @@ func prepareMessages(request: Components.Schemas.ChatCompletionRequest) throws -
   sysContent += try defaultTemplate.render()
 
   messages.append(.system(Components.Schemas.SystemMessage(
-    content: .case1(sysContent),
-    role: .system))
+    role: .system,
+    content: .case1(sysContent)
+    ))
   )
 
   if request.tools?.isEmpty == false {
@@ -134,8 +135,8 @@ func prepareMessages(request: Components.Schemas.ChatCompletionRequest) throws -
     let toolTemplate = try toolGen.gen(customTools: request.tools!)
     let tools = try toolTemplate.render()
     messages.append(.user(Components.Schemas.UserMessage(
-      content: .case1(tools),
-      role: .user)
+      role: .user,
+      content: .case1(tools))
     ))
   }
 
@@ -193,9 +194,9 @@ public func maybeExtractCustomToolCalls(input: String) -> [Components.Schemas.To
 
       result.append(
         Components.Schemas.ToolCall(
-          arguments: .init(additionalProperties: props),
           call_id: UUID().uuidString,
-          tool_name: .case2(name) // custom_tool
+          tool_name: .case2(name), // custom_tool
+          arguments: .init(additionalProperties: props)
         )
       )
     }
@@ -206,7 +207,7 @@ public func maybeExtractCustomToolCalls(input: String) -> [Components.Schemas.To
   }
 }
 
-func decodeAssistantMessage(tokens: String, stopReason: Components.Schemas.StopReason) -> Components.Schemas.CompletionMessage {
+func decodeAssistantMessage(tokens: String, stopReason: Components.Schemas.CompletionMessage.stop_reasonPayload) -> Components.Schemas.CompletionMessage {
   var content = tokens
 
   let roles = ["user", "system", "assistant"]
@@ -229,8 +230,8 @@ func decodeAssistantMessage(tokens: String, stopReason: Components.Schemas.StopR
   }
 
   return Components.Schemas.CompletionMessage(
-    content: .case1(content),
     role: .assistant,
+    content: .case1(content),
     stop_reason: stopReason,
     tool_calls: maybeExtractCustomToolCalls(input: content)
   )

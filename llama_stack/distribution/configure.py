@@ -39,7 +39,7 @@ def configure_single_provider(registry: Dict[str, ProviderSpec], provider: Provi
     return Provider(
         provider_id=provider.provider_id,
         provider_type=provider.provider_type,
-        config=cfg.dict(),
+        config=cfg.model_dump(),
     )
 
 
@@ -62,7 +62,7 @@ def configure_api_providers(config: StackRunConfig, build_spec: DistributionSpec
     if config.apis:
         apis_to_serve = config.apis
     else:
-        apis_to_serve = [a.value for a in Api if a not in (Api.telemetry, Api.inspect)]
+        apis_to_serve = [a.value for a in Api if a not in (Api.telemetry, Api.inspect, Api.providers)]
 
     for api_str in apis_to_serve:
         api = Api(api_str)

@@ -20,3 +20,6 @@ _build
 docs/src
 pyrightconfig.json
 venv/
+pytest-report.xml
+.coverage
+.python-version

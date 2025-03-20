@@ -9,6 +9,7 @@ import argparse
 from .download import Download
 from .model import ModelParser
 from .stack import StackParser
+from .stack.utils import print_subcommand_description
 from .verify_download import VerifyDownload
 
 
@@ -20,6 +21,7 @@ class LlamaCLIParser:
             prog="llama",
             description="Welcome to the Llama CLI",
             add_help=True,
+            formatter_class=argparse.RawTextHelpFormatter,
         )
 
         # Default command is to print help
@@ -32,6 +34,8 @@ class LlamaCLIParser:
         StackParser.create(subparsers)
         Download.create(subparsers)
         VerifyDownload.create(subparsers)
+
+        print_subcommand_description(self.parser, subparsers)
 
     def parse_args(self) -> argparse.Namespace:
         return self.parser.parse_args()

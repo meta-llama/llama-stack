@@ -10,16 +10,19 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
+import json
 from typing import Any, Mapping
 
 from llama_stack.providers.utils.common.data_schema_validator import ColumnName
 
 
-def llama_stack_instruct_to_torchtune_instruct(sample: Mapping[str, Any]) -> Mapping[str, Any]:
+def llama_stack_instruct_to_torchtune_instruct(
+    sample: Mapping[str, Any],
+) -> Mapping[str, Any]:
     assert ColumnName.chat_completion_input.value in sample and ColumnName.expected_answer.value in sample, (
         "Invalid input row"
     )
-    input_messages = eval(str(sample[ColumnName.chat_completion_input.value]))
+    input_messages = json.loads(sample[ColumnName.chat_completion_input.value])
 
     assert len(input_messages) == 1, "llama stack intruct dataset format only supports 1 user message"
     input_message = input_messages[0]
@@ -37,7 +40,7 @@ def llama_stack_instruct_to_torchtune_instruct(sample: Mapping[str, Any]) -> Map
 def llama_stack_chat_to_torchtune_chat(sample: Mapping[str, Any]) -> Mapping[str, Any]:
     assert ColumnName.dialog.value in sample, "Invalid input row"
     role_map = {"user": "human", "assistant": "gpt"}
-    dialog = eval(str(sample[ColumnName.dialog.value]))
+    dialog = json.loads(sample[ColumnName.dialog.value])
 
     assert len(dialog) > 1, "dialog must have at least 2 messagse"
     roles = []

@@ -4,6 +4,8 @@
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/llama-stack)](https://pypi.org/project/llama-stack/)
 [![License](https://img.shields.io/pypi/l/llama_stack.svg)](https://github.com/meta-llama/llama-stack/blob/main/LICENSE)
 [![Discord](https://img.shields.io/discord/1257833999603335178)](https://discord.gg/llama-stack)
+[![Unit Tests](https://github.com/meta-llama/llama-stack/actions/workflows/unit-tests.yml/badge.svg?branch=main)](https://github.com/meta-llama/llama-stack/actions/workflows/unit-tests.yml?query=branch%3Amain)
+[![Integration Tests](https://github.com/meta-llama/llama-stack/actions/workflows/integration-tests.yml/badge.svg?branch=main)](https://github.com/meta-llama/llama-stack/actions/workflows/integration-tests.yml?query=branch%3Amain)
 
 [**Quick Start**](https://llama-stack.readthedocs.io/en/latest/getting_started/index.html) | [**Documentation**](https://llama-stack.readthedocs.io/en/latest/index.html) | [**Colab Notebook**](./docs/getting_started.ipynb)
 
@@ -32,7 +34,7 @@ Llama Stack standardizes the core building blocks that simplify AI application d
 By reducing friction and complexity, Llama Stack empowers developers to focus on what they do best: building transformative generative AI applications.
 
 ### API Providers
-Here is a list of the various API providers and available distributions that can help developers get started easily with Llama Stack. 
+Here is a list of the various API providers and available distributions that can help developers get started easily with Llama Stack.
 
 | **API Provider Builder** |    **Environments**    | **Agents** | **Inference** | **Memory** | **Safety** | **Telemetry** |
 |:------------------------:|:----------------------:|:----------:|:-------------:|:----------:|:----------:|:-------------:|
@@ -50,6 +52,10 @@ Here is a list of the various API providers and available distributions that can
 |        PG Vector         |      Single Node       |            |               |     ✅      |            |               |
 |    PyTorch ExecuTorch    |     On-device iOS      |     ✅      |       ✅       |            |            |               |
 |           vLLM           | Hosted and Single Node |            |       ✅       |            |            |               |
+|          OpenAI          |         Hosted         |            |       ✅       |            |            |               |
+|        Anthropic         |         Hosted         |            |       ✅       |            |            |               |
+|          Gemini          |         Hosted         |            |       ✅       |            |            |               |
+
 
 ### Distributions
 
@@ -67,26 +73,6 @@ A Llama Stack Distribution (or "distro") is a pre-configured bundle of provider 
 |                   Fireworks                   |                    [llamastack/distribution-fireworks](https://hub.docker.com/repository/docker/llamastack/distribution-fireworks/general)                    |          [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/fireworks.html)           |
 | vLLM |                  [llamastack/distribution-remote-vllm](https://hub.docker.com/repository/docker/llamastack/distribution-remote-vllm/general)                  |         [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/remote-vllm.html)          |
 
-### Installation
-
-You have two ways to install this repository:
-
-* **Install as a package**:
-   You can install the repository directly from [PyPI](https://pypi.org/project/llama-stack/) by running the following command:
-   ```bash
-   pip install llama-stack
-   ```
-
-* **Install from source**:
-   If you prefer to install from the source code, we recommend using [uv](https://github.com/astral-sh/uv).
-   Then, run the following commands:
-   ```bash
-    git clone git@github.com:meta-llama/llama-stack.git
-    cd llama-stack
-
-    uv sync
-    uv pip install -e .
-   ```
 
 ### Documentation
 

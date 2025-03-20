@@ -7,7 +7,7 @@
 import json
 import logging
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 
 from pydantic import BaseModel
@@ -21,6 +21,7 @@ log = logging.getLogger(__name__)
 class AgentSessionInfo(BaseModel):
     session_id: str
     session_name: str
+    # TODO: is this used anywhere?
     vector_db_id: Optional[str] = None
     started_at: datetime
 
@@ -35,7 +36,7 @@ class AgentPersistence:
         session_info = AgentSessionInfo(
             session_id=session_id,
             session_name=name,
-            started_at=datetime.now(),
+            started_at=datetime.now(timezone.utc),
         )
         await self.kvstore.set(
             key=f"session:{self.agent_id}:{session_id}",
@@ -85,6 +86,14 @@ class AgentPersistence:
         turns.sort(key=lambda x: (x.completed_at or datetime.min))
         return turns
 
+    async def get_session_turn(self, session_id: str, turn_id: str) -> Optional[Turn]:
+        value = await self.kvstore.get(
+            key=f"session:{self.agent_id}:{session_id}:{turn_id}",
+        )
+        if not value:
+            return None
+        return Turn(**json.loads(value))
+
     async def set_in_progress_tool_call_step(self, session_id: str, turn_id: str, step: ToolExecutionStep):
         await self.kvstore.set(
             key=f"in_progress_tool_call_step:{self.agent_id}:{session_id}:{turn_id}",
@@ -96,3 +105,15 @@ class AgentPersistence:
             key=f"in_progress_tool_call_step:{self.agent_id}:{session_id}:{turn_id}",
         )
         return ToolExecutionStep(**json.loads(value)) if value else None
+
+    async def set_num_infer_iters_in_turn(self, session_id: str, turn_id: str, num_infer_iters: int):
+        await self.kvstore.set(
+            key=f"num_infer_iters_in_turn:{self.agent_id}:{session_id}:{turn_id}",
+            value=str(num_infer_iters),
+        )
+
+    async def get_num_infer_iters_in_turn(self, session_id: str, turn_id: str) -> Optional[int]:
+        value = await self.kvstore.get(
+            key=f"num_infer_iters_in_turn:{self.agent_id}:{session_id}:{turn_id}",
+        )
+        return int(value) if value else None

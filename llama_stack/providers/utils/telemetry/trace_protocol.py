@@ -6,6 +6,7 @@
 
 import asyncio
 import inspect
+import json
 from functools import wraps
 from typing import Any, AsyncGenerator, Callable, Type, TypeVar
 
@@ -17,6 +18,10 @@ T = TypeVar("T")
 
 
 def serialize_value(value: Any) -> Primitive:
+    return str(_prepare_for_json(value))
+
+
+def _prepare_for_json(value: Any) -> str:
     """Serialize a single value into JSON-compatible format."""
     if value is None:
         return ""
@@ -25,9 +30,17 @@ def serialize_value(value: Any) -> Primitive:
     elif hasattr(value, "_name_"):
         return value._name_
     elif isinstance(value, BaseModel):
-        return value.model_dump_json()
+        return json.loads(value.model_dump_json())
+    elif isinstance(value, (list, tuple, set)):
+        return [_prepare_for_json(item) for item in value]
+    elif isinstance(value, dict):
+        return {str(k): _prepare_for_json(v) for k, v in value.items()}
     else:
-        return str(value)
+        try:
+            json.dumps(value)
+            return value
+        except Exception:
+            return str(value)
 
 
 def trace_protocol(cls: Type[T]) -> Type[T]:
@@ -104,7 +117,8 @@ def trace_protocol(cls: Type[T]) -> Type[T]:
                     result = method(self, *args, **kwargs)
                     span.set_attribute("output", serialize_value(result))
                     return result
-                except Exception as _e:
+                except Exception as e:
+                    span.set_attribute("error", str(e))
                     raise
 
         if is_async_gen:

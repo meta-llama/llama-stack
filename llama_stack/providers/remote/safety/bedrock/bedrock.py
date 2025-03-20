@@ -59,7 +59,8 @@ class BedrockSafetyAdapter(Safety, ShieldsProtocolPrivate):
         if not shield:
             raise ValueError(f"Shield {shield_id} not found")
 
-        """This is the implementation for the bedrock guardrails. The input to the guardrails is to be of this format
+        """
+        This is the implementation for the bedrock guardrails. The input to the guardrails is to be of this format
         ```content = [
             {
                 "text": {
@@ -67,10 +68,8 @@ class BedrockSafetyAdapter(Safety, ShieldsProtocolPrivate):
                 }
             }
         ]```
-        However the incoming messages are of this type UserMessage(content=....) coming from
-        https://github.com/meta-llama/llama-models/blob/main/models/llama3/api/datatypes.py
-
-        They contain content, role . For now we will extract the content and default the "qualifiers": ["query"]
+        Incoming messages contain content, role . For now we will extract the content and
+        default the "qualifiers": ["query"]
         """
 
         shield_params = shield.params

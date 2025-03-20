@@ -16,7 +16,7 @@ class StackBuild(Subcommand):
             "build",
             prog="llama stack build",
             description="Build a Llama stack container",
-            formatter_class=argparse.RawTextHelpFormatter,
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         )
         self._add_arguments()
         self.parser.set_defaults(func=self._run_stack_build_command)
@@ -26,7 +26,7 @@ class StackBuild(Subcommand):
             "--config",
             type=str,
             default=None,
-            help="Path to a config file to use for the build. You can find example configs in llama_stack/distribution/**/build.yaml. If this argument is not provided, you will be prompted to enter information interactively",
+            help="Path to a config file to use for the build. You can find example configs in llama_stack/distributions/**/build.yaml. If this argument is not provided, you will be prompted to enter information interactively",
         )
 
         self.parser.add_argument(

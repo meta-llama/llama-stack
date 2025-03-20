@@ -8,12 +8,12 @@ Features:
 - Remote Inferencing: Perform inferencing tasks remotely with Llama models hosted on a remote connection (or serverless localhost).
 - Simple Integration: With easy-to-use APIs, a developer can quickly integrate Llama Stack in their Android app. The difference with local vs remote inferencing is also minimal.
 
-Latest Release Notes: [v0.0.58](https://github.com/meta-llama/llama-stack-client-kotlin/releases/tag/v0.0.58)
+Latest Release Notes: [link](https://github.com/meta-llama/llama-stack-client-kotlin/tree/latest-release)
 
 *Tagged releases are stable versions of the project. While we strive to maintain a stable main branch, it's not guaranteed to be free of bugs or issues.*
 
 ## Android Demo App
-Check out our demo app to see how to integrate Llama Stack into your Android app: [Android Demo App](https://github.com/meta-llama/llama-stack-apps/tree/android-kotlin-app-latest/examples/android_app)
+Check out our demo app to see how to integrate Llama Stack into your Android app: [Android Demo App](https://github.com/meta-llama/llama-stack-client-kotlin/tree/examples/android_app)
 
 The key files in the app are `ExampleLlamaStackLocalInference.kt`, `ExampleLlamaStackRemoteInference.kts`, and `MainActivity.java`. With encompassed business logic, the app shows how to use Llama Stack for both the environments.
 
@@ -24,7 +24,7 @@ The key files in the app are `ExampleLlamaStackLocalInference.kt`, `ExampleLlama
 Add the following dependency in your `build.gradle.kts` file:
 ```
 dependencies {
- implementation("com.llama.llamastack:llama-stack-client-kotlin:0.0.58")
+ implementation("com.llama.llamastack:llama-stack-client-kotlin:0.1.4.2")
 }
 ```
 This will download jar files in your gradle cache in a directory like `~/.gradle/caches/modules-2/files-2.1/com.llama.llamastack/`
@@ -36,13 +36,13 @@ If you plan on doing remote inferencing this is sufficient to get started.
 For local inferencing, it is required to include the ExecuTorch library into your app.
 
 Include the ExecuTorch library by:
-1. Download the `download-prebuilt-et-lib.sh` script file from the [llama-stack-client-kotlin-client-local](https://github.com/meta-llama/llama-stack-client-kotlin/blob/release/0.0.58/llama-stack-client-kotlin-client-local/download-prebuilt-et-lib.sh) directory to your local machine.
+1. Download the `download-prebuilt-et-lib.sh` script file from the [llama-stack-client-kotlin-client-local](https://github.com/meta-llama/llama-stack-client-kotlin/tree/latest-release/llama-stack-client-kotlin-client-local/download-prebuilt-et-lib.sh) directory to your local machine.
 2. Move the script to the top level of your Android app where the app directory resides:
 <p align="center">
-<img src="https://raw.githubusercontent.com/meta-llama/llama-stack-client-kotlin/refs/heads/release/0.0.58/doc/img/example_android_app_directory.png" style="width:300px">
+<img src="https://github.com/meta-llama/llama-stack-client-kotlin/blob/latest-release/doc/img/example_android_app_directory.png" style="width:300px">
 </p>
 
-3. Run `sh download-prebuilt-et-lib.sh` to create an `app/libs` directory and download the `executorch.aar` in that path. This generates an ExecuTorch library for the XNNPACK delegate with commit: [0a12e33](https://github.com/pytorch/executorch/commit/0a12e33d22a3d44d1aa2af5f0d0673d45b962553).
+3. Run `sh download-prebuilt-et-lib.sh` to create an `app/libs` directory and download the `executorch.aar` in that path. This generates an ExecuTorch library for the XNNPACK delegate.
 4. Add the `executorch.aar` dependency in your `build.gradle.kts` file:
 ```
 dependencies {
@@ -60,10 +60,10 @@ Start a Llama Stack server on localhost. Here is an example of how you can do th
 ```
 conda create -n stack-fireworks python=3.10
 conda activate stack-fireworks
-pip install llama-stack=0.0.58
+pip install --no-cache llama-stack==0.1.4
 llama stack build --template fireworks --image-type conda
 export FIREWORKS_API_KEY=<SOME_KEY>
-llama stack run /Users/<your_username>/.llama/distributions/llamastack-fireworks/fireworks-run.yaml --port=5050
+llama stack run fireworks --port 5050
 ```
 
 Ensure the Llama Stack server version is the same as the Kotlin SDK Library for maximum compatibility.
@@ -146,7 +146,7 @@ The purpose of this section is to share more details with users that would like 
 ### Prerequisite
 
 You must complete the following steps:
-1. Clone the repo (`git clone https://github.com/meta-llama/llama-stack-client-kotlin.git -b release/0.0.58`)
+1. Clone the repo (`git clone https://github.com/meta-llama/llama-stack-client-kotlin.git -b latest-release`)
 2. Port the appropriate ExecuTorch libraries over into your Llama Stack Kotlin library environment.
 ```
 cd llama-stack-client-kotlin-client-local

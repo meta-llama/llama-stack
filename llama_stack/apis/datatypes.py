@@ -5,12 +5,16 @@
 # the root directory of this source tree.
 
 from enum import Enum
+from typing import Optional
+
+from pydantic import BaseModel
 
 from llama_stack.schema_utils import json_schema_type
 
 
 @json_schema_type
 class Api(Enum):
+    providers = "providers"
     inference = "inference"
     safety = "safety"
     agents = "agents"
@@ -33,3 +37,20 @@ class Api(Enum):
 
     # built-in API
     inspect = "inspect"
+
+
+@json_schema_type
+class Error(BaseModel):
+    """
+    Error response from the API. Roughly follows RFC 7807.
+
+    :param status: HTTP status code
+    :param title: Error title, a short summary of the error which is invariant for an error type
+    :param detail: Error detail, a longer human-readable description of the error
+    :param instance: (Optional) A URL which can be used to retrieve more information about the specific occurrence of the error
+    """
+
+    status: int
+    title: str
+    detail: str
+    instance: Optional[str] = None
