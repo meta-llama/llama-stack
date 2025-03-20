@@ -90,6 +90,16 @@ def available_providers() -> List[ProviderSpec]:
         ),
         remote_provider_spec(
             api=Api.inference,
+            api_dependencies=[Api.models],
+            adapter=AdapterSpec(
+                adapter_type="podman-ai-lab",
+                pip_packages=["ollama", "aiohttp"],
+                config_class="llama_stack.providers.remote.inference.podman_ai_lab.PodmanAILabImplConfig",
+                module="llama_stack.providers.remote.inference.podman_ai_lab",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.inference,
             adapter=AdapterSpec(
                 adapter_type="vllm",
                 pip_packages=["openai"],
