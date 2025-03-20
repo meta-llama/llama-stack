@@ -3,19 +3,21 @@ from typing import Any, Dict, Union
 
 # Remove register_provider import since registration is in registry/safety.py
 from llama_stack.apis.safety import Safety
-from llama_stack.providers.remote.safety.fms.config import (
+from llama_stack.providers.remote.safety.trustyai_fms.config import (
     ChatDetectorConfig,
     ContentDetectorConfig,
     DetectorParams,
     EndpointType,
     FMSSafetyProviderConfig,
 )
-from llama_stack.providers.remote.safety.fms.detectors.base import (
+from llama_stack.providers.remote.safety.trustyai_fms.detectors.base import (
     BaseDetector,
     DetectorProvider,
 )
-from llama_stack.providers.remote.safety.fms.detectors.chat import ChatDetector
-from llama_stack.providers.remote.safety.fms.detectors.content import ContentDetector
+from llama_stack.providers.remote.safety.trustyai_fms.detectors.chat import ChatDetector
+from llama_stack.providers.remote.safety.trustyai_fms.detectors.content import (
+    ContentDetector,
+)
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -40,7 +42,7 @@ async def create_fms_provider(config: Dict[str, Any]) -> Safety:
     Returns:
         Safety: Configured FMS safety provider
     """
-    logger.debug("Creating FMS provider")
+    logger.debug("Creating trustyai-fms provider")
     return await get_adapter_impl(FMSSafetyProviderConfig(**config))
 
 

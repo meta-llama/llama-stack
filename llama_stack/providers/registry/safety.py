@@ -67,10 +67,10 @@ def available_providers() -> List[ProviderSpec]:
         remote_provider_spec(
             api=Api.safety,
             adapter=AdapterSpec(
-                adapter_type="fms",
+                adapter_type="trustyai_fms",
                 pip_packages=[],
-                module="llama_stack.providers.remote.safety.fms",
-                config_class="llama_stack.providers.remote.safety.fms.config.FMSSafetyProviderConfig",
+                module="llama_stack.providers.remote.safety.trustyai_fms",
+                config_class="llama_stack.providers.remote.safety.trustyai_fms.config.FMSSafetyProviderConfig",
             ),
         ),
     ]

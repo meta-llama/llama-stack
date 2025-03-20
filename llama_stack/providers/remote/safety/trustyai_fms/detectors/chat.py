@@ -6,8 +6,8 @@ from typing import Any, Dict, List, Optional
 
 from llama_stack.apis.inference import Message
 from llama_stack.apis.safety import RunShieldResponse
-from llama_stack.providers.remote.safety.fms.config import ChatDetectorConfig
-from llama_stack.providers.remote.safety.fms.detectors.base import (
+from llama_stack.providers.remote.safety.trustyai_fms.config import ChatDetectorConfig
+from llama_stack.providers.remote.safety.trustyai_fms.detectors.base import (
     BaseDetector,
     DetectionResult,
     DetectorError,

@@ -28,7 +28,7 @@ from llama_stack.apis.safety import (
 )
 from llama_stack.apis.shields import ListShieldsResponse, Shield, Shields
 from llama_stack.providers.datatypes import ShieldsProtocolPrivate
-from llama_stack.providers.remote.safety.fms.config import (
+from llama_stack.providers.remote.safety.trustyai_fms.config import (
     BaseDetectorConfig,
     EndpointType,
 )
@@ -724,7 +724,7 @@ class SimpleShieldStore(ShieldStore):
             # Create shield with all required fields
             shield = Shield(
                 identifier=identifier,
-                provider_id="fms-safety",
+                provider_id="trustyai-fms-safety",
                 provider_resource_id=identifier,
                 type="shield",
                 name=f"{identifier} Shield",
@@ -927,7 +927,7 @@ class DetectorProvider(Safety, Shields):
 
                 shield = Shield(
                     identifier=config_id,
-                    provider_id="fms-safety",
+                    provider_id="trustyai-fms-safety",
                     provider_resource_id=config_id,
                     type="shield",
                     name=f"{config_id} Shield",
