@@ -172,8 +172,10 @@ class AuthenticationMiddleware:
                         if auth_response.access_attributes:
                             user_attributes = auth_response.access_attributes.model_dump(exclude_none=True)
                         else:
-                            logger.warning("Authentication response did not contain any attributes")
-                            user_attributes = {}
+                            logger.warning("No access attributes, setting namespace to api_key by default")
+                            user_attributes = {
+                                "namespaces": [api_key],
+                            }
 
                         scope["user_attributes"] = user_attributes
                         logger.debug(f"Authentication successful: {len(user_attributes)} attributes")

@@ -201,4 +201,6 @@ async def test_auth_middleware_no_attributes(mock_middleware, mock_scope):
         await middleware(mock_scope, mock_receive, mock_send)
 
         assert "user_attributes" in mock_scope
-        assert mock_scope["user_attributes"] == {}
+        attributes = mock_scope["user_attributes"]
+        assert "namespaces" in attributes
+        assert attributes["namespaces"] == ["test-api-key"]
