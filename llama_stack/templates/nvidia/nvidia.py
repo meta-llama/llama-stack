@@ -9,7 +9,6 @@ from pathlib import Path
 from llama_stack.distribution.datatypes import ModelInput, Provider, ShieldInput, ToolGroupInput
 from llama_stack.providers.remote.inference.nvidia import NVIDIAConfig
 from llama_stack.providers.remote.inference.nvidia.models import MODEL_ENTRIES
-from llama_stack.providers.remote.post_training.nvidia import NvidiaPostTrainingConfig
 from llama_stack.providers.remote.safety.nvidia import NVIDIASafetyConfig
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings, get_model_registry
 
@@ -19,7 +18,6 @@ def get_distribution_template() -> DistributionTemplate:
         "inference": ["remote::nvidia"],
         "vector_io": ["inline::faiss"],
         "safety": ["remote::nvidia"],
-        "post_training": ["remote::nvidia"],
         "agents": ["inline::meta-reference"],
         "telemetry": ["inline::meta-reference"],
         "eval": ["inline::meta-reference"],
@@ -32,12 +30,6 @@ def get_distribution_template() -> DistributionTemplate:
         provider_id="nvidia",
         provider_type="remote::nvidia",
         config=NVIDIAConfig.sample_run_config(),
-    )
-
-    post_training_provider = Provider(
-        provider_id="nvidia",
-        provider_type="remote::nvidia",
-        config=NvidiaPostTrainingConfig.sample_run_config(),
     )
     safety_provider = Provider(
         provider_id="nvidia",
@@ -76,7 +68,6 @@ def get_distribution_template() -> DistributionTemplate:
             "run.yaml": RunConfigSettings(
                 provider_overrides={
                     "inference": [inference_provider],
-                    "post_training": [post_training_provider],
                 },
                 default_models=default_models,
                 default_tool_groups=default_tool_groups,

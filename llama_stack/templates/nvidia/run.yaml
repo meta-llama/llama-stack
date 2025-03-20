@@ -5,7 +5,6 @@ apis:
 - datasetio
 - eval
 - inference
-- post_training
 - safety
 - scoring
 - telemetry
@@ -32,14 +31,6 @@ providers:
     config:
       guardrails_service_url: ${env.GUARDRAILS_SERVICE_URL:http://localhost:7331}
       config_id: self-check
-  post_training:
-  - provider_id: nvidia
-    provider_type: remote::nvidia
-    config:
-      api_key: ${env.NVIDIA_API_KEY:}
-      dataset_namespace: ${env.NVIDIA_DATASET_NAMESPACE:default}
-      project_id: ${env.NVIDIA_PROJECT_ID:test-project}
-      customizer_url: ${env.NVIDIA_CUSTOMIZER_URL:http://nemo.test}
   agents:
   - provider_id: meta-reference
     provider_type: inline::meta-reference

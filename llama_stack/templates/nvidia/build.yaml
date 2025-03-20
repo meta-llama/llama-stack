@@ -8,8 +8,6 @@ distribution_spec:
     - inline::faiss
     safety:
     - remote::nvidia
-    post_training:
-    - remote::nvidia
     agents:
     - inline::meta-reference
     telemetry:
