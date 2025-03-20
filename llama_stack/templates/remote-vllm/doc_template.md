@@ -36,6 +36,7 @@ export INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct
 export CUDA_VISIBLE_DEVICES=0
 
 docker run \
+    --pull always \
     --runtime nvidia \
     --gpus $CUDA_VISIBLE_DEVICES \
     -v ~/.cache/huggingface:/root/.cache/huggingface \
@@ -56,6 +57,7 @@ export SAFETY_MODEL=meta-llama/Llama-Guard-3-1B
 export CUDA_VISIBLE_DEVICES=1
 
 docker run \
+    --pull always \
     --runtime nvidia \
     --gpus $CUDA_VISIBLE_DEVICES \
     -v ~/.cache/huggingface:/root/.cache/huggingface \
@@ -83,6 +85,7 @@ export LLAMA_STACK_PORT=5001
 
 docker run \
   -it \
+  --pull always \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ./run.yaml:/root/my-run.yaml \
   llamastack/distribution-{{ name }} \
@@ -104,6 +107,7 @@ cd /path/to/llama-stack
 
 docker run \
   -it \
+  --pull always \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ~/.llama:/root/.llama \
   -v ./llama_stack/templates/remote-vllm/run-with-safety.yaml:/root/my-run.yaml \

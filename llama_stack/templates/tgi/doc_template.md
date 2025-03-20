@@ -38,6 +38,7 @@ export INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct
 export CUDA_VISIBLE_DEVICES=0
 
 docker run --rm -it \
+  --pull always \
   -v $HOME/.cache/huggingface:/data \
   -p $INFERENCE_PORT:$INFERENCE_PORT \
   --gpus $CUDA_VISIBLE_DEVICES \
@@ -58,6 +59,7 @@ export SAFETY_MODEL=meta-llama/Llama-Guard-3-1B
 export CUDA_VISIBLE_DEVICES=1
 
 docker run --rm -it \
+  --pull always \
   -v $HOME/.cache/huggingface:/data \
   -p $SAFETY_PORT:$SAFETY_PORT \
   --gpus $CUDA_VISIBLE_DEVICES \
@@ -81,6 +83,7 @@ This method allows you to get started quickly without having to build the distri
 LLAMA_STACK_PORT=5001
 docker run \
   -it \
+  --pull always \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   llamastack/distribution-{{ name }} \
   --port $LLAMA_STACK_PORT \
@@ -97,6 +100,7 @@ cd /path/to/llama-stack
 
 docker run \
   -it \
+  --pull always \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ~/.llama:/root/.llama \
   -v ./llama_stack/templates/tgi/run-with-safety.yaml:/root/my-run.yaml \

@@ -67,6 +67,7 @@ This method allows you to get started quickly without having to build the distri
 LLAMA_STACK_PORT=5001
 docker run \
   -it \
+  --pull always \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   llamastack/distribution-together \
   --port $LLAMA_STACK_PORT \
