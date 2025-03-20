@@ -667,8 +667,16 @@ curl -X POST "http://localhost:8000/tool-runtime/rag-tool/rerank" \
 - `rerank_config`: Optional dictionary rerank configuration.
   - `api_url`: URL for the external reranking service.
   - `api_key`: Authentication key for the external service.
+ 
+## 6. Seamless Integration into Configurable Retrieval for RAG RFC
 
-## 6. Considerations and Tradeoffs
+The initial reranking solution described in this RFC aligns with existing **Configurable Retrieval for RAG RFC** proposals. By extending the existing `query_config` with a `reranker` parameter, the reranking capability integrates with current retrieval configurations. This approach leverages familiar configuration patterns, allowing users to enable or disable reranking within their existing workflows.
+
+By embedding the initial reranking solution as an optional parameter within the existing retrieval endpoint, the system remains streamlined and user-friendly. Users retain full control over reranking configurations, toggling between basic embedded reranking methods and more advanced, dedicated reranking endpoints as operational needs evolve. 
+
+This staged implementation strategy facilitates adoption, promotes clarity, and provides a clear pathway toward future scalability enhancements.
+
+## 7. Considerations and Tradeoffs
 
 #### Flexibility vs. Complexity
 
@@ -707,13 +715,13 @@ curl -X POST "http://localhost:8000/tool-runtime/rag-tool/rerank" \
 
 By not enforcing a default reranker, this approach shifts responsibility to users, allowing them to make informed decisions based on their legal and compliance needs.
 
-## 7. Conclusion
+## 8. Conclusion
 
 The proposed reranking mechanism addresses the shortcomings of traditional document retrieval by refining initial results to deliver more relevant and precise context for downstream tasks. By offering both external API and local inference options, the solution provides a flexible and scalable approach that can be tailored to diverse operational scenarios. With defined API endpoints and telemetry, this design lays the foundation for iterative enhancements and further collaboration, ensuring the system can evolve to meet emerging requirements.
 
 ---
 
-## 8. Approval
+## 9. Approval
 
 | Person      | Role           | Approval Date |
 | ----------- | -------------- | ------------- |
