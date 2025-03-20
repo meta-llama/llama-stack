@@ -35,12 +35,12 @@ class PandasDataframeDataset:
         else:
             return self.df.iloc[idx].to_dict()
 
-    def load(self) -> None:
+    async def load(self) -> None:
         if self.df is not None:
             return
 
         if self.dataset_def.source.type == "uri":
-            self.df = get_dataframe_from_uri(self.dataset_def.source.uri)
+            self.df = await get_dataframe_from_uri(self.dataset_def.source.uri)
         elif self.dataset_def.source.type == "rows":
             self.df = pandas.DataFrame(self.dataset_def.source.rows)
         else:
@@ -95,7 +95,7 @@ class LocalFSDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
     ) -> IterrowsResponse:
         dataset_def = self.dataset_infos[dataset_id]
         dataset_impl = PandasDataframeDataset(dataset_def)
-        dataset_impl.load()
+        await dataset_impl.load()
 
         start_index = start_index or 0
 
@@ -114,7 +114,7 @@ class LocalFSDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
     async def append_rows(self, dataset_id: str, rows: List[Dict[str, Any]]) -> None:
         dataset_def = self.dataset_infos[dataset_id]
         dataset_impl = PandasDataframeDataset(dataset_def)
-        dataset_impl.load()
+        await dataset_impl.load()
 
         new_rows_df = pandas.DataFrame(rows)
         dataset_impl.df = pandas.concat([dataset_impl.df, new_rows_df], ignore_index=True)

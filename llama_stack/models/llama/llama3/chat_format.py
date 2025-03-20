@@ -12,6 +12,7 @@
 # the top-level of this source tree.
 
 import io
+import json
 import uuid
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
@@ -203,9 +204,10 @@ class ChatFormat:
             # This code tries to handle that case
             if tool_name in BuiltinTool.__members__:
                 tool_name = BuiltinTool[tool_name]
-                tool_arguments = {
-                    "query": list(tool_arguments.values())[0],
-                }
+                if isinstance(tool_arguments, dict):
+                    tool_arguments = {
+                        "query": list(tool_arguments.values())[0],
+                    }
         else:
             builtin_tool_info = ToolUtils.maybe_extract_builtin_tool_call(content)
             if builtin_tool_info is not None:
@@ -229,6 +231,7 @@ class ChatFormat:
                     call_id=call_id,
                     tool_name=tool_name,
                     arguments=tool_arguments,
+                    arguments_json=json.dumps(tool_arguments),
                 )
             )
             content = ""

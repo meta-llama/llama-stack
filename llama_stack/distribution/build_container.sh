@@ -235,7 +235,7 @@ image_tag="$image_name:$version_tag"
 # Detect platform architecture
 ARCH=$(uname -m)
 if [ -n "$BUILD_PLATFORM" ]; then
-  CLI_ARGS+=("--platform $BUILD_PLATFORM")
+  CLI_ARGS+=("--platform" "$BUILD_PLATFORM")
 elif [ "$ARCH" = "arm64" ] || [ "$ARCH" = "aarch64" ]; then
   CLI_ARGS+=("--platform" "linux/arm64")
 elif [ "$ARCH" = "x86_64" ]; then

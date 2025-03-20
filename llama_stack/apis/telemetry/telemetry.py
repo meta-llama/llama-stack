@@ -146,16 +146,14 @@ class SpanEndPayload(BaseModel):
     status: SpanStatus
 
 
-StructuredLogPayload = register_schema(
-    Annotated[
-        Union[
-            SpanStartPayload,
-            SpanEndPayload,
-        ],
-        Field(discriminator="type"),
+StructuredLogPayload = Annotated[
+    Union[
+        SpanStartPayload,
+        SpanEndPayload,
     ],
-    name="StructuredLogPayload",
-)
+    Field(discriminator="type"),
+]
+register_schema(StructuredLogPayload, name="StructuredLogPayload")
 
 
 @json_schema_type
@@ -164,17 +162,15 @@ class StructuredLogEvent(EventCommon):
     payload: StructuredLogPayload
 
 
-Event = register_schema(
-    Annotated[
-        Union[
-            UnstructuredLogEvent,
-            MetricEvent,
-            StructuredLogEvent,
-        ],
-        Field(discriminator="type"),
+Event = Annotated[
+    Union[
+        UnstructuredLogEvent,
+        MetricEvent,
+        StructuredLogEvent,
     ],
-    name="Event",
-)
+    Field(discriminator="type"),
+]
+register_schema(Event, name="Event")
 
 
 @json_schema_type

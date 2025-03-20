@@ -84,13 +84,11 @@ class RowsDataSource(BaseModel):
     rows: List[Dict[str, Any]]
 
 
-DataSource = register_schema(
-    Annotated[
-        Union[URIDataSource, RowsDataSource],
-        Field(discriminator="type"),
-    ],
-    name="DataSource",
-)
+DataSource = Annotated[
+    Union[URIDataSource, RowsDataSource],
+    Field(discriminator="type"),
+]
+register_schema(DataSource, name="DataSource")
 
 
 class CommonDatasetFields(BaseModel):
@@ -121,8 +119,6 @@ class Dataset(CommonDatasetFields, Resource):
 
 class DatasetInput(CommonDatasetFields, BaseModel):
     dataset_id: str
-    provider_id: Optional[str] = None
-    provider_dataset_id: Optional[str] = None
 
 
 class ListDatasetsResponse(BaseModel):

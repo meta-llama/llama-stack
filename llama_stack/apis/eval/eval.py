@@ -43,10 +43,8 @@ class AgentCandidate(BaseModel):
     config: AgentConfig
 
 
-EvalCandidate = register_schema(
-    Annotated[Union[ModelCandidate, AgentCandidate], Field(discriminator="type")],
-    name="EvalCandidate",
-)
+EvalCandidate = Annotated[Union[ModelCandidate, AgentCandidate], Field(discriminator="type")]
+register_schema(EvalCandidate, name="EvalCandidate")
 
 
 @json_schema_type

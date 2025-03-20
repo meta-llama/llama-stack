@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import asyncio
 import base64
 import io
 from urllib.parse import unquote
@@ -13,12 +14,15 @@ import pandas
 from llama_stack.providers.utils.memory.vector_store import parse_data_url
 
 
-def get_dataframe_from_uri(uri: str):
+async def get_dataframe_from_uri(uri: str):
     df = None
     if uri.endswith(".csv"):
-        df = pandas.read_csv(uri)
+        # Moving to its own thread to avoid io from blocking the eventloop
+        # This isn't ideal as it moves more then just the IO to a new thread
+        # but it is as close as we can easly get
+        df = await asyncio.to_thread(pandas.read_csv, uri)
     elif uri.endswith(".xlsx"):
-        df = pandas.read_excel(uri)
+        df = await asyncio.to_thread(pandas.read_excel, uri)
     elif uri.startswith("data:"):
         parts = parse_data_url(uri)
         data = parts["data"]

@@ -11,9 +11,7 @@ from pydantic import BaseModel
 from llama_stack.apis.inspect import (
     HealthInfo,
     Inspect,
-    ListProvidersResponse,
     ListRoutesResponse,
-    ProviderInfo,
     RouteInfo,
     VersionInfo,
 )
@@ -38,24 +36,6 @@ class DistributionInspectImpl(Inspect):
 
     async def initialize(self) -> None:
         pass
-
-    async def list_providers(self) -> ListProvidersResponse:
-        run_config = self.config.run_config
-
-        ret = []
-        for api, providers in run_config.providers.items():
-            ret.extend(
-                [
-                    ProviderInfo(
-                        api=api,
-                        provider_id=p.provider_id,
-                        provider_type=p.provider_type,
-                    )
-                    for p in providers
-                ]
-            )
-
-        return ListProvidersResponse(data=ret)
 
     async def list_routes(self) -> ListRoutesResponse:
         run_config = self.config.run_config

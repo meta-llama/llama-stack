@@ -63,19 +63,15 @@ class TextContentItem(BaseModel):
 
 
 # other modalities can be added here
-InterleavedContentItem = register_schema(
-    Annotated[
-        Union[ImageContentItem, TextContentItem],
-        Field(discriminator="type"),
-    ],
-    name="InterleavedContentItem",
-)
+InterleavedContentItem = Annotated[
+    Union[ImageContentItem, TextContentItem],
+    Field(discriminator="type"),
+]
+register_schema(InterleavedContentItem, name="InterleavedContentItem")
 
 # accept a single "str" as a special case since it is common
-InterleavedContent = register_schema(
-    Union[str, InterleavedContentItem, List[InterleavedContentItem]],
-    name="InterleavedContent",
-)
+InterleavedContent = Union[str, InterleavedContentItem, List[InterleavedContentItem]]
+register_schema(InterleavedContent, name="InterleavedContent")
 
 
 @json_schema_type
@@ -109,10 +105,8 @@ class ToolCallDelta(BaseModel):
 
 
 # streaming completions send a stream of ContentDeltas
-ContentDelta = register_schema(
-    Annotated[
-        Union[TextDelta, ImageDelta, ToolCallDelta],
-        Field(discriminator="type"),
-    ],
-    name="ContentDelta",
-)
+ContentDelta = Annotated[
+    Union[TextDelta, ImageDelta, ToolCallDelta],
+    Field(discriminator="type"),
+]
+register_schema(ContentDelta, name="ContentDelta")

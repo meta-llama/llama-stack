@@ -52,6 +52,7 @@ jobs:
           # always test against the latest version of the client
           uv pip install git+https://github.com/meta-llama/llama-stack-client-python.git@main
           uv pip install -e .
+          llama stack build --template ollama --image-type venv
 
       - name: Wait for Ollama to start
         run: |

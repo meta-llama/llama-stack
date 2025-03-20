@@ -16,4 +16,4 @@ if [ $FOUND_PYTHON -ne 0 ]; then
      uv python install $PYTHON_VERSION
 fi
 
-uv run --python $PYTHON_VERSION --with-editable . --with-editable ".[dev]" --with-editable ".[unit]" pytest -s -v tests/unit/ $@
+uv run --python $PYTHON_VERSION --with-editable . --with-editable ".[dev]" --with-editable ".[unit]" pytest --asyncio-mode=auto -s -v tests/unit/ $@

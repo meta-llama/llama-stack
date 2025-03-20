@@ -2650,7 +2650,7 @@
                     }
                 },
                 "tags": [
-                    "Inspect"
+                    "Providers"
                 ],
                 "description": "",
                 "parameters": []
@@ -4159,70 +4159,80 @@
                         ]
                     },
                     "arguments": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "integer"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "array",
-                                    "items": {
-                                        "oneOf": [
-                                            {
-                                                "type": "string"
-                                            },
-                                            {
-                                                "type": "integer"
-                                            },
-                                            {
-                                                "type": "number"
-                                            },
-                                            {
-                                                "type": "boolean"
-                                            },
-                                            {
-                                                "type": "null"
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "integer"
+                                        },
+                                        {
+                                            "type": "number"
+                                        },
+                                        {
+                                            "type": "boolean"
+                                        },
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "type": "array",
+                                            "items": {
+                                                "oneOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "integer"
+                                                    },
+                                                    {
+                                                        "type": "number"
+                                                    },
+                                                    {
+                                                        "type": "boolean"
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
                                             }
-                                        ]
-                                    }
-                                },
-                                {
-                                    "type": "object",
-                                    "additionalProperties": {
-                                        "oneOf": [
-                                            {
-                                                "type": "string"
-                                            },
-                                            {
-                                                "type": "integer"
-                                            },
-                                            {
-                                                "type": "number"
-                                            },
-                                            {
-                                                "type": "boolean"
-                                            },
-                                            {
-                                                "type": "null"
+                                        },
+                                        {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "oneOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "integer"
+                                                    },
+                                                    {
+                                                        "type": "number"
+                                                    },
+                                                    {
+                                                        "type": "boolean"
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
                                             }
-                                        ]
-                                    }
+                                        }
+                                    ]
                                 }
-                            ]
-                        }
+                            }
+                        ]
+                    },
+                    "arguments_json": {
+                        "type": "string"
                     }
                 },
                 "additionalProperties": false,
@@ -6258,6 +6268,7 @@
                 "type": "string",
                 "enum": [
                     "average",
+                    "weighted_average",
                     "median",
                     "categorical_count",
                     "accuracy"
@@ -7787,7 +7798,8 @@
                 "type": "object",
                 "properties": {
                     "document_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The unique identifier for the document."
                     },
                     "content": {
                         "oneOf": [
@@ -7806,10 +7818,12 @@
                             {
                                 "$ref": "#/components/schemas/URL"
                             }
-                        ]
+                        ],
+                        "description": "The content of the document."
                     },
                     "mime_type": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The MIME type of the document."
                     },
                     "metadata": {
                         "type": "object",
@@ -7834,7 +7848,8 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "Additional metadata for the document."
                     }
                 },
                 "additionalProperties": false,
@@ -7843,7 +7858,8 @@
                     "content",
                     "metadata"
                 ],
-                "title": "RAGDocument"
+                "title": "RAGDocument",
+                "description": "A document to be used for document ingestion in the RAG Tool."
             },
             "InsertRequest": {
                 "type": "object",
@@ -9847,6 +9863,23 @@
                 ],
                 "title": "ScoreBatchResponse"
             },
+            "AlgorithmConfig": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/LoraFinetuningConfig"
+                    },
+                    {
+                        "$ref": "#/components/schemas/QATFinetuningConfig"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "LoRA": "#/components/schemas/LoraFinetuningConfig",
+                        "QAT": "#/components/schemas/QATFinetuningConfig"
+                    }
+                }
+            },
             "LoraFinetuningConfig": {
                 "type": "object",
                 "properties": {
@@ -9982,14 +10015,7 @@
                         "type": "string"
                     },
                     "algorithm_config": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/LoraFinetuningConfig"
-                            },
-                            {
-                                "$ref": "#/components/schemas/QATFinetuningConfig"
-                            }
-                        ]
+                        "$ref": "#/components/schemas/AlgorithmConfig"
                     }
                 },
                 "additionalProperties": false,
