@@ -78,17 +78,15 @@ class BasicScoringFnParams(BaseModel):
     )
 
 
-ScoringFnParams = register_schema(
-    Annotated[
-        Union[
-            LLMAsJudgeScoringFnParams,
-            RegexParserScoringFnParams,
-            BasicScoringFnParams,
-        ],
-        Field(discriminator="type"),
+ScoringFnParams = Annotated[
+    Union[
+        LLMAsJudgeScoringFnParams,
+        RegexParserScoringFnParams,
+        BasicScoringFnParams,
     ],
-    name="ScoringFnParams",
-)
+    Field(discriminator="type"),
+]
+register_schema(ScoringFnParams, name="ScoringFnParams")
 
 
 class CommonScoringFnFields(BaseModel):

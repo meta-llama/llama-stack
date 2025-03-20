@@ -144,18 +144,16 @@ class CompletionMessage(BaseModel):
     tool_calls: Optional[List[ToolCall]] = Field(default_factory=list)
 
 
-Message = register_schema(
-    Annotated[
-        Union[
-            UserMessage,
-            SystemMessage,
-            ToolResponseMessage,
-            CompletionMessage,
-        ],
-        Field(discriminator="role"),
+Message = Annotated[
+    Union[
+        UserMessage,
+        SystemMessage,
+        ToolResponseMessage,
+        CompletionMessage,
     ],
-    name="Message",
-)
+    Field(discriminator="role"),
+]
+register_schema(Message, name="Message")
 
 
 @json_schema_type
@@ -263,13 +261,11 @@ class GrammarResponseFormat(BaseModel):
     bnf: Dict[str, Any]
 
 
-ResponseFormat = register_schema(
-    Annotated[
-        Union[JsonSchemaResponseFormat, GrammarResponseFormat],
-        Field(discriminator="type"),
-    ],
-    name="ResponseFormat",
-)
+ResponseFormat = Annotated[
+    Union[JsonSchemaResponseFormat, GrammarResponseFormat],
+    Field(discriminator="type"),
+]
+register_schema(ResponseFormat, name="ResponseFormat")
 
 
 # This is an internally used class

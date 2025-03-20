@@ -186,13 +186,11 @@ class TopKSamplingStrategy(BaseModel):
     top_k: int = Field(..., ge=1)
 
 
-SamplingStrategy = register_schema(
-    Annotated[
-        Union[GreedySamplingStrategy, TopPSamplingStrategy, TopKSamplingStrategy],
-        Field(discriminator="type"),
-    ],
-    name="SamplingStrategy",
-)
+SamplingStrategy = Annotated[
+    Union[GreedySamplingStrategy, TopPSamplingStrategy, TopKSamplingStrategy],
+    Field(discriminator="type"),
+]
+register_schema(SamplingStrategy, name="SamplingStrategy")
 
 
 @json_schema_type

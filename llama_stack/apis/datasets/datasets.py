@@ -84,13 +84,11 @@ class RowsDataSource(BaseModel):
     rows: List[Dict[str, Any]]
 
 
-DataSource = register_schema(
-    Annotated[
-        Union[URIDataSource, RowsDataSource],
-        Field(discriminator="type"),
-    ],
-    name="DataSource",
-)
+DataSource = Annotated[
+    Union[URIDataSource, RowsDataSource],
+    Field(discriminator="type"),
+]
+register_schema(DataSource, name="DataSource")
 
 
 class CommonDatasetFields(BaseModel):

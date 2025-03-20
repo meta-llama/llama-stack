@@ -88,10 +88,8 @@ class QATFinetuningConfig(BaseModel):
     group_size: int
 
 
-AlgorithmConfig = register_schema(
-    Annotated[LoraFinetuningConfig | QATFinetuningConfig, Field(discriminator="type")],
-    name="AlgorithmConfig",
-)
+AlgorithmConfig = Annotated[LoraFinetuningConfig | QATFinetuningConfig, Field(discriminator="type")]
+register_schema(AlgorithmConfig, name="AlgorithmConfig")
 
 
 @json_schema_type
