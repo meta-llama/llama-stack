@@ -6689,6 +6689,15 @@ components:
       required:
         - results
       title: ScoreBatchResponse
+    AlgorithmConfig:
+      oneOf:
+        - $ref: '#/components/schemas/LoraFinetuningConfig'
+        - $ref: '#/components/schemas/QATFinetuningConfig'
+      discriminator:
+        propertyName: type
+        mapping:
+          LoRA: '#/components/schemas/LoraFinetuningConfig'
+          QAT: '#/components/schemas/QATFinetuningConfig'
     LoraFinetuningConfig:
       type: object
       properties:
@@ -6772,9 +6781,7 @@ components:
         checkpoint_dir:
           type: string
         algorithm_config:
-          oneOf:
-            - $ref: '#/components/schemas/LoraFinetuningConfig'
-            - $ref: '#/components/schemas/QATFinetuningConfig'
+          $ref: '#/components/schemas/AlgorithmConfig'
       additionalProperties: false
       required:
         - job_uuid
