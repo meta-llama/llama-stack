@@ -74,6 +74,12 @@ the build. If not specified, currently active Conda environment will be used if 
             default=False,
             help="Run the stack after building using the same image type, name, and other applicable arguments",
         )
+        self.parser.add_argument(
+            "--providers",
+            type=str,
+            default=None,
+            help="Build a config for a list of providers and only those providers. This list is formatted like: api1=provider1,api2=provider2. Where there can be multiple providers per API.",
+        )
 
     def _run_stack_build_command(self, args: argparse.Namespace) -> None:
         # always keep implementation completely silo-ed away from CLI so CLI
