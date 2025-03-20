@@ -11,6 +11,10 @@ Providers come in two flavors:
 
 Importantly, Llama Stack always strives to provide at least one fully inline provider for each API so you can iterate on a fully featured environment locally.
 
+## External Providers
+
+Llama Stack supports external providers that live outside of the main codebase. This allows you to create and maintain your own providers independently. See the [External Providers Guide](external) for details.
+
 ## Agents
 Run multi-step agentic workflows with LLMs with tool usage, memory (RAG), etc.
 
@@ -50,6 +54,7 @@ The following providers (i.e., databases) are available for Vector IO:
 ```{toctree}
 :maxdepth: 1
 
+external
 vector_io/faiss
 vector_io/sqlite-vec
 vector_io/chromadb
