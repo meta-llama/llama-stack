@@ -12,6 +12,7 @@ from llama_stack.apis.benchmarks import Benchmarks
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
 from llama_stack.apis.eval import Eval
+from llama_stack.apis.files import Files
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.inspect import Inspect
 from llama_stack.apis.models import Models
@@ -79,6 +80,7 @@ def api_protocol_map() -> Dict[Api, Any]:
         Api.post_training: PostTraining,
         Api.tool_groups: ToolGroups,
         Api.tool_runtime: ToolRuntime,
+        Api.files: Files,
     }
 
 

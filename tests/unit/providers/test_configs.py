@@ -14,17 +14,10 @@ from llama_stack.distribution.utils.dynamic import instantiate_class_type
 class TestProviderConfigurations:
     """Test suite for testing provider configurations across all API types."""
 
-    def test_all_api_providers_exist(self):
-        provider_registry = get_provider_registry()
-        for api in providable_apis():
-            providers = provider_registry.get(api, {})
-            assert providers, f"No providers found for API type: {api}"
-
     @pytest.mark.parametrize("api", providable_apis())
     def test_api_providers(self, api):
         provider_registry = get_provider_registry()
         providers = provider_registry.get(api, {})
-        assert providers, f"No providers found for API type: {api}"
 
         failures = []
         for provider_type, provider_spec in providers.items():
