@@ -2183,7 +2183,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/JobStatus"
+                                    "$ref": "#/components/schemas/Job"
                                 }
                             }
                         }
@@ -7648,16 +7648,6 @@
                 "title": "PostTrainingJobArtifactsResponse",
                 "description": "Artifacts of a finetuning job."
             },
-            "JobStatus": {
-                "type": "string",
-                "enum": [
-                    "completed",
-                    "in_progress",
-                    "failed",
-                    "scheduled"
-                ],
-                "title": "JobStatus"
-            },
             "PostTrainingJobStatusResponse": {
                 "type": "object",
                 "properties": {
@@ -7665,7 +7655,14 @@
                         "type": "string"
                     },
                     "status": {
-                        "$ref": "#/components/schemas/JobStatus"
+                        "type": "string",
+                        "enum": [
+                            "completed",
+                            "in_progress",
+                            "failed",
+                            "scheduled"
+                        ],
+                        "title": "JobStatus"
                     },
                     "scheduled_at": {
                         "type": "string",
@@ -8114,6 +8111,30 @@
                 ],
                 "title": "IterrowsResponse",
                 "description": "A paginated list of rows from a dataset."
+            },
+            "Job": {
+                "type": "object",
+                "properties": {
+                    "job_id": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "completed",
+                            "in_progress",
+                            "failed",
+                            "scheduled"
+                        ],
+                        "title": "JobStatus"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "job_id",
+                    "status"
+                ],
+                "title": "Job"
             },
             "ListAgentSessionsResponse": {
                 "type": "object",
@@ -9638,19 +9659,6 @@
                     "benchmark_config"
                 ],
                 "title": "RunEvalRequest"
-            },
-            "Job": {
-                "type": "object",
-                "properties": {
-                    "job_id": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "job_id"
-                ],
-                "title": "Job"
             },
             "RunShieldRequest": {
                 "type": "object",

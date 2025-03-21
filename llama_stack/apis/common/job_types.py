@@ -10,14 +10,14 @@ from pydantic import BaseModel
 from llama_stack.schema_utils import json_schema_type
 
 
-@json_schema_type
-class Job(BaseModel):
-    job_id: str
-
-
-@json_schema_type
 class JobStatus(Enum):
     completed = "completed"
     in_progress = "in_progress"
     failed = "failed"
     scheduled = "scheduled"
+
+
+@json_schema_type
+class Job(BaseModel):
+    job_id: str
+    status: JobStatus
