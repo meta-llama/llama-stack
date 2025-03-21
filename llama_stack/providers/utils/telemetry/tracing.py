@@ -34,7 +34,7 @@ INVALID_SPAN_ID = 0x0000000000000000
 INVALID_TRACE_ID = 0x00000000000000000000000000000000
 
 
-def format_trace_id(trace_id: int) -> str:
+def trace_id_to_str(trace_id: int) -> str:
     """Convenience trace ID formatting method
     Args:
         trace_id: Trace ID int
@@ -45,7 +45,7 @@ def format_trace_id(trace_id: int) -> str:
     return format(trace_id, "032x")
 
 
-def format_span_id(span_id: int) -> str:
+def span_id_to_str(span_id: int) -> str:
     """Convenience span ID formatting method
     Args:
         span_id: Span ID int
@@ -60,14 +60,14 @@ def generate_span_id() -> str:
     span_id = random.getrandbits(64)
     while span_id == INVALID_SPAN_ID:
         span_id = random.getrandbits(64)
-    return format_span_id(span_id)
+    return span_id_to_str(span_id)
 
 
 def generate_trace_id() -> str:
     trace_id = random.getrandbits(128)
     while trace_id == INVALID_TRACE_ID:
         trace_id = random.getrandbits(128)
-    return format_trace_id(trace_id)
+    return trace_id_to_str(trace_id)
 
 
 CURRENT_TRACE_CONTEXT = contextvars.ContextVar("trace_context", default=None)

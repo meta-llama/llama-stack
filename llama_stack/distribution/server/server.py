@@ -239,7 +239,7 @@ class TracingMiddleware:
 
         trace_context = await start_trace(trace_path, {"__location__": "server", "raw_path": path})
 
-        async def send_wrapper(message):
+        async def send_with_trace_id(message):
             if message["type"] == "http.response.start":
                 headers = message.get("headers", [])
                 headers.append([b"x-trace-id", str(trace_context.trace_id).encode()])
@@ -247,7 +247,7 @@ class TracingMiddleware:
             await send(message)
 
         try:
-            return await self.app(scope, receive, send_wrapper)
+            return await self.app(scope, receive, send_with_trace_id)
         finally:
             await end_trace()
 
