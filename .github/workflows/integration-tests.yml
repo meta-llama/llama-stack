@@ -25,7 +25,8 @@ jobs:
       matrix:
         # Listing tests manually since some of them currently fail
         # TODO: generate matrix list from tests/integration when fixed
-        test-type: [inference, datasets, inspect, scoring, post_training, providers]
+        test-type: [agents, inference, datasets, inspect, scoring, post_training, providers]
+        client-type: [library, http]
       fail-fast: false # we want to run all tests regardless of failure
 
     steps:
@@ -43,17 +44,19 @@ jobs:
 
       - name: Pull Ollama image
         run: |
-          ollama pull llama3.2:3b-instruct-fp16
+          ollama pull llama3.2:1b-instruct-fp16
 
       - name: Start Ollama in background
         run: |
-          nohup ollama run llama3.2:3b-instruct-fp16 > ollama.log 2>&1 &
+          nohup ollama run llama3.2:1b-instruct-fp16 > ollama.log 2>&1 &
 
       - name: Set Up Environment and Install Dependencies
         run: |
           uv sync --extra dev --extra test
           uv pip install ollama faiss-cpu
           # always test against the latest version of the client
+          # TODO: this is not necessarily a good idea. we need to test against both published and latest
+          # to find out backwards compatibility issues.
           uv pip install git+https://github.com/meta-llama/llama-stack-client-python.git@main
           uv pip install -e .
           llama stack build --template ollama --image-type venv
@@ -74,13 +77,15 @@ jobs:
           exit 1
 
       - name: Start Llama Stack server in background
+        if: matrix.client-type == 'http'
         env:
-          INFERENCE_MODEL: "meta-llama/Llama-3.2-3B-Instruct"
+          INFERENCE_MODEL: "meta-llama/Llama-3.2-1B-Instruct"
         run: |
           source .venv/bin/activate
           nohup uv run llama stack run ./llama_stack/templates/ollama/run.yaml --image-type venv > server.log 2>&1 &
 
       - name: Wait for Llama Stack server to be ready
+        if: matrix.client-type == 'http'
         run: |
           echo "Waiting for Llama Stack server..."
           for i in {1..30}; do
@@ -96,6 +101,14 @@ jobs:
 
       - name: Run Integration Tests
         env:
-          INFERENCE_MODEL: "meta-llama/Llama-3.2-3B-Instruct"
+          INFERENCE_MODEL: "meta-llama/Llama-3.2-1B-Instruct"
         run: |
-          uv run pytest -v tests/integration/${{ matrix.test-type }} --stack-config=ollama --text-model="meta-llama/Llama-3.2-3B-Instruct" --embedding-model=all-MiniLM-L6-v2
+          if [ "${{ matrix.client-type }}" == "library" ]; then
+            stack_config="ollama"
+          else
+            stack_config="http://localhost:8321"
+          fi
+          uv run pytest -v tests/integration/${{ matrix.test-type }} --stack-config=${stack_config} \
+            -k "not(builtin_tool or safety_with_image or code_interpreter or test_rag)" \
+            --text-model="meta-llama/Llama-3.2-1B-Instruct" \
+            --embedding-model=all-MiniLM-L6-v2
