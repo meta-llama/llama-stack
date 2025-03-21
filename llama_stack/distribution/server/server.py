@@ -228,12 +228,50 @@ class TracingMiddleware:
     async def __call__(self, scope, receive, send):
         if scope.get("type") == "lifespan":
             return await self.app(scope, receive, send)
+
         path = scope.get("path", "")
-        await start_trace(path, {"__location__": "server"})
+
+        # Try to match the path to a route template
+        route_template = self._match_path(path)
+
+        # Use the matched template or original path
+        trace_path = route_template or path
+
+        await start_trace(trace_path, {"__location__": "server", "raw_path": path})
         try:
             return await self.app(scope, receive, send)
         finally:
             await end_trace()
+
+    def _match_path(self, path):
+        """Match a path to a route template using simple segment matching."""
+        path_segments = path.split("/")
+
+        for route in self.app.app.routes:
+            if not hasattr(route, "path"):
+                continue
+
+            route_path = route.path
+            route_segments = route_path.split("/")
+
+            # Skip if number of segments doesn't match
+            if len(path_segments) != len(route_segments):
+                continue
+
+            matches = True
+            for path_seg, route_seg in zip(path_segments, route_segments, strict=True):
+                # If route segment is a parameter (contains {...}), it matches anything
+                if route_seg.startswith("{") and route_seg.endswith("}"):
+                    continue
+                # Otherwise, segments must match exactly
+                elif path_seg != route_seg:
+                    matches = False
+                    break
+
+            if matches:
+                return route_path
+
+        return None
 
 
 class ClientVersionMiddleware:
