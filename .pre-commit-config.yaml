@@ -93,6 +93,7 @@ repos:
         language: python
         pass_filenames: false
         require_serial: true
+        files: ^llama_stack/apis/|^docs/openapi_generator/
 
 ci:
     autofix_commit_msg: 🎨 [pre-commit.ci] Auto format from pre-commit.com hooks
