@@ -254,7 +254,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
                 func = getattr(impl, endpoint.name)
                 if endpoint.method not in endpoint_impls:
                     endpoint_impls[endpoint.method] = {}
-                endpoint_impls[endpoint.method][_convert_path_to_regex(endpoint.route)] = func
+                endpoint_impls[endpoint.method][_convert_path_to_regex(endpoint.route)] = (func, endpoint.route)
 
         self.endpoint_impls = endpoint_impls
         return True
@@ -290,7 +290,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
                 )
             return response
 
-    def _find_matching_endpoint(self, method: str, path: str) -> tuple[Any, dict]:
+    def _find_matching_endpoint(self, method: str, path: str) -> tuple[Any, dict, str]:
         """Find the matching endpoint implementation for a given method and path.
 
         Args:
@@ -307,12 +307,12 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         if not impls:
             raise ValueError(f"No endpoint found for {path}")
 
-        for regex, func in impls.items():
+        for regex, (func, route) in impls.items():
             match = re.match(regex, path)
             if match:
                 # Extract named groups from the regex match
                 path_params = match.groupdict()
-                return func, path_params
+                return func, path_params, route
 
         raise ValueError(f"No endpoint found for {path}")
 
@@ -326,10 +326,10 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         body = options.params or {}
         body |= options.json_data or {}
 
-        matched_func, path_params = self._find_matching_endpoint(options.method, path)
+        matched_func, path_params, route = self._find_matching_endpoint(options.method, path)
         body |= path_params
         body = self._convert_body(path, options.method, body)
-        await start_trace(options.url, {"__location__": "library_client"})
+        await start_trace(route, {"__location__": "library_client"})
         try:
             result = await matched_func(**body)
         finally:
@@ -371,13 +371,13 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         path = options.url
         body = options.params or {}
         body |= options.json_data or {}
-        func, path_params = self._find_matching_endpoint(options.method, path)
+        func, path_params, route = self._find_matching_endpoint(options.method, path)
         body |= path_params
 
         body = self._convert_body(path, options.method, body)
 
         async def gen():
-            await start_trace(options.url, {"__location__": "library_client"})
+            await start_trace(route, {"__location__": "library_client"})
             try:
                 async for chunk in await func(**body):
                     data = json.dumps(convert_pydantic_to_json_value(chunk))
@@ -422,7 +422,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         if not body:
             return {}
 
-        func, _ = self._find_matching_endpoint(method, path)
+        func, _, _ = self._find_matching_endpoint(method, path)
         sig = inspect.signature(func)
 
         # Strip NOT_GIVENs to use the defaults in signature
