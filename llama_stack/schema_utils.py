@@ -18,6 +18,8 @@ class WebMethod:
     response_examples: Optional[List[Any]] = None
     method: Optional[str] = None
     raw_bytes_request_body: Optional[bool] = False
+    # A descriptive name of the corresponding span created by tracing
+    descriptive_name: Optional[str] = None
 
 
 class HasWebMethod(Protocol):
@@ -34,6 +36,7 @@ def webmethod(
     request_examples: Optional[List[Any]] = None,
     response_examples: Optional[List[Any]] = None,
     raw_bytes_request_body: Optional[bool] = False,
+    descriptive_name: Optional[str] = None,
 ) -> Callable[[T], T]:
     """
     Decorator that supplies additional metadata to an endpoint operation function.
@@ -52,6 +55,7 @@ def webmethod(
             request_examples=request_examples,
             response_examples=response_examples,
             raw_bytes_request_body=raw_bytes_request_body,
+            descriptive_name=descriptive_name,
         )
         return cls
 

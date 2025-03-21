@@ -36,7 +36,6 @@ from llama_stack.apis.inference import (
 )
 from llama_stack.apis.safety import SafetyViolation
 from llama_stack.apis.tools import ToolDef
-from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
 from llama_stack.schema_utils import json_schema_type, register_schema, webmethod
 
 
@@ -383,7 +382,6 @@ class AgentStepResponse(BaseModel):
 
 
 @runtime_checkable
-@trace_protocol
 class Agents(Protocol):
     """Agents API for creating and interacting with agentic systems.
 
@@ -395,7 +393,7 @@ class Agents(Protocol):
     - Agents can also use Memory to retrieve information from knowledge bases. See the RAG Tool and Vector IO APIs for more details.
     """
 
-    @webmethod(route="/agents", method="POST")
+    @webmethod(route="/agents", method="POST", descriptive_name="create_agent")
     async def create_agent(
         self,
         agent_config: AgentConfig,
@@ -407,7 +405,9 @@ class Agents(Protocol):
         """
         ...
 
-    @webmethod(route="/agents/{agent_id}/session/{session_id}/turn", method="POST")
+    @webmethod(
+        route="/agents/{agent_id}/session/{session_id}/turn", method="POST", descriptive_name="create_agent_turn"
+    )
     async def create_agent_turn(
         self,
         agent_id: str,
@@ -439,6 +439,7 @@ class Agents(Protocol):
     @webmethod(
         route="/agents/{agent_id}/session/{session_id}/turn/{turn_id}/resume",
         method="POST",
+        descriptive_name="resume_agent_turn",
     )
     async def resume_agent_turn(
         self,
@@ -501,7 +502,7 @@ class Agents(Protocol):
         """
         ...
 
-    @webmethod(route="/agents/{agent_id}/session", method="POST")
+    @webmethod(route="/agents/{agent_id}/session", method="POST", descriptive_name="create_agent_session")
     async def create_agent_session(
         self,
         agent_id: str,

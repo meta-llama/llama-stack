@@ -32,6 +32,10 @@ from llama_stack.distribution.request_headers import (
     request_provider_data_context,
 )
 from llama_stack.distribution.resolver import InvalidProviderError
+from llama_stack.distribution.server.endpoints import (
+    find_matching_endpoint,
+    initialize_endpoint_impls,
+)
 from llama_stack.distribution.stack import (
     construct_stack,
     redact_sensitive_fields,
@@ -222,56 +226,24 @@ def create_dynamic_typed_route(func: Any, method: str, route: str):
 
 
 class TracingMiddleware:
-    def __init__(self, app):
+    def __init__(self, app, impls):
         self.app = app
+        self.impls = impls
 
     async def __call__(self, scope, receive, send):
         if scope.get("type") == "lifespan":
             return await self.app(scope, receive, send)
 
         path = scope.get("path", "")
-
-        # Try to match the path to a route template
-        route_template = self._match_path(path)
-
-        # Use the matched template or original path
-        trace_path = route_template or path
+        if not hasattr(self, "endpoint_impls"):
+            self.endpoint_impls = initialize_endpoint_impls(self.impls)
+        _, _, trace_path = find_matching_endpoint(scope.get("method", "GET"), path, self.endpoint_impls)
 
         await start_trace(trace_path, {"__location__": "server", "raw_path": path})
         try:
             return await self.app(scope, receive, send)
         finally:
             await end_trace()
-
-    def _match_path(self, path):
-        """Match a path to a route template using simple segment matching."""
-        path_segments = path.split("/")
-
-        for route in self.app.app.routes:
-            if not hasattr(route, "path"):
-                continue
-
-            route_path = route.path
-            route_segments = route_path.split("/")
-
-            # Skip if number of segments doesn't match
-            if len(path_segments) != len(route_segments):
-                continue
-
-            matches = True
-            for path_seg, route_seg in zip(path_segments, route_segments, strict=True):
-                # If route segment is a parameter (contains {...}), it matches anything
-                if route_seg.startswith("{") and route_seg.endswith("}"):
-                    continue
-                # Otherwise, segments must match exactly
-                elif path_seg != route_seg:
-                    matches = False
-                    break
-
-            if matches:
-                return route_path
-
-        return None
 
 
 class ClientVersionMiddleware:
@@ -391,7 +363,6 @@ def main():
     logger.info(yaml.dump(safe_config, indent=2))
 
     app = FastAPI(lifespan=lifespan)
-    app.add_middleware(TracingMiddleware)
     if not os.environ.get("LLAMA_STACK_DISABLE_VERSION_CHECK"):
         app.add_middleware(ClientVersionMiddleware)
 
@@ -455,6 +426,7 @@ def main():
     app.exception_handler(Exception)(global_exception_handler)
 
     app.__llama_stack_impls__ = impls
+    app.add_middleware(TracingMiddleware, impls=impls)
 
     import uvicorn
 

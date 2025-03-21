@@ -9,7 +9,6 @@ import inspect
 import json
 import logging
 import os
-import re
 from concurrent.futures import ThreadPoolExecutor
 from enum import Enum
 from pathlib import Path
@@ -37,7 +36,10 @@ from llama_stack.distribution.request_headers import (
     request_provider_data_context,
 )
 from llama_stack.distribution.resolver import ProviderRegistry
-from llama_stack.distribution.server.endpoints import get_all_api_endpoints
+from llama_stack.distribution.server.endpoints import (
+    find_matching_endpoint,
+    initialize_endpoint_impls,
+)
 from llama_stack.distribution.stack import (
     construct_stack,
     get_stack_run_config_from_template,
@@ -232,31 +234,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
             safe_config = redact_sensitive_fields(self.config.model_dump())
             console.print(yaml.dump(safe_config, indent=2))
 
-        endpoints = get_all_api_endpoints()
-        endpoint_impls = {}
-
-        def _convert_path_to_regex(path: str) -> str:
-            # Convert {param} to named capture groups
-            # handle {param:path} as well which allows for forward slashes in the param value
-            pattern = re.sub(
-                r"{(\w+)(?::path)?}",
-                lambda m: f"(?P<{m.group(1)}>{'[^/]+' if not m.group(0).endswith(':path') else '.+'})",
-                path,
-            )
-
-            return f"^{pattern}$"
-
-        for api, api_endpoints in endpoints.items():
-            if api not in self.impls:
-                continue
-            for endpoint in api_endpoints:
-                impl = self.impls[api]
-                func = getattr(impl, endpoint.name)
-                if endpoint.method not in endpoint_impls:
-                    endpoint_impls[endpoint.method] = {}
-                endpoint_impls[endpoint.method][_convert_path_to_regex(endpoint.route)] = (func, endpoint.route)
-
-        self.endpoint_impls = endpoint_impls
+        self.endpoint_impls = initialize_endpoint_impls(self.impls)
         return True
 
     async def request(
@@ -290,32 +268,6 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
                 )
             return response
 
-    def _find_matching_endpoint(self, method: str, path: str) -> tuple[Any, dict, str]:
-        """Find the matching endpoint implementation for a given method and path.
-
-        Args:
-            method: HTTP method (GET, POST, etc.)
-            path: URL path to match against
-
-        Returns:
-            A tuple of (endpoint_function, path_params)
-
-        Raises:
-            ValueError: If no matching endpoint is found
-        """
-        impls = self.endpoint_impls.get(method)
-        if not impls:
-            raise ValueError(f"No endpoint found for {path}")
-
-        for regex, (func, route) in impls.items():
-            match = re.match(regex, path)
-            if match:
-                # Extract named groups from the regex match
-                path_params = match.groupdict()
-                return func, path_params, route
-
-        raise ValueError(f"No endpoint found for {path}")
-
     async def _call_non_streaming(
         self,
         *,
@@ -326,7 +278,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         body = options.params or {}
         body |= options.json_data or {}
 
-        matched_func, path_params, route = self._find_matching_endpoint(options.method, path)
+        matched_func, path_params, route = find_matching_endpoint(options.method, path, self.endpoint_impls)
         body |= path_params
         body = self._convert_body(path, options.method, body)
         await start_trace(route, {"__location__": "library_client"})
@@ -371,7 +323,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         path = options.url
         body = options.params or {}
         body |= options.json_data or {}
-        func, path_params, route = self._find_matching_endpoint(options.method, path)
+        func, path_params, route = find_matching_endpoint(options.method, path, self.endpoint_impls)
         body |= path_params
 
         body = self._convert_body(path, options.method, body)
@@ -422,7 +374,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         if not body:
             return {}
 
-        func, _, _ = self._find_matching_endpoint(method, path)
+        func, _, _ = find_matching_endpoint(method, path, self.endpoint_impls)
         sig = inspect.signature(func)
 
         # Strip NOT_GIVENs to use the defaults in signature
