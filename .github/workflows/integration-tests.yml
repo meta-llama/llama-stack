@@ -40,11 +40,11 @@ jobs:
 
       - name: Pull Ollama image
         run: |
-          ollama pull llama3.2:3b-instruct-fp16
+          ollama pull llama3.2:1b-instruct-fp16
 
       - name: Start Ollama in background
         run: |
-          nohup ollama run llama3.2:3b-instruct-fp16 > ollama.log 2>&1 &
+          nohup ollama run llama3.2:1b-instruct-fp16 > ollama.log 2>&1 &
 
       - name: Set Up Environment and Install Dependencies
         run: |
@@ -75,7 +75,7 @@ jobs:
       - name: Start Llama Stack server in background
         if: matrix.client-type == 'http'
         env:
-          INFERENCE_MODEL: "meta-llama/Llama-3.2-3B-Instruct"
+          INFERENCE_MODEL: "meta-llama/Llama-3.2-1B-Instruct"
         run: |
           source .venv/bin/activate
           nohup uv run llama stack run ./llama_stack/templates/ollama/run.yaml --image-type venv > server.log 2>&1 &
@@ -97,7 +97,7 @@ jobs:
 
       - name: Run Integration Tests
         env:
-          INFERENCE_MODEL: "meta-llama/Llama-3.2-3B-Instruct"
+          INFERENCE_MODEL: "meta-llama/Llama-3.2-1B-Instruct"
         run: |
           if [ "${{ matrix.client-type }}" == "library" ]; then
             stack_config="ollama"
@@ -106,5 +106,5 @@ jobs:
           fi
           uv run pytest -v tests/integration/${{ matrix.test-type }} --stack-config=${stack_config} \
             -k "not(builtin_tool or safety_with_image or code_interpreter or test_rag)" \
-            --text-model="meta-llama/Llama-3.2-3B-Instruct" \
+            --text-model="meta-llama/Llama-3.2-1B-Instruct" \
             --embedding-model=all-MiniLM-L6-v2
