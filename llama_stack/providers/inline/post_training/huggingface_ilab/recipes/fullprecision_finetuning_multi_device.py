@@ -1,4 +1,5 @@
 import asyncio
+import pathlib
 import tempfile
 import typing
 from asyncio import subprocess
@@ -288,9 +289,19 @@ class FullPrecisionFineTuning:
             set_subproc_ref_callback (Callable[[subprocess.Process], None]): Sets subprocess reference in 'Impl' class' ref to this job
         """
 
-        training_subproc = await asyncio.create_subprocess_shell(
-            'echo "yay Im running in a subprocess: $$"; sleep 5; echo "exiting subprocess $$"'
-        )
+        # assumes that SPMD training file is next to current file
+        train_file = pathlib.Path(__file__).resolve() / "train.py"
+        NGPU = 2
+
+        command = f"""
+        torchrun \
+        --nproc_per_node {NGPU} \
+        --rdzv_backend gloo \
+        --rdzv_endpoint="localhost:0" \
+        {train_file} \
+        """
+
+        training_subproc = await asyncio.create_subprocess_shell(cmd=command)
         set_subproc_ref_callback(training_subproc)
         await training_subproc.wait()
         set_status_callback(JobStatus.completed)
