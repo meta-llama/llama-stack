@@ -54,6 +54,8 @@ jobs:
           uv sync --extra dev --extra test
           uv pip install ollama faiss-cpu
           # always test against the latest version of the client
+          # TODO: this is not necessarily a good idea. we need to test against both published and latest
+          # to find out backwards compatibility issues.
           uv pip install git+https://github.com/meta-llama/llama-stack-client-python.git@main
           uv pip install -e .
           llama stack build --template ollama --image-type venv
@@ -94,8 +96,12 @@ jobs:
           cat server.log
           exit 1
 
-      - name: Run Integration Tests
+      - name: Run Integration Tests via library client
         env:
           INFERENCE_MODEL: "meta-llama/Llama-3.2-3B-Instruct"
         run: |
           uv run pytest -v tests/integration/${{ matrix.test-type }} --stack-config=ollama --text-model="meta-llama/Llama-3.2-3B-Instruct" --embedding-model=all-MiniLM-L6-v2
+
+      - name: Run Integration Tests via http client
+        run: |
+          uv run pytest -v tests/integration/${{ matrix.test-type }} --stack-config=http://localhost:8321 --text-model="meta-llama/Llama-3.2-3B-Instruct" --embedding-model=all-MiniLM-L6-v2
