@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 from dataclasses import dataclass
-from typing import Any, Callable, List, Optional, Protocol, TypeVar
+from typing import Any, Callable, List, Optional, TypeVar
 
 from .strong_typing.schema import json_schema_type, register_schema  # noqa: F401
 
@@ -20,11 +20,7 @@ class WebMethod:
     raw_bytes_request_body: Optional[bool] = False
 
 
-class HasWebMethod(Protocol):
-    __webmethod__: WebMethod
-
-
-T = TypeVar("T", bound=HasWebMethod)  # Bound T to classes that match this protocol
+T = TypeVar("T", bound=Callable[..., Any])
 
 
 def webmethod(
@@ -44,8 +40,8 @@ def webmethod(
     :param response_examples: Sample responses that the operation might produce. Pass a list of objects, not JSON.
     """
 
-    def wrap(cls: T) -> T:
-        cls.__webmethod__ = WebMethod(
+    def wrap(func: T) -> T:
+        func.__webmethod__ = WebMethod(  # type: ignore
             route=route,
             method=method,
             public=public or False,
@@ -53,6 +49,6 @@ def webmethod(
             response_examples=response_examples,
             raw_bytes_request_body=raw_bytes_request_body,
         )
-        return cls
+        return func
 
     return wrap
