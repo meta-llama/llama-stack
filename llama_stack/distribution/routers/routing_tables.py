@@ -198,7 +198,7 @@ class CommonRoutingTableImpl(RoutingTable):
             return None
 
         # Check if user has permission to access this object
-        if not check_access(obj.identifier, obj.access_attributes, get_auth_attributes()):
+        if not check_access(obj.identifier, getattr(obj, "access_attributes", None), get_auth_attributes()):
             logger.debug(f"Access denied to {type} '{identifier}' based on attribute mismatch")
             return None
 
@@ -244,7 +244,7 @@ class CommonRoutingTableImpl(RoutingTable):
             filtered_objs = [
                 obj
                 for obj in filtered_objs
-                if check_access(obj.identifier, obj.access_attributes, get_auth_attributes())
+                if check_access(obj.identifier, getattr(obj, "access_attributes", None), get_auth_attributes())
             ]
 
         return filtered_objs
