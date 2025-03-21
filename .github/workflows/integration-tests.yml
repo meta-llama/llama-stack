@@ -26,7 +26,7 @@ jobs:
         # Listing tests manually since some of them currently fail
         # TODO: generate matrix list from tests/integration when fixed
         test-type: [agents, inference, datasets, inspect, scoring, post_training, providers]
-        stack-config: ["ollama", "http://localhost:8321"]
+        client-type: [library, http]
       fail-fast: false # we want to run all tests regardless of failure
 
     steps:
@@ -77,7 +77,7 @@ jobs:
           exit 1
 
       - name: Start Llama Stack server in background
-        if: matrix.stack-config == "http://localhost:8321"
+        if: matrix.client-type == "http"
         env:
           INFERENCE_MODEL: "meta-llama/Llama-3.2-3B-Instruct"
         run: |
@@ -85,7 +85,7 @@ jobs:
           nohup uv run llama stack run ./llama_stack/templates/ollama/run.yaml --image-type venv > server.log 2>&1 &
 
       - name: Wait for Llama Stack server to be ready
-        if: matrix.stack-config == "http://localhost:8321"
+        if: matrix.client-type == "http"
         run: |
           echo "Waiting for Llama Stack server..."
           for i in {1..30}; do
@@ -103,7 +103,12 @@ jobs:
         env:
           INFERENCE_MODEL: "meta-llama/Llama-3.2-3B-Instruct"
         run: |
-          uv run pytest -v tests/integration/${{ matrix.test-type }} --stack-config=${{ matrix.stack-config }} \
+          if [ "${{ matrix.client-type }}" == "library" ]; then
+            stack_config="ollama"
+          else
+            stack_config="http://localhost:8321"
+          fi
+          uv run pytest -v tests/integration/${{ matrix.test-type }} --stack-config=${stack_config} \
             -k "not(builtin_tool or safety_with_image or code_interpreter or test_rag)" \
             --text-model="meta-llama/Llama-3.2-3B-Instruct" \
             --embedding-model=all-MiniLM-L6-v2
