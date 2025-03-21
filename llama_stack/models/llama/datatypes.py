@@ -207,6 +207,7 @@ class SamplingParams(BaseModel):
     :param stop: Up to 4 sequences where the API will stop generating further tokens.
         The returned text will not contain the stop sequence.
     """
+
     strategy: SamplingStrategy = Field(default_factory=GreedySamplingStrategy)
 
     max_tokens: Optional[int] = 0
