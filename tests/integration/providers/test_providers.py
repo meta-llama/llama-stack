@@ -12,11 +12,12 @@ from llama_stack import LlamaStackAsLibraryClient
 
 class TestProviders:
     @pytest.mark.asyncio
-    def test_list(self, llama_stack_client: LlamaStackAsLibraryClient | LlamaStackClient):
+    def test_providers(self, llama_stack_client: LlamaStackAsLibraryClient | LlamaStackClient):
         provider_list = llama_stack_client.providers.list()
         assert provider_list is not None
+        assert len(provider_list) > 0
 
-    @pytest.mark.asyncio
-    def test_inspect(self, llama_stack_client: LlamaStackAsLibraryClient | LlamaStackClient):
-        provider_list = llama_stack_client.providers.retrieve("ollama")
-        assert provider_list is not None
+        for provider in provider_list:
+            pid = provider.provider_id
+            provider = llama_stack_client.providers.retrieve(pid)
+            assert provider is not None
