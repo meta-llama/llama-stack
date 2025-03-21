@@ -26,7 +26,7 @@ jobs:
         # Listing tests manually since some of them currently fail
         # TODO: generate matrix list from tests/integration when fixed
         test-type: [agents, inference, datasets, inspect, scoring, post_training, providers]
-        stack-config: [ollama, http://localhost:8321]
+        stack-config: ["ollama", "http://localhost:8321"]
       fail-fast: false # we want to run all tests regardless of failure
 
     steps:
