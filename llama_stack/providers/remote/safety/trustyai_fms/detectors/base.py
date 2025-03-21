@@ -724,7 +724,7 @@ class SimpleShieldStore(ShieldStore):
             # Create shield with all required fields
             shield = Shield(
                 identifier=identifier,
-                provider_id="trustyai-fms-safety",
+                provider_id="trustyai_fms",
                 provider_resource_id=identifier,
                 type="shield",
                 name=f"{identifier} Shield",
@@ -927,7 +927,7 @@ class DetectorProvider(Safety, Shields):
 
                 shield = Shield(
                     identifier=config_id,
-                    provider_id="trustyai-fms-safety",
+                    provider_id="trustyai_fms",
                     provider_resource_id=config_id,
                     type="shield",
                     name=f"{config_id} Shield",
