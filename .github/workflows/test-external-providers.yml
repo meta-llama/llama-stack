@@ -42,6 +42,7 @@ jobs:
 
       - name: Create provider configuration
         run: |
+          cd llama-stack-provider-ollama
           mkdir -p /tmp/providers.d/inference
           cp custom_ollama.yaml /tmp/providers.d/inference/custom_ollama.yaml
 
@@ -80,3 +81,7 @@ jobs:
           echo "Llama Stack server failed to start"
           cat server.log
           exit 1
+
+      - name: Setup tmate session
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
