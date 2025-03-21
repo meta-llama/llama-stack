@@ -45,7 +45,7 @@ def get_distribution_template() -> DistributionTemplate:
         provider_id="vllm-inference",
         provider_type="remote::vllm",
         config=VLLMInferenceAdapterConfig.sample_run_config(
-            url="${env.VLLM_URL}",
+            url="${env.VLLM_URL:http://localhost:8000/v1}",
         ),
     )
     embedding_provider = Provider(
