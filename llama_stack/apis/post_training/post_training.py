@@ -8,7 +8,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Literal, Optional, Protocol
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from typing_extensions import Annotated
 
 from llama_stack.apis.common.content_types import URL
@@ -71,6 +71,7 @@ class TrainingConfig(BaseModel):
 
 @json_schema_type
 class LoraFinetuningConfig(BaseModel):
+    model_config = ConfigDict(extra="allow")
     type: Literal["LoRA"] = "LoRA"
     lora_attn_modules: List[str]
     apply_lora_to_mlp: bool

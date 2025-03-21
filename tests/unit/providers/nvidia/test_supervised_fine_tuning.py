@@ -102,7 +102,16 @@ class TestNvidiaPostTraining(unittest.TestCase):
             "ownership": {"created_by": "me", "access_policies": {}},
         }
 
-        algorithm_config = LoraFinetuningConfig(type="LoRA", adapter_dim=16, adapter_dropout=0.1)
+        algorithm_config = LoraFinetuningConfig(
+            type="LoRA",
+            adapter_dim=16,
+            adapter_dropout=0.1,
+            apply_lora_to_mlp=True,
+            apply_lora_to_output=True,
+            alpha=16,
+            rank=16,
+            lora_attn_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
+        )
 
         data_config = TrainingConfigDataConfig(dataset_id="sample-basic-test", batch_size=16)
 
@@ -147,7 +156,7 @@ class TestNvidiaPostTraining(unittest.TestCase):
                     "epochs": 2,
                     "batch_size": 16,
                     "learning_rate": 0.0001,
-                    "lora": {"adapter_dim": 16, "adapter_dropout": 0.1},
+                    "lora": {"alpha": 16, "adapter_dim": 16, "adapter_dropout": 0.1},
                 },
             },
         )
@@ -277,7 +286,15 @@ class TestNvidiaPostTraining(unittest.TestCase):
             "output_model": "default/job-1234",
         }
 
-        algorithm_config = LoraFinetuningConfig(type="LoRA", adapter_dim=16, adapter_dropout=0.1)
+        algorithm_config = LoraFinetuningConfig(
+            alpha=16,
+            rank=16,
+            type="LoRA",
+            adapter_dim=16,
+            adapter_dropout=0.1,
+            apply_lora_to_mlp=True,
+            apply_lora_to_output=True,
+        )
 
         data_config = TrainingConfigDataConfig(dataset_id="sample-basic-test", batch_size=16)
 

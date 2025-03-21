@@ -61,6 +61,11 @@ class TestNvidiaParameters(unittest.TestCase):
             type="LoRA",
             adapter_dim=custom_adapter_dim,  # Custom value
             adapter_dropout=0.2,  # Custom value
+            apply_lora_to_mlp=True,
+            apply_lora_to_output=True,
+            alpha=16,
+            rank=16,
+            lora_attn_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
         )
 
         data_config = TrainingConfigDataConfig(dataset_id="test-dataset", batch_size=16)
@@ -84,7 +89,7 @@ class TestNvidiaParameters(unittest.TestCase):
         self._assert_request_params(
             {
                 "hyperparameters": {
-                    "lora": {"adapter_dim": custom_adapter_dim, "adapter_dropout": 0.2},
+                    "lora": {"adapter_dim": custom_adapter_dim, "adapter_dropout": 0.2, "alpha": 16},
                     "epochs": 3,
                     "learning_rate": 0.0002,
                     "batch_size": 16,
@@ -98,7 +103,16 @@ class TestNvidiaParameters(unittest.TestCase):
         required_dataset_id = "required-dataset"
         required_job_uuid = "required-job"
 
-        algorithm_config = LoraFinetuningConfig(type="LoRA", adapter_dim=8)
+        algorithm_config = LoraFinetuningConfig(
+            type="LoRA",
+            adapter_dim=16,
+            adapter_dropout=0.1,
+            apply_lora_to_mlp=True,
+            apply_lora_to_output=True,
+            alpha=16,
+            rank=16,
+            lora_attn_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
+        )
 
         data_config = TrainingConfigDataConfig(
             dataset_id=required_dataset_id,  # Required parameter
@@ -173,7 +187,16 @@ class TestNvidiaParameters(unittest.TestCase):
                 job_uuid="test-job",
                 model="meta-llama/Llama-3.1-8B-Instruct",
                 checkpoint_dir="test-dir",  # Unsupported parameter
-                algorithm_config=LoraFinetuningConfig(type="LoRA"),
+                algorithm_config=LoraFinetuningConfig(
+                    type="LoRA",
+                    adapter_dim=16,
+                    adapter_dropout=0.1,
+                    apply_lora_to_mlp=True,
+                    apply_lora_to_output=True,
+                    alpha=16,
+                    rank=16,
+                    lora_attn_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
+                ),
                 training_config=training_config,
                 logger_config={"test": "value"},  # Unsupported parameter
                 hyperparam_search_config={"test": "value"},  # Unsupported parameter
