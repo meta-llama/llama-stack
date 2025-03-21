@@ -54,16 +54,6 @@ _global_lock = threading.Lock()
 _TRACER_PROVIDER = None
 
 
-def string_to_trace_id(s: str) -> int:
-    # Convert the string to bytes and then to an integer
-    return int.from_bytes(s.encode(), byteorder="big", signed=False)
-
-
-def string_to_span_id(s: str) -> int:
-    # Use only the first 8 bytes (64 bits) for span ID
-    return int.from_bytes(s.encode()[:8], byteorder="big", signed=False)
-
-
 def is_tracing_enabled(tracer):
     with tracer.start_as_current_span("check_tracing") as span:
         return span.is_recording()
@@ -137,7 +127,7 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
     def _log_unstructured(self, event: UnstructuredLogEvent, ttl_seconds: int) -> None:
         with self._lock:
             # Use global storage instead of instance storage
-            span_id = string_to_span_id(event.span_id)
+            span_id = event.span_id
             span = _GLOBAL_STORAGE["active_spans"].get(span_id)
 
             if span:
@@ -197,8 +187,7 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
 
     def _log_structured(self, event: StructuredLogEvent, ttl_seconds: int) -> None:
         with self._lock:
-            span_id = string_to_span_id(event.span_id)
-            trace_id = string_to_trace_id(event.trace_id)
+            span_id = int(event.span_id, 16)
             tracer = trace.get_tracer(__name__)
             if event.attributes is None:
                 event.attributes = {}
@@ -209,14 +198,23 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
                 if span_id in _GLOBAL_STORAGE["active_spans"]:
                     return
 
-                parent_span = None
+                context = None
                 if event.payload.parent_span_id:
-                    parent_span_id = string_to_span_id(event.payload.parent_span_id)
+                    parent_span_id = int(event.payload.parent_span_id, 16)
                     parent_span = _GLOBAL_STORAGE["active_spans"].get(parent_span_id)
-
-                context = trace.Context(trace_id=trace_id)
-                if parent_span:
-                    context = trace.set_span_in_context(parent_span, context)
+                    context = trace.set_span_in_context(parent_span)
+                else:
+                    context = trace.set_span_in_context(
+                        trace.NonRecordingSpan(
+                            trace.SpanContext(
+                                trace_id=int(event.trace_id, 16),
+                                span_id=span_id,
+                                is_remote=False,
+                                trace_flags=trace.TraceFlags(trace.TraceFlags.SAMPLED),
+                            )
+                        )
+                    )
+                    event.attributes["__root_span__"] = "true"
 
                 span = tracer.start_span(
                     name=event.payload.name,
