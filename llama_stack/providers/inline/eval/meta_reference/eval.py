@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 import json
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from tqdm import tqdm
 
@@ -21,8 +21,8 @@ from llama_stack.providers.inline.agents.meta_reference.agent_instance import (
 from llama_stack.providers.utils.common.data_schema_validator import ColumnName
 from llama_stack.providers.utils.kvstore import kvstore_impl
 
-from .....apis.common.job_types import Job
-from .....apis.eval.eval import BenchmarkConfig, Eval, EvaluateResponse, JobStatus
+from .....apis.common.job_types import Job, JobStatus
+from .....apis.eval.eval import BenchmarkConfig, Eval, EvaluateResponse
 from .config import MetaReferenceEvalConfig
 
 EVAL_TASKS_PREFIX = "benchmarks:"
@@ -89,7 +89,11 @@ class MetaReferenceEvalImpl(
 
         all_rows = await self.datasetio_api.iterrows(
             dataset_id=dataset_id,
-            limit=(-1 if benchmark_config.num_examples is None else benchmark_config.num_examples),
+            limit=(
+                -1
+                if benchmark_config.num_examples is None
+                else benchmark_config.num_examples
+            ),
         )
         res = await self.evaluate_rows(
             benchmark_id=benchmark_id,
@@ -102,7 +106,7 @@ class MetaReferenceEvalImpl(
         # need job scheduler queue (ray/celery) w/ jobs api
         job_id = str(len(self.jobs))
         self.jobs[job_id] = res
-        return Job(job_id=job_id)
+        return Job(job_id=job_id, status=JobStatus.completed)
 
     async def _run_agent_generation(
         self, input_rows: List[Dict[str, Any]], benchmark_config: BenchmarkConfig
@@ -115,10 +119,14 @@ class MetaReferenceEvalImpl(
         for i, x in tqdm(enumerate(input_rows)):
             assert ColumnName.chat_completion_input.value in x, "Invalid input row"
             input_messages = json.loads(x[ColumnName.chat_completion_input.value])
-            input_messages = [UserMessage(**x) for x in input_messages if x["role"] == "user"]
+            input_messages = [
+                UserMessage(**x) for x in input_messages if x["role"] == "user"
+            ]
 
             # NOTE: only single-turn agent generation is supported. Create a new session for each input row
-            session_create_response = await self.agents_api.create_agent_session(agent_id, f"session-{i}")
+            session_create_response = await self.agents_api.create_agent_session(
+                agent_id, f"session-{i}"
+            )
             session_id = session_create_response.session_id
 
             turn_request = dict(
@@ -127,7 +135,12 @@ class MetaReferenceEvalImpl(
                 messages=input_messages,
                 stream=True,
             )
-            turn_response = [chunk async for chunk in await self.agents_api.create_agent_turn(**turn_request)]
+            turn_response = [
+                chunk
+                async for chunk in await self.agents_api.create_agent_turn(
+                    **turn_request
+                )
+            ]
             final_event = turn_response[-1].event.payload
 
             # check if there's a memory retrieval step and extract the context
@@ -136,10 +149,14 @@ class MetaReferenceEvalImpl(
                 if step.step_type == StepType.tool_execution.value:
                     for tool_response in step.tool_responses:
                         if tool_response.tool_name == MEMORY_QUERY_TOOL:
-                            memory_rag_context = " ".join(x.text for x in tool_response.content)
+                            memory_rag_context = " ".join(
+                                x.text for x in tool_response.content
+                            )
 
             agent_generation = {}
-            agent_generation[ColumnName.generated_answer.value] = final_event.turn.output_message.content
+            agent_generation[ColumnName.generated_answer.value] = (
+                final_event.turn.output_message.content
+            )
             if memory_rag_context:
                 agent_generation[ColumnName.context.value] = memory_rag_context
 
@@ -151,7 +168,9 @@ class MetaReferenceEvalImpl(
         self, input_rows: List[Dict[str, Any]], benchmark_config: BenchmarkConfig
     ) -> List[Dict[str, Any]]:
         candidate = benchmark_config.eval_candidate
-        assert candidate.sampling_params.max_tokens is not None, "SamplingParams.max_tokens must be provided"
+        assert (
+            candidate.sampling_params.max_tokens is not None
+        ), "SamplingParams.max_tokens must be provided"
 
         generations = []
         for x in tqdm(input_rows):
@@ -162,21 +181,39 @@ class MetaReferenceEvalImpl(
                     content=input_content,
                     sampling_params=candidate.sampling_params,
                 )
-                generations.append({ColumnName.generated_answer.value: response.completion_message.content})
+                generations.append(
+                    {
+                        ColumnName.generated_answer.value: response.completion_message.content
+                    }
+                )
             elif ColumnName.chat_completion_input.value in x:
-                chat_completion_input_json = json.loads(x[ColumnName.chat_completion_input.value])
-                input_messages = [UserMessage(**x) for x in chat_completion_input_json if x["role"] == "user"]
+                chat_completion_input_json = json.loads(
+                    x[ColumnName.chat_completion_input.value]
+                )
+                input_messages = [
+                    UserMessage(**x)
+                    for x in chat_completion_input_json
+                    if x["role"] == "user"
+                ]
                 messages = []
                 if candidate.system_message:
                     messages.append(candidate.system_message)
-                messages += [SystemMessage(**x) for x in chat_completion_input_json if x["role"] == "system"]
+                messages += [
+                    SystemMessage(**x)
+                    for x in chat_completion_input_json
+                    if x["role"] == "system"
+                ]
                 messages += input_messages
                 response = await self.inference_api.chat_completion(
                     model_id=candidate.model,
                     messages=messages,
                     sampling_params=candidate.sampling_params,
                 )
-                generations.append({ColumnName.generated_answer.value: response.completion_message.content})
+                generations.append(
+                    {
+                        ColumnName.generated_answer.value: response.completion_message.content
+                    }
+                )
             else:
                 raise ValueError("Invalid input row")
 
@@ -199,7 +236,8 @@ class MetaReferenceEvalImpl(
 
         # scoring with generated_answer
         score_input_rows = [
-            input_r | generated_r for input_r, generated_r in zip(input_rows, generations, strict=False)
+            input_r | generated_r
+            for input_r, generated_r in zip(input_rows, generations, strict=False)
         ]
 
         if benchmark_config.scoring_params is not None:
@@ -208,7 +246,9 @@ class MetaReferenceEvalImpl(
                 for scoring_fn_id in scoring_functions
             }
         else:
-            scoring_functions_dict = {scoring_fn_id: None for scoring_fn_id in scoring_functions}
+            scoring_functions_dict = {
+                scoring_fn_id: None for scoring_fn_id in scoring_functions
+            }
 
         score_response = await self.scoring_api.score(
             input_rows=score_input_rows, scoring_functions=scoring_functions_dict
@@ -216,17 +256,18 @@ class MetaReferenceEvalImpl(
 
         return EvaluateResponse(generations=generations, scores=score_response.results)
 
-    async def job_status(self, benchmark_id: str, job_id: str) -> Optional[JobStatus]:
+    async def job_status(self, benchmark_id: str, job_id: str) -> Job:
         if job_id in self.jobs:
-            return JobStatus.completed
+            return Job(job_id=job_id, status=JobStatus.completed)
 
-        return None
+        raise ValueError(f"Job {job_id} not found")
 
     async def job_cancel(self, benchmark_id: str, job_id: str) -> None:
         raise NotImplementedError("Job cancel is not implemented yet")
 
     async def job_result(self, benchmark_id: str, job_id: str) -> EvaluateResponse:
-        status = await self.job_status(benchmark_id, job_id)
+        job = await self.job_status(benchmark_id, job_id)
+        status = job.status
         if not status or status != JobStatus.completed:
             raise ValueError(f"Job is not completed, Status: {status.value}")
 
