@@ -237,9 +237,17 @@ class TracingMiddleware:
         # Use the matched template or original path
         trace_path = route_template or path
 
-        await start_trace(trace_path, {"__location__": "server", "raw_path": path})
+        trace_context = await start_trace(trace_path, {"__location__": "server", "raw_path": path})
+
+        async def send_wrapper(message):
+            if message["type"] == "http.response.start":
+                headers = message.get("headers", [])
+                headers.append([b"x-trace-id", str(trace_context.trace_id).encode()])
+                message["headers"] = headers
+            await send(message)
+
         try:
-            return await self.app(scope, receive, send)
+            return await self.app(scope, receive, send_wrapper)
         finally:
             await end_trace()
 
