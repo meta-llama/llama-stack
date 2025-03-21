@@ -56,7 +56,7 @@ MULTILINGUAL_ANSWER_REGEXES = [
     r"Àṣàyàn\s*:",
 ]
 
-MULTILINGUAL_ANSWER_PATTERN_TEMPLATE = r"(?i){}\s*([A-D]|[أ-د]|[অ]|[ব]|[ড]|[ঢ]|[Ａ]|[Ｂ]|[Ｃ]|[Ｄ])"
+MULTILINGUAL_ANSWER_PATTERN_TEMPLATE = r"(?i){}\s*([A-J]|[أ-د]|[অ]|[ব]|[ড]|[ঢ]|[Ａ]|[Ｂ]|[Ｃ]|[Ｄ])"
 
 regex_parser_multiple_choice_answer = ScoringFn(
     identifier="basic::regex_parser_multiple_choice_answer",
