@@ -5284,6 +5284,7 @@ components:
         - in_progress
         - failed
         - scheduled
+        - cancelled
       title: JobStatus
     PostTrainingJobStatusResponse:
       type: object
