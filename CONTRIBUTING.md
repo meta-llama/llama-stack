@@ -168,7 +168,7 @@ If you have made changes to a provider's configuration in any form (introducing 
 If you are making changes to the documentation at [https://llama-stack.readthedocs.io/en/latest/](https://llama-stack.readthedocs.io/en/latest/), you can use the following command to build the documentation and preview your changes. You will need [Sphinx](https://www.sphinx-doc.org/en/master/) and the readthedocs theme.
 
 ```bash
-cd llama-stack/docs
+cd docs
 uv sync --extra docs
 
 # This rebuilds the documentation pages.
