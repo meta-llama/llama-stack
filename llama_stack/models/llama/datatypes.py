@@ -197,6 +197,16 @@ SamplingStrategy = register_schema(
 
 @json_schema_type
 class SamplingParams(BaseModel):
+    """Sampling parameters.
+
+    :param strategy: The sampling strategy.
+    :param max_tokens: The maximum number of tokens that can be generated in the completion. The token count of
+        your prompt plus max_tokens cannot exceed the model's context length.
+    :param repetition_penalty: Number between -2.0 and 2.0. Positive values penalize new tokens
+        based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics.
+    :param stop: Up to 4 sequences where the API will stop generating further tokens.
+        The returned text will not contain the stop sequence.
+    """
     strategy: SamplingStrategy = Field(default_factory=GreedySamplingStrategy)
 
     max_tokens: Optional[int] = 0
