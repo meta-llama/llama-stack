@@ -15,9 +15,10 @@ import numpy as np
 import sqlite_vec
 from numpy.typing import NDArray
 
+from llama_stack.apis.inference.inference import Inference
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import Chunk, QueryChunksResponse, VectorIO
-from llama_stack.providers.datatypes import Api, VectorDBsProtocolPrivate
+from llama_stack.providers.datatypes import VectorDBsProtocolPrivate
 from llama_stack.providers.utils.memory.vector_store import EmbeddingIndex, VectorDBWithIndex
 
 logger = logging.getLogger(__name__)
@@ -78,6 +79,8 @@ class SQLiteVecIndex(EmbeddingIndex):
         embedding (serialized to raw bytes) into the virtual table using the assigned rowid.
         If any insert fails, the transaction is rolled back to maintain consistency.
         """
+        assert all(isinstance(chunk.content, str) for chunk in chunks), "SQLiteVecIndex only supports text chunks"
+
         cur = self.connection.cursor()
         try:
             # Start transaction
@@ -89,6 +92,7 @@ class SQLiteVecIndex(EmbeddingIndex):
                 metadata_data = [
                     (generate_chunk_id(chunk.metadata["document_id"], chunk.content), chunk.model_dump_json())
                     for chunk in batch_chunks
+                    if isinstance(chunk.content, str)
                 ]
                 # Insert metadata (ON CONFLICT to avoid duplicates)
                 cur.executemany(
@@ -103,6 +107,7 @@ class SQLiteVecIndex(EmbeddingIndex):
                 embedding_data = [
                     (generate_chunk_id(chunk.metadata["document_id"], chunk.content), serialize_vector(emb.tolist()))
                     for chunk, emb in zip(batch_chunks, batch_embeddings, strict=True)
+                    if isinstance(chunk.content, str)
                 ]
                 # Insert embeddings in batch
                 cur.executemany(f"INSERT INTO {self.vector_table} (id, embedding) VALUES (?, ?);", embedding_data)
@@ -154,7 +159,7 @@ class SQLiteVecVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
     and creates a cache of VectorDBWithIndex instances (each wrapping a SQLiteVecIndex).
     """
 
-    def __init__(self, config, inference_api: Api.inference) -> None:
+    def __init__(self, config, inference_api: Inference) -> None:
         self.config = config
         self.inference_api = inference_api
         self.cache: Dict[str, VectorDBWithIndex] = {}

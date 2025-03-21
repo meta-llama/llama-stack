@@ -69,7 +69,7 @@ class ToolGroup(Resource):
 
 @json_schema_type
 class ToolInvocationResult(BaseModel):
-    content: InterleavedContent
+    content: Optional[InterleavedContent] = None
     error_message: Optional[str] = None
     error_code: Optional[int] = None
     metadata: Optional[Dict[str, Any]] = None
@@ -140,9 +140,9 @@ class SpecialToolGroup(Enum):
 @runtime_checkable
 @trace_protocol
 class ToolRuntime(Protocol):
-    tool_store: ToolStore
+    tool_store: ToolStore | None = None
 
-    rag_tool: RAGToolRuntime
+    rag_tool: RAGToolRuntime | None = None
 
     # TODO: This needs to be renamed once OPEN API generator name conflict issue is fixed.
     @webmethod(route="/tool-runtime/list-tools", method="GET")

@@ -28,7 +28,11 @@ providers:
   eval:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
-    config: {}
+    config:
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/meta-reference-gpu}/meta_reference_eval.db
   scoring:
   - provider_id: basic
     provider_type: inline::basic
@@ -40,7 +44,11 @@ providers:
   datasetio:
   - provider_id: localfs
     provider_type: inline::localfs
-    config: {}
+    config:
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/experimental-post-training}/localfs_datasetio.db
   telemetry:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -58,7 +66,7 @@ providers:
       persistence_store:
         type: sqlite
         namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/meta-reference-gpu}/agents_store.db
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/experimental-post-training}/agents_store.db
   safety:
   - provider_id: llama-guard
     provider_type: inline::llama-guard
@@ -70,7 +78,7 @@ providers:
       kvstore:
         type: sqlite
         namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/meta-reference-gpu}/faiss_store.db
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/experimental-post-training}/faiss_store.db
   tool_runtime:
   - provider_id: brave-search
     provider_type: remote::brave-search
@@ -82,7 +90,7 @@ providers:
 metadata_store:
   namespace: null
   type: sqlite
-  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/meta-reference-gpu}/registry.db
+  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/experimental-post-training}/registry.db
 models: []
 shields: []
 vector_dbs: []

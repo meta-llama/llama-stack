@@ -21,10 +21,7 @@ from llama_stack.providers.remote.inference.passthrough.config import (
     PassthroughImplConfig,
 )
 from llama_stack.providers.utils.inference.model_registry import ProviderModelEntry
-from llama_stack.templates.template import (
-    DistributionTemplate,
-    RunConfigSettings,
-)
+from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
 
 def get_distribution_template() -> DistributionTemplate:
@@ -186,7 +183,7 @@ def get_distribution_template() -> DistributionTemplate:
         },
         run_config_env_vars={
             "LLAMA_STACK_PORT": (
-                "5001",
+                "8321",
                 "Port for the Llama Stack distribution server",
             ),
             "PASSTHROUGH_API_KEY": (

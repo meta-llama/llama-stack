@@ -189,7 +189,7 @@ group_tools = client.tools.list_tools(toolgroup_id="search_tools")
 ## Simple Example: Using an Agent with the Code-Interpreter Tool
 
 ```python
-from llama_stack_client.lib.agents.agent import Agent
+from llama_stack_client import Agent
 
 # Instantiate the AI agent with the given configuration
 agent = Agent(

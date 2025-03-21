@@ -55,11 +55,11 @@ chunks_response = client.vector_io.query(
 A better way to ingest documents is to use the RAG Tool. This tool allows you to ingest documents from URLs, files, etc. and automatically chunks them into smaller pieces.
 
 ```python
-from llama_stack_client.types import Document
+from llama_stack_client import RAGDocument
 
 urls = ["memory_optimizations.rst", "chat.rst", "llama3.rst"]
 documents = [
-    Document(
+    RAGDocument(
         document_id=f"num-{i}",
         content=f"https://raw.githubusercontent.com/pytorch/torchtune/main/docs/source/tutorials/{url}",
         mime_type="text/plain",
@@ -86,7 +86,7 @@ results = client.tool_runtime.rag_tool.query(
 One of the most powerful patterns is combining agents with RAG capabilities. Here's a complete example:
 
 ```python
-from llama_stack_client.lib.agents.agent import Agent
+from llama_stack_client import Agent
 
 # Create agent with memory
 agent = Agent(
@@ -140,9 +140,9 @@ response = agent.create_turn(
 
 You can print the response with below.
 ```python
-from llama_stack_client.lib.agents.event_logger import EventLogger
+from llama_stack_client import AgentEventLogger
 
-for log in EventLogger().log(response):
+for log in AgentEventLogger().log(response):
     log.print()
 ```
 

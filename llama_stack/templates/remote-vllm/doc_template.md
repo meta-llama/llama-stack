@@ -36,6 +36,7 @@ export INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct
 export CUDA_VISIBLE_DEVICES=0
 
 docker run \
+    --pull always \
     --runtime nvidia \
     --gpus $CUDA_VISIBLE_DEVICES \
     -v ~/.cache/huggingface:/root/.cache/huggingface \
@@ -48,6 +49,8 @@ docker run \
     --port $INFERENCE_PORT
 ```
 
+Note that you'll also need to set `--enable-auto-tool-choice` and `--tool-call-parser` to [enable tool calling in vLLM](https://docs.vllm.ai/en/latest/features/tool_calling.html).
+
 If you are using Llama Stack Safety / Shield APIs, then you will need to also run another instance of a vLLM with a corresponding safety model like `meta-llama/Llama-Guard-3-1B` using a script like:
 
 ```bash
@@ -56,6 +59,7 @@ export SAFETY_MODEL=meta-llama/Llama-Guard-3-1B
 export CUDA_VISIBLE_DEVICES=1
 
 docker run \
+    --pull always \
     --runtime nvidia \
     --gpus $CUDA_VISIBLE_DEVICES \
     -v ~/.cache/huggingface:/root/.cache/huggingface \
@@ -79,10 +83,11 @@ This method allows you to get started quickly without having to build the distri
 ```bash
 export INFERENCE_PORT=8000
 export INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct
-export LLAMA_STACK_PORT=5001
+export LLAMA_STACK_PORT=8321
 
 docker run \
   -it \
+  --pull always \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ./run.yaml:/root/my-run.yaml \
   llamastack/distribution-{{ name }} \
@@ -104,6 +109,7 @@ cd /path/to/llama-stack
 
 docker run \
   -it \
+  --pull always \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ~/.llama:/root/.llama \
   -v ./llama_stack/templates/remote-vllm/run-with-safety.yaml:/root/my-run.yaml \
@@ -124,7 +130,7 @@ Make sure you have done `uv pip install llama-stack` and have the Llama Stack CL
 ```bash
 export INFERENCE_PORT=8000
 export INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct
-export LLAMA_STACK_PORT=5001
+export LLAMA_STACK_PORT=8321
 
 cd distributions/remote-vllm
 llama stack build --template remote-vllm --image-type conda

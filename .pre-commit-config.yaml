@@ -89,7 +89,7 @@ repos:
         name: API Spec Codegen
         additional_dependencies:
           - uv==0.6.2
-        entry: sh -c 'uv run --with ".[dev]" ./docs/openapi_generator/run_openapi_generator.sh > /dev/null 2>&1'
+        entry: sh -c 'uv run --with ".[dev]" ./docs/openapi_generator/run_openapi_generator.sh > /dev/null'
         language: python
         pass_filenames: false
         require_serial: true

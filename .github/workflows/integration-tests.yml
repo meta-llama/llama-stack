@@ -14,6 +14,10 @@ on:
       - 'requirements.txt'
       - '.github/workflows/integration-tests.yml' # This workflow
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test-matrix:
     runs-on: ubuntu-latest

@@ -55,6 +55,7 @@ export CUDA_VISIBLE_DEVICES=0
 export LLAMA_STACK_PORT=8321
 
 docker run --rm -it \
+  --pull always \
   --network host \
   -v $HOME/.cache/huggingface:/data \
   -e HF_TOKEN=$HF_TOKEN \
@@ -78,6 +79,7 @@ export SAFETY_MODEL=meta-llama/Llama-Guard-3-1B
 export CUDA_VISIBLE_DEVICES=1
 
 docker run --rm -it \
+  --pull always \
   --network host \
   -v $HOME/.cache/huggingface:/data \
   -e HF_TOKEN=$HF_TOKEN \
@@ -120,6 +122,7 @@ This method allows you to get started quickly without having to build the distri
 
 ```bash
 docker run -it \
+  --pull always \
   --network host \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v $HOME/.llama:/root/.llama \
@@ -147,6 +150,7 @@ export SAFETY_MODEL=meta-llama/Llama-Guard-3-1B
 
 docker run \
   -it \
+  --pull always \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v $HOME/.llama:/root/.llama \
   -v ./llama_stack/templates/tgi/run-with-safety.yaml:/root/my-run.yaml \

@@ -36,7 +36,7 @@ class VectorDBStore(Protocol):
 @runtime_checkable
 @trace_protocol
 class VectorIO(Protocol):
-    vector_db_store: VectorDBStore
+    vector_db_store: VectorDBStore | None = None
 
     # this will just block now until chunks are inserted, but it should
     # probably return a Job instance which can be polled for completion

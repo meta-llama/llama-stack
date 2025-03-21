@@ -5529,8 +5529,6 @@ components:
               - type: array
               - type: object
       additionalProperties: false
-      required:
-        - content
       title: ToolInvocationResult
     IterrowsResponse:
       type: object

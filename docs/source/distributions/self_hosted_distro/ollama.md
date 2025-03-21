@@ -32,7 +32,7 @@ You should use this distribution if you have a regular desktop machine without v
 
 The following environment variables can be configured:
 
-- `LLAMA_STACK_PORT`: Port for the Llama Stack distribution server (default: `5001`)
+- `LLAMA_STACK_PORT`: Port for the Llama Stack distribution server (default: `8321`)
 - `OLLAMA_URL`: URL of the Ollama server (default: `http://127.0.0.1:11434`)
 - `INFERENCE_MODEL`: Inference model loaded into the Ollama server (default: `meta-llama/Llama-3.2-3B-Instruct`)
 - `SAFETY_MODEL`: Safety model loaded into the Ollama server (default: `meta-llama/Llama-Guard-3-1B`)
@@ -71,9 +71,10 @@ Now you are ready to run Llama Stack with Ollama as the inference provider. You 
 This method allows you to get started quickly without having to build the distribution code.
 
 ```bash
-export LLAMA_STACK_PORT=5001
+export LLAMA_STACK_PORT=8321
 docker run \
   -it \
+  --pull always \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ~/.llama:/root/.llama \
   llamastack/distribution-ollama \
@@ -91,6 +92,7 @@ cd /path/to/llama-stack
 
 docker run \
   -it \
+  --pull always \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ~/.llama:/root/.llama \
   -v ./llama_stack/templates/ollama/run-with-safety.yaml:/root/my-run.yaml \
@@ -107,7 +109,7 @@ docker run \
 Make sure you have done `uv pip install llama-stack` and have the Llama Stack CLI available.
 
 ```bash
-export LLAMA_STACK_PORT=5001
+export LLAMA_STACK_PORT=8321
 
 llama stack build --template ollama --image-type conda
 llama stack run ./run.yaml \

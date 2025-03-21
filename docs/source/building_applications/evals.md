@@ -23,9 +23,7 @@ In this example, we will show you how to:
 
 ##### Building a Search Agent
 ```python
-from llama_stack_client import LlamaStackClient
-from llama_stack_client.lib.agents.agent import Agent
-from llama_stack_client.lib.agents.event_logger import EventLogger
+from llama_stack_client import LlamaStackClient, Agent, AgentEventLogger
 
 client = LlamaStackClient(base_url=f"http://{HOST}:{PORT}")
 
@@ -54,7 +52,7 @@ for prompt in user_prompts:
         session_id=session_id,
     )
 
-    for log in EventLogger().log(response):
+    for log in AgentEventLogger().log(response):
         log.print()
 ```
 

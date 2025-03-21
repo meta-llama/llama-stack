@@ -44,7 +44,7 @@ from llama_stack.providers.utils.telemetry.sqlite_trace_store import SQLiteTrace
 
 from .config import TelemetryConfig, TelemetrySink
 
-_GLOBAL_STORAGE = {
+_GLOBAL_STORAGE: dict[str, dict[str | int, Any]] = {
     "active_spans": {},
     "counters": {},
     "gauges": {},
@@ -70,7 +70,7 @@ def is_tracing_enabled(tracer):
 
 
 class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
-    def __init__(self, config: TelemetryConfig, deps: Dict[str, Any]) -> None:
+    def __init__(self, config: TelemetryConfig, deps: Dict[Api, Any]) -> None:
         self.config = config
         self.datasetio_api = deps.get(Api.datasetio)
         self.meter = None
@@ -91,15 +91,16 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
             provider = TracerProvider(resource=resource)
             trace.set_tracer_provider(provider)
             _TRACER_PROVIDER = provider
-            if TelemetrySink.OTEL in self.config.sinks:
-                otlp_exporter = OTLPSpanExporter(
-                    endpoint=self.config.otel_endpoint,
+            if TelemetrySink.OTEL_TRACE in self.config.sinks:
+                span_exporter = OTLPSpanExporter(
+                    endpoint=self.config.otel_trace_endpoint,
                 )
-                span_processor = BatchSpanProcessor(otlp_exporter)
+                span_processor = BatchSpanProcessor(span_exporter)
                 trace.get_tracer_provider().add_span_processor(span_processor)
+            if TelemetrySink.OTEL_METRIC in self.config.sinks:
                 metric_reader = PeriodicExportingMetricReader(
                     OTLPMetricExporter(
-                        endpoint=self.config.otel_endpoint,
+                        endpoint=self.config.otel_metric_endpoint,
                     )
                 )
                 metric_provider = MeterProvider(resource=resource, metric_readers=[metric_reader])
@@ -109,7 +110,7 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
             if TelemetrySink.CONSOLE in self.config.sinks:
                 trace.get_tracer_provider().add_span_processor(ConsoleSpanProcessor())
 
-        if TelemetrySink.OTEL in self.config.sinks:
+        if TelemetrySink.OTEL_METRIC in self.config.sinks:
             self.meter = metrics.get_meter(__name__)
         if TelemetrySink.SQLITE in self.config.sinks:
             self.trace_store = SQLiteTraceStore(self.config.sqlite_db_path)
@@ -146,7 +147,7 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
                         "message": event.message,
                         "severity": event.severity.value,
                         "__ttl__": ttl_seconds,
-                        **event.attributes,
+                        **(event.attributes or {}),
                     },
                     timestamp=timestamp_ns,
                 )
@@ -154,6 +155,7 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
                 print(f"Warning: No active span found for span_id {span_id}. Dropping event: {event}")
 
     def _get_or_create_counter(self, name: str, unit: str) -> metrics.Counter:
+        assert self.meter is not None
         if name not in _GLOBAL_STORAGE["counters"]:
             _GLOBAL_STORAGE["counters"][name] = self.meter.create_counter(
                 name=name,
@@ -163,6 +165,7 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
         return _GLOBAL_STORAGE["counters"][name]
 
     def _get_or_create_gauge(self, name: str, unit: str) -> metrics.ObservableGauge:
+        assert self.meter is not None
         if name not in _GLOBAL_STORAGE["gauges"]:
             _GLOBAL_STORAGE["gauges"][name] = self.meter.create_gauge(
                 name=name,
@@ -182,6 +185,7 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
             up_down_counter.add(event.value, attributes=event.attributes)
 
     def _get_or_create_up_down_counter(self, name: str, unit: str) -> metrics.UpDownCounter:
+        assert self.meter is not None
         if name not in _GLOBAL_STORAGE["up_down_counters"]:
             _GLOBAL_STORAGE["up_down_counters"][name] = self.meter.create_up_down_counter(
                 name=name,

@@ -30,7 +30,7 @@ The `llamastack/distribution-passthrough` distribution consists of the following
 
 The following environment variables can be configured:
 
-- `LLAMA_STACK_PORT`: Port for the Llama Stack distribution server (default: `5001`)
+- `LLAMA_STACK_PORT`: Port for the Llama Stack distribution server (default: `8321`)
 - `PASSTHROUGH_API_KEY`: Passthrough API Key (default: ``)
 - `PASSTHROUGH_URL`: Passthrough URL (default: ``)
 

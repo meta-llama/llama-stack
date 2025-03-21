@@ -13,7 +13,7 @@ from llama_stack.apis.telemetry import QueryCondition, QuerySpansResponse, Span
 class TelemetryDatasetMixin:
     """Mixin class that provides dataset-related functionality for telemetry providers."""
 
-    datasetio_api: DatasetIO
+    datasetio_api: DatasetIO | None
 
     async def save_spans_to_dataset(
         self,

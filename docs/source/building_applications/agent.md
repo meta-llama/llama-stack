@@ -14,7 +14,7 @@ Agents are configured using the `AgentConfig` class, which includes:
 - **Safety Shields**: Guardrails to ensure responsible AI behavior
 
 ```python
-from llama_stack_client.lib.agents.agent import Agent
+from llama_stack_client import Agent
 
 
 # Create the agent
@@ -44,14 +44,14 @@ Each interaction with an agent is called a "turn" and consists of:
 - **Output Message**: The agent's response
 
 ```python
-from llama_stack_client.lib.agents.event_logger import EventLogger
+from llama_stack_client import AgentEventLogger
 
 # Create a turn with streaming response
 turn_response = agent.create_turn(
     session_id=session_id,
     messages=[{"role": "user", "content": "Tell me about Llama models"}],
 )
-for log in EventLogger().log(turn_response):
+for log in AgentEventLogger().log(turn_response):
     log.print()
 ```
 ###  Non-Streaming

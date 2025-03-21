@@ -6,17 +6,19 @@
 
 from pathlib import Path
 
-from llama_stack.distribution.datatypes import (
-    Provider,
-    ShieldInput,
-    ToolGroupInput,
-)
+from llama_stack.distribution.datatypes import Provider, ShieldInput, ToolGroupInput
 from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOConfig
 from llama_stack.providers.remote.inference.sambanova import SambaNovaImplConfig
 from llama_stack.providers.remote.inference.sambanova.models import MODEL_ENTRIES
 from llama_stack.providers.remote.vector_io.chroma.config import ChromaVectorIOConfig
-from llama_stack.providers.remote.vector_io.pgvector.config import PGVectorVectorIOConfig
-from llama_stack.templates.template import DistributionTemplate, RunConfigSettings, get_model_registry
+from llama_stack.providers.remote.vector_io.pgvector.config import (
+    PGVectorVectorIOConfig,
+)
+from llama_stack.templates.template import (
+    DistributionTemplate,
+    RunConfigSettings,
+    get_model_registry,
+)
 
 
 def get_distribution_template() -> DistributionTemplate:
@@ -105,7 +107,7 @@ def get_distribution_template() -> DistributionTemplate:
         },
         run_config_env_vars={
             "LLAMASTACK_PORT": (
-                "5001",
+                "8321",
                 "Port for the Llama Stack distribution server",
             ),
             "SAMBANOVA_API_KEY": (

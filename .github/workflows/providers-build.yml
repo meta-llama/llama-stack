@@ -18,6 +18,10 @@ on:
       - 'llama_stack/distribution/*.sh'
       - '.github/workflows/providers-build.yml'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   generate-matrix:
     runs-on: ubuntu-latest

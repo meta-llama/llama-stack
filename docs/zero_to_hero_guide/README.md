@@ -96,7 +96,7 @@ If you're looking for more specific topics, we have a [Zero to Hero Guide](#next
 3. **Set the ENV variables by exporting them to the terminal**:
    ```bash
    export OLLAMA_URL="http://localhost:11434"
-   export LLAMA_STACK_PORT=5001
+   export LLAMA_STACK_PORT=8321
    export INFERENCE_MODEL="meta-llama/Llama-3.2-3B-Instruct"
    export SAFETY_MODEL="meta-llama/Llama-Guard-3-1B"
    ```
@@ -112,7 +112,7 @@ If you're looking for more specific topics, we have a [Zero to Hero Guide](#next
    ```
    Note: Every time you run a new model with `ollama run`, you will need to restart the llama stack. Otherwise it won't see the new model.
 
-The server will start and listen on `http://localhost:5001`.
+The server will start and listen on `http://localhost:8321`.
 
 ---
 ## Test with `llama-stack-client` CLI
@@ -120,11 +120,11 @@ After setting up the server, open a new terminal window and configure the llama-
 
 1. Configure the CLI to point to the llama-stack server.
    ```bash
-   llama-stack-client configure --endpoint http://localhost:5001
+   llama-stack-client configure --endpoint http://localhost:8321
    ```
    **Expected Output:**
    ```bash
-   Done! You can now use the Llama Stack Client CLI with endpoint http://localhost:5001
+   Done! You can now use the Llama Stack Client CLI with endpoint http://localhost:8321
    ```
 2. Test the CLI by running inference:
    ```bash
@@ -218,7 +218,7 @@ if INFERENCE_MODEL is None:
     raise ValueError("The environment variable 'INFERENCE_MODEL' is not set.")
 
 # Initialize the clien
-client = LlamaStackClient(base_url="http://localhost:5001")
+client = LlamaStackClient(base_url="http://localhost:8321")
 
 # Create a chat completion reques
 response = client.inference.chat_completion(

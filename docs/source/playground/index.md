@@ -118,6 +118,7 @@ Playground can also be started in a docker image:
 export LLAMA_STACK_URL=http://localhost:11434
 
 docker run \
+  --pull always \
   -p 8501:8501 \
   -e LLAMA_STACK_ENDPOINT=$LLAMA_STACK_URL \
   quay.io/jland/llama-stack-playground

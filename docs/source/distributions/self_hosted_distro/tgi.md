@@ -33,7 +33,7 @@ You can use this distribution if you have GPUs and want to run an independent TG
 
 The following environment variables can be configured:
 
-- `LLAMA_STACK_PORT`: Port for the Llama Stack distribution server (default: `5001`)
+- `LLAMA_STACK_PORT`: Port for the Llama Stack distribution server (default: `8321`)
 - `INFERENCE_MODEL`: Inference model loaded into the TGI server (default: `meta-llama/Llama-3.2-3B-Instruct`)
 - `TGI_URL`: URL of the TGI server with the main inference model (default: `http://127.0.0.1:8080/v1`)
 - `TGI_SAFETY_URL`: URL of the TGI server with the safety model (default: `http://127.0.0.1:8081/v1`)
@@ -50,6 +50,7 @@ export INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct
 export CUDA_VISIBLE_DEVICES=0
 
 docker run --rm -it \
+  --pull always \
   -v $HOME/.cache/huggingface:/data \
   -p $INFERENCE_PORT:$INFERENCE_PORT \
   --gpus $CUDA_VISIBLE_DEVICES \
@@ -70,6 +71,7 @@ export SAFETY_MODEL=meta-llama/Llama-Guard-3-1B
 export CUDA_VISIBLE_DEVICES=1
 
 docker run --rm -it \
+  --pull always \
   -v $HOME/.cache/huggingface:/data \
   -p $SAFETY_PORT:$SAFETY_PORT \
   --gpus $CUDA_VISIBLE_DEVICES \
@@ -90,9 +92,10 @@ Now you are ready to run Llama Stack with TGI as the inference provider. You can
 This method allows you to get started quickly without having to build the distribution code.
 
 ```bash
-LLAMA_STACK_PORT=5001
+LLAMA_STACK_PORT=8321
 docker run \
   -it \
+  --pull always \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   llamastack/distribution-tgi \
   --port $LLAMA_STACK_PORT \
@@ -109,6 +112,7 @@ cd /path/to/llama-stack
 
 docker run \
   -it \
+  --pull always \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ~/.llama:/root/.llama \
   -v ./llama_stack/templates/tgi/run-with-safety.yaml:/root/my-run.yaml \
