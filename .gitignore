@@ -23,3 +23,5 @@ venv/
 pytest-report.xml
 .coverage
 .python-version
+**/local-*
+**/charts/*.tgz

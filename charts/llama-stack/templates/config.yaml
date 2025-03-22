@@ -1,0 +1,9 @@
+{{- if .Values.customRunConfig }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "llama-stack.fullname" . }}-run-config
+data:
+  run.yaml: |-
+    {{- .Files.Get "files/run.yaml" | nindent 4 }}
+{{- end }}
