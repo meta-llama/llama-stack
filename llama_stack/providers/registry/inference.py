@@ -83,7 +83,7 @@ def available_providers() -> List[ProviderSpec]:
             api=Api.inference,
             adapter=AdapterSpec(
                 adapter_type="ollama",
-                pip_packages=["ollama", "aiohttp"],
+                pip_packages=["ollama", "aiohttp", "openai"],
                 config_class="llama_stack.providers.remote.inference.ollama.OllamaImplConfig",
                 module="llama_stack.providers.remote.inference.ollama",
             ),
