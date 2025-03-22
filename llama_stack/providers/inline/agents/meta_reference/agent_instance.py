@@ -490,9 +490,6 @@ class ChatAgent(ShieldRunnerMixin):
             stop_reason = None
 
             async with tracing.span("inference") as span:
-                from rich.pretty import pprint
-
-                pprint(input_messages)
                 async for chunk in await self.inference_api.chat_completion(
                     self.agent_config.model,
                     input_messages,
