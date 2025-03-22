@@ -180,25 +180,29 @@ class ChatAgent(ShieldRunnerMixin):
         return messages
 
     async def create_and_execute_turn(self, request: AgentTurnCreateRequest) -> AsyncGenerator:
-        await self._initialize_tools(request.toolgroups)
-        async with tracing.span("create_and_execute_turn") as span:
+        span = tracing.get_current_span()
+        if span:
             span.set_attribute("session_id", request.session_id)
             span.set_attribute("agent_id", self.agent_id)
             span.set_attribute("request", request.model_dump_json())
             turn_id = str(uuid.uuid4())
             span.set_attribute("turn_id", turn_id)
-            async for chunk in self._run_turn(request, turn_id):
-                yield chunk
+
+        await self._initialize_tools(request.toolgroups)
+        async for chunk in self._run_turn(request, turn_id):
+            yield chunk
 
     async def resume_turn(self, request: AgentTurnResumeRequest) -> AsyncGenerator:
-        await self._initialize_tools()
-        async with tracing.span("resume_turn") as span:
+        span = tracing.get_current_span()
+        if span:
             span.set_attribute("agent_id", self.agent_id)
             span.set_attribute("session_id", request.session_id)
-            span.set_attribute("turn_id", request.turn_id)
             span.set_attribute("request", request.model_dump_json())
-            async for chunk in self._run_turn(request):
-                yield chunk
+            span.set_attribute("turn_id", request.turn_id)
+
+        await self._initialize_tools()
+        async for chunk in self._run_turn(request):
+            yield chunk
 
     async def _run_turn(
         self,
