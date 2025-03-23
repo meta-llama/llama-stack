@@ -23,14 +23,12 @@ def available_providers() -> List[ProviderSpec]:
             ]
             + kvstore_dependencies(),
             module="llama_stack.providers.inline.evaluation.meta_reference",
-            config_class="llama_stack.providers.inline.evaluation.meta_reference.MetaReferenceEvaluationImplConfig",
+            config_class="llama_stack.providers.inline.evaluation.meta_reference.MetaReferenceEvaluationConfig",
             api_dependencies=[
                 Api.inference,
-                Api.safety,
-                Api.vector_io,
-                Api.vector_dbs,
-                Api.tool_runtime,
-                Api.tool_groups,
+                Api.agents,
+                Api.datasets,
+                Api.datasetio,
             ],
         ),
     ]
