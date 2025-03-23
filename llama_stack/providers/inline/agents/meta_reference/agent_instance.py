@@ -453,7 +453,7 @@ class ChatAgent(ShieldRunnerMixin):
             for document in documents:
                 raw_document_text = await get_raw_document_text(document)
                 contexts.append(raw_document_text)
-        
+
             attached_context = "\n".join(contexts)
             input_messages[-1].context = attached_context
 
