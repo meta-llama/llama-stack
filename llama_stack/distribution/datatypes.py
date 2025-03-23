@@ -122,10 +122,6 @@ class DatasetWithACL(Dataset, ResourceWithACL):
     pass
 
 
-class ScoringFnWithACL(ScoringFn, ResourceWithACL):
-    pass
-
-
 class BenchmarkWithACL(Benchmark, ResourceWithACL):
     pass
 
@@ -155,7 +151,6 @@ RoutableObjectWithProvider = Annotated[
         ShieldWithACL,
         VectorDBWithACL,
         DatasetWithACL,
-        ScoringFnWithACL,
         BenchmarkWithACL,
         ToolWithACL,
         ToolGroupWithACL,
