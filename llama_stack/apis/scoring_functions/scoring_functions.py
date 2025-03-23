@@ -146,4 +146,3 @@ class ScoringFunctions(Protocol):
         provider_id: Optional[str] = None,
         params: Optional[ScoringFnParams] = None,
     ) -> None: ...
-

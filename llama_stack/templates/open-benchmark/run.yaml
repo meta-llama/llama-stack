@@ -166,7 +166,18 @@ datasets:
     uri: huggingface://datasets/llamastack/bfcl_v3?split=train
   metadata: {}
   dataset_id: bfcl
-  provider_id: huggingface
+- purpose: eval/messages-answer
+  source:
+    type: uri
+    uri: huggingface://datasets/llamastack/IfEval?split=train
+  metadata: {}
+  dataset_id: ifeval
+- purpose: eval/messages-answer
+  source:
+    type: uri
+    uri: huggingface://datasets/llamastack/docvqa?split=val
+  metadata: {}
+  dataset_id: docvqa
 benchmarks: []
 tool_groups:
 - toolgroup_id: builtin::websearch

@@ -43,7 +43,6 @@ from llama_stack.distribution.datatypes import (
     RoutableObject,
     RoutableObjectWithProvider,
     RoutedProtocol,
-    ScoringFnWithACL,
     ShieldWithACL,
     ToolGroupWithACL,
     ToolWithACL,

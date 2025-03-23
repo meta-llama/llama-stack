@@ -1562,109 +1562,6 @@ paths:
           required: false
           schema:
             type: integer
-  /v1/eval/benchmarks/{benchmark_id}/jobs/{job_id}:
-    get:
-      responses:
-        '200':
-          description: The status of the evaluationjob.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Job'
-        '400':
-          $ref: '#/components/responses/BadRequest400'
-        '429':
-          $ref: >-
-            #/components/responses/TooManyRequests429
-        '500':
-          $ref: >-
-            #/components/responses/InternalServerError500
-        default:
-          $ref: '#/components/responses/DefaultError'
-      tags:
-        - Eval
-      description: Get the status of a job.
-      parameters:
-        - name: benchmark_id
-          in: path
-          description: >-
-            The ID of the benchmark to run the evaluation on.
-          required: true
-          schema:
-            type: string
-        - name: job_id
-          in: path
-          description: The ID of the job to get the status of.
-          required: true
-          schema:
-            type: string
-    delete:
-      responses:
-        '200':
-          description: OK
-        '400':
-          $ref: '#/components/responses/BadRequest400'
-        '429':
-          $ref: >-
-            #/components/responses/TooManyRequests429
-        '500':
-          $ref: >-
-            #/components/responses/InternalServerError500
-        default:
-          $ref: '#/components/responses/DefaultError'
-      tags:
-        - Eval
-      description: Cancel a job.
-      parameters:
-        - name: benchmark_id
-          in: path
-          description: >-
-            The ID of the benchmark to run the evaluation on.
-          required: true
-          schema:
-            type: string
-        - name: job_id
-          in: path
-          description: The ID of the job to cancel.
-          required: true
-          schema:
-            type: string
-  /v1/eval/benchmarks/{benchmark_id}/jobs/{job_id}/result:
-    get:
-      responses:
-        '200':
-          description: The result of the job.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EvaluateResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest400'
-        '429':
-          $ref: >-
-            #/components/responses/TooManyRequests429
-        '500':
-          $ref: >-
-            #/components/responses/InternalServerError500
-        default:
-          $ref: '#/components/responses/DefaultError'
-      tags:
-        - Eval
-      description: Get the result of a job.
-      parameters:
-        - name: benchmark_id
-          in: path
-          description: >-
-            The ID of the benchmark to run the evaluation on.
-          required: true
-          schema:
-            type: string
-        - name: job_id
-          in: path
-          description: The ID of the job to get the result of.
-          required: true
-          schema:
-            type: string
   /v1/agents/{agent_id}/sessions:
     get:
       responses:
@@ -1923,7 +1820,7 @@ paths:
         default:
           $ref: '#/components/responses/DefaultError'
       tags:
-        - Providers
+        - Models
       description: ''
       parameters: []
     post:
@@ -1974,7 +1871,7 @@ paths:
         default:
           $ref: '#/components/responses/DefaultError'
       tags:
-        - Inspect
+        - Providers
       description: ''
       parameters: []
   /v1/inspect/routes:
@@ -4448,252 +4345,6 @@ components:
       title: EmbeddingsResponse
       description: >-
         Response containing generated embeddings.
-    AgentCandidate:
-      type: object
-      properties:
-        type:
-          type: string
-          const: agent
-          default: agent
-        config:
-          $ref: '#/components/schemas/AgentConfig'
-          description: >-
-            The configuration for the agent candidate.
-      additionalProperties: false
-      required:
-        - type
-        - config
-      title: AgentCandidate
-      description: An agent candidate for evaluation.
-    AggregationFunctionType:
-      type: string
-      enum:
-        - average
-        - weighted_average
-        - median
-        - categorical_count
-        - accuracy
-      title: AggregationFunctionType
-    BasicScoringFnParams:
-      type: object
-      properties:
-        type:
-          type: string
-          const: basic
-          default: basic
-        aggregation_functions:
-          type: array
-          items:
-            $ref: '#/components/schemas/AggregationFunctionType'
-      additionalProperties: false
-      required:
-        - type
-      title: BasicScoringFnParams
-    BenchmarkConfig:
-      type: object
-      properties:
-        eval_candidate:
-          $ref: '#/components/schemas/EvalCandidate'
-          description: The candidate to evaluate.
-        scoring_params:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/ScoringFnParams'
-          description: >-
-            Map between scoring function id and parameters for each scoring function
-            you want to run
-        num_examples:
-          type: integer
-          description: >-
-            (Optional) The number of examples to evaluate. If not provided, all examples
-            in the dataset will be evaluated
-      additionalProperties: false
-      required:
-        - eval_candidate
-        - scoring_params
-      title: BenchmarkConfig
-      description: >-
-        A benchmark configuration for evaluation.
-    EvalCandidate:
-      oneOf:
-        - $ref: '#/components/schemas/ModelCandidate'
-        - $ref: '#/components/schemas/AgentCandidate'
-      discriminator:
-        propertyName: type
-        mapping:
-          model: '#/components/schemas/ModelCandidate'
-          agent: '#/components/schemas/AgentCandidate'
-    LLMAsJudgeScoringFnParams:
-      type: object
-      properties:
-        type:
-          type: string
-          const: llm_as_judge
-          default: llm_as_judge
-        judge_model:
-          type: string
-        prompt_template:
-          type: string
-        judge_score_regexes:
-          type: array
-          items:
-            type: string
-        aggregation_functions:
-          type: array
-          items:
-            $ref: '#/components/schemas/AggregationFunctionType'
-      additionalProperties: false
-      required:
-        - type
-        - judge_model
-      title: LLMAsJudgeScoringFnParams
-    ModelCandidate:
-      type: object
-      properties:
-        type:
-          type: string
-          const: model
-          default: model
-        model:
-          type: string
-          description: The model ID to evaluate.
-        sampling_params:
-          $ref: '#/components/schemas/SamplingParams'
-          description: The sampling parameters for the model.
-        system_message:
-          $ref: '#/components/schemas/SystemMessage'
-          description: >-
-            (Optional) The system message providing instructions or context to the
-            model.
-      additionalProperties: false
-      required:
-        - type
-        - model
-        - sampling_params
-      title: ModelCandidate
-      description: A model candidate for evaluation.
-    RegexParserScoringFnParams:
-      type: object
-      properties:
-        type:
-          type: string
-          const: regex_parser
-          default: regex_parser
-        parsing_regexes:
-          type: array
-          items:
-            type: string
-        aggregation_functions:
-          type: array
-          items:
-            $ref: '#/components/schemas/AggregationFunctionType'
-      additionalProperties: false
-      required:
-        - type
-      title: RegexParserScoringFnParams
-    ScoringFnParams:
-      oneOf:
-        - $ref: '#/components/schemas/LLMAsJudgeScoringFnParams'
-        - $ref: '#/components/schemas/RegexParserScoringFnParams'
-        - $ref: '#/components/schemas/BasicScoringFnParams'
-      discriminator:
-        propertyName: type
-        mapping:
-          llm_as_judge: '#/components/schemas/LLMAsJudgeScoringFnParams'
-          regex_parser: '#/components/schemas/RegexParserScoringFnParams'
-          basic: '#/components/schemas/BasicScoringFnParams'
-    EvaluateRowsRequest:
-      type: object
-      properties:
-        input_rows:
-          type: array
-          items:
-            type: object
-            additionalProperties:
-              oneOf:
-                - type: 'null'
-                - type: boolean
-                - type: number
-                - type: string
-                - type: array
-                - type: object
-          description: The rows to evaluate.
-        scoring_functions:
-          type: array
-          items:
-            type: string
-          description: >-
-            The scoring functions to use for the evaluation.
-        benchmark_config:
-          $ref: '#/components/schemas/BenchmarkConfig'
-          description: The configuration for the benchmark.
-      additionalProperties: false
-      required:
-        - input_rows
-        - scoring_functions
-        - benchmark_config
-      title: EvaluateRowsRequest
-    EvaluateResponse:
-      type: object
-      properties:
-        generations:
-          type: array
-          items:
-            type: object
-            additionalProperties:
-              oneOf:
-                - type: 'null'
-                - type: boolean
-                - type: number
-                - type: string
-                - type: array
-                - type: object
-          description: The generations from the evaluation.
-        scores:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/ScoringResult'
-          description: The scores from the evaluation.
-      additionalProperties: false
-      required:
-        - generations
-        - scores
-      title: EvaluateResponse
-      description: The response from an evaluation.
-    ScoringResult:
-      type: object
-      properties:
-        score_rows:
-          type: array
-          items:
-            type: object
-            additionalProperties:
-              oneOf:
-                - type: 'null'
-                - type: boolean
-                - type: number
-                - type: string
-                - type: array
-                - type: object
-          description: >-
-            The scoring result for each row. Each row is a map of column name to value.
-        aggregated_results:
-          type: object
-          additionalProperties:
-            oneOf:
-              - type: 'null'
-              - type: boolean
-              - type: number
-              - type: string
-              - type: array
-              - type: object
-          description: Map of metric name to aggregated value
-      additionalProperties: false
-      required:
-        - score_rows
-        - aggregated_results
-      title: ScoringResult
-      description: A scoring result for a single row.
     Agent:
       type: object
       properties:
@@ -5451,6 +5102,7 @@ components:
             - in_progress
             - failed
             - scheduled
+            - cancelled
           title: JobStatus
         scheduled_at:
           type: string
@@ -5901,24 +5553,6 @@ components:
         - data
       title: IterrowsResponse
       description: A paginated list of rows from a dataset.
-    Job:
-      type: object
-      properties:
-        job_id:
-          type: string
-        status:
-          type: string
-          enum:
-            - completed
-            - in_progress
-            - failed
-            - scheduled
-          title: JobStatus
-      additionalProperties: false
-      required:
-        - job_id
-        - status
-      title: Job
     ListAgentSessionsResponse:
       type: object
       properties:
@@ -6984,8 +6618,9 @@ components:
           description: The candidate to evaluate.
       additionalProperties: false
       required:
-        - benchmark_config
-      title: RunEvalRequest
+        - task
+        - candidate
+      title: RunRequest
     RunShieldRequest:
       type: object
       properties:
@@ -7058,81 +6693,6 @@ components:
         - attributes_to_save
         - dataset_id
       title: SaveSpansToDatasetRequest
-    ScoreRequest:
-      type: object
-      properties:
-        input_rows:
-          type: array
-          items:
-            type: object
-            additionalProperties:
-              oneOf:
-                - type: 'null'
-                - type: boolean
-                - type: number
-                - type: string
-                - type: array
-                - type: object
-          description: The rows to score.
-        scoring_functions:
-          type: object
-          additionalProperties:
-            oneOf:
-              - $ref: '#/components/schemas/ScoringFnParams'
-              - type: 'null'
-          description: >-
-            The scoring functions to use for the scoring.
-      additionalProperties: false
-      required:
-        - input_rows
-        - scoring_functions
-      title: ScoreRequest
-    ScoreResponse:
-      type: object
-      properties:
-        results:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/ScoringResult'
-          description: >-
-            A map of scoring function name to ScoringResult.
-      additionalProperties: false
-      required:
-        - results
-      title: ScoreResponse
-      description: The response from scoring.
-    ScoreBatchRequest:
-      type: object
-      properties:
-        dataset_id:
-          type: string
-        scoring_functions:
-          type: object
-          additionalProperties:
-            oneOf:
-              - $ref: '#/components/schemas/ScoringFnParams'
-              - type: 'null'
-        save_results_dataset:
-          type: boolean
-      additionalProperties: false
-      required:
-        - dataset_id
-        - scoring_functions
-        - save_results_dataset
-      title: ScoreBatchRequest
-    ScoreBatchResponse:
-      type: object
-      properties:
-        dataset_id:
-          type: string
-        results:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/ScoringResult'
-      additionalProperties: false
-      required:
-        - results
-      title: ScoreBatchResponse
     AlgorithmConfig:
       oneOf:
         - $ref: '#/components/schemas/LoraFinetuningConfig'

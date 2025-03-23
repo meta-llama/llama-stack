@@ -26,4 +26,3 @@ def available_providers() -> List[ProviderSpec]:
             ],
         ),
     ]
-
