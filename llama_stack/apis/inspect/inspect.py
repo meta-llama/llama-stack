@@ -25,17 +25,6 @@ class HealthInfo(BaseModel):
 
 
 @json_schema_type
-class ProviderInfo(BaseModel):
-    api: str
-    provider_id: str
-    provider_type: str
-
-
-class ListProvidersResponse(BaseModel):
-    data: List[ProviderInfo]
-
-
-@json_schema_type
 class VersionInfo(BaseModel):
     version: str
 
@@ -46,9 +35,6 @@ class ListRoutesResponse(BaseModel):
 
 @runtime_checkable
 class Inspect(Protocol):
-    @webmethod(route="/inspect/providers", method="GET")
-    async def list_providers(self) -> ListProvidersResponse: ...
-
     @webmethod(route="/inspect/routes", method="GET")
     async def list_routes(self) -> ListRoutesResponse: ...
 

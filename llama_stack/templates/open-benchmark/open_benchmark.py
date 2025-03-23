@@ -167,7 +167,6 @@ def get_distribution_template() -> DistributionTemplate:
     default_datasets = [
         DatasetInput(
             dataset_id="simpleqa",
-            provider_id="huggingface",
             purpose=DatasetPurpose.eval_messages_answer,
             source=URIDataSource(
                 uri="huggingface://datasets/llamastack/simpleqa?split=train",
@@ -175,7 +174,6 @@ def get_distribution_template() -> DistributionTemplate:
         ),
         DatasetInput(
             dataset_id="mmlu_cot",
-            provider_id="huggingface",
             purpose=DatasetPurpose.eval_messages_answer,
             source=URIDataSource(
                 uri="huggingface://datasets/llamastack/mmlu_cot?split=test&name=all",
@@ -183,7 +181,6 @@ def get_distribution_template() -> DistributionTemplate:
         ),
         DatasetInput(
             dataset_id="gpqa_cot",
-            provider_id="huggingface",
             purpose=DatasetPurpose.eval_messages_answer,
             source=URIDataSource(
                 uri="huggingface://datasets/llamastack/gpqa_0shot_cot?split=test&name=gpqa_main",
@@ -191,7 +188,6 @@ def get_distribution_template() -> DistributionTemplate:
         ),
         DatasetInput(
             dataset_id="math_500",
-            provider_id="huggingface",
             purpose=DatasetPurpose.eval_messages_answer,
             source=URIDataSource(
                 uri="huggingface://datasets/llamastack/math_500?split=test",
@@ -199,10 +195,23 @@ def get_distribution_template() -> DistributionTemplate:
         ),
         DatasetInput(
             dataset_id="bfcl",
-            provider_id="huggingface",
             purpose=DatasetPurpose.eval_messages_answer,
             source=URIDataSource(
                 uri="huggingface://datasets/llamastack/bfcl_v3?split=train",
+            ),
+        ),
+        DatasetInput(
+            dataset_id="ifeval",
+            purpose=DatasetPurpose.eval_messages_answer,
+            source=URIDataSource(
+                uri="huggingface://datasets/llamastack/IfEval?split=train",
+            ),
+        ),
+        DatasetInput(
+            dataset_id="docvqa",
+            purpose=DatasetPurpose.eval_messages_answer,
+            source=URIDataSource(
+                uri="huggingface://datasets/llamastack/docvqa?split=val",
             ),
         ),
     ]
@@ -234,6 +243,16 @@ def get_distribution_template() -> DistributionTemplate:
     #         dataset_id="bfcl",
     #         grader_ids=["basic::bfcl"],
     #     ),
+    #     BenchmarkInput(
+    #         benchmark_id="meta-reference-ifeval",
+    #         dataset_id="ifeval",
+    #         grader_ids=["basic::ifeval"],
+    #     ),
+    #     BenchmarkInput(
+    #         benchmark_id="meta-reference-docvqa",
+    #         dataset_id="docvqa",
+    #         grader_ids=["basic::docvqa"],
+    #     ),
     # ]
 
     return DistributionTemplate(
@@ -258,7 +277,7 @@ def get_distribution_template() -> DistributionTemplate:
         },
         run_config_env_vars={
             "LLAMA_STACK_PORT": (
-                "5001",
+                "8321",
                 "Port for the Llama Stack distribution server",
             ),
             "TOGETHER_API_KEY": (

@@ -2285,7 +2285,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ListAgentSessionsResponse"
+                                    "$ref": "#/components/schemas/Job"
                                 }
                             }
                         }
@@ -2719,7 +2719,7 @@
                     }
                 },
                 "tags": [
-                    "Inspect"
+                    "Providers"
                 ],
                 "description": "",
                 "parameters": []
@@ -4108,70 +4108,80 @@
                         ]
                     },
                     "arguments": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "integer"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "array",
-                                    "items": {
-                                        "oneOf": [
-                                            {
-                                                "type": "string"
-                                            },
-                                            {
-                                                "type": "integer"
-                                            },
-                                            {
-                                                "type": "number"
-                                            },
-                                            {
-                                                "type": "boolean"
-                                            },
-                                            {
-                                                "type": "null"
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "integer"
+                                        },
+                                        {
+                                            "type": "number"
+                                        },
+                                        {
+                                            "type": "boolean"
+                                        },
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "type": "array",
+                                            "items": {
+                                                "oneOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "integer"
+                                                    },
+                                                    {
+                                                        "type": "number"
+                                                    },
+                                                    {
+                                                        "type": "boolean"
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
                                             }
-                                        ]
-                                    }
-                                },
-                                {
-                                    "type": "object",
-                                    "additionalProperties": {
-                                        "oneOf": [
-                                            {
-                                                "type": "string"
-                                            },
-                                            {
-                                                "type": "integer"
-                                            },
-                                            {
-                                                "type": "number"
-                                            },
-                                            {
-                                                "type": "boolean"
-                                            },
-                                            {
-                                                "type": "null"
+                                        },
+                                        {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "oneOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "integer"
+                                                    },
+                                                    {
+                                                        "type": "number"
+                                                    },
+                                                    {
+                                                        "type": "boolean"
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
                                             }
-                                        ]
-                                    }
+                                        }
+                                    ]
                                 }
-                            ]
-                        }
+                            }
+                        ]
+                    },
+                    "arguments_json": {
+                        "type": "string"
                     }
                 },
                 "additionalProperties": false,
@@ -6182,6 +6192,382 @@
                 "title": "EmbeddingsResponse",
                 "description": "Response containing generated embeddings."
             },
+            "AgentCandidate": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "agent",
+                        "default": "agent"
+                    },
+                    "config": {
+                        "$ref": "#/components/schemas/AgentConfig",
+                        "description": "The configuration for the agent candidate."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "config"
+                ],
+                "title": "AgentCandidate",
+                "description": "An agent candidate for evaluation."
+            },
+            "AggregationFunctionType": {
+                "type": "string",
+                "enum": [
+                    "average",
+                    "weighted_average",
+                    "median",
+                    "categorical_count",
+                    "accuracy"
+                ],
+                "title": "AggregationFunctionType"
+            },
+            "BasicScoringFnParams": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "basic",
+                        "default": "basic"
+                    },
+                    "aggregation_functions": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AggregationFunctionType"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ],
+                "title": "BasicScoringFnParams"
+            },
+            "BenchmarkConfig": {
+                "type": "object",
+                "properties": {
+                    "eval_candidate": {
+                        "$ref": "#/components/schemas/EvalCandidate",
+                        "description": "The candidate to evaluate."
+                    },
+                    "scoring_params": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/ScoringFnParams"
+                        },
+                        "description": "Map between scoring function id and parameters for each scoring function you want to run"
+                    },
+                    "num_examples": {
+                        "type": "integer",
+                        "description": "(Optional) The number of examples to evaluate. If not provided, all examples in the dataset will be evaluated"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "eval_candidate",
+                    "scoring_params"
+                ],
+                "title": "BenchmarkConfig",
+                "description": "A benchmark configuration for evaluation."
+            },
+            "EvalCandidate": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/ModelCandidate"
+                    },
+                    {
+                        "$ref": "#/components/schemas/AgentCandidate"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "model": "#/components/schemas/ModelCandidate",
+                        "agent": "#/components/schemas/AgentCandidate"
+                    }
+                }
+            },
+            "LLMAsJudgeScoringFnParams": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "llm_as_judge",
+                        "default": "llm_as_judge"
+                    },
+                    "judge_model": {
+                        "type": "string"
+                    },
+                    "prompt_template": {
+                        "type": "string"
+                    },
+                    "judge_score_regexes": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "aggregation_functions": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AggregationFunctionType"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "judge_model"
+                ],
+                "title": "LLMAsJudgeScoringFnParams"
+            },
+            "ModelCandidate": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "model",
+                        "default": "model"
+                    },
+                    "model": {
+                        "type": "string",
+                        "description": "The model ID to evaluate."
+                    },
+                    "sampling_params": {
+                        "$ref": "#/components/schemas/SamplingParams",
+                        "description": "The sampling parameters for the model."
+                    },
+                    "system_message": {
+                        "$ref": "#/components/schemas/SystemMessage",
+                        "description": "(Optional) The system message providing instructions or context to the model."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "model",
+                    "sampling_params"
+                ],
+                "title": "ModelCandidate",
+                "description": "A model candidate for evaluation."
+            },
+            "RegexParserScoringFnParams": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "regex_parser",
+                        "default": "regex_parser"
+                    },
+                    "parsing_regexes": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "aggregation_functions": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AggregationFunctionType"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ],
+                "title": "RegexParserScoringFnParams"
+            },
+            "ScoringFnParams": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/LLMAsJudgeScoringFnParams"
+                    },
+                    {
+                        "$ref": "#/components/schemas/RegexParserScoringFnParams"
+                    },
+                    {
+                        "$ref": "#/components/schemas/BasicScoringFnParams"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "llm_as_judge": "#/components/schemas/LLMAsJudgeScoringFnParams",
+                        "regex_parser": "#/components/schemas/RegexParserScoringFnParams",
+                        "basic": "#/components/schemas/BasicScoringFnParams"
+                    }
+                }
+            },
+            "EvaluateRowsRequest": {
+                "type": "object",
+                "properties": {
+                    "input_rows": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "oneOf": [
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "type": "boolean"
+                                    },
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array"
+                                    },
+                                    {
+                                        "type": "object"
+                                    }
+                                ]
+                            }
+                        },
+                        "description": "The rows to evaluate."
+                    },
+                    "scoring_functions": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "The scoring functions to use for the evaluation."
+                    },
+                    "benchmark_config": {
+                        "$ref": "#/components/schemas/BenchmarkConfig",
+                        "description": "The configuration for the benchmark."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "input_rows",
+                    "scoring_functions",
+                    "benchmark_config"
+                ],
+                "title": "EvaluateRowsRequest"
+            },
+            "EvaluateResponse": {
+                "type": "object",
+                "properties": {
+                    "generations": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "oneOf": [
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "type": "boolean"
+                                    },
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array"
+                                    },
+                                    {
+                                        "type": "object"
+                                    }
+                                ]
+                            }
+                        },
+                        "description": "The generations from the evaluation."
+                    },
+                    "scores": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/ScoringResult"
+                        },
+                        "description": "The scores from the evaluation."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "generations",
+                    "scores"
+                ],
+                "title": "EvaluateResponse",
+                "description": "The response from an evaluation."
+            },
+            "ScoringResult": {
+                "type": "object",
+                "properties": {
+                    "score_rows": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "oneOf": [
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "type": "boolean"
+                                    },
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array"
+                                    },
+                                    {
+                                        "type": "object"
+                                    }
+                                ]
+                            }
+                        },
+                        "description": "The scoring result for each row. Each row is a map of column name to value."
+                    },
+                    "aggregated_results": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        },
+                        "description": "Map of metric name to aggregated value"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "score_rows",
+                    "aggregated_results"
+                ],
+                "title": "ScoringResult",
+                "description": "A scoring result for a single row."
+            },
             "Agent": {
                 "type": "object",
                 "properties": {
@@ -7319,8 +7705,7 @@
                             "completed",
                             "in_progress",
                             "failed",
-                            "scheduled",
-                            "cancelled"
+                            "scheduled"
                         ],
                         "title": "JobStatus"
                     },
@@ -7698,7 +8083,8 @@
                 "type": "object",
                 "properties": {
                     "document_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The unique identifier for the document."
                     },
                     "content": {
                         "oneOf": [
@@ -7717,10 +8103,12 @@
                             {
                                 "$ref": "#/components/schemas/URL"
                             }
-                        ]
+                        ],
+                        "description": "The content of the document."
                     },
                     "mime_type": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The MIME type of the document."
                     },
                     "metadata": {
                         "type": "object",
@@ -7745,7 +8133,8 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "Additional metadata for the document."
                     }
                 },
                 "additionalProperties": false,
@@ -7754,7 +8143,8 @@
                     "content",
                     "metadata"
                 ],
-                "title": "RAGDocument"
+                "title": "RAGDocument",
+                "description": "A document to be used for document ingestion in the RAG Tool."
             },
             "InsertRequest": {
                 "type": "object",
@@ -7964,9 +8354,6 @@
                     }
                 },
                 "additionalProperties": false,
-                "required": [
-                    "content"
-                ],
                 "title": "ToolInvocationResult"
             },
             "IterrowsResponse": {
@@ -8012,6 +8399,30 @@
                 ],
                 "title": "IterrowsResponse",
                 "description": "A paginated list of rows from a dataset."
+            },
+            "Job": {
+                "type": "object",
+                "properties": {
+                    "job_id": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "completed",
+                            "in_progress",
+                            "failed",
+                            "scheduled"
+                        ],
+                        "title": "JobStatus"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "job_id",
+                    "status"
+                ],
+                "title": "Job"
             },
             "ListAgentSessionsResponse": {
                 "type": "object",
@@ -9596,21 +10007,16 @@
             "RunRequest": {
                 "type": "object",
                 "properties": {
-                    "task": {
-                        "$ref": "#/components/schemas/EvaluationTask",
-                        "description": "The task to evaluate. To specify a task, one of the following must be provided: - `benchmark_id`: Run evaluation task against a benchmark_id - `dataset_id` and `grader_ids`: Run evaluation task against a dataset_id and a list of grader_ids - `data_source` and `grader_ids`: Run evaluation task against a data source (e.g. rows, uri, etc.) and a list of grader_ids"
-                    },
-                    "candidate": {
-                        "$ref": "#/components/schemas/EvaluationCandidate",
-                        "description": "The candidate to evaluate."
+                    "benchmark_config": {
+                        "$ref": "#/components/schemas/BenchmarkConfig",
+                        "description": "The configuration for the benchmark."
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "task",
-                    "candidate"
+                    "benchmark_config"
                 ],
-                "title": "RunRequest"
+                "title": "RunEvalRequest"
             },
             "RunShieldRequest": {
                 "type": "object",
@@ -9716,6 +10122,145 @@
                     "dataset_id"
                 ],
                 "title": "SaveSpansToDatasetRequest"
+            },
+            "ScoreRequest": {
+                "type": "object",
+                "properties": {
+                    "input_rows": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "oneOf": [
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "type": "boolean"
+                                    },
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array"
+                                    },
+                                    {
+                                        "type": "object"
+                                    }
+                                ]
+                            }
+                        },
+                        "description": "The rows to score."
+                    },
+                    "scoring_functions": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "$ref": "#/components/schemas/ScoringFnParams"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ]
+                        },
+                        "description": "The scoring functions to use for the scoring."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "input_rows",
+                    "scoring_functions"
+                ],
+                "title": "ScoreRequest"
+            },
+            "ScoreResponse": {
+                "type": "object",
+                "properties": {
+                    "results": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/ScoringResult"
+                        },
+                        "description": "A map of scoring function name to ScoringResult."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "results"
+                ],
+                "title": "ScoreResponse",
+                "description": "The response from scoring."
+            },
+            "ScoreBatchRequest": {
+                "type": "object",
+                "properties": {
+                    "dataset_id": {
+                        "type": "string"
+                    },
+                    "scoring_functions": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "$ref": "#/components/schemas/ScoringFnParams"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ]
+                        }
+                    },
+                    "save_results_dataset": {
+                        "type": "boolean"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "dataset_id",
+                    "scoring_functions",
+                    "save_results_dataset"
+                ],
+                "title": "ScoreBatchRequest"
+            },
+            "ScoreBatchResponse": {
+                "type": "object",
+                "properties": {
+                    "dataset_id": {
+                        "type": "string"
+                    },
+                    "results": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/ScoringResult"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "results"
+                ],
+                "title": "ScoreBatchResponse"
+            },
+            "AlgorithmConfig": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/LoraFinetuningConfig"
+                    },
+                    {
+                        "$ref": "#/components/schemas/QATFinetuningConfig"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "LoRA": "#/components/schemas/LoraFinetuningConfig",
+                        "QAT": "#/components/schemas/QATFinetuningConfig"
+                    }
+                }
             },
             "LoraFinetuningConfig": {
                 "type": "object",
@@ -9852,14 +10397,7 @@
                         "type": "string"
                     },
                     "algorithm_config": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/LoraFinetuningConfig"
-                            },
-                            {
-                                "$ref": "#/components/schemas/QATFinetuningConfig"
-                            }
-                        ]
+                        "$ref": "#/components/schemas/AlgorithmConfig"
                     }
                 },
                 "additionalProperties": false,

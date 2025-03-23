@@ -404,7 +404,7 @@ def _download_from_manifest(manifest_file: str, max_concurrent_downloads: int):
         d = json.load(f)
         manifest = Manifest(**d)
 
-    if datetime.now(timezone.utc) > manifest.expires_on:
+    if datetime.now(timezone.utc) > manifest.expires_on.astimezone(timezone.utc):
         raise ValueError(f"Manifest URLs have expired on {manifest.expires_on}")
 
     console = Console()

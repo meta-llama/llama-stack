@@ -66,7 +66,6 @@ providers:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
     config:
-      service_name: ${env.OTEL_SERVICE_NAME:llama-stack}
       sinks: ${env.TELEMETRY_SINKS:console,sqlite}
       sqlite_db_path: ${env.SQLITE_DB_PATH:~/.llama/distributions/open-benchmark/trace_store.db}
   datasetio:
@@ -143,28 +142,24 @@ datasets:
     uri: huggingface://datasets/llamastack/simpleqa?split=train
   metadata: {}
   dataset_id: simpleqa
-  provider_id: huggingface
 - purpose: eval/messages-answer
   source:
     type: uri
     uri: huggingface://datasets/llamastack/mmlu_cot?split=test&name=all
   metadata: {}
   dataset_id: mmlu_cot
-  provider_id: huggingface
 - purpose: eval/messages-answer
   source:
     type: uri
     uri: huggingface://datasets/llamastack/gpqa_0shot_cot?split=test&name=gpqa_main
   metadata: {}
   dataset_id: gpqa_cot
-  provider_id: huggingface
 - purpose: eval/messages-answer
   source:
     type: uri
     uri: huggingface://datasets/llamastack/math_500?split=test
   metadata: {}
   dataset_id: math_500
-  provider_id: huggingface
 - purpose: eval/messages-answer
   source:
     type: uri

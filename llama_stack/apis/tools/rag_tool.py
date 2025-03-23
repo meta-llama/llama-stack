@@ -17,6 +17,15 @@ from llama_stack.schema_utils import json_schema_type, register_schema, webmetho
 
 @json_schema_type
 class RAGDocument(BaseModel):
+    """
+    A document to be used for document ingestion in the RAG Tool.
+
+    :param document_id: The unique identifier for the document.
+    :param content: The content of the document.
+    :param mime_type: The MIME type of the document.
+    :param metadata: Additional metadata for the document.
+    """
+
     document_id: str
     content: InterleavedContent | URL
     mime_type: str | None = None
@@ -49,16 +58,14 @@ class LLMRAGQueryGeneratorConfig(BaseModel):
     template: str
 
 
-RAGQueryGeneratorConfig = register_schema(
-    Annotated[
-        Union[
-            DefaultRAGQueryGeneratorConfig,
-            LLMRAGQueryGeneratorConfig,
-        ],
-        Field(discriminator="type"),
+RAGQueryGeneratorConfig = Annotated[
+    Union[
+        DefaultRAGQueryGeneratorConfig,
+        LLMRAGQueryGeneratorConfig,
     ],
-    name="RAGQueryGeneratorConfig",
-)
+    Field(discriminator="type"),
+]
+register_schema(RAGQueryGeneratorConfig, name="RAGQueryGeneratorConfig")
 
 
 @json_schema_type

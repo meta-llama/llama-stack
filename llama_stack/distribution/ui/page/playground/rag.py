@@ -5,9 +5,7 @@
 # the root directory of this source tree.
 
 import streamlit as st
-from llama_stack_client.lib.agents.agent import Agent
-from llama_stack_client.lib.agents.event_logger import EventLogger
-from llama_stack_client.types.shared.document import Document
+from llama_stack_client import Agent, AgentEventLogger, RAGDocument
 
 from llama_stack.distribution.ui.modules.api import llama_stack_api
 from llama_stack.distribution.ui.modules.utils import data_url_from_file
@@ -35,7 +33,7 @@ def rag_chat_page():
             )
             if st.button("Create Vector Database"):
                 documents = [
-                    Document(
+                    RAGDocument(
                         document_id=uploaded_file.name,
                         content=data_url_from_file(uploaded_file),
                     )
@@ -167,7 +165,7 @@ def rag_chat_page():
             message_placeholder = st.empty()
             full_response = ""
             retrieval_response = ""
-            for log in EventLogger().log(response):
+            for log in AgentEventLogger().log(response):
                 log.print()
                 if log.role == "tool_execution":
                     retrieval_response += log.content.replace("====", "").strip()

@@ -55,7 +55,7 @@ llama stack run llama_stack/templates/open-benchmark/run.yaml
 There are 3 necessary inputs to run a benchmark eval
 - `list of benchmark_ids`: The list of benchmark ids to run evaluation on
 - `model-id`: The model id to evaluate on
-- `utput_dir`: Path to store the evaluate results
+- `output_dir`: Path to store the evaluate results
 ```
 llama-stack-client eval run-benchmark <benchmark_id_1> <benchmark_id_2> ... \
 --model_id <model id to evaluate on> \
@@ -69,7 +69,7 @@ llama-stack-client eval run-benchmark help
 to see the description of all the flags that eval run-benchmark has
 
 
-In the output log, you can find the file path that has your evaluation results. Open that file and you can see you aggrgate
+In the output log, you can find the file path that has your evaluation results. Open that file and you can see you aggregate
 evaluation results over there.
 
 

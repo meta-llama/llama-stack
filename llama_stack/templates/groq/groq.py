@@ -95,7 +95,7 @@ def get_distribution_template() -> DistributionTemplate:
         },
         run_config_env_vars={
             "LLAMASTACK_PORT": (
-                "5001",
+                "8321",
                 "Port for the Llama Stack distribution server",
             ),
             "GROQ_API_KEY": (
