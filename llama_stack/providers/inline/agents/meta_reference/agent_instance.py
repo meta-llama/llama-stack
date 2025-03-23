@@ -453,7 +453,9 @@ class ChatAgent(ShieldRunnerMixin):
             for document in documents:
                 raw_document_text = await get_raw_document_text(document)
                 contexts.append(raw_document_text)
-            input_messages[-1].context = "\n".join(contexts)
+        
+            attached_context = "\n".join(contexts)
+            input_messages[-1].context = attached_context
 
         session_info = await self.storage.get_session_info(session_id)
         # if the session has a memory bank id, let the memory tool use it
@@ -889,17 +891,16 @@ async def load_data_from_url(url: str) -> str:
             r = await client.get(url)
             resp = r.text
             return resp
-    return ""
+    raise ValueError(f"Unexpected URL: {type(url)}")
 
 
 async def get_raw_document_text(document: Document) -> str:
+    if not document.mime_type.startswith("text/"):
+        raise ValueError(f"Unexpected document mime type: {document.mime_type}")
     if isinstance(document.content, URL):
         return await load_data_from_url(document.content.uri)
     elif isinstance(document.content, str):
-        if document.content.startswith("http"):
-            return await load_data_from_url(document.content)
-        else:
-            return document.content
+        return document.content
     elif isinstance(document.content, TextContentItem):
         return document.content.text
     else:
