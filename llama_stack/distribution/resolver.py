@@ -11,6 +11,7 @@ from llama_stack.apis.agents import Agents
 from llama_stack.apis.benchmarks import Benchmarks
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
+from llama_stack.apis.evaluation import Evaluation
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.inspect import Inspect
 from llama_stack.apis.models import Models
@@ -35,6 +36,7 @@ from llama_stack.distribution.utils.dynamic import instantiate_class_type
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import (
     Api,
+    BenchmarksProtocolPrivate,
     DatasetsProtocolPrivate,
     InlineProviderSpec,
     ModelsProtocolPrivate,
@@ -71,6 +73,7 @@ def api_protocol_map() -> Dict[Api, Any]:
         Api.post_training: PostTraining,
         Api.tool_groups: ToolGroups,
         Api.tool_runtime: ToolRuntime,
+        Api.evaluation: Evaluation,
     }
 
 
@@ -81,6 +84,7 @@ def additional_protocols_map() -> Dict[Api, Any]:
         Api.vector_io: (VectorDBsProtocolPrivate, VectorDBs, Api.vector_dbs),
         Api.safety: (ShieldsProtocolPrivate, Shields, Api.shields),
         Api.datasetio: (DatasetsProtocolPrivate, Datasets, Api.datasets),
+        Api.evaluation: (BenchmarksProtocolPrivate, Benchmarks, Api.benchmarks),
     }
 
 

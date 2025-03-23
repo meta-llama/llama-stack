@@ -46,6 +46,7 @@ async def get_routing_table_impl(
 async def get_auto_router_impl(api: Api, routing_table: RoutingTable, deps: Dict[str, Any]) -> Any:
     from .routers import (
         DatasetIORouter,
+        EvaluationRouter,
         InferenceRouter,
         SafetyRouter,
         ToolRuntimeRouter,
@@ -58,6 +59,7 @@ async def get_auto_router_impl(api: Api, routing_table: RoutingTable, deps: Dict
         "safety": SafetyRouter,
         "datasetio": DatasetIORouter,
         "tool_runtime": ToolRuntimeRouter,
+        "evaluation": EvaluationRouter,
     }
     api_to_deps = {
         "inference": {"telemetry": Api.telemetry},

@@ -7,13 +7,21 @@
 import time
 from typing import Any, AsyncGenerator, AsyncIterator, Dict, List, Optional, Union
 
+from llama_stack.apis.benchmarks import Benchmark
 from llama_stack.apis.common.content_types import (
     URL,
     InterleavedContent,
     InterleavedContentItem,
 )
 from llama_stack.apis.datasetio import DatasetIO, IterrowsResponse
-from llama_stack.apis.datasets import DatasetPurpose, DataSource
+from llama_stack.apis.datasets import Dataset, DatasetPurpose, DataSource
+from llama_stack.apis.evaluation import (
+    Evaluation,
+    EvaluationCandidate,
+    EvaluationJob,
+    EvaluationResponse,
+    EvaluationTask,
+)
 from llama_stack.apis.inference import (
     ChatCompletionResponse,
     ChatCompletionResponseEventType,
@@ -474,11 +482,11 @@ class DatasetIORouter(DatasetIO):
         source: DataSource,
         metadata: Optional[Dict[str, Any]] = None,
         dataset_id: Optional[str] = None,
-    ) -> None:
+    ) -> Dataset:
         logger.debug(
             f"DatasetIORouter.register_dataset: {purpose=} {source=} {metadata=} {dataset_id=}",
         )
-        await self.routing_table.register_dataset(
+        return await self.routing_table.register_dataset(
             purpose=purpose,
             source=source,
             metadata=metadata,
@@ -573,3 +581,57 @@ class ToolRuntimeRouter(ToolRuntime):
     ) -> List[ToolDef]:
         logger.debug(f"ToolRuntimeRouter.list_runtime_tools: {tool_group_id}")
         return await self.routing_table.get_provider_impl(tool_group_id).list_tools(tool_group_id, mcp_endpoint)
+
+
+class EvaluationRouter(Evaluation):
+    def __init__(
+        self,
+        routing_table: RoutingTable,
+    ) -> None:
+        logger.debug("Initializing EvaluationRouter")
+        self.routing_table = routing_table
+
+    async def initialize(self) -> None:
+        logger.debug("EvaluationRouter.initialize")
+        pass
+
+    async def shutdown(self) -> None:
+        logger.debug("EvaluationRouter.shutdown")
+        pass
+
+    async def register_benchmark(
+        self,
+        dataset_id: str,
+        grader_ids: List[str],
+        benchmark_id: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> Benchmark:
+        logger.debug(
+            f"EvaluationRouter.register_benchmark: {benchmark_id=} {dataset_id=} {grader_ids=} {metadata=}",
+        )
+        return await self.routing_table.register_benchmark(
+            benchmark_id=benchmark_id,
+            dataset_id=dataset_id,
+            grader_ids=grader_ids,
+            metadata=metadata,
+        )
+
+    async def run(
+        self,
+        task: EvaluationTask,
+        candidate: EvaluationCandidate,
+    ) -> EvaluationJob:
+        raise NotImplementedError("Run is not implemented yet")
+
+    async def run_sync(
+        self,
+        task: EvaluationTask,
+        candidate: EvaluationCandidate,
+    ) -> EvaluationResponse:
+        raise NotImplementedError("Run sync is not implemented yet")
+
+    async def grade(self, task: EvaluationTask) -> EvaluationJob:
+        raise NotImplementedError("Grade is not implemented yet")
+
+    async def grade_sync(self, task: EvaluationTask) -> EvaluationResponse:
+        raise NotImplementedError("Grade sync is not implemented yet")
