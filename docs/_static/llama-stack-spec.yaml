@@ -4557,28 +4557,9 @@ components:
           type: string
           const: equality
           default: equality
-        equality:
-          type: object
-          properties:
-            aggregation_functions:
-              type: array
-              items:
-                type: string
-                enum:
-                  - average
-                  - median
-                  - categorical_count
-                  - accuracy
-                title: AggregationFunctionType
-                description: A type of aggregation function.
-          additionalProperties: false
-          required:
-            - aggregation_functions
-          title: BasicGraderParams
       additionalProperties: false
       required:
         - type
-        - equality
       title: EqualityGrader
     FactualityGrader:
       type: object
@@ -4587,28 +4568,9 @@ components:
           type: string
           const: factuality
           default: factuality
-        factuality:
-          type: object
-          properties:
-            aggregation_functions:
-              type: array
-              items:
-                type: string
-                enum:
-                  - average
-                  - median
-                  - categorical_count
-                  - accuracy
-                title: AggregationFunctionType
-                description: A type of aggregation function.
-          additionalProperties: false
-          required:
-            - aggregation_functions
-          title: BasicGraderParams
       additionalProperties: false
       required:
         - type
-        - factuality
       title: FactualityGrader
     FaithfulnessGrader:
       type: object
@@ -4617,28 +4579,9 @@ components:
           type: string
           const: faithfulness
           default: faithfulness
-        faithfulness:
-          type: object
-          properties:
-            aggregation_functions:
-              type: array
-              items:
-                type: string
-                enum:
-                  - average
-                  - median
-                  - categorical_count
-                  - accuracy
-                title: AggregationFunctionType
-                description: A type of aggregation function.
-          additionalProperties: false
-          required:
-            - aggregation_functions
-          title: BasicGraderParams
       additionalProperties: false
       required:
         - type
-        - faithfulness
       title: FaithfulnessGrader
     Grader:
       type: object
@@ -4711,23 +4654,11 @@ components:
               type: array
               items:
                 type: string
-            aggregation_functions:
-              type: array
-              items:
-                type: string
-                enum:
-                  - average
-                  - median
-                  - categorical_count
-                  - accuracy
-                title: AggregationFunctionType
-                description: A type of aggregation function.
           additionalProperties: false
           required:
             - model
             - prompt
             - score_regexes
-            - aggregation_functions
           title: LlmGraderParams
       additionalProperties: false
       required:
@@ -4748,21 +4679,9 @@ components:
               type: array
               items:
                 type: string
-            aggregation_functions:
-              type: array
-              items:
-                type: string
-                enum:
-                  - average
-                  - median
-                  - categorical_count
-                  - accuracy
-                title: AggregationFunctionType
-                description: A type of aggregation function.
           additionalProperties: false
           required:
             - parsing_regexes
-            - aggregation_functions
           title: RegexParserGraderParams
       additionalProperties: false
       required:
@@ -4776,28 +4695,9 @@ components:
           type: string
           const: subset_of
           default: subset_of
-        subset_of:
-          type: object
-          properties:
-            aggregation_functions:
-              type: array
-              items:
-                type: string
-                enum:
-                  - average
-                  - median
-                  - categorical_count
-                  - accuracy
-                title: AggregationFunctionType
-                description: A type of aggregation function.
-          additionalProperties: false
-          required:
-            - aggregation_functions
-          title: BasicGraderParams
       additionalProperties: false
       required:
         - type
-        - subset_of
       title: SubsetOfGrader
     Model:
       type: object

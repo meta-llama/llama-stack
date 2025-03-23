@@ -6505,36 +6505,11 @@
                         "type": "string",
                         "const": "equality",
                         "default": "equality"
-                    },
-                    "equality": {
-                        "type": "object",
-                        "properties": {
-                            "aggregation_functions": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string",
-                                    "enum": [
-                                        "average",
-                                        "median",
-                                        "categorical_count",
-                                        "accuracy"
-                                    ],
-                                    "title": "AggregationFunctionType",
-                                    "description": "A type of aggregation function."
-                                }
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "aggregation_functions"
-                        ],
-                        "title": "BasicGraderParams"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "type",
-                    "equality"
+                    "type"
                 ],
                 "title": "EqualityGrader"
             },
@@ -6545,36 +6520,11 @@
                         "type": "string",
                         "const": "factuality",
                         "default": "factuality"
-                    },
-                    "factuality": {
-                        "type": "object",
-                        "properties": {
-                            "aggregation_functions": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string",
-                                    "enum": [
-                                        "average",
-                                        "median",
-                                        "categorical_count",
-                                        "accuracy"
-                                    ],
-                                    "title": "AggregationFunctionType",
-                                    "description": "A type of aggregation function."
-                                }
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "aggregation_functions"
-                        ],
-                        "title": "BasicGraderParams"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "type",
-                    "factuality"
+                    "type"
                 ],
                 "title": "FactualityGrader"
             },
@@ -6585,36 +6535,11 @@
                         "type": "string",
                         "const": "faithfulness",
                         "default": "faithfulness"
-                    },
-                    "faithfulness": {
-                        "type": "object",
-                        "properties": {
-                            "aggregation_functions": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string",
-                                    "enum": [
-                                        "average",
-                                        "median",
-                                        "categorical_count",
-                                        "accuracy"
-                                    ],
-                                    "title": "AggregationFunctionType",
-                                    "description": "A type of aggregation function."
-                                }
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "aggregation_functions"
-                        ],
-                        "title": "BasicGraderParams"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "type",
-                    "faithfulness"
+                    "type"
                 ],
                 "title": "FaithfulnessGrader"
             },
@@ -6733,28 +6658,13 @@
                                 "items": {
                                     "type": "string"
                                 }
-                            },
-                            "aggregation_functions": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string",
-                                    "enum": [
-                                        "average",
-                                        "median",
-                                        "categorical_count",
-                                        "accuracy"
-                                    ],
-                                    "title": "AggregationFunctionType",
-                                    "description": "A type of aggregation function."
-                                }
                             }
                         },
                         "additionalProperties": false,
                         "required": [
                             "model",
                             "prompt",
-                            "score_regexes",
-                            "aggregation_functions"
+                            "score_regexes"
                         ],
                         "title": "LlmGraderParams"
                     }
@@ -6782,26 +6692,11 @@
                                 "items": {
                                     "type": "string"
                                 }
-                            },
-                            "aggregation_functions": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string",
-                                    "enum": [
-                                        "average",
-                                        "median",
-                                        "categorical_count",
-                                        "accuracy"
-                                    ],
-                                    "title": "AggregationFunctionType",
-                                    "description": "A type of aggregation function."
-                                }
                             }
                         },
                         "additionalProperties": false,
                         "required": [
-                            "parsing_regexes",
-                            "aggregation_functions"
+                            "parsing_regexes"
                         ],
                         "title": "RegexParserGraderParams"
                     }
@@ -6820,36 +6715,11 @@
                         "type": "string",
                         "const": "subset_of",
                         "default": "subset_of"
-                    },
-                    "subset_of": {
-                        "type": "object",
-                        "properties": {
-                            "aggregation_functions": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string",
-                                    "enum": [
-                                        "average",
-                                        "median",
-                                        "categorical_count",
-                                        "accuracy"
-                                    ],
-                                    "title": "AggregationFunctionType",
-                                    "description": "A type of aggregation function."
-                                }
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "aggregation_functions"
-                        ],
-                        "title": "BasicGraderParams"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "type",
-                    "subset_of"
+                    "type"
                 ],
                 "title": "SubsetOfGrader"
             },
