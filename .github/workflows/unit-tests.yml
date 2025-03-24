@@ -15,6 +15,10 @@ on:
       - '.github/workflows/unit-tests.yml' # This workflow
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   unit-tests:
     runs-on: ubuntu-latest

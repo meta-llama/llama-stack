@@ -6,7 +6,7 @@
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Literal, Optional, Protocol
+from typing import Any, Dict, List, Literal, Optional, Protocol, Union
 
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
@@ -88,7 +88,7 @@ class QATFinetuningConfig(BaseModel):
     group_size: int
 
 
-AlgorithmConfig = Annotated[LoraFinetuningConfig | QATFinetuningConfig, Field(discriminator="type")]
+AlgorithmConfig = Annotated[Union[LoraFinetuningConfig, QATFinetuningConfig], Field(discriminator="type")]
 register_schema(AlgorithmConfig, name="AlgorithmConfig")
 
 
@@ -182,7 +182,7 @@ class PostTraining(Protocol):
             description="Model descriptor from `llama model list`",
         ),
         checkpoint_dir: Optional[str] = None,
-        algorithm_config: Optional[LoraFinetuningConfig | QATFinetuningConfig] = None,
+        algorithm_config: Optional[AlgorithmConfig] = None,
     ) -> PostTrainingJob: ...
 
     @webmethod(route="/post-training/preference-optimize", method="POST")

@@ -92,6 +92,7 @@ RUN apt-get update && apt-get install -y \
        procps psmisc lsof \
        traceroute \
        bubblewrap \
+       gcc \
        && rm -rf /var/lib/apt/lists/*
 
 ENV UV_SYSTEM_PYTHON=1

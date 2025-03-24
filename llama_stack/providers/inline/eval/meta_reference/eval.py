@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 import json
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from tqdm import tqdm
 
@@ -21,8 +21,8 @@ from llama_stack.providers.inline.agents.meta_reference.agent_instance import (
 from llama_stack.providers.utils.common.data_schema_validator import ColumnName
 from llama_stack.providers.utils.kvstore import kvstore_impl
 
-from .....apis.common.job_types import Job
-from .....apis.eval.eval import BenchmarkConfig, Eval, EvaluateResponse, JobStatus
+from .....apis.common.job_types import Job, JobStatus
+from .....apis.eval.eval import BenchmarkConfig, Eval, EvaluateResponse
 from .config import MetaReferenceEvalConfig
 
 EVAL_TASKS_PREFIX = "benchmarks:"
@@ -102,7 +102,7 @@ class MetaReferenceEvalImpl(
         # need job scheduler queue (ray/celery) w/ jobs api
         job_id = str(len(self.jobs))
         self.jobs[job_id] = res
-        return Job(job_id=job_id)
+        return Job(job_id=job_id, status=JobStatus.completed)
 
     async def _run_agent_generation(
         self, input_rows: List[Dict[str, Any]], benchmark_config: BenchmarkConfig
@@ -216,17 +216,18 @@ class MetaReferenceEvalImpl(
 
         return EvaluateResponse(generations=generations, scores=score_response.results)
 
-    async def job_status(self, benchmark_id: str, job_id: str) -> Optional[JobStatus]:
+    async def job_status(self, benchmark_id: str, job_id: str) -> Job:
         if job_id in self.jobs:
-            return JobStatus.completed
+            return Job(job_id=job_id, status=JobStatus.completed)
 
-        return None
+        raise ValueError(f"Job {job_id} not found")
 
     async def job_cancel(self, benchmark_id: str, job_id: str) -> None:
         raise NotImplementedError("Job cancel is not implemented yet")
 
     async def job_result(self, benchmark_id: str, job_id: str) -> EvaluateResponse:
-        status = await self.job_status(benchmark_id, job_id)
+        job = await self.job_status(benchmark_id, job_id)
+        status = job.status
         if not status or status != JobStatus.completed:
             raise ValueError(f"Job is not completed, Status: {status.value}")
 

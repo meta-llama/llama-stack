@@ -44,7 +44,7 @@ from llama_stack.providers.utils.telemetry.sqlite_trace_store import SQLiteTrace
 
 from .config import TelemetryConfig, TelemetrySink
 
-_GLOBAL_STORAGE = {
+_GLOBAL_STORAGE: dict[str, dict[str | int, Any]] = {
     "active_spans": {},
     "counters": {},
     "gauges": {},
@@ -54,30 +54,21 @@ _global_lock = threading.Lock()
 _TRACER_PROVIDER = None
 
 
-def string_to_trace_id(s: str) -> int:
-    # Convert the string to bytes and then to an integer
-    return int.from_bytes(s.encode(), byteorder="big", signed=False)
-
-
-def string_to_span_id(s: str) -> int:
-    # Use only the first 8 bytes (64 bits) for span ID
-    return int.from_bytes(s.encode()[:8], byteorder="big", signed=False)
-
-
 def is_tracing_enabled(tracer):
     with tracer.start_as_current_span("check_tracing") as span:
         return span.is_recording()
 
 
 class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
-    def __init__(self, config: TelemetryConfig, deps: Dict[str, Any]) -> None:
+    def __init__(self, config: TelemetryConfig, deps: Dict[Api, Any]) -> None:
         self.config = config
         self.datasetio_api = deps.get(Api.datasetio)
         self.meter = None
 
         resource = Resource.create(
             {
-                ResourceAttributes.SERVICE_NAME: self.config.service_name,
+                # service name is always the same, use zero-width space to avoid clutter
+                ResourceAttributes.SERVICE_NAME: "​",
             }
         )
 
@@ -91,15 +82,16 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
             provider = TracerProvider(resource=resource)
             trace.set_tracer_provider(provider)
             _TRACER_PROVIDER = provider
-            if TelemetrySink.OTEL in self.config.sinks:
-                otlp_exporter = OTLPSpanExporter(
-                    endpoint=self.config.otel_endpoint,
+            if TelemetrySink.OTEL_TRACE in self.config.sinks:
+                span_exporter = OTLPSpanExporter(
+                    endpoint=self.config.otel_trace_endpoint,
                 )
-                span_processor = BatchSpanProcessor(otlp_exporter)
+                span_processor = BatchSpanProcessor(span_exporter)
                 trace.get_tracer_provider().add_span_processor(span_processor)
+            if TelemetrySink.OTEL_METRIC in self.config.sinks:
                 metric_reader = PeriodicExportingMetricReader(
                     OTLPMetricExporter(
-                        endpoint=self.config.otel_endpoint,
+                        endpoint=self.config.otel_metric_endpoint,
                     )
                 )
                 metric_provider = MeterProvider(resource=resource, metric_readers=[metric_reader])
@@ -109,7 +101,7 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
             if TelemetrySink.CONSOLE in self.config.sinks:
                 trace.get_tracer_provider().add_span_processor(ConsoleSpanProcessor())
 
-        if TelemetrySink.OTEL in self.config.sinks:
+        if TelemetrySink.OTEL_METRIC in self.config.sinks:
             self.meter = metrics.get_meter(__name__)
         if TelemetrySink.SQLITE in self.config.sinks:
             self.trace_store = SQLiteTraceStore(self.config.sqlite_db_path)
@@ -135,7 +127,7 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
     def _log_unstructured(self, event: UnstructuredLogEvent, ttl_seconds: int) -> None:
         with self._lock:
             # Use global storage instead of instance storage
-            span_id = string_to_span_id(event.span_id)
+            span_id = event.span_id
             span = _GLOBAL_STORAGE["active_spans"].get(span_id)
 
             if span:
@@ -146,7 +138,7 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
                         "message": event.message,
                         "severity": event.severity.value,
                         "__ttl__": ttl_seconds,
-                        **event.attributes,
+                        **(event.attributes or {}),
                     },
                     timestamp=timestamp_ns,
                 )
@@ -154,6 +146,7 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
                 print(f"Warning: No active span found for span_id {span_id}. Dropping event: {event}")
 
     def _get_or_create_counter(self, name: str, unit: str) -> metrics.Counter:
+        assert self.meter is not None
         if name not in _GLOBAL_STORAGE["counters"]:
             _GLOBAL_STORAGE["counters"][name] = self.meter.create_counter(
                 name=name,
@@ -163,6 +156,7 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
         return _GLOBAL_STORAGE["counters"][name]
 
     def _get_or_create_gauge(self, name: str, unit: str) -> metrics.ObservableGauge:
+        assert self.meter is not None
         if name not in _GLOBAL_STORAGE["gauges"]:
             _GLOBAL_STORAGE["gauges"][name] = self.meter.create_gauge(
                 name=name,
@@ -182,6 +176,7 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
             up_down_counter.add(event.value, attributes=event.attributes)
 
     def _get_or_create_up_down_counter(self, name: str, unit: str) -> metrics.UpDownCounter:
+        assert self.meter is not None
         if name not in _GLOBAL_STORAGE["up_down_counters"]:
             _GLOBAL_STORAGE["up_down_counters"][name] = self.meter.create_up_down_counter(
                 name=name,
@@ -192,8 +187,7 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
 
     def _log_structured(self, event: StructuredLogEvent, ttl_seconds: int) -> None:
         with self._lock:
-            span_id = string_to_span_id(event.span_id)
-            trace_id = string_to_trace_id(event.trace_id)
+            span_id = int(event.span_id, 16)
             tracer = trace.get_tracer(__name__)
             if event.attributes is None:
                 event.attributes = {}
@@ -204,14 +198,23 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
                 if span_id in _GLOBAL_STORAGE["active_spans"]:
                     return
 
-                parent_span = None
+                context = None
                 if event.payload.parent_span_id:
-                    parent_span_id = string_to_span_id(event.payload.parent_span_id)
+                    parent_span_id = int(event.payload.parent_span_id, 16)
                     parent_span = _GLOBAL_STORAGE["active_spans"].get(parent_span_id)
-
-                context = trace.Context(trace_id=trace_id)
-                if parent_span:
-                    context = trace.set_span_in_context(parent_span, context)
+                    context = trace.set_span_in_context(parent_span)
+                else:
+                    context = trace.set_span_in_context(
+                        trace.NonRecordingSpan(
+                            trace.SpanContext(
+                                trace_id=int(event.trace_id, 16),
+                                span_id=span_id,
+                                is_remote=False,
+                                trace_flags=trace.TraceFlags(trace.TraceFlags.SAMPLED),
+                            )
+                        )
+                    )
+                    event.attributes["__root_span__"] = "true"
 
                 span = tracer.start_span(
                     name=event.payload.name,

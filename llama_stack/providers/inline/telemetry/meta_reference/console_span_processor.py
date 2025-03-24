@@ -101,6 +101,6 @@ class ConsoleSpanProcessor(SpanProcessor):
         """Shutdown the processor."""
         pass
 
-    def force_flush(self, timeout_millis: float = None) -> bool:
+    def force_flush(self, timeout_millis: float | None = None) -> bool:
         """Force flush any pending spans."""
         return True
