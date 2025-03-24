@@ -105,8 +105,11 @@ def test_text_completion_streaming(client_with_models, text_model_id, test_case)
         "inference:completion:stop_sequence",
     ],
 )
-def test_text_completion_stop_sequence(client_with_models, text_model_id, test_case):
+def test_text_completion_stop_sequence(client_with_models, text_model_id, inference_provider_type, test_case):
     skip_if_model_doesnt_support_completion(client_with_models, text_model_id)
+    # This is only supported/tested for remote vLLM: https://github.com/meta-llama/llama-stack/issues/1771
+    if inference_provider_type != "remote::vllm":
+        pytest.xfail(f"{inference_provider_type} doesn't support 'stop' parameter yet")
     tc = TestCase(test_case)
 
     response = client_with_models.inference.completion(
