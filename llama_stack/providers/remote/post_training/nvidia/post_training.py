@@ -14,7 +14,6 @@ from llama_stack.apis.post_training import (
     AlgorithmConfig,
     DPOAlignmentConfig,
     JobStatus,
-    LoraFinetuningConfig,
     PostTrainingJob,
     PostTrainingJobArtifactsResponse,
     PostTrainingJobStatusResponse,
@@ -393,14 +392,14 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
 
         # Handle LoRA-specific configuration
         if algorithm_config:
-            if isinstance(algorithm_config, LoraFinetuningConfig) and algorithm_config.type == "LoRA":
+            if isinstance(algorithm_config, dict) and algorithm_config.get("type") == "LoRA":
                 warn_unsupported_params(algorithm_config, supported_params["lora_config"], "LoRA config")
                 job_config["hyperparameters"]["lora"] = {
                     k: v
                     for k, v in {
-                        "adapter_dim": getattr(algorithm_config, "adapter_dim", None),
-                        "alpha": getattr(algorithm_config, "alpha", None),
-                        "adapter_dropout": getattr(algorithm_config, "adapter_dropout", None),
+                        "adapter_dim": algorithm_config.get("adapter_dim"),
+                        "alpha": algorithm_config.get("alpha"),
+                        "adapter_dropout": algorithm_config.get("adapter_dropout"),
                     }.items()
                     if v is not None
                 }

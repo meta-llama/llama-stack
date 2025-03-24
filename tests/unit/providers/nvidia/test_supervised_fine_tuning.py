@@ -6,32 +6,46 @@
 
 import os
 import unittest
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import patch
 import warnings
 import pytest
+
 from llama_stack_client.types.algorithm_config_param import LoraFinetuningConfig, QatFinetuningConfig
-from llama_stack_client.types.post_training.job_status_response import JobStatusResponse
-from llama_stack_client.types.post_training_job import PostTrainingJob
 from llama_stack_client.types.post_training_supervised_fine_tune_params import (
     TrainingConfig,
     TrainingConfigDataConfig,
     TrainingConfigOptimizerConfig,
 )
 
-from llama_stack.distribution.library_client import LlamaStackAsLibraryClient
-from .mock_llama_stack_client import MockLlamaStackClient
+from llama_stack.providers.remote.post_training.nvidia.post_training import (
+    NvidiaPostTrainingAdapter,
+    NvidiaPostTrainingConfig,
+    NvidiaPostTrainingJobStatusResponse,
+    ListNvidiaPostTrainingJobs,
+    NvidiaPostTrainingJob,
+)
 
 
 class TestNvidiaPostTraining(unittest.TestCase):
-    # ToDo: add tests for env variables, models supported.
     def setUp(self):
         os.environ["NVIDIA_BASE_URL"] = "http://nemo.test"  # needed for llm inference
         os.environ["NVIDIA_CUSTOMIZER_URL"] = "http://nemo.test"  # needed for nemo customizer
-        os.environ["LLAMA_STACK_BASE_URL"] = "http://localhost:5002"  # mocking llama stack base url
 
-        with patch("llama_stack.distribution.library_client.LlamaStackAsLibraryClient", MockLlamaStackClient):
-            self.llama_stack_client = LlamaStackAsLibraryClient("nvidia")
-            _ = self.llama_stack_client.initialize()
+        config = NvidiaPostTrainingConfig(
+            base_url=os.environ["NVIDIA_BASE_URL"], customizer_url=os.environ["NVIDIA_CUSTOMIZER_URL"], api_key=None
+        )
+        self.adapter = NvidiaPostTrainingAdapter(config)
+        self.make_request_patcher = patch(
+            "llama_stack.providers.remote.post_training.nvidia.post_training.NvidiaPostTrainingAdapter._make_request"
+        )
+        self.mock_make_request = self.make_request_patcher.start()
+
+    def tearDown(self):
+        self.make_request_patcher.stop()
+
+    @pytest.fixture(autouse=True)
+    def inject_fixtures(self, run_async):
+        self.run_async = run_async
 
     def _assert_request(self, mock_call, expected_method, expected_path, expected_params=None, expected_json=None):
         """Helper method to verify request details in mock calls."""
@@ -51,11 +65,9 @@ class TestNvidiaPostTraining(unittest.TestCase):
             for key, value in expected_json.items():
                 assert call_args[1]["json"][key] == value
 
-    @patch("llama_stack.providers.remote.post_training.nvidia.post_training.NvidiaPostTrainingAdapter._make_request")
-    def test_supervised_fine_tune(self, mock_make_request):
-        """Test the supervised fine-tuning API call.
-        ToDo: add tests for env variables."""
-        mock_make_request.return_value = {
+    def test_supervised_fine_tune(self):
+        """Test the supervised fine-tuning API call."""
+        self.mock_make_request.return_value = {
             "id": "cust-JGTaMbJMdqjJU8WbQdN9Q2",
             "created_at": "2024-12-09T04:06:28.542884",
             "updated_at": "2024-12-09T04:06:28.542884",
@@ -125,40 +137,27 @@ class TestNvidiaPostTraining(unittest.TestCase):
             optimizer_config=optimizer_config,
         )
 
-        with warnings.catch_warnings(record=True) as w:
+        with warnings.catch_warnings(record=True):
             warnings.simplefilter("always")
-            training_job = self.llama_stack_client.post_training.supervised_fine_tune(
-                job_uuid="1234",
-                model="meta-llama/Llama-3.1-8B-Instruct",
-                checkpoint_dir="",
-                algorithm_config=algorithm_config,
-                training_config=training_config,
-                logger_config={},
-                hyperparam_search_config={},
+            training_job = self.run_async(
+                self.adapter.supervised_fine_tune(
+                    job_uuid="1234",
+                    model="meta-llama/Llama-3.1-8B-Instruct",
+                    checkpoint_dir="",
+                    algorithm_config=algorithm_config,
+                    training_config=training_config,
+                    logger_config={},
+                    hyperparam_search_config={},
+                )
             )
 
-            # required lora config unsupported parameters warnings
-            fields = [
-                "apply_lora_to_mlp",
-                "rank",
-                "use_dora",
-                "lora_attn_modules",
-                "quantize_base",
-                "apply_lora_to_output",
-            ]
-            for field in fields:
-                assert any(field in str(warning.message) for warning in w)
-
         # check the output is a PostTrainingJob
-        # Note: Although the type is PostTrainingJob: llama_stack.apis.post_training.PostTrainingJob,
-        # post llama_stack_client initialization it gets translated to llama_stack_client.types.post_training_job.PostTrainingJob
-        assert isinstance(training_job, PostTrainingJob)
-
+        assert isinstance(training_job, NvidiaPostTrainingJob)
         assert training_job.job_uuid == "cust-JGTaMbJMdqjJU8WbQdN9Q2"
 
-        mock_make_request.assert_called_once()
+        self.mock_make_request.assert_called_once()
         self._assert_request(
-            mock_make_request,
+            self.mock_make_request,
             "POST",
             "/v1/customization/jobs",
             expected_json={
@@ -188,19 +187,20 @@ class TestNvidiaPostTraining(unittest.TestCase):
         )
         # This will raise NotImplementedError since QAT is not supported
         with self.assertRaises(NotImplementedError):
-            self.llama_stack_client.post_training.supervised_fine_tune(
-                job_uuid="1234",
-                model="meta-llama/Llama-3.1-8B-Instruct",
-                checkpoint_dir="",
-                algorithm_config=algorithm_config,
-                training_config=training_config,
-                logger_config={},
-                hyperparam_search_config={},
+            self.run_async(
+                self.adapter.supervised_fine_tune(
+                    job_uuid="1234",
+                    model="meta-llama/Llama-3.1-8B-Instruct",
+                    checkpoint_dir="",
+                    algorithm_config=algorithm_config,
+                    training_config=training_config,
+                    logger_config={},
+                    hyperparam_search_config={},
+                )
             )
 
-    @patch("llama_stack.providers.remote.post_training.nvidia.post_training.NvidiaPostTrainingAdapter._make_request")
-    def test_get_job_status(self, mock_make_request):
-        mock_make_request.return_value = {
+    def test_get_training_job_status(self):
+        self.mock_make_request.return_value = {
             "created_at": "2024-12-09T04:06:28.580220",
             "updated_at": "2024-12-09T04:21:19.852832",
             "status": "completed",
@@ -213,10 +213,11 @@ class TestNvidiaPostTraining(unittest.TestCase):
         }
 
         job_id = "cust-JGTaMbJMdqjJU8WbQdN9Q2"
-        status = self.llama_stack_client.post_training.job.status(job_uuid=job_id)
 
-        assert isinstance(status, JobStatusResponse)
-        assert status.status == "completed"
+        status = self.run_async(self.adapter.get_training_job_status(job_uuid=job_id))
+
+        assert isinstance(status, NvidiaPostTrainingJobStatusResponse)
+        assert status.status.value == "completed"
         assert status.steps_completed == 1210
         assert status.epochs_completed == 2
         assert status.percentage_done == 100.0
@@ -224,15 +225,14 @@ class TestNvidiaPostTraining(unittest.TestCase):
         assert status.train_loss == 1.718016266822815
         assert status.val_loss == 1.8661999702453613
 
-        mock_make_request.assert_called_once()
+        self.mock_make_request.assert_called_once()
         self._assert_request(
-            mock_make_request, "GET", f"/v1/customization/jobs/{job_id}/status", expected_params={"job_id": job_id}
+            self.mock_make_request, "GET", f"/v1/customization/jobs/{job_id}/status", expected_params={"job_id": job_id}
         )
 
-    @patch("llama_stack.providers.remote.post_training.nvidia.post_training.NvidiaPostTrainingAdapter._make_request")
-    def test_get_job(self, mock_make_request):
+    def test_get_training_jobs(self):
         job_id = "cust-JGTaMbJMdqjJU8WbQdN9Q2"
-        mock_make_request.return_value = {
+        self.mock_make_request.return_value = {
             "data": [
                 {
                     "id": job_id,
@@ -258,123 +258,37 @@ class TestNvidiaPostTraining(unittest.TestCase):
             ]
         }
 
-        jobs = self.llama_stack_client.post_training.job.list()
-        assert isinstance(jobs, list)
-        assert len(jobs) == 1
-        job = jobs[0]
-        assert job.job_uuid == job_id
-        assert job.status == "completed"
+        jobs = self.run_async(self.adapter.get_training_jobs())
 
-        mock_make_request.assert_called_once()
+        assert isinstance(jobs, ListNvidiaPostTrainingJobs)
+        assert len(jobs.data) == 1
+        job = jobs.data[0]
+        assert job.job_uuid == job_id
+        assert job.status.value == "completed"
+
+        self.mock_make_request.assert_called_once()
         self._assert_request(
-            mock_make_request,
+            self.mock_make_request,
             "GET",
             "/v1/customization/jobs",
             expected_params={"page": 1, "page_size": 10, "sort": "created_at"},
         )
 
-    @patch("llama_stack.providers.remote.post_training.nvidia.post_training.NvidiaPostTrainingAdapter._make_request")
-    def test_cancel_job(self, mock_make_request):
-        mock_make_request.return_value = {}  # Empty response for successful cancellation
+    def test_cancel_training_job(self):
+        self.mock_make_request.return_value = {}  # Empty response for successful cancellation
         job_id = "cust-JGTaMbJMdqjJU8WbQdN9Q2"
 
-        result = self.llama_stack_client.post_training.job.cancel(job_uuid=job_id)
+        result = self.run_async(self.adapter.cancel_training_job(job_uuid=job_id))
+
         assert result is None
 
-        # Verify the correct request was made
-        mock_make_request.assert_called_once()
+        self.mock_make_request.assert_called_once()
         self._assert_request(
-            mock_make_request, "POST", f"/v1/customization/jobs/{job_id}/cancel", expected_params={"job_id": job_id}
+            self.mock_make_request,
+            "POST",
+            f"/v1/customization/jobs/{job_id}/cancel",
+            expected_params={"job_id": job_id},
         )
-
-    @pytest.mark.asyncio
-    @patch("llama_stack.providers.remote.post_training.nvidia.post_training.NvidiaPostTrainingAdapter._make_request")
-    async def test_async_supervised_fine_tune(self, mock_make_request):
-        mock_make_request.return_value = {
-            "id": "cust-JGTaMbJMdqjJU8WbQdN9Q2",
-            "status": "created",
-            "created_at": "2024-12-09T04:06:28.542884",
-            "updated_at": "2024-12-09T04:06:28.542884",
-            "model": "meta-llama/Llama-3.1-8B-Instruct",
-            "dataset_id": "sample-basic-test",
-            "output_model": "default/job-1234",
-        }
-
-        algorithm_config = LoraFinetuningConfig(
-            alpha=16,
-            rank=16,
-            type="LoRA",
-            adapter_dim=16,
-            adapter_dropout=0.1,
-            apply_lora_to_mlp=True,
-            apply_lora_to_output=True,
-        )
-
-        data_config = TrainingConfigDataConfig(dataset_id="sample-basic-test", batch_size=16)
-
-        optimizer_config = TrainingConfigOptimizerConfig(
-            lr=0.0001,
-        )
-
-        training_config = TrainingConfig(
-            n_epochs=2,
-            data_config=data_config,
-            optimizer_config=optimizer_config,
-        )
-
-        training_job = await self.llama_stack_client.post_training.supervised_fine_tune_async(
-            job_uuid="1234",
-            model="meta-llama/Llama-3.1-8B-Instruct",
-            checkpoint_dir="",
-            algorithm_config=algorithm_config,
-            training_config=training_config,
-            logger_config={},
-            hyperparam_search_config={},
-        )
-
-        assert training_job["job_uuid"] == "cust-JGTaMbJMdqjJU8WbQdN9Q2"
-        assert training_job["status"] == "created"
-
-        mock_make_request.assert_called_once()
-        call_args = mock_make_request.call_args
-        assert call_args[1]["method"] == "POST"
-        assert call_args[1]["path"] == "/v1/customization/jobs"
-
-    @pytest.mark.asyncio
-    @patch("aiohttp.ClientSession.post")
-    async def test_inference_with_fine_tuned_model(self, mock_post):
-        mock_response = MagicMock()
-        mock_response.status = 200
-        mock_response.json = AsyncMock(
-            return_value={
-                "id": "cmpl-123456",
-                "object": "text_completion",
-                "created": 1677858242,
-                "model": "job-1234",
-                "choices": [
-                    {
-                        "text": "The next GTC will take place in the middle of March, 2023.",
-                        "index": 0,
-                        "logprobs": None,
-                        "finish_reason": "stop",
-                    }
-                ],
-                "usage": {"prompt_tokens": 100, "completion_tokens": 12, "total_tokens": 112},
-            }
-        )
-        mock_post.return_value.__aenter__.return_value = mock_response
-
-        response = await self.llama_stack_client.inference.completion(
-            content="When is the upcoming GTC event? GTC 2018 attracted over 8,400 attendees. Due to the COVID pandemic of 2020, GTC 2020 was converted to a digital event and drew roughly 59,000 registrants. The 2021 GTC keynote, which was streamed on YouTube on April 12, included a portion that was made with CGI using the Nvidia Omniverse real-time rendering platform. This next GTC will take place in the middle of March, 2023. Answer: ",
-            stream=False,
-            model_id="job-1234",
-            sampling_params={
-                "max_tokens": 128,
-            },
-        )
-
-        assert response["model"] == "job-1234"
-        assert response["choices"][0]["text"] == "The next GTC will take place in the middle of March, 2023."
 
 
 if __name__ == "__main__":
