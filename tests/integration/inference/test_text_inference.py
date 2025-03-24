@@ -199,8 +199,8 @@ def test_text_completion_structured_output(client_with_models, text_model_id, te
 
     class AnswerFormat(BaseModel):
         name: str
-        year_born: int
-        year_retired: int
+        year_born: str
+        year_retired: str
 
     tc = TestCase(test_case)
 
