@@ -8,9 +8,11 @@ from urllib.parse import parse_qs, urlparse
 
 import datasets as hf_datasets
 
-from llama_stack.apis.datasetio import DatasetIO, IterrowsResponse
+from llama_stack.apis.common.responses import PaginatedResponse
+from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Dataset
 from llama_stack.providers.datatypes import DatasetsProtocolPrivate
+from llama_stack.providers.utils.datasetio.pagination import paginate_records
 from llama_stack.providers.utils.kvstore import kvstore_impl
 
 from .config import HuggingfaceDatasetIOConfig
@@ -70,24 +72,13 @@ class HuggingfaceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
         dataset_id: str,
         start_index: Optional[int] = None,
         limit: Optional[int] = None,
-    ) -> IterrowsResponse:
+    ) -> PaginatedResponse:
         dataset_def = self.dataset_infos[dataset_id]
         path, params = parse_hf_params(dataset_def)
         loaded_dataset = hf_datasets.load_dataset(path, **params)
 
-        start_index = start_index or 0
-
-        if limit is None or limit == -1:
-            end = len(loaded_dataset)
-        else:
-            end = min(start_index + limit, len(loaded_dataset))
-
-        rows = [loaded_dataset[i] for i in range(start_index, end)]
-
-        return IterrowsResponse(
-            data=rows,
-            next_start_index=end if end < len(loaded_dataset) else None,
-        )
+        records = [loaded_dataset[i] for i in range(len(loaded_dataset))]
+        return paginate_records(records, start_index, limit)
 
     async def append_rows(self, dataset_id: str, rows: List[Dict[str, Any]]) -> None:
         dataset_def = self.dataset_infos[dataset_id]
