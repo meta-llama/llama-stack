@@ -1491,7 +1491,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/JobStatus'
+                $ref: '#/components/schemas/Job'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -5277,22 +5277,20 @@ components:
         - checkpoints
       title: PostTrainingJobArtifactsResponse
       description: Artifacts of a finetuning job.
-    JobStatus:
-      type: string
-      enum:
-        - completed
-        - in_progress
-        - failed
-        - scheduled
-        - cancelled
-      title: JobStatus
     PostTrainingJobStatusResponse:
       type: object
       properties:
         job_uuid:
           type: string
         status:
-          $ref: '#/components/schemas/JobStatus'
+          type: string
+          enum:
+            - completed
+            - in_progress
+            - failed
+            - scheduled
+            - cancelled
+          title: JobStatus
         scheduled_at:
           type: string
           format: date-time
@@ -5530,8 +5528,6 @@ components:
               - type: array
               - type: object
       additionalProperties: false
-      required:
-        - content
       title: ToolInvocationResult
     IterrowsResponse:
       type: object
@@ -5559,6 +5555,25 @@ components:
         - data
       title: IterrowsResponse
       description: A paginated list of rows from a dataset.
+    Job:
+      type: object
+      properties:
+        job_id:
+          type: string
+        status:
+          type: string
+          enum:
+            - completed
+            - in_progress
+            - failed
+            - scheduled
+            - cancelled
+          title: JobStatus
+      additionalProperties: false
+      required:
+        - job_id
+        - status
+      title: Job
     ListAgentSessionsResponse:
       type: object
       properties:
@@ -6553,15 +6568,6 @@ components:
       required:
         - benchmark_config
       title: RunEvalRequest
-    Job:
-      type: object
-      properties:
-        job_id:
-          type: string
-      additionalProperties: false
-      required:
-        - job_id
-      title: Job
     RunShieldRequest:
       type: object
       properties:
@@ -6690,6 +6696,15 @@ components:
       required:
         - results
       title: ScoreBatchResponse
+    AlgorithmConfig:
+      oneOf:
+        - $ref: '#/components/schemas/LoraFinetuningConfig'
+        - $ref: '#/components/schemas/QATFinetuningConfig'
+      discriminator:
+        propertyName: type
+        mapping:
+          LoRA: '#/components/schemas/LoraFinetuningConfig'
+          QAT: '#/components/schemas/QATFinetuningConfig'
     LoraFinetuningConfig:
       type: object
       properties:
@@ -6773,9 +6788,7 @@ components:
         checkpoint_dir:
           type: string
         algorithm_config:
-          oneOf:
-            - $ref: '#/components/schemas/LoraFinetuningConfig'
-            - $ref: '#/components/schemas/QATFinetuningConfig'
+          $ref: '#/components/schemas/AlgorithmConfig'
       additionalProperties: false
       required:
         - job_uuid

@@ -20,7 +20,7 @@ The `llamastack/distribution-cerebras` distribution consists of the following pr
 
 The following environment variables can be configured:
 
-- `LLAMA_STACK_PORT`: Port for the Llama Stack distribution server (default: `5001`)
+- `LLAMA_STACK_PORT`: Port for the Llama Stack distribution server (default: `8321`)
 - `CEREBRAS_API_KEY`: Cerebras API Key (default: ``)
 
 ### Models
@@ -45,9 +45,10 @@ You can do this via Conda (build code) or Docker which has a pre-built image.
 This method allows you to get started quickly without having to build the distribution code.
 
 ```bash
-LLAMA_STACK_PORT=5001
+LLAMA_STACK_PORT=8321
 docker run \
   -it \
+  --pull always \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ./run.yaml:/root/my-run.yaml \
   llamastack/distribution-cerebras \
@@ -61,6 +62,6 @@ docker run \
 ```bash
 llama stack build --template cerebras --image-type conda
 llama stack run ./run.yaml \
-  --port 5001 \
+  --port 8321 \
   --env CEREBRAS_API_KEY=$CEREBRAS_API_KEY
 ```

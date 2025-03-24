@@ -21,6 +21,7 @@ def get_distribution_template() -> DistributionTemplate:
         "agents": ["inline::meta-reference"],
         "telemetry": ["inline::meta-reference"],
         "eval": ["inline::meta-reference"],
+        "post_training": ["remote::nvidia"],
         "datasetio": ["inline::localfs"],
         "scoring": ["inline::basic"],
         "tool_runtime": ["inline::rag-runtime"],

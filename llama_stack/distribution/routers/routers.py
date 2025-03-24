@@ -14,13 +14,7 @@ from llama_stack.apis.common.content_types import (
 )
 from llama_stack.apis.datasetio import DatasetIO, IterrowsResponse
 from llama_stack.apis.datasets import DatasetPurpose, DataSource
-from llama_stack.apis.eval import (
-    BenchmarkConfig,
-    Eval,
-    EvaluateResponse,
-    Job,
-    JobStatus,
-)
+from llama_stack.apis.eval import BenchmarkConfig, Eval, EvaluateResponse, Job
 from llama_stack.apis.inference import (
     ChatCompletionResponse,
     ChatCompletionResponseEventType,
@@ -623,7 +617,7 @@ class EvalRouter(Eval):
         self,
         benchmark_id: str,
         job_id: str,
-    ) -> Optional[JobStatus]:
+    ) -> Job:
         logger.debug(f"EvalRouter.job_status: {benchmark_id}, {job_id}")
         return await self.routing_table.get_provider_impl(benchmark_id).job_status(benchmark_id, job_id)
 

@@ -32,6 +32,10 @@ from llama_stack.distribution.request_headers import (
     request_provider_data_context,
 )
 from llama_stack.distribution.resolver import InvalidProviderError
+from llama_stack.distribution.server.endpoints import (
+    find_matching_endpoint,
+    initialize_endpoint_impls,
+)
 from llama_stack.distribution.stack import (
     construct_stack,
     redact_sensitive_fields,
@@ -222,14 +226,30 @@ def create_dynamic_typed_route(func: Any, method: str, route: str):
 
 
 class TracingMiddleware:
-    def __init__(self, app):
+    def __init__(self, app, impls):
         self.app = app
+        self.impls = impls
 
     async def __call__(self, scope, receive, send):
-        path = scope.get("path", "")
-        await start_trace(path, {"__location__": "server"})
-        try:
+        if scope.get("type") == "lifespan":
             return await self.app(scope, receive, send)
+
+        path = scope.get("path", "")
+        if not hasattr(self, "endpoint_impls"):
+            self.endpoint_impls = initialize_endpoint_impls(self.impls)
+        _, _, trace_path = find_matching_endpoint(scope.get("method", "GET"), path, self.endpoint_impls)
+
+        trace_context = await start_trace(trace_path, {"__location__": "server", "raw_path": path})
+
+        async def send_with_trace_id(message):
+            if message["type"] == "http.response.start":
+                headers = message.get("headers", [])
+                headers.append([b"x-trace-id", str(trace_context.trace_id).encode()])
+                message["headers"] = headers
+            await send(message)
+
+        try:
+            return await self.app(scope, receive, send_with_trace_id)
         finally:
             await end_trace()
 
@@ -351,7 +371,6 @@ def main():
     logger.info(yaml.dump(safe_config, indent=2))
 
     app = FastAPI(lifespan=lifespan)
-    app.add_middleware(TracingMiddleware)
     if not os.environ.get("LLAMA_STACK_DISABLE_VERSION_CHECK"):
         app.add_middleware(ClientVersionMiddleware)
 
@@ -415,6 +434,7 @@ def main():
     app.exception_handler(Exception)(global_exception_handler)
 
     app.__llama_stack_impls__ = impls
+    app.add_middleware(TracingMiddleware, impls=impls)
 
     import uvicorn
 

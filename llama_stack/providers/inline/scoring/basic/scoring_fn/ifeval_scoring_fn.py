@@ -10,7 +10,6 @@ from llama_stack.apis.scoring import ScoringResultRow
 from llama_stack.apis.scoring_functions import ScoringFnParams
 from llama_stack.providers.utils.scoring.base_scoring_fn import RegisteredBaseScoringFn
 
-from ..utils.ifeval_utils import INSTRUCTION_DICT, INSTRUCTION_LIST
 from .fn_defs.ifeval import (
     ifeval,
 )
@@ -33,6 +32,8 @@ class IfEvalScoringFn(RegisteredBaseScoringFn):
         scoring_fn_identifier: Optional[str] = None,
         scoring_params: Optional[ScoringFnParams] = None,
     ) -> ScoringResultRow:
+        from ..utils.ifeval_utils import INSTRUCTION_DICT, INSTRUCTION_LIST
+
         assert scoring_fn_identifier is not None, "Scoring function identifier not found."
         fn_def = self.supported_fn_defs_registry[scoring_fn_identifier]
         if scoring_params is not None:

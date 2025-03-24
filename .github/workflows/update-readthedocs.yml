@@ -22,6 +22,10 @@ on:
       - 'pyproject.toml'
       - '.github/workflows/update-readthedocs.yml'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   update-readthedocs:
     runs-on: ubuntu-latest

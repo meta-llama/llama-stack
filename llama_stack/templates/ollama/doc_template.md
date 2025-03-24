@@ -60,9 +60,10 @@ Now you are ready to run Llama Stack with Ollama as the inference provider. You 
 This method allows you to get started quickly without having to build the distribution code.
 
 ```bash
-export LLAMA_STACK_PORT=5001
+export LLAMA_STACK_PORT=8321
 docker run \
   -it \
+  --pull always \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ~/.llama:/root/.llama \
   llamastack/distribution-{{ name }} \
@@ -80,6 +81,7 @@ cd /path/to/llama-stack
 
 docker run \
   -it \
+  --pull always \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ~/.llama:/root/.llama \
   -v ./llama_stack/templates/ollama/run-with-safety.yaml:/root/my-run.yaml \
@@ -96,7 +98,7 @@ docker run \
 Make sure you have done `uv pip install llama-stack` and have the Llama Stack CLI available.
 
 ```bash
-export LLAMA_STACK_PORT=5001
+export LLAMA_STACK_PORT=8321
 
 llama stack build --template {{ name }} --image-type conda
 llama stack run ./run.yaml \

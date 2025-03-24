@@ -27,7 +27,7 @@ The `llamastack/distribution-sambanova` distribution consists of the following p
 
 The following environment variables can be configured:
 
-- `LLAMASTACK_PORT`: Port for the Llama Stack distribution server (default: `5001`)
+- `LLAMASTACK_PORT`: Port for the Llama Stack distribution server (default: `8321`)
 - `SAMBANOVA_API_KEY`: SambaNova.AI API Key (default: ``)
 
 ### Models
@@ -59,9 +59,10 @@ You can do this via Conda (build code) or Docker which has a pre-built image.
 This method allows you to get started quickly without having to build the distribution code.
 
 ```bash
-LLAMA_STACK_PORT=5001
+LLAMA_STACK_PORT=8321
 docker run \
   -it \
+  --pull always \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   llamastack/distribution-sambanova \
   --port $LLAMA_STACK_PORT \

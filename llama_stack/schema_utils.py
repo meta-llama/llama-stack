@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 from dataclasses import dataclass
-from typing import Any, Callable, List, Optional, Protocol, TypeVar
+from typing import Any, Callable, List, Optional, TypeVar
 
 from .strong_typing.schema import json_schema_type, register_schema  # noqa: F401
 
@@ -18,13 +18,11 @@ class WebMethod:
     response_examples: Optional[List[Any]] = None
     method: Optional[str] = None
     raw_bytes_request_body: Optional[bool] = False
+    # A descriptive name of the corresponding span created by tracing
+    descriptive_name: Optional[str] = None
 
 
-class HasWebMethod(Protocol):
-    __webmethod__: WebMethod
-
-
-T = TypeVar("T", bound=HasWebMethod)  # Bound T to classes that match this protocol
+T = TypeVar("T", bound=Callable[..., Any])
 
 
 def webmethod(
@@ -34,6 +32,7 @@ def webmethod(
     request_examples: Optional[List[Any]] = None,
     response_examples: Optional[List[Any]] = None,
     raw_bytes_request_body: Optional[bool] = False,
+    descriptive_name: Optional[str] = None,
 ) -> Callable[[T], T]:
     """
     Decorator that supplies additional metadata to an endpoint operation function.
@@ -44,15 +43,16 @@ def webmethod(
     :param response_examples: Sample responses that the operation might produce. Pass a list of objects, not JSON.
     """
 
-    def wrap(cls: T) -> T:
-        cls.__webmethod__ = WebMethod(
+    def wrap(func: T) -> T:
+        func.__webmethod__ = WebMethod(  # type: ignore
             route=route,
             method=method,
             public=public or False,
             request_examples=request_examples,
             response_examples=response_examples,
             raw_bytes_request_body=raw_bytes_request_body,
+            descriptive_name=descriptive_name,
         )
-        return cls
+        return func
 
     return wrap
