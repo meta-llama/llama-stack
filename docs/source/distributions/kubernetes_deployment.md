@@ -8,7 +8,7 @@ First, create a local Kubernetes cluster via Kind:
 kind create cluster --image kindest/node:v1.32.0 --name llama-stack-test
 ```
 
-Start vLLM server as a Kubernetes Pod and Service:
+First, create a Kubernetes PVC and Secret for downloading and storing Hugging Face model:
 
 ```bash
 cat <<EOF |kubectl apply -f -
@@ -31,7 +31,12 @@ metadata:
 type: Opaque
 data:
   token: $(HF_TOKEN)
----
+```
+
+Next, start the vLLM server as a Kubernetes Deployment and Service:
+
+```bash
+cat <<EOF |kubectl apply -f -
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -47,28 +52,23 @@ spec:
         app.kubernetes.io/name: vllm
     spec:
       containers:
-      - name: llama-stack
-        image: $(VLLM_IMAGE)
-        command:
-            - bash
-            - -c
-            - |
-              MODEL="meta-llama/Llama-3.2-1B-Instruct"
-              MODEL_PATH=/app/model/$(basename $MODEL)
-              huggingface-cli login --token $HUGGING_FACE_HUB_TOKEN
-              huggingface-cli download $MODEL --local-dir $MODEL_PATH --cache-dir $MODEL_PATH
-              python3 -m vllm.entrypoints.openai.api_server --model $MODEL_PATH --served-model-name $MODEL --port 8000
+      - name: vllm
+        image: vllm/vllm-openai:latest
+        command: ["/bin/sh", "-c"]
+        args: [
+          "vllm serve meta-llama/Llama-3.2-1B-Instruct"
+        ]
+        env:
+        - name: HUGGING_FACE_HUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: hf-token-secret
+              key: token
         ports:
           - containerPort: 8000
         volumeMounts:
           - name: llama-storage
-            mountPath: /app/model
-        env:
-          - name: HUGGING_FACE_HUB_TOKEN
-            valueFrom:
-              secretKeyRef:
-                name: hf-token-secret
-                key: token
+            mountPath: /root/.cache/huggingface
       volumes:
       - name: llama-storage
         persistentVolumeClaim:
