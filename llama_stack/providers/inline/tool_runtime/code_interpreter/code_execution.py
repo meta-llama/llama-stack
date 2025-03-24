@@ -161,9 +161,9 @@ _set_seeds()\
 def process_matplotlib_response(response, matplotlib_dump_dir: str):
     image_data = response["image_data"]
     # Convert the base64 string to a bytes object
-    images = [base64.b64decode(d["image_base64"]) for d in image_data]
+    images_raw = [base64.b64decode(d["image_base64"]) for d in image_data]
     # Create a list of PIL images from the bytes objects
-    images = [Image.open(BytesIO(img)) for img in images]
+    images = [Image.open(BytesIO(img)) for img in images_raw]
     # Create a list of image paths
     image_paths = []
     for i, img in enumerate(images):

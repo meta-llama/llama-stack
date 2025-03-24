@@ -90,6 +90,7 @@ RUN apt-get update && apt-get install -y \
        procps psmisc lsof \
        traceroute \
        bubblewrap \
+       gcc \
        && rm -rf /var/lib/apt/lists/*
 
 ENV UV_SYSTEM_PYTHON=1
@@ -235,7 +236,7 @@ image_tag="$image_name:$version_tag"
 # Detect platform architecture
 ARCH=$(uname -m)
 if [ -n "$BUILD_PLATFORM" ]; then
-  CLI_ARGS+=("--platform $BUILD_PLATFORM")
+  CLI_ARGS+=("--platform" "$BUILD_PLATFORM")
 elif [ "$ARCH" = "arm64" ] || [ "$ARCH" = "aarch64" ]; then
   CLI_ARGS+=("--platform" "linux/arm64")
 elif [ "$ARCH" = "x86_64" ]; then

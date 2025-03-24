@@ -36,6 +36,7 @@ class ScoringFnParamsType(Enum):
 @json_schema_type
 class AggregationFunctionType(Enum):
     average = "average"
+    weighted_average = "weighted_average"
     median = "median"
     categorical_count = "categorical_count"
     accuracy = "accuracy"
@@ -78,17 +79,15 @@ class BasicScoringFnParams(BaseModel):
     )
 
 
-ScoringFnParams = register_schema(
-    Annotated[
-        Union[
-            LLMAsJudgeScoringFnParams,
-            RegexParserScoringFnParams,
-            BasicScoringFnParams,
-        ],
-        Field(discriminator="type"),
+ScoringFnParams = Annotated[
+    Union[
+        LLMAsJudgeScoringFnParams,
+        RegexParserScoringFnParams,
+        BasicScoringFnParams,
     ],
-    name="ScoringFnParams",
-)
+    Field(discriminator="type"),
+]
+register_schema(ScoringFnParams, name="ScoringFnParams")
 
 
 class CommonScoringFnFields(BaseModel):

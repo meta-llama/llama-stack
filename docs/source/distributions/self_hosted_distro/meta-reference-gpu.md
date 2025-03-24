@@ -32,7 +32,7 @@ Note that you need access to nvidia GPUs to run this distribution. This distribu
 
 The following environment variables can be configured:
 
-- `LLAMA_STACK_PORT`: Port for the Llama Stack distribution server (default: `5001`)
+- `LLAMA_STACK_PORT`: Port for the Llama Stack distribution server (default: `8321`)
 - `INFERENCE_MODEL`: Inference model loaded into the Meta Reference server (default: `meta-llama/Llama-3.2-3B-Instruct`)
 - `INFERENCE_CHECKPOINT_DIR`: Directory containing the Meta Reference model checkpoint (default: `null`)
 - `SAFETY_MODEL`: Name of the safety (Llama-Guard) model to use (default: `meta-llama/Llama-Guard-3-1B`)
@@ -77,9 +77,10 @@ You can do this via Conda (build code) or Docker which has a pre-built image.
 This method allows you to get started quickly without having to build the distribution code.
 
 ```bash
-LLAMA_STACK_PORT=5001
+LLAMA_STACK_PORT=8321
 docker run \
   -it \
+  --pull always \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ~/.llama:/root/.llama \
   llamastack/distribution-meta-reference-gpu \
@@ -92,6 +93,7 @@ If you are using Llama Stack Safety / Shield APIs, use:
 ```bash
 docker run \
   -it \
+  --pull always \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ~/.llama:/root/.llama \
   llamastack/distribution-meta-reference-gpu \
@@ -107,7 +109,7 @@ Make sure you have done `uv pip install llama-stack` and have the Llama Stack CL
 ```bash
 llama stack build --template meta-reference-gpu --image-type conda
 llama stack run distributions/meta-reference-gpu/run.yaml \
-  --port 5001 \
+  --port 8321 \
   --env INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct
 ```
 
@@ -115,7 +117,7 @@ If you are using Llama Stack Safety / Shield APIs, use:
 
 ```bash
 llama stack run distributions/meta-reference-gpu/run-with-safety.yaml \
-  --port 5001 \
+  --port 8321 \
   --env INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct \
   --env SAFETY_MODEL=meta-llama/Llama-Guard-3-1B
 ```

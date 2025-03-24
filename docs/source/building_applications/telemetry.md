@@ -57,7 +57,7 @@ The `otel` sink works with any service compatible with the OpenTelemetry collect
 Start a Jaeger instance with the OTLP HTTP endpoint at 4318 and the Jaeger UI at 16686 using the following command:
 
 ```bash
-$ docker run --rm --name jaeger \
+$ docker run --pull always --rm --name jaeger \
   -p 16686:16686 -p 4318:4318 \
   jaegertracing/jaeger:2.1.0
 ```

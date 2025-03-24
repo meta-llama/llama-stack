@@ -21,7 +21,7 @@ def available_providers() -> List[ProviderSpec]:
             api=Api.safety,
             provider_type="inline::prompt-guard",
             pip_packages=[
-                "transformers",
+                "transformers[accelerate]",
                 "torch --index-url https://download.pytorch.org/whl/cpu",
             ],
             module="llama_stack.providers.inline.safety.prompt_guard",

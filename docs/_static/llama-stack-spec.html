@@ -2183,7 +2183,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/JobStatus"
+                                    "$ref": "#/components/schemas/Job"
                                 }
                             }
                         }
@@ -2650,7 +2650,7 @@
                     }
                 },
                 "tags": [
-                    "Inspect"
+                    "Providers"
                 ],
                 "description": "",
                 "parameters": []
@@ -6268,6 +6268,7 @@
                 "type": "string",
                 "enum": [
                     "average",
+                    "weighted_average",
                     "median",
                     "categorical_count",
                     "accuracy"
@@ -7647,16 +7648,6 @@
                 "title": "PostTrainingJobArtifactsResponse",
                 "description": "Artifacts of a finetuning job."
             },
-            "JobStatus": {
-                "type": "string",
-                "enum": [
-                    "completed",
-                    "in_progress",
-                    "failed",
-                    "scheduled"
-                ],
-                "title": "JobStatus"
-            },
             "PostTrainingJobStatusResponse": {
                 "type": "object",
                 "properties": {
@@ -7664,7 +7655,14 @@
                         "type": "string"
                     },
                     "status": {
-                        "$ref": "#/components/schemas/JobStatus"
+                        "type": "string",
+                        "enum": [
+                            "completed",
+                            "in_progress",
+                            "failed",
+                            "scheduled"
+                        ],
+                        "title": "JobStatus"
                     },
                     "scheduled_at": {
                         "type": "string",
@@ -8068,9 +8066,6 @@
                     }
                 },
                 "additionalProperties": false,
-                "required": [
-                    "content"
-                ],
                 "title": "ToolInvocationResult"
             },
             "IterrowsResponse": {
@@ -8116,6 +8111,30 @@
                 ],
                 "title": "IterrowsResponse",
                 "description": "A paginated list of rows from a dataset."
+            },
+            "Job": {
+                "type": "object",
+                "properties": {
+                    "job_id": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "completed",
+                            "in_progress",
+                            "failed",
+                            "scheduled"
+                        ],
+                        "title": "JobStatus"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "job_id",
+                    "status"
+                ],
+                "title": "Job"
             },
             "ListAgentSessionsResponse": {
                 "type": "object",
@@ -9641,19 +9660,6 @@
                 ],
                 "title": "RunEvalRequest"
             },
-            "Job": {
-                "type": "object",
-                "properties": {
-                    "job_id": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "job_id"
-                ],
-                "title": "Job"
-            },
             "RunShieldRequest": {
                 "type": "object",
                 "properties": {
@@ -9862,6 +9868,23 @@
                 ],
                 "title": "ScoreBatchResponse"
             },
+            "AlgorithmConfig": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/LoraFinetuningConfig"
+                    },
+                    {
+                        "$ref": "#/components/schemas/QATFinetuningConfig"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "LoRA": "#/components/schemas/LoraFinetuningConfig",
+                        "QAT": "#/components/schemas/QATFinetuningConfig"
+                    }
+                }
+            },
             "LoraFinetuningConfig": {
                 "type": "object",
                 "properties": {
@@ -9997,14 +10020,7 @@
                         "type": "string"
                     },
                     "algorithm_config": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/LoraFinetuningConfig"
-                            },
-                            {
-                                "$ref": "#/components/schemas/QATFinetuningConfig"
-                            }
-                        ]
+                        "$ref": "#/components/schemas/AlgorithmConfig"
                     }
                 },
                 "additionalProperties": false,

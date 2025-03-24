@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 
 from opentelemetry.sdk.trace import SpanProcessor
 from opentelemetry.trace import Span
+from opentelemetry.trace.span import format_span_id, format_trace_id
 
 
 class SQLiteSpanProcessor(SpanProcessor):
@@ -100,14 +101,14 @@ class SQLiteSpanProcessor(SpanProcessor):
             conn = self._get_connection()
             cursor = conn.cursor()
 
-            trace_id = format(span.get_span_context().trace_id, "032x")
-            span_id = format(span.get_span_context().span_id, "016x")
+            trace_id = format_trace_id(span.get_span_context().trace_id)
+            span_id = format_span_id(span.get_span_context().span_id)
             service_name = span.resource.attributes.get("service.name", "unknown")
 
             parent_span_id = None
             parent_context = span.parent
             if parent_context:
-                parent_span_id = format(parent_context.span_id, "016x")
+                parent_span_id = format_span_id(parent_context.span_id)
 
             # Insert into traces
             cursor.execute(
@@ -123,7 +124,7 @@ class SQLiteSpanProcessor(SpanProcessor):
                 (
                     trace_id,
                     service_name,
-                    (span_id if not parent_span_id else None),
+                    (span_id if span.attributes.get("__root_span__") == "true" else None),
                     datetime.fromtimestamp(span.start_time / 1e9, timezone.utc).isoformat(),
                     datetime.fromtimestamp(span.end_time / 1e9, timezone.utc).isoformat(),
                 ),

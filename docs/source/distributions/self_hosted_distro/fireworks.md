@@ -30,7 +30,7 @@ The `llamastack/distribution-fireworks` distribution consists of the following p
 
 The following environment variables can be configured:
 
-- `LLAMA_STACK_PORT`: Port for the Llama Stack distribution server (default: `5001`)
+- `LLAMA_STACK_PORT`: Port for the Llama Stack distribution server (default: `8321`)
 - `FIREWORKS_API_KEY`: Fireworks.AI API Key (default: ``)
 
 ### Models
@@ -63,9 +63,10 @@ You can do this via Conda (build code) or Docker which has a pre-built image.
 This method allows you to get started quickly without having to build the distribution code.
 
 ```bash
-LLAMA_STACK_PORT=5001
+LLAMA_STACK_PORT=8321
 docker run \
   -it \
+  --pull always \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   llamastack/distribution-fireworks \
   --port $LLAMA_STACK_PORT \

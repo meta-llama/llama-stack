@@ -69,7 +69,7 @@ def popen_not_allowed(*args, **kwargs):
     )
 
 
-_subprocess.Popen = popen_not_allowed
+_subprocess.Popen = popen_not_allowed  # type: ignore
 
 
 import atexit as _atexit
@@ -104,7 +104,7 @@ def _open_connections():
     return _NETWORK_CONNECTIONS
 
 
-_builtins._open_connections = _open_connections
+_builtins._open_connections = _open_connections  # type: ignore
 
 
 @_atexit.register

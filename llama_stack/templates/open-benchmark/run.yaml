@@ -68,7 +68,6 @@ providers:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
     config:
-      service_name: ${env.OTEL_SERVICE_NAME:llama-stack}
       sinks: ${env.TELEMETRY_SINKS:console,sqlite}
       sqlite_db_path: ${env.SQLITE_DB_PATH:~/.llama/distributions/open-benchmark/trace_store.db}
   eval:
@@ -188,6 +187,18 @@ datasets:
     uri: huggingface://datasets/llamastack/bfcl_v3?split=train
   metadata: {}
   dataset_id: bfcl
+- purpose: eval/messages-answer
+  source:
+    type: uri
+    uri: huggingface://datasets/llamastack/IfEval?split=train
+  metadata: {}
+  dataset_id: ifeval
+- purpose: eval/messages-answer
+  source:
+    type: uri
+    uri: huggingface://datasets/llamastack/docvqa?split=val
+  metadata: {}
+  dataset_id: docvqa
 scoring_fns: []
 benchmarks:
 - dataset_id: simpleqa
@@ -215,6 +226,16 @@ benchmarks:
   - basic::bfcl
   metadata: {}
   benchmark_id: meta-reference-bfcl
+- dataset_id: ifeval
+  scoring_functions:
+  - basic::ifeval
+  metadata: {}
+  benchmark_id: meta-reference-ifeval
+- dataset_id: docvqa
+  scoring_functions:
+  - basic::docvqa
+  metadata: {}
+  benchmark_id: meta-reference-docvqa
 tool_groups:
 - toolgroup_id: builtin::websearch
   provider_id: tavily-search
