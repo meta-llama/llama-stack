@@ -85,8 +85,6 @@ FROM $container_base
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y \
-       gcc \
-       g++ \
        iputils-ping net-tools iproute2 dnsutils telnet \
        curl wget telnet \
        procps psmisc lsof \
