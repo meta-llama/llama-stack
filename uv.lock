@@ -1,4 +1,5 @@
 version = 1
+revision = 1
 requires-python = ">=3.10"
 resolution-markers = [
     "(python_full_version < '3.11' and platform_machine != 'aarch64' and sys_platform == 'linux') or (python_full_version < '3.11' and sys_platform != 'darwin' and sys_platform != 'linux')",
@@ -674,6 +675,19 @@ wheels = [
 ]
 
 [[package]]
+name = "fastapi-pagination"
+version = "0.12.34"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pydantic" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/83/4d/6e695098ce33b3394cf26b335ca4ec6407f9421cfdf9ad6a38775580db21/fastapi_pagination-0.12.34.tar.gz", hash = "sha256:05ee8c0bc572072160f7f30900bfd87869e1880c87bc5797922fec2e49e65f11", size = 26901 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/72/f3/a0a1e7efd88dba07743665d1f6f88008c9a1e174458581ecaa53b8699a7c/fastapi_pagination-0.12.34-py3-none-any.whl", hash = "sha256:089d1078aae1784395b4dbd923d0c8246641ddcc291c5ec6d92a30edb92ecbdd", size = 43308 },
+]
+
+[[package]]
 name = "fastjsonschema"
 version = "2.21.1"
 source = { registry = "https://pypi.org/simple" }
@@ -1319,6 +1333,7 @@ version = "0.1.8"
 source = { editable = "." }
 dependencies = [
     { name = "blobfile" },
+    { name = "fastapi-pagination" },
     { name = "fire" },
     { name = "httpx" },
     { name = "huggingface-hub" },
@@ -1404,6 +1419,7 @@ requires-dist = [
     { name = "chardet", marker = "extra == 'unit'" },
     { name = "datasets", marker = "extra == 'test'" },
     { name = "fastapi", marker = "extra == 'dev'" },
+    { name = "fastapi-pagination" },
     { name = "fire" },
     { name = "httpx" },
     { name = "huggingface-hub" },
@@ -1455,6 +1471,7 @@ requires-dist = [
     { name = "types-setuptools", marker = "extra == 'dev'" },
     { name = "uvicorn", marker = "extra == 'dev'" },
 ]
+provides-extras = ["dev", "unit", "test", "docs", "codegen"]
 
 [[package]]
 name = "llama-stack-client"

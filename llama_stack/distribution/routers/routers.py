@@ -12,7 +12,8 @@ from llama_stack.apis.common.content_types import (
     InterleavedContent,
     InterleavedContentItem,
 )
-from llama_stack.apis.datasetio import DatasetIO, IterrowsResponse
+from llama_stack.apis.common.responses import PaginatedResponse
+from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import DatasetPurpose, DataSource
 from llama_stack.apis.eval import BenchmarkConfig, Eval, EvaluateResponse, Job
 from llama_stack.apis.inference import (
@@ -497,7 +498,7 @@ class DatasetIORouter(DatasetIO):
         dataset_id: str,
         start_index: Optional[int] = None,
         limit: Optional[int] = None,
-    ) -> IterrowsResponse:
+    ) -> PaginatedResponse:
         logger.debug(
             f"DatasetIORouter.iterrows: {dataset_id}, {start_index=} {limit=}",
         )
