@@ -12,7 +12,7 @@ import pytest
 
 from llama_stack.apis.models import ModelType
 from llama_stack.distribution.datatypes import ModelWithACL
-from llama_stack.distribution.server.auth import AccessAttributes
+from llama_stack.distribution.server.auth_providers import AccessAttributes
 from llama_stack.distribution.store.registry import CachedDiskDistributionRegistry
 from llama_stack.providers.utils.kvstore.config import SqliteKVStoreConfig
 from llama_stack.providers.utils.kvstore.sqlite import SqliteKVStoreImpl
