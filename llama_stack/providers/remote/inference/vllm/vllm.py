@@ -245,7 +245,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
-    ) -> CompletionResponse | AsyncGenerator[CompletionResponseStreamChunk]:
+    ) -> CompletionResponse | AsyncGenerator[CompletionResponseStreamChunk, None]:
         assert self.model_store is not None
         if sampling_params is None:
             sampling_params = SamplingParams()
@@ -275,7 +275,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
         tool_config: Optional[ToolConfig] = None,
-    ) -> ChatCompletionResponse | AsyncGenerator[ChatCompletionResponseStreamChunk]:
+    ) -> ChatCompletionResponse | AsyncGenerator[ChatCompletionResponseStreamChunk, None]:
         assert self.model_store is not None
         if sampling_params is None:
             sampling_params = SamplingParams()
@@ -319,7 +319,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
 
     async def _stream_chat_completion(
         self, request: ChatCompletionRequest, client: AsyncOpenAI
-    ) -> AsyncGenerator[ChatCompletionResponseStreamChunk]:
+    ) -> AsyncGenerator[ChatCompletionResponseStreamChunk, None]:
         params = await self._get_params(request)
 
         stream = await client.chat.completions.create(**params)
@@ -336,7 +336,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         r = await self.client.completions.create(**params)
         return process_completion_response(r)
 
-    async def _stream_completion(self, request: CompletionRequest) -> AsyncGenerator[CompletionResponseStreamChunk]:
+    async def _stream_completion(self, request: CompletionRequest) -> AsyncGenerator[CompletionResponseStreamChunk, None]:
         assert self.client is not None
         params = await self._get_params(request)
 
