@@ -37,6 +37,7 @@ dependencies = [
     "termcolor",
     "tiktoken",
     "pillow",
+    "kubernetes",
 ]
 
 [project.optional-dependencies]
