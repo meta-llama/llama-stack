@@ -431,7 +431,7 @@ class Inference(Protocol):
     - Embedding models: these models generate embeddings to be used for semantic search.
     """
 
-    model_store: ModelStore
+    model_store: ModelStore | None = None
 
     @webmethod(route="/inference/completion", method="POST")
     async def completion(

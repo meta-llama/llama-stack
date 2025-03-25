@@ -253,7 +253,6 @@ exclude = [
     "^llama_stack/providers/remote/inference/sample/",
     "^llama_stack/providers/remote/inference/tgi/",
     "^llama_stack/providers/remote/inference/together/",
-    "^llama_stack/providers/remote/inference/vllm/",
     "^llama_stack/providers/remote/safety/bedrock/",
     "^llama_stack/providers/remote/safety/nvidia/",
     "^llama_stack/providers/remote/safety/sample/",

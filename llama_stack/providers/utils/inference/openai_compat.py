@@ -137,7 +137,10 @@ def get_sampling_strategy_options(params: SamplingParams) -> dict:
     return options
 
 
-def get_sampling_options(params: SamplingParams) -> dict:
+def get_sampling_options(params: SamplingParams | None) -> dict:
+    if not params:
+        return {}
+
     options = {}
     if params:
         options.update(get_sampling_strategy_options(params))
