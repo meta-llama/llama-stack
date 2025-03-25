@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Literal, Optional, Protocol, Union
 
@@ -12,8 +11,7 @@ from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
 from llama_stack.apis.common.content_types import URL
-from llama_stack.apis.common.job_types import JobStatus
-from llama_stack.apis.common.training_types import Checkpoint
+from llama_stack.apis.common.job_types import BaseJob
 from llama_stack.schema_utils import json_schema_type, register_schema, webmethod
 
 
@@ -93,14 +91,6 @@ register_schema(AlgorithmConfig, name="AlgorithmConfig")
 
 
 @json_schema_type
-class PostTrainingJobLogStream(BaseModel):
-    """Stream of logs from a finetuning job."""
-
-    job_uuid: str
-    log_lines: List[str]
-
-
-@json_schema_type
 class RLHFAlgorithm(Enum):
     dpo = "dpo"
 
@@ -135,41 +125,17 @@ class PostTrainingRLHFRequest(BaseModel):
     logger_config: Dict[str, Any]
 
 
-class PostTrainingJob(BaseModel):
-    job_uuid: str
-
-
 @json_schema_type
-class PostTrainingJobStatusResponse(BaseModel):
-    """Status of a finetuning job."""
-
-    job_uuid: str
-    status: JobStatus
-
-    scheduled_at: Optional[datetime] = None
-    started_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
-
-    resources_allocated: Optional[Dict[str, Any]] = None
-
-    checkpoints: List[Checkpoint] = Field(default_factory=list)
+class PostTrainingJob(BaseJob, BaseModel):
+    type: Literal["post-training"] = "post-training"
 
 
 class ListPostTrainingJobsResponse(BaseModel):
-    data: List[PostTrainingJob]
-
-
-@json_schema_type
-class PostTrainingJobArtifactsResponse(BaseModel):
-    """Artifacts of a finetuning job."""
-
-    job_uuid: str
-    checkpoints: List[Checkpoint] = Field(default_factory=list)
-
-    # TODO(ashwin): metrics, evals
+    data: list[PostTrainingJob]
 
 
 class PostTraining(Protocol):
+    # This is how you create a new job - POST against the root endpoint
     @webmethod(route="/post-training/supervised-fine-tune", method="POST")
     async def supervised_fine_tune(
         self,
@@ -196,14 +162,20 @@ class PostTraining(Protocol):
         logger_config: Dict[str, Any],
     ) -> PostTrainingJob: ...
 
+    # CRUD operations on running jobs
+    @webmethod(route="/post-training/jobs/{job_id:path}", method="GET")
+    async def get_post_training_job(self, job_id: str) -> PostTrainingJob: ...
+
     @webmethod(route="/post-training/jobs", method="GET")
-    async def get_training_jobs(self) -> ListPostTrainingJobsResponse: ...
+    async def list_post_training_jobs(self) -> ListPostTrainingJobsResponse: ...
 
-    @webmethod(route="/post-training/job/status", method="GET")
-    async def get_training_job_status(self, job_uuid: str) -> PostTrainingJobStatusResponse: ...
+    @webmethod(route="/post-training/jobs/{job_id:path}", method="POST")
+    async def update_post_training_job(self, job: PostTrainingJob) -> PostTrainingJob: ...
 
-    @webmethod(route="/post-training/job/cancel", method="POST")
-    async def cancel_training_job(self, job_uuid: str) -> None: ...
+    @webmethod(route="/post-training/job/{job_id:path}", method="DELETE")
+    async def delete_post_training_job(self, job_id: str) -> None: ...
 
-    @webmethod(route="/post-training/job/artifacts", method="GET")
-    async def get_training_job_artifacts(self, job_uuid: str) -> PostTrainingJobArtifactsResponse: ...
+    # Note: pause/resume/cancel are achieved as follows:
+    # - POST with status=paused
+    # - POST with status=resuming
+    # - POST with status=cancelled

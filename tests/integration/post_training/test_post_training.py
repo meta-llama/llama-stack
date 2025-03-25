@@ -8,14 +8,12 @@ from typing import List
 import pytest
 
 from llama_stack.apis.common.job_types import JobStatus
+from llama_stack.apis.common.training_types import Checkpoint
 from llama_stack.apis.post_training import (
-    Checkpoint,
     DataConfig,
     LoraFinetuningConfig,
     OptimizerConfig,
     PostTrainingJob,
-    PostTrainingJobArtifactsResponse,
-    PostTrainingJobStatusResponse,
     TrainingConfig,
 )
 
@@ -84,7 +82,6 @@ class TestPostTraining:
     async def test_get_training_job_status(self, post_training_stack):
         post_training_impl = post_training_stack
         job_status = await post_training_impl.get_training_job_status("1234")
-        assert isinstance(job_status, PostTrainingJobStatusResponse)
         assert job_status.job_uuid == "1234"
         assert job_status.status == JobStatus.completed
         assert isinstance(job_status.checkpoints[0], Checkpoint)
@@ -93,7 +90,6 @@ class TestPostTraining:
     async def test_get_training_job_artifacts(self, post_training_stack):
         post_training_impl = post_training_stack
         job_artifacts = await post_training_impl.get_training_job_artifacts("1234")
-        assert isinstance(job_artifacts, PostTrainingJobArtifactsResponse)
         assert job_artifacts.job_uuid == "1234"
         assert isinstance(job_artifacts.checkpoints[0], Checkpoint)
         assert job_artifacts.checkpoints[0].identifier == "Llama3.2-3B-Instruct-sft-0"
