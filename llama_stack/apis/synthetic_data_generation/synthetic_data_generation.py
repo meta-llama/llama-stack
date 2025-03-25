@@ -5,10 +5,11 @@
 # the root directory of this source tree.
 
 from enum import Enum
-from typing import Any, Dict, List, Optional, Protocol, Union
+from typing import List, Literal, Optional, Protocol
 
 from pydantic import BaseModel
 
+from llama_stack.apis.common.job_types import BaseJob
 from llama_stack.apis.inference import Message
 from llama_stack.schema_utils import json_schema_type, webmethod
 
@@ -34,13 +35,16 @@ class SyntheticDataGenerationRequest(BaseModel):
 
 
 @json_schema_type
-class SyntheticDataGenerationResponse(BaseModel):
-    """Response from the synthetic data generation. Batch of (prompt, response, score) tuples that pass the threshold."""
-
-    synthetic_data: List[Dict[str, Any]]
-    statistics: Optional[Dict[str, Any]] = None
+class SyntheticDataGenerationJob(BaseJob, BaseModel):
+    type: Literal["synthetic-data-generation"] = "synthetic-data-generation"
 
 
+@json_schema_type
+class ListSyntheticDataGenerationJobsResponse(BaseModel):
+    items: list[SyntheticDataGenerationJob]
+
+
+# TODO: consider shortening the route
 class SyntheticDataGeneration(Protocol):
     @webmethod(route="/synthetic-data-generation/generate")
     def synthetic_data_generate(
@@ -48,4 +52,29 @@ class SyntheticDataGeneration(Protocol):
         dialogs: List[Message],
         filtering_function: FilteringFunction = FilteringFunction.none,
         model: Optional[str] = None,
-    ) -> Union[SyntheticDataGenerationResponse]: ...
+    ) -> SyntheticDataGenerationJob: ...
+
+    # TODO: should these be under /generate/?
+    # CRUD operations on running jobs
+    @webmethod(route="/synthetic-data-generation/jobs/{job_id:path}", method="GET")
+    async def get_synthetic_data_generation_job(self) -> SyntheticDataGenerationJob: ...
+
+    @webmethod(route="/synthetic-data-generation/jobs", method="GET")
+    async def list_synthetic_data_generation_jobs(self) -> ListSyntheticDataGenerationJobsResponse: ...
+
+    @webmethod(route="/synthetic-data-generation/jobs/{job_id:path}", method="POST")
+    async def update_synthetic_data_generation_job(self) -> SyntheticDataGenerationJob: ...
+
+    @webmethod(route="/synthetic-data-generation/job/{job_id:path}", method="DELETE")
+    async def delete_synthetic_data_generation_job(self, job_id: str) -> None: ...
+
+    # Note: pause/resume/cancel are achieved as follows:
+    # - POST with status=paused
+    # - POST with status=resuming
+    # - POST with status=cancelled
+
+    # This is how you get the logs for a job
+    @webmethod(route="/synthetic-data-generation/jobs/{job_id:path}/logs", method="GET")
+    async def get_synthetic_data_generation_job_logs(self) -> str: ...
+
+    # TODO: implement streaming for logs

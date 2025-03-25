@@ -14,7 +14,7 @@ from llama_stack.apis.common.content_types import (
 )
 from llama_stack.apis.datasetio import DatasetIO, IterrowsResponse
 from llama_stack.apis.datasets import DatasetPurpose, DataSource
-from llama_stack.apis.eval import BenchmarkConfig, Eval, EvaluateResponse, Job
+from llama_stack.apis.eval import BenchmarkConfig, Eval, EvaluateJob, ListEvaluateJobsResponse
 from llama_stack.apis.inference import (
     ChatCompletionResponse,
     ChatCompletionResponseEventType,
@@ -587,61 +587,37 @@ class EvalRouter(Eval):
         logger.debug("EvalRouter.shutdown")
         pass
 
-    async def run_eval(
+    async def evaluate(
         self,
         benchmark_id: str,
         benchmark_config: BenchmarkConfig,
-    ) -> Job:
-        logger.debug(f"EvalRouter.run_eval: {benchmark_id}")
-        return await self.routing_table.get_provider_impl(benchmark_id).run_eval(
+    ) -> EvaluateJob:
+        logger.debug(f"EvalRouter.evaluate: {benchmark_id}")
+        return await self.routing_table.get_provider_impl(benchmark_id).evaluate(
             benchmark_id=benchmark_id,
             benchmark_config=benchmark_config,
         )
 
-    async def evaluate_rows(
-        self,
-        benchmark_id: str,
-        input_rows: List[Dict[str, Any]],
-        scoring_functions: List[str],
-        benchmark_config: BenchmarkConfig,
-    ) -> EvaluateResponse:
-        logger.debug(f"EvalRouter.evaluate_rows: {benchmark_id}, {len(input_rows)} rows")
-        return await self.routing_table.get_provider_impl(benchmark_id).evaluate_rows(
-            benchmark_id=benchmark_id,
-            input_rows=input_rows,
-            scoring_functions=scoring_functions,
-            benchmark_config=benchmark_config,
-        )
+    # TODO: rename into get_evaluatION_job? also below
+    async def get_evaluate_job(self, job_id: str) -> EvaluateJob:
+        logger.debug(f"EvalRouter.get_evaluate_job: {job_id}")
+        return await self.routing_table.get_provider_impl("eval").get_evaluate_job(job_id)
 
-    async def job_status(
-        self,
-        benchmark_id: str,
-        job_id: str,
-    ) -> Job:
-        logger.debug(f"EvalRouter.job_status: {benchmark_id}, {job_id}")
-        return await self.routing_table.get_provider_impl(benchmark_id).job_status(benchmark_id, job_id)
+    async def list_evaluate_jobs(self) -> ListEvaluateJobsResponse:
+        logger.debug("EvalRouter.list_evaluate_jobs")
+        return await self.routing_table.get_provider_impl("eval").list_evaluate_jobs()
 
-    async def job_cancel(
-        self,
-        benchmark_id: str,
-        job_id: str,
-    ) -> None:
-        logger.debug(f"EvalRouter.job_cancel: {benchmark_id}, {job_id}")
-        await self.routing_table.get_provider_impl(benchmark_id).job_cancel(
-            benchmark_id,
-            job_id,
-        )
+    async def update_evaluate_job(self, job_id: str) -> EvaluateJob:
+        logger.debug(f"EvalRouter.update_evaluate_job: {job_id}")
+        return await self.routing_table.get_provider_impl("eval").update_evaluate_job(job_id)
 
-    async def job_result(
-        self,
-        benchmark_id: str,
-        job_id: str,
-    ) -> EvaluateResponse:
-        logger.debug(f"EvalRouter.job_result: {benchmark_id}, {job_id}")
-        return await self.routing_table.get_provider_impl(benchmark_id).job_result(
-            benchmark_id,
-            job_id,
-        )
+    async def delete_evaluate_job(self, job_id: str) -> None:
+        logger.debug(f"EvalRouter.delete_evaluate_job: {job_id}")
+        return await self.routing_table.get_provider_impl("eval").delete_evaluate_job(job_id)
+
+    async def get_evaluate_job_logs(self, job_id: str) -> str:
+        logger.debug(f"EvalRouter.get_eval_job_logs: {job_id}")
+        return await self.routing_table.get_provider_impl("eval").get_eval_job_logs(job_id)
 
 
 class ToolRuntimeRouter(ToolRuntime):
