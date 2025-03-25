@@ -64,4 +64,13 @@ def available_providers() -> List[ProviderSpec]:
                 config_class="llama_stack.providers.remote.safety.nvidia.NVIDIASafetyConfig",
             ),
         ),
+        remote_provider_spec(
+            api=Api.safety,
+            adapter=AdapterSpec(
+                adapter_type="sambanova",
+                pip_packages=["litellm"],
+                module="llama_stack.providers.remote.safety.sambanova",
+                config_class="llama_stack.providers.remote.safety.sambanova.SambaNovaSafetyConfig",
+            ),
+        ),
     ]

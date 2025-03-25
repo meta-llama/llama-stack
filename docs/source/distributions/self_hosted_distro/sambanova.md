@@ -17,7 +17,7 @@ The `llamastack/distribution-sambanova` distribution consists of the following p
 |-----|-------------|
 | agents | `inline::meta-reference` |
 | inference | `remote::sambanova`, `inline::sentence-transformers` |
-| safety | `inline::llama-guard` |
+| safety | `remote::sambanova` |
 | telemetry | `inline::meta-reference` |
 | tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::code-interpreter`, `inline::rag-runtime`, `remote::model-context-protocol`, `remote::wolfram-alpha` |
 | vector_io | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
