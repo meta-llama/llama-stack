@@ -67,8 +67,7 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
 
         resource = Resource.create(
             {
-                # service name is always the same, use zero-width space to avoid clutter
-                ResourceAttributes.SERVICE_NAME: "​",
+                ResourceAttributes.SERVICE_NAME: self.config.service_name,
             }
         )
 
