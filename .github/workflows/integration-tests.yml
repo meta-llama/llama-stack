@@ -52,7 +52,9 @@ jobs:
       - name: Set Up Environment and Install Dependencies
         run: |
           uv sync --extra dev --extra test
+          # TODO: refactor this workflow so that we don't need to duplicate dependencies here
           uv pip install ollama faiss-cpu
+          uv pip install torchtune torchao numpy
           # always test against the latest version of the client
           uv pip install git+https://github.com/meta-llama/llama-stack-client-python.git@main
           uv pip install -e .
@@ -99,3 +101,11 @@ jobs:
           INFERENCE_MODEL: "meta-llama/Llama-3.2-3B-Instruct"
         run: |
           uv run pytest -v tests/integration/${{ matrix.test-type }} --stack-config=ollama --text-model="meta-llama/Llama-3.2-3B-Instruct" --embedding-model=all-MiniLM-L6-v2
+        if: matrix.test-type != 'post_training'
+
+      - name: Run Integration Tests
+        env:
+          INFERENCE_MODEL: "meta-llama/Llama-3.2-3B-Instruct"
+        run: |
+          uv run pytest -v tests/integration/${{ matrix.test-type }} --stack-config=experimental-post-training --text-model="meta-llama/Llama-3.2-3B-Instruct" --embedding-model=all-MiniLM-L6-v2
+        if: matrix.test-type == 'post_training'
