@@ -152,6 +152,7 @@ ignore = [
 [tool.mypy]
 mypy_path = ["llama_stack"]
 packages = ["llama_stack"]
+plugins = ['pydantic.mypy']
 disable_error_code = []
 warn_return_any = true
 # # honor excludes by not following there through imports
@@ -303,3 +304,8 @@ exclude = [
 # packages that lack typing annotations, do not have stubs, or are unavailable.
 module = ["yaml", "fire"]
 ignore_missing_imports = true
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
