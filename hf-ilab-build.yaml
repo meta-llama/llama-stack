@@ -1,0 +1,25 @@
+version: "2"
+distribution_spec:
+  description: Use (an external) Ollama server for running LLM inference
+  providers:
+    inference:
+      - remote::ollama
+    vector_io:
+      - inline::faiss
+    safety:
+      - inline::llama-guard
+    telemetry:
+      - inline::meta-reference
+    agents:
+      - inline::meta-reference
+    eval:
+      - inline::meta-reference
+    datasetio:
+      - inline::localfs
+    scoring:
+      - inline::llm-as-judge
+    tool_runtime:
+      - remote::brave-search
+    post_training:
+      - inline::huggingface-ilab
+image_type: venv
