@@ -3,20 +3,17 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
+from llama_stack.apis.common.job_types import JobArtifact, JobStatus
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
 from llama_stack.apis.post_training import (
     AlgorithmConfig,
     DPOAlignmentConfig,
-    JobStatus,
     ListPostTrainingJobsResponse,
     LoraFinetuningConfig,
     PostTrainingJob,
-    PostTrainingJobArtifactsResponse,
-    PostTrainingJobStatusResponse,
     TrainingConfig,
 )
 from llama_stack.providers.inline.post_training.torchtune.config import (
@@ -59,14 +56,9 @@ class TorchtunePostTrainingImpl:
         if job_uuid in self.jobs:
             raise ValueError(f"Job {job_uuid} already exists")
 
-        post_training_job = PostTrainingJob(job_uuid=job_uuid)
-
-        job_status_response = PostTrainingJobStatusResponse(
-            job_uuid=job_uuid,
-            status=JobStatus.scheduled,
-            scheduled_at=datetime.now(timezone.utc),
-        )
-        self.jobs[job_uuid] = job_status_response
+        post_training_job = PostTrainingJob(id=job_uuid)
+        post_training_job.update_status(JobStatus.scheduled)
+        self.jobs[job_uuid] = post_training_job
 
         if isinstance(algorithm_config, LoraFinetuningConfig):
             try:
@@ -83,20 +75,19 @@ class TorchtunePostTrainingImpl:
                     self.datasets_api,
                 )
 
-                job_status_response.status = JobStatus.in_progress
-                job_status_response.started_at = datetime.now(timezone.utc)
+                post_training_job.update_status(JobStatus.running)
 
                 await recipe.setup()
                 resources_allocated, checkpoints = await recipe.train()
 
                 self.checkpoints_dict[job_uuid] = checkpoints
-                job_status_response.resources_allocated = resources_allocated
-                job_status_response.checkpoints = checkpoints
-                job_status_response.status = JobStatus.completed
-                job_status_response.completed_at = datetime.now(timezone.utc)
+                post_training_job.artifacts = [
+                    JobArtifact(name="resources", type="resources", metadata=resources_allocated),
+                ] + checkpoints
+                post_training_job.update_status(JobStatus.completed)
 
             except Exception:
-                job_status_response.status = JobStatus.failed
+                post_training_job.update_status(JobStatus.failed)
                 raise
         else:
             raise NotImplementedError()
@@ -113,20 +104,25 @@ class TorchtunePostTrainingImpl:
         logger_config: Dict[str, Any],
     ) -> PostTrainingJob: ...
 
-    async def get_training_jobs(self) -> ListPostTrainingJobsResponse:
-        return ListPostTrainingJobsResponse(data=[PostTrainingJob(job_uuid=uuid_) for uuid_ in self.jobs])
+    # TODO: should these be under post-training/supervised-fine-tune/?
+    # CRUD operations on running jobs
+    @webmethod(route="/post-training/jobs/{job_id:path}", method="GET")
+    async def get_post_training_job(self, job_id: str) -> PostTrainingJob:
+        return self.jobs[job_id]
 
-    @webmethod(route="/post-training/job/status")
-    async def get_training_job_status(self, job_uuid: str) -> Optional[PostTrainingJobStatusResponse]:
-        return self.jobs.get(job_uuid, None)
+    @webmethod(route="/post-training/jobs", method="GET")
+    async def list_post_training_jobs(self) -> ListPostTrainingJobsResponse:
+        return ListPostTrainingJobsResponse(data=list(self.jobs.values()))
 
-    @webmethod(route="/post-training/job/cancel")
-    async def cancel_training_job(self, job_uuid: str) -> None:
-        raise NotImplementedError("Job cancel is not implemented yet")
+    @webmethod(route="/post-training/jobs/{job_id:path}", method="POST")
+    async def update_post_training_job(self, job: PostTrainingJob) -> PostTrainingJob:
+        raise NotImplementedError
 
-    @webmethod(route="/post-training/job/artifacts")
-    async def get_training_job_artifacts(self, job_uuid: str) -> Optional[PostTrainingJobArtifactsResponse]:
-        if job_uuid in self.checkpoints_dict:
-            checkpoints = self.checkpoints_dict.get(job_uuid, [])
-            return PostTrainingJobArtifactsResponse(job_uuid=job_uuid, checkpoints=checkpoints)
-        return None
+    @webmethod(route="/post-training/job/{job_id:path}", method="DELETE")
+    async def delete_post_training_job(self, job_id: str) -> None:
+        raise NotImplementedError
+
+    # Note: pause/resume/cancel are achieved as follows:
+    # - POST with status=paused
+    # - POST with status=resuming
+    # - POST with status=cancelled
