@@ -336,7 +336,9 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         r = await self.client.completions.create(**params)
         return process_completion_response(r)
 
-    async def _stream_completion(self, request: CompletionRequest) -> AsyncGenerator[CompletionResponseStreamChunk, None]:
+    async def _stream_completion(
+        self, request: CompletionRequest
+    ) -> AsyncGenerator[CompletionResponseStreamChunk, None]:
         assert self.client is not None
         params = await self._get_params(request)
 
