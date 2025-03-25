@@ -83,17 +83,15 @@ def convert_to_pydantic(annotation: Any, value: Any) -> Any:
         item_type = get_args(annotation)[0]
         try:
             return [convert_to_pydantic(item_type, item) for item in value]
-        except Exception:
-            logger.error(f"Error converting list {value} into {item_type}")
-            return value
+        except Exception as e:
+            raise ValueError(f"Failed to convert list {value} into {item_type}: {e}") from e
 
     elif origin is dict:
-        key_type, val_type = get_args(annotation)
+        val_type = get_args(annotation)
         try:
             return {k: convert_to_pydantic(val_type, v) for k, v in value.items()}
-        except Exception:
-            logger.error(f"Error converting dict {value} into {val_type}")
-            return value
+        except Exception as e:
+            raise ValueError(f"Failed to convert dict {value} into {val_type}: {e}") from e
 
     try:
         # Handle Pydantic models and discriminated unions
