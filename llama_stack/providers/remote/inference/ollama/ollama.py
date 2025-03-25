@@ -103,7 +103,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         assert self.model_store is not None
         if sampling_params is None:
             sampling_params = SamplingParams()
-        model = self.model_store.get_model(model_id)
+        model = await self.model_store.get_model(model_id)
         request = CompletionRequest(
             model=model.provider_resource_id,
             content=content,
@@ -167,7 +167,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         assert self.model_store is not None
         if sampling_params is None:
             sampling_params = SamplingParams()
-        model = self.model_store.get_model(model_id)
+        model = await self.model_store.get_model(model_id)
         request = ChatCompletionRequest(
             model=model.provider_resource_id,
             messages=messages,
@@ -287,7 +287,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         task_type: Optional[EmbeddingTaskType] = None,
     ) -> EmbeddingsResponse:
         assert self.model_store is not None
-        model = self.model_store.get_model(model_id)
+        model = await self.model_store.get_model(model_id)
 
         assert all(not content_has_media(content) for content in contents), (
             "Ollama does not support media for embeddings"

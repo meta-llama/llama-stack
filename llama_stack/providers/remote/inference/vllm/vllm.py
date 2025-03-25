@@ -249,7 +249,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         assert self.model_store is not None
         if sampling_params is None:
             sampling_params = SamplingParams()
-        model = self.model_store.get_model(model_id)
+        model = await self.model_store.get_model(model_id)
         request = CompletionRequest(
             model=model.provider_resource_id,
             content=content,
@@ -279,7 +279,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         assert self.model_store is not None
         if sampling_params is None:
             sampling_params = SamplingParams()
-        model = self.model_store.get_model(model_id)
+        model = await self.model_store.get_model(model_id)
         # This is to be consistent with OpenAI API and support vLLM <= v0.6.3
         # References:
         #   * https://platform.openai.com/docs/api-reference/chat/create#chat-create-tool_choice
@@ -397,7 +397,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         task_type: Optional[EmbeddingTaskType] = None,
     ) -> EmbeddingsResponse:
         assert self.client is not None
-        model = self.model_store.get_model(model_id)
+        model = await self.model_store.get_model(model_id)
 
         kwargs = {}
         assert model.model_type == ModelType.embedding

@@ -394,7 +394,7 @@ class EmbeddingsResponse(BaseModel):
 
 
 class ModelStore(Protocol):
-    def get_model(self, identifier: str) -> Model: ...
+    async def get_model(self, identifier: str) -> Model: ...
 
 
 class TextTruncation(Enum):
