@@ -5306,6 +5306,7 @@ components:
             - in_progress
             - failed
             - scheduled
+            - cancelled
           title: JobStatus
         scheduled_at:
           type: string
@@ -5583,6 +5584,7 @@ components:
             - in_progress
             - failed
             - scheduled
+            - cancelled
           title: JobStatus
       additionalProperties: false
       required:

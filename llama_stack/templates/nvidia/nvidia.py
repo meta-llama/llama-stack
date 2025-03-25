@@ -21,6 +21,7 @@ def get_distribution_template() -> DistributionTemplate:
         "agents": ["inline::meta-reference"],
         "telemetry": ["inline::meta-reference"],
         "eval": ["inline::meta-reference"],
+        "post_training": ["remote::nvidia"],
         "datasetio": ["inline::localfs"],
         "scoring": ["inline::basic"],
         "tool_runtime": ["inline::rag-runtime"],
@@ -88,6 +89,31 @@ def get_distribution_template() -> DistributionTemplate:
             "NVIDIA_API_KEY": (
                 "",
                 "NVIDIA API Key",
+            ),
+            ## Nemo Customizer related variables
+            "NVIDIA_USER_ID": (
+                "llama-stack-user",
+                "NVIDIA User ID",
+            ),
+            "NVIDIA_DATASET_NAMESPACE": (
+                "default",
+                "NVIDIA Dataset Namespace",
+            ),
+            "NVIDIA_ACCESS_POLICIES": (
+                "{}",
+                "NVIDIA Access Policies",
+            ),
+            "NVIDIA_PROJECT_ID": (
+                "test-project",
+                "NVIDIA Project ID",
+            ),
+            "NVIDIA_CUSTOMIZER_URL": (
+                "https://customizer.api.nvidia.com",
+                "NVIDIA Customizer URL",
+            ),
+            "NVIDIA_OUTPUT_MODEL_DIR": (
+                "test-example-model@v1",
+                "NVIDIA Output Model Directory",
             ),
             "GUARDRAILS_SERVICE_URL": (
                 "http://0.0.0.0:7331",

@@ -433,6 +433,7 @@
     "zmq"
   ],
   "nvidia": [
+    "aiohttp",
     "aiosqlite",
     "blobfile",
     "chardet",
