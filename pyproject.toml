@@ -245,7 +245,6 @@ exclude = [
     "^llama_stack/providers/remote/inference/gemini/",
     "^llama_stack/providers/remote/inference/groq/",
     "^llama_stack/providers/remote/inference/nvidia/",
-    "^llama_stack/providers/remote/inference/ollama/",
     "^llama_stack/providers/remote/inference/openai/",
     "^llama_stack/providers/remote/inference/passthrough/",
     "^llama_stack/providers/remote/inference/runpod/",

@@ -300,7 +300,7 @@ def process_chat_completion_response(
 
 async def process_completion_stream_response(
     stream: AsyncGenerator[OpenAICompatCompletionResponse, None],
-) -> AsyncGenerator:
+) -> AsyncGenerator[CompletionResponseStreamChunk, None]:
     stop_reason = None
 
     async for chunk in stream:
@@ -337,7 +337,7 @@ async def process_completion_stream_response(
 async def process_chat_completion_stream_response(
     stream: AsyncGenerator[OpenAICompatCompletionResponse, None],
     request: ChatCompletionRequest,
-) -> AsyncGenerator:
+) -> AsyncGenerator[ChatCompletionResponseStreamChunk]:
     yield ChatCompletionResponseStreamChunk(
         event=ChatCompletionResponseEvent(
             event_type=ChatCompletionResponseEventType.start,
