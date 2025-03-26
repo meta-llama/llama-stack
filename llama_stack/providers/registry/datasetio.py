@@ -36,4 +36,18 @@ def available_providers() -> List[ProviderSpec]:
                 config_class="llama_stack.providers.remote.datasetio.huggingface.HuggingfaceDatasetIOConfig",
             ),
         ),
+        remote_provider_spec(
+            api=Api.datasetio,
+            adapter=AdapterSpec(
+                adapter_type="postgresql",
+                pip_packages=[
+#                    "asyncpg",
+#                    "datasets",
+                "psycopg",
+                "psycopg[pool]",
+                ],
+                module="llama_stack.providers.remote.datasetio.postgresql",
+                config_class="llama_stack.providers.remote.datasetio.postgresql.PostgreSQLDatasetIOConfig",
+            ),
+        ),
     ]

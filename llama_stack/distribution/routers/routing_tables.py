@@ -430,6 +430,8 @@ class DatasetsRoutingTable(CommonRoutingTableImpl, Datasets):
             # infer provider from uri
             if source.uri.startswith("huggingface"):
                 provider_id = "huggingface"
+            elif source.uri.startswith("postgresql"):
+                provider_id = "postgresql"
             else:
                 provider_id = "localfs"
         else:

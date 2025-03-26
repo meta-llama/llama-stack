@@ -176,6 +176,7 @@ class Datasets(Protocol):
                "type": "uri",
                "uri": "huggingface://llamastack/simpleqa?split=train"
            }
+           TODO: Add postgresql example here
            - {
                "type": "rows",
                "rows": [
