@@ -132,6 +132,7 @@ select = [
     "N",   # Naming
     "W",   # Warnings
     "DTZ", # datetime rules
+    "I",   # isort (imports order)
 ]
 ignore = [
     # The following ignores are desired by the project maintainers.

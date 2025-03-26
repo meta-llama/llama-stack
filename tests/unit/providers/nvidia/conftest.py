@@ -5,8 +5,9 @@
 # the root directory of this source tree.
 
 import asyncio
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 mock_session = MagicMock()
 mock_session.closed = False
