@@ -92,8 +92,6 @@ Interactive pages for users to play with and explore Llama Stack API capabilitie
 
 ## Starting the Llama Stack Playground
 
-### Llama CLI
-
 To start the Llama Stack Playground, run the following commands:
 
 1. Start up the Llama Stack API server
@@ -109,29 +107,3 @@ cd llama_stack/distribution/ui
 pip install -r requirements.txt
 streamlit run app.py
 ```
-
-### Docker
-
-Playground can also be started in a docker image:
-
-```sh
-export LLAMA_STACK_URL=http://localhost:11434
-
-docker run \
-  --pull always \
-  -p 8501:8501 \
-  -e LLAMA_STACK_ENDPOINT=$LLAMA_STACK_URL \
-  quay.io/jland/llama-stack-playground
-```
-
-## Configurable Environment Variables
-
-## Environment Variables
-
-| Environment Variable       | Description                        | Default Value             |
-|----------------------------|------------------------------------|---------------------------|
-| LLAMA_STACK_ENDPOINT       | The endpoint for the Llama Stack   | http://localhost:8321     |
-| FIREWORKS_API_KEY          | API key for Fireworks provider     | (empty string)            |
-| TOGETHER_API_KEY           | API key for Together provider      | (empty string)            |
-| SAMBANOVA_API_KEY          | API key for SambaNova provider     | (empty string)            |
-| OPENAI_API_KEY             | API key for OpenAI provider        | (empty string)            |
