@@ -1,7 +1,7 @@
 # Report for Podman AI Lab distribution
 
 ## Supported Models
-| Model Descriptor | ollama |
+| Model Descriptor | Podman AI Lab |
 |:---|:---|
 | Llama-3-8B-Instruct | ❌ |
 | Llama-3-70B-Instruct | ❌ |
