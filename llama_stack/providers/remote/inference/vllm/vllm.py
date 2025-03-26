@@ -346,7 +346,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         async for chunk in process_completion_stream_response(stream):
             yield chunk
 
-    async def register_model(self, model: Model) -> None:
+    async def register_model(self, model: Model) -> Model:
         assert self.client is not None
         model = await self.register_helper.register_model(model)
         res = await self.client.models.list()
@@ -356,6 +356,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
                 f"Model {model.provider_resource_id} is not being served by vLLM. "
                 f"Available models: {', '.join(available_models)}"
             )
+        return model
 
     async def _get_params(self, request: Union[ChatCompletionRequest, CompletionRequest]) -> dict:
         options = get_sampling_options(request.sampling_params)
