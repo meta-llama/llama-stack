@@ -557,10 +557,6 @@ paths:
       responses:
         '200':
           description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FileResponse'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -2764,16 +2760,33 @@ components:
       properties:
         strategy:
           $ref: '#/components/schemas/SamplingStrategy'
+          description: The sampling strategy.
         max_tokens:
           type: integer
           default: 0
+          description: >-
+            The maximum number of tokens that can be generated in the completion.
+            The token count of your prompt plus max_tokens cannot exceed the model's
+            context length.
         repetition_penalty:
           type: number
           default: 1.0
+          description: >-
+            Number between -2.0 and 2.0. Positive values penalize new tokens based
+            on whether they appear in the text so far, increasing the model's likelihood
+            to talk about new topics.
+        stop:
+          type: array
+          items:
+            type: string
+          description: >-
+            Up to 4 sequences where the API will stop generating further tokens. The
+            returned text will not contain the stop sequence.
       additionalProperties: false
       required:
         - strategy
       title: SamplingParams
+      description: Sampling parameters.
     SamplingStrategy:
       oneOf:
         - $ref: '#/components/schemas/GreedySamplingStrategy'
@@ -4246,39 +4259,6 @@ components:
       title: FileUploadResponse
       description: >-
         Response after initiating a file upload session.
-    FileResponse:
-      type: object
-      properties:
-        bucket:
-          type: string
-          description: >-
-            Bucket under which the file is stored (valid chars: a-zA-Z0-9_-)
-        key:
-          type: string
-          description: >-
-            Key under which the file is stored (valid chars: a-zA-Z0-9_-/.)
-        mime_type:
-          type: string
-          description: MIME type of the file
-        url:
-          type: string
-          description: Upload URL for the file contents
-        bytes:
-          type: integer
-          description: Size of the file in bytes
-        created_at:
-          type: integer
-          description: Timestamp of when the file was created
-      additionalProperties: false
-      required:
-        - bucket
-        - key
-        - mime_type
-        - url
-        - bytes
-        - created_at
-      title: FileResponse
-      description: Response representing a file entry.
     EmbeddingsRequest:
       type: object
       properties:
@@ -4550,40 +4530,40 @@ components:
       title: URIDataSource
       description: >-
         A dataset that can be obtained from a URI.
-    EqualityGrader:
+    FileResponse:
       type: object
       properties:
-        type:
+        bucket:
           type: string
-          const: equality
-          default: equality
+          description: >-
+            Bucket under which the file is stored (valid chars: a-zA-Z0-9_-)
+        key:
+          type: string
+          description: >-
+            Key under which the file is stored (valid chars: a-zA-Z0-9_-/.)
+        mime_type:
+          type: string
+          description: MIME type of the file
+        url:
+          type: string
+          description: Upload URL for the file contents
+        bytes:
+          type: integer
+          description: Size of the file in bytes
+        created_at:
+          type: integer
+          description: Timestamp of when the file was created
       additionalProperties: false
       required:
-        - type
-      title: EqualityGrader
-    FactualityGrader:
-      type: object
-      properties:
-        type:
-          type: string
-          const: factuality
-          default: factuality
-      additionalProperties: false
-      required:
-        - type
-      title: FactualityGrader
-    FaithfulnessGrader:
-      type: object
-      properties:
-        type:
-          type: string
-          const: faithfulness
-          default: faithfulness
-      additionalProperties: false
-      required:
-        - type
-      title: FaithfulnessGrader
-    Grader:
+        - bucket
+        - key
+        - mime_type
+        - url
+        - bytes
+        - created_at
+      title: FileResponse
+      description: Response representing a file entry.
+    Model:
       type: object
       properties:
         identifier:
@@ -5453,6 +5433,25 @@ components:
         - data
       title: IterrowsResponse
       description: A paginated list of rows from a dataset.
+    Job:
+      type: object
+      properties:
+        job_id:
+          type: string
+        status:
+          type: string
+          enum:
+            - completed
+            - in_progress
+            - failed
+            - scheduled
+            - cancelled
+          title: JobStatus
+      additionalProperties: false
+      required:
+        - job_id
+        - status
+      title: Job
     ListAgentSessionsResponse:
       type: object
       properties:

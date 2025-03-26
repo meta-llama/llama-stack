@@ -1,4 +1,5 @@
 version = 1
+revision = 1
 requires-python = ">=3.10"
 resolution-markers = [
     "(python_full_version < '3.11' and platform_machine != 'aarch64' and sys_platform == 'linux') or (python_full_version < '3.11' and sys_platform != 'darwin' and sys_platform != 'linux')",
@@ -1315,7 +1316,7 @@ wheels = [
 
 [[package]]
 name = "llama-stack"
-version = "0.1.7"
+version = "0.1.8"
 source = { editable = "." }
 dependencies = [
     { name = "blobfile" },
@@ -1370,6 +1371,7 @@ docs = [
     { name = "tomli" },
 ]
 test = [
+    { name = "aiohttp" },
     { name = "aiosqlite" },
     { name = "autoevals" },
     { name = "chardet" },
@@ -1385,6 +1387,7 @@ test = [
     { name = "torchvision", version = "0.21.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(platform_machine != 'aarch64' and sys_platform == 'linux') or (sys_platform != 'darwin' and sys_platform != 'linux')" },
 ]
 unit = [
+    { name = "aiohttp" },
     { name = "aiosqlite" },
     { name = "chardet" },
     { name = "openai" },
@@ -1395,6 +1398,8 @@ unit = [
 
 [package.metadata]
 requires-dist = [
+    { name = "aiohttp", marker = "extra == 'test'" },
+    { name = "aiohttp", marker = "extra == 'unit'" },
     { name = "aiosqlite", marker = "extra == 'test'" },
     { name = "aiosqlite", marker = "extra == 'unit'" },
     { name = "autoevals", marker = "extra == 'test'" },
@@ -1410,7 +1415,7 @@ requires-dist = [
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "jinja2", marker = "extra == 'codegen'", specifier = ">=3.1.6" },
     { name = "jsonschema" },
-    { name = "llama-stack-client", specifier = ">=0.1.7" },
+    { name = "llama-stack-client", specifier = ">=0.1.8" },
     { name = "mcp", marker = "extra == 'test'" },
     { name = "myst-parser", marker = "extra == 'docs'" },
     { name = "nbval", marker = "extra == 'dev'" },
@@ -1455,10 +1460,11 @@ requires-dist = [
     { name = "types-setuptools", marker = "extra == 'dev'" },
     { name = "uvicorn", marker = "extra == 'dev'" },
 ]
+provides-extras = ["dev", "unit", "test", "docs", "codegen"]
 
 [[package]]
 name = "llama-stack-client"
-version = "0.1.7"
+version = "0.1.8"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -1475,9 +1481,9 @@ dependencies = [
     { name = "tqdm" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/12/82/cd3ac4cddfeb2c63dc25b2469ded66e39101a01586bb2535bfae4293dc49/llama_stack_client-0.1.7.tar.gz", hash = "sha256:8ed51d73a62848a72e1c862d8881e64785be1a9118bcea94aa910025571b34d0", size = 242071 }
+sdist = { url = "https://files.pythonhosted.org/packages/c5/cb/b058f62f52c7a29cc7238866cac357550bfc8ff99afcd1805436ef906181/llama_stack_client-0.1.8.tar.gz", hash = "sha256:2f1ff22c891c4c03e9b8fa18adbc0fb4d6e7337181d90a897760ec368ef3269c", size = 242834 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/dc/ee/055282258899f25f61d248a335e6bcdceb76e3f6ed76ad3a28240ebfa0fe/llama_stack_client-0.1.7-py3-none-any.whl", hash = "sha256:db89a21811310f9249a951a25f96298affa3ca1d3610a518093c94e984105292", size = 273882 },
+    { url = "https://files.pythonhosted.org/packages/a3/aa/d02c314b93be7ce0e447a7d7e3cbbea1955e06651abdf6a273714058e4aa/llama_stack_client-0.1.8-py3-none-any.whl", hash = "sha256:e34e42ff491b3146130f6cf741fd5e901f8cd66302e8608e514655f74cc3df73", size = 274304 },
 ]
 
 [[package]]

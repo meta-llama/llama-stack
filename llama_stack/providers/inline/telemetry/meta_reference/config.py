@@ -28,6 +28,11 @@ class TelemetryConfig(BaseModel):
         default="http://localhost:4318/v1/metrics",
         description="The OpenTelemetry collector endpoint URL for metrics",
     )
+    service_name: str = Field(
+        # service name is always the same, use zero-width space to avoid clutter
+        default="​",
+        description="The service name to use for telemetry",
+    )
     sinks: List[TelemetrySink] = Field(
         default=[TelemetrySink.CONSOLE, TelemetrySink.SQLITE],
         description="List of telemetry sinks to enable (possible values: otel, sqlite, console)",
@@ -47,6 +52,7 @@ class TelemetryConfig(BaseModel):
     @classmethod
     def sample_run_config(cls, __distro_dir__: str, db_name: str = "trace_store.db") -> Dict[str, Any]:
         return {
+            "service_name": "${env.OTEL_SERVICE_NAME:​}",
             "sinks": "${env.TELEMETRY_SINKS:console,sqlite}",
             "sqlite_db_path": "${env.SQLITE_DB_PATH:" + __distro_dir__ + "/" + db_name + "}",
         }

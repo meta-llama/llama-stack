@@ -164,7 +164,7 @@ class Files(Protocol):
         self,
         bucket: str,
         key: str,
-    ) -> FileResponse:
+    ) -> None:
         """
         Delete a file identified by a bucket and key.
 

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "llama_stack"
-version = "0.1.7"
+version = "0.1.8"
 authors = [{ name = "Meta Llama", email = "llama-oss@meta.com" }]
 description = "Llama Stack"
 readme = "README.md"
@@ -27,7 +27,7 @@ dependencies = [
     "huggingface-hub",
     "jinja2>=3.1.6",
     "jsonschema",
-    "llama-stack-client>=0.1.7",
+    "llama-stack-client>=0.1.8",
     "prompt-toolkit",
     "python-dotenv",
     "pydantic>=2",
@@ -56,7 +56,7 @@ dev = [
     "ruamel.yaml",      # needed for openapi generator
 ]
 # These are the dependencies required for running unit tests.
-unit = ["sqlite-vec", "openai", "aiosqlite", "pypdf", "chardet", "qdrant-client"]
+unit = ["sqlite-vec", "openai", "aiosqlite", "aiohttp", "pypdf", "chardet", "qdrant-client"]
 # These are the core dependencies required for running integration tests. They are shared across all
 # providers. If a provider requires additional dependencies, please add them to your environment
 # separately. If you are using "uv" to execute your tests, you can use the "--with" flag to specify extra
@@ -64,6 +64,7 @@ unit = ["sqlite-vec", "openai", "aiosqlite", "pypdf", "chardet", "qdrant-client"
 test = [
     "openai",
     "aiosqlite",
+    "aiohttp",
     "torch>=2.6.0",
     "torchvision>=0.21.0",
     "opentelemetry-sdk",
@@ -130,7 +131,6 @@ select = [
     "F",   # Pyflakes
     "N",   # Naming
     "W",   # Warnings
-    "I",   # isort
     "DTZ", # datetime rules
 ]
 ignore = [
@@ -152,6 +152,7 @@ ignore = [
 [tool.mypy]
 mypy_path = ["llama_stack"]
 packages = ["llama_stack"]
+plugins = ['pydantic.mypy']
 disable_error_code = []
 warn_return_any = true
 # # honor excludes by not following there through imports
@@ -262,6 +263,7 @@ exclude = [
     "^llama_stack/providers/remote/tool_runtime/model_context_protocol/",
     "^llama_stack/providers/remote/tool_runtime/tavily_search/",
     "^llama_stack/providers/remote/tool_runtime/wolfram_alpha/",
+    "^llama_stack/providers/remote/post_training/nvidia/",
     "^llama_stack/providers/remote/vector_io/chroma/",
     "^llama_stack/providers/remote/vector_io/milvus/",
     "^llama_stack/providers/remote/vector_io/pgvector/",
@@ -303,3 +305,8 @@ exclude = [
 # packages that lack typing annotations, do not have stubs, or are unavailable.
 module = ["yaml", "fire"]
 ignore_missing_imports = true
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
