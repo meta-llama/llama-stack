@@ -15,7 +15,7 @@ import warnings
 from contextlib import asynccontextmanager
 from importlib.metadata import version as parse_version
 from pathlib import Path
-from typing import Any, List, Optional, Union
+from typing import Annotated, Any
 
 import yaml
 from fastapi import Body, FastAPI, HTTPException, Request
@@ -23,7 +23,6 @@ from fastapi import Path as FastapiPath
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, ValidationError
-from typing_extensions import Annotated
 
 from llama_stack.distribution.datatypes import LoggingConfig, StackRunConfig
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
@@ -90,7 +89,7 @@ async def global_exception_handler(request: Request, exc: Exception):
     return JSONResponse(status_code=http_exc.status_code, content={"error": {"detail": http_exc.detail}})
 
 
-def translate_exception(exc: Exception) -> Union[HTTPException, RequestValidationError]:
+def translate_exception(exc: Exception) -> HTTPException | RequestValidationError:
     if isinstance(exc, ValidationError):
         exc = RequestValidationError(exc.raw_errors)
 
@@ -294,7 +293,7 @@ class ClientVersionMiddleware:
         return await self.app(scope, receive, send)
 
 
-def main(args: Optional[argparse.Namespace] = None):
+def main(args: argparse.Namespace | None = None):
     """Start the LlamaStack server."""
     parser = argparse.ArgumentParser(description="Start the LlamaStack server.")
     parser.add_argument(
@@ -364,7 +363,7 @@ def main(args: Optional[argparse.Namespace] = None):
         raise ValueError("Either --yaml-config or --template must be provided")
 
     logger_config = None
-    with open(config_file, "r") as fp:
+    with open(config_file) as fp:
         config_contents = yaml.safe_load(fp)
         if isinstance(config_contents, dict) and (cfg := config_contents.get("logging_config")):
             logger_config = LoggingConfig(**cfg)
@@ -490,7 +489,7 @@ def main(args: Optional[argparse.Namespace] = None):
     uvicorn.run(**uvicorn_config)
 
 
-def extract_path_params(route: str) -> List[str]:
+def extract_path_params(route: str) -> list[str]:
     segments = route.split("/")
     params = [seg[1:-1] for seg in segments if seg.startswith("{") and seg.endswith("}")]
     # to handle path params like {param:path}

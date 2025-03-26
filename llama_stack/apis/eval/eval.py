@@ -4,10 +4,9 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, List, Literal, Optional, Protocol, Union
+from typing import Annotated, Any, Literal, Protocol
 
 from pydantic import BaseModel, Field
-from typing_extensions import Annotated
 
 from llama_stack.apis.agents import AgentConfig
 from llama_stack.apis.common.job_types import Job
@@ -29,7 +28,7 @@ class ModelCandidate(BaseModel):
     type: Literal["model"] = "model"
     model: str
     sampling_params: SamplingParams
-    system_message: Optional[SystemMessage] = None
+    system_message: SystemMessage | None = None
 
 
 @json_schema_type
@@ -43,7 +42,7 @@ class AgentCandidate(BaseModel):
     config: AgentConfig
 
 
-EvalCandidate = Annotated[Union[ModelCandidate, AgentCandidate], Field(discriminator="type")]
+EvalCandidate = Annotated[ModelCandidate | AgentCandidate, Field(discriminator="type")]
 register_schema(EvalCandidate, name="EvalCandidate")
 
 
@@ -57,11 +56,11 @@ class BenchmarkConfig(BaseModel):
     """
 
     eval_candidate: EvalCandidate
-    scoring_params: Dict[str, ScoringFnParams] = Field(
+    scoring_params: dict[str, ScoringFnParams] = Field(
         description="Map between scoring function id and parameters for each scoring function you want to run",
         default_factory=dict,
     )
-    num_examples: Optional[int] = Field(
+    num_examples: int | None = Field(
         description="Number of examples to evaluate (useful for testing), if not provided, all examples in the dataset will be evaluated",
         default=None,
     )
@@ -76,9 +75,9 @@ class EvaluateResponse(BaseModel):
     :param scores: The scores from the evaluation.
     """
 
-    generations: List[Dict[str, Any]]
+    generations: list[dict[str, Any]]
     # each key in the dict is a scoring function name
-    scores: Dict[str, ScoringResult]
+    scores: dict[str, ScoringResult]
 
 
 class Eval(Protocol):
@@ -101,8 +100,8 @@ class Eval(Protocol):
     async def evaluate_rows(
         self,
         benchmark_id: str,
-        input_rows: List[Dict[str, Any]],
-        scoring_functions: List[str],
+        input_rows: list[dict[str, Any]],
+        scoring_functions: list[str],
         benchmark_config: BenchmarkConfig,
     ) -> EvaluateResponse:
         """Evaluate a list of rows on a benchmark.

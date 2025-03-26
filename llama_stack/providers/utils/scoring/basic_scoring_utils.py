@@ -5,8 +5,8 @@
 # the root directory of this source tree.
 import contextlib
 import signal
+from collections.abc import Iterator
 from types import FrameType
-from typing import Iterator, Optional
 
 
 class TimeoutError(Exception):
@@ -15,7 +15,7 @@ class TimeoutError(Exception):
 
 @contextlib.contextmanager
 def time_limit(seconds: float) -> Iterator[None]:
-    def signal_handler(signum: int, frame: Optional[FrameType]) -> None:
+    def signal_handler(signum: int, frame: FrameType | None) -> None:
         raise TimeoutError("Timed out!")
 
     signal.setitimer(signal.ITIMER_REAL, seconds)

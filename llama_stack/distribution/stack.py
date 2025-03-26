@@ -8,7 +8,7 @@ import importlib.resources
 import os
 import re
 import tempfile
-from typing import Any, Dict, Optional
+from typing import Any
 
 import yaml
 
@@ -88,7 +88,7 @@ RESOURCES = [
 ]
 
 
-async def register_resources(run_config: StackRunConfig, impls: Dict[Api, Any]):
+async def register_resources(run_config: StackRunConfig, impls: dict[Api, Any]):
     for rsrc, api, register_method, list_method in RESOURCES:
         objects = getattr(run_config, rsrc)
         if api not in impls:
@@ -116,11 +116,11 @@ class EnvVarError(Exception):
         super().__init__(f"Environment variable '{var_name}' not set or empty{f' at {path}' if path else ''}")
 
 
-def redact_sensitive_fields(data: Dict[str, Any]) -> Dict[str, Any]:
+def redact_sensitive_fields(data: dict[str, Any]) -> dict[str, Any]:
     """Redact sensitive information from config before printing."""
     sensitive_patterns = ["api_key", "api_token", "password", "secret"]
 
-    def _redact_dict(d: Dict[str, Any]) -> Dict[str, Any]:
+    def _redact_dict(d: dict[str, Any]) -> dict[str, Any]:
         result = {}
         for k, v in d.items():
             if isinstance(v, dict):
@@ -215,8 +215,8 @@ def validate_env_pair(env_pair: str) -> tuple[str, str]:
 # Produces a stack of providers for the given run config. Not all APIs may be
 # asked for in the run config.
 async def construct_stack(
-    run_config: StackRunConfig, provider_registry: Optional[ProviderRegistry] = None
-) -> Dict[Api, Any]:
+    run_config: StackRunConfig, provider_registry: ProviderRegistry | None = None
+) -> dict[Api, Any]:
     dist_registry, _ = await create_dist_registry(run_config.metadata_store, run_config.image_name)
     impls = await resolve_impls(run_config, provider_registry or get_provider_registry(), dist_registry)
     await register_resources(run_config, impls)
@@ -235,7 +235,7 @@ def get_stack_run_config_from_template(template: str) -> StackRunConfig:
 
 
 def run_config_from_adhoc_config_spec(
-    adhoc_config_spec: str, provider_registry: Optional[ProviderRegistry] = None
+    adhoc_config_spec: str, provider_registry: ProviderRegistry | None = None
 ) -> StackRunConfig:
     """
     Create an adhoc distribution from a list of API providers.

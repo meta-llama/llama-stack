@@ -7,7 +7,6 @@
 import importlib.resources
 import logging
 from pathlib import Path
-from typing import Dict, List
 
 from pydantic import BaseModel
 from termcolor import cprint
@@ -37,7 +36,7 @@ class ApiInput(BaseModel):
 
 
 def get_provider_dependencies(
-    config_providers: Dict[str, List[Provider]],
+    config_providers: dict[str, list[Provider]],
 ) -> tuple[list[str], list[str]]:
     """Get normal and special dependencies from provider configuration."""
     all_providers = get_provider_registry()
@@ -71,7 +70,7 @@ def get_provider_dependencies(
     return list(set(normal_deps)), list(set(special_deps))
 
 
-def print_pip_install_help(providers: Dict[str, List[Provider]]):
+def print_pip_install_help(providers: dict[str, list[Provider]]):
     normal_deps, special_deps = get_provider_dependencies(providers)
 
     cprint(

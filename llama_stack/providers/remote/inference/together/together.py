@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import AsyncGenerator, List, Optional, Union
+from collections.abc import AsyncGenerator
 
 from together import AsyncTogether
 
@@ -73,10 +73,10 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
         self,
         model_id: str,
         content: InterleavedContent,
-        sampling_params: Optional[SamplingParams] = None,
-        response_format: Optional[ResponseFormat] = None,
-        stream: Optional[bool] = False,
-        logprobs: Optional[LogProbConfig] = None,
+        sampling_params: SamplingParams | None = None,
+        response_format: ResponseFormat | None = None,
+        stream: bool | None = False,
+        logprobs: LogProbConfig | None = None,
     ) -> AsyncGenerator:
         if sampling_params is None:
             sampling_params = SamplingParams()
@@ -125,8 +125,8 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
 
     def _build_options(
         self,
-        sampling_params: Optional[SamplingParams],
-        logprobs: Optional[LogProbConfig],
+        sampling_params: SamplingParams | None,
+        logprobs: LogProbConfig | None,
         fmt: ResponseFormat,
     ) -> dict:
         options = get_sampling_options(sampling_params)
@@ -153,15 +153,15 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
     async def chat_completion(
         self,
         model_id: str,
-        messages: List[Message],
-        sampling_params: Optional[SamplingParams] = None,
-        tools: Optional[List[ToolDefinition]] = None,
-        tool_choice: Optional[ToolChoice] = ToolChoice.auto,
-        tool_prompt_format: Optional[ToolPromptFormat] = None,
-        response_format: Optional[ResponseFormat] = None,
-        stream: Optional[bool] = False,
-        logprobs: Optional[LogProbConfig] = None,
-        tool_config: Optional[ToolConfig] = None,
+        messages: list[Message],
+        sampling_params: SamplingParams | None = None,
+        tools: list[ToolDefinition] | None = None,
+        tool_choice: ToolChoice | None = ToolChoice.auto,
+        tool_prompt_format: ToolPromptFormat | None = None,
+        response_format: ResponseFormat | None = None,
+        stream: bool | None = False,
+        logprobs: LogProbConfig | None = None,
+        tool_config: ToolConfig | None = None,
     ) -> AsyncGenerator:
         if sampling_params is None:
             sampling_params = SamplingParams()
@@ -202,7 +202,7 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
         async for chunk in process_chat_completion_stream_response(stream, request):
             yield chunk
 
-    async def _get_params(self, request: Union[ChatCompletionRequest, CompletionRequest]) -> dict:
+    async def _get_params(self, request: ChatCompletionRequest | CompletionRequest) -> dict:
         input_dict = {}
         media_present = request_has_media(request)
         llama_model = self.get_llama_model(request.model)
@@ -227,10 +227,10 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
     async def embeddings(
         self,
         model_id: str,
-        contents: List[str] | List[InterleavedContentItem],
-        text_truncation: Optional[TextTruncation] = TextTruncation.none,
-        output_dimension: Optional[int] = None,
-        task_type: Optional[EmbeddingTaskType] = None,
+        contents: list[str] | list[InterleavedContentItem],
+        text_truncation: TextTruncation | None = TextTruncation.none,
+        output_dimension: int | None = None,
+        task_type: EmbeddingTaskType | None = None,
     ) -> EmbeddingsResponse:
         model = await self.model_store.get_model(model_id)
         assert all(not content_has_media(content) for content in contents), (

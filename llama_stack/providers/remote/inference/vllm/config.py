@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -13,7 +12,7 @@ from llama_stack.schema_utils import json_schema_type
 
 @json_schema_type
 class VLLMInferenceAdapterConfig(BaseModel):
-    url: Optional[str] = Field(
+    url: str | None = Field(
         default=None,
         description="The URL for the vLLM model serving endpoint",
     )
@@ -21,7 +20,7 @@ class VLLMInferenceAdapterConfig(BaseModel):
         default=4096,
         description="Maximum number of tokens to generate.",
     )
-    api_token: Optional[str] = Field(
+    api_token: str | None = Field(
         default="fake",
         description="The API token",
     )

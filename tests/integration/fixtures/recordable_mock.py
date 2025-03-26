@@ -24,7 +24,7 @@ class RecordableMock:
         # Load existing cache if available and not recording
         if self.json_path.exists():
             try:
-                with open(self.json_path, "r") as f:
+                with open(self.json_path) as f:
                     self.cache = json.load(f)
             except Exception as e:
                 print(f"Error loading cache from {self.json_path}: {e}")

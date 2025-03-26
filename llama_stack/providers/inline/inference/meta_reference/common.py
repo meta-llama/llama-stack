@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 from pathlib import Path
-from typing import List, Optional
 
 from pydantic import BaseModel
 
@@ -15,7 +14,7 @@ from llama_stack.distribution.utils.model_utils import model_local_dir
 class TokenResult(BaseModel):
     token: int
     text: str
-    logprobs: Optional[List[float]] = None
+    logprobs: list[float] | None = None
 
 
 def model_checkpoint_dir(model_id) -> str:

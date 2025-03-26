@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from llama_stack.apis.scoring import ScoringResultRow
 from llama_stack.apis.scoring_functions import ScoringFnParams
@@ -26,9 +26,9 @@ class EqualityScoringFn(RegisteredBaseScoringFn):
 
     async def score_row(
         self,
-        input_row: Dict[str, Any],
-        scoring_fn_identifier: Optional[str] = "equality",
-        scoring_params: Optional[ScoringFnParams] = None,
+        input_row: dict[str, Any],
+        scoring_fn_identifier: str | None = "equality",
+        scoring_params: ScoringFnParams | None = None,
     ) -> ScoringResultRow:
         assert "expected_answer" in input_row, "Expected answer not found in input row."
         assert "generated_answer" in input_row, "Generated answer not found in input row."

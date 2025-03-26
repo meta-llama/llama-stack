@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Optional
 
 from pydantic import BaseModel, Field, SecretStr
 
@@ -29,7 +28,7 @@ class InferenceEndpointImplConfig(BaseModel):
     endpoint_name: str = Field(
         description="The name of the Hugging Face Inference Endpoint in the format of '{namespace}/{endpoint_name}' (e.g. 'my-cool-org/meta-llama-3-1-8b-instruct-rce'). Namespace is optional and will default to the user account if not provided.",
     )
-    api_token: Optional[SecretStr] = Field(
+    api_token: SecretStr | None = Field(
         default=None,
         description="Your Hugging Face user access token (will default to locally saved token if not provided)",
     )
@@ -52,7 +51,7 @@ class InferenceAPIImplConfig(BaseModel):
     huggingface_repo: str = Field(
         description="The model ID of the model on the Hugging Face Hub (e.g. 'meta-llama/Meta-Llama-3.1-70B-Instruct')",
     )
-    api_token: Optional[SecretStr] = Field(
+    api_token: SecretStr | None = Field(
         default=None,
         description="Your Hugging Face user access token (will default to locally saved token if not provided)",
     )

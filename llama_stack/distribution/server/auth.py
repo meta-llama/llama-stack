@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 import json
-from typing import Dict, List, Optional
 from urllib.parse import parse_qs
 
 import httpx
@@ -20,9 +19,9 @@ logger = get_logger(name=__name__, category="auth")
 class AuthRequestContext(BaseModel):
     path: str = Field(description="The path of the request being authenticated")
 
-    headers: Dict[str, str] = Field(description="HTTP headers from the original request (excluding Authorization)")
+    headers: dict[str, str] = Field(description="HTTP headers from the original request (excluding Authorization)")
 
-    params: Dict[str, List[str]] = Field(
+    params: dict[str, list[str]] = Field(
         description="Query parameters from the original request, parsed as dictionary of lists"
     )
 
@@ -36,7 +35,7 @@ class AuthRequest(BaseModel):
 class AuthResponse(BaseModel):
     """The format of the authentication response from the auth endpoint."""
 
-    access_attributes: Optional[AccessAttributes] = Field(
+    access_attributes: AccessAttributes | None = Field(
         default=None,
         description="""
         Structured user attributes for attribute-based access control.
@@ -58,7 +57,7 @@ class AuthResponse(BaseModel):
         """,
     )
 
-    message: Optional[str] = Field(
+    message: str | None = Field(
         default=None, description="Optional message providing additional context about the authentication result."
     )
 

@@ -9,7 +9,7 @@ import base64
 import io
 import json
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import faiss
 import numpy as np
@@ -84,7 +84,7 @@ class FaissIndex(EmbeddingIndex):
 
         await self.kvstore.delete(f"{FAISS_INDEX_PREFIX}{self.bank_id}")
 
-    async def add_chunks(self, chunks: List[Chunk], embeddings: NDArray):
+    async def add_chunks(self, chunks: list[Chunk], embeddings: NDArray):
         # Add dimension check
         embedding_dim = embeddings.shape[1] if len(embeddings.shape) > 1 else embeddings.shape[0]
         if embedding_dim != self.index.d:
@@ -159,7 +159,7 @@ class FaissVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
             inference_api=self.inference_api,
         )
 
-    async def list_vector_dbs(self) -> List[VectorDB]:
+    async def list_vector_dbs(self) -> list[VectorDB]:
         return [i.vector_db for i in self.cache.values()]
 
     async def unregister_vector_db(self, vector_db_id: str) -> None:
@@ -176,8 +176,8 @@ class FaissVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
     async def insert_chunks(
         self,
         vector_db_id: str,
-        chunks: List[Chunk],
-        ttl_seconds: Optional[int] = None,
+        chunks: list[Chunk],
+        ttl_seconds: int | None = None,
     ) -> None:
         index = self.cache.get(vector_db_id)
         if index is None:
@@ -189,7 +189,7 @@ class FaissVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
         self,
         vector_db_id: str,
         query: InterleavedContent,
-        params: Optional[Dict[str, Any]] = None,
+        params: dict[str, Any] | None = None,
     ) -> QueryChunksResponse:
         index = self.cache.get(vector_db_id)
         if index is None:
