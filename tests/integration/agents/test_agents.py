@@ -188,16 +188,12 @@ def test_builtin_tool_web_search(llama_stack_client_with_mocked_inference, agent
             }
         ],
         session_id=session_id,
+        stream=False,
     )
 
-    logs = [str(log) for log in AgentEventLogger().log(response) if log is not None]
-    logs_str = "".join(logs)
-
-    assert "tool_execution>" in logs_str
-    assert "Tool:brave_search Response:" in logs_str
-    assert "mark zuckerberg" in logs_str.lower()
-    if len(agent_config["output_shields"]) > 0:
-        assert "No Violation" in logs_str
+    tool_execution_step = next(step for step in response.steps if step.step_type == "tool_execution")
+    assert tool_execution_step.tool_calls[0].tool_name == "web_search"
+    assert "mark zuckerberg" in response.output_message.content.lower()
 
 
 def test_builtin_tool_code_execution(llama_stack_client_with_mocked_inference, agent_config):

@@ -33,7 +33,7 @@ class PromptTemplateTests(unittest.TestCase):
             if not example:
                 continue
             for tool in example:
-                assert tool.tool_name in text
+                assert tool.name in text
 
     def test_system_default(self):
         generator = SystemDefaultGenerator()

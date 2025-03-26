@@ -49,7 +49,7 @@
       "expected": "Washington"
     }
   },
-  "tool_calling": {
+  "tool_calling_deprecated": {
     "data": {
       "messages": [
         {"role": "system", "content": "Pretend you are a weather assistant."},
@@ -58,6 +58,30 @@
       "tools": [
         {
           "tool_name": "get_weather",
+          "description": "Get the current weather",
+          "parameters": {
+            "location": {
+              "param_type": "string",
+              "description": "The city and state (both required), e.g. San Francisco, CA."
+            }
+          }
+        }
+      ],
+      "expected": {
+        "location": "San Francisco, CA"
+      }
+    }
+  },
+  "tool_calling": {
+    "data": {
+      "messages": [
+        {"role": "system", "content": "Pretend you are a weather assistant."},
+        {"role": "user", "content": "What's the weather like in San Francisco?"}
+      ],
+      "tools": [
+        {
+          "type": "function",
+          "name": "get_weather",
           "description": "Get the current weather",
           "parameters": {
             "location": {
@@ -128,6 +152,56 @@
       }
     }
   },
+  "tool_calling_builtin_web_search": {
+    "data": {
+      "messages": [
+        {"role": "system", "content": "You are a helpful assistant. Use available tools to answer the question."},
+        {"role": "user", "content": "What's the weather like in San Francisco?"}
+      ],
+      "tools": [
+        {
+          "type": "web_search"
+        }
+      ],
+      "expected": "web_search"
+    }
+  },
+  "tool_calling_builtin_brave_search": {
+    "data": {
+      "messages": [
+        {"role": "system", "content": "You are a helpful assistant. Use available tools to answer the question."},
+        {"role": "user", "content": "What's the weather like in San Francisco?"}
+      ],
+      "tools": [{
+        "tool_name": "brave_search"
+      }],
+      "expected": "web_search"
+    }
+  },
+  "tool_calling_builtin_code_interpreter_deprecated": {
+    "data": {
+      "messages": [
+        {"role": "system", "content": "You are a helpful assistant. Use available tools to answer the question."},
+        {"role": "user", "content": "plot log(x) from -10 to 10"}
+      ],
+      "tools": [{
+        "tool_name": "code_interpreter"
+      }],
+      "expected": "code_interpreter"
+    }
+  },
+  "tool_calling_builtin_code_interpreter": {
+    "data": {
+      "messages": [
+        {"role": "system", "content": "You are a helpful assistant. Use available tools to answer the question."},
+        {"role": "user", "content": "plot log(x) from -10 to 10"}
+      ],
+      "tools": [{
+        "type": "code_interpreter"
+      }],
+      "expected": "code_interpreter"
+    }
+  },
   "tool_calling_tools_absent": {
     "data": {
       "messages": [
@@ -146,6 +220,7 @@
           "tool_calls": [
             {
               "call_id": "1",
+              "type": "function",
               "tool_name": "get_object_namespace_list",
               "arguments": {
                 "kind": "pod",

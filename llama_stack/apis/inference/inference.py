@@ -17,18 +17,18 @@ from typing import (
     runtime_checkable,
 )
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
 from llama_stack.apis.common.content_types import ContentDelta, InterleavedContent, InterleavedContentItem
 from llama_stack.apis.models import Model
 from llama_stack.apis.telemetry.telemetry import MetricResponseMixin
 from llama_stack.models.llama.datatypes import (
-    BuiltinTool,
     SamplingParams,
     StopReason,
     ToolCall,
     ToolDefinition,
+    ToolDefinitionDeprecated,
     ToolPromptFormat,
 )
 from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
@@ -156,22 +156,13 @@ Message = Annotated[
 register_schema(Message, name="Message")
 
 
+# TODO: move this to agent.py where this is used
 @json_schema_type
 class ToolResponse(BaseModel):
     call_id: str
-    tool_name: Union[BuiltinTool, str]
+    tool_name: str
     content: InterleavedContent
     metadata: Optional[Dict[str, Any]] = None
-
-    @field_validator("tool_name", mode="before")
-    @classmethod
-    def validate_field(cls, v):
-        if isinstance(v, str):
-            try:
-                return BuiltinTool(v)
-            except ValueError:
-                return v
-        return v
 
 
 class ToolChoice(Enum):
@@ -462,7 +453,8 @@ class Inference(Protocol):
         model_id: str,
         messages: List[Message],
         sampling_params: Optional[SamplingParams] = None,
-        tools: Optional[List[ToolDefinition]] = None,
+        # TODO: remove ToolDefinitionDeprecated in v0.1.10
+        tools: Optional[List[ToolDefinition] | List[ToolDefinitionDeprecated]] = None,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
         tool_prompt_format: Optional[ToolPromptFormat] = None,
         response_format: Optional[ResponseFormat] = None,

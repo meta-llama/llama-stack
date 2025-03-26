@@ -43,6 +43,7 @@ from llama_stack.models.llama.datatypes import (
     Role,
     StopReason,
     ToolPromptFormat,
+    ToolType,
     is_multimodal,
 )
 from llama_stack.models.llama.llama3.chat_format import ChatFormat
@@ -374,8 +375,8 @@ def augment_messages_for_tools_llama_3_1(
 
     messages.append(SystemMessage(content=sys_content))
 
-    has_custom_tools = any(isinstance(dfn.tool_name, str) for dfn in request.tools)
-    if has_custom_tools:
+    custom_tools = [t for t in request.tools if t.type == ToolType.function.value]
+    if custom_tools:
         fmt = request.tool_config.tool_prompt_format or ToolPromptFormat.json
         if fmt == ToolPromptFormat.json:
             tool_gen = JsonCustomToolGenerator()
@@ -384,7 +385,6 @@ def augment_messages_for_tools_llama_3_1(
         else:
             raise ValueError(f"Non supported ToolPromptFormat {fmt}")
 
-        custom_tools = [t for t in request.tools if isinstance(t.tool_name, str)]
         custom_template = tool_gen.gen(custom_tools)
         messages.append(UserMessage(content=custom_template.render()))
 
@@ -407,7 +407,7 @@ def augment_messages_for_tools_llama_3_2(
     sys_content = ""
     custom_tools, builtin_tools = [], []
     for t in request.tools:
-        if isinstance(t.tool_name, str):
+        if t.type == ToolType.function.value:
             custom_tools.append(t)
         else:
             builtin_tools.append(t)
@@ -419,7 +419,7 @@ def augment_messages_for_tools_llama_3_2(
         sys_content += tool_template.render()
         sys_content += "\n"
 
-    custom_tools = [dfn for dfn in request.tools if isinstance(dfn.tool_name, str)]
+    custom_tools = [t for t in request.tools if t.type == ToolType.function.value]
     if custom_tools:
         fmt = request.tool_config.tool_prompt_format or ToolPromptFormat.python_list
         if fmt != ToolPromptFormat.python_list:

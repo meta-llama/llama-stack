@@ -20,7 +20,6 @@ from typing import Dict, List, Optional, Tuple
 from PIL import Image as PIL_Image
 
 from llama_stack.models.llama.datatypes import (
-    BuiltinTool,
     RawContent,
     RawMediaItem,
     RawMessage,
@@ -29,6 +28,7 @@ from llama_stack.models.llama.datatypes import (
     StopReason,
     ToolCall,
     ToolPromptFormat,
+    ToolType,
 )
 
 from .tokenizer import Tokenizer
@@ -127,7 +127,7 @@ class ChatFormat:
         if (
             message.role == "assistant"
             and len(message.tool_calls) > 0
-            and message.tool_calls[0].tool_name == BuiltinTool.code_interpreter
+            and message.tool_calls[0].type == ToolType.code_interpreter
         ):
             tokens.append(self.tokenizer.special_tokens["<|python_tag|>"])
 
@@ -194,6 +194,7 @@ class ChatFormat:
             stop_reason = StopReason.end_of_message
 
         tool_name = None
+        tool_type = ToolType.function
         tool_arguments = {}
 
         custom_tool_info = ToolUtils.maybe_extract_custom_tool_call(content)
@@ -202,8 +203,8 @@ class ChatFormat:
             # Sometimes when agent has custom tools alongside builin tools
             # Agent responds for builtin tool calls in the format of the custom tools
             # This code tries to handle that case
-            if tool_name in BuiltinTool.__members__:
-                tool_name = BuiltinTool[tool_name]
+            if tool_name in ToolType.__members__:
+                tool_type = ToolType[tool_name]
                 if isinstance(tool_arguments, dict):
                     tool_arguments = {
                         "query": list(tool_arguments.values())[0],
@@ -215,10 +216,11 @@ class ChatFormat:
                 tool_arguments = {
                     "query": query,
                 }
-                if tool_name in BuiltinTool.__members__:
-                    tool_name = BuiltinTool[tool_name]
+                if tool_name in ToolType.__members__:
+                    tool_type = ToolType[tool_name]
             elif ipython:
-                tool_name = BuiltinTool.code_interpreter
+                tool_name = ToolType.code_interpreter.value
+                tool_type = ToolType.code_interpreter
                 tool_arguments = {
                     "code": content,
                 }
@@ -228,6 +230,7 @@ class ChatFormat:
             call_id = str(uuid.uuid4())
             tool_calls.append(
                 ToolCall(
+                    type=tool_type,
                     call_id=call_id,
                     tool_name=tool_name,
                     arguments=tool_arguments,

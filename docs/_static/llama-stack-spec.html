@@ -3798,6 +3798,21 @@
                 ],
                 "title": "AppendRowsRequest"
             },
+            "CodeInterpreterTool": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "code_interpreter",
+                        "default": "code_interpreter"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ],
+                "title": "CodeInterpreterTool"
+            },
             "CompletionMessage": {
                 "type": "object",
                 "properties": {
@@ -3836,6 +3851,34 @@
                 ],
                 "title": "CompletionMessage",
                 "description": "A message containing the model's (assistant) response in a chat conversation."
+            },
+            "FunctionTool": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "function",
+                        "default": "function"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "parameters": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/ToolParamDefinition"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "name"
+                ],
+                "title": "FunctionTool"
             },
             "GrammarResponseFormat": {
                 "type": "object",
@@ -4138,25 +4181,21 @@
             "ToolCall": {
                 "type": "object",
                 "properties": {
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "function",
+                            "web_search",
+                            "wolfram_alpha",
+                            "code_interpreter"
+                        ],
+                        "title": "ToolType"
+                    },
                     "call_id": {
                         "type": "string"
                     },
                     "tool_name": {
-                        "oneOf": [
-                            {
-                                "type": "string",
-                                "enum": [
-                                    "brave_search",
-                                    "wolfram_alpha",
-                                    "photogen",
-                                    "code_interpreter"
-                                ],
-                                "title": "BuiltinTool"
-                            },
-                            {
-                                "type": "string"
-                            }
-                        ]
+                        "type": "string"
                     },
                     "arguments": {
                         "oneOf": [
@@ -4237,47 +4276,12 @@
                 },
                 "additionalProperties": false,
                 "required": [
+                    "type",
                     "call_id",
                     "tool_name",
                     "arguments"
                 ],
                 "title": "ToolCall"
-            },
-            "ToolDefinition": {
-                "type": "object",
-                "properties": {
-                    "tool_name": {
-                        "oneOf": [
-                            {
-                                "type": "string",
-                                "enum": [
-                                    "brave_search",
-                                    "wolfram_alpha",
-                                    "photogen",
-                                    "code_interpreter"
-                                ],
-                                "title": "BuiltinTool"
-                            },
-                            {
-                                "type": "string"
-                            }
-                        ]
-                    },
-                    "description": {
-                        "type": "string"
-                    },
-                    "parameters": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "$ref": "#/components/schemas/ToolParamDefinition"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "tool_name"
-                ],
-                "title": "ToolDefinition"
             },
             "ToolParamDefinition": {
                 "type": "object",
@@ -4428,6 +4432,36 @@
                 "title": "UserMessage",
                 "description": "A message from the user in a chat conversation."
             },
+            "WebSearchTool": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "web_search",
+                        "default": "web_search"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ],
+                "title": "WebSearchTool"
+            },
+            "WolframAlphaTool": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "wolfram_alpha",
+                        "default": "wolfram_alpha"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ],
+                "title": "WolframAlphaTool"
+            },
             "BatchChatCompletionRequest": {
                 "type": "object",
                 "properties": {
@@ -4449,7 +4483,29 @@
                     "tools": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/ToolDefinition"
+                            "oneOf": [
+                                {
+                                    "$ref": "#/components/schemas/WebSearchTool"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/WolframAlphaTool"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/CodeInterpreterTool"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/FunctionTool"
+                                }
+                            ],
+                            "discriminator": {
+                                "propertyName": "type",
+                                "mapping": {
+                                    "web_search": "#/components/schemas/WebSearchTool",
+                                    "wolfram_alpha": "#/components/schemas/WolframAlphaTool",
+                                    "code_interpreter": "#/components/schemas/CodeInterpreterTool",
+                                    "function": "#/components/schemas/FunctionTool"
+                                }
+                            }
                         }
                     },
                     "tool_choice": {
@@ -4734,6 +4790,41 @@
                 "title": "ToolConfig",
                 "description": "Configuration for tool use."
             },
+            "ToolDefinitionDeprecated": {
+                "type": "object",
+                "properties": {
+                    "tool_name": {
+                        "oneOf": [
+                            {
+                                "type": "string",
+                                "enum": [
+                                    "brave_search",
+                                    "wolfram_alpha",
+                                    "code_interpreter"
+                                ],
+                                "title": "BuiltinTool"
+                            },
+                            {
+                                "type": "string"
+                            }
+                        ]
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "parameters": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/ToolParamDefinition"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "tool_name"
+                ],
+                "title": "ToolDefinitionDeprecated"
+            },
             "ChatCompletionRequest": {
                 "type": "object",
                 "properties": {
@@ -4753,10 +4844,42 @@
                         "description": "Parameters to control the sampling strategy"
                     },
                     "tools": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/ToolDefinition"
-                        },
+                        "oneOf": [
+                            {
+                                "type": "array",
+                                "items": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/WebSearchTool"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/WolframAlphaTool"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/CodeInterpreterTool"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/FunctionTool"
+                                        }
+                                    ],
+                                    "discriminator": {
+                                        "propertyName": "type",
+                                        "mapping": {
+                                            "web_search": "#/components/schemas/WebSearchTool",
+                                            "wolfram_alpha": "#/components/schemas/WolframAlphaTool",
+                                            "code_interpreter": "#/components/schemas/CodeInterpreterTool",
+                                            "function": "#/components/schemas/FunctionTool"
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/ToolDefinitionDeprecated"
+                                }
+                            }
+                        ],
                         "description": "(Optional) List of tool definitions available to the model"
                     },
                     "tool_choice": {
@@ -5630,21 +5753,7 @@
                         "type": "string"
                     },
                     "tool_name": {
-                        "oneOf": [
-                            {
-                                "type": "string",
-                                "enum": [
-                                    "brave_search",
-                                    "wolfram_alpha",
-                                    "photogen",
-                                    "code_interpreter"
-                                ],
-                                "title": "BuiltinTool"
-                            },
-                            {
-                                "type": "string"
-                            }
-                        ]
+                        "type": "string"
                     },
                     "content": {
                         "$ref": "#/components/schemas/InterleavedContent"

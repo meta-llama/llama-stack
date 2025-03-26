@@ -80,12 +80,12 @@ from llama_stack.apis.inference import (
     UserMessage,
 )
 from llama_stack.models.llama.datatypes import (
-    BuiltinTool,
     GreedySamplingStrategy,
     SamplingParams,
     StopReason,
     ToolCall,
     ToolDefinition,
+    ToolType,
     TopKSamplingStrategy,
     TopPSamplingStrategy,
 )
@@ -271,7 +271,7 @@ def process_chat_completion_response(
         else:
             # only return tool_calls if provided in the request
             new_tool_calls = []
-            request_tools = {t.tool_name: t for t in request.tools}
+            request_tools = {t.name: t for t in request.tools}
             for t in raw_message.tool_calls:
                 if t.tool_name in request_tools:
                     new_tool_calls.append(t)
@@ -423,7 +423,7 @@ async def process_chat_completion_stream_response(
             )
         )
 
-    request_tools = {t.tool_name: t for t in request.tools}
+    request_tools = {t.name: t for t in request.tools}
     for tool_call in message.tool_calls:
         if tool_call.tool_name in request_tools:
             yield ChatCompletionResponseStreamChunk(
@@ -574,7 +574,7 @@ async def convert_message_to_openai_dict_new(
                 OpenAIChatCompletionMessageToolCall(
                     id=tool.call_id,
                     function=OpenAIFunction(
-                        name=(tool.tool_name if not isinstance(tool.tool_name, BuiltinTool) else tool.tool_name.value),
+                        name=tool.tool_name,
                         arguments=json.dumps(tool.arguments),
                     ),
                     type="function",
@@ -638,7 +638,7 @@ def convert_tooldef_to_openai_tool(tool: ToolDefinition) -> dict:
     Convert a ToolDefinition to an OpenAI API-compatible dictionary.
 
     ToolDefinition:
-        tool_name: str | BuiltinTool
+        tool_name: str
         description: Optional[str]
         parameters: Optional[Dict[str, ToolParamDefinition]]
 
@@ -677,10 +677,7 @@ def convert_tooldef_to_openai_tool(tool: ToolDefinition) -> dict:
     }
     function = out["function"]
 
-    if isinstance(tool.tool_name, BuiltinTool):
-        function.update(name=tool.tool_name.value)  # TODO(mf): is this sufficient?
-    else:
-        function.update(name=tool.tool_name)
+    function.update(name=tool.name)
 
     if tool.description:
         function.update(description=tool.description)
@@ -761,6 +758,7 @@ def _convert_openai_tool_calls(
 
     return [
         ToolCall(
+            type=ToolType.function,
             call_id=call.id,
             tool_name=call.function.name,
             arguments=json.loads(call.function.arguments),
@@ -975,6 +973,7 @@ async def convert_openai_chat_completion_stream(
             try:
                 arguments = json.loads(buffer["arguments"])
                 tool_call = ToolCall(
+                    type=ToolType.function,
                     call_id=buffer["call_id"],
                     tool_name=buffer["name"],
                     arguments=arguments,
