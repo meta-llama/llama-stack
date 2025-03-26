@@ -424,14 +424,27 @@ class DatasetsRoutingTable(CommonRoutingTableImpl, Datasets):
         provider_dataset_id = dataset_id
 
         # infer provider from source
+        import os
+
+        if os.getenv("LLAMA_STACK_DEBUG", "false") == "true":
+            breakpoint()
         if source.type == DatasetType.rows.value:
             provider_id = "localfs"
         elif source.type == DatasetType.uri.value:
             # infer provider from uri
             if source.uri.startswith("huggingface"):
                 provider_id = "huggingface"
-            else:
+            # TODO: Fix lsfs and add more providers here
+            elif source.uri.startswith("lsfs://") or source.uri.startswith("file://"):
                 provider_id = "localfs"
+                if source.uri.startswith("lsfs://"):
+                    source.uri = source.uri.replace("lsfs://", "file://", count=1)
+            elif source.uri.startswith("postgresql://"):
+                provider_id = "postgresql"
+            else:
+                provider_id = None
+                # since panda can't read from any URI, just file paths
+                raise ValueError(f"Unknown data source URI: {source.uri}")
         else:
             raise ValueError(f"Unknown data source type: {source.type}")
 
