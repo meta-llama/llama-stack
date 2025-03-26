@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 
 from pydantic import BaseModel
 
@@ -21,8 +21,8 @@ class IterrowsResponse(BaseModel):
     :param next_start_index: Index into dataset for the first row in the next page. None if there are no more rows.
     """
 
-    data: List[Dict[str, Any]]
-    next_start_index: Optional[int] = None
+    data: list[dict[str, Any]]
+    next_start_index: int | None = None
 
 
 class DatasetStore(Protocol):
@@ -39,8 +39,8 @@ class DatasetIO(Protocol):
     async def iterrows(
         self,
         dataset_id: str,
-        start_index: Optional[int] = None,
-        limit: Optional[int] = None,
+        start_index: int | None = None,
+        limit: int | None = None,
     ) -> IterrowsResponse:
         """Get a paginated list of rows from a dataset. Uses cursor-based pagination.
 
@@ -51,4 +51,4 @@ class DatasetIO(Protocol):
         ...
 
     @webmethod(route="/datasetio/append-rows/{dataset_id:path}", method="POST")
-    async def append_rows(self, dataset_id: str, rows: List[Dict[str, Any]]) -> None: ...
+    async def append_rows(self, dataset_id: str, rows: list[dict[str, Any]]) -> None: ...

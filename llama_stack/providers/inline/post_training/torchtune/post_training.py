@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 from datetime import datetime, timezone
-from typing import Any, Dict, Optional
+from typing import Any
 
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
@@ -50,11 +50,11 @@ class TorchtunePostTrainingImpl:
         self,
         job_uuid: str,
         training_config: TrainingConfig,
-        hyperparam_search_config: Dict[str, Any],
-        logger_config: Dict[str, Any],
+        hyperparam_search_config: dict[str, Any],
+        logger_config: dict[str, Any],
         model: str,
-        checkpoint_dir: Optional[str],
-        algorithm_config: Optional[AlgorithmConfig],
+        checkpoint_dir: str | None,
+        algorithm_config: AlgorithmConfig | None,
     ) -> PostTrainingJob:
         if job_uuid in self.jobs:
             raise ValueError(f"Job {job_uuid} already exists")
@@ -109,15 +109,15 @@ class TorchtunePostTrainingImpl:
         finetuned_model: str,
         algorithm_config: DPOAlignmentConfig,
         training_config: TrainingConfig,
-        hyperparam_search_config: Dict[str, Any],
-        logger_config: Dict[str, Any],
+        hyperparam_search_config: dict[str, Any],
+        logger_config: dict[str, Any],
     ) -> PostTrainingJob: ...
 
     async def get_training_jobs(self) -> ListPostTrainingJobsResponse:
         return ListPostTrainingJobsResponse(data=[PostTrainingJob(job_uuid=uuid_) for uuid_ in self.jobs])
 
     @webmethod(route="/post-training/job/status")
-    async def get_training_job_status(self, job_uuid: str) -> Optional[PostTrainingJobStatusResponse]:
+    async def get_training_job_status(self, job_uuid: str) -> PostTrainingJobStatusResponse | None:
         return self.jobs.get(job_uuid, None)
 
     @webmethod(route="/post-training/job/cancel")
@@ -125,7 +125,7 @@ class TorchtunePostTrainingImpl:
         raise NotImplementedError("Job cancel is not implemented yet")
 
     @webmethod(route="/post-training/job/artifacts")
-    async def get_training_job_artifacts(self, job_uuid: str) -> Optional[PostTrainingJobArtifactsResponse]:
+    async def get_training_job_artifacts(self, job_uuid: str) -> PostTrainingJobArtifactsResponse | None:
         if job_uuid in self.checkpoints_dict:
             checkpoints = self.checkpoints_dict.get(job_uuid, [])
             return PostTrainingJobArtifactsResponse(job_uuid=job_uuid, checkpoints=checkpoints)

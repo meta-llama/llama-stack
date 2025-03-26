@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Iterable
+from collections.abc import Iterable
 
 from rich.console import Console
 from rich.table import Table

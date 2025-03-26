@@ -5,9 +5,10 @@
 # the root directory of this source tree.
 
 import os
+from collections.abc import Generator
 from copy import deepcopy
 from functools import partial
-from typing import Any, Generator
+from typing import Any
 
 from llama_stack.models.llama.datatypes import Model
 from llama_stack.models.llama.llama3.chat_format import ChatFormat

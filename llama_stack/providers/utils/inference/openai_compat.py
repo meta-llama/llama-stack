@@ -6,7 +6,7 @@
 import json
 import logging
 import warnings
-from typing import AsyncGenerator, Dict, Iterable, List, Optional, Union
+from collections.abc import AsyncGenerator, Iterable
 
 from openai import AsyncStream
 from openai.types.chat import (
@@ -102,24 +102,24 @@ class OpenAICompatCompletionChoiceDelta(BaseModel):
 
 
 class OpenAICompatLogprobs(BaseModel):
-    text_offset: Optional[List[int]] = None
+    text_offset: list[int] | None = None
 
-    token_logprobs: Optional[List[float]] = None
+    token_logprobs: list[float] | None = None
 
-    tokens: Optional[List[str]] = None
+    tokens: list[str] | None = None
 
-    top_logprobs: Optional[List[Dict[str, float]]] = None
+    top_logprobs: list[dict[str, float]] | None = None
 
 
 class OpenAICompatCompletionChoice(BaseModel):
-    finish_reason: Optional[str] = None
-    text: Optional[str] = None
-    delta: Optional[OpenAICompatCompletionChoiceDelta] = None
-    logprobs: Optional[OpenAICompatLogprobs] = None
+    finish_reason: str | None = None
+    text: str | None = None
+    delta: OpenAICompatCompletionChoiceDelta | None = None
+    logprobs: OpenAICompatLogprobs | None = None
 
 
 class OpenAICompatCompletionResponse(BaseModel):
-    choices: List[OpenAICompatCompletionChoice]
+    choices: list[OpenAICompatCompletionChoice]
 
 
 def get_sampling_strategy_options(params: SamplingParams) -> dict:
@@ -175,8 +175,8 @@ def get_stop_reason(finish_reason: str) -> StopReason:
 
 
 def convert_openai_completion_logprobs(
-    logprobs: Optional[OpenAICompatLogprobs],
-) -> Optional[List[TokenLogProbs]]:
+    logprobs: OpenAICompatLogprobs | None,
+) -> list[TokenLogProbs] | None:
     if not logprobs:
         return None
     if hasattr(logprobs, "top_logprobs"):
@@ -193,7 +193,7 @@ def convert_openai_completion_logprobs(
     return None
 
 
-def convert_openai_completion_logprobs_stream(text: str, logprobs: Optional[Union[float, OpenAICompatLogprobs]]):
+def convert_openai_completion_logprobs_stream(text: str, logprobs: float | OpenAICompatLogprobs | None):
     if logprobs is None:
         return None
     if isinstance(logprobs, float):
@@ -500,7 +500,7 @@ class UnparseableToolCall(BaseModel):
 
 
 async def convert_message_to_openai_dict_new(
-    message: Message | Dict,
+    message: Message | dict,
 ) -> OpenAIChatCompletionMessage:
     """
     Convert a Message to an OpenAI API-compatible dictionary.
@@ -529,14 +529,10 @@ async def convert_message_to_openai_dict_new(
     #  List[...] -> List[...]
     async def _convert_message_content(
         content: InterleavedContent,
-    ) -> Union[str, Iterable[OpenAIChatCompletionContentPartParam]]:
+    ) -> str | Iterable[OpenAIChatCompletionContentPartParam]:
         async def impl(
             content_: InterleavedContent,
-        ) -> Union[
-            str,
-            OpenAIChatCompletionContentPartParam,
-            List[OpenAIChatCompletionContentPartParam],
-        ]:
+        ) -> str | OpenAIChatCompletionContentPartParam | list[OpenAIChatCompletionContentPartParam]:
             # Llama Stack and OpenAI spec match for str and text input
             if isinstance(content_, str):
                 return content_
@@ -605,7 +601,7 @@ async def convert_message_to_openai_dict_new(
 
 def convert_tool_call(
     tool_call: ChatCompletionMessageToolCall,
-) -> Union[ToolCall, UnparseableToolCall]:
+) -> ToolCall | UnparseableToolCall:
     """
     Convert a ChatCompletionMessageToolCall tool call to either a
     ToolCall or UnparseableToolCall. Returns an UnparseableToolCall
@@ -738,8 +734,8 @@ def _convert_openai_finish_reason(finish_reason: str) -> StopReason:
 
 
 def _convert_openai_tool_calls(
-    tool_calls: List[OpenAIChatCompletionMessageToolCall],
-) -> List[ToolCall]:
+    tool_calls: list[OpenAIChatCompletionMessageToolCall],
+) -> list[ToolCall]:
     """
     Convert an OpenAI ChatCompletionMessageToolCall list into a list of ToolCall.
 
@@ -775,7 +771,7 @@ def _convert_openai_tool_calls(
 
 def _convert_openai_logprobs(
     logprobs: OpenAIChoiceLogprobs,
-) -> Optional[List[TokenLogProbs]]:
+) -> list[TokenLogProbs] | None:
     """
     Convert an OpenAI ChoiceLogprobs into a list of TokenLogProbs.
 

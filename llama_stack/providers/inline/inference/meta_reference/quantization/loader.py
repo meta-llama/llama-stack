@@ -9,7 +9,7 @@
 
 import logging
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import torch
 from fairscale.nn.model_parallel.initialize import get_model_parallel_rank
@@ -43,7 +43,7 @@ def convert_to_fp8_quantized_model(
     model: Transformer,
     config: MetaReferenceQuantizedInferenceConfig,
     checkpoint_dir: str,
-    fp8_activation_scale_ub: Optional[float] = 1200.0,
+    fp8_activation_scale_ub: float | None = 1200.0,
 ) -> Transformer:
     if config.quantization.type == QuantizationType.bf16.value:
         return model
@@ -124,8 +124,8 @@ class Int8DynActInt4WeightLinearLoRA(Int8DynActInt4WeightLinear):
         precision: torch.dtype = torch.float32,
         scales_precision: torch.dtype = torch.float32,
         # LoRA parameters
-        lora_rank: Optional[int] = None,
-        lora_scale: Optional[float] = None,
+        lora_rank: int | None = None,
+        lora_scale: float | None = None,
     ) -> None:
         super().__init__(
             in_features,
@@ -150,13 +150,13 @@ class Int8DynActInt4WeightLinearLoRA(Int8DynActInt4WeightLinear):
 
     def load_hook(
         self,
-        state_dict: Dict[str, Any],
+        state_dict: dict[str, Any],
         prefix: str,
-        local_metadata: Dict[str, Any],
+        local_metadata: dict[str, Any],
         strict: bool,
-        missing_keys: List[str],
-        unexpected_keys: List[str],
-        error_msgs: List[str],
+        missing_keys: list[str],
+        unexpected_keys: list[str],
+        error_msgs: list[str],
     ) -> None:
         """A hook to load the quantized weights from the state dict."""
         if prefix + "zeros" not in state_dict:
@@ -194,13 +194,13 @@ class Int8WeightEmbedding(torch.nn.Embedding):
 
     def load_hook(
         self,
-        state_dict: Dict[str, Any],
+        state_dict: dict[str, Any],
         prefix: str,
-        local_metadata: Dict[str, Any],
+        local_metadata: dict[str, Any],
         strict: bool,
-        missing_keys: List[str],
-        unexpected_keys: List[str],
-        error_msgs: List[str],
+        missing_keys: list[str],
+        unexpected_keys: list[str],
+        error_msgs: list[str],
     ) -> None:
         """A hook to load the quantized embedding weight and scales from the state dict."""
         weights = state_dict.pop(prefix + "weight")
@@ -224,13 +224,13 @@ class Int8WeightLinear(torch.nn.Linear):
 
     def load_hook(
         self,
-        state_dict: Dict[str, Any],
+        state_dict: dict[str, Any],
         prefix: str,
-        local_metadata: Dict[str, Any],
+        local_metadata: dict[str, Any],
         strict: bool,
-        missing_keys: List[str],
-        unexpected_keys: List[str],
-        error_msgs: List[str],
+        missing_keys: list[str],
+        unexpected_keys: list[str],
+        error_msgs: list[str],
     ) -> None:
         """A hook to load the quantized linear weight and scales from the state dict."""
         weights = state_dict.pop(prefix + "weight")
@@ -241,8 +241,8 @@ class Int8WeightLinear(torch.nn.Linear):
 def _prepare_model_int4_weight_int8_dynamic_activation(
     model: torch.nn.Module,
     group_size: int,
-    lora_rank: Optional[int],
-    lora_scale: Optional[float],
+    lora_rank: int | None,
+    lora_scale: float | None,
 ):
     """Prepare the model for int4 weight and int8 dynamic activation quantization.
 
@@ -268,7 +268,7 @@ def _prepare_model_int4_weight_int8_dynamic_activation(
             )
             del module
             setattr(model, module_name, quantized_module)
-        elif isinstance(module, (ColumnParallelLinear, RowParallelLinear, nn.Linear)):
+        elif isinstance(module, ColumnParallelLinear | RowParallelLinear | nn.Linear):
             quantized_module = Int8DynActInt4WeightLinearLoRA(
                 in_features=module.in_features,
                 out_features=module.out_features,

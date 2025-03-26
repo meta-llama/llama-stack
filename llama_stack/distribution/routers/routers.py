@@ -5,7 +5,8 @@
 # the root directory of this source tree.
 
 import time
-from typing import Any, AsyncGenerator, AsyncIterator, Dict, List, Optional, Union
+from collections.abc import AsyncGenerator, AsyncIterator
+from typing import Any
 
 from llama_stack.apis.common.content_types import (
     URL,
@@ -84,9 +85,9 @@ class VectorIORouter(VectorIO):
         self,
         vector_db_id: str,
         embedding_model: str,
-        embedding_dimension: Optional[int] = 384,
-        provider_id: Optional[str] = None,
-        provider_vector_db_id: Optional[str] = None,
+        embedding_dimension: int | None = 384,
+        provider_id: str | None = None,
+        provider_vector_db_id: str | None = None,
     ) -> None:
         logger.debug(f"VectorIORouter.register_vector_db: {vector_db_id}, {embedding_model}")
         await self.routing_table.register_vector_db(
@@ -100,8 +101,8 @@ class VectorIORouter(VectorIO):
     async def insert_chunks(
         self,
         vector_db_id: str,
-        chunks: List[Chunk],
-        ttl_seconds: Optional[int] = None,
+        chunks: list[Chunk],
+        ttl_seconds: int | None = None,
     ) -> None:
         logger.debug(
             f"VectorIORouter.insert_chunks: {vector_db_id}, {len(chunks)} chunks, ttl_seconds={ttl_seconds}, chunk_ids={[chunk.metadata['document_id'] for chunk in chunks[:3]]}{' and more...' if len(chunks) > 3 else ''}",
@@ -112,7 +113,7 @@ class VectorIORouter(VectorIO):
         self,
         vector_db_id: str,
         query: InterleavedContent,
-        params: Optional[Dict[str, Any]] = None,
+        params: dict[str, Any] | None = None,
     ) -> QueryChunksResponse:
         logger.debug(f"VectorIORouter.query_chunks: {vector_db_id}")
         return await self.routing_table.get_provider_impl(vector_db_id).query_chunks(vector_db_id, query, params)
@@ -124,7 +125,7 @@ class InferenceRouter(Inference):
     def __init__(
         self,
         routing_table: RoutingTable,
-        telemetry: Optional[Telemetry] = None,
+        telemetry: Telemetry | None = None,
     ) -> None:
         logger.debug("Initializing InferenceRouter")
         self.routing_table = routing_table
@@ -144,10 +145,10 @@ class InferenceRouter(Inference):
     async def register_model(
         self,
         model_id: str,
-        provider_model_id: Optional[str] = None,
-        provider_id: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-        model_type: Optional[ModelType] = None,
+        provider_model_id: str | None = None,
+        provider_id: str | None = None,
+        metadata: dict[str, Any] | None = None,
+        model_type: ModelType | None = None,
     ) -> None:
         logger.debug(
             f"InferenceRouter.register_model: {model_id=} {provider_model_id=} {provider_id=} {metadata=} {model_type=}",
@@ -160,7 +161,7 @@ class InferenceRouter(Inference):
         completion_tokens: int,
         total_tokens: int,
         model: Model,
-    ) -> List[MetricEvent]:
+    ) -> list[MetricEvent]:
         """Constructs a list of MetricEvent objects containing token usage metrics.
 
         Args:
@@ -205,7 +206,7 @@ class InferenceRouter(Inference):
         completion_tokens: int,
         total_tokens: int,
         model: Model,
-    ) -> List[MetricInResponse]:
+    ) -> list[MetricInResponse]:
         metrics = self._construct_metrics(prompt_tokens, completion_tokens, total_tokens, model)
         if self.telemetry:
             for metric in metrics:
@@ -214,9 +215,9 @@ class InferenceRouter(Inference):
 
     async def _count_tokens(
         self,
-        messages: List[Message] | InterleavedContent,
-        tool_prompt_format: Optional[ToolPromptFormat] = None,
-    ) -> Optional[int]:
+        messages: list[Message] | InterleavedContent,
+        tool_prompt_format: ToolPromptFormat | None = None,
+    ) -> int | None:
         if isinstance(messages, list):
             encoded = self.formatter.encode_dialog_prompt(messages, tool_prompt_format)
         else:
@@ -226,16 +227,16 @@ class InferenceRouter(Inference):
     async def chat_completion(
         self,
         model_id: str,
-        messages: List[Message],
-        sampling_params: Optional[SamplingParams] = None,
-        response_format: Optional[ResponseFormat] = None,
-        tools: Optional[List[ToolDefinition]] = None,
-        tool_choice: Optional[ToolChoice] = None,
-        tool_prompt_format: Optional[ToolPromptFormat] = None,
-        stream: Optional[bool] = False,
-        logprobs: Optional[LogProbConfig] = None,
-        tool_config: Optional[ToolConfig] = None,
-    ) -> Union[ChatCompletionResponse, AsyncIterator[ChatCompletionResponseStreamChunk]]:
+        messages: list[Message],
+        sampling_params: SamplingParams | None = None,
+        response_format: ResponseFormat | None = None,
+        tools: list[ToolDefinition] | None = None,
+        tool_choice: ToolChoice | None = None,
+        tool_prompt_format: ToolPromptFormat | None = None,
+        stream: bool | None = False,
+        logprobs: LogProbConfig | None = None,
+        tool_config: ToolConfig | None = None,
+    ) -> ChatCompletionResponse | AsyncIterator[ChatCompletionResponseStreamChunk]:
         logger.debug(
             f"InferenceRouter.chat_completion: {model_id=}, {stream=}, {messages=}, {tools=}, {tool_config=}, {response_format=}",
         )
@@ -336,10 +337,10 @@ class InferenceRouter(Inference):
         self,
         model_id: str,
         content: InterleavedContent,
-        sampling_params: Optional[SamplingParams] = None,
-        response_format: Optional[ResponseFormat] = None,
-        stream: Optional[bool] = False,
-        logprobs: Optional[LogProbConfig] = None,
+        sampling_params: SamplingParams | None = None,
+        response_format: ResponseFormat | None = None,
+        stream: bool | None = False,
+        logprobs: LogProbConfig | None = None,
     ) -> AsyncGenerator:
         if sampling_params is None:
             sampling_params = SamplingParams()
@@ -399,10 +400,10 @@ class InferenceRouter(Inference):
     async def embeddings(
         self,
         model_id: str,
-        contents: List[str] | List[InterleavedContentItem],
-        text_truncation: Optional[TextTruncation] = TextTruncation.none,
-        output_dimension: Optional[int] = None,
-        task_type: Optional[EmbeddingTaskType] = None,
+        contents: list[str] | list[InterleavedContentItem],
+        text_truncation: TextTruncation | None = TextTruncation.none,
+        output_dimension: int | None = None,
+        task_type: EmbeddingTaskType | None = None,
     ) -> EmbeddingsResponse:
         logger.debug(f"InferenceRouter.embeddings: {model_id}")
         model = await self.routing_table.get_model(model_id)
@@ -438,9 +439,9 @@ class SafetyRouter(Safety):
     async def register_shield(
         self,
         shield_id: str,
-        provider_shield_id: Optional[str] = None,
-        provider_id: Optional[str] = None,
-        params: Optional[Dict[str, Any]] = None,
+        provider_shield_id: str | None = None,
+        provider_id: str | None = None,
+        params: dict[str, Any] | None = None,
     ) -> Shield:
         logger.debug(f"SafetyRouter.register_shield: {shield_id}")
         return await self.routing_table.register_shield(shield_id, provider_shield_id, provider_id, params)
@@ -448,8 +449,8 @@ class SafetyRouter(Safety):
     async def run_shield(
         self,
         shield_id: str,
-        messages: List[Message],
-        params: Dict[str, Any] = None,
+        messages: list[Message],
+        params: dict[str, Any] = None,
     ) -> RunShieldResponse:
         logger.debug(f"SafetyRouter.run_shield: {shield_id}")
         return await self.routing_table.get_provider_impl(shield_id).run_shield(
@@ -479,8 +480,8 @@ class DatasetIORouter(DatasetIO):
         self,
         purpose: DatasetPurpose,
         source: DataSource,
-        metadata: Optional[Dict[str, Any]] = None,
-        dataset_id: Optional[str] = None,
+        metadata: dict[str, Any] | None = None,
+        dataset_id: str | None = None,
     ) -> None:
         logger.debug(
             f"DatasetIORouter.register_dataset: {purpose=} {source=} {metadata=} {dataset_id=}",
@@ -495,8 +496,8 @@ class DatasetIORouter(DatasetIO):
     async def iterrows(
         self,
         dataset_id: str,
-        start_index: Optional[int] = None,
-        limit: Optional[int] = None,
+        start_index: int | None = None,
+        limit: int | None = None,
     ) -> IterrowsResponse:
         logger.debug(
             f"DatasetIORouter.iterrows: {dataset_id}, {start_index=} {limit=}",
@@ -507,7 +508,7 @@ class DatasetIORouter(DatasetIO):
             limit=limit,
         )
 
-    async def append_rows(self, dataset_id: str, rows: List[Dict[str, Any]]) -> None:
+    async def append_rows(self, dataset_id: str, rows: list[dict[str, Any]]) -> None:
         logger.debug(f"DatasetIORouter.append_rows: {dataset_id}, {len(rows)} rows")
         return await self.routing_table.get_provider_impl(dataset_id).append_rows(
             dataset_id=dataset_id,
@@ -534,7 +535,7 @@ class ScoringRouter(Scoring):
     async def score_batch(
         self,
         dataset_id: str,
-        scoring_functions: Dict[str, Optional[ScoringFnParams]] = None,
+        scoring_functions: dict[str, ScoringFnParams | None] = None,
         save_results_dataset: bool = False,
     ) -> ScoreBatchResponse:
         logger.debug(f"ScoringRouter.score_batch: {dataset_id}")
@@ -555,8 +556,8 @@ class ScoringRouter(Scoring):
 
     async def score(
         self,
-        input_rows: List[Dict[str, Any]],
-        scoring_functions: Dict[str, Optional[ScoringFnParams]] = None,
+        input_rows: list[dict[str, Any]],
+        scoring_functions: dict[str, ScoringFnParams | None] = None,
     ) -> ScoreResponse:
         logger.debug(f"ScoringRouter.score: {len(input_rows)} rows, {len(scoring_functions)} functions")
         res = {}
@@ -601,8 +602,8 @@ class EvalRouter(Eval):
     async def evaluate_rows(
         self,
         benchmark_id: str,
-        input_rows: List[Dict[str, Any]],
-        scoring_functions: List[str],
+        input_rows: list[dict[str, Any]],
+        scoring_functions: list[str],
         benchmark_config: BenchmarkConfig,
     ) -> EvaluateResponse:
         logger.debug(f"EvalRouter.evaluate_rows: {benchmark_id}, {len(input_rows)} rows")
@@ -656,8 +657,8 @@ class ToolRuntimeRouter(ToolRuntime):
         async def query(
             self,
             content: InterleavedContent,
-            vector_db_ids: List[str],
-            query_config: Optional[RAGQueryConfig] = None,
+            vector_db_ids: list[str],
+            query_config: RAGQueryConfig | None = None,
         ) -> RAGQueryResult:
             logger.debug(f"ToolRuntimeRouter.RagToolImpl.query: {vector_db_ids}")
             return await self.routing_table.get_provider_impl("knowledge_search").query(
@@ -666,7 +667,7 @@ class ToolRuntimeRouter(ToolRuntime):
 
         async def insert(
             self,
-            documents: List[RAGDocument],
+            documents: list[RAGDocument],
             vector_db_id: str,
             chunk_size_in_tokens: int = 512,
         ) -> None:
@@ -697,7 +698,7 @@ class ToolRuntimeRouter(ToolRuntime):
         logger.debug("ToolRuntimeRouter.shutdown")
         pass
 
-    async def invoke_tool(self, tool_name: str, kwargs: Dict[str, Any]) -> Any:
+    async def invoke_tool(self, tool_name: str, kwargs: dict[str, Any]) -> Any:
         logger.debug(f"ToolRuntimeRouter.invoke_tool: {tool_name}")
         return await self.routing_table.get_provider_impl(tool_name).invoke_tool(
             tool_name=tool_name,
@@ -705,7 +706,7 @@ class ToolRuntimeRouter(ToolRuntime):
         )
 
     async def list_runtime_tools(
-        self, tool_group_id: Optional[str] = None, mcp_endpoint: Optional[URL] = None
-    ) -> List[ToolDef]:
+        self, tool_group_id: str | None = None, mcp_endpoint: URL | None = None
+    ) -> list[ToolDef]:
         logger.debug(f"ToolRuntimeRouter.list_runtime_tools: {tool_group_id}")
         return await self.routing_table.get_provider_impl(tool_group_id).list_tools(tool_group_id, mcp_endpoint)

@@ -13,7 +13,6 @@
 
 from dataclasses import dataclass
 from functools import lru_cache
-from typing import List, Optional
 
 from .datatypes import (
     CheckpointQuantizationFormat,
@@ -27,14 +26,14 @@ LLAMA2_VOCAB_SIZE = 32000
 LLAMA3_VOCAB_SIZE = 128256
 
 
-def resolve_model(descriptor: str) -> Optional[Model]:
+def resolve_model(descriptor: str) -> Model | None:
     for m in all_registered_models():
         if descriptor in (m.descriptor(), m.huggingface_repo):
             return m
     return None
 
 
-def all_registered_models() -> List[Model]:
+def all_registered_models() -> list[Model]:
     return (
         llama2_family() + llama3_family() + llama3_1_family() + llama3_2_family() + llama3_3_family() + safety_models()
     )
@@ -49,41 +48,41 @@ def recommended_sampling_params() -> SamplingParams:
     )
 
 
-def llama2_family() -> List[Model]:
+def llama2_family() -> list[Model]:
     return [
         *llama2_base_models(),
         *llama2_instruct_models(),
     ]
 
 
-def llama3_family() -> List[Model]:
+def llama3_family() -> list[Model]:
     return [
         *llama3_base_models(),
         *llama3_instruct_models(),
     ]
 
 
-def llama3_1_family() -> List[Model]:
+def llama3_1_family() -> list[Model]:
     return [
         *llama3_1_base_models(),
         *llama3_1_instruct_models(),
     ]
 
 
-def llama3_2_family() -> List[Model]:
+def llama3_2_family() -> list[Model]:
     return [
         *llama3_2_base_models(),
         *llama3_2_instruct_models(),
     ]
 
 
-def llama3_3_family() -> List[Model]:
+def llama3_3_family() -> list[Model]:
     return [
         *llama3_3_instruct_models(),
     ]
 
 
-def llama2_base_models() -> List[Model]:
+def llama2_base_models() -> list[Model]:
     return [
         Model(
             core_model_id=CoreModelId.llama2_7b,
@@ -145,7 +144,7 @@ def llama2_base_models() -> List[Model]:
     ]
 
 
-def llama3_base_models() -> List[Model]:
+def llama3_base_models() -> list[Model]:
     return [
         Model(
             core_model_id=CoreModelId.llama3_8b,
@@ -187,7 +186,7 @@ def llama3_base_models() -> List[Model]:
     ]
 
 
-def llama3_1_base_models() -> List[Model]:
+def llama3_1_base_models() -> list[Model]:
     return [
         Model(
             core_model_id=CoreModelId.llama3_1_8b,
@@ -290,7 +289,7 @@ def llama3_1_base_models() -> List[Model]:
     ]
 
 
-def llama3_2_base_models() -> List[Model]:
+def llama3_2_base_models() -> list[Model]:
     return [
         Model(
             core_model_id=CoreModelId.llama3_2_1b,
@@ -377,7 +376,7 @@ def llama3_2_base_models() -> List[Model]:
     ]
 
 
-def llama2_instruct_models() -> List[Model]:
+def llama2_instruct_models() -> list[Model]:
     return [
         Model(
             core_model_id=CoreModelId.llama2_7b_chat,
@@ -439,7 +438,7 @@ def llama2_instruct_models() -> List[Model]:
     ]
 
 
-def llama3_instruct_models() -> List[Model]:
+def llama3_instruct_models() -> list[Model]:
     return [
         Model(
             core_model_id=CoreModelId.llama3_8b_instruct,
@@ -482,7 +481,7 @@ def llama3_instruct_models() -> List[Model]:
     ]
 
 
-def llama3_1_instruct_models() -> List[Model]:
+def llama3_1_instruct_models() -> list[Model]:
     return [
         Model(
             core_model_id=CoreModelId.llama3_1_8b_instruct,
@@ -615,7 +614,7 @@ def arch_args_3b() -> dict:
     }
 
 
-def llama3_2_quantized_models() -> List[Model]:
+def llama3_2_quantized_models() -> list[Model]:
     return [
         Model(
             core_model_id=CoreModelId.llama3_2_1b_instruct,
@@ -688,7 +687,7 @@ def llama3_2_quantized_models() -> List[Model]:
     ]
 
 
-def llama3_2_instruct_models() -> List[Model]:
+def llama3_2_instruct_models() -> list[Model]:
     return [
         Model(
             core_model_id=CoreModelId.llama3_2_1b_instruct,
@@ -754,7 +753,7 @@ def llama3_2_instruct_models() -> List[Model]:
     ]
 
 
-def llama3_3_instruct_models() -> List[Model]:
+def llama3_3_instruct_models() -> list[Model]:
     return [
         Model(
             core_model_id=CoreModelId.llama3_3_70b_instruct,
@@ -779,7 +778,7 @@ def llama3_3_instruct_models() -> List[Model]:
 
 
 @lru_cache
-def safety_models() -> List[Model]:
+def safety_models() -> list[Model]:
     return [
         Model(
             core_model_id=CoreModelId.llama_guard_3_11b_vision,
@@ -904,7 +903,7 @@ def safety_models() -> List[Model]:
 @dataclass
 class LlamaDownloadInfo:
     folder: str
-    files: List[str]
+    files: list[str]
     pth_size: int
 
 

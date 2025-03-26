@@ -9,7 +9,7 @@ import asyncio
 import logging
 import os
 import tempfile
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.tools import (
@@ -45,8 +45,8 @@ class CodeInterpreterToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime):
         return
 
     async def list_runtime_tools(
-        self, tool_group_id: Optional[str] = None, mcp_endpoint: Optional[URL] = None
-    ) -> List[ToolDef]:
+        self, tool_group_id: str | None = None, mcp_endpoint: URL | None = None
+    ) -> list[ToolDef]:
         return [
             ToolDef(
                 name="code_interpreter",
@@ -61,7 +61,7 @@ class CodeInterpreterToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime):
             )
         ]
 
-    async def invoke_tool(self, tool_name: str, kwargs: Dict[str, Any]) -> ToolInvocationResult:
+    async def invoke_tool(self, tool_name: str, kwargs: dict[str, Any]) -> ToolInvocationResult:
         script = kwargs["code"]
         # Use environment variable to control bwrap usage
         force_disable_bwrap = os.environ.get("DISABLE_CODE_SANDBOX", "").lower() in ("1", "true", "yes")

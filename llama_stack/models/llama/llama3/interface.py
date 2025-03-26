@@ -12,7 +12,6 @@
 # the top-level of this source tree.
 
 from pathlib import Path
-from typing import List, Optional
 
 from termcolor import colored
 
@@ -132,7 +131,7 @@ class LLama31Interface:
         self.formatter = ChatFormat(self.tokenizer)
         self.tool_prompt_format = tool_prompt_format
 
-    def get_tokens(self, messages: List[RawMessage]) -> List[int]:
+    def get_tokens(self, messages: list[RawMessage]) -> list[int]:
         model_input = self.formatter.encode_dialog_prompt(
             messages,
             self.tool_prompt_format,
@@ -150,10 +149,10 @@ class LLama31Interface:
 
     def system_messages(
         self,
-        builtin_tools: List[BuiltinTool],
-        custom_tools: List[ToolDefinition],
-        instruction: Optional[str] = None,
-    ) -> List[RawMessage]:
+        builtin_tools: list[BuiltinTool],
+        custom_tools: list[ToolDefinition],
+        instruction: str | None = None,
+    ) -> list[RawMessage]:
         messages = []
 
         default_gen = SystemDefaultGenerator()
@@ -195,8 +194,8 @@ class LLama31Interface:
         self,
         content: str,
         stop_reason: StopReason,
-        tool_call: Optional[ToolCall] = None,
-    ) -> List[RawMessage]:
+        tool_call: ToolCall | None = None,
+    ) -> list[RawMessage]:
         tool_calls = []
         if tool_call:
             tool_calls.append(tool_call)
@@ -209,7 +208,7 @@ class LLama31Interface:
             )
         ]
 
-    def user_message(self, content: str) -> List[RawMessage]:
+    def user_message(self, content: str) -> list[RawMessage]:
         return [RawMessage(role="user", content=content)]
 
     def display_message_as_tokens(self, message: RawMessage) -> None:
@@ -229,7 +228,7 @@ class LLama31Interface:
         print("\n", end="")
 
 
-def list_jinja_templates() -> List[Template]:
+def list_jinja_templates() -> list[Template]:
     return TEMPLATES
 
 

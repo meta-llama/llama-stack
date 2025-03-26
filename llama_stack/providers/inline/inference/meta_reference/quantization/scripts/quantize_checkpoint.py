@@ -13,7 +13,6 @@ import os
 import shutil
 import sys
 from pathlib import Path
-from typing import Optional
 
 import fire
 import torch
@@ -38,10 +37,10 @@ def main(
     ckpt_dir: str,
     tokenizer_path: str,
     quantized_ckpt_dir: str,
-    max_seq_len: Optional[int] = 512,
-    max_batch_size: Optional[int] = 4,
-    model_parallel_size: Optional[int] = None,
-    fp8_activation_scale_ub: Optional[float] = 1200.0,
+    max_seq_len: int | None = 512,
+    max_batch_size: int | None = 4,
+    model_parallel_size: int | None = None,
+    fp8_activation_scale_ub: float | None = 1200.0,
     seed: int = 1,
 ):
     """ """
@@ -79,7 +78,7 @@ def main(
         )
         ckpt_path = checkpoints[get_model_parallel_rank()]
         checkpoint = torch.load(ckpt_path, map_location="cpu", weights_only=True)
-        with open(Path(ckpt_dir) / "params.json", "r") as f:
+        with open(Path(ckpt_dir) / "params.json") as f:
             params = json.loads(f.read())
 
         model_args: ModelArgs = ModelArgs(
@@ -143,7 +142,7 @@ def main(
 
         ckpt_path = os.path.join(
             quantized_ckpt_dir,
-            "consolidated.{:02d}.pth".format(get_model_parallel_rank()),
+            f"consolidated.{get_model_parallel_rank():02d}.pth",
         )
         torch.save(model.state_dict(), ckpt_path)
 

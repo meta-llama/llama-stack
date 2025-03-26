@@ -7,8 +7,9 @@
 import asyncio
 import inspect
 import json
+from collections.abc import AsyncGenerator, Callable
 from functools import wraps
-from typing import Any, AsyncGenerator, Callable, Type, TypeVar
+from typing import Any, TypeVar
 
 from pydantic import BaseModel
 
@@ -25,13 +26,13 @@ def _prepare_for_json(value: Any) -> str:
     """Serialize a single value into JSON-compatible format."""
     if value is None:
         return ""
-    elif isinstance(value, (str, int, float, bool)):
+    elif isinstance(value, str | int | float | bool):
         return value
     elif hasattr(value, "_name_"):
         return value._name_
     elif isinstance(value, BaseModel):
         return json.loads(value.model_dump_json())
-    elif isinstance(value, (list, tuple, set)):
+    elif isinstance(value, list | tuple | set):
         return [_prepare_for_json(item) for item in value]
     elif isinstance(value, dict):
         return {str(k): _prepare_for_json(v) for k, v in value.items()}
@@ -43,7 +44,7 @@ def _prepare_for_json(value: Any) -> str:
             return str(value)
 
 
-def trace_protocol(cls: Type[T]) -> Type[T]:
+def trace_protocol(cls: type[T]) -> type[T]:
     """
     A class decorator that automatically traces all methods in a protocol/base class
     and its inheriting classes.

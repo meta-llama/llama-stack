@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import List, Optional
 
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.telemetry import QueryCondition, QuerySpansResponse, Span
@@ -17,10 +16,10 @@ class TelemetryDatasetMixin:
 
     async def save_spans_to_dataset(
         self,
-        attribute_filters: List[QueryCondition],
-        attributes_to_save: List[str],
+        attribute_filters: list[QueryCondition],
+        attributes_to_save: list[str],
         dataset_id: str,
-        max_depth: Optional[int] = None,
+        max_depth: int | None = None,
     ) -> None:
         if self.datasetio_api is None:
             raise RuntimeError("DatasetIO API not available")
@@ -48,9 +47,9 @@ class TelemetryDatasetMixin:
 
     async def query_spans(
         self,
-        attribute_filters: List[QueryCondition],
-        attributes_to_return: List[str],
-        max_depth: Optional[int] = None,
+        attribute_filters: list[QueryCondition],
+        attributes_to_return: list[str],
+        max_depth: int | None = None,
     ) -> QuerySpansResponse:
         traces = await self.query_traces(attribute_filters=attribute_filters)
         spans = []

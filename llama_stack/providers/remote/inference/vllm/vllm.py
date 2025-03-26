@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 import json
 import logging
-from typing import AsyncGenerator, List, Optional, Union
+from collections.abc import AsyncGenerator
 
 import httpx
 from openai import AsyncOpenAI
@@ -86,7 +86,7 @@ def build_hf_repo_model_entries():
 
 def _convert_to_vllm_tool_calls_in_response(
     tool_calls,
-) -> List[ToolCall]:
+) -> list[ToolCall]:
     if not tool_calls:
         return []
 
@@ -101,7 +101,7 @@ def _convert_to_vllm_tool_calls_in_response(
     ]
 
 
-def _convert_to_vllm_tools_in_request(tools: List[ToolDefinition]) -> List[dict]:
+def _convert_to_vllm_tools_in_request(tools: list[ToolDefinition]) -> list[dict]:
     if tools is None:
         return tools
 
@@ -244,11 +244,11 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         self,
         model_id: str,
         content: InterleavedContent,
-        sampling_params: Optional[SamplingParams] = None,
-        response_format: Optional[ResponseFormat] = None,
-        stream: Optional[bool] = False,
-        logprobs: Optional[LogProbConfig] = None,
-    ) -> Union[CompletionResponse, CompletionResponseStreamChunk]:
+        sampling_params: SamplingParams | None = None,
+        response_format: ResponseFormat | None = None,
+        stream: bool | None = False,
+        logprobs: LogProbConfig | None = None,
+    ) -> CompletionResponse | CompletionResponseStreamChunk:
         if sampling_params is None:
             sampling_params = SamplingParams()
         model = await self.model_store.get_model(model_id)
@@ -268,15 +268,15 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
     async def chat_completion(
         self,
         model_id: str,
-        messages: List[Message],
-        sampling_params: Optional[SamplingParams] = None,
-        response_format: Optional[ResponseFormat] = None,
-        tools: Optional[List[ToolDefinition]] = None,
-        tool_choice: Optional[ToolChoice] = ToolChoice.auto,
-        tool_prompt_format: Optional[ToolPromptFormat] = None,
-        stream: Optional[bool] = False,
-        logprobs: Optional[LogProbConfig] = None,
-        tool_config: Optional[ToolConfig] = None,
+        messages: list[Message],
+        sampling_params: SamplingParams | None = None,
+        response_format: ResponseFormat | None = None,
+        tools: list[ToolDefinition] | None = None,
+        tool_choice: ToolChoice | None = ToolChoice.auto,
+        tool_prompt_format: ToolPromptFormat | None = None,
+        stream: bool | None = False,
+        logprobs: LogProbConfig | None = None,
+        tool_config: ToolConfig | None = None,
     ) -> AsyncGenerator:
         if sampling_params is None:
             sampling_params = SamplingParams()
@@ -352,7 +352,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
             )
         return model
 
-    async def _get_params(self, request: Union[ChatCompletionRequest, CompletionRequest]) -> dict:
+    async def _get_params(self, request: ChatCompletionRequest | CompletionRequest) -> dict:
         options = get_sampling_options(request.sampling_params)
         if "max_tokens" not in options:
             options["max_tokens"] = self.config.max_tokens
@@ -388,10 +388,10 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
     async def embeddings(
         self,
         model_id: str,
-        contents: List[str] | List[InterleavedContentItem],
-        text_truncation: Optional[TextTruncation] = TextTruncation.none,
-        output_dimension: Optional[int] = None,
-        task_type: Optional[EmbeddingTaskType] = None,
+        contents: list[str] | list[InterleavedContentItem],
+        text_truncation: TextTruncation | None = TextTruncation.none,
+        output_dimension: int | None = None,
+        task_type: EmbeddingTaskType | None = None,
     ) -> EmbeddingsResponse:
         model = await self.model_store.get_model(model_id)
 

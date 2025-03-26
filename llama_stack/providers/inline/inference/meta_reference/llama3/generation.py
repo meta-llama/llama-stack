@@ -13,8 +13,9 @@ import math
 import os
 import sys
 import time
+from collections.abc import Generator
 from pathlib import Path
-from typing import Generator, List, Optional, Tuple, Union
+from typing import Optional
 
 import torch
 import torch.nn.functional as F
@@ -57,7 +58,7 @@ log = logging.getLogger(__name__)
 class Llama3:
     @staticmethod
     def build(
-        config: Union[MetaReferenceInferenceConfig, MetaReferenceQuantizedInferenceConfig],
+        config: MetaReferenceInferenceConfig | MetaReferenceQuantizedInferenceConfig,
         model_id: str,
         llama_model: Model,
     ):
@@ -127,7 +128,7 @@ class Llama3:
         )
         ckpt_path = checkpoints[get_model_parallel_rank()]
         state_dict = torch.load(ckpt_path, map_location="cpu", weights_only=True)
-        with open(Path(ckpt_dir) / "params.json", "r") as f:
+        with open(Path(ckpt_dir) / "params.json") as f:
             params = json.loads(f.read())
 
         if "model" in params:
@@ -417,7 +418,7 @@ def sample_top_p(probs, p):
 class LogitsProcessor:
     def __init__(self, token_enforcer: TokenEnforcer):
         self.token_enforcer = token_enforcer
-        self.mask: Optional[torch.Tensor] = None
+        self.mask: torch.Tensor | None = None
 
     def process_logits(self, tokens: torch.Tensor, scores: torch.Tensor) -> torch.Tensor:
         token_sequence = tokens[0, :].tolist()
@@ -436,7 +437,7 @@ class LogitsProcessor:
 def get_logits_processor(
     tokenizer: Tokenizer,
     vocab_size: int,
-    response_format: Optional[ResponseFormat],
+    response_format: ResponseFormat | None,
 ) -> Optional["LogitsProcessor"]:
     if response_format is None:
         return None
@@ -454,7 +455,7 @@ def get_logits_processor(
     return LogitsProcessor(token_enforcer)
 
 
-def _build_regular_tokens_list(tokenizer: Tokenizer, vocab_size: int) -> List[Tuple[int, str, bool]]:
+def _build_regular_tokens_list(tokenizer: Tokenizer, vocab_size: int) -> list[tuple[int, str, bool]]:
     token_0 = tokenizer.encode("0", bos=False, eos=False)[-1]
     regular_tokens = []
 

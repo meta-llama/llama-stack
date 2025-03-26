@@ -13,7 +13,6 @@ import sys
 import textwrap
 from functools import lru_cache
 from pathlib import Path
-from typing import Dict, Optional
 
 import yaml
 from prompt_toolkit import prompt
@@ -46,14 +45,14 @@ from llama_stack.providers.datatypes import Api
 TEMPLATES_PATH = Path(__file__).parent.parent.parent / "templates"
 
 
-@lru_cache()
-def available_templates_specs() -> Dict[str, BuildConfig]:
+@lru_cache
+def available_templates_specs() -> dict[str, BuildConfig]:
     import yaml
 
     template_specs = {}
     for p in TEMPLATES_PATH.rglob("*build.yaml"):
         template_name = p.parent.name
-        with open(p, "r") as f:
+        with open(p) as f:
             build_config = BuildConfig(**yaml.safe_load(f))
             template_specs[template_name] = build_config
     return template_specs
@@ -138,7 +137,7 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
         for api, providers_for_api in get_provider_registry().items():
             available_providers = [x for x in providers_for_api.keys() if x not in ("remote", "remote::sample")]
             api_provider = prompt(
-                "> Enter provider for API {}: ".format(api.value),
+                f"> Enter provider for API {api.value}: ",
                 completer=WordCompleter(available_providers),
                 complete_while_typing=True,
                 validator=Validator.from_callable(
@@ -161,7 +160,7 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
 
         build_config = BuildConfig(image_type=image_type, distribution_spec=distribution_spec)
     else:
-        with open(args.config, "r") as f:
+        with open(args.config) as f:
             try:
                 build_config = BuildConfig(**yaml.safe_load(f))
             except Exception as e:
@@ -276,9 +275,9 @@ def _generate_run_config(
 
 def _run_stack_build_command_from_build_config(
     build_config: BuildConfig,
-    image_name: Optional[str] = None,
-    template_name: Optional[str] = None,
-    config_path: Optional[str] = None,
+    image_name: str | None = None,
+    template_name: str | None = None,
+    config_path: str | None = None,
 ) -> str:
     if build_config.image_type == LlamaStackImageType.CONTAINER.value:
         if template_name:

@@ -6,18 +6,14 @@
 
 from enum import Enum
 from typing import (
+    Annotated,
     Any,
-    Dict,
-    List,
     Literal,
-    Optional,
     Protocol,
-    Union,
     runtime_checkable,
 )
 
 from pydantic import BaseModel, Field
-from typing_extensions import Annotated
 
 from llama_stack.apis.common.type_system import ParamType
 from llama_stack.apis.resource import Resource, ResourceType
@@ -46,12 +42,12 @@ class AggregationFunctionType(Enum):
 class LLMAsJudgeScoringFnParams(BaseModel):
     type: Literal[ScoringFnParamsType.llm_as_judge.value] = ScoringFnParamsType.llm_as_judge.value
     judge_model: str
-    prompt_template: Optional[str] = None
-    judge_score_regexes: Optional[List[str]] = Field(
+    prompt_template: str | None = None
+    judge_score_regexes: list[str] | None = Field(
         description="Regexes to extract the answer from generated response",
         default_factory=list,
     )
-    aggregation_functions: Optional[List[AggregationFunctionType]] = Field(
+    aggregation_functions: list[AggregationFunctionType] | None = Field(
         description="Aggregation functions to apply to the scores of each row",
         default_factory=list,
     )
@@ -60,11 +56,11 @@ class LLMAsJudgeScoringFnParams(BaseModel):
 @json_schema_type
 class RegexParserScoringFnParams(BaseModel):
     type: Literal[ScoringFnParamsType.regex_parser.value] = ScoringFnParamsType.regex_parser.value
-    parsing_regexes: Optional[List[str]] = Field(
+    parsing_regexes: list[str] | None = Field(
         description="Regex to extract the answer from generated response",
         default_factory=list,
     )
-    aggregation_functions: Optional[List[AggregationFunctionType]] = Field(
+    aggregation_functions: list[AggregationFunctionType] | None = Field(
         description="Aggregation functions to apply to the scores of each row",
         default_factory=list,
     )
@@ -73,33 +69,29 @@ class RegexParserScoringFnParams(BaseModel):
 @json_schema_type
 class BasicScoringFnParams(BaseModel):
     type: Literal[ScoringFnParamsType.basic.value] = ScoringFnParamsType.basic.value
-    aggregation_functions: Optional[List[AggregationFunctionType]] = Field(
+    aggregation_functions: list[AggregationFunctionType] | None = Field(
         description="Aggregation functions to apply to the scores of each row",
         default_factory=list,
     )
 
 
 ScoringFnParams = Annotated[
-    Union[
-        LLMAsJudgeScoringFnParams,
-        RegexParserScoringFnParams,
-        BasicScoringFnParams,
-    ],
+    LLMAsJudgeScoringFnParams | RegexParserScoringFnParams | BasicScoringFnParams,
     Field(discriminator="type"),
 ]
 register_schema(ScoringFnParams, name="ScoringFnParams")
 
 
 class CommonScoringFnFields(BaseModel):
-    description: Optional[str] = None
-    metadata: Dict[str, Any] = Field(
+    description: str | None = None
+    metadata: dict[str, Any] = Field(
         default_factory=dict,
         description="Any additional metadata for this definition",
     )
     return_type: ParamType = Field(
         description="The return type of the deterministic function",
     )
-    params: Optional[ScoringFnParams] = Field(
+    params: ScoringFnParams | None = Field(
         description="The parameters for the scoring function for benchmark eval, these can be overridden for app eval",
         default=None,
     )
@@ -120,12 +112,12 @@ class ScoringFn(CommonScoringFnFields, Resource):
 
 class ScoringFnInput(CommonScoringFnFields, BaseModel):
     scoring_fn_id: str
-    provider_id: Optional[str] = None
-    provider_scoring_fn_id: Optional[str] = None
+    provider_id: str | None = None
+    provider_scoring_fn_id: str | None = None
 
 
 class ListScoringFunctionsResponse(BaseModel):
-    data: List[ScoringFn]
+    data: list[ScoringFn]
 
 
 @runtime_checkable
@@ -142,7 +134,7 @@ class ScoringFunctions(Protocol):
         scoring_fn_id: str,
         description: str,
         return_type: ParamType,
-        provider_scoring_fn_id: Optional[str] = None,
-        provider_id: Optional[str] = None,
-        params: Optional[ScoringFnParams] = None,
+        provider_scoring_fn_id: str | None = None,
+        provider_id: str | None = None,
+        params: ScoringFnParams | None = None,
     ) -> None: ...
