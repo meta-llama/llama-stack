@@ -50,7 +50,7 @@ def get_distribution_template() -> DistributionTemplate:
 
     safety_model = ModelInput(
         model_id="${env.SAFETY_MODEL}",
-        provider_id="ollama",
+        provider_id="podman-ai-lab",
     )
     default_tool_groups = [
         ToolGroupInput(
@@ -131,7 +131,7 @@ def get_distribution_template() -> DistributionTemplate:
             ),
             "SAFETY_MODEL": (
                 "meta-llama/Llama-Guard-3-1B",
-                "Safety model loaded into the Ollama server",
+                "Safety model loaded into the Podman AI Lab server",
             ),
         },
     )

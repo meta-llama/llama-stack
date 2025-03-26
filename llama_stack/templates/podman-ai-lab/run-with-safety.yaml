@@ -109,7 +109,7 @@ metadata_store:
 models:
 - metadata: {}
   model_id: ${env.SAFETY_MODEL}
-  provider_id: ollama
+  provider_id: podman-ai-lab
   model_type: llm
 shields:
 - shield_id: ${env.SAFETY_MODEL}

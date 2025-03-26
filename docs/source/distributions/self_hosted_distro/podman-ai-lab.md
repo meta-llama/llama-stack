@@ -26,7 +26,7 @@ The `llamastack/distribution-podman-ai-lab` distribution consists of the followi
 | vector_io | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
 
 
-You should use this distribution if you have a regular desktop machine without very powerful GPUs. Of course, if you have powerful GPUs, you can still continue using this distribution since Ollama supports GPU acceleration.
+You should use this distribution if you have a regular desktop machine without very powerful GPUs. Of course, if you have powerful GPUs, you can still continue using this distribution since Podman AI Lab supports GPU acceleration.
 
 ### Environment Variables
 
@@ -34,12 +34,12 @@ The following environment variables can be configured:
 
 - `LLAMA_STACK_PORT`: Port for the Llama Stack distribution server (default: `5001`)
 - `PODMAN_AI_LAB_URL`: URL of the Podman AI Lab server (default: `http://127.0.0.1:10434`)
-- `SAFETY_MODEL`: Safety model loaded into the Ollama server (default: `meta-llama/Llama-Guard-3-1B`)
+- `SAFETY_MODEL`: Safety model loaded into the Podman AI Lab server (default: `meta-llama/Llama-Guard-3-1B`)
 
 
 ## Setting up Podman AI Lab server
 
-Please check the [Podman AI Lab Documentation](https://github.com/containers/podman-desktop-extension-ai-lab) on how to install and run Ollama. After installing Ollama, you need to run `ollama serve` to start the server.
+Please check the [Podman AI Lab Documentation](https://github.com/containers/podman-desktop-extension-ai-lab) on how to install and run Podman AI Lab.
 
 
 If you are using Llama Stack Safety / Shield APIs, you will also need to pull and run the safety model.
@@ -47,7 +47,6 @@ If you are using Llama Stack Safety / Shield APIs, you will also need to pull an
 ```bash
 export SAFETY_MODEL="meta-llama/Llama-Guard-3-1B"
 
-# ollama names this model differently, and we must use the ollama name when loading the model
 export PODMAN_AI_LAB_SAFETY_MODEL="llama-guard3:1b"
 ```
 
@@ -81,7 +80,7 @@ docker run \
   -it \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ~/.llama:/root/.llama \
-  -v ./llama_stack/templates/ollama/run-with-safety.yaml:/root/my-run.yaml \
+  -v ./llama_stack/templates/podman-ai-lab/run-with-safety.yaml:/root/my-run.yaml \
   llamastack/distribution-podman-ai-lab \
   --yaml-config /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
