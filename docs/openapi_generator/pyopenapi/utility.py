@@ -7,10 +7,9 @@
 import json
 import typing
 import inspect
-import os
 from pathlib import Path
 from typing import TextIO
-from typing import Any, Dict, List, Optional, Protocol, Type, Union, get_type_hints, get_origin, get_args
+from typing import Any, List, Optional, Union, get_type_hints, get_origin, get_args
 
 from llama_stack.strong_typing.schema import object_to_json, StrictJsonType
 from llama_stack.distribution.resolver import api_protocol_map
@@ -125,29 +124,59 @@ def is_optional_type(type_: Any) -> bool:
     return origin is Optional or (origin is Union and type(None) in args)
 
 
-def validate_api_method_return_types() -> List[str]:
-    """Validate that all API methods have proper return types."""
+def _validate_api_method_return_type(method) -> str | None:
+    hints = get_type_hints(method)
+
+    if 'return' not in hints:
+        return "has no return type annotation"
+
+    return_type = hints['return']
+    if is_optional_type(return_type):
+        return "returns Optional type"
+
+
+def _validate_api_delete_method_returns_none(method) -> str | None:
+    hints = get_type_hints(method)
+
+    if 'return' not in hints:
+        return "has no return type annotation"
+
+    return_type = hints['return']
+    if return_type is not None and return_type is not type(None):
+        return "does not return None"
+
+
+_VALIDATORS = {
+    "GET": [
+        _validate_api_method_return_type,
+    ],
+    "DELETE": [
+        _validate_api_delete_method_returns_none,
+    ],
+}
+
+
+def _get_methods_by_type(protocol, method_type: str):
+    members = inspect.getmembers(protocol, predicate=inspect.isfunction)
+    return {
+        method_name: method
+        for method_name, method in members
+        if (webmethod := getattr(method, '__webmethod__', None))
+        if webmethod and webmethod.method == method_type
+    }
+
+
+def validate_api() -> List[str]:
+    """Validate the API protocols."""
     errors = []
     protocols = api_protocol_map()
 
-    for protocol_name, protocol in protocols.items():
-        methods = inspect.getmembers(protocol, predicate=inspect.isfunction)
-
-        for method_name, method in methods:
-            if not hasattr(method, '__webmethod__'):
-                continue
-
-            # Only check GET methods
-            if method.__webmethod__.method != "GET":
-                continue
-
-            hints = get_type_hints(method)
-
-            if 'return' not in hints:
-                errors.append(f"Method {protocol_name}.{method_name} has no return type annotation")
-            else:
-                return_type = hints['return']
-                if is_optional_type(return_type):
-                    errors.append(f"Method {protocol_name}.{method_name} returns Optional type")
+    for target, validators in _VALIDATORS.items():
+        for protocol_name, protocol in protocols.items():
+            for validator in validators:
+                for method_name, method in _get_methods_by_type(protocol, target).items():
+                    err = validator(method)
+                    if err:
+                        errors.append(f"Method {protocol_name}.{method_name} {err}")
 
     return errors
