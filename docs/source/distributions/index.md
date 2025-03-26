@@ -19,7 +19,7 @@ If you have a custom or an advanced setup or you are developing on Llama Stack y
 
 **Kubernetes**:
 
-If you have built a container image and want to deploy it in a Kubernetes cluster instead of starting the Llama Stack server locally. See [Kubernetes Deployment Guide](kubernetes_deployment) for more details.
+If you have built a container image and want to deploy it in a Kubernetes cluster instead of starting the Llama Stack server locally. See [Kubernetes Deployment Guide](kubernetes_deployment.md) for more details.
 
 
 ```{toctree}
