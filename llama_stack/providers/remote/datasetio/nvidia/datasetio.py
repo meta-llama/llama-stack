@@ -4,14 +4,13 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Dict, List, Optional
 
 import aiohttp
 
 from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.common.type_system import ParamType
-from llama_stack.apis.datasets.datasets import Dataset, ListDatasetsResponse
-from llama_stack.apis.resource import ResourceType
+from llama_stack.apis.datasetio import IterrowsResponse
 from llama_stack.schema_utils import webmethod
 
 from .config import NvidiaDatasetIOConfig
@@ -19,8 +18,6 @@ from .config import NvidiaDatasetIOConfig
 
 class NvidiaDatasetIOAdapter:
     """Nvidia NeMo DatasetIO API."""
-
-    type: Literal[ResourceType.dataset.value] = ResourceType.dataset.value
 
     def __init__(self, config: NvidiaDatasetIOConfig):
         self.config = config
@@ -80,19 +77,6 @@ class NvidiaDatasetIOAdapter:
         """
         ...
 
-    @webmethod(route="/datasets/{dataset_id:namespace}", method="GET")
-    async def get_dataset(
-        self,
-        dataset_id: str,
-    ) -> Optional[Dataset]:
-        raise NotImplementedError("Not implemented")
-
-    @webmethod(route="/datasets", method="GET")
-    async def list_datasets(
-        self,
-    ) -> ListDatasetsResponse:
-        raise NotImplementedError("Not implemented")
-
     @webmethod(route="/datasets/{dataset_id:path}", method="POST")
     async def update_dataset(
         self,
@@ -111,4 +95,15 @@ class NvidiaDatasetIOAdapter:
         dataset_id: str,
         namespace: Optional[str] = "default",
     ) -> None:
+        raise NotImplementedError("Not implemented")
+
+    async def iterrows(
+        self,
+        dataset_id: str,
+        start_index: Optional[int] = None,
+        limit: Optional[int] = None,
+    ) -> IterrowsResponse:
+        raise NotImplementedError("Not implemented")
+
+    async def append_rows(self, dataset_id: str, rows: List[Dict[str, Any]]) -> None:
         raise NotImplementedError("Not implemented")

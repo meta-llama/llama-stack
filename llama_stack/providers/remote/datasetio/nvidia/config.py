@@ -24,11 +24,6 @@ class NvidiaDatasetIOConfig(BaseModel):
         description="The NVIDIA dataset namespace.",
     )
 
-    access_policies: Optional[dict] = Field(
-        default_factory=lambda: os.getenv("NVIDIA_ACCESS_POLICIES", {}),
-        description="The NVIDIA access policies.",
-    )
-
     project_id: Optional[str] = Field(
         default_factory=lambda: os.getenv("NVIDIA_PROJECT_ID", "test-project"),
         description="The NVIDIA project ID.",
@@ -46,8 +41,6 @@ class NvidiaDatasetIOConfig(BaseModel):
             default_values.append("project_id='test-project'")
         if os.getenv("NVIDIA_DATASET_NAMESPACE") is None:
             default_values.append("dataset_namespace='default'")
-        if os.getenv("NVIDIA_ACCESS_POLICIES") is None:
-            default_values.append("access_policies='{}'")
         if os.getenv("NVIDIA_DATASETS_URL") is None:
             default_values.append("datasets_url='http://nemo.test'")
 
@@ -64,8 +57,5 @@ class NvidiaDatasetIOConfig(BaseModel):
             "api_key": "${env.NVIDIA_API_KEY:}",
             "user_id": "${env.NVIDIA_USER_ID:llama-stack-user}",
             "dataset_namespace": "${env.NVIDIA_DATASET_NAMESPACE:default}",
-            "access_policies": "${env.NVIDIA_ACCESS_POLICIES:}",
             "project_id": "${env.NVIDIA_PROJECT_ID:test-project}",
-            "customizer_url": "${env.NVIDIA_CUSTOMIZER_URL:}",
-            "output_model_dir": "${env.NVIDIA_OUTPUT_MODEL_DIR:test-example-model@v1}",
         }
