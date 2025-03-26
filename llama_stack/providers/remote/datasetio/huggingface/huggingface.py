@@ -3,7 +3,7 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from typing import Any, Dict, List, Optional
+from typing import Any
 from urllib.parse import parse_qs, urlparse
 
 import datasets as hf_datasets
@@ -70,8 +70,8 @@ class HuggingfaceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
     async def iterrows(
         self,
         dataset_id: str,
-        start_index: Optional[int] = None,
-        limit: Optional[int] = None,
+        start_index: int | None = None,
+        limit: int | None = None,
     ) -> PaginatedResponse:
         dataset_def = self.dataset_infos[dataset_id]
         path, params = parse_hf_params(dataset_def)
@@ -80,7 +80,7 @@ class HuggingfaceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
         records = [loaded_dataset[i] for i in range(len(loaded_dataset))]
         return paginate_records(records, start_index, limit)
 
-    async def append_rows(self, dataset_id: str, rows: List[Dict[str, Any]]) -> None:
+    async def append_rows(self, dataset_id: str, rows: list[dict[str, Any]]) -> None:
         dataset_def = self.dataset_infos[dataset_id]
         path, params = parse_hf_params(dataset_def)
         loaded_dataset = hf_datasets.load_dataset(path, **params)

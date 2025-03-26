@@ -4,10 +4,9 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Literal, Union
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field
-from typing_extensions import Annotated
 
 from llama_stack.schema_utils import json_schema_type, register_schema
 
@@ -73,18 +72,16 @@ class DialogType(BaseModel):
 
 
 ParamType = Annotated[
-    Union[
-        StringType,
-        NumberType,
-        BooleanType,
-        ArrayType,
-        ObjectType,
-        JsonType,
-        UnionType,
-        ChatCompletionInputType,
-        CompletionInputType,
-        AgentTurnInputType,
-    ],
+    StringType
+    | NumberType
+    | BooleanType
+    | ArrayType
+    | ObjectType
+    | JsonType
+    | UnionType
+    | ChatCompletionInputType
+    | CompletionInputType
+    | AgentTurnInputType,
     Field(discriminator="type"),
 ]
 register_schema(ParamType, name="ParamType")

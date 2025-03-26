@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 import json
-from typing import Any, Dict, Optional
+from typing import Any
 
 import httpx
 
@@ -49,7 +49,7 @@ class TavilySearchToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, NeedsReques
         return provider_data.tavily_search_api_key
 
     async def list_runtime_tools(
-        self, tool_group_id: Optional[str] = None, mcp_endpoint: Optional[URL] = None
+        self, tool_group_id: str | None = None, mcp_endpoint: URL | None = None
     ) -> ListToolDefsResponse:
         return ListToolDefsResponse(
             data=[
@@ -67,7 +67,7 @@ class TavilySearchToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, NeedsReques
             ]
         )
 
-    async def invoke_tool(self, tool_name: str, kwargs: Dict[str, Any]) -> ToolInvocationResult:
+    async def invoke_tool(self, tool_name: str, kwargs: dict[str, Any]) -> ToolInvocationResult:
         api_key = self._get_api_key()
         async with httpx.AsyncClient() as client:
             response = await client.post(

@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 from enum import Enum
-from typing import Any, Dict, List, Optional, Protocol, Union
+from typing import Any, Protocol
 
 from pydantic import BaseModel
 
@@ -28,24 +28,24 @@ class FilteringFunction(Enum):
 class SyntheticDataGenerationRequest(BaseModel):
     """Request to generate synthetic data. A small batch of prompts and a filtering function"""
 
-    dialogs: List[Message]
+    dialogs: list[Message]
     filtering_function: FilteringFunction = FilteringFunction.none
-    model: Optional[str] = None
+    model: str | None = None
 
 
 @json_schema_type
 class SyntheticDataGenerationResponse(BaseModel):
     """Response from the synthetic data generation. Batch of (prompt, response, score) tuples that pass the threshold."""
 
-    synthetic_data: List[Dict[str, Any]]
-    statistics: Optional[Dict[str, Any]] = None
+    synthetic_data: list[dict[str, Any]]
+    statistics: dict[str, Any] | None = None
 
 
 class SyntheticDataGeneration(Protocol):
     @webmethod(route="/synthetic-data-generation/generate")
     def synthetic_data_generate(
         self,
-        dialogs: List[Message],
+        dialogs: list[Message],
         filtering_function: FilteringFunction = FilteringFunction.none,
-        model: Optional[str] = None,
-    ) -> Union[SyntheticDataGenerationResponse]: ...
+        model: str | None = None,
+    ) -> SyntheticDataGenerationResponse: ...

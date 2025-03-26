@@ -8,9 +8,10 @@ import abc
 import asyncio
 import functools
 import threading
+from collections.abc import Callable, Coroutine, Iterable
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, Callable, Coroutine, Dict, Iterable, Tuple, TypeAlias
+from typing import Any, TypeAlias
 
 from pydantic import BaseModel
 
@@ -38,7 +39,7 @@ class JobArtifact(BaseModel):
     name: str
     # TODO: uri should be a reference to /files API; revisit when /files is implemented
     uri: str | None = None
-    metadata: Dict[str, Any]
+    metadata: dict[str, Any]
 
 
 JobHandler = Callable[
@@ -46,7 +47,7 @@ JobHandler = Callable[
 ]
 
 
-LogMessage: TypeAlias = Tuple[datetime, str]
+LogMessage: TypeAlias = tuple[datetime, str]
 
 
 _COMPLETED_STATUSES = {JobStatus.completed, JobStatus.failed}
@@ -60,7 +61,7 @@ class Job:
         self._handler = handler
         self._artifacts: list[JobArtifact] = []
         self._logs: list[LogMessage] = []
-        self._state_transitions: list[Tuple[datetime, JobStatus]] = [(datetime.now(timezone.utc), JobStatus.new)]
+        self._state_transitions: list[tuple[datetime, JobStatus]] = [(datetime.now(timezone.utc), JobStatus.new)]
 
     @property
     def handler(self) -> JobHandler:

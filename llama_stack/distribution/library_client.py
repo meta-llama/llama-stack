@@ -12,7 +12,7 @@ import os
 from concurrent.futures import ThreadPoolExecutor
 from enum import Enum
 from pathlib import Path
-from typing import Any, Optional, TypeVar, Union, get_args, get_origin
+from typing import Any, TypeVar, Union, get_args, get_origin
 
 import httpx
 import yaml
@@ -119,8 +119,8 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
         self,
         config_path_or_template_name: str,
         skip_logger_removal: bool = False,
-        custom_provider_registry: Optional[ProviderRegistry] = None,
-        provider_data: Optional[dict[str, Any]] = None,
+        custom_provider_registry: ProviderRegistry | None = None,
+        provider_data: dict[str, Any] | None = None,
     ):
         super().__init__()
         self.async_client = AsyncLlamaStackAsLibraryClient(
@@ -181,8 +181,8 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
     def __init__(
         self,
         config_path_or_template_name: str,
-        custom_provider_registry: Optional[ProviderRegistry] = None,
-        provider_data: Optional[dict[str, Any]] = None,
+        custom_provider_registry: ProviderRegistry | None = None,
+        provider_data: dict[str, Any] | None = None,
     ):
         super().__init__()
         # when using the library client, we should not log to console since many
@@ -371,7 +371,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         )
         return await response.parse()
 
-    def _convert_body(self, path: str, method: str, body: Optional[dict] = None) -> dict:
+    def _convert_body(self, path: str, method: str, body: dict | None = None) -> dict:
         if not body:
             return {}
 

@@ -6,7 +6,6 @@
 
 import inspect
 import re
-from typing import Dict, List
 
 from pydantic import BaseModel
 
@@ -29,7 +28,7 @@ def toolgroup_protocol_map():
     }
 
 
-def get_all_api_endpoints() -> Dict[Api, List[ApiEndpoint]]:
+def get_all_api_endpoints() -> dict[Api, list[ApiEndpoint]]:
     apis = {}
 
     protocols = api_protocol_map()

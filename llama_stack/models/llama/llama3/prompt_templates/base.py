@@ -12,7 +12,7 @@
 # the top-level of this source tree.
 
 from dataclasses import dataclass
-from typing import Any, Dict, List
+from typing import Any
 
 from jinja2 import Template
 
@@ -20,7 +20,7 @@ from jinja2 import Template
 @dataclass
 class PromptTemplate:
     template: str
-    data: Dict[str, Any]
+    data: dict[str, Any]
 
     def render(self):
         template = Template(self.template)
@@ -35,5 +35,5 @@ class PromptTemplateGeneratorBase:
     def gen(self, *args, **kwargs) -> PromptTemplate:
         raise NotImplementedError()
 
-    def data_examples(self) -> List[Any]:
+    def data_examples(self) -> list[Any]:
         raise NotImplementedError()

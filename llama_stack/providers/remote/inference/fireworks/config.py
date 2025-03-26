@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field, SecretStr
 
@@ -17,13 +17,13 @@ class FireworksImplConfig(BaseModel):
         default="https://api.fireworks.ai/inference/v1",
         description="The URL for the Fireworks server",
     )
-    api_key: Optional[SecretStr] = Field(
+    api_key: SecretStr | None = Field(
         default=None,
         description="The Fireworks.ai API Key",
     )
 
     @classmethod
-    def sample_run_config(cls, api_key: str = "${env.FIREWORKS_API_KEY}", **kwargs) -> Dict[str, Any]:
+    def sample_run_config(cls, api_key: str = "${env.FIREWORKS_API_KEY}", **kwargs) -> dict[str, Any]:
         return {
             "url": "https://api.fireworks.ai/inference/v1",
             "api_key": api_key,

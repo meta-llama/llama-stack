@@ -9,7 +9,6 @@ import hashlib
 from dataclasses import dataclass
 from functools import partial
 from pathlib import Path
-from typing import Dict, List, Optional
 
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
@@ -21,7 +20,7 @@ from llama_stack.cli.subcommand import Subcommand
 class VerificationResult:
     filename: str
     expected_hash: str
-    actual_hash: Optional[str]
+    actual_hash: str | None
     exists: bool
     matches: bool
 
@@ -60,9 +59,9 @@ def calculate_md5(filepath: Path, chunk_size: int = 8192) -> str:
     return md5_hash.hexdigest()
 
 
-def load_checksums(checklist_path: Path) -> Dict[str, str]:
+def load_checksums(checklist_path: Path) -> dict[str, str]:
     checksums = {}
-    with open(checklist_path, "r") as f:
+    with open(checklist_path) as f:
         for line in f:
             if line.strip():
                 md5sum, filepath = line.strip().split("  ", 1)
@@ -72,7 +71,7 @@ def load_checksums(checklist_path: Path) -> Dict[str, str]:
     return checksums
 
 
-def verify_files(model_dir: Path, checksums: Dict[str, str], console: Console) -> List[VerificationResult]:
+def verify_files(model_dir: Path, checksums: dict[str, str], console: Console) -> list[VerificationResult]:
     results = []
 
     with Progress(

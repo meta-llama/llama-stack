@@ -10,7 +10,8 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
-from typing import Any, Dict, List, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 import numpy as np
 from torch.utils.data import Dataset
@@ -27,7 +28,7 @@ from llama_stack.providers.inline.post_training.torchtune.datasets.format_adapte
 class SFTDataset(Dataset):
     def __init__(
         self,
-        rows: List[Dict[str, Any]],
+        rows: list[dict[str, Any]],
         message_transform: Transform,
         model_transform: Transform,
         dataset_type: str,
@@ -40,11 +41,11 @@ class SFTDataset(Dataset):
     def __len__(self):
         return len(self._rows)
 
-    def __getitem__(self, index: int) -> Dict[str, Any]:
+    def __getitem__(self, index: int) -> dict[str, Any]:
         sample = self._rows[index]
         return self._prepare_sample(sample)
 
-    def _prepare_sample(self, sample: Mapping[str, Any]) -> Dict[str, Any]:
+    def _prepare_sample(self, sample: Mapping[str, Any]) -> dict[str, Any]:
         if self._dataset_type == "instruct":
             sample = llama_stack_instruct_to_torchtune_instruct(sample)
         elif self._dataset_type == "dialog":

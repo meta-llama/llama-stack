@@ -27,7 +27,7 @@ THIS_DIR = Path(__file__).parent
 def case_id_generator(case):
     """Generate a test ID from the case's 'case_id' field, or use a default."""
     case_id = case.get("case_id")
-    if isinstance(case_id, (str, int)):
+    if isinstance(case_id, str | int):
         return re.sub(r"\\W|^(?=\\d)", "_", str(case_id))
     return None
 
@@ -43,7 +43,7 @@ def pytest_generate_tests(metafunc):
 
         try:
             config_data = _load_all_verification_configs()
-        except (FileNotFoundError, IOError) as e:
+        except (OSError, FileNotFoundError) as e:
             print(f"ERROR loading verification configs: {e}")
             config_data = {"providers": {}}
 

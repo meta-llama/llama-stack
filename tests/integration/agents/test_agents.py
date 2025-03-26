@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict
+from typing import Any
 from uuid import uuid4
 
 import pytest
@@ -37,7 +37,7 @@ def get_boiling_point(liquid_name: str, celcius: bool = True) -> int:
         return -1
 
 
-def get_boiling_point_with_metadata(liquid_name: str, celcius: bool = True) -> Dict[str, Any]:
+def get_boiling_point_with_metadata(liquid_name: str, celcius: bool = True) -> dict[str, Any]:
     """
     Returns the boiling point of a liquid in Celcius or Fahrenheit
 

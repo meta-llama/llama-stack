@@ -9,7 +9,7 @@ import hashlib
 import logging
 import os
 import uuid
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 from numpy.typing import NDArray
 from pymilvus import MilvusClient
@@ -39,7 +39,7 @@ class MilvusIndex(EmbeddingIndex):
         if await asyncio.to_thread(self.client.has_collection, self.collection_name):
             await asyncio.to_thread(self.client.drop_collection, collection_name=self.collection_name)
 
-    async def add_chunks(self, chunks: List[Chunk], embeddings: NDArray):
+    async def add_chunks(self, chunks: list[Chunk], embeddings: NDArray):
         assert len(chunks) == len(embeddings), (
             f"Chunk length {len(chunks)} does not match embedding length {len(embeddings)}"
         )
@@ -89,7 +89,7 @@ class MilvusIndex(EmbeddingIndex):
 
 class MilvusVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
     def __init__(
-        self, config: Union[RemoteMilvusVectorIOConfig, InlineMilvusVectorIOConfig], inference_api: Api.inference
+        self, config: RemoteMilvusVectorIOConfig | InlineMilvusVectorIOConfig, inference_api: Api.inference
     ) -> None:
         self.config = config
         self.cache = {}
@@ -124,7 +124,7 @@ class MilvusVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
 
         self.cache[vector_db.identifier] = index
 
-    async def _get_and_cache_vector_db_index(self, vector_db_id: str) -> Optional[VectorDBWithIndex]:
+    async def _get_and_cache_vector_db_index(self, vector_db_id: str) -> VectorDBWithIndex | None:
         if vector_db_id in self.cache:
             return self.cache[vector_db_id]
 
@@ -148,8 +148,8 @@ class MilvusVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
     async def insert_chunks(
         self,
         vector_db_id: str,
-        chunks: List[Chunk],
-        ttl_seconds: Optional[int] = None,
+        chunks: list[Chunk],
+        ttl_seconds: int | None = None,
     ) -> None:
         index = await self._get_and_cache_vector_db_index(vector_db_id)
         if not index:
@@ -161,7 +161,7 @@ class MilvusVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
         self,
         vector_db_id: str,
         query: InterleavedContent,
-        params: Optional[Dict[str, Any]] = None,
+        params: dict[str, Any] | None = None,
     ) -> QueryChunksResponse:
         index = await self._get_and_cache_vector_db_index(vector_db_id)
         if not index:
@@ -172,7 +172,7 @@ class MilvusVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
 
 def generate_chunk_id(document_id: str, chunk_text: str) -> str:
     """Generate a unique chunk ID using a hash of document ID and chunk text."""
-    hash_input = f"{document_id}:{chunk_text}".encode("utf-8")
+    hash_input = f"{document_id}:{chunk_text}".encode()
     return str(uuid.UUID(hashlib.md5(hash_input).hexdigest()))
 
 

@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 from enum import Enum
-from typing import Optional
 
 from pydantic import BaseModel
 
@@ -54,4 +53,4 @@ class Error(BaseModel):
     status: int
     title: str
     detail: str
-    instance: Optional[str] = None
+    instance: str | None = None
