@@ -7,7 +7,7 @@
 from pathlib import Path
 
 from llama_stack.distribution.datatypes import ModelInput, Provider, ShieldInput, ToolGroupInput
-from llama_stack.providers.remote.datasets.nvidia import NvidiaDatasetConfig
+from llama_stack.providers.remote.datasetio.nvidia import NvidiaDatasetIOConfig
 from llama_stack.providers.remote.inference.nvidia import NVIDIAConfig
 from llama_stack.providers.remote.inference.nvidia.models import MODEL_ENTRIES
 from llama_stack.providers.remote.post_training.nvidia import NvidiaPostTrainingConfig
@@ -24,10 +24,15 @@ def get_distribution_template() -> DistributionTemplate:
         "agents": ["inline::meta-reference"],
         "telemetry": ["inline::meta-reference"],
         "eval": ["inline::meta-reference"],
-        "datasetio": ["inline::localfs"],
-        "datasets": ["remote::nvidia"],
-        "scoring": ["inline::basic"],
-        "tool_runtime": ["inline::rag-runtime"],
+        "datasetio": ["remote::huggingface", "inline::localfs", "remote::nvidia"],
+        "scoring": ["inline::basic", "inline::llm-as-judge", "inline::braintrust"],
+        "tool_runtime": [
+            "remote::brave-search",
+            "remote::tavily-search",
+            "inline::code-interpreter",
+            "inline::rag-runtime",
+            "remote::model-context-protocol",
+        ],
     }
 
     inference_provider = Provider(
@@ -42,11 +47,12 @@ def get_distribution_template() -> DistributionTemplate:
         config=NvidiaPostTrainingConfig.sample_run_config(),
     )
 
-    datasets_provider = Provider(
+    datasetio_provider = Provider(
         provider_id="nvidia",
         provider_type="remote::nvidia",
-        config=NvidiaDatasetConfig.sample_run_config(),
+        config=NvidiaDatasetIOConfig.sample_run_config(),
     )
+
     safety_provider = Provider(
         provider_id="nvidia",
         provider_type="remote::nvidia",
@@ -85,7 +91,7 @@ def get_distribution_template() -> DistributionTemplate:
                 provider_overrides={
                     "inference": [inference_provider],
                     "post_training": [post_training_provider],
-                    "datasets": [datasets_provider],
+                    "datasetio": [datasetio_provider],
                 },
                 default_models=default_models,
                 default_tool_groups=default_tool_groups,

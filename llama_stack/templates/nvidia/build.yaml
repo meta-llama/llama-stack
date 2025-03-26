@@ -16,7 +16,6 @@ distribution_spec:
     - inline::meta-reference
     datasetio:
     - inline::localfs
-    datasets:
     - remote::nvidia
     scoring:
     - inline::basic

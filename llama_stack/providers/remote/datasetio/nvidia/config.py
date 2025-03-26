@@ -11,8 +11,8 @@ from typing import Any, Dict, Optional
 from pydantic import BaseModel, Field
 
 
-class NvidiaDatasetConfig(BaseModel):
-    """Configuration for NVIDIA Dataset implementation."""
+class NvidiaDatasetIOConfig(BaseModel):
+    """Configuration for NVIDIA DatasetIO implementation."""
 
     api_key: Optional[str] = Field(
         default_factory=lambda: os.getenv("NVIDIA_API_KEY"),
