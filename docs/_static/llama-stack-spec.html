@@ -6502,7 +6502,52 @@
                 "title": "FileResponse",
                 "description": "Response representing a file entry."
             },
-            "Model": {
+            "EqualityGrader": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "equality",
+                        "default": "equality"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ],
+                "title": "EqualityGrader"
+            },
+            "FactualityGrader": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "factuality",
+                        "default": "factuality"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ],
+                "title": "FactualityGrader"
+            },
+            "FaithfulnessGrader": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "faithfulness",
+                        "default": "faithfulness"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ],
+                "title": "FaithfulnessGrader"
+            },
+            "Grader": {
                 "type": "object",
                 "properties": {
                     "identifier": {
@@ -7853,31 +7898,6 @@
                 ],
                 "title": "IterrowsResponse",
                 "description": "A paginated list of rows from a dataset."
-            },
-            "Job": {
-                "type": "object",
-                "properties": {
-                    "job_id": {
-                        "type": "string"
-                    },
-                    "status": {
-                        "type": "string",
-                        "enum": [
-                            "completed",
-                            "in_progress",
-                            "failed",
-                            "scheduled",
-                            "cancelled"
-                        ],
-                        "title": "JobStatus"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "job_id",
-                    "status"
-                ],
-                "title": "Job"
             },
             "ListAgentSessionsResponse": {
                 "type": "object",
