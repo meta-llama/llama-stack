@@ -3,7 +3,6 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from typing import List
 
 import pytest
 
@@ -77,7 +76,7 @@ class TestPostTraining:
     async def test_get_training_jobs(self, post_training_stack):
         post_training_impl = post_training_stack
         jobs_list = await post_training_impl.get_training_jobs()
-        assert isinstance(jobs_list, List)
+        assert isinstance(jobs_list, list)
         assert jobs_list[0].job_uuid == "1234"
 
     @pytest.mark.asyncio

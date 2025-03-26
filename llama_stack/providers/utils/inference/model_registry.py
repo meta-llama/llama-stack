@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -20,13 +20,13 @@ from llama_stack.providers.utils.inference import (
 # more closer to the Model class.
 class ProviderModelEntry(BaseModel):
     provider_model_id: str
-    aliases: List[str] = Field(default_factory=list)
-    llama_model: Optional[str] = None
+    aliases: list[str] = Field(default_factory=list)
+    llama_model: str | None = None
     model_type: ModelType = ModelType.llm
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
 
-def get_huggingface_repo(model_descriptor: str) -> Optional[str]:
+def get_huggingface_repo(model_descriptor: str) -> str | None:
     for model in all_registered_models():
         if model.descriptor() == model_descriptor:
             return model.huggingface_repo
@@ -34,7 +34,7 @@ def get_huggingface_repo(model_descriptor: str) -> Optional[str]:
 
 
 def build_hf_repo_model_entry(
-    provider_model_id: str, model_descriptor: str, additional_aliases: Optional[List[str]] = None
+    provider_model_id: str, model_descriptor: str, additional_aliases: list[str] | None = None
 ) -> ProviderModelEntry:
     aliases = [
         get_huggingface_repo(model_descriptor),
@@ -58,7 +58,7 @@ def build_model_entry(provider_model_id: str, model_descriptor: str) -> Provider
 
 
 class ModelRegistryHelper(ModelsProtocolPrivate):
-    def __init__(self, model_entries: List[ProviderModelEntry]):
+    def __init__(self, model_entries: list[ProviderModelEntry]):
         self.alias_to_provider_id_map = {}
         self.provider_id_to_llama_model_map = {}
         for entry in model_entries:
@@ -72,11 +72,11 @@ class ModelRegistryHelper(ModelsProtocolPrivate):
                 self.alias_to_provider_id_map[entry.llama_model] = entry.provider_model_id
                 self.provider_id_to_llama_model_map[entry.provider_model_id] = entry.llama_model
 
-    def get_provider_model_id(self, identifier: str) -> Optional[str]:
+    def get_provider_model_id(self, identifier: str) -> str | None:
         return self.alias_to_provider_id_map.get(identifier, None)
 
     # TODO: why keep a separate llama model mapping?
-    def get_llama_model(self, provider_model_id: str) -> Optional[str]:
+    def get_llama_model(self, provider_model_id: str) -> str | None:
         return self.provider_id_to_llama_model_map.get(provider_model_id, None)
 
     async def register_model(self, model: Model) -> Model:

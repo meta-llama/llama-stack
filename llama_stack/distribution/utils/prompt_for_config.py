@@ -8,12 +8,11 @@ import inspect
 import json
 import logging
 from enum import Enum
-from typing import Any, List, Literal, Optional, Type, Union, get_args, get_origin
+from typing import Annotated, Any, Literal, Union, get_args, get_origin
 
 from pydantic import BaseModel
 from pydantic.fields import FieldInfo
 from pydantic_core import PydanticUndefinedType
-from typing_extensions import Annotated
 
 log = logging.getLogger(__name__)
 
@@ -21,7 +20,7 @@ log = logging.getLogger(__name__)
 def is_list_of_primitives(field_type):
     """Check if a field type is a List of primitive types."""
     origin = get_origin(field_type)
-    if origin is List or origin is list:
+    if origin is list or origin is list:
         args = get_args(field_type)
         if len(args) == 1 and args[0] in (int, float, str, bool):
             return True
@@ -53,7 +52,7 @@ def get_non_none_type(field_type):
     return next(arg for arg in get_args(field_type) if arg is not type(None))
 
 
-def manually_validate_field(model: Type[BaseModel], field_name: str, value: Any):
+def manually_validate_field(model: type[BaseModel], field_name: str, value: Any):
     validators = model.__pydantic_decorators__.field_validators
     for _name, validator in validators.items():
         if field_name in validator.info.fields:
@@ -126,7 +125,7 @@ def prompt_for_discriminated_union(
 #
 # doesn't support List[nested_class] yet or Dicts of any kind. needs a bunch of
 # unit tests for coverage.
-def prompt_for_config(config_type: type[BaseModel], existing_config: Optional[BaseModel] = None) -> BaseModel:
+def prompt_for_config(config_type: type[BaseModel], existing_config: BaseModel | None = None) -> BaseModel:
     """
     Recursively prompt the user for configuration values based on a Pydantic BaseModel.
 

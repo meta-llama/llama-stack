@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, List, Literal, Optional, Protocol, runtime_checkable
+from typing import Any, Literal, Protocol, runtime_checkable
 
 from pydantic import BaseModel
 
@@ -14,7 +14,7 @@ from llama_stack.schema_utils import json_schema_type, webmethod
 
 
 class CommonShieldFields(BaseModel):
-    params: Optional[Dict[str, Any]] = None
+    params: dict[str, Any] | None = None
 
 
 @json_schema_type
@@ -34,12 +34,12 @@ class Shield(CommonShieldFields, Resource):
 
 class ShieldInput(CommonShieldFields):
     shield_id: str
-    provider_id: Optional[str] = None
-    provider_shield_id: Optional[str] = None
+    provider_id: str | None = None
+    provider_shield_id: str | None = None
 
 
 class ListShieldsResponse(BaseModel):
-    data: List[Shield]
+    data: list[Shield]
 
 
 @runtime_checkable
@@ -55,7 +55,7 @@ class Shields(Protocol):
     async def register_shield(
         self,
         shield_id: str,
-        provider_shield_id: Optional[str] = None,
-        provider_id: Optional[str] = None,
-        params: Optional[Dict[str, Any]] = None,
+        provider_shield_id: str | None = None,
+        provider_id: str | None = None,
+        params: dict[str, Any] | None = None,
     ) -> Shield: ...

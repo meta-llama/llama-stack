@@ -3,7 +3,7 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from typing import Any, Dict, List
+from typing import Any
 
 import requests
 
@@ -101,8 +101,8 @@ class NVIDIAEvalImpl(
     async def evaluate_rows(
         self,
         benchmark_id: str,
-        input_rows: List[Dict[str, Any]],
-        scoring_functions: List[str],
+        input_rows: list[dict[str, Any]],
+        scoring_functions: list[str],
         benchmark_config: BenchmarkConfig,
     ) -> EvaluateResponse:
         raise NotImplementedError()

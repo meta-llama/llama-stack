@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Dict, List, Tuple
 
 from llama_stack.apis.models.models import ModelType
 from llama_stack.distribution.datatypes import (
@@ -51,7 +50,7 @@ from llama_stack.templates.template import (
 )
 
 
-def get_inference_providers() -> Tuple[List[Provider], Dict[str, List[ProviderModelEntry]]]:
+def get_inference_providers() -> tuple[list[Provider], dict[str, list[ProviderModelEntry]]]:
     # in this template, we allow each API key to be optional
     providers = [
         (

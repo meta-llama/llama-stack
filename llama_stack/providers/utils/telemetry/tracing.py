@@ -10,9 +10,10 @@ import logging
 import queue
 import random
 import threading
+from collections.abc import Callable
 from datetime import datetime, timezone
 from functools import wraps
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 from llama_stack.apis.telemetry import (
     LogSeverity,
@@ -106,13 +107,13 @@ class BackgroundLogger:
 
 
 class TraceContext:
-    spans: List[Span] = []
+    spans: list[Span] = []
 
     def __init__(self, logger: BackgroundLogger, trace_id: str):
         self.logger = logger
         self.trace_id = trace_id
 
-    def push_span(self, name: str, attributes: Dict[str, Any] = None) -> Span:
+    def push_span(self, name: str, attributes: dict[str, Any] = None) -> Span:
         current_span = self.get_current_span()
         span = Span(
             span_id=generate_span_id(),
@@ -168,7 +169,7 @@ def setup_logger(api: Telemetry, level: int = logging.INFO):
     root_logger.addHandler(TelemetryHandler())
 
 
-async def start_trace(name: str, attributes: Dict[str, Any] = None) -> TraceContext:
+async def start_trace(name: str, attributes: dict[str, Any] = None) -> TraceContext:
     global CURRENT_TRACE_CONTEXT, BACKGROUND_LOGGER
 
     if BACKGROUND_LOGGER is None:
@@ -246,7 +247,7 @@ class TelemetryHandler(logging.Handler):
 
 
 class SpanContextManager:
-    def __init__(self, name: str, attributes: Dict[str, Any] = None):
+    def __init__(self, name: str, attributes: dict[str, Any] = None):
         self.name = name
         self.attributes = attributes
         self.span = None
@@ -316,11 +317,11 @@ class SpanContextManager:
         return wrapper
 
 
-def span(name: str, attributes: Dict[str, Any] = None):
+def span(name: str, attributes: dict[str, Any] = None):
     return SpanContextManager(name, attributes)
 
 
-def get_current_span() -> Optional[Span]:
+def get_current_span() -> Span | None:
     global CURRENT_TRACE_CONTEXT
     if CURRENT_TRACE_CONTEXT is None:
         logger.debug("No trace context to get current span")

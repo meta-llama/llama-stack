@@ -9,7 +9,7 @@ import logging
 import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 from urllib.parse import unquote
 
 import httpx
@@ -94,7 +94,7 @@ def content_from_data(data_url: str) -> str:
         return ""
 
 
-def concat_interleaved_content(content: List[InterleavedContent]) -> InterleavedContent:
+def concat_interleaved_content(content: list[InterleavedContent]) -> InterleavedContent:
     """concatenate interleaved content into a single list. ensure that 'str's are converted to TextContentItem when in a list"""
 
     ret = []
@@ -141,7 +141,7 @@ async def content_from_doc(doc: RAGDocument) -> str:
     return interleaved_content_as_str(doc.content)
 
 
-def make_overlapped_chunks(document_id: str, text: str, window_len: int, overlap_len: int) -> List[Chunk]:
+def make_overlapped_chunks(document_id: str, text: str, window_len: int, overlap_len: int) -> list[Chunk]:
     tokenizer = Tokenizer.get_instance()
     tokens = tokenizer.encode(text, bos=False, eos=False)
 
@@ -165,7 +165,7 @@ def make_overlapped_chunks(document_id: str, text: str, window_len: int, overlap
 
 class EmbeddingIndex(ABC):
     @abstractmethod
-    async def add_chunks(self, chunks: List[Chunk], embeddings: NDArray):
+    async def add_chunks(self, chunks: list[Chunk], embeddings: NDArray):
         raise NotImplementedError()
 
     @abstractmethod
@@ -185,7 +185,7 @@ class VectorDBWithIndex:
 
     async def insert_chunks(
         self,
-        chunks: List[Chunk],
+        chunks: list[Chunk],
     ) -> None:
         embeddings_response = await self.inference_api.embeddings(
             self.vector_db.embedding_model, [x.content for x in chunks]
@@ -197,7 +197,7 @@ class VectorDBWithIndex:
     async def query_chunks(
         self,
         query: InterleavedContent,
-        params: Optional[Dict[str, Any]] = None,
+        params: dict[str, Any] | None = None,
     ) -> QueryChunksResponse:
         if params is None:
             params = {}

@@ -5,7 +5,8 @@
 # the root directory of this source tree.
 import json
 import logging
-from typing import Any, AsyncGenerator, AsyncIterator, Dict, List, Optional, Union
+from collections.abc import AsyncGenerator, AsyncIterator
+from typing import Any
 
 import httpx
 from openai import AsyncOpenAI
@@ -94,7 +95,7 @@ def build_hf_repo_model_entries():
 
 def _convert_to_vllm_tool_calls_in_response(
     tool_calls,
-) -> List[ToolCall]:
+) -> list[ToolCall]:
     if not tool_calls:
         return []
 
@@ -109,7 +110,7 @@ def _convert_to_vllm_tool_calls_in_response(
     ]
 
 
-def _convert_to_vllm_tools_in_request(tools: List[ToolDefinition]) -> List[dict]:
+def _convert_to_vllm_tools_in_request(tools: list[ToolDefinition]) -> list[dict]:
     compat_tools = []
 
     for tool in tools:
@@ -262,10 +263,10 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         self,
         model_id: str,
         content: InterleavedContent,
-        sampling_params: Optional[SamplingParams] = None,
-        response_format: Optional[ResponseFormat] = None,
-        stream: Optional[bool] = False,
-        logprobs: Optional[LogProbConfig] = None,
+        sampling_params: SamplingParams | None = None,
+        response_format: ResponseFormat | None = None,
+        stream: bool | None = False,
+        logprobs: LogProbConfig | None = None,
     ) -> CompletionResponse | AsyncGenerator[CompletionResponseStreamChunk, None]:
         self._lazy_initialize_client()
         if sampling_params is None:
@@ -287,15 +288,15 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
     async def chat_completion(
         self,
         model_id: str,
-        messages: List[Message],
-        sampling_params: Optional[SamplingParams] = None,
-        tools: Optional[List[ToolDefinition]] = None,
-        tool_choice: Optional[ToolChoice] = ToolChoice.auto,
-        tool_prompt_format: Optional[ToolPromptFormat] = None,
-        response_format: Optional[ResponseFormat] = None,
-        stream: Optional[bool] = False,
-        logprobs: Optional[LogProbConfig] = None,
-        tool_config: Optional[ToolConfig] = None,
+        messages: list[Message],
+        sampling_params: SamplingParams | None = None,
+        tools: list[ToolDefinition] | None = None,
+        tool_choice: ToolChoice | None = ToolChoice.auto,
+        tool_prompt_format: ToolPromptFormat | None = None,
+        response_format: ResponseFormat | None = None,
+        stream: bool | None = False,
+        logprobs: LogProbConfig | None = None,
+        tool_config: ToolConfig | None = None,
     ) -> ChatCompletionResponse | AsyncGenerator[ChatCompletionResponseStreamChunk, None]:
         self._lazy_initialize_client()
         if sampling_params is None:
@@ -385,7 +386,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
             )
         return model
 
-    async def _get_params(self, request: Union[ChatCompletionRequest, CompletionRequest]) -> dict:
+    async def _get_params(self, request: ChatCompletionRequest | CompletionRequest) -> dict:
         options = get_sampling_options(request.sampling_params)
         if "max_tokens" not in options:
             options["max_tokens"] = self.config.max_tokens
@@ -422,10 +423,10 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
     async def embeddings(
         self,
         model_id: str,
-        contents: List[str] | List[InterleavedContentItem],
-        text_truncation: Optional[TextTruncation] = TextTruncation.none,
-        output_dimension: Optional[int] = None,
-        task_type: Optional[EmbeddingTaskType] = None,
+        contents: list[str] | list[InterleavedContentItem],
+        text_truncation: TextTruncation | None = TextTruncation.none,
+        output_dimension: int | None = None,
+        task_type: EmbeddingTaskType | None = None,
     ) -> EmbeddingsResponse:
         self._lazy_initialize_client()
         assert self.client is not None
@@ -448,29 +449,29 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
     async def openai_completion(
         self,
         model: str,
-        prompt: Union[str, List[str], List[int], List[List[int]]],
-        best_of: Optional[int] = None,
-        echo: Optional[bool] = None,
-        frequency_penalty: Optional[float] = None,
-        logit_bias: Optional[Dict[str, float]] = None,
-        logprobs: Optional[bool] = None,
-        max_tokens: Optional[int] = None,
-        n: Optional[int] = None,
-        presence_penalty: Optional[float] = None,
-        seed: Optional[int] = None,
-        stop: Optional[Union[str, List[str]]] = None,
-        stream: Optional[bool] = None,
-        stream_options: Optional[Dict[str, Any]] = None,
-        temperature: Optional[float] = None,
-        top_p: Optional[float] = None,
-        user: Optional[str] = None,
-        guided_choice: Optional[List[str]] = None,
-        prompt_logprobs: Optional[int] = None,
+        prompt: str | list[str] | list[int] | list[list[int]],
+        best_of: int | None = None,
+        echo: bool | None = None,
+        frequency_penalty: float | None = None,
+        logit_bias: dict[str, float] | None = None,
+        logprobs: bool | None = None,
+        max_tokens: int | None = None,
+        n: int | None = None,
+        presence_penalty: float | None = None,
+        seed: int | None = None,
+        stop: str | list[str] | None = None,
+        stream: bool | None = None,
+        stream_options: dict[str, Any] | None = None,
+        temperature: float | None = None,
+        top_p: float | None = None,
+        user: str | None = None,
+        guided_choice: list[str] | None = None,
+        prompt_logprobs: int | None = None,
     ) -> OpenAICompletion:
         self._lazy_initialize_client()
         model_obj = await self._get_model(model)
 
-        extra_body: Dict[str, Any] = {}
+        extra_body: dict[str, Any] = {}
         if prompt_logprobs is not None and prompt_logprobs >= 0:
             extra_body["prompt_logprobs"] = prompt_logprobs
         if guided_choice:
@@ -501,29 +502,29 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
     async def openai_chat_completion(
         self,
         model: str,
-        messages: List[OpenAIMessageParam],
-        frequency_penalty: Optional[float] = None,
-        function_call: Optional[Union[str, Dict[str, Any]]] = None,
-        functions: Optional[List[Dict[str, Any]]] = None,
-        logit_bias: Optional[Dict[str, float]] = None,
-        logprobs: Optional[bool] = None,
-        max_completion_tokens: Optional[int] = None,
-        max_tokens: Optional[int] = None,
-        n: Optional[int] = None,
-        parallel_tool_calls: Optional[bool] = None,
-        presence_penalty: Optional[float] = None,
-        response_format: Optional[OpenAIResponseFormatParam] = None,
-        seed: Optional[int] = None,
-        stop: Optional[Union[str, List[str]]] = None,
-        stream: Optional[bool] = None,
-        stream_options: Optional[Dict[str, Any]] = None,
-        temperature: Optional[float] = None,
-        tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
-        tools: Optional[List[Dict[str, Any]]] = None,
-        top_logprobs: Optional[int] = None,
-        top_p: Optional[float] = None,
-        user: Optional[str] = None,
-    ) -> Union[OpenAIChatCompletion, AsyncIterator[OpenAIChatCompletionChunk]]:
+        messages: list[OpenAIMessageParam],
+        frequency_penalty: float | None = None,
+        function_call: str | dict[str, Any] | None = None,
+        functions: list[dict[str, Any]] | None = None,
+        logit_bias: dict[str, float] | None = None,
+        logprobs: bool | None = None,
+        max_completion_tokens: int | None = None,
+        max_tokens: int | None = None,
+        n: int | None = None,
+        parallel_tool_calls: bool | None = None,
+        presence_penalty: float | None = None,
+        response_format: OpenAIResponseFormatParam | None = None,
+        seed: int | None = None,
+        stop: str | list[str] | None = None,
+        stream: bool | None = None,
+        stream_options: dict[str, Any] | None = None,
+        temperature: float | None = None,
+        tool_choice: str | dict[str, Any] | None = None,
+        tools: list[dict[str, Any]] | None = None,
+        top_logprobs: int | None = None,
+        top_p: float | None = None,
+        user: str | None = None,
+    ) -> OpenAIChatCompletion | AsyncIterator[OpenAIChatCompletionChunk]:
         self._lazy_initialize_client()
         model_obj = await self._get_model(model)
         params = await prepare_openai_completion_params(
@@ -556,21 +557,21 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
     async def batch_completion(
         self,
         model_id: str,
-        content_batch: List[InterleavedContent],
-        sampling_params: Optional[SamplingParams] = None,
-        response_format: Optional[ResponseFormat] = None,
-        logprobs: Optional[LogProbConfig] = None,
+        content_batch: list[InterleavedContent],
+        sampling_params: SamplingParams | None = None,
+        response_format: ResponseFormat | None = None,
+        logprobs: LogProbConfig | None = None,
     ):
         raise NotImplementedError("Batch completion is not supported for Ollama")
 
     async def batch_chat_completion(
         self,
         model_id: str,
-        messages_batch: List[List[Message]],
-        sampling_params: Optional[SamplingParams] = None,
-        tools: Optional[List[ToolDefinition]] = None,
-        tool_config: Optional[ToolConfig] = None,
-        response_format: Optional[ResponseFormat] = None,
-        logprobs: Optional[LogProbConfig] = None,
+        messages_batch: list[list[Message]],
+        sampling_params: SamplingParams | None = None,
+        tools: list[ToolDefinition] | None = None,
+        tool_config: ToolConfig | None = None,
+        response_format: ResponseFormat | None = None,
+        logprobs: LogProbConfig | None = None,
     ):
         raise NotImplementedError("Batch chat completion is not supported for Ollama")

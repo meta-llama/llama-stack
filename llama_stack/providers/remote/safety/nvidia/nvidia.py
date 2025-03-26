@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 import logging
-from typing import Any, List, Optional
+from typing import Any
 
 import requests
 
@@ -41,7 +41,7 @@ class NVIDIASafetyAdapter(Safety, ShieldsProtocolPrivate):
             raise ValueError("Shield model not provided.")
 
     async def run_shield(
-        self, shield_id: str, messages: List[Message], params: Optional[dict[str, Any]] = None
+        self, shield_id: str, messages: list[Message], params: dict[str, Any] | None = None
     ) -> RunShieldResponse:
         """
         Run a safety shield check against the provided messages.
@@ -112,7 +112,7 @@ class NeMoGuardrails:
         response.raise_for_status()
         return response.json()
 
-    async def run(self, messages: List[Message]) -> RunShieldResponse:
+    async def run(self, messages: list[Message]) -> RunShieldResponse:
         """
         Queries the /v1/guardrails/checks endpoint of the NeMo guardrails deployed API.
 

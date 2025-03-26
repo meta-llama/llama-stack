@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 import logging
-from typing import Tuple
 
 import httpx
 
@@ -18,7 +17,7 @@ def _is_nvidia_hosted(config: NVIDIAConfig) -> bool:
     return "integrate.api.nvidia.com" in config.url
 
 
-async def _get_health(url: str) -> Tuple[bool, bool]:
+async def _get_health(url: str) -> tuple[bool, bool]:
     """
     Query {url}/v1/health/{live,ready} to check if the server is running and ready
 

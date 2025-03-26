@@ -6,7 +6,7 @@
 
 import logging
 import os
-from typing import Callable, Optional
+from collections.abc import Callable
 
 import torch
 from fairscale.nn.model_parallel.initialize import get_model_parallel_rank
@@ -45,8 +45,8 @@ def experts_batched_swiglu_wrapper(
 def convert_to_quantized_model(
     model: Transformer,
     checkpoint_dir: str,
-    quantization_mode: Optional[str] = None,
-    fp8_activation_scale_ub: Optional[float] = 1200.0,
+    quantization_mode: str | None = None,
+    fp8_activation_scale_ub: float | None = 1200.0,
     use_rich_progress: bool = True,
 ) -> Transformer:
     from ...quantize_impls import (
@@ -213,7 +213,7 @@ def logging_callbacks(
         )
         task_id = progress.add_task("[blue]Converting layers...", total=total_blocks, status="Starting")
 
-    def update_status(message: Optional[str], completed: Optional[int] = None) -> None:
+    def update_status(message: str | None, completed: int | None = None) -> None:
         if use_rich_progress:
             if message is not None:
                 progress.update(task_id, status=message)

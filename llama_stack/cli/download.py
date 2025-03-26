@@ -13,7 +13,6 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from functools import partial
 from pathlib import Path
-from typing import Dict, List, Optional
 
 import httpx
 from pydantic import BaseModel, ConfigDict
@@ -102,7 +101,7 @@ class DownloadTask:
     output_file: str
     total_size: int = 0
     downloaded_size: int = 0
-    task_id: Optional[int] = None
+    task_id: int | None = None
     retries: int = 0
     max_retries: int = 3
 
@@ -262,7 +261,7 @@ class ParallelDownloader:
             self.progress.update(task.task_id, description=f"[red]Failed: {task.output_file}[/red]")
             raise DownloadError(f"Download failed for {task.output_file}: {str(e)}") from e
 
-    def has_disk_space(self, tasks: List[DownloadTask]) -> bool:
+    def has_disk_space(self, tasks: list[DownloadTask]) -> bool:
         try:
             total_remaining_size = sum(task.total_size - task.downloaded_size for task in tasks)
             dir_path = os.path.dirname(os.path.abspath(tasks[0].output_file))
@@ -282,7 +281,7 @@ class ParallelDownloader:
         except Exception as e:
             raise DownloadError(f"Failed to check disk space: {str(e)}") from e
 
-    async def download_all(self, tasks: List[DownloadTask]) -> None:
+    async def download_all(self, tasks: list[DownloadTask]) -> None:
         if not tasks:
             raise ValueError("No download tasks provided")
 
@@ -391,20 +390,20 @@ def _meta_download(
 
 class ModelEntry(BaseModel):
     model_id: str
-    files: Dict[str, str]
+    files: dict[str, str]
 
     model_config = ConfigDict(protected_namespaces=())
 
 
 class Manifest(BaseModel):
-    models: List[ModelEntry]
+    models: list[ModelEntry]
     expires_on: datetime
 
 
 def _download_from_manifest(manifest_file: str, max_concurrent_downloads: int):
     from llama_stack.distribution.utils.model_utils import model_local_dir
 
-    with open(manifest_file, "r") as f:
+    with open(manifest_file) as f:
         d = json.load(f)
         manifest = Manifest(**d)
 

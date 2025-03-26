@@ -6,7 +6,7 @@
 
 import os
 import warnings
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -14,17 +14,17 @@ from pydantic import BaseModel, Field
 class NvidiaDatasetIOConfig(BaseModel):
     """Configuration for NVIDIA DatasetIO implementation."""
 
-    api_key: Optional[str] = Field(
+    api_key: str | None = Field(
         default_factory=lambda: os.getenv("NVIDIA_API_KEY"),
         description="The NVIDIA API key.",
     )
 
-    dataset_namespace: Optional[str] = Field(
+    dataset_namespace: str | None = Field(
         default_factory=lambda: os.getenv("NVIDIA_DATASET_NAMESPACE", "default"),
         description="The NVIDIA dataset namespace.",
     )
 
-    project_id: Optional[str] = Field(
+    project_id: str | None = Field(
         default_factory=lambda: os.getenv("NVIDIA_PROJECT_ID", "test-project"),
         description="The NVIDIA project ID.",
     )
@@ -52,7 +52,7 @@ class NvidiaDatasetIOConfig(BaseModel):
             )
 
     @classmethod
-    def sample_run_config(cls, **kwargs) -> Dict[str, Any]:
+    def sample_run_config(cls, **kwargs) -> dict[str, Any]:
         return {
             "api_key": "${env.NVIDIA_API_KEY:}",
             "dataset_namespace": "${env.NVIDIA_DATASET_NAMESPACE:default}",

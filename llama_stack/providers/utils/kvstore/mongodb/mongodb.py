@@ -6,7 +6,6 @@
 
 import logging
 from datetime import datetime
-from typing import List, Optional
 
 from pymongo import AsyncMongoClient
 
@@ -43,12 +42,12 @@ class MongoDBKVStoreImpl(KVStore):
             return key
         return f"{self.config.namespace}:{key}"
 
-    async def set(self, key: str, value: str, expiration: Optional[datetime] = None) -> None:
+    async def set(self, key: str, value: str, expiration: datetime | None = None) -> None:
         key = self._namespaced_key(key)
         update_query = {"$set": {"value": value, "expiration": expiration}}
         await self.collection.update_one({"key": key}, update_query, upsert=True)
 
-    async def get(self, key: str) -> Optional[str]:
+    async def get(self, key: str) -> str | None:
         key = self._namespaced_key(key)
         query = {"key": key}
         result = await self.collection.find_one(query, {"value": 1, "_id": 0})
@@ -58,7 +57,7 @@ class MongoDBKVStoreImpl(KVStore):
         key = self._namespaced_key(key)
         await self.collection.delete_one({"key": key})
 
-    async def range(self, start_key: str, end_key: str) -> List[str]:
+    async def range(self, start_key: str, end_key: str) -> list[str]:
         start_key = self._namespaced_key(start_key)
         end_key = self._namespaced_key(end_key)
         query = {

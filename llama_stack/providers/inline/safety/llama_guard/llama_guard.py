@@ -6,7 +6,7 @@
 
 import re
 from string import Template
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from llama_stack.apis.common.content_types import ImageContentItem, TextContentItem
 from llama_stack.apis.inference import (
@@ -149,8 +149,8 @@ class LlamaGuardSafetyImpl(Safety, ShieldsProtocolPrivate):
     async def run_shield(
         self,
         shield_id: str,
-        messages: List[Message],
-        params: Dict[str, Any] = None,
+        messages: list[Message],
+        params: dict[str, Any] = None,
     ) -> RunShieldResponse:
         shield = await self.shield_store.get_shield(shield_id)
         if not shield:
@@ -177,7 +177,7 @@ class LlamaGuardShield:
         self,
         model: str,
         inference_api: Inference,
-        excluded_categories: Optional[List[str]] = None,
+        excluded_categories: list[str] | None = None,
     ):
         if excluded_categories is None:
             excluded_categories = []
@@ -193,7 +193,7 @@ class LlamaGuardShield:
         self.inference_api = inference_api
         self.excluded_categories = excluded_categories
 
-    def check_unsafe_response(self, response: str) -> Optional[str]:
+    def check_unsafe_response(self, response: str) -> str | None:
         match = re.match(r"^unsafe\n(.*)$", response)
         if match:
             # extracts the unsafe code
@@ -202,7 +202,7 @@ class LlamaGuardShield:
 
         return None
 
-    def get_safety_categories(self) -> List[str]:
+    def get_safety_categories(self) -> list[str]:
         excluded_categories = self.excluded_categories
         if set(excluded_categories) == set(SAFETY_CATEGORIES_TO_CODE_MAP.values()):
             excluded_categories = []
@@ -218,7 +218,7 @@ class LlamaGuardShield:
 
         return final_categories
 
-    def validate_messages(self, messages: List[Message]) -> None:
+    def validate_messages(self, messages: list[Message]) -> None:
         if len(messages) == 0:
             raise ValueError("Messages must not be empty")
         if messages[0].role != Role.user.value:
@@ -229,7 +229,7 @@ class LlamaGuardShield:
 
         return messages
 
-    async def run(self, messages: List[Message]) -> RunShieldResponse:
+    async def run(self, messages: list[Message]) -> RunShieldResponse:
         messages = self.validate_messages(messages)
 
         if self.model == CoreModelId.llama_guard_3_11b_vision.value:
@@ -247,10 +247,10 @@ class LlamaGuardShield:
         content = content.strip()
         return self.get_shield_response(content)
 
-    def build_text_shield_input(self, messages: List[Message]) -> UserMessage:
+    def build_text_shield_input(self, messages: list[Message]) -> UserMessage:
         return UserMessage(content=self.build_prompt(messages))
 
-    def build_vision_shield_input(self, messages: List[Message]) -> UserMessage:
+    def build_vision_shield_input(self, messages: list[Message]) -> UserMessage:
         conversation = []
         most_recent_img = None
 
@@ -284,7 +284,7 @@ class LlamaGuardShield:
 
         return UserMessage(content=prompt)
 
-    def build_prompt(self, messages: List[Message]) -> str:
+    def build_prompt(self, messages: list[Message]) -> str:
         categories = self.get_safety_categories()
         categories_str = "\n".join(categories)
         conversations_str = "\n\n".join(

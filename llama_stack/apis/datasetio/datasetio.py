@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 
 from llama_stack.apis.common.responses import PaginatedResponse
 from llama_stack.apis.datasets import Dataset
@@ -24,8 +24,8 @@ class DatasetIO(Protocol):
     async def iterrows(
         self,
         dataset_id: str,
-        start_index: Optional[int] = None,
-        limit: Optional[int] = None,
+        start_index: int | None = None,
+        limit: int | None = None,
     ) -> PaginatedResponse:
         """Get a paginated list of rows from a dataset.
 
@@ -44,4 +44,4 @@ class DatasetIO(Protocol):
         ...
 
     @webmethod(route="/datasetio/append-rows/{dataset_id:path}", method="POST")
-    async def append_rows(self, dataset_id: str, rows: List[Dict[str, Any]]) -> None: ...
+    async def append_rows(self, dataset_id: str, rows: list[dict[str, Any]]) -> None: ...

@@ -3,7 +3,7 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from typing import Any, Dict
+from typing import Any
 
 from llama_stack.distribution.datatypes import Api
 
@@ -12,7 +12,7 @@ from .config import NVIDIAEvalConfig
 
 async def get_adapter_impl(
     config: NVIDIAEvalConfig,
-    deps: Dict[Api, Any],
+    deps: dict[Api, Any],
 ):
     from .eval import NVIDIAEvalImpl
 
