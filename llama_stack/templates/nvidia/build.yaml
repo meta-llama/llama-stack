@@ -12,6 +12,8 @@ distribution_spec:
     - inline::meta-reference
     telemetry:
     - inline::meta-reference
+    post_training:
+    - remote::nvidia
     datasetio:
     - inline::localfs
     tool_runtime:
