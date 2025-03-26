@@ -146,9 +146,27 @@ def _validate_api_delete_method_returns_none(method) -> str | None:
         return "does not return None"
 
 
+def _validate_list_parameters_contain_data(method) -> str | None:
+    hints = get_type_hints(method)
+
+    if 'return' not in hints:
+        return "has no return type annotation"
+
+    return_type = hints['return']
+    if not inspect.isclass(return_type):
+        return
+
+    if not return_type.__name__.startswith('List'):
+        return
+
+    if 'data' not in return_type.model_fields:
+        return "does not have data attribute"
+
+
 _VALIDATORS = {
     "GET": [
         _validate_api_method_return_type,
+        _validate_list_parameters_contain_data,
     ],
     "DELETE": [
         _validate_api_delete_method_returns_none,
