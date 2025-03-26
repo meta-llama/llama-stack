@@ -7,6 +7,7 @@
 from pathlib import Path
 
 from llama_stack.distribution.datatypes import ModelInput, Provider, ShieldInput, ToolGroupInput
+from llama_stack.providers.remote.datasetio.nvidia import NvidiaDatasetIOConfig
 from llama_stack.providers.remote.inference.nvidia import NVIDIAConfig
 from llama_stack.providers.remote.inference.nvidia.models import MODEL_ENTRIES
 from llama_stack.providers.remote.safety.nvidia import NVIDIASafetyConfig
@@ -22,7 +23,7 @@ def get_distribution_template() -> DistributionTemplate:
         "telemetry": ["inline::meta-reference"],
         "eval": ["inline::meta-reference"],
         "post_training": ["remote::nvidia"],
-        "datasetio": ["inline::localfs"],
+        "datasetio": ["inline::localfs", "remote::nvidia"],
         "scoring": ["inline::basic"],
         "tool_runtime": ["inline::rag-runtime"],
     }
@@ -44,6 +45,11 @@ def get_distribution_template() -> DistributionTemplate:
     safety_model = ModelInput(
         model_id="${env.SAFETY_MODEL}",
         provider_id="nvidia",
+    )
+    datasetio_provider = Provider(
+        provider_id="nvidia",
+        provider_type="remote::nvidia",
+        config=NvidiaDatasetIOConfig.sample_run_config(),
     )
 
     available_models = {
@@ -69,6 +75,7 @@ def get_distribution_template() -> DistributionTemplate:
             "run.yaml": RunConfigSettings(
                 provider_overrides={
                     "inference": [inference_provider],
+                    "datasetio": [datasetio_provider],
                 },
                 default_models=default_models,
                 default_tool_groups=default_tool_groups,

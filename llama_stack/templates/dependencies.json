@@ -437,6 +437,7 @@
     "aiosqlite",
     "blobfile",
     "chardet",
+    "datasets",
     "emoji",
     "faiss-cpu",
     "fastapi",
