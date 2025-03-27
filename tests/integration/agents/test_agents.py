@@ -8,13 +8,15 @@ from typing import Any, Dict
 from uuid import uuid4
 
 import pytest
+from llama_stack_client import Agent, AgentEventLogger, Document
+from llama_stack_client.types.shared_params.agent_config import AgentConfig, ToolConfig
 
 from llama_stack.apis.agents.agents import (
     AgentConfig as Server__AgentConfig,
+)
+from llama_stack.apis.agents.agents import (
     ToolChoice,
 )
-from llama_stack_client import Agent, AgentEventLogger, Document
-from llama_stack_client.types.shared_params.agent_config import AgentConfig, ToolConfig
 
 
 def get_boiling_point(liquid_name: str, celcius: bool = True) -> int:
