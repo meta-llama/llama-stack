@@ -67,7 +67,7 @@ options:
                         Image Type to use for the build. This can be either conda or container or venv. If not specified, will use the image type from the template config. (default:
                         conda)
   --image-name IMAGE_NAME
-                        [for image-type=conda|venv] Name of the conda or virtual environment to use for the build. If not specified, currently active Conda environment will be used if
+                        [for image-type=conda|container|venv] Name of the conda or virtual environment to use for the build. If not specified, currently active Conda environment will be used if
                         found. (default: None)
   --print-deps-only     Print the dependencies for the stack only, without building the stack (default: False)
   --run                 Run the stack after building using the same image type, name, and other applicable arguments (default: False)

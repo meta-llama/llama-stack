@@ -21,6 +21,7 @@ from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.validation import Validator
 from termcolor import cprint
 
+from llama_stack.cli.stack.utils import ImageType
 from llama_stack.cli.table import print_table
 from llama_stack.distribution.build import (
     SERVER_DEPENDENCIES,
@@ -62,10 +63,10 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
     if args.list_templates:
         return _run_template_list_cmd()
 
-    if args.image_type == "venv":
+    if args.image_type == ImageType.VENV.value:
         current_venv = os.environ.get("VIRTUAL_ENV")
         image_name = args.image_name or current_venv
-    elif args.image_type == "conda":
+    elif args.image_type == ImageType.CONDA.value:
         current_conda_env = os.environ.get("CONDA_DEFAULT_ENV")
         image_name = args.image_name or current_conda_env
     else:
@@ -84,7 +85,7 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
             build_config.image_type = args.image_type
         else:
             cprint(
-                f"Please specify a image-type (container | conda | venv) for {args.template}",
+                f"Please specify a image-type ({' | '.join(e.value for e in ImageType)}) for {args.template}",
                 color="red",
             )
             sys.exit(1)
@@ -98,15 +99,15 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
         )
 
         image_type = prompt(
-            "> Enter the image type you want your Llama Stack to be built as (container or conda or venv): ",
+            f"> Enter the image type you want your Llama Stack to be built as ({' or '.join(e.value for e in ImageType)}): ",
             validator=Validator.from_callable(
-                lambda x: x in ["container", "conda", "venv"],
-                error_message="Invalid image type, please enter conda or container or venv",
+                lambda x: x in [e.value for e in ImageType],
+                error_message=f"Invalid image type, please enter {' or '.join(e.value for e in ImageType)}",
             ),
-            default="conda",
+            default=ImageType.CONDA.value,
         )
 
-        if image_type == "conda":
+        if image_type == ImageType.CONDA.value:
             if not image_name:
                 cprint(
                     f"No current conda environment detected or specified, will create a new conda environment with the name `llamastack-{name}`",
