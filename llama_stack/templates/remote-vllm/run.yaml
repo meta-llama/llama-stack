@@ -3,10 +3,8 @@ image_name: remote-vllm
 apis:
 - agents
 - datasetio
-- eval
 - inference
 - safety
-- scoring
 - telemetry
 - tool_runtime
 - vector_io
@@ -43,14 +41,6 @@ providers:
         type: sqlite
         namespace: null
         db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/remote-vllm}/agents_store.db
-  eval:
-  - provider_id: meta-reference
-    provider_type: inline::meta-reference
-    config:
-      kvstore:
-        type: sqlite
-        namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/remote-vllm}/meta_reference_eval.db
   datasetio:
   - provider_id: huggingface
     provider_type: remote::huggingface
@@ -66,17 +56,6 @@ providers:
         type: sqlite
         namespace: null
         db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/remote-vllm}/localfs_datasetio.db
-  scoring:
-  - provider_id: basic
-    provider_type: inline::basic
-    config: {}
-  - provider_id: llm-as-judge
-    provider_type: inline::llm-as-judge
-    config: {}
-  - provider_id: braintrust
-    provider_type: inline::braintrust
-    config:
-      openai_api_key: ${env.OPENAI_API_KEY:}
   telemetry:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -124,7 +103,6 @@ models:
 shields: []
 vector_dbs: []
 datasets: []
-scoring_fns: []
 benchmarks: []
 tool_groups:
 - toolgroup_id: builtin::websearch

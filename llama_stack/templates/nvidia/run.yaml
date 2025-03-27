@@ -3,11 +3,9 @@ image_name: nvidia
 apis:
 - agents
 - datasetio
-- eval
 - inference
 - post_training
 - safety
-- scoring
 - telemetry
 - tool_runtime
 - vector_io
@@ -47,14 +45,6 @@ providers:
       service_name: "${env.OTEL_SERVICE_NAME:\u200B}"
       sinks: ${env.TELEMETRY_SINKS:console,sqlite}
       sqlite_db_path: ${env.SQLITE_DB_PATH:~/.llama/distributions/nvidia/trace_store.db}
-  eval:
-  - provider_id: meta-reference
-    provider_type: inline::meta-reference
-    config:
-      kvstore:
-        type: sqlite
-        namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/nvidia}/meta_reference_eval.db
   post_training:
   - provider_id: nvidia
     provider_type: remote::nvidia
@@ -71,10 +61,6 @@ providers:
         type: sqlite
         namespace: null
         db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/nvidia}/localfs_datasetio.db
-  scoring:
-  - provider_id: basic
-    provider_type: inline::basic
-    config: {}
   tool_runtime:
   - provider_id: rag-runtime
     provider_type: inline::rag-runtime
@@ -204,7 +190,6 @@ models:
 shields: []
 vector_dbs: []
 datasets: []
-scoring_fns: []
 benchmarks: []
 tool_groups:
 - toolgroup_id: builtin::rag

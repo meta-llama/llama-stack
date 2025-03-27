@@ -13,7 +13,7 @@ from llama_stack.providers.utils.kvstore.config import (
 )
 
 
-class MetaReferenceEvalConfig(BaseModel):
+class MetaReferenceEvaluationConfig(BaseModel):
     kvstore: KVStoreConfig
 
     @classmethod
@@ -21,6 +21,6 @@ class MetaReferenceEvalConfig(BaseModel):
         return {
             "kvstore": SqliteKVStoreConfig.sample_run_config(
                 __distro_dir__=__distro_dir__,
-                db_name="meta_reference_eval.db",
+                db_name="meta_reference_evaluation.db",
             )
         }

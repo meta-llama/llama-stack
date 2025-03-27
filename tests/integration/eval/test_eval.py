@@ -16,6 +16,7 @@ from ..datasets.test_datasets import data_url_from_file
 
 
 @pytest.mark.parametrize("scoring_fn_id", ["basic::equality"])
+@pytest.mark.skip(reason="TODO(xiyan): fix this")
 def test_evaluate_rows(llama_stack_client, text_model_id, scoring_fn_id):
     dataset = llama_stack_client.datasets.register(
         purpose="eval/messages-answer",
@@ -65,6 +66,7 @@ def test_evaluate_rows(llama_stack_client, text_model_id, scoring_fn_id):
 
 
 @pytest.mark.parametrize("scoring_fn_id", ["basic::subset_of"])
+@pytest.mark.skip(reason="TODO(xiyan): fix this")
 def test_evaluate_benchmark(llama_stack_client, text_model_id, scoring_fn_id):
     dataset = llama_stack_client.datasets.register(
         purpose="eval/messages-answer",

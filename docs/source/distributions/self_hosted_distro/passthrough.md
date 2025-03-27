@@ -17,10 +17,8 @@ The `llamastack/distribution-passthrough` distribution consists of the following
 |-----|-------------|
 | agents | `inline::meta-reference` |
 | datasetio | `remote::huggingface`, `inline::localfs` |
-| eval | `inline::meta-reference` |
 | inference | `remote::passthrough`, `inline::sentence-transformers` |
 | safety | `inline::llama-guard` |
-| scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |
 | telemetry | `inline::meta-reference` |
 | tool_runtime | `remote::brave-search`, `remote::tavily-search`, `remote::wolfram-alpha`, `inline::code-interpreter`, `inline::rag-runtime`, `remote::model-context-protocol` |
 | vector_io | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |

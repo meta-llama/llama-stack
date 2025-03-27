@@ -7,19 +7,21 @@ from typing import Any, Dict
 
 from llama_stack.distribution.datatypes import Api
 
-from .config import BasicScoringConfig
+from .config import MetaReferenceEvaluationConfig
 
 
 async def get_provider_impl(
-    config: BasicScoringConfig,
+    config: MetaReferenceEvaluationConfig,
     deps: Dict[Api, Any],
 ):
-    from .scoring import BasicScoringImpl
+    from .evaluation import MetaReferenceEvaluationImpl
 
-    impl = BasicScoringImpl(
+    impl = MetaReferenceEvaluationImpl(
         config,
         deps[Api.datasetio],
         deps[Api.datasets],
+        deps[Api.inference],
+        deps[Api.agents],
     )
     await impl.initialize()
     return impl
