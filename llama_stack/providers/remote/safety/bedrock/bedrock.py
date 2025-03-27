@@ -28,6 +28,7 @@ class BedrockSafetyAdapter(Safety, ShieldsProtocolPrivate):
     def __init__(self, config: BedrockSafetyConfig) -> None:
         self.config = config
         self.registered_shields = []
+        self.test = 2
 
     async def initialize(self) -> None:
         try:
