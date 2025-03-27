@@ -815,6 +815,56 @@
                     }
                 ]
             },
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FileRegistrationResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Files"
+                ],
+                "description": "Register an existing file with the provider.",
+                "parameters": [
+                    {
+                        "name": "bucket",
+                        "in": "path",
+                        "description": "Storage location",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "key",
+                        "in": "path",
+                        "description": "File path relative to the storage location",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            },
             "delete": {
                 "responses": {
                     "200": {
@@ -2534,6 +2584,47 @@
                         "name": "bucket",
                         "in": "path",
                         "description": "Bucket name (valid chars: a-zA-Z0-9_-)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            },
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BucketRegistrationResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Files"
+                ],
+                "description": "Register an existing storage location with the provider.",
+                "parameters": [
+                    {
+                        "name": "bucket",
+                        "in": "path",
+                        "description": "Storage location",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -9384,6 +9475,61 @@
                     "scoring_functions"
                 ],
                 "title": "RegisterBenchmarkRequest"
+            },
+            "BucketRegistrationResponse": {
+                "type": "object",
+                "properties": {
+                    "bucket": {
+                        "type": "string",
+                        "description": "The registered storage location URI (e.g., \"s3://my-bucket\" or \"file:///data\")"
+                    },
+                    "created_at": {
+                        "type": "integer",
+                        "description": "Timestamp of registration"
+                    },
+                    "status": {
+                        "type": "string",
+                        "description": "Current status of the storage location"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "bucket",
+                    "created_at",
+                    "status"
+                ],
+                "title": "BucketRegistrationResponse",
+                "description": "Response after registering a storage location."
+            },
+            "FileRegistrationResponse": {
+                "type": "object",
+                "properties": {
+                    "bucket": {
+                        "type": "string",
+                        "description": "The storage location URI (e.g., \"s3://my-bucket\" or \"file:///data\")"
+                    },
+                    "key": {
+                        "type": "string",
+                        "description": "The file path relative to the storage location"
+                    },
+                    "created_at": {
+                        "type": "integer",
+                        "description": "Timestamp of registration"
+                    },
+                    "status": {
+                        "type": "string",
+                        "description": "Current status of the file"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "bucket",
+                    "key",
+                    "created_at",
+                    "status"
+                ],
+                "title": "FileRegistrationResponse",
+                "description": "Response after registering a file."
             },
             "RegisterDatasetRequest": {
                 "type": "object",

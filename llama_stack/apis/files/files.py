@@ -77,6 +77,38 @@ class ListFileResponse(BaseModel):
     data: List[FileResponse]
 
 
+@json_schema_type
+class BucketRegistrationResponse(BaseModel):
+    """
+    Response after registering a storage location.
+
+    :param bucket: The registered storage location URI (e.g., "s3://my-bucket" or "file:///data")
+    :param created_at: Timestamp of registration
+    :param status: Current status of the storage location
+    """
+
+    bucket: str
+    created_at: int
+    status: str
+
+
+@json_schema_type
+class FileRegistrationResponse(BaseModel):
+    """
+    Response after registering a file.
+
+    :param bucket: The storage location URI (e.g., "s3://my-bucket" or "file:///data")
+    :param key: The file path relative to the storage location
+    :param created_at: Timestamp of registration
+    :param status: Current status of the file
+    """
+
+    bucket: str
+    key: str
+    created_at: int
+    status: str
+
+
 @runtime_checkable
 @trace_protocol
 class Files(Protocol):
@@ -170,5 +202,33 @@ class Files(Protocol):
 
         :param bucket: Bucket name (valid chars: a-zA-Z0-9_-)
         :param key: Key under which the file is stored (valid chars: a-zA-Z0-9_-/.)
+        """
+        ...
+
+    @webmethod(route="/files/{bucket}", method="PUT")
+    async def register_bucket(
+        self,
+        bucket: str,
+    ) -> BucketRegistrationResponse:
+        """
+        Register an existing storage location with the provider.
+
+        :param bucket: Storage location
+        :raises: ValidationError if URI is invalid or contains invalid characters
+        """
+        ...
+
+    @webmethod(route="/files/{bucket}/{key:path}", method="PUT")
+    async def register_bucket_file(
+        self,
+        bucket: str,
+        key: str,
+    ) -> FileRegistrationResponse:
+        """
+        Register an existing file with the provider.
+
+        :param bucket: Storage location
+        :param key: File path relative to the storage location
+        :raises: ValidationError if URI is invalid or contains invalid characters
         """
         ...
