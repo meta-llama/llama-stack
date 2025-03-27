@@ -117,7 +117,7 @@ def generate_dependencies_file(change_tracker: ChangedPathTracker):
         if name:
             distribution_deps[name] = deps
 
-    deps_file = REPO_ROOT / "distributions" / "dependencies.json"
+    deps_file = REPO_ROOT / "llama_stack" / "templates" / "dependencies.json"
     change_tracker.add_paths(deps_file)
     with open(deps_file, "w") as f:
         f.write(json.dumps(distribution_deps, indent=2) + "\n")
