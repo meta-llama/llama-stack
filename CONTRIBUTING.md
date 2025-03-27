@@ -81,7 +81,9 @@ Note that you can create a dotenv file `.env` that includes necessary environmen
 LLAMA_STACK_BASE_URL=http://localhost:8321
 LLAMA_STACK_CLIENT_LOG=debug
 LLAMA_STACK_PORT=8321
-LLAMA_STACK_CONFIG=
+LLAMA_STACK_CONFIG=<provider-name>
+TAVILY_SEARCH_API_KEY=
+BRAVE_SEARCH_API_KEY=
 ```
 
 And then use this dotenv file when running client SDK tests via the following:

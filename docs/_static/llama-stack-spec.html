@@ -818,14 +818,7 @@
             "delete": {
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/FileResponse"
-                                }
-                            }
-                        }
+                        "description": "OK"
                     },
                     "400": {
                         "$ref": "#/components/responses/BadRequest400"
@@ -6140,46 +6133,6 @@
                 "title": "FileUploadResponse",
                 "description": "Response after initiating a file upload session."
             },
-            "FileResponse": {
-                "type": "object",
-                "properties": {
-                    "bucket": {
-                        "type": "string",
-                        "description": "Bucket under which the file is stored (valid chars: a-zA-Z0-9_-)"
-                    },
-                    "key": {
-                        "type": "string",
-                        "description": "Key under which the file is stored (valid chars: a-zA-Z0-9_-/.)"
-                    },
-                    "mime_type": {
-                        "type": "string",
-                        "description": "MIME type of the file"
-                    },
-                    "url": {
-                        "type": "string",
-                        "description": "Upload URL for the file contents"
-                    },
-                    "bytes": {
-                        "type": "integer",
-                        "description": "Size of the file in bytes"
-                    },
-                    "created_at": {
-                        "type": "integer",
-                        "description": "Timestamp of when the file was created"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "bucket",
-                    "key",
-                    "mime_type",
-                    "url",
-                    "bytes",
-                    "created_at"
-                ],
-                "title": "FileResponse",
-                "description": "Response representing a file entry."
-            },
             "EmbeddingsRequest": {
                 "type": "object",
                 "properties": {
@@ -6933,6 +6886,46 @@
                 "title": "URIDataSource",
                 "description": "A dataset that can be obtained from a URI."
             },
+            "FileResponse": {
+                "type": "object",
+                "properties": {
+                    "bucket": {
+                        "type": "string",
+                        "description": "Bucket under which the file is stored (valid chars: a-zA-Z0-9_-)"
+                    },
+                    "key": {
+                        "type": "string",
+                        "description": "Key under which the file is stored (valid chars: a-zA-Z0-9_-/.)"
+                    },
+                    "mime_type": {
+                        "type": "string",
+                        "description": "MIME type of the file"
+                    },
+                    "url": {
+                        "type": "string",
+                        "description": "Upload URL for the file contents"
+                    },
+                    "bytes": {
+                        "type": "integer",
+                        "description": "Size of the file in bytes"
+                    },
+                    "created_at": {
+                        "type": "integer",
+                        "description": "Timestamp of when the file was created"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "bucket",
+                    "key",
+                    "mime_type",
+                    "url",
+                    "bytes",
+                    "created_at"
+                ],
+                "title": "FileResponse",
+                "description": "Response representing a file entry."
+            },
             "Model": {
                 "type": "object",
                 "properties": {
@@ -7671,7 +7664,8 @@
                             "completed",
                             "in_progress",
                             "failed",
-                            "scheduled"
+                            "scheduled",
+                            "cancelled"
                         ],
                         "title": "JobStatus"
                     },
@@ -8135,7 +8129,8 @@
                             "completed",
                             "in_progress",
                             "failed",
-                            "scheduled"
+                            "scheduled",
+                            "cancelled"
                         ],
                         "title": "JobStatus"
                     }

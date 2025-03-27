@@ -5,6 +5,7 @@ apis:
 - datasetio
 - eval
 - inference
+- post_training
 - safety
 - scoring
 - telemetry
@@ -48,6 +49,7 @@ providers:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
     config:
+      service_name: "${env.OTEL_SERVICE_NAME:\u200B}"
       sinks: ${env.TELEMETRY_SINKS:console,sqlite}
       sqlite_db_path: ${env.SQLITE_DB_PATH:~/.llama/distributions/nvidia/trace_store.db}
   eval:
@@ -58,6 +60,14 @@ providers:
         type: sqlite
         namespace: null
         db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/nvidia}/meta_reference_eval.db
+  post_training:
+  - provider_id: nvidia
+    provider_type: remote::nvidia
+    config:
+      api_key: ${env.NVIDIA_API_KEY:}
+      dataset_namespace: ${env.NVIDIA_DATASET_NAMESPACE:default}
+      project_id: ${env.NVIDIA_PROJECT_ID:test-project}
+      customizer_url: ${env.NVIDIA_CUSTOMIZER_URL:http://nemo.test}
   datasetio:
   - provider_id: localfs
     provider_type: inline::localfs
