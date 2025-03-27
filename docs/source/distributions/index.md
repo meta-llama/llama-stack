@@ -27,8 +27,6 @@ If you have built a container image and want to deploy it in a Kubernetes cluste
 :hidden:
 
 importing_as_library
-building_distro
 configuration
-selection
 kubernetes_deployment
 ```

@@ -93,7 +93,6 @@ getting_started/index
 concepts/index
 providers/index
 distributions/index
-distributions/selection
 building_applications/index
 playground/index
 contributing/index
