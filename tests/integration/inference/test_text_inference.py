@@ -23,8 +23,26 @@ def skip_if_model_doesnt_support_completion(client_with_models, model_id):
     provider_id = models[model_id].provider_id
     providers = {p.provider_id: p for p in client_with_models.providers.list()}
     provider = providers[provider_id]
-    if provider.provider_type in ("remote::openai", "remote::anthropic", "remote::gemini", "remote::groq"):
+    if provider.provider_type in (
+        "remote::openai",
+        "remote::anthropic",
+        "remote::gemini",
+        "remote::groq",
+        "remote::sambanova",
+    ):
         pytest.skip(f"Model {model_id} hosted by {provider.provider_type} doesn't support completion")
+
+
+def skip_if_model_doesnt_support_json_schema_structured_output(client_with_models, model_id):
+    models = {m.identifier: m for m in client_with_models.models.list()}
+    models.update({m.provider_resource_id: m for m in client_with_models.models.list()})
+    provider_id = models[model_id].provider_id
+    providers = {p.provider_id: p for p in client_with_models.providers.list()}
+    provider = providers[provider_id]
+    if provider.provider_type in ("remote::sambanova",):
+        pytest.skip(
+            f"Model {model_id} hosted by {provider.provider_type} doesn't support json_schema structured output"
+        )
 
 
 def get_llama_model(client_with_models, model_id):
@@ -417,6 +435,8 @@ def test_text_chat_completion_with_tool_choice_none(client_with_models, text_mod
     ],
 )
 def test_text_chat_completion_structured_output(client_with_models, text_model_id, test_case):
+    skip_if_model_doesnt_support_json_schema_structured_output(client_with_models, text_model_id)
+
     class NBAStats(BaseModel):
         year_for_draft: int
         num_seasons_in_nba: int
