@@ -17,7 +17,6 @@ from llama_stack.apis.tools import (
     ToolRuntime,
 )
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
-from llama_stack.models.llama.datatypes import BuiltinTool
 from llama_stack.providers.datatypes import ToolsProtocolPrivate
 
 from .config import BraveSearchToolConfig
@@ -61,7 +60,6 @@ class BraveSearchToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, NeedsRequest
                         parameter_type="string",
                     )
                 ],
-                built_in_type=BuiltinTool.brave_search,
             )
         ]
 

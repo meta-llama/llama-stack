@@ -17,7 +17,7 @@ from typing import List, Optional
 from termcolor import colored
 
 from llama_stack.models.llama.datatypes import (
-    BuiltinTool,
+    FunctionTool,
     RawMessage,
     StopReason,
     ToolCall,
@@ -25,7 +25,6 @@ from llama_stack.models.llama.datatypes import (
     ToolPromptFormat,
 )
 
-from . import template_data
 from .chat_format import ChatFormat
 from .prompt_templates import (
     BuiltinToolGenerator,
@@ -150,8 +149,8 @@ class LLama31Interface:
 
     def system_messages(
         self,
-        builtin_tools: List[BuiltinTool],
-        custom_tools: List[ToolDefinition],
+        builtin_tools: List[ToolDefinition],
+        custom_tools: List[FunctionTool],
         instruction: Optional[str] = None,
     ) -> List[RawMessage]:
         messages = []
@@ -227,31 +226,3 @@ class LLama31Interface:
             on_col = on_colors[i % len(on_colors)]
             print(colored(self.tokenizer.decode([t]), "white", on_col), end="")
         print("\n", end="")
-
-
-def list_jinja_templates() -> List[Template]:
-    return TEMPLATES
-
-
-def render_jinja_template(name: str, tool_prompt_format: ToolPromptFormat):
-    by_name = {t.template_name: t for t in TEMPLATES}
-    if name not in by_name:
-        raise ValueError(f"No template found for `{name}`")
-
-    template = by_name[name]
-    interface = LLama31Interface(tool_prompt_format)
-
-    data_func = getattr(template_data, template.data_provider)
-    if template.role == "system":
-        messages = interface.system_messages(**data_func())
-    elif template.role == "tool":
-        messages = interface.tool_response_messages(**data_func())
-    elif template.role == "assistant":
-        messages = interface.assistant_response_messages(**data_func())
-    elif template.role == "user":
-        messages = interface.user_message(**data_func())
-
-    tokens = interface.get_tokens(messages)
-    special_tokens = list(interface.tokenizer.special_tokens.values())
-    tokens = [(interface.tokenizer.decode([t]), t in special_tokens) for t in tokens]
-    return template, tokens

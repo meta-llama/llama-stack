@@ -16,9 +16,13 @@ from datetime import datetime
 from typing import Any, List, Optional
 
 from llama_stack.models.llama.datatypes import (
-    BuiltinTool,
+    CodeInterpreterTool,
+    FunctionTool,
     ToolDefinition,
     ToolParamDefinition,
+    ToolType,
+    WebSearchTool,
+    WolframAlphaTool,
 )
 
 from .base import PromptTemplate, PromptTemplateGeneratorBase
@@ -47,7 +51,7 @@ class BuiltinToolGenerator(PromptTemplateGeneratorBase):
     def _tool_breakdown(self, tools: List[ToolDefinition]):
         builtin_tools, custom_tools = [], []
         for dfn in tools:
-            if isinstance(dfn.tool_name, BuiltinTool):
+            if dfn.type != ToolType.function.value:
                 builtin_tools.append(dfn)
             else:
                 custom_tools.append(dfn)
@@ -70,7 +74,11 @@ class BuiltinToolGenerator(PromptTemplateGeneratorBase):
         return PromptTemplate(
             template_str.lstrip("\n"),
             {
-                "builtin_tools": [t.tool_name.value for t in builtin_tools],
+                "builtin_tools": [
+                    # brave_search is used in training data for web_search
+                    t.type if t.type != ToolType.web_search.value else "brave_search"
+                    for t in builtin_tools
+                ],
                 "custom_tools": custom_tools,
             },
         )
@@ -79,19 +87,19 @@ class BuiltinToolGenerator(PromptTemplateGeneratorBase):
         return [
             # builtin tools
             [
-                ToolDefinition(tool_name=BuiltinTool.code_interpreter),
-                ToolDefinition(tool_name=BuiltinTool.brave_search),
-                ToolDefinition(tool_name=BuiltinTool.wolfram_alpha),
+                CodeInterpreterTool(),
+                WebSearchTool(),
+                WolframAlphaTool(),
             ],
             # only code interpretor
             [
-                ToolDefinition(tool_name=BuiltinTool.code_interpreter),
+                CodeInterpreterTool(),
             ],
         ]
 
 
 class JsonCustomToolGenerator(PromptTemplateGeneratorBase):
-    def gen(self, custom_tools: List[ToolDefinition]) -> PromptTemplate:
+    def gen(self, custom_tools: List[FunctionTool]) -> PromptTemplate:
         template_str = textwrap.dedent(
             """
             Answer the user's question by making use of the following functions if needed.
@@ -99,7 +107,7 @@ class JsonCustomToolGenerator(PromptTemplateGeneratorBase):
             Here is a list of functions in JSON format:
             {% for t in custom_tools -%}
             {# manually setting up JSON because jinja sorts keys in unexpected ways -#}
-            {%- set tname = t.tool_name -%}
+            {%- set tname = t.name -%}
             {%- set tdesc = t.description -%}
             {%- set tparams = t.parameters -%}
             {%- set required_params = [] -%}
@@ -140,8 +148,8 @@ class JsonCustomToolGenerator(PromptTemplateGeneratorBase):
     def data_examples(self) -> List[List[ToolDefinition]]:
         return [
             [
-                ToolDefinition(
-                    tool_name="trending_songs",
+                FunctionTool(
+                    name="trending_songs",
                     description="Returns the trending songs on a Music site",
                     parameters={
                         "n": ToolParamDefinition(
@@ -161,14 +169,14 @@ class JsonCustomToolGenerator(PromptTemplateGeneratorBase):
 
 
 class FunctionTagCustomToolGenerator(PromptTemplateGeneratorBase):
-    def gen(self, custom_tools: List[ToolDefinition]) -> PromptTemplate:
+    def gen(self, custom_tools: List[FunctionTool]) -> PromptTemplate:
         template_str = textwrap.dedent(
             """
             You have access to the following functions:
 
             {% for t in custom_tools %}
             {#- manually setting up JSON because jinja sorts keys in unexpected ways -#}
-            {%- set tname = t.tool_name -%}
+            {%- set tname = t.name -%}
             {%- set tdesc = t.description -%}
             {%- set modified_params = t.parameters.copy() -%}
             {%- for key, value in modified_params.items() -%}
@@ -202,8 +210,8 @@ class FunctionTagCustomToolGenerator(PromptTemplateGeneratorBase):
     def data_examples(self) -> List[List[ToolDefinition]]:
         return [
             [
-                ToolDefinition(
-                    tool_name="trending_songs",
+                FunctionTool(
+                    name="trending_songs",
                     description="Returns the trending songs on a Music site",
                     parameters={
                         "n": ToolParamDefinition(
@@ -240,7 +248,7 @@ class PythonListCustomToolGenerator(PromptTemplateGeneratorBase):  # noqa: N801
             {"function_description": self._gen_function_description(custom_tools)},
         )
 
-    def _gen_function_description(self, custom_tools: List[ToolDefinition]) -> PromptTemplate:
+    def _gen_function_description(self, custom_tools: List[FunctionTool]) -> PromptTemplate:
         template_str = textwrap.dedent(
             """
             If you decide to invoke any of the function(s), you MUST put it in the format of [func_name1(params_name1=params_value1, params_name2=params_value2...), func_name2(params)]
@@ -252,7 +260,7 @@ class PythonListCustomToolGenerator(PromptTemplateGeneratorBase):  # noqa: N801
             [
                 {% for t in tools -%}
                 {# manually setting up JSON because jinja sorts keys in unexpected ways -#}
-                {%- set tname = t.tool_name -%}
+                {%- set tname = t.name -%}
                 {%- set tdesc = t.description -%}
                 {%- set tparams = t.parameters -%}
                 {%- set required_params = [] -%}
@@ -289,8 +297,8 @@ class PythonListCustomToolGenerator(PromptTemplateGeneratorBase):  # noqa: N801
     def data_examples(self) -> List[List[ToolDefinition]]:
         return [
             [
-                ToolDefinition(
-                    tool_name="get_weather",
+                FunctionTool(
+                    name="get_weather",
                     description="Get weather info for places",
                     parameters={
                         "city": ToolParamDefinition(

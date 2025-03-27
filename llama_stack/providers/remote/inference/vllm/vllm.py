@@ -45,7 +45,7 @@ from llama_stack.apis.inference import (
     ToolPromptFormat,
 )
 from llama_stack.apis.models import Model, ModelType
-from llama_stack.models.llama.datatypes import BuiltinTool, StopReason, ToolCall
+from llama_stack.models.llama.datatypes import StopReason, ToolCall
 from llama_stack.models.llama.sku_list import all_registered_models
 from llama_stack.providers.datatypes import ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.model_registry import (
@@ -110,6 +110,8 @@ def _convert_to_vllm_tools_in_request(tools: List[ToolDefinition]) -> List[dict]
     for tool in tools:
         properties = {}
         compat_required = []
+
+        tool_name = tool.name
         if tool.parameters:
             for tool_key, tool_param in tool.parameters.items():
                 properties[tool_key] = {"type": tool_param.param_type}
@@ -119,12 +121,6 @@ def _convert_to_vllm_tools_in_request(tools: List[ToolDefinition]) -> List[dict]
                     properties[tool_key]["default"] = tool_param.default
                 if tool_param.required:
                     compat_required.append(tool_key)
-
-        # The tool.tool_name can be a str or a BuiltinTool enum. If
-        # it's the latter, convert to a string.
-        tool_name = tool.tool_name
-        if isinstance(tool_name, BuiltinTool):
-            tool_name = tool_name.value
 
         compat_tool = {
             "type": "function",

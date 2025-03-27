@@ -16,7 +16,7 @@ from llama_stack.apis.inference import (
     ToolChoice,
     UserMessage,
 )
-from llama_stack.models.llama.datatypes import BuiltinTool, ToolDefinition
+from llama_stack.models.llama.datatypes import ToolDefinition, ToolType
 from llama_stack.providers.utils.inference.openai_compat import (
     convert_message_to_openai_dict,
     get_sampling_options,
@@ -65,7 +65,7 @@ def _llama_stack_tools_to_openai_tools(
 
     result = []
     for t in tools:
-        if isinstance(t.tool_name, BuiltinTool):
+        if t.type != ToolType.function.value:
             raise NotImplementedError("Built-in tools not yet implemented")
         if t.parameters is None:
             parameters = None

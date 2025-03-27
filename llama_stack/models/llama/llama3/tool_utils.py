@@ -16,12 +16,18 @@ import re
 from typing import Optional, Tuple
 
 from llama_stack.log import get_logger
-from llama_stack.models.llama.datatypes import BuiltinTool, RecursiveType, ToolCall, ToolPromptFormat
+from llama_stack.models.llama.datatypes import RecursiveType, ToolCall, ToolPromptFormat, ToolType
 
 logger = get_logger(name=__name__, category="inference")
 
 BUILTIN_TOOL_PATTERN = r'\b(?P<tool_name>\w+)\.call\(query="(?P<query>[^"]*)"\)'
 CUSTOM_TOOL_CALL_PATTERN = re.compile(r"<function=(?P<function_name>[^}]+)>(?P<args>{.*?})")
+
+
+# The model is trained with brave_search for web_search, so we need to map it
+TOOL_NAME_MAP = {
+    "brave_search": ToolType.web_search.value,
+}
 
 
 def is_json(s):
@@ -112,11 +118,6 @@ def parse_python_list_for_function_calls(input_string):
 
 class ToolUtils:
     @staticmethod
-    def is_builtin_tool_call(message_body: str) -> bool:
-        match = re.search(ToolUtils.BUILTIN_TOOL_PATTERN, message_body)
-        return match is not None
-
-    @staticmethod
     def maybe_extract_builtin_tool_call(message_body: str) -> Optional[Tuple[str, str]]:
         # Find the first match in the text
         match = re.search(BUILTIN_TOOL_PATTERN, message_body)
@@ -125,7 +126,7 @@ class ToolUtils:
         if match:
             tool_name = match.group("tool_name")
             query = match.group("query")
-            return tool_name, query
+            return TOOL_NAME_MAP.get(tool_name, tool_name), query
         else:
             return None
 
@@ -143,7 +144,7 @@ class ToolUtils:
             tool_name = match.group("function_name")
             query = match.group("args")
             try:
-                return tool_name, json.loads(query.replace("'", '"'))
+                return TOOL_NAME_MAP.get(tool_name, tool_name), json.loads(query.replace("'", '"'))
             except Exception as e:
                 print("Exception while parsing json query for custom tool call", query, e)
                 return None
@@ -152,30 +153,28 @@ class ToolUtils:
             if ("type" in response and response["type"] == "function") or ("name" in response):
                 function_name = response["name"]
                 args = response["parameters"]
-                return function_name, args
+                return TOOL_NAME_MAP.get(function_name, function_name), args
             else:
                 return None
         elif is_valid_python_list(message_body):
             res = parse_python_list_for_function_calls(message_body)
             # FIXME: Enable multiple tool calls
-            return res[0]
+            function_name, args = res[0]
+            return TOOL_NAME_MAP.get(function_name, function_name), args
         else:
             return None
 
     @staticmethod
     def encode_tool_call(t: ToolCall, tool_prompt_format: ToolPromptFormat) -> str:
-        if t.tool_name == BuiltinTool.brave_search:
+        if t.type == ToolType.web_search:
             q = t.arguments["query"]
             return f'brave_search.call(query="{q}")'
-        elif t.tool_name == BuiltinTool.wolfram_alpha:
+        elif t.type == ToolType.wolfram_alpha:
             q = t.arguments["query"]
             return f'wolfram_alpha.call(query="{q}")'
-        elif t.tool_name == BuiltinTool.photogen:
-            q = t.arguments["query"]
-            return f'photogen.call(query="{q}")'
-        elif t.tool_name == BuiltinTool.code_interpreter:
+        elif t.type == ToolType.code_interpreter:
             return t.arguments["code"]
-        else:
+        elif t.type == ToolType.function:
             fname = t.tool_name
 
             if tool_prompt_format == ToolPromptFormat.json:
@@ -208,3 +207,5 @@ class ToolUtils:
                 return f"[{fname}({args_str})]"
             else:
                 raise ValueError(f"Unsupported tool prompt format: {tool_prompt_format}")
+        else:
+            raise ValueError(f"Unsupported tool type: {t.type}")

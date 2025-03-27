@@ -15,11 +15,11 @@ import textwrap
 from typing import List
 
 from llama_stack.models.llama.datatypes import (
-    BuiltinTool,
     RawMessage,
     StopReason,
     ToolCall,
     ToolPromptFormat,
+    ToolType,
 )
 
 from ..prompt_format import (
@@ -183,8 +183,9 @@ def usecases() -> List[UseCase | str]:
                         stop_reason=StopReason.end_of_message,
                         tool_calls=[
                             ToolCall(
+                                type=ToolType.wolfram_alpha,
                                 call_id="tool_call_id",
-                                tool_name=BuiltinTool.wolfram_alpha,
+                                tool_name=ToolType.wolfram_alpha.value,
                                 arguments={"query": "100th decimal of pi"},
                             )
                         ],

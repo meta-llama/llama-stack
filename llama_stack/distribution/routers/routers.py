@@ -32,6 +32,7 @@ from llama_stack.apis.inference import (
     ToolChoice,
     ToolConfig,
     ToolDefinition,
+    ToolDefinitionDeprecated,
     ToolPromptFormat,
 )
 from llama_stack.apis.models import Model, ModelType
@@ -54,6 +55,9 @@ from llama_stack.apis.tools import (
 )
 from llama_stack.apis.vector_io import Chunk, QueryChunksResponse, VectorIO
 from llama_stack.log import get_logger
+from llama_stack.models.llama.datatypes import (
+    ToolType,
+)
 from llama_stack.models.llama.llama3.chat_format import ChatFormat
 from llama_stack.models.llama.llama3.tokenizer import Tokenizer
 from llama_stack.providers.datatypes import RoutingTable
@@ -229,7 +233,7 @@ class InferenceRouter(Inference):
         messages: List[Message],
         sampling_params: Optional[SamplingParams] = None,
         response_format: Optional[ResponseFormat] = None,
-        tools: Optional[List[ToolDefinition]] = None,
+        tools: Optional[List[ToolDefinition] | List[ToolDefinitionDeprecated]] = None,
         tool_choice: Optional[ToolChoice] = None,
         tool_prompt_format: Optional[ToolPromptFormat] = None,
         stream: Optional[bool] = False,
@@ -259,24 +263,42 @@ class InferenceRouter(Inference):
                 params["tool_prompt_format"] = tool_prompt_format
             tool_config = ToolConfig(**params)
 
-        tools = tools or []
+        # TODO: remove ToolDefinitionDeprecated in v0.1.10
+        converted_tools = []
+        for tool in tools or []:
+            if isinstance(tool, ToolDefinitionDeprecated):
+                logger.warning(f"ToolDefinitionDeprecated: {tool}, use ToolDefinition instead")
+                converted_tools.append(tool.to_tool_definition())
+            else:
+                converted_tools.append(tool)
+
         if tool_config.tool_choice == ToolChoice.none:
-            tools = []
+            converted_tools = []
         elif tool_config.tool_choice == ToolChoice.auto:
             pass
         elif tool_config.tool_choice == ToolChoice.required:
             pass
         else:
             # verify tool_choice is one of the tools
-            tool_names = [t.tool_name if isinstance(t.tool_name, str) else t.tool_name.value for t in tools]
-            if tool_config.tool_choice not in tool_names:
-                raise ValueError(f"Tool choice {tool_config.tool_choice} is not one of the tools: {tool_names}")
+            for t in converted_tools:
+                if t.type == ToolType.function.value:
+                    if tool_config.tool_choice == t.name:
+                        break
+                elif t.type in (
+                    ToolType.web_search.value,
+                    ToolType.wolfram_alpha.value,
+                    ToolType.code_interpreter.value,
+                ):
+                    if tool_config.tool_choice == t.type:
+                        break
+            else:
+                raise ValueError(f"Tool choice {tool_config.tool_choice} is not one of the tools: {converted_tools}")
 
         params = dict(
             model_id=model_id,
             messages=messages,
             sampling_params=sampling_params,
-            tools=tools,
+            tools=converted_tools,
             tool_choice=tool_choice,
             tool_prompt_format=tool_prompt_format,
             response_format=response_format,
