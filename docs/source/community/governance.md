@@ -183,7 +183,7 @@ of lazy consensus. This allows the majority of decisions to be made without reso
 
 Decision making typically involves the following steps:
 *   Proposal *(via GitHub issue + GitHub PR)*
-*   Discussion *(in Slack channels at #feast-development and GitHub)*
+*   Discussion *(in Discord channels and GitHub)*
 *   (optional) Maintainers voting (if there is active opposition + consensus is not reached through discussion)
 *   Decision
 
