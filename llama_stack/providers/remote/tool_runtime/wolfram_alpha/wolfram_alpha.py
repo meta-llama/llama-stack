@@ -5,12 +5,13 @@
 # the root directory of this source tree.
 
 import json
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 import httpx
 
 from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.tools import (
+    ListToolDefsResponse,
     Tool,
     ToolDef,
     ToolInvocationResult,
@@ -50,20 +51,22 @@ class WolframAlphaToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, NeedsReques
 
     async def list_runtime_tools(
         self, tool_group_id: Optional[str] = None, mcp_endpoint: Optional[URL] = None
-    ) -> List[ToolDef]:
-        return [
-            ToolDef(
-                name="wolfram_alpha",
-                description="Query WolframAlpha for computational knowledge",
-                parameters=[
-                    ToolParameter(
-                        name="query",
-                        description="The query to compute",
-                        parameter_type="string",
-                    )
-                ],
-            )
-        ]
+    ) -> ListToolDefsResponse:
+        return ListToolDefsResponse(
+            data=[
+                ToolDef(
+                    name="wolfram_alpha",
+                    description="Query WolframAlpha for computational knowledge",
+                    parameters=[
+                        ToolParameter(
+                            name="query",
+                            description="The query to compute",
+                            parameter_type="string",
+                        )
+                    ],
+                )
+            ]
+        )
 
     async def invoke_tool(self, tool_name: str, kwargs: Dict[str, Any]) -> ToolInvocationResult:
         api_key = self._get_api_key()

@@ -20,6 +20,7 @@ from llama_stack.apis.common.content_types import (
 )
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.tools import (
+    ListToolDefsResponse,
     RAGDocument,
     RAGQueryConfig,
     RAGQueryResult,
@@ -162,27 +163,29 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
 
     async def list_runtime_tools(
         self, tool_group_id: Optional[str] = None, mcp_endpoint: Optional[URL] = None
-    ) -> List[ToolDef]:
+    ) -> ListToolDefsResponse:
         # Parameters are not listed since these methods are not yet invoked automatically
         # by the LLM. The method is only implemented so things like /tools can list without
         # encountering fatals.
-        return [
-            ToolDef(
-                name="insert_into_memory",
-                description="Insert documents into memory",
-            ),
-            ToolDef(
-                name="knowledge_search",
-                description="Search for information in a database.",
-                parameters=[
-                    ToolParameter(
-                        name="query",
-                        description="The query to search for. Can be a natural language sentence or keywords.",
-                        parameter_type="string",
-                    ),
-                ],
-            ),
-        ]
+        return ListToolDefsResponse(
+            data=[
+                ToolDef(
+                    name="insert_into_memory",
+                    description="Insert documents into memory",
+                ),
+                ToolDef(
+                    name="knowledge_search",
+                    description="Search for information in a database.",
+                    parameters=[
+                        ToolParameter(
+                            name="query",
+                            description="The query to search for. Can be a natural language sentence or keywords.",
+                            parameter_type="string",
+                        ),
+                    ],
+                ),
+            ]
+        )
 
     async def invoke_tool(self, tool_name: str, kwargs: Dict[str, Any]) -> ToolInvocationResult:
         vector_db_ids = kwargs.get("vector_db_ids", [])

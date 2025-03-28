@@ -4,12 +4,13 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 import httpx
 
 from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.tools import (
+    ListToolDefsResponse,
     Tool,
     ToolDef,
     ToolInvocationResult,
@@ -49,21 +50,23 @@ class BraveSearchToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, NeedsRequest
 
     async def list_runtime_tools(
         self, tool_group_id: Optional[str] = None, mcp_endpoint: Optional[URL] = None
-    ) -> List[ToolDef]:
-        return [
-            ToolDef(
-                name="web_search",
-                description="Search the web for information",
-                parameters=[
-                    ToolParameter(
-                        name="query",
-                        description="The query to search for",
-                        parameter_type="string",
-                    )
-                ],
-                built_in_type=BuiltinTool.brave_search,
-            )
-        ]
+    ) -> ListToolDefsResponse:
+        return ListToolDefsResponse(
+            data=[
+                ToolDef(
+                    name="web_search",
+                    description="Search the web for information",
+                    parameters=[
+                        ToolParameter(
+                            name="query",
+                            description="The query to search for",
+                            parameter_type="string",
+                        )
+                    ],
+                    built_in_type=BuiltinTool.brave_search,
+                )
+            ]
+        )
 
     async def invoke_tool(self, tool_name: str, kwargs: Dict[str, Any]) -> ToolInvocationResult:
         api_key = self._get_api_key()

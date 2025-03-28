@@ -88,6 +88,10 @@ class ListToolsResponse(BaseModel):
     data: List[Tool]
 
 
+class ListToolDefsResponse(BaseModel):
+    data: list[ToolDef]
+
+
 @runtime_checkable
 @trace_protocol
 class ToolGroups(Protocol):
@@ -148,7 +152,7 @@ class ToolRuntime(Protocol):
     @webmethod(route="/tool-runtime/list-tools", method="GET")
     async def list_runtime_tools(
         self, tool_group_id: Optional[str] = None, mcp_endpoint: Optional[URL] = None
-    ) -> List[ToolDef]: ...
+    ) -> ListToolDefsResponse: ...
 
     @webmethod(route="/tool-runtime/invoke", method="POST")
     async def invoke_tool(self, tool_name: str, kwargs: Dict[str, Any]) -> ToolInvocationResult:
