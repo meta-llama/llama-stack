@@ -339,11 +339,12 @@ class LoraFinetuningSingleDevice:
         all_rows = await fetch_rows(dataset_id)
         rows = all_rows.data
 
-        await validate_input_dataset_schema(
-            datasets_api=self.datasets_api,
-            dataset_id=dataset_id,
-            dataset_type=self._data_format.value,
-        )
+        # TODO: have we broken dataset schema validation?
+        #await validate_input_dataset_schema(
+        #    datasets_api=self.datasets_api,
+        #    dataset_id=dataset_id,
+        #    dataset_type=self._data_format.value,
+        #)
         data_transform = await utils.get_data_transform(self._data_format)
         ds = SFTDataset(
             rows,

@@ -15,12 +15,10 @@ apis:
 - tool_runtime
 providers:
   inference:
-  - provider_id: meta-reference-inference
-    provider_type: inline::meta-reference
+  - provider_id: ollama
+    provider_type: remote::ollama
     config:
-      max_seq_len: 4096
-      checkpoint_dir: null
-      create_distributed_process_group: False
+      url: ${env.OLLAMA_URL:http://localhost:11434}
   - provider_id: ollama
     provider_type: remote::ollama
     config:
@@ -57,7 +55,7 @@ providers:
   - provider_id: torchtune-post-training
     provider_type: inline::torchtune
     config: {
-      checkpoint_format: huggingface
+      checkpoint_format: meta
     }
   agents:
   - provider_id: meta-reference
@@ -91,7 +89,17 @@ metadata_store:
   namespace: null
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/experimental-post-training}/registry.db
-models: []
+models:
+- metadata: {}
+  model_id: ${env.INFERENCE_MODEL}
+  provider_id: ollama
+  model_type: llm
+- metadata:
+    embedding_dimension: 384
+  model_id: all-MiniLM-L6-v2
+  provider_id: ollama
+  provider_model_id: all-minilm:latest
+  model_type: embedding
 shields: []
 vector_dbs: []
 datasets: []
