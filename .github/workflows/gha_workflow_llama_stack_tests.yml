@@ -140,7 +140,7 @@ jobs:
       #######################
       - name: "Checkout 'meta-llama/llama-stack' repository"
         id: checkout_repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           ref: ${{ inputs.branch }}
 
@@ -302,7 +302,7 @@ jobs:
       - name: "PR - Test Summary"
         id: pr_test_summary_create
         if: github.event_name == 'pull_request_target'
-        uses: test-summary/action@v2
+        uses: test-summary/action@31493c76ec9e7aa675f1585d3ed6f1da69269a86 # v2.4
         with:
           paths: "${{ github.workspace }}/merged-test-results.xml"
           output: test-summary.md
@@ -310,7 +310,7 @@ jobs:
       - name: "PR - Upload Test Summary"
         id: pr_test_summary_upload
         if: github.event_name == 'pull_request_target'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: test-summary
           path: test-summary.md
@@ -320,7 +320,7 @@ jobs:
       - name: "PR - Update comment"
         id: pr_update_comment
         if: github.event_name == 'pull_request_target'
-        uses: thollander/actions-comment-pull-request@v3
+        uses: thollander/actions-comment-pull-request@65f9e5c9a1f2cd378bd74b2e057c9736982a8e74 # v3.0.1
         with:
           filePath: test-summary.md
 
@@ -350,6 +350,6 @@ jobs:
       - name: "Manual - Test Summary"
         id: manual_test_summary
         if: always() && github.event_name == 'workflow_dispatch'
-        uses: test-summary/action@v2
+        uses: test-summary/action@31493c76ec9e7aa675f1585d3ed6f1da69269a86 # v2.4
         with:
           paths: "${{ github.workspace }}/merged-test-results.xml"
