@@ -120,13 +120,16 @@ def client_with_models(
     judge_model_id,
 ):
     client = llama_stack_client
+    from rich.pretty import pprint
 
     providers = [p for p in client.providers.list() if p.api == "inference"]
+    pprint(providers)
     assert len(providers) > 0, "No inference providers found"
     inference_providers = [p.provider_id for p in providers if p.provider_type != "inline::sentence-transformers"]
 
     model_ids = {m.identifier for m in client.models.list()}
     model_ids.update(m.provider_resource_id for m in client.models.list())
+    pprint(model_ids)
 
     if text_model_id and text_model_id not in model_ids:
         client.models.register(model_id=text_model_id, provider_id=inference_providers[0])

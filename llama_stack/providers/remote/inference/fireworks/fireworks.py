@@ -33,9 +33,7 @@ from llama_stack.apis.inference import (
 )
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.log import get_logger
-from llama_stack.providers.utils.inference.model_registry import (
-    ModelRegistryHelper,
-)
+from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
 from llama_stack.providers.utils.inference.openai_compat import (
     convert_message_to_openai_dict,
     get_sampling_options,
@@ -58,7 +56,9 @@ from .models import MODEL_ENTRIES
 logger = get_logger(name=__name__, category="inference")
 
 
-class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProviderData):
+class FireworksInferenceAdapter(
+    ModelRegistryHelper, Inference, NeedsRequestProviderData
+):
     def __init__(self, config: FireworksImplConfig) -> None:
         ModelRegistryHelper.__init__(self, MODEL_ENTRIES)
         self.config = config
@@ -70,7 +70,9 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProv
         pass
 
     def _get_api_key(self) -> str:
-        config_api_key = self.config.api_key.get_secret_value() if self.config.api_key else None
+        config_api_key = (
+            self.config.api_key.get_secret_value() if self.config.api_key else None
+        )
         if config_api_key:
             return config_api_key
         else:
@@ -110,7 +112,9 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProv
         else:
             return await self._nonstream_completion(request)
 
-    async def _nonstream_completion(self, request: CompletionRequest) -> CompletionResponse:
+    async def _nonstream_completion(
+        self, request: CompletionRequest
+    ) -> CompletionResponse:
         params = await self._get_params(request)
         r = await self._get_client().completion.acreate(**params)
         return process_completion_response(r)
@@ -190,7 +194,9 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProv
         else:
             return await self._nonstream_chat_completion(request)
 
-    async def _nonstream_chat_completion(self, request: ChatCompletionRequest) -> ChatCompletionResponse:
+    async def _nonstream_chat_completion(
+        self, request: ChatCompletionRequest
+    ) -> ChatCompletionResponse:
         params = await self._get_params(request)
         if "messages" in params:
             r = await self._get_client().chat.completions.acreate(**params)
@@ -198,7 +204,9 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProv
             r = await self._get_client().completion.acreate(**params)
         return process_chat_completion_response(r, request)
 
-    async def _stream_chat_completion(self, request: ChatCompletionRequest) -> AsyncGenerator:
+    async def _stream_chat_completion(
+        self, request: ChatCompletionRequest
+    ) -> AsyncGenerator:
         params = await self._get_params(request)
 
         async def _to_async_generator():
@@ -213,7 +221,9 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProv
         async for chunk in process_chat_completion_stream_response(stream, request):
             yield chunk
 
-    async def _get_params(self, request: Union[ChatCompletionRequest, CompletionRequest]) -> dict:
+    async def _get_params(
+        self, request: Union[ChatCompletionRequest, CompletionRequest]
+    ) -> dict:
         input_dict = {}
         media_present = request_has_media(request)
 
@@ -221,12 +231,17 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProv
         if isinstance(request, ChatCompletionRequest):
             if media_present or not llama_model:
                 input_dict["messages"] = [
-                    await convert_message_to_openai_dict(m, download=True) for m in request.messages
+                    await convert_message_to_openai_dict(m, download=True)
+                    for m in request.messages
                 ]
             else:
-                input_dict["prompt"] = await chat_completion_request_to_prompt(request, llama_model)
+                input_dict["prompt"] = await chat_completion_request_to_prompt(
+                    request, llama_model
+                )
         else:
-            assert not media_present, "Fireworks does not support media for Completion requests"
+            assert (
+                not media_present
+            ), "Fireworks does not support media for Completion requests"
             input_dict["prompt"] = await completion_request_to_prompt(request)
 
         # Fireworks always prepends with BOS
@@ -238,7 +253,9 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProv
             "model": request.model,
             **input_dict,
             "stream": request.stream,
-            **self._build_options(request.sampling_params, request.response_format, request.logprobs),
+            **self._build_options(
+                request.sampling_params, request.response_format, request.logprobs
+            ),
         }
         logger.debug(f"params to fireworks: {params}")
 
@@ -257,9 +274,9 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProv
         kwargs = {}
         if model.metadata.get("embedding_dimension"):
             kwargs["dimensions"] = model.metadata.get("embedding_dimension")
-        assert all(not content_has_media(content) for content in contents), (
-            "Fireworks does not support media for embeddings"
-        )
+        assert all(
+            not content_has_media(content) for content in contents
+        ), "Fireworks does not support media for embeddings"
         response = self._get_client().embeddings.create(
             model=model.provider_resource_id,
             input=[interleaved_content_as_str(content) for content in contents],
