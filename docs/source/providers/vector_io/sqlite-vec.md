@@ -15,16 +15,23 @@ That means you're not limited to storing vectors in memory or in a separate serv
 
 ### Comparison to Faiss
 
-SQLite-Vec is a lightweight alternative to Faiss, which is a popular vector database provider.
-While Faiss is a fast, lightweight and powerful inline provider, Faiss reindexes the
-entire database when a new vector is added. SQLite-Vec is a disk-based storage provider
-that allows for larger vector storage and handles incremental writes more efficiently.
+The choice between Faiss and sqlite-vec should be made based on the needs of your application,
+as they have different strengths.
 
-SQLite-vec is a great alternative to Faiss when you need to execute several writes to the
-database.
+#### Choosing the Right Provider
+
+Scenario | Recommended Tool | Reason
+-- |-----------------| --
+Online Analytical Processing (OLAP) | Faiss           | Fast, in-memory searches
+Online Transaction Processing (OLTP) | sqlite-vec      | Frequent writes and reads
+Frequent writes | sqlite-vec      | Efficient disk-based storage and incremental indexing
+Large datasets | sqlite-vec      | Disk-based storage for larger vector storage
+Datasets that can fit in memory, frequent reads | Faiss           | Fast in-memory searches, optimized for speed, indexing, and GPU acceleration
+
+#### Empirical Example
 
 Consider the histogram below in which 10,000 randomly generated strings were inserted
-in batches of 100 into both Faiss and SQLite-vec using `client.tool_runtime.rag_tool.insert()`.
+in batches of 100 into both Faiss and sqlite-vec using `client.tool_runtime.rag_tool.insert()`.
 
 ```{image} ../../../../_static/providers/vector_io/write_time_comparison_sqlite-vec-faiss.png
 :alt: Comparison of SQLite-Vec and Faiss write times
@@ -35,12 +42,21 @@ You will notice that the average write time for `sqlite-vec` was 788ms, compared
 47,640ms for Faiss. While the number is jarring, if you look at the distribution, you can see that it is rather
 uniformly spread across the [1500, 100000] interval.
 
+Looking at each individual write in the order that the documents are inserted you'll see the increase in
+write speed as Faiss reindexes the vectors after each write.
 ```{image} ../../../../_static/providers/vector_io/write_time_sequence_sqlite-vec-faiss.png
 :alt: Comparison of SQLite-Vec and Faiss write times
 :width: 400px
 ```
-For more information about this topic see [the GitHub Issue](https://github.com/meta-llama/llama-stack/issues/1165)
-where this was discussed.
+
+In comparison, the read times for Faiss was on average 10% faster than sqlite-vec.
+The modes of the two distributions highlight the differences much further where Faiss
+will likely yield faster read performance.
+
+```{image} ../../../../_static/providers/vector_io/read_time_comparison_sqlite-vec-faiss.png
+:alt: Comparison of SQLite-Vec and Faiss read times
+:width: 400px
+```
 
 ## Usage
 
