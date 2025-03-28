@@ -26,7 +26,7 @@ Online Analytical Processing (OLAP) | Faiss           | Fast, in-memory searches
 Online Transaction Processing (OLTP) | sqlite-vec      | Frequent writes and reads
 Frequent writes | sqlite-vec      | Efficient disk-based storage and incremental indexing
 Large datasets | sqlite-vec      | Disk-based storage for larger vector storage
-Datasets that can fit in memory, frequent reads | Faiss           | Fast in-memory searches, optimized for speed, indexing, and GPU acceleration
+Datasets that can fit in memory, frequent reads | Faiss | Optimized for speed, indexing, and GPU acceleration
 
 #### Empirical Example
 
