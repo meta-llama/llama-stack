@@ -431,7 +431,7 @@ def _unwrap_generic_list(typ: Type[List[T]]) -> Type[T]:
     "Extracts the item type of a list type (e.g. returns `T` for `List[T]`)."
 
     (list_type,) = typing.get_args(typ)  # unpack single tuple element
-    return list_type
+    return list_type  # type: ignore
 
 
 def is_generic_set(typ: object) -> TypeGuard[Type[set]]:
@@ -456,7 +456,7 @@ def _unwrap_generic_set(typ: Type[Set[T]]) -> Type[T]:
     "Extracts the item type of a set type (e.g. returns `T` for `Set[T]`)."
 
     (set_type,) = typing.get_args(typ)  # unpack single tuple element
-    return set_type
+    return set_type  # type: ignore
 
 
 def is_generic_dict(typ: object) -> TypeGuard[Type[dict]]:
@@ -513,7 +513,7 @@ def unwrap_annotated_type(typ: T) -> T:
 
     if is_type_annotated(typ):
         # type is Annotated[T, ...]
-        return typing.get_args(typ)[0]
+        return typing.get_args(typ)[0]  # type: ignore
     else:
         # type is a regular type
         return typ
@@ -563,7 +563,7 @@ else:
         return typing.get_type_hints(typ)
 
 
-def get_class_properties(typ: type) -> Iterable[Tuple[str, type]]:
+def get_class_properties(typ: type) -> Iterable[Tuple[str, type | str]]:
     "Returns all properties of a class."
 
     if is_dataclass_type(typ):
@@ -573,7 +573,7 @@ def get_class_properties(typ: type) -> Iterable[Tuple[str, type]]:
         return resolved_hints.items()
 
 
-def get_class_property(typ: type, name: str) -> Optional[type]:
+def get_class_property(typ: type, name: str) -> Optional[type | str]:
     "Looks up the annotated type of a property in a class by its property name."
 
     for property_name, property_type in get_class_properties(typ):

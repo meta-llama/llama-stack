@@ -21,7 +21,7 @@ from llama_stack.schema_utils import json_schema_type
 
 
 class ModelsProtocolPrivate(Protocol):
-    async def register_model(self, model: Model) -> None: ...
+    async def register_model(self, model: Model) -> Model: ...
 
     async def unregister_model(self, model_id: str) -> None: ...
 
@@ -113,8 +113,7 @@ Fully-qualified name of the module to import. The module is expected to have:
         default_factory=list,
         description="The pip dependencies needed for this implementation",
     )
-    config_class: Optional[str] = Field(
-        default=None,
+    config_class: str = Field(
         description="Fully-qualified classname of the config for this provider",
     )
     provider_data_validator: Optional[str] = Field(
@@ -162,7 +161,8 @@ class RemoteProviderConfig(BaseModel):
     @classmethod
     def from_url(cls, url: str) -> "RemoteProviderConfig":
         parsed = urlparse(url)
-        return cls(host=parsed.hostname, port=parsed.port, protocol=parsed.scheme)
+        attrs = {k: v for k, v in parsed._asdict().items() if v is not None}
+        return cls(**attrs)
 
 
 @json_schema_type

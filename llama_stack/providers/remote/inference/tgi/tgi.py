@@ -83,7 +83,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
     async def shutdown(self) -> None:
         pass
 
-    async def register_model(self, model: Model) -> None:
+    async def register_model(self, model: Model) -> Model:
         model = await self.register_helper.register_model(model)
         if model.provider_resource_id != self.model_id:
             raise ValueError(

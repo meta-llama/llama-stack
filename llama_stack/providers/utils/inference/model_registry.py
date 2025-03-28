@@ -104,3 +104,6 @@ class ModelRegistryHelper(ModelsProtocolPrivate):
                 )
 
         return model
+
+    async def unregister_model(self, model_id: str) -> None:
+        pass

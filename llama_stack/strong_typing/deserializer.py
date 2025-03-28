@@ -627,7 +627,7 @@ class NamedTupleDeserializer(ClassDeserializer[NamedTuple]):
         super().assign(property_parsers)
 
     def create(self, **field_values: Any) -> NamedTuple:
-        return self.class_type(**field_values)
+        return self.class_type(**field_values)  # type: ignore
 
 
 class DataclassDeserializer(ClassDeserializer[T]):

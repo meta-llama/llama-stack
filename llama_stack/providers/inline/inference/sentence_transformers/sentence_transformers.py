@@ -43,7 +43,7 @@ class SentenceTransformersInferenceImpl(
     async def shutdown(self) -> None:
         pass
 
-    async def register_model(self, model: Model) -> None:
+    async def register_model(self, model: Model) -> Model:
         return model
 
     async def unregister_model(self, model_id: str) -> None:

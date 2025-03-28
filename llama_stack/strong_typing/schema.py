@@ -460,13 +460,13 @@ class JsonSchemaGenerator:
             discriminator = None
             if typing.get_origin(data_type) is Annotated:
                 discriminator = typing.get_args(data_type)[1].discriminator
-            ret = {"oneOf": [self.type_to_schema(union_type) for union_type in typing.get_args(typ)]}
+            ret: Schema = {"oneOf": [self.type_to_schema(union_type) for union_type in typing.get_args(typ)]}
             if discriminator:
                 # for each union type, we need to read the value of the discriminator
-                mapping = {}
+                mapping: JsonType = {}
                 for union_type in typing.get_args(typ):
                     props = self.type_to_schema(union_type, force_expand=True)["properties"]
-                    mapping[props[discriminator]["default"]] = self.type_to_schema(union_type)["$ref"]
+                    mapping[props[discriminator]["default"]] = self.type_to_schema(union_type)["$ref"]  # type: ignore
 
                 ret["discriminator"] = {
                     "propertyName": discriminator,

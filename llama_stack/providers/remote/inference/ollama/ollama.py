@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 
-from typing import AsyncGenerator, List, Optional, Union
+from typing import Any, AsyncGenerator, List, Optional, Union
 
 import httpx
 from ollama import AsyncClient
@@ -19,10 +19,15 @@ from llama_stack.apis.common.content_types import (
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
     ChatCompletionResponse,
+    ChatCompletionResponseStreamChunk,
     CompletionRequest,
+    CompletionResponse,
+    CompletionResponseStreamChunk,
     EmbeddingsResponse,
     EmbeddingTaskType,
+    GrammarResponseFormat,
     Inference,
+    JsonSchemaResponseFormat,
     LogProbConfig,
     Message,
     ResponseFormat,
@@ -94,7 +99,8 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
-    ) -> AsyncGenerator:
+    ) -> CompletionResponse | AsyncGenerator[CompletionResponseStreamChunk, None]:
+        assert self.model_store is not None
         if sampling_params is None:
             sampling_params = SamplingParams()
         model = await self.model_store.get_model(model_id)
@@ -111,7 +117,9 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         else:
             return await self._nonstream_completion(request)
 
-    async def _stream_completion(self, request: CompletionRequest) -> AsyncGenerator:
+    async def _stream_completion(
+        self, request: CompletionRequest
+    ) -> AsyncGenerator[CompletionResponseStreamChunk, None]:
         params = await self._get_params(request)
 
         async def _generate_and_convert_to_openai_compat():
@@ -129,7 +137,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         async for chunk in process_completion_stream_response(stream):
             yield chunk
 
-    async def _nonstream_completion(self, request: CompletionRequest) -> AsyncGenerator:
+    async def _nonstream_completion(self, request: CompletionRequest) -> CompletionResponse:
         params = await self._get_params(request)
         r = await self.client.generate(**params)
 
@@ -148,14 +156,15 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         model_id: str,
         messages: List[Message],
         sampling_params: Optional[SamplingParams] = None,
-        response_format: Optional[ResponseFormat] = None,
         tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
         tool_prompt_format: Optional[ToolPromptFormat] = None,
+        response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
         tool_config: Optional[ToolConfig] = None,
-    ) -> AsyncGenerator:
+    ) -> ChatCompletionResponse | AsyncGenerator[ChatCompletionResponseStreamChunk, None]:
+        assert self.model_store is not None
         if sampling_params is None:
             sampling_params = SamplingParams()
         model = await self.model_store.get_model(model_id)
@@ -181,7 +190,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         if sampling_options.get("max_tokens") is not None:
             sampling_options["num_predict"] = sampling_options["max_tokens"]
 
-        input_dict = {}
+        input_dict: dict[str, Any] = {}
         media_present = request_has_media(request)
         llama_model = self.register_helper.get_llama_model(request.model)
         if isinstance(request, ChatCompletionRequest):
@@ -201,9 +210,9 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
             input_dict["raw"] = True
 
         if fmt := request.response_format:
-            if fmt.type == "json_schema":
+            if isinstance(fmt, JsonSchemaResponseFormat):
                 input_dict["format"] = fmt.json_schema
-            elif fmt.type == "grammar":
+            elif isinstance(fmt, GrammarResponseFormat):
                 raise NotImplementedError("Grammar response format is not supported")
             else:
                 raise ValueError(f"Unknown response format type: {fmt.type}")
@@ -240,7 +249,9 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         )
         return process_chat_completion_response(response, request)
 
-    async def _stream_chat_completion(self, request: ChatCompletionRequest) -> AsyncGenerator:
+    async def _stream_chat_completion(
+        self, request: ChatCompletionRequest
+    ) -> AsyncGenerator[ChatCompletionResponseStreamChunk, None]:
         params = await self._get_params(request)
 
         async def _generate_and_convert_to_openai_compat():
@@ -275,6 +286,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         output_dimension: Optional[int] = None,
         task_type: Optional[EmbeddingTaskType] = None,
     ) -> EmbeddingsResponse:
+        assert self.model_store is not None
         model = await self.model_store.get_model(model_id)
 
         assert all(not content_has_media(content) for content in contents), (
