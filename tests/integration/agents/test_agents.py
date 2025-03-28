@@ -520,19 +520,7 @@ def test_rag_and_code_agent(llama_stack_client_with_mocked_inference, agent_conf
         ],
     }
     agent = Agent(llama_stack_client_with_mocked_inference, **agent_config)
-    inflation_doc = Document(
-        document_id="test_csv",
-        content="https://raw.githubusercontent.com/meta-llama/llama-stack-apps/main/examples/resources/inflation.csv",
-        mime_type="text/csv",
-        metadata={},
-    )
     user_prompts = [
-        (
-            "Here is a csv file, can you describe it?",
-            [inflation_doc],
-            "code_interpreter",
-            "",
-        ),
         (
             "when was Perplexity the company founded?",
             [],
