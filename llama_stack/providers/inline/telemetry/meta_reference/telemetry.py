@@ -202,6 +202,8 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
                     parent_span_id = int(event.payload.parent_span_id, 16)
                     parent_span = _GLOBAL_STORAGE["active_spans"].get(parent_span_id)
                     context = trace.set_span_in_context(parent_span)
+                else:
+                    event.attributes["__root_span__"] = "true"
 
                 span = tracer.start_span(
                     name=event.payload.name,
