@@ -1316,7 +1316,7 @@ wheels = [
 
 [[package]]
 name = "llama-stack"
-version = "0.1.19"
+version = "0.1.9"
 source = { editable = "." }
 dependencies = [
     { name = "blobfile" },
@@ -1415,7 +1415,7 @@ requires-dist = [
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "jinja2", marker = "extra == 'codegen'", specifier = ">=3.1.6" },
     { name = "jsonschema" },
-    { name = "llama-stack-client", specifier = ">=0.1.19" },
+    { name = "llama-stack-client", specifier = ">=0.1.9" },
     { name = "mcp", marker = "extra == 'test'" },
     { name = "myst-parser", marker = "extra == 'docs'" },
     { name = "nbval", marker = "extra == 'dev'" },
