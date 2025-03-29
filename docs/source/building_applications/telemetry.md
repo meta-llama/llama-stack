@@ -45,14 +45,16 @@ Here's an example that sends telemetry signals to all three sink types. Your con
   - provider_id: meta-reference
     provider_type: inline::meta-reference
     config:
-      sinks: ['console', 'sqlite', 'otel']
-      otel_endpoint: "http://localhost:4318/v1/traces"
+      sinks: ['console', 'sqlite', 'otel_trace', 'otel_metric']
+      otel_trace_endpoint: "http://localhost:4318/v1/traces"
+      otel_metric_endpoint: "http://localhost:4318/v1/metrics"
       sqlite_db_path: "/path/to/telemetry.db"
 ```
 
 ### Jaeger to visualize traces
 
-The `otel` sink works with any service compatible with the OpenTelemetry collector. Let's use Jaeger to visualize this data.
+The `otel` sink works with any service compatible with the OpenTelemetry collector, traces and metrics has two separate endpoints.
+Let's use Jaeger to visualize this data.
 
 Start a Jaeger instance with the OTLP HTTP endpoint at 4318 and the Jaeger UI at 16686 using the following command:
 
