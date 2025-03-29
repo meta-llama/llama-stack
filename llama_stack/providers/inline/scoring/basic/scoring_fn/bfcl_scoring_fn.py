@@ -6,7 +6,7 @@
 
 import json
 import re
-from typing import Any, Dict, Optional
+from typing import Any
 
 from llama_stack.apis.scoring import ScoringResultRow
 from llama_stack.apis.scoring_functions import ScoringFnParams
@@ -17,7 +17,7 @@ from ..utils.bfcl.checker import ast_checker, is_empty_output
 from .fn_defs.bfcl import bfcl
 
 
-def postprocess(x: Dict[str, Any], test_category: str) -> Dict[str, Any]:
+def postprocess(x: dict[str, Any], test_category: str) -> dict[str, Any]:
     contain_func_call = False
     error = None
     error_type = None
@@ -52,11 +52,11 @@ def postprocess(x: Dict[str, Any], test_category: str) -> Dict[str, Any]:
     }
 
 
-def gen_valid(x: Dict[str, Any]) -> Dict[str, float]:
+def gen_valid(x: dict[str, Any]) -> dict[str, float]:
     return {"valid": x["valid"]}
 
 
-def gen_relevance_acc(x: Dict[str, Any]) -> Dict[str, float]:
+def gen_relevance_acc(x: dict[str, Any]) -> dict[str, float]:
     # This function serves for both relevance and irrelevance tests, which share the exact opposite logic.
     # If `test_category` is "irrelevance", the model is expected to output no function call.
     # No function call means either the AST decoding fails (a error message is generated) or the decoded AST does not contain any function call (such as a empty list, `[]`).
@@ -78,9 +78,9 @@ class BFCLScoringFn(RegisteredBaseScoringFn):
 
     async def score_row(
         self,
-        input_row: Dict[str, Any],
-        scoring_fn_identifier: Optional[str] = "bfcl",
-        scoring_params: Optional[ScoringFnParams] = None,
+        input_row: dict[str, Any],
+        scoring_fn_identifier: str | None = "bfcl",
+        scoring_params: ScoringFnParams | None = None,
     ) -> ScoringResultRow:
         test_category = re.sub(r"_[0-9_-]+$", "", input_row["id"])
         score_result = postprocess(input_row, test_category)

@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 import os
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field, SecretStr
 
@@ -20,13 +20,13 @@ class CerebrasImplConfig(BaseModel):
         default=os.environ.get("CEREBRAS_BASE_URL", DEFAULT_BASE_URL),
         description="Base URL for the Cerebras API",
     )
-    api_key: Optional[SecretStr] = Field(
+    api_key: SecretStr | None = Field(
         default=os.environ.get("CEREBRAS_API_KEY"),
         description="Cerebras API Key",
     )
 
     @classmethod
-    def sample_run_config(cls, **kwargs) -> Dict[str, Any]:
+    def sample_run_config(cls, **kwargs) -> dict[str, Any]:
         return {
             "base_url": DEFAULT_BASE_URL,
             "api_key": "${env.CEREBRAS_API_KEY}",

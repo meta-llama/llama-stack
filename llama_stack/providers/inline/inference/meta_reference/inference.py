@@ -6,7 +6,7 @@
 
 import asyncio
 import logging
-from typing import AsyncGenerator, List, Optional, Union
+from collections.abc import AsyncGenerator
 
 from llama_stack.apis.common.content_types import (
     TextDelta,
@@ -136,11 +136,11 @@ class MetaReferenceInferenceImpl(
         self,
         model_id: str,
         content: InterleavedContent,
-        sampling_params: Optional[SamplingParams] = None,
-        response_format: Optional[ResponseFormat] = None,
-        stream: Optional[bool] = False,
-        logprobs: Optional[LogProbConfig] = None,
-    ) -> Union[CompletionResponse, CompletionResponseStreamChunk]:
+        sampling_params: SamplingParams | None = None,
+        response_format: ResponseFormat | None = None,
+        stream: bool | None = False,
+        logprobs: LogProbConfig | None = None,
+    ) -> CompletionResponse | CompletionResponseStreamChunk:
         if sampling_params is None:
             sampling_params = SamplingParams()
         if logprobs:
@@ -245,15 +245,15 @@ class MetaReferenceInferenceImpl(
     async def chat_completion(
         self,
         model_id: str,
-        messages: List[Message],
-        sampling_params: Optional[SamplingParams] = None,
-        response_format: Optional[ResponseFormat] = None,
-        tools: Optional[List[ToolDefinition]] = None,
-        tool_choice: Optional[ToolChoice] = ToolChoice.auto,
-        tool_prompt_format: Optional[ToolPromptFormat] = None,
-        stream: Optional[bool] = False,
-        logprobs: Optional[LogProbConfig] = None,
-        tool_config: Optional[ToolConfig] = None,
+        messages: list[Message],
+        sampling_params: SamplingParams | None = None,
+        response_format: ResponseFormat | None = None,
+        tools: list[ToolDefinition] | None = None,
+        tool_choice: ToolChoice | None = ToolChoice.auto,
+        tool_prompt_format: ToolPromptFormat | None = None,
+        stream: bool | None = False,
+        logprobs: LogProbConfig | None = None,
+        tool_config: ToolConfig | None = None,
     ) -> AsyncGenerator:
         if sampling_params is None:
             sampling_params = SamplingParams()

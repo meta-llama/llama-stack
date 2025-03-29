@@ -6,10 +6,9 @@
 
 import re
 from enum import Enum
-from typing import Literal, Optional, Union
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field, field_validator
-from typing_extensions import Annotated
 
 from llama_stack.distribution.utils.config_dirs import RUNTIME_BASE_DIR
 
@@ -22,7 +21,7 @@ class KVStoreType(Enum):
 
 
 class CommonConfig(BaseModel):
-    namespace: Optional[str] = Field(
+    namespace: str | None = Field(
         default=None,
         description="All keys will be prefixed with this namespace",
     )
@@ -69,7 +68,7 @@ class PostgresKVStoreConfig(CommonConfig):
     port: int = 5432
     db: str = "llamastack"
     user: str
-    password: Optional[str] = None
+    password: str | None = None
     table_name: str = "llamastack_kvstore"
 
     @classmethod
@@ -108,7 +107,7 @@ class MongoDBKVStoreConfig(CommonConfig):
     port: int = 27017
     db: str = "llamastack"
     user: str = None
-    password: Optional[str] = None
+    password: str | None = None
     collection_name: str = "llamastack_kvstore"
 
     @classmethod
@@ -126,6 +125,6 @@ class MongoDBKVStoreConfig(CommonConfig):
 
 
 KVStoreConfig = Annotated[
-    Union[RedisKVStoreConfig, SqliteKVStoreConfig, PostgresKVStoreConfig, MongoDBKVStoreConfig],
+    RedisKVStoreConfig | SqliteKVStoreConfig | PostgresKVStoreConfig | MongoDBKVStoreConfig,
     Field(discriminator="type", default=KVStoreType.sqlite.value),
 ]

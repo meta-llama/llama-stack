@@ -9,7 +9,6 @@
 
 import collections
 import logging
-from typing import Optional, Type
 
 log = logging.getLogger(__name__)
 
@@ -29,7 +28,7 @@ class Fp8ScaledWeights:
     # TODO: Ugly trick so torch allows us to replace parameters
     # with our custom Fp8Weights instance. Do this properly.
     @property
-    def __class__(self) -> Type[nn.parameter.Parameter]:
+    def __class__(self) -> type[nn.parameter.Parameter]:
         return nn.Parameter
 
     @property
@@ -54,7 +53,7 @@ def ffn_swiglu(
     w1: Fp8RowwiseWeights,
     w3: Fp8RowwiseWeights,
     w2: Fp8RowwiseWeights,
-    num_tokens: Optional[Tensor] = None,
+    num_tokens: Tensor | None = None,
     is_memory_bounded: bool = False,
 ) -> Tensor:
     if isinstance(w1, Fp8ScaledWeights) and isinstance(w3, Fp8ScaledWeights) and isinstance(w2, Fp8ScaledWeights):
@@ -78,7 +77,7 @@ def ffn_swiglu(
 def quantize_fp8(
     w: Tensor,
     fp8_activation_scale_ub: float,
-    output_device: Optional[torch.device] = None,
+    output_device: torch.device | None = None,
 ) -> Fp8RowwiseWeights:
     """Quantize [n, k] weight tensor.
 
@@ -129,8 +128,8 @@ def load_fp8(
 def fc_fp8_dynamic(
     x: Tensor,
     w: Fp8RowwiseWeights,
-    activation_scale_ub: Optional[Tensor] = None,
-    num_tokens: Optional[Tensor] = None,
+    activation_scale_ub: Tensor | None = None,
+    num_tokens: Tensor | None = None,
     is_memory_bounded: bool = False,
 ) -> Tensor:
     """
@@ -148,8 +147,8 @@ def ffn_swiglu_fp8_dynamic(
     w1: Fp8RowwiseWeights,
     w3: Fp8RowwiseWeights,
     w2: Fp8RowwiseWeights,
-    activation_scale_ub: Optional[Tensor] = None,
-    num_tokens: Optional[Tensor] = None,
+    activation_scale_ub: Tensor | None = None,
+    num_tokens: Tensor | None = None,
     is_memory_bounded: bool = False,
 ) -> Tensor:
     (B, T, D) = x.shape  # noqa: N806

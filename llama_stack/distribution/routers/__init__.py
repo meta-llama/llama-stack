@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict
+from typing import Any
 
 from llama_stack.distribution.datatypes import RoutedProtocol
 from llama_stack.distribution.store import DistributionRegistry
@@ -23,7 +23,7 @@ from .routing_tables import (
 
 async def get_routing_table_impl(
     api: Api,
-    impls_by_provider_id: Dict[str, RoutedProtocol],
+    impls_by_provider_id: dict[str, RoutedProtocol],
     _deps,
     dist_registry: DistributionRegistry,
 ) -> Any:
@@ -45,7 +45,7 @@ async def get_routing_table_impl(
     return impl
 
 
-async def get_auto_router_impl(api: Api, routing_table: RoutingTable, deps: Dict[str, Any]) -> Any:
+async def get_auto_router_impl(api: Api, routing_table: RoutingTable, deps: dict[str, Any]) -> Any:
     from .routers import (
         DatasetIORouter,
         EvalRouter,

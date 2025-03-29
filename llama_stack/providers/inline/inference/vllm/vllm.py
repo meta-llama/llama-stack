@@ -7,7 +7,7 @@
 import json
 import re
 import uuid
-from typing import AsyncGenerator, AsyncIterator, Dict, List, Optional, Union
+from collections.abc import AsyncGenerator, AsyncIterator
 
 # These vLLM modules contain names that overlap with Llama Stack names, so we import
 # fully-qualified names
@@ -98,7 +98,7 @@ def _random_uuid_str() -> str:
 
 
 def _response_format_to_guided_decoding_params(
-    response_format: Optional[ResponseFormat],  # type: ignore
+    response_format: ResponseFormat | None,  # type: ignore
 ) -> vllm.sampling_params.GuidedDecodingParams:
     """
     Translate constrained decoding parameters from Llama Stack's format to vLLM's format.
@@ -129,9 +129,9 @@ def _response_format_to_guided_decoding_params(
 
 
 def _convert_sampling_params(
-    sampling_params: Optional[SamplingParams],
-    response_format: Optional[ResponseFormat],  # type: ignore
-    log_prob_config: Optional[LogProbConfig],
+    sampling_params: SamplingParams | None,
+    response_format: ResponseFormat | None,  # type: ignore
+    log_prob_config: LogProbConfig | None,
 ) -> vllm.SamplingParams:
     """Convert sampling and constrained decoding configuration from Llama Stack's format to vLLM's
     format."""
@@ -363,11 +363,11 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         self,
         model_id: str,
         content: InterleavedContent,
-        sampling_params: Optional[SamplingParams] = None,
-        response_format: Optional[ResponseFormat] = None,
-        stream: Optional[bool] = False,
-        logprobs: Optional[LogProbConfig] = None,
-    ) -> Union[CompletionResponse, AsyncIterator[CompletionResponseStreamChunk]]:
+        sampling_params: SamplingParams | None = None,
+        response_format: ResponseFormat | None = None,
+        stream: bool | None = False,
+        logprobs: LogProbConfig | None = None,
+    ) -> CompletionResponse | AsyncIterator[CompletionResponseStreamChunk]:
         if model_id not in self.model_ids:
             raise ValueError(
                 f"This adapter is not registered to model id '{model_id}'. Registered IDs are: {self.model_ids}"
@@ -396,25 +396,25 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
     async def embeddings(
         self,
         model_id: str,
-        contents: List[str] | List[InterleavedContentItem],
-        text_truncation: Optional[TextTruncation] = TextTruncation.none,
-        output_dimension: Optional[int] = None,
-        task_type: Optional[EmbeddingTaskType] = None,
+        contents: list[str] | list[InterleavedContentItem],
+        text_truncation: TextTruncation | None = TextTruncation.none,
+        output_dimension: int | None = None,
+        task_type: EmbeddingTaskType | None = None,
     ) -> EmbeddingsResponse:
         raise NotImplementedError()
 
     async def chat_completion(
         self,
         model_id: str,
-        messages: List[Message],  # type: ignore
-        sampling_params: Optional[SamplingParams] = None,
-        response_format: Optional[ResponseFormat] = None,  # type: ignore
-        tools: Optional[List[ToolDefinition]] = None,
-        tool_choice: Optional[ToolChoice] = ToolChoice.auto,
-        tool_prompt_format: Optional[ToolPromptFormat] = None,
-        stream: Optional[bool] = False,
-        logprobs: Optional[LogProbConfig] = None,
-        tool_config: Optional[ToolConfig] = None,
+        messages: list[Message],  # type: ignore
+        sampling_params: SamplingParams | None = None,
+        response_format: ResponseFormat | None = None,  # type: ignore
+        tools: list[ToolDefinition] | None = None,
+        tool_choice: ToolChoice | None = ToolChoice.auto,
+        tool_prompt_format: ToolPromptFormat | None = None,
+        stream: bool | None = False,
+        logprobs: LogProbConfig | None = None,
+        tool_config: ToolConfig | None = None,
     ) -> ChatCompletionResponse | ChatCompletionResponseStreamChunk:
         sampling_params = sampling_params or SamplingParams()
         if model_id not in self.model_ids:
@@ -598,7 +598,7 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
 
     async def _chat_completion_for_meta_llama(
         self, request: ChatCompletionRequest
-    ) -> Union[ChatCompletionResponse, AsyncIterator[ChatCompletionResponseStreamChunk]]:
+    ) -> ChatCompletionResponse | AsyncIterator[ChatCompletionResponseStreamChunk]:
         """
         Subroutine that routes chat completions for Meta Llama models through Llama Stack's
         chat template instead of using vLLM's version of that template. The Llama Stack version
@@ -694,7 +694,7 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         # Tool calls come in pieces, but Llama Stack expects them in bigger chunks. We build up
         # those chunks and output them at the end.
         # This data structure holds the current set of partial tool calls.
-        index_to_tool_call: Dict[int, Dict] = dict()
+        index_to_tool_call: dict[int, dict] = dict()
 
         # The Llama Stack event stream must always start with a start event. Use an empty one to
         # simplify logic below

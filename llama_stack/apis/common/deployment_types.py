@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel
 
@@ -25,6 +25,6 @@ class RestAPIMethod(Enum):
 class RestAPIExecutionConfig(BaseModel):
     url: URL
     method: RestAPIMethod
-    params: Optional[Dict[str, Any]] = None
-    headers: Optional[Dict[str, Any]] = None
-    body: Optional[Dict[str, Any]] = None
+    params: dict[str, Any] | None = None
+    headers: dict[str, Any] | None = None
+    body: dict[str, Any] | None = None

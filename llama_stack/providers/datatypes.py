@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, List, Optional, Protocol
+from typing import Any, Protocol
 from urllib.parse import urlparse
 
 from pydantic import BaseModel, Field
@@ -43,7 +43,7 @@ class DatasetsProtocolPrivate(Protocol):
 
 
 class ScoringFunctionsProtocolPrivate(Protocol):
-    async def list_scoring_functions(self) -> List[ScoringFn]: ...
+    async def list_scoring_functions(self) -> list[ScoringFn]: ...
 
     async def register_scoring_function(self, scoring_fn: ScoringFn) -> None: ...
 
@@ -66,24 +66,24 @@ class ProviderSpec(BaseModel):
         ...,
         description="Fully-qualified classname of the config for this provider",
     )
-    api_dependencies: List[Api] = Field(
+    api_dependencies: list[Api] = Field(
         default_factory=list,
         description="Higher-level API surfaces may depend on other providers to provide their functionality",
     )
-    optional_api_dependencies: List[Api] = Field(
+    optional_api_dependencies: list[Api] = Field(
         default_factory=list,
     )
-    deprecation_warning: Optional[str] = Field(
+    deprecation_warning: str | None = Field(
         default=None,
         description="If this provider is deprecated, specify the warning message here",
     )
-    deprecation_error: Optional[str] = Field(
+    deprecation_error: str | None = Field(
         default=None,
         description="If this provider is deprecated and does NOT work, specify the error message here",
     )
 
     # used internally by the resolver; this is a hack for now
-    deps__: List[str] = Field(default_factory=list)
+    deps__: list[str] = Field(default_factory=list)
 
     @property
     def is_sample(self) -> bool:
@@ -109,26 +109,26 @@ Fully-qualified name of the module to import. The module is expected to have:
  - `get_adapter_impl(config, deps)`: returns the adapter implementation
 """,
     )
-    pip_packages: List[str] = Field(
+    pip_packages: list[str] = Field(
         default_factory=list,
         description="The pip dependencies needed for this implementation",
     )
-    config_class: Optional[str] = Field(
+    config_class: str | None = Field(
         default=None,
         description="Fully-qualified classname of the config for this provider",
     )
-    provider_data_validator: Optional[str] = Field(
+    provider_data_validator: str | None = Field(
         default=None,
     )
 
 
 @json_schema_type
 class InlineProviderSpec(ProviderSpec):
-    pip_packages: List[str] = Field(
+    pip_packages: list[str] = Field(
         default_factory=list,
         description="The pip dependencies needed for this implementation",
     )
-    container_image: Optional[str] = Field(
+    container_image: str | None = Field(
         default=None,
         description="""
 The container image to use for this implementation. If one is provided, pip_packages will be ignored.
@@ -143,14 +143,14 @@ Fully-qualified name of the module to import. The module is expected to have:
  - `get_provider_impl(config, deps)`: returns the local implementation
 """,
     )
-    provider_data_validator: Optional[str] = Field(
+    provider_data_validator: str | None = Field(
         default=None,
     )
 
 
 class RemoteProviderConfig(BaseModel):
     host: str = "localhost"
-    port: Optional[int] = None
+    port: int | None = None
     protocol: str = "http"
 
     @property
@@ -175,7 +175,7 @@ API responses, specify the adapter here.
     )
 
     @property
-    def container_image(self) -> Optional[str]:
+    def container_image(self) -> str | None:
         return None
 
     @property
@@ -183,16 +183,16 @@ API responses, specify the adapter here.
         return self.adapter.module
 
     @property
-    def pip_packages(self) -> List[str]:
+    def pip_packages(self) -> list[str]:
         return self.adapter.pip_packages
 
     @property
-    def provider_data_validator(self) -> Optional[str]:
+    def provider_data_validator(self) -> str | None:
         return self.adapter.provider_data_validator
 
 
 def remote_provider_spec(
-    api: Api, adapter: AdapterSpec, api_dependencies: Optional[List[Api]] = None
+    api: Api, adapter: AdapterSpec, api_dependencies: list[Api] | None = None
 ) -> RemoteProviderSpec:
     return RemoteProviderSpec(
         api=api,

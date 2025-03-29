@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict
+from typing import Any
 
 from llama_stack.providers.inline.inference.sentence_transformers.config import (
     SentenceTransformersInferenceConfig,
@@ -13,7 +13,7 @@ from llama_stack.providers.inline.inference.sentence_transformers.config import 
 
 async def get_provider_impl(
     config: SentenceTransformersInferenceConfig,
-    _deps: Dict[str, Any],
+    _deps: dict[str, Any],
 ):
     from .sentence_transformers import SentenceTransformersInferenceImpl
 

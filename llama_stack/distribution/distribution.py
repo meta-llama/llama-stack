@@ -5,14 +5,13 @@
 # the root directory of this source tree.
 
 import importlib
-from typing import Dict, List
 
 from pydantic import BaseModel
 
 from llama_stack.providers.datatypes import Api, ProviderSpec
 
 
-def stack_apis() -> List[Api]:
+def stack_apis() -> list[Api]:
     return list(Api)
 
 
@@ -21,7 +20,7 @@ class AutoRoutedApiInfo(BaseModel):
     router_api: Api
 
 
-def builtin_automatically_routed_apis() -> List[AutoRoutedApiInfo]:
+def builtin_automatically_routed_apis() -> list[AutoRoutedApiInfo]:
     return [
         AutoRoutedApiInfo(
             routing_table_api=Api.models,
@@ -54,12 +53,12 @@ def builtin_automatically_routed_apis() -> List[AutoRoutedApiInfo]:
     ]
 
 
-def providable_apis() -> List[Api]:
+def providable_apis() -> list[Api]:
     routing_table_apis = {x.routing_table_api for x in builtin_automatically_routed_apis()}
     return [api for api in Api if api not in routing_table_apis and api != Api.inspect and api != Api.providers]
 
 
-def get_provider_registry() -> Dict[Api, Dict[str, ProviderSpec]]:
+def get_provider_registry() -> dict[Api, dict[str, ProviderSpec]]:
     ret = {}
     for api in providable_apis():
         name = api.name.lower()

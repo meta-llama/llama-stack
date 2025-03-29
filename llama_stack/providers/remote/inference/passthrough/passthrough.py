@@ -4,7 +4,8 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, AsyncGenerator, Dict, List, Optional
+from collections.abc import AsyncGenerator
+from typing import Any
 
 from llama_stack_client import AsyncLlamaStackClient
 
@@ -85,10 +86,10 @@ class PassthroughInferenceAdapter(Inference):
         self,
         model_id: str,
         content: InterleavedContent,
-        sampling_params: Optional[SamplingParams] = None,
-        response_format: Optional[ResponseFormat] = None,
-        stream: Optional[bool] = False,
-        logprobs: Optional[LogProbConfig] = None,
+        sampling_params: SamplingParams | None = None,
+        response_format: ResponseFormat | None = None,
+        stream: bool | None = False,
+        logprobs: LogProbConfig | None = None,
     ) -> AsyncGenerator:
         if sampling_params is None:
             sampling_params = SamplingParams()
@@ -115,15 +116,15 @@ class PassthroughInferenceAdapter(Inference):
     async def chat_completion(
         self,
         model_id: str,
-        messages: List[Message],
-        sampling_params: Optional[SamplingParams] = None,
-        tools: Optional[List[ToolDefinition]] = None,
-        tool_choice: Optional[ToolChoice] = ToolChoice.auto,
-        tool_prompt_format: Optional[ToolPromptFormat] = None,
-        response_format: Optional[ResponseFormat] = None,
-        stream: Optional[bool] = False,
-        logprobs: Optional[LogProbConfig] = None,
-        tool_config: Optional[ToolConfig] = None,
+        messages: list[Message],
+        sampling_params: SamplingParams | None = None,
+        tools: list[ToolDefinition] | None = None,
+        tool_choice: ToolChoice | None = ToolChoice.auto,
+        tool_prompt_format: ToolPromptFormat | None = None,
+        response_format: ResponseFormat | None = None,
+        stream: bool | None = False,
+        logprobs: LogProbConfig | None = None,
+        tool_config: ToolConfig | None = None,
     ) -> AsyncGenerator:
         if sampling_params is None:
             sampling_params = SamplingParams()
@@ -157,7 +158,7 @@ class PassthroughInferenceAdapter(Inference):
         else:
             return await self._nonstream_chat_completion(json_params)
 
-    async def _nonstream_chat_completion(self, json_params: Dict[str, Any]) -> ChatCompletionResponse:
+    async def _nonstream_chat_completion(self, json_params: dict[str, Any]) -> ChatCompletionResponse:
         client = self._get_client()
         response = await client.inference.chat_completion(**json_params)
 
@@ -170,7 +171,7 @@ class PassthroughInferenceAdapter(Inference):
             logprobs=response.logprobs,
         )
 
-    async def _stream_chat_completion(self, json_params: Dict[str, Any]) -> AsyncGenerator:
+    async def _stream_chat_completion(self, json_params: dict[str, Any]) -> AsyncGenerator:
         client = self._get_client()
         stream_response = await client.inference.chat_completion(**json_params)
 
@@ -185,10 +186,10 @@ class PassthroughInferenceAdapter(Inference):
     async def embeddings(
         self,
         model_id: str,
-        contents: List[InterleavedContent],
-        text_truncation: Optional[TextTruncation] = TextTruncation.none,
-        output_dimension: Optional[int] = None,
-        task_type: Optional[EmbeddingTaskType] = None,
+        contents: list[InterleavedContent],
+        text_truncation: TextTruncation | None = TextTruncation.none,
+        output_dimension: int | None = None,
+        task_type: EmbeddingTaskType | None = None,
     ) -> EmbeddingsResponse:
         client = self._get_client()
         model = await self.model_store.get_model(model_id)
@@ -201,7 +202,7 @@ class PassthroughInferenceAdapter(Inference):
             task_type=task_type,
         )
 
-    def cast_value_to_json_dict(self, request_params: Dict[str, Any]) -> Dict[str, Any]:
+    def cast_value_to_json_dict(self, request_params: dict[str, Any]) -> dict[str, Any]:
         json_params = {}
         for key, value in request_params.items():
             json_input = convert_pydantic_to_json_value(value)
