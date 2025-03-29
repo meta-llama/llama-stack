@@ -19,7 +19,6 @@ from llama_stack.apis.inference import (
     EmbeddingsResponse,
     EmbeddingTaskType,
     Inference,
-    JsonSchemaResponseFormat,
     LogProbConfig,
     Message,
     ResponseFormat,
@@ -36,11 +35,8 @@ from llama_stack.log import get_logger
 from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
 from llama_stack.providers.utils.inference.openai_compat import (
     convert_chat_completion_request_to_openai_params,
-    convert_message_to_openai_dict_new,
     convert_openai_chat_completion_choice,
     convert_openai_chat_completion_stream,
-    convert_tooldef_to_openai_tool,
-    get_sampling_options,
 )
 from llama_stack.providers.utils.inference.prompt_adapter import (
     interleaved_content_as_str,
@@ -54,9 +50,7 @@ class LiteLLMOpenAIMixin(
     Inference,
     NeedsRequestProviderData,
 ):
-    def __init__(
-        self, model_entries, api_key_from_config: str, provider_data_api_key_field: str
-    ):
+    def __init__(self, model_entries, api_key_from_config: str, provider_data_api_key_field: str):
         ModelRegistryHelper.__init__(self, model_entries)
         self.api_key_from_config = api_key_from_config
         self.provider_data_api_key_field = provider_data_api_key_field
@@ -96,9 +90,7 @@ class LiteLLMOpenAIMixin(
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
         tool_config: Optional[ToolConfig] = None,
-    ) -> Union[
-        ChatCompletionResponse, AsyncIterator[ChatCompletionResponseStreamChunk]
-    ]:
+    ) -> Union[ChatCompletionResponse, AsyncIterator[ChatCompletionResponseStreamChunk]]:
         if sampling_params is None:
             sampling_params = SamplingParams()
         model = await self.model_store.get_model(model_id)
