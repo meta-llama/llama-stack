@@ -1157,10 +1157,6 @@ async def convert_chat_completion_request_to_openai_params(
         # Apply additionalProperties: False recursively to all objects
         fmt = _add_additional_properties_recursive(fmt)
 
-        from rich.pretty import pprint
-
-        pprint(fmt)
-
         input_dict["response_format"] = {
             "type": "json_schema",
             "json_schema": {
