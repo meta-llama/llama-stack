@@ -23,7 +23,12 @@ def skip_if_model_doesnt_support_completion(client_with_models, model_id):
     provider_id = models[model_id].provider_id
     providers = {p.provider_id: p for p in client_with_models.providers.list()}
     provider = providers[provider_id]
-    if provider.provider_type in ("remote::openai", "remote::anthropic", "remote::gemini", "remote::groq"):
+    if provider.provider_type in (
+        "remote::openai",
+        "remote::anthropic",
+        "remote::gemini",
+        "remote::groq",
+    ):
         pytest.skip(f"Model {model_id} hosted by {provider.provider_type} doesn't support completion")
 
 
@@ -194,7 +199,9 @@ def test_text_completion_log_probs_streaming(client_with_models, text_model_id, 
         "inference:completion:structured_output",
     ],
 )
-def test_text_completion_structured_output(client_with_models, text_model_id, test_case):
+def test_text_completion_structured_output(client_with_models, text_model_id, test_case, inference_provider_type):
+    if inference_provider_type == "remote::tgi":
+        pytest.xfail(f"{inference_provider_type} doesn't support structured outputs yet")
     skip_if_model_doesnt_support_completion(client_with_models, text_model_id)
 
     class AnswerFormat(BaseModel):
@@ -372,7 +379,12 @@ def test_text_chat_completion_with_tool_calling_and_streaming(client_with_models
         "inference:chat_completion:tool_calling",
     ],
 )
-def test_text_chat_completion_with_tool_choice_required(client_with_models, text_model_id, test_case):
+def test_text_chat_completion_with_tool_choice_required(
+    client_with_models, text_model_id, test_case, inference_provider_type
+):
+    if inference_provider_type == "remote::tgi":
+        pytest.xfail(f"{inference_provider_type} doesn't support tool_choice 'required' parameter yet")
+
     tc = TestCase(test_case)
 
     response = client_with_models.inference.chat_completion(
@@ -416,7 +428,10 @@ def test_text_chat_completion_with_tool_choice_none(client_with_models, text_mod
         "inference:chat_completion:structured_output",
     ],
 )
-def test_text_chat_completion_structured_output(client_with_models, text_model_id, test_case):
+def test_text_chat_completion_structured_output(client_with_models, text_model_id, test_case, inference_provider_type):
+    if inference_provider_type == "remote::tgi":
+        pytest.xfail(f"{inference_provider_type} doesn't support structured outputs yet")
+
     class NBAStats(BaseModel):
         year_for_draft: int
         num_seasons_in_nba: int
