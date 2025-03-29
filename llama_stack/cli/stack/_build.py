@@ -137,6 +137,8 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
         providers = dict()
         for api, providers_for_api in get_provider_registry().items():
             available_providers = [x for x in providers_for_api.keys() if x not in ("remote", "remote::sample")]
+            if not available_providers:
+                continue
             api_provider = prompt(
                 "> Enter provider for API {}: ".format(api.value),
                 completer=WordCompleter(available_providers),
