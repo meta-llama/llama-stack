@@ -7,16 +7,10 @@
 import time
 from uuid import uuid4
 
-import pytest
 from llama_stack_client import Agent
-
-from llama_stack.distribution.library_client import LlamaStackAsLibraryClient
 
 
 def test_agent_query_spans(llama_stack_client, text_model_id):
-    if isinstance(llama_stack_client, LlamaStackAsLibraryClient):
-        pytest.mark.xfail(reason="Need to fix LlamaStackAsLibraryClient to log spans")
-
     agent = Agent(llama_stack_client, model=text_model_id, instructions="You are a helpful assistant")
     session_id = agent.create_session(f"test-session-{uuid4()}")
     agent.create_turn(
@@ -41,7 +35,6 @@ def test_agent_query_spans(llama_stack_client, text_model_id):
         ],
         attributes_to_return=["input", "output"],
     ):
-        print(span.attributes)
         if span.attributes["output"] != "no shields":
             agent_logs.append(span.attributes)
 
