@@ -66,3 +66,11 @@ class SqliteKVStoreImpl(KVStore):
                     _, value, _ = row
                     result.append(value)
                 return result
+
+    async def list(self) -> List[str]:
+        async with aiosqlite.connect(self.db_path) as db:
+            async with db.execute(f"SELECT key FROM {self.table_name}") as cursor:
+                keys = []
+                async for row in cursor:
+                    keys.append(row[0])
+                return keys
