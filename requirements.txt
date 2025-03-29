@@ -10,6 +10,7 @@ click==8.1.8
 colorama==0.4.6 ; sys_platform == 'win32'
 distro==1.9.0
 exceptiongroup==1.2.2 ; python_full_version < '3.11'
+fastapi-pagination==0.12.34
 filelock==3.17.0
 fire==0.7.0
 fsspec==2024.12.0

@@ -37,6 +37,7 @@ dependencies = [
     "termcolor",
     "tiktoken",
     "pillow",
+    "fastapi-pagination",
 ]
 
 [project.optional-dependencies]

@@ -22,6 +22,7 @@ from fastapi import Body, FastAPI, HTTPException, Request
 from fastapi import Path as FastapiPath
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi_pagination import add_pagination
 from pydantic import BaseModel, ValidationError
 from typing_extensions import Annotated
 
@@ -453,6 +454,7 @@ def main(args: Optional[argparse.Namespace] = None):
 
     app.__llama_stack_impls__ = impls
     app.add_middleware(TracingMiddleware, impls=impls)
+    add_pagination(app)
 
     import uvicorn
 

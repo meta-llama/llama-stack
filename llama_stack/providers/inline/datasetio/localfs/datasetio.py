@@ -7,9 +7,11 @@ from typing import Any, Dict, List, Optional
 
 import pandas
 
-from llama_stack.apis.datasetio import DatasetIO, IterrowsResponse
+from llama_stack.apis.common.responses import PaginatedResponse
+from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Dataset
 from llama_stack.providers.datatypes import DatasetsProtocolPrivate
+from llama_stack.providers.utils.datasetio.pagination import paginate_records
 from llama_stack.providers.utils.datasetio.url_utils import get_dataframe_from_uri
 from llama_stack.providers.utils.kvstore import kvstore_impl
 
@@ -92,24 +94,13 @@ class LocalFSDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
         dataset_id: str,
         start_index: Optional[int] = None,
         limit: Optional[int] = None,
-    ) -> IterrowsResponse:
+    ) -> PaginatedResponse:
         dataset_def = self.dataset_infos[dataset_id]
         dataset_impl = PandasDataframeDataset(dataset_def)
         await dataset_impl.load()
 
-        start_index = start_index or 0
-
-        if limit is None or limit == -1:
-            end = len(dataset_impl)
-        else:
-            end = min(start_index + limit, len(dataset_impl))
-
-        rows = dataset_impl[start_index:end]
-
-        return IterrowsResponse(
-            data=rows,
-            next_start_index=end if end < len(dataset_impl) else None,
-        )
+        records = dataset_impl.df.to_dict("records")
+        return paginate_records(records, start_index, limit)
 
     async def append_rows(self, dataset_id: str, rows: List[Dict[str, Any]]) -> None:
         dataset_def = self.dataset_infos[dataset_id]
