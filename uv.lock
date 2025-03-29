@@ -1316,7 +1316,7 @@ wheels = [
 
 [[package]]
 name = "llama-stack"
-version = "0.1.8"
+version = "0.1.19"
 source = { editable = "." }
 dependencies = [
     { name = "blobfile" },
@@ -1415,7 +1415,7 @@ requires-dist = [
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "jinja2", marker = "extra == 'codegen'", specifier = ">=3.1.6" },
     { name = "jsonschema" },
-    { name = "llama-stack-client", specifier = ">=0.1.8" },
+    { name = "llama-stack-client", specifier = ">=0.1.19" },
     { name = "mcp", marker = "extra == 'test'" },
     { name = "myst-parser", marker = "extra == 'docs'" },
     { name = "nbval", marker = "extra == 'dev'" },
@@ -1464,7 +1464,7 @@ provides-extras = ["dev", "unit", "test", "docs", "codegen"]
 
 [[package]]
 name = "llama-stack-client"
-version = "0.1.8"
+version = "0.1.19"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -1481,9 +1481,9 @@ dependencies = [
     { name = "tqdm" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/c5/cb/b058f62f52c7a29cc7238866cac357550bfc8ff99afcd1805436ef906181/llama_stack_client-0.1.8.tar.gz", hash = "sha256:2f1ff22c891c4c03e9b8fa18adbc0fb4d6e7337181d90a897760ec368ef3269c", size = 242834 }
+sdist = { url = "https://files.pythonhosted.org/packages/3c/e7/5fac23acee430e060cbe12ade872bf17720977755af551a7bd3d5d2e43cd/llama_stack_client-0.1.19.tar.gz", hash = "sha256:061db4584cdbe2606bfe809c6f0caab6637c8e91aa2350ab46e896bc82869e5c", size = 242819 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a3/aa/d02c314b93be7ce0e447a7d7e3cbbea1955e06651abdf6a273714058e4aa/llama_stack_client-0.1.8-py3-none-any.whl", hash = "sha256:e34e42ff491b3146130f6cf741fd5e901f8cd66302e8608e514655f74cc3df73", size = 274304 },
+    { url = "https://files.pythonhosted.org/packages/9c/11/fccdcbae6a0c261172b3384875675e5bbb5ef2612b7ccb96cf2f735ea104/llama_stack_client-0.1.19-py3-none-any.whl", hash = "sha256:7049eeee6ac60947c37495d3f5b77f209d7721d18af9638b6a59a982e97581a6", size = 274309 },
 ]
 
 [[package]]
