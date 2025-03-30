@@ -412,9 +412,6 @@ def main(args: Optional[argparse.Namespace] = None):
         docs_url="/docs",
         redoc_url="/redoc",
         openapi_url="/openapi.json",
-        title="Llama Stack API",
-        description="API for Llama Stack",
-        version="0.1.9"
     )
     if not os.environ.get("LLAMA_STACK_DISABLE_VERSION_CHECK"):
         app.add_middleware(ClientVersionMiddleware)
