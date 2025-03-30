@@ -57,11 +57,7 @@ from llama_stack.apis.inference import (
     UserMessage,
 )
 from llama_stack.apis.safety import Safety
-from llama_stack.apis.tools import (
-    ToolGroups,
-    ToolInvocationResult,
-    ToolRuntime,
-)
+from llama_stack.apis.tools import ToolGroups, ToolInvocationResult, ToolRuntime
 from llama_stack.apis.vector_io import VectorIO
 from llama_stack.log import get_logger
 from llama_stack.models.llama.datatypes import (
@@ -459,7 +455,15 @@ class ChatAgent(ShieldRunnerMixin):
                 contexts.append(raw_document_text)
 
             attached_context = "\n".join(contexts)
-            input_messages[-1].context = attached_context
+            if isinstance(input_messages[-1].content, str):
+                input_messages[-1].content += attached_context
+            elif isinstance(input_messages[-1].content, list):
+                input_messages[-1].content.append(TextContentItem(text=attached_context))
+            else:
+                input_messages[-1].content = [
+                    input_messages[-1].content,
+                    TextContentItem(text=attached_context),
+                ]
 
         session_info = await self.storage.get_session_info(session_id)
         # if the session has a memory bank id, let the memory tool use it
