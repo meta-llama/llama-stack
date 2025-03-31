@@ -1,4 +1,4 @@
-# List of Distributions
+# Available List of Distributions
 
 Here are a list of distributions you can use to start a Llama Stack server that are provided out of the box.
 

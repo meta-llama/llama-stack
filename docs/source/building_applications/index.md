@@ -1,4 +1,4 @@
-# Building AI Applications
+# Building AI Applications (Examples)
 
 Llama Stack provides all the building blocks needed to create sophisticated AI applications.
 
