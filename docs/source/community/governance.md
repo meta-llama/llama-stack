@@ -40,7 +40,7 @@ There are several roles within the Llama Stack community, each with its own set 
 - [Users](#users)
 - [Contributors](#contributors)
 - [Triagers](#triagers)
-- [Coder Owners](#code-owners)
+- [Code Owners](#code-owners)
 - [Maintainers](#maintainers-project--area)
 
 ### Users
