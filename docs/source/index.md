@@ -6,6 +6,7 @@ Llama Stack {{ llama_stack_version }} is now available! See the {{ llama_stack_v
 
 # Llama Stack
 
+## What is Llama Stack?
 
 Llama Stack defines and standardizes the core building blocks needed to bring generative AI applications to market. It provides a unified set of APIs with implementations from leading service providers, enabling seamless transitions between development and production environments. More specifically, it provides
 
@@ -21,6 +22,12 @@ Llama Stack defines and standardizes the core building blocks needed to bring ge
 ```
 
 Our goal is to provide pre-packaged implementations (aka "distributions") which can be run in a variety of deployment environments. LlamaStack can assist you in your entire app development lifecycle - start iterating on local, mobile or desktop and seamlessly transition to on-prem or public cloud deployments. At every point in this transition, the same set of APIs and the same developer experience is available.
+
+## How does Llama Stack work?
+Llama Stack consists of a [server](./distributions/index.md) (with multiple pluggable API [providers](./providers/index.md)) and [client SDKs](#available-sdks) meant to
+be used in your applications. The server can be run in a variety of environments, including local (inline)
+development, on-premises, and cloud. The client SDKs are available for Python, Swift, Node, and
+Kotlin.
 
 ## Quick Links
 

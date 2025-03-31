@@ -1,10 +1,11 @@
 # Quick Start
 
-In this guide, we'll walk through how you can use the Llama Stack (server and client SDK) to test a simple RAG agent.
+In this guide, we'll walk through how you can use the Llama Stack (server and client SDK) to build a simple [RAG (Retrieval Augmented Generation)](../building_applications/rag.md) agent.
 
 A Llama Stack agent is a simple integrated system that can perform tasks by combining a Llama model for reasoning with tools (e.g., RAG, web search, code execution, etc.) for taking actions.
 
 In Llama Stack, we provide a server exposing multiple APIs. These APIs are backed by implementations from different providers. For this guide, we will use [Ollama](https://ollama.com/) as the inference provider.
+Ollama is an LLM runtime that allows you to run Llama models locally.
 
 
 ### 1. Start Ollama
@@ -24,7 +25,7 @@ If you do not have ollama, you can install it from [here](https://ollama.com/dow
 
 ### 2. Pick a client environment
 
-Llama Stack has a service-oriented architecture, so every interaction with the Stack happens through an REST interface. You can interact with the Stack in two ways:
+Llama Stack has a service-oriented architecture, so every interaction with the Stack happens through a REST interface. You can interact with the Stack in two ways:
 
 * Install the `llama-stack-client` PyPI package and point `LlamaStackClient` to a local or remote Llama Stack server.
 * Or, install the `llama-stack` PyPI package and use the Stack as a library using `LlamaStackAsLibraryClient`.
