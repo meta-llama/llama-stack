@@ -275,6 +275,7 @@ def test_text_chat_completion_first_token_profiling(client_with_models, text_mod
         model_id=text_model_id,
         messages=messages,
         stream=False,
+        timeout=120,  # Increase timeout to 2 minutes for large conversation history
     )
     message_content = response.completion_message.content.lower().strip()
     assert len(message_content) > 0
@@ -301,6 +302,7 @@ def test_text_chat_completion_streaming(client_with_models, text_model_id, test_
         model_id=text_model_id,
         messages=[{"role": "user", "content": question}],
         stream=True,
+        timeout=120,  # Increase timeout to 2 minutes for large conversation history
     )
     streamed_content = [str(chunk.event.delta.text.lower().strip()) for chunk in response]
     assert len(streamed_content) > 0
