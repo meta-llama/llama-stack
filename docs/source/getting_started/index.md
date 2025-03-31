@@ -134,7 +134,7 @@ client = LlamaStackClient(base_url=f"http://localhost:8321")
 # List available models
 models = client.models.list()
 
-# Find the first LLM
+# Select the first LLM
 llm = next(m for m in models if m.model_type == 'llm')
 model_id = llm.identifier
 
