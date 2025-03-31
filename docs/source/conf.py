@@ -37,6 +37,7 @@ author = "Meta"
 extensions = [
     "myst_parser",
     "sphinx_rtd_theme",
+    "sphinx_rtd_dark_mode",
     "sphinx_copybutton",
     "sphinx_tabs.tabs",
     "sphinx_design",
