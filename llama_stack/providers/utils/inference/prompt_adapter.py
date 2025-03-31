@@ -224,7 +224,9 @@ async def completion_request_to_prompt(request: CompletionRequest) -> str:
     return formatter.tokenizer.decode(model_input.tokens)
 
 
-async def completion_request_to_prompt_model_input_info(request: CompletionRequest) -> Tuple[str, int]:
+async def completion_request_to_prompt_model_input_info(
+    request: CompletionRequest,
+) -> Tuple[str, int]:
     content = augment_content_with_response_format_prompt(request.response_format, request.content)
     request.content = content
     request = await convert_request_to_raw(request)
@@ -271,8 +273,14 @@ async def chat_completion_request_to_model_input_info(
         request.messages,
         tool_prompt_format=request.tool_config.tool_prompt_format or get_default_tool_prompt_format(llama_model),
     )
+    tokens = []
+    for t in model_input.tokens:
+        if t == 128256:
+            tokens.append(formatter.vision_token)
+        else:
+            tokens.append(t)
     return (
-        formatter.tokenizer.decode(model_input.tokens),
+        formatter.tokenizer.decode(tokens),
         len(model_input.tokens),
     )
 
