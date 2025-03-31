@@ -24,7 +24,7 @@ If you do not have ollama, you can install it from [here](https://ollama.com/dow
 
 ### 2. Use `uv` to install and run Llama Stack
 
-Install uv
+Install [uv](https://docs.astral.sh/uv/) to setup your virtual environment
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
