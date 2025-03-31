@@ -88,7 +88,7 @@ BRAVE_SEARCH_API_KEY=
 
 And then use this dotenv file when running client SDK tests via the following:
 ```bash
-uv run --env-file .env -- pytest -v tests/integration/inference/test_text_inference.py
+uv run --env-file .env -- pytest -v tests/integration/inference/test_text_inference.py --text-model=meta-llama/Llama-3.1-8B-Instruct
 ```
 
 ## Pre-commit Hooks
@@ -125,6 +125,10 @@ If you'd like to run for a non-default version of Python (currently 3.10), pass 
 source .venv/bin/activate
 PYTHON_VERSION=3.13 ./scripts/unit-tests.sh
 ```
+
+## Running integration tests
+
+You can run integration tests following the instructions [here](tests/integration/README.md).
 
 ## Adding a new dependency to the project
 

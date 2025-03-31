@@ -23,8 +23,8 @@ Model parameters can be influenced by the following options:
 - `--judge-model`: comma-separated list of judge models.
 - `--embedding-dimension`: output dimensionality of the embedding model to use for testing. Default: 384
 
-Each of these are comma-separated lists and can be used to generate multiple parameter combinations.
-
+Each of these are comma-separated lists and can be used to generate multiple parameter combinations. Note that tests will be skipped
+if no model is specified.
 
 Experimental, under development, options:
 - `--record-responses`: record new API responses instead of using cached ones
