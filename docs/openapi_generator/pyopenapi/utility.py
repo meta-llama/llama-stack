@@ -143,7 +143,7 @@ def _validate_api_method_doesnt_return_list(method) -> str | None:
 
     return_type = hints['return']
     if get_origin(return_type) is list:
-        return "returns a list where a List*Response object is expected"
+        return "returns a list where a PaginatedResponse or List*Response object is expected"
 
 
 def _validate_api_delete_method_returns_none(method) -> str | None:
