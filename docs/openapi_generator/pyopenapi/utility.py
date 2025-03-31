@@ -132,7 +132,7 @@ def _validate_api_method_return_type(method) -> str | None:
 
     return_type = hints['return']
     if is_optional_type(return_type):
-        return "returns Optional type"
+        return "returns Optional type where a return value is mandatory"
 
 
 def _validate_api_method_doesnt_return_list(method) -> str | None:
@@ -143,7 +143,7 @@ def _validate_api_method_doesnt_return_list(method) -> str | None:
 
     return_type = hints['return']
     if get_origin(return_type) is list:
-        return "returns a list"
+        return "returns a list where a List*Response object is expected"
 
 
 def _validate_api_delete_method_returns_none(method) -> str | None:
@@ -154,7 +154,7 @@ def _validate_api_delete_method_returns_none(method) -> str | None:
 
     return_type = hints['return']
     if return_type is not None and return_type is not type(None):
-        return "does not return None"
+        return "does not return None where None is mandatory"
 
 
 def _validate_list_parameters_contain_data(method) -> str | None:
@@ -171,7 +171,7 @@ def _validate_list_parameters_contain_data(method) -> str | None:
         return
 
     if 'data' not in return_type.model_fields:
-        return "does not have data attribute"
+        return "does not have a mandatory data attribute containing the list of objects"
 
 
 _VALIDATORS = {
