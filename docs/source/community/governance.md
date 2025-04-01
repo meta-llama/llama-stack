@@ -107,18 +107,16 @@ ongoing engagement with the community. Because of this, maintainers have the rig
 > **Note**: maintainers, like other contributors, must make changes to Llama Stack via pull requests (with code review).
 > This applies to all changes to documentation, code, configuration, governance, and so on.
 
+#### Maintainer Responsibilities
 Maintainers control the overall project organization, direction, and are responsible for resolving disputes. They also
 - Attend a regular maintainers sync
 - Participate in strategic planning, approve changes to the governance model, and manage the copyrights within the project outputs.
+- Perform code reviews for other maintainers and the community. The areas of specialization listed in [CODEOWNERS.md](./github/CODEOWNERS.md) can be used to help with routing an issue/question to the right person.
+- Triage GitHub issues, applying [labels]([https://github.com/meta-llama/llama-stack/labels](https://github.com/meta-llama/llama-stack/labels)) to each new item. Labels are extremely useful for future issue follow ups. Adding labels is somewhat subjective, so please use your best judgment.
+- Triage build issues, filing issues for known flaky builds or bugs, fixing or finding someone to fix any master build breakages.
+- Make sure that ongoing PRs are moving forward at the right pace or closing them.
 - (optional) Plan the project roadmap and articulate the vision
 - (optional) Guide design decisions to reinforce key project values (e.g. simplicity)
-
-#### Optional maintainer responsibilities
-Other optional activities a maintainer (project or area maintainer) may participate in:
-  *   Perform code reviews for other maintainers and the community. The areas of specialization listed in [OWNERS.md](OWNERS.md) can be used to help with routing an issue/question to the right person.
-  *   Triage GitHub issues, applying [labels]([https://github.com/meta-llama/llama-stack/labels](https://github.com/meta-llama/llama-stack/labels)) to each new item. Labels are extremely useful for future issue follow ups. Adding labels is somewhat subjective, so please use your best judgment.
-  *   Triage build issues, filing issues for known flaky builds or bugs, fixing or finding someone to fix any master build breakages.
-  *   Make sure that ongoing PRs are moving forward at the right pace or closing them.
 
 ### Becoming a Maintainer
 
