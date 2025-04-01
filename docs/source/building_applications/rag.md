@@ -1,4 +1,4 @@
-## Using Retrieval Augmented Generation (RAG)
+## Retrieval Augmented Generation (RAG)
 
 RAG enables your applications to reference and recall information from previous interactions or external documents.
 
