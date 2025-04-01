@@ -7787,7 +7787,13 @@
                 "type": "object",
                 "properties": {
                     "status": {
-                        "type": "string"
+                        "type": "string",
+                        "enum": [
+                            "OK",
+                            "Error",
+                            "Not Implemented"
+                        ],
+                        "title": "HealthStatus"
                     }
                 },
                 "additionalProperties": false,
@@ -7982,6 +7988,31 @@
                                 }
                             ]
                         }
+                    },
+                    "health": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
                     }
                 },
                 "additionalProperties": false,
@@ -7989,7 +8020,8 @@
                     "api",
                     "provider_id",
                     "provider_type",
-                    "config"
+                    "config",
+                    "health"
                 ],
                 "title": "ProviderInfo"
             },
