@@ -568,11 +568,11 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "PaginatedResponse with the list of buckets",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ListBucketResponse"
+                                    "$ref": "#/components/schemas/PaginatedResponse"
                                 }
                             }
                         }
@@ -596,11 +596,21 @@
                 "description": "List all buckets.",
                 "parameters": [
                     {
-                        "name": "bucket",
+                        "name": "page",
                         "in": "query",
-                        "required": true,
+                        "description": "The page number (1-based). If None, starts from first page.",
+                        "required": false,
                         "schema": {
-                            "type": "string"
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "description": "Number of items per page. If None or -1, returns all items.",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
                         }
                     }
                 ]
@@ -1850,7 +1860,7 @@
                 "parameters": []
             }
         },
-        "/v1/files/session:{upload_id}": {
+        "/v1/files/session/{upload_id}": {
             "get": {
                 "responses": {
                     "200": {
@@ -2631,11 +2641,11 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "PaginatedResponse with the list of files",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ListFileResponse"
+                                    "$ref": "#/components/schemas/PaginatedResponse"
                                 }
                             }
                         }
@@ -2665,6 +2675,24 @@
                         "required": true,
                         "schema": {
                             "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "The page number (1-based). If None, starts from first page.",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "description": "Number of items per page. If None or -1, returns all items.",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
                         }
                     }
                 ]
@@ -9085,37 +9113,6 @@
                 ],
                 "title": "Job"
             },
-            "BucketResponse": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "name"
-                ],
-                "title": "BucketResponse"
-            },
-            "ListBucketResponse": {
-                "type": "object",
-                "properties": {
-                    "data": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/BucketResponse"
-                        },
-                        "description": "List of FileResponse entries"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "data"
-                ],
-                "title": "ListBucketResponse",
-                "description": "Response representing a list of file entries."
-            },
             "ListBenchmarksResponse": {
                 "type": "object",
                 "properties": {
@@ -9147,24 +9144,6 @@
                     "data"
                 ],
                 "title": "ListDatasetsResponse"
-            },
-            "ListFileResponse": {
-                "type": "object",
-                "properties": {
-                    "data": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/FileResponse"
-                        },
-                        "description": "List of FileResponse entries"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "data"
-                ],
-                "title": "ListFileResponse",
-                "description": "Response representing a list of file entries."
             },
             "ListModelsResponse": {
                 "type": "object",

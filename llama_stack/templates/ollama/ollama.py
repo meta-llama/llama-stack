@@ -35,6 +35,7 @@ def get_distribution_template() -> DistributionTemplate:
             "remote::model-context-protocol",
             "remote::wolfram-alpha",
         ],
+        "files": ["remote::s3"],
     }
     name = "ollama"
     inference_provider = Provider(
@@ -46,6 +47,20 @@ def get_distribution_template() -> DistributionTemplate:
         provider_id="faiss",
         provider_type="inline::faiss",
         config=FaissVectorIOConfig.sample_run_config(f"~/.llama/distributions/{name}"),
+    )
+
+    # Add S3 provider configuration
+    s3_provider = Provider(
+        provider_id="s3",
+        provider_type="remote::s3",
+        config={
+            "aws_access_key_id": "${env.AWS_ACCESS_KEY_ID:}",
+            "aws_secret_access_key": "${env.AWS_SECRET_ACCESS_KEY:}",
+            "region_name": "${env.AWS_REGION_NAME:}",
+            "endpoint_url": "${env.AWS_ENDPOINT_URL:}",
+            "bucket_name": "${env.AWS_BUCKET_NAME:}",
+            "verify_tls": "${env.AWS_VERIFY_TLS:true}",
+        },
     )
 
     inference_model = ModelInput(
@@ -92,6 +107,7 @@ def get_distribution_template() -> DistributionTemplate:
                 provider_overrides={
                     "inference": [inference_provider],
                     "vector_io": [vector_io_provider_faiss],
+                    "files": [s3_provider],
                 },
                 default_models=[inference_model, embedding_model],
                 default_tool_groups=default_tool_groups,
@@ -100,6 +116,7 @@ def get_distribution_template() -> DistributionTemplate:
                 provider_overrides={
                     "inference": [inference_provider],
                     "vector_io": [vector_io_provider_faiss],
+                    "files": [s3_provider],
                     "safety": [
                         Provider(
                             provider_id="llama-guard",
@@ -147,6 +164,31 @@ def get_distribution_template() -> DistributionTemplate:
             "SAFETY_MODEL": (
                 "meta-llama/Llama-Guard-3-1B",
                 "Safety model loaded into the Ollama server",
+            ),
+            # Add AWS S3 environment variables
+            "AWS_ACCESS_KEY_ID": (
+                "",
+                "AWS access key ID for S3 access",
+            ),
+            "AWS_SECRET_ACCESS_KEY": (
+                "",
+                "AWS secret access key for S3 access",
+            ),
+            "AWS_REGION_NAME": (
+                "",
+                "AWS region name for S3 access",
+            ),
+            "AWS_ENDPOINT_URL": (
+                "",
+                "AWS endpoint URL for S3 access (for custom endpoints)",
+            ),
+            "AWS_BUCKET_NAME": (
+                "",
+                "AWS bucket name for S3 access",
+            ),
+            "AWS_VERIFY_TLS": (
+                "true",
+                "Whether to verify TLS for S3 connections",
             ),
         },
     )
