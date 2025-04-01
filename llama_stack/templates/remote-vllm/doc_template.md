@@ -85,11 +85,14 @@ export INFERENCE_PORT=8000
 export INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct
 export LLAMA_STACK_PORT=8321
 
+# You need a local checkout of llama-stack to run this, get it using
+# git clone https://github.com/meta-llama/llama-stack.git
+cd /path/to/llama-stack
+
 docker run \
-  -it \
   --pull always \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
-  -v ./run.yaml:/root/my-run.yaml \
+  -v ./llama_stack/templates/remote-vllm/run.yaml:/root/my-run.yaml \
   llamastack/distribution-{{ name }} \
   --yaml-config /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
@@ -108,7 +111,6 @@ export SAFETY_MODEL=meta-llama/Llama-Guard-3-1B
 cd /path/to/llama-stack
 
 docker run \
-  -it \
   --pull always \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ~/.llama:/root/.llama \

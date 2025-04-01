@@ -147,6 +147,9 @@ def get_sampling_options(params: SamplingParams) -> dict:
         if params.repetition_penalty is not None and params.repetition_penalty != 1.0:
             options["repeat_penalty"] = params.repetition_penalty
 
+        if params.stop is not None:
+            options["stop"] = params.stop
+
     return options
 
 

@@ -120,6 +120,33 @@ def test_text_completion_streaming(client_with_models, text_model_id, test_case)
 @pytest.mark.parametrize(
     "test_case",
     [
+        "inference:completion:stop_sequence",
+    ],
+)
+def test_text_completion_stop_sequence(client_with_models, text_model_id, inference_provider_type, test_case):
+    skip_if_model_doesnt_support_completion(client_with_models, text_model_id)
+    # This is only supported/tested for remote vLLM: https://github.com/meta-llama/llama-stack/issues/1771
+    if inference_provider_type != "remote::vllm":
+        pytest.xfail(f"{inference_provider_type} doesn't support 'stop' parameter yet")
+    tc = TestCase(test_case)
+
+    response = client_with_models.inference.completion(
+        content=tc["content"],
+        stream=True,
+        model_id=text_model_id,
+        sampling_params={
+            "max_tokens": 50,
+            "stop": ["1963"],
+        },
+    )
+    streamed_content = [chunk.delta for chunk in response]
+    content_str = "".join(streamed_content).lower().strip()
+    assert "1963" not in content_str
+
+
+@pytest.mark.parametrize(
+    "test_case",
+    [
         "inference:completion:log_probs",
     ],
 )
@@ -266,6 +293,7 @@ def test_text_chat_completion_first_token_profiling(client_with_models, text_mod
         model_id=text_model_id,
         messages=messages,
         stream=False,
+        timeout=120,  # Increase timeout to 2 minutes for large conversation history
     )
     message_content = response.completion_message.content.lower().strip()
     assert len(message_content) > 0
@@ -292,6 +320,7 @@ def test_text_chat_completion_streaming(client_with_models, text_model_id, test_
         model_id=text_model_id,
         messages=[{"role": "user", "content": question}],
         stream=True,
+        timeout=120,  # Increase timeout to 2 minutes for large conversation history
     )
     streamed_content = [str(chunk.event.delta.text.lower().strip()) for chunk in response]
     assert len(streamed_content) > 0

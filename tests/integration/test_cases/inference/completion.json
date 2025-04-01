@@ -10,6 +10,11 @@
             "expected": "1963"
         }
     },
+    "stop_sequence": {
+        "data": {
+            "content": "Return the exact same sentence and don't add additional words): Michael Jordan was born in the year of 1963"
+        }
+    },
     "streaming": {
         "data": {
             "content": "Roses are red,"

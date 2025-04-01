@@ -58,6 +58,7 @@ def rag_chat_page():
                 llama_stack_api.client.tool_runtime.rag_tool.insert(
                     vector_db_id=vector_db_name,  # Use the user-provided name
                     documents=documents,
+                    chunk_size_in_tokens=512,
                 )
                 st.success("Vector database created successfully!")
 
