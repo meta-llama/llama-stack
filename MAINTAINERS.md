@@ -9,5 +9,5 @@
 | Dinesh Yeduguru  | Meta         | @dineshyv       |
 | Vladimir Ivić    | Meta         | @vladimirivic   |
 | Sixian Yi        | Meta         | @sixianyi0721   |
-|                  | Meta         | @ehhuan         |
+| Eric Huang       | Meta         | @ehhuan         |
 | Botao Chen       | Meta         | @SLR722         |
