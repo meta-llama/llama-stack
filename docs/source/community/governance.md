@@ -45,6 +45,9 @@ There are several roles within the Llama Stack community, each with its own set 
 
 ### Users
 
+Users are expected to follow the [Code of Conduct](CODE_OF_CONDUCT.md) and are encouraged to participate in the
+community.
+
 Users are community members who require the operational functionality of Llama Stack. They are the most important
 community members, and without them, the project would have no purpose. Anyone can be a user; there are no special
 requirements.
@@ -77,8 +80,7 @@ In addition to their actions as users, contributors may also find themselves doi
 Contributors engage with the project through the issue tracker or by writing or editing documentation. They submit changes to the project itself via Pull Requests (PRs), which will be considered for inclusion in the project by existing maintainers (see next section).
 
 Contributors should follow the following guides when creating PRs:
-- [Contribution Process](https://docs.feast.dev/project/contributing)
-- [Development Guide](https://docs.feast.dev/project/development-guide).
+- [Contribution Process](CONTRIBUTING.md)
 
 As contributors gain experience and familiarity with the project, their profile and commitment within the community will
 increase. At some stage, they may find themselves being nominated for being a maintainer.
