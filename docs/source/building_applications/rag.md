@@ -1,4 +1,4 @@
-## Using Retrieval Augmented Generation (RAG)
+## Retrieval Augmented Generation (RAG)
 
 RAG enables your applications to reference and recall information from previous interactions or external documents.
 
@@ -162,3 +162,8 @@ for vector_db_id in client.vector_dbs.list():
     print(f"Unregistering vector database: {vector_db_id.identifier}")
     client.vector_dbs.unregister(vector_db_id=vector_db_id.identifier)
 ```
+
+### Supported Data Types
+
+You can ingest data into the vector database using `RAGDocument` objects.
+The supported mime types (https://en.wikipedia.org/wiki/Media_type#mime.types) data types are:
