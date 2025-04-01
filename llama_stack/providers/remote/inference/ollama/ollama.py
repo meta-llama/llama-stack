@@ -293,6 +293,9 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         if model.model_type == ModelType.embedding:
             logger.info(f"Pulling embedding model `{model.provider_resource_id}` if necessary...")
             await self.client.pull(model.provider_resource_id)
+        # we use list() here instead of ps() -
+        #  - ps() only lists running models, not available models
+        #  - models not currently running are run by the ollama server as needed
         response = await self.client.list()
         available_models = [m["model"] for m in response["models"]]
         if model.provider_resource_id not in available_models:
