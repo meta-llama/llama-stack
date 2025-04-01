@@ -18,6 +18,7 @@ The `llamastack/distribution-ollama` distribution consists of the following prov
 | agents | `inline::meta-reference` |
 | datasetio | `remote::huggingface`, `inline::localfs` |
 | eval | `inline::meta-reference` |
+| files | `remote::s3` |
 | inference | `remote::ollama` |
 | safety | `inline::llama-guard` |
 | scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |
@@ -36,6 +37,12 @@ The following environment variables can be configured:
 - `OLLAMA_URL`: URL of the Ollama server (default: `http://127.0.0.1:11434`)
 - `INFERENCE_MODEL`: Inference model loaded into the Ollama server (default: `meta-llama/Llama-3.2-3B-Instruct`)
 - `SAFETY_MODEL`: Safety model loaded into the Ollama server (default: `meta-llama/Llama-Guard-3-1B`)
+- `AWS_ACCESS_KEY_ID`: AWS access key ID for S3 access (default: ``)
+- `AWS_SECRET_ACCESS_KEY`: AWS secret access key for S3 access (default: ``)
+- `AWS_REGION_NAME`: AWS region name for S3 access (default: ``)
+- `AWS_ENDPOINT_URL`: AWS endpoint URL for S3 access (for custom endpoints) (default: ``)
+- `AWS_BUCKET_NAME`: AWS bucket name for S3 access (default: ``)
+- `AWS_VERIFY_TLS`: Whether to verify TLS for S3 connections (default: `true`)
 
 
 ## Setting up Ollama server

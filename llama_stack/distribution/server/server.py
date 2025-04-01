@@ -14,12 +14,11 @@ import traceback
 import warnings
 from contextlib import asynccontextmanager
 from importlib.metadata import version as parse_version
-from pathlib import Path
+from pathlib import Path as FSPath
 from typing import Annotated, Any
 
 import yaml
-from fastapi import Body, FastAPI, HTTPException, Request
-from fastapi import Path as FastapiPath
+from fastapi import Depends, FastAPI, HTTPException, Path, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, StreamingResponse
 from openai import BadRequestError
@@ -59,7 +58,7 @@ from llama_stack.providers.utils.telemetry.tracing import (
 from .auth import AuthenticationMiddleware
 from .endpoints import get_all_api_endpoints
 
-REPO_ROOT = Path(__file__).parent.parent.parent.parent
+REPO_ROOT = FSPath(__file__).parent.parent.parent.parent
 
 logger = get_logger(name=__name__, category="server")
 
@@ -209,21 +208,53 @@ def create_dynamic_typed_route(func: Any, method: str, route: str):
                 raise translate_exception(e) from e
 
     sig = inspect.signature(func)
+    webmethod_attr = getattr(func, "__webmethod__", None)
+    raw_bytes_request_body = getattr(webmethod_attr, "raw_bytes_request_body", False) if webmethod_attr else False
 
-    new_params = [inspect.Parameter("request", inspect.Parameter.POSITIONAL_OR_KEYWORD, annotation=Request)]
-    new_params.extend(sig.parameters.values())
-
+    # Extract path parameters from the route in order
     path_params = extract_path_params(route)
-    if method == "post":
-        # Annotate parameters that are in the path with Path(...) and others with Body(...)
-        new_params = [new_params[0]] + [
-            (
-                param.replace(annotation=Annotated[param.annotation, FastapiPath(..., title=param.name)])
-                if param.name in path_params
-                else param.replace(annotation=Annotated[param.annotation, Body(..., embed=True)])
+
+    # Create a mapping of parameter names to their original parameters
+    param_map = {param.name: param for param in sig.parameters.values()}
+
+    # First, collect all parameters by type
+    request_param = None
+    path_parameters = []
+    body_parameters = []
+    raw_parameters = []
+
+    # Handle request parameter first
+    if "request" in param_map:
+        request_param = param_map["request"]
+
+    # Handle path parameters in the order they appear in the route
+    for path_param in path_params:
+        if path_param in param_map:
+            path_parameters.append(
+                param_map[path_param].replace(
+                    annotation=Annotated[param_map[path_param].annotation, Path(..., title=path_param)]
+                )
             )
-            for param in new_params[1:]
-        ]
+
+    # Handle remaining parameters
+    for param_name, param in param_map.items():
+        if param_name == "request" or param_name in path_params:
+            continue
+        if not raw_bytes_request_body:
+            # Use Depends for non-path parameters
+            body_parameters.append(
+                param.replace(annotation=Annotated[param.annotation, Depends(lambda p=param: p.annotation())])
+            )
+        else:
+            raw_parameters.append(param)
+
+    # Combine parameters in the correct order: request -> path -> body -> raw
+    new_params = []
+    if request_param:
+        new_params.append(request_param)
+    new_params.extend(path_parameters)
+    new_params.extend(body_parameters)
+    new_params.extend(raw_parameters)
 
     endpoint.__signature__ = sig.replace(parameters=new_params)
 
@@ -371,12 +402,12 @@ def main(args: argparse.Namespace | None = None):
     log_line = ""
     if args.config:
         # if the user provided a config file, use it, even if template was specified
-        config_file = Path(args.config)
+        config_file = FSPath(args.config)
         if not config_file.exists():
             raise ValueError(f"Config file {config_file} does not exist")
         log_line = f"Using config file: {config_file}"
     elif args.template:
-        config_file = Path(REPO_ROOT) / "llama_stack" / "templates" / args.template / "run.yaml"
+        config_file = FSPath(REPO_ROOT) / "llama_stack" / "templates" / args.template / "run.yaml"
         if not config_file.exists():
             raise ValueError(f"Template {args.template} does not exist")
         log_line = f"Using template {args.template} config file: {config_file}"
