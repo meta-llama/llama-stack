@@ -2688,9 +2688,9 @@
                     "200": {
                         "description": "OK",
                         "content": {
-                            "application/jsonl": {
+                            "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ToolDef"
+                                    "$ref": "#/components/schemas/ListToolDefsResponse"
                                 }
                             }
                         }
@@ -8327,6 +8327,22 @@
                     "data"
                 ],
                 "title": "ListRoutesResponse"
+            },
+            "ListToolDefsResponse": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ToolDef"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "data"
+                ],
+                "title": "ListToolDefsResponse"
             },
             "ListScoringFunctionsResponse": {
                 "type": "object",
