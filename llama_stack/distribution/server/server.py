@@ -247,6 +247,7 @@ class TracingMiddleware:
         # Check if the path is a FastAPI built-in path
         if any(path.startswith(fastapi_path) for fastapi_path in self.fastapi_paths):
             # Pass through to FastAPI's built-in handlers
+            logger.debug(f"Bypassing custom routing for FastAPI built-in path: {path}")
             return await self.app(scope, receive, send)
         
         if not hasattr(self, "endpoint_impls"):
