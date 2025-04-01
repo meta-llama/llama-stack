@@ -225,6 +225,7 @@ class SambaNovaInferenceAdapter(LiteLLMOpenAIMixin):
         return {
             "model": request.model,
             "api_key": api_key,
+            "api_base": self.config.url,
             **input_dict,
             "stream": request.stream,
             **get_sampling_options(request.sampling_params),
