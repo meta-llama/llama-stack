@@ -33,12 +33,12 @@ providers:
     provider_type: remote::together
     config:
       url: https://api.together.xyz/v1
-      api_key: ${env.TOGETHER_API_KEY}
+      api_key: ${env.TOGETHER_API_KEY:}
   vector_io:
   - provider_id: sqlite-vec
     provider_type: inline::sqlite-vec
     config:
-      db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/dev}/sqlite_vec.db
+      db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/open-benchmark}/sqlite_vec.db
   - provider_id: ${env.ENABLE_CHROMADB+chromadb}
     provider_type: remote::chromadb
     config:
@@ -54,7 +54,8 @@ providers:
   safety:
   - provider_id: llama-guard
     provider_type: inline::llama-guard
-    config: {}
+    config:
+      excluded_categories: []
   agents:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -62,25 +63,37 @@ providers:
       persistence_store:
         type: sqlite
         namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/dev}/agents_store.db
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/open-benchmark}/agents_store.db
   telemetry:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
     config:
-      service_name: ${env.OTEL_SERVICE_NAME:llama-stack}
+      service_name: "${env.OTEL_SERVICE_NAME:\u200B}"
       sinks: ${env.TELEMETRY_SINKS:console,sqlite}
-      sqlite_db_path: ${env.SQLITE_DB_PATH:~/.llama/distributions/dev/trace_store.db}
+      sqlite_db_path: ${env.SQLITE_DB_PATH:~/.llama/distributions/open-benchmark/trace_store.db}
   eval:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
-    config: {}
+    config:
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/open-benchmark}/meta_reference_eval.db
   datasetio:
   - provider_id: huggingface
     provider_type: remote::huggingface
-    config: {}
+    config:
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/open-benchmark}/huggingface_datasetio.db
   - provider_id: localfs
     provider_type: inline::localfs
-    config: {}
+    config:
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/open-benchmark}/localfs_datasetio.db
   scoring:
   - provider_id: basic
     provider_type: inline::basic
@@ -114,17 +127,12 @@ providers:
     config: {}
 metadata_store:
   type: sqlite
-  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/dev}/registry.db
+  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/open-benchmark}/registry.db
 models:
 - metadata: {}
   model_id: openai/gpt-4o
   provider_id: openai
   provider_model_id: openai/gpt-4o
-  model_type: llm
-- metadata: {}
-  model_id: meta-llama/Llama-3.1-405B-Instruct
-  provider_id: together
-  provider_model_id: meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo
   model_type: llm
 - metadata: {}
   model_id: anthropic/claude-3-5-sonnet-latest
@@ -141,66 +149,94 @@ models:
   provider_id: groq
   provider_model_id: groq/llama-3.3-70b-versatile
   model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-3.1-405B-Instruct
+  provider_id: together
+  provider_model_id: meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo
+  model_type: llm
 shields:
 - shield_id: meta-llama/Llama-Guard-3-8B
 vector_dbs: []
 datasets:
-  - dataset_id: simpleqa
-    provider_id: huggingface
-    url:
-      uri: https://huggingface.co/datasets/llamastack/simpleqa
-    metadata:
-      path: llamastack/simpleqa
-      name:
-      split: train
-    dataset_schema:
-      input_query:
-        type: string
-      expected_answer:
-        type: string
-      chat_completion_input:
-        type: string
-  - dataset_id: mmlu_cot
-    provider_id: huggingface
-    url:
-      uri: https://huggingface.co/datasets/llamastack/mmlu_cot
-    metadata:
-      path: llamastack/mmlu_cot
-      name: all
-      split: test
-    dataset_schema:
-      input_query:
-        type: string
-      expected_answer:
-        type: string
-      chat_completion_input:
-        type: string
-  - dataset_id: gpqa_cot
-    provider_id: huggingface
-    url:
-      uri: https://huggingface.co/datasets/llamastack/gpqa_0shot_cot
-    metadata:
-      path: llamastack/gpqa_0shot_cot
-      name: gpqa_main
-      split: train
-    dataset_schema:
-      input_query:
-        type: string
-      expected_answer:
-        type: string
-      chat_completion_input:
-        type: string
+- purpose: eval/messages-answer
+  source:
+    type: uri
+    uri: huggingface://datasets/llamastack/simpleqa?split=train
+  metadata: {}
+  dataset_id: simpleqa
+- purpose: eval/messages-answer
+  source:
+    type: uri
+    uri: huggingface://datasets/llamastack/mmlu_cot?split=test&name=all
+  metadata: {}
+  dataset_id: mmlu_cot
+- purpose: eval/messages-answer
+  source:
+    type: uri
+    uri: huggingface://datasets/llamastack/gpqa_0shot_cot?split=test&name=gpqa_main
+  metadata: {}
+  dataset_id: gpqa_cot
+- purpose: eval/messages-answer
+  source:
+    type: uri
+    uri: huggingface://datasets/llamastack/math_500?split=test
+  metadata: {}
+  dataset_id: math_500
+- purpose: eval/messages-answer
+  source:
+    type: uri
+    uri: huggingface://datasets/llamastack/bfcl_v3?split=train
+  metadata: {}
+  dataset_id: bfcl
+- purpose: eval/messages-answer
+  source:
+    type: uri
+    uri: huggingface://datasets/llamastack/IfEval?split=train
+  metadata: {}
+  dataset_id: ifeval
+- purpose: eval/messages-answer
+  source:
+    type: uri
+    uri: huggingface://datasets/llamastack/docvqa?split=val
+  metadata: {}
+  dataset_id: docvqa
 scoring_fns: []
 benchmarks:
-  - benchmark_id: meta-reference-simpleqa
-    dataset_id: simpleqa
-    scoring_functions: ["llm-as-judge::405b-simpleqa"]
-  - benchmark_id: meta-reference-mmlu-cot
-    dataset_id: mmlu_cot
-    scoring_functions: ["basic::regex_parser_multiple_choice_answer"]
-  - benchmark_id: meta-reference-gpqa-cot
-    dataset_id: gpqa_cot
-    scoring_functions: ["basic::regex_parser_multiple_choice_answer"]
+- dataset_id: simpleqa
+  scoring_functions:
+  - llm-as-judge::405b-simpleqa
+  metadata: {}
+  benchmark_id: meta-reference-simpleqa
+- dataset_id: mmlu_cot
+  scoring_functions:
+  - basic::regex_parser_multiple_choice_answer
+  metadata: {}
+  benchmark_id: meta-reference-mmlu-cot
+- dataset_id: gpqa_cot
+  scoring_functions:
+  - basic::regex_parser_multiple_choice_answer
+  metadata: {}
+  benchmark_id: meta-reference-gpqa-cot
+- dataset_id: math_500
+  scoring_functions:
+  - basic::regex_parser_math_response
+  metadata: {}
+  benchmark_id: meta-reference-math-500
+- dataset_id: bfcl
+  scoring_functions:
+  - basic::bfcl
+  metadata: {}
+  benchmark_id: meta-reference-bfcl
+- dataset_id: ifeval
+  scoring_functions:
+  - basic::ifeval
+  metadata: {}
+  benchmark_id: meta-reference-ifeval
+- dataset_id: docvqa
+  scoring_functions:
+  - basic::docvqa
+  metadata: {}
+  benchmark_id: meta-reference-docvqa
 tool_groups:
 - toolgroup_id: builtin::websearch
   provider_id: tavily-search

@@ -1,9 +1,0 @@
----
-description: General rules always applicable across the project
-globs:
-alwaysApply: true
----
-# Style
-
-- Comments must add value to code. Don't write filler comments explaining what you are doing next; they just add noise.
-- Add a comment to clarify surprising behavior which would not be obvious. Good variable naming and clear code organization is more important.

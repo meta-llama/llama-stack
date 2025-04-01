@@ -110,10 +110,18 @@ MCP tools are special tools that can interact with llama stack over model contex
 
 Refer to [https://github.com/modelcontextprotocol/servers](https://github.com/modelcontextprotocol/servers) for available MCP servers.
 
+```shell
+# start your MCP server
+mkdir /tmp/content
+touch /tmp/content/foo
+touch /tmp/content/bar
+npx -y supergateway --port 8000 --stdio 'npx -y @modelcontextprotocol/server-filesystem /tmp/content'
+```
+
+Then register the MCP server as a tool group,
 ```python
-# Register MCP tools
 client.toolgroups.register(
-    toolgroup_id="builtin::filesystem",
+    toolgroup_id="mcp::filesystem",
     provider_id="model-context-protocol",
     mcp_endpoint=URL(uri="http://localhost:8000/sse"),
 )
@@ -181,7 +189,7 @@ group_tools = client.tools.list_tools(toolgroup_id="search_tools")
 ## Simple Example: Using an Agent with the Code-Interpreter Tool
 
 ```python
-from llama_stack_client.lib.agents.agent import Agent
+from llama_stack_client import Agent
 
 # Instantiate the AI agent with the given configuration
 agent = Agent(

@@ -1,10 +1,11 @@
 # Quick Start
 
-In this guide, we'll walk through how you can use the Llama Stack (server and client SDK) to test a simple RAG agent.
+In this guide, we'll walk through how you can use the Llama Stack (server and client SDK) to build a simple [RAG (Retrieval Augmented Generation)](../building_applications/rag.md) agent.
 
 A Llama Stack agent is a simple integrated system that can perform tasks by combining a Llama model for reasoning with tools (e.g., RAG, web search, code execution, etc.) for taking actions.
 
 In Llama Stack, we provide a server exposing multiple APIs. These APIs are backed by implementations from different providers. For this guide, we will use [Ollama](https://ollama.com/) as the inference provider.
+Ollama is an LLM runtime that allows you to run Llama models locally.
 
 
 ### 1. Start Ollama
@@ -24,7 +25,7 @@ If you do not have ollama, you can install it from [here](https://ollama.com/dow
 
 ### 2. Pick a client environment
 
-Llama Stack has a service-oriented architecture, so every interaction with the Stack happens through an REST interface. You can interact with the Stack in two ways:
+Llama Stack has a service-oriented architecture, so every interaction with the Stack happens through a REST interface. You can interact with the Stack in two ways:
 
 * Install the `llama-stack-client` PyPI package and point `LlamaStackClient` to a local or remote Llama Stack server.
 * Or, install the `llama-stack` PyPI package and use the Stack as a library using `LlamaStackAsLibraryClient`.
@@ -54,6 +55,7 @@ mkdir -p ~/.llama
 Then you can start the server using the container tool of your choice.  For example, if you are running Docker you can use the following command:
 ```bash
 docker run -it \
+  --pull always \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ~/.llama:/root/.llama \
   llamastack/distribution-ollama \
@@ -74,6 +76,7 @@ Docker containers run in their own isolated network namespaces on Linux. To allo
 Linux users having issues running the above command should instead try the following:
 ```bash
 docker run -it \
+  --pull always \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ~/.llama:/root/.llama \
   --network=host \
@@ -88,11 +91,19 @@ docker run -it \
 
 :::{dropdown} Installing the Llama Stack client CLI and SDK
 
-You can interact with the Llama Stack server using various client SDKs. We will use the Python SDK which you can install using the following command. Note that you must be using Python 3.10 or newer:
+You can interact with the Llama Stack server using various client SDKs.  Note that you must be using Python 3.10 or newer. We will use the Python SDK which you can install via `conda` or `virtualenv`.
+
+For `conda`:
 ```bash
 yes | conda create -n stack-client python=3.10
 conda activate stack-client
+pip install llama-stack-client
+```
 
+For `virtualenv`:
+```bash
+python -m venv stack-client
+source stack-client/bin/activate
 pip install llama-stack-client
 ```
 
@@ -173,6 +184,13 @@ response = client.inference.chat_completion(
 print(response.completion_message.content)
 ```
 
+To run the above example, put the code in a file called `inference.py`, ensure your `conda` or `virtualenv` environment is active, and run the following:
+```bash
+pip install llama_stack
+llama stack build --template ollama --image-type <conda|venv>
+python inference.py
+```
+
 ### 4. Your first RAG agent
 
 Here is an example of a simple RAG (Retrieval Augmented Generation) chatbot agent which can answer questions about TorchTune documentation.
@@ -182,9 +200,7 @@ import os
 import uuid
 from termcolor import cprint
 
-from llama_stack_client.lib.agents.agent import Agent
-from llama_stack_client.lib.agents.event_logger import EventLogger
-from llama_stack_client.types import Document
+from llama_stack_client import Agent, AgentEventLogger, RAGDocument
 
 
 def create_http_client():
@@ -210,7 +226,7 @@ client = (
 # Documents to be used for RAG
 urls = ["chat.rst", "llama3.rst", "memory_optimizations.rst", "lora_finetune.rst"]
 documents = [
-    Document(
+    RAGDocument(
         document_id=f"num-{i}",
         content=f"https://raw.githubusercontent.com/pytorch/torchtune/main/docs/source/tutorials/{url}",
         mime_type="text/plain",
@@ -269,8 +285,15 @@ for prompt in user_prompts:
         messages=[{"role": "user", "content": prompt}],
         session_id=session_id,
     )
-    for log in EventLogger().log(response):
+    for log in AgentEventLogger().log(response):
         log.print()
+```
+
+To run the above example, put the code in a file called `rag.py`, ensure your `conda` or `virtualenv` environment is active, and run the following:
+```bash
+pip install llama_stack
+llama stack build --template ollama --image-type <conda|venv>
+python rag.py
 ```
 
 ## Next Steps

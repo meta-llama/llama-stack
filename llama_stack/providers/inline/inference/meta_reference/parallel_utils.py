@@ -10,6 +10,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import copy
 import json
 import logging
 import multiprocessing
@@ -213,7 +214,7 @@ def maybe_parse_message(maybe_json: Optional[str]) -> Optional[ProcessingMessage
 
 def parse_message(json_str: str) -> ProcessingMessage:
     data = json.loads(json_str)
-    return ProcessingMessageWrapper(**data).payload
+    return copy.deepcopy(ProcessingMessageWrapper(**data).payload)
 
 
 def worker_process_entrypoint(

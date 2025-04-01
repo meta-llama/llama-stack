@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 
 from opentelemetry.sdk.trace import ReadableSpan
 from opentelemetry.sdk.trace.export import SpanProcessor
@@ -34,7 +34,7 @@ class ConsoleSpanProcessor(SpanProcessor):
         if span.attributes and span.attributes.get("__autotraced__"):
             return
 
-        timestamp = datetime.utcfromtimestamp(span.start_time / 1e9).strftime("%H:%M:%S.%f")[:-3]
+        timestamp = datetime.fromtimestamp(span.start_time / 1e9, tz=timezone.utc).strftime("%H:%M:%S.%f")[:-3]
 
         print(
             f"{COLORS['dim']}{timestamp}{COLORS['reset']} "
@@ -46,7 +46,7 @@ class ConsoleSpanProcessor(SpanProcessor):
         if span.attributes and span.attributes.get("__autotraced__"):
             return
 
-        timestamp = datetime.utcfromtimestamp(span.end_time / 1e9).strftime("%H:%M:%S.%f")[:-3]
+        timestamp = datetime.fromtimestamp(span.end_time / 1e9, tz=timezone.utc).strftime("%H:%M:%S.%f")[:-3]
 
         span_context = (
             f"{COLORS['dim']}{timestamp}{COLORS['reset']} "
@@ -74,7 +74,7 @@ class ConsoleSpanProcessor(SpanProcessor):
                 print(f"    {COLORS['dim']}{key}: {str_value}{COLORS['reset']}")
 
         for event in span.events:
-            event_time = datetime.utcfromtimestamp(event.timestamp / 1e9).strftime("%H:%M:%S.%f")[:-3]
+            event_time = datetime.fromtimestamp(event.timestamp / 1e9, tz=timezone.utc).strftime("%H:%M:%S.%f")[:-3]
 
             severity = event.attributes.get("severity", "info")
             message = event.attributes.get("message", event.name)
@@ -101,6 +101,6 @@ class ConsoleSpanProcessor(SpanProcessor):
         """Shutdown the processor."""
         pass
 
-    def force_flush(self, timeout_millis: float = None) -> bool:
+    def force_flush(self, timeout_millis: float | None = None) -> bool:
         """Force flush any pending spans."""
         return True

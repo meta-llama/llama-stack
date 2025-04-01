@@ -6,26 +6,9 @@
 
 from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
 
-from pydantic import BaseModel
-
+from llama_stack.apis.common.responses import PaginatedResponse
 from llama_stack.apis.datasets import Dataset
-from llama_stack.schema_utils import json_schema_type, webmethod
-
-
-@json_schema_type
-class PaginatedRowsResult(BaseModel):
-    """
-    A paginated list of rows from a dataset.
-
-    :param rows: The rows in the current page.
-    :param total_count: The total number of rows in the dataset.
-    :param next_page_token: The token to get the next page of rows.
-    """
-
-    # the rows obey the DatasetSchema for the given dataset
-    rows: List[Dict[str, Any]]
-    total_count: int
-    next_page_token: Optional[str] = None
+from llama_stack.schema_utils import webmethod
 
 
 class DatasetStore(Protocol):
@@ -37,22 +20,28 @@ class DatasetIO(Protocol):
     # keeping for aligning with inference/safety, but this is not used
     dataset_store: DatasetStore
 
-    @webmethod(route="/datasetio/rows", method="GET")
-    async def get_rows_paginated(
+    @webmethod(route="/datasetio/iterrows/{dataset_id:path}", method="GET")
+    async def iterrows(
         self,
         dataset_id: str,
-        rows_in_page: int,
-        page_token: Optional[str] = None,
-        filter_condition: Optional[str] = None,
-    ) -> PaginatedRowsResult:
+        start_index: Optional[int] = None,
+        limit: Optional[int] = None,
+    ) -> PaginatedResponse:
         """Get a paginated list of rows from a dataset.
 
+        Uses offset-based pagination where:
+        - start_index: The starting index (0-based). If None, starts from beginning.
+        - limit: Number of items to return. If None or -1, returns all items.
+
+        The response includes:
+        - data: List of items for the current page
+        - has_more: Whether there are more items available after this set
+
         :param dataset_id: The ID of the dataset to get the rows from.
-        :param rows_in_page: The number of rows to get per page.
-        :param page_token: The token to get the next page of rows.
-        :param filter_condition: (Optional) A condition to filter the rows by.
+        :param start_index: Index into dataset for the first row to get. Get all rows if None.
+        :param limit: The number of rows to get.
         """
         ...
 
-    @webmethod(route="/datasetio/rows", method="POST")
+    @webmethod(route="/datasetio/append-rows/{dataset_id:path}", method="POST")
     async def append_rows(self, dataset_id: str, rows: List[Dict[str, Any]]) -> None: ...

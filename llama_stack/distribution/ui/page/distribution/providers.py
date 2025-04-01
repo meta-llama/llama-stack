@@ -5,7 +5,8 @@
 # the root directory of this source tree.
 
 import streamlit as st
-from modules.api import llama_stack_api
+
+from llama_stack.distribution.ui.modules.api import llama_stack_api
 
 
 def providers():

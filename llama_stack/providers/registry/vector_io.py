@@ -92,15 +92,13 @@ def available_providers() -> List[ProviderSpec]:
             ),
             api_dependencies=[Api.inference],
         ),
-        remote_provider_spec(
+        InlineProviderSpec(
             api=Api.vector_io,
-            adapter=AdapterSpec(
-                adapter_type="sample",
-                pip_packages=[],
-                module="llama_stack.providers.remote.vector_io.sample",
-                config_class="llama_stack.providers.remote.vector_io.sample.SampleVectorIOConfig",
-            ),
-            api_dependencies=[],
+            provider_type="inline::qdrant",
+            pip_packages=["qdrant-client"],
+            module="llama_stack.providers.inline.vector_io.qdrant",
+            config_class="llama_stack.providers.inline.vector_io.qdrant.QdrantVectorIOConfig",
+            api_dependencies=[Api.inference],
         ),
         remote_provider_spec(
             Api.vector_io,

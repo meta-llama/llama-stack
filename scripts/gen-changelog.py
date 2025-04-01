@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 # All rights reserved.
 #
@@ -10,7 +11,7 @@ import requests
 
 
 def get_all_releases(token):
-    url = f"https://api.github.com/repos/meta-llama/llama-stack/releases"
+    url = "https://api.github.com/repos/meta-llama/llama-stack/releases"
     headers = {"Accept": "application/vnd.github.v3+json"}
 
     if token:
@@ -21,9 +22,7 @@ def get_all_releases(token):
     if response.status_code == 200:
         return response.json()
     else:
-        raise Exception(
-            f"Error fetching releases: {response.status_code}, {response.text}"
-        )
+        raise Exception(f"Error fetching releases: {response.status_code}, {response.text}")
 
 
 def clean_release_body(body):
@@ -54,7 +53,7 @@ def merge_release_notes(output_file, token=None):
     releases = get_all_releases(token)
 
     with open(output_file, "w", encoding="utf-8") as md_file:
-        md_file.write(f"# Changelog\n\n")
+        md_file.write("# Changelog\n\n")
 
         for release in releases:
             md_file.write(f"# {release['tag_name']}\n")

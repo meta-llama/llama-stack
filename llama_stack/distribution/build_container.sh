@@ -43,7 +43,7 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 CONTAINER_BINARY=${CONTAINER_BINARY:-docker}
-CONTAINER_OPTS=${CONTAINER_OPTS:-}
+CONTAINER_OPTS=${CONTAINER_OPTS:---progress=plain}
 
 TEMP_DIR=$(mktemp -d)
 
@@ -90,6 +90,7 @@ RUN apt-get update && apt-get install -y \
        procps psmisc lsof \
        traceroute \
        bubblewrap \
+       gcc \
        && rm -rf /var/lib/apt/lists/*
 
 ENV UV_SYSTEM_PYTHON=1
@@ -235,7 +236,7 @@ image_tag="$image_name:$version_tag"
 # Detect platform architecture
 ARCH=$(uname -m)
 if [ -n "$BUILD_PLATFORM" ]; then
-  CLI_ARGS+=("--platform $BUILD_PLATFORM")
+  CLI_ARGS+=("--platform" "$BUILD_PLATFORM")
 elif [ "$ARCH" = "arm64" ] || [ "$ARCH" = "aarch64" ]; then
   CLI_ARGS+=("--platform" "linux/arm64")
 elif [ "$ARCH" = "x86_64" ]; then
@@ -253,8 +254,7 @@ $CONTAINER_BINARY build \
   "${CLI_ARGS[@]}" \
   -t "$image_tag" \
   -f "$TEMP_DIR/Containerfile" \
-  "." \
-  --progress=plain
+  "."
 
 # clean up tmp/configs
 set +x

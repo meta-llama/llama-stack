@@ -115,7 +115,7 @@ class Files(Protocol):
     async def get_upload_session_info(
         self,
         upload_id: str,
-    ) -> Optional[FileUploadResponse]:
+    ) -> FileUploadResponse:
         """
         Returns information about an existsing upload session
 
@@ -164,7 +164,7 @@ class Files(Protocol):
         self,
         bucket: str,
         key: str,
-    ) -> FileResponse:
+    ) -> None:
         """
         Delete a file identified by a bucket and key.
 

@@ -96,6 +96,13 @@ class MetricEvent(EventCommon):
     unit: str
 
 
+@json_schema_type
+class MetricInResponse(BaseModel):
+    metric: str
+    value: Union[int, float]
+    unit: Optional[str] = None
+
+
 # This is a short term solution to allow inference API to return metrics
 # The ideal way to do this is to have a way for all response types to include metrics
 # and all metric events logged to the telemetry API to be inlcuded with the response
@@ -117,7 +124,7 @@ class MetricEvent(EventCommon):
 
 
 class MetricResponseMixin(BaseModel):
-    metrics: Optional[List[MetricEvent]] = None
+    metrics: Optional[List[MetricInResponse]] = None
 
 
 @json_schema_type
@@ -139,16 +146,14 @@ class SpanEndPayload(BaseModel):
     status: SpanStatus
 
 
-StructuredLogPayload = register_schema(
-    Annotated[
-        Union[
-            SpanStartPayload,
-            SpanEndPayload,
-        ],
-        Field(discriminator="type"),
+StructuredLogPayload = Annotated[
+    Union[
+        SpanStartPayload,
+        SpanEndPayload,
     ],
-    name="StructuredLogPayload",
-)
+    Field(discriminator="type"),
+]
+register_schema(StructuredLogPayload, name="StructuredLogPayload")
 
 
 @json_schema_type
@@ -157,17 +162,15 @@ class StructuredLogEvent(EventCommon):
     payload: StructuredLogPayload
 
 
-Event = register_schema(
-    Annotated[
-        Union[
-            UnstructuredLogEvent,
-            MetricEvent,
-            StructuredLogEvent,
-        ],
-        Field(discriminator="type"),
+Event = Annotated[
+    Union[
+        UnstructuredLogEvent,
+        MetricEvent,
+        StructuredLogEvent,
     ],
-    name="Event",
-)
+    Field(discriminator="type"),
+]
+register_schema(Event, name="Event")
 
 
 @json_schema_type

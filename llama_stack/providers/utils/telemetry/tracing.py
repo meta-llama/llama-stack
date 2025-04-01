@@ -5,12 +5,12 @@
 # the root directory of this source tree.
 
 import asyncio
-import base64
+import contextvars
 import logging
 import queue
+import random
 import threading
-import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from functools import wraps
 from typing import Any, Callable, Dict, List, Optional
 
@@ -24,19 +24,53 @@ from llama_stack.apis.telemetry import (
     Telemetry,
     UnstructuredLogEvent,
 )
+from llama_stack.log import get_logger
 from llama_stack.providers.utils.telemetry.trace_protocol import serialize_value
 
-log = logging.getLogger(__name__)
+logger = get_logger(__name__, category="core")
 
 
-def generate_short_uuid(len: int = 8):
-    full_uuid = uuid.uuid4()
-    uuid_bytes = full_uuid.bytes
-    encoded = base64.urlsafe_b64encode(uuid_bytes)
-    return encoded.rstrip(b"=").decode("ascii")[:len]
+INVALID_SPAN_ID = 0x0000000000000000
+INVALID_TRACE_ID = 0x00000000000000000000000000000000
 
 
-CURRENT_TRACE_CONTEXT = None
+def trace_id_to_str(trace_id: int) -> str:
+    """Convenience trace ID formatting method
+    Args:
+        trace_id: Trace ID int
+
+    Returns:
+        The trace ID as 32-byte hexadecimal string
+    """
+    return format(trace_id, "032x")
+
+
+def span_id_to_str(span_id: int) -> str:
+    """Convenience span ID formatting method
+    Args:
+        span_id: Span ID int
+
+    Returns:
+        The span ID as 16-byte hexadecimal string
+    """
+    return format(span_id, "016x")
+
+
+def generate_span_id() -> str:
+    span_id = random.getrandbits(64)
+    while span_id == INVALID_SPAN_ID:
+        span_id = random.getrandbits(64)
+    return span_id_to_str(span_id)
+
+
+def generate_trace_id() -> str:
+    trace_id = random.getrandbits(128)
+    while trace_id == INVALID_TRACE_ID:
+        trace_id = random.getrandbits(128)
+    return trace_id_to_str(trace_id)
+
+
+CURRENT_TRACE_CONTEXT = contextvars.ContextVar("trace_context", default=None)
 BACKGROUND_LOGGER = None
 
 
@@ -51,7 +85,7 @@ class BackgroundLogger:
         try:
             self.log_queue.put_nowait(event)
         except queue.Full:
-            log.error("Log queue is full, dropping event")
+            logger.error("Log queue is full, dropping event")
 
     def _process_logs(self):
         while True:
@@ -81,10 +115,10 @@ class TraceContext:
     def push_span(self, name: str, attributes: Dict[str, Any] = None) -> Span:
         current_span = self.get_current_span()
         span = Span(
-            span_id=generate_short_uuid(),
+            span_id=generate_span_id(),
             trace_id=self.trace_id,
             name=name,
-            start_time=datetime.now(),
+            start_time=datetime.now(timezone.utc),
             parent_span_id=current_span.span_id if current_span else None,
             attributes=attributes,
         )
@@ -129,35 +163,36 @@ def setup_logger(api: Telemetry, level: int = logging.INFO):
 
     if BACKGROUND_LOGGER is None:
         BACKGROUND_LOGGER = BackgroundLogger(api)
-    logger = logging.getLogger()
-    logger.setLevel(level)
-    logger.addHandler(TelemetryHandler())
+    root_logger = logging.getLogger()
+    root_logger.setLevel(level)
+    root_logger.addHandler(TelemetryHandler())
 
 
 async def start_trace(name: str, attributes: Dict[str, Any] = None) -> TraceContext:
     global CURRENT_TRACE_CONTEXT, BACKGROUND_LOGGER
 
     if BACKGROUND_LOGGER is None:
-        log.info("No Telemetry implementation set. Skipping trace initialization...")
+        logger.debug("No Telemetry implementation set. Skipping trace initialization...")
         return
 
-    trace_id = generate_short_uuid(16)
+    trace_id = generate_trace_id()
     context = TraceContext(BACKGROUND_LOGGER, trace_id)
     context.push_span(name, {"__root__": True, **(attributes or {})})
 
-    CURRENT_TRACE_CONTEXT = context
+    CURRENT_TRACE_CONTEXT.set(context)
     return context
 
 
 async def end_trace(status: SpanStatus = SpanStatus.OK):
     global CURRENT_TRACE_CONTEXT
 
-    context = CURRENT_TRACE_CONTEXT
+    context = CURRENT_TRACE_CONTEXT.get()
     if context is None:
+        logger.debug("No trace context to end")
         return
 
     context.pop_span(status)
-    CURRENT_TRACE_CONTEXT = None
+    CURRENT_TRACE_CONTEXT.set(None)
 
 
 def severity(levelname: str) -> LogSeverity:
@@ -188,7 +223,7 @@ class TelemetryHandler(logging.Handler):
         if BACKGROUND_LOGGER is None:
             raise RuntimeError("Telemetry API not initialized")
 
-        context = CURRENT_TRACE_CONTEXT
+        context = CURRENT_TRACE_CONTEXT.get()
         if context is None:
             return
 
@@ -200,7 +235,7 @@ class TelemetryHandler(logging.Handler):
             UnstructuredLogEvent(
                 trace_id=span.trace_id,
                 span_id=span.span_id,
-                timestamp=datetime.now(),
+                timestamp=datetime.now(timezone.utc),
                 message=self.format(record),
                 severity=severity(record.levelname),
             )
@@ -218,16 +253,22 @@ class SpanContextManager:
 
     def __enter__(self):
         global CURRENT_TRACE_CONTEXT
-        context = CURRENT_TRACE_CONTEXT
-        if context:
-            self.span = context.push_span(self.name, self.attributes)
+        context = CURRENT_TRACE_CONTEXT.get()
+        if not context:
+            logger.debug("No trace context to push span")
+            return self
+
+        self.span = context.push_span(self.name, self.attributes)
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         global CURRENT_TRACE_CONTEXT
-        context = CURRENT_TRACE_CONTEXT
-        if context:
-            context.pop_span()
+        context = CURRENT_TRACE_CONTEXT.get()
+        if not context:
+            logger.debug("No trace context to pop span")
+            return
+
+        context.pop_span()
 
     def set_attribute(self, key: str, value: Any):
         if self.span:
@@ -237,16 +278,22 @@ class SpanContextManager:
 
     async def __aenter__(self):
         global CURRENT_TRACE_CONTEXT
-        context = CURRENT_TRACE_CONTEXT
-        if context:
-            self.span = context.push_span(self.name, self.attributes)
+        context = CURRENT_TRACE_CONTEXT.get()
+        if not context:
+            logger.debug("No trace context to push span")
+            return self
+
+        self.span = context.push_span(self.name, self.attributes)
         return self
 
     async def __aexit__(self, exc_type, exc_value, traceback):
         global CURRENT_TRACE_CONTEXT
-        context = CURRENT_TRACE_CONTEXT
-        if context:
-            context.pop_span()
+        context = CURRENT_TRACE_CONTEXT.get()
+        if not context:
+            logger.debug("No trace context to pop span")
+            return
+
+        context.pop_span()
 
     def __call__(self, func: Callable):
         @wraps(func)
@@ -275,7 +322,11 @@ def span(name: str, attributes: Dict[str, Any] = None):
 
 def get_current_span() -> Optional[Span]:
     global CURRENT_TRACE_CONTEXT
-    context = CURRENT_TRACE_CONTEXT
+    if CURRENT_TRACE_CONTEXT is None:
+        logger.debug("No trace context to get current span")
+        return None
+
+    context = CURRENT_TRACE_CONTEXT.get()
     if context:
         return context.get_current_span()
     return None

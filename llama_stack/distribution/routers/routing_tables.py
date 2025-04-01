@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 import logging
+import uuid
 from typing import Any, Dict, List, Optional
 
 from pydantic import TypeAdapter
@@ -12,7 +13,16 @@ from pydantic import TypeAdapter
 from llama_stack.apis.benchmarks import Benchmark, Benchmarks, ListBenchmarksResponse
 from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.common.type_system import ParamType
-from llama_stack.apis.datasets import Dataset, Datasets, ListDatasetsResponse
+from llama_stack.apis.datasets import (
+    Dataset,
+    DatasetPurpose,
+    Datasets,
+    DatasetType,
+    DataSource,
+    ListDatasetsResponse,
+    RowsDataSource,
+    URIDataSource,
+)
 from llama_stack.apis.models import ListModelsResponse, Model, Models, ModelType
 from llama_stack.apis.resource import ResourceType
 from llama_stack.apis.scoring_functions import (
@@ -31,11 +41,22 @@ from llama_stack.apis.tools import (
     ToolHost,
 )
 from llama_stack.apis.vector_dbs import ListVectorDBsResponse, VectorDB, VectorDBs
+from llama_stack.distribution.access_control import check_access
 from llama_stack.distribution.datatypes import (
+    AccessAttributes,
+    BenchmarkWithACL,
+    DatasetWithACL,
+    ModelWithACL,
     RoutableObject,
     RoutableObjectWithProvider,
     RoutedProtocol,
+    ScoringFnWithACL,
+    ShieldWithACL,
+    ToolGroupWithACL,
+    ToolWithACL,
+    VectorDBWithACL,
 )
+from llama_stack.distribution.request_headers import get_auth_attributes
 from llama_stack.distribution.store import DistributionRegistry
 from llama_stack.providers.datatypes import Api, RoutingTable
 
@@ -176,6 +197,11 @@ class CommonRoutingTableImpl(RoutingTable):
         if not obj:
             return None
 
+        # Check if user has permission to access this object
+        if not check_access(obj.identifier, getattr(obj, "access_attributes", None), get_auth_attributes()):
+            logger.debug(f"Access denied to {type} '{identifier}' based on attribute mismatch")
+            return None
+
         return obj
 
     async def unregister_object(self, obj: RoutableObjectWithProvider) -> None:
@@ -192,6 +218,13 @@ class CommonRoutingTableImpl(RoutingTable):
 
         p = self.impls_by_provider_id[obj.provider_id]
 
+        # If object supports access control but no attributes set, use creator's attributes
+        if not obj.access_attributes:
+            creator_attributes = get_auth_attributes()
+            if creator_attributes:
+                obj.access_attributes = AccessAttributes(**creator_attributes)
+                logger.info(f"Setting access attributes for {obj.type} '{obj.identifier}' based on creator's identity")
+
         registered_obj = await register_object_with_provider(obj, p)
         # TODO: This needs to be fixed for all APIs once they return the registered object
         if obj.type == ResourceType.model.value:
@@ -204,15 +237,28 @@ class CommonRoutingTableImpl(RoutingTable):
 
     async def get_all_with_type(self, type: str) -> List[RoutableObjectWithProvider]:
         objs = await self.dist_registry.get_all()
-        return [obj for obj in objs if obj.type == type]
+        filtered_objs = [obj for obj in objs if obj.type == type]
+
+        # Apply attribute-based access control filtering
+        if filtered_objs:
+            filtered_objs = [
+                obj
+                for obj in filtered_objs
+                if check_access(obj.identifier, getattr(obj, "access_attributes", None), get_auth_attributes())
+            ]
+
+        return filtered_objs
 
 
 class ModelsRoutingTable(CommonRoutingTableImpl, Models):
     async def list_models(self) -> ListModelsResponse:
         return ListModelsResponse(data=await self.get_all_with_type("model"))
 
-    async def get_model(self, model_id: str) -> Optional[Model]:
-        return await self.get_object_by_identifier("model", model_id)
+    async def get_model(self, model_id: str) -> Model:
+        model = await self.get_object_by_identifier("model", model_id)
+        if model is None:
+            raise ValueError(f"Model '{model_id}' not found")
+        return model
 
     async def register_model(
         self,
@@ -238,7 +284,7 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
             model_type = ModelType.llm
         if "embedding_dimension" not in metadata and model_type == ModelType.embedding:
             raise ValueError("Embedding model must have an embedding dimension in its metadata")
-        model = Model(
+        model = ModelWithACL(
             identifier=model_id,
             provider_resource_id=provider_model_id,
             provider_id=provider_id,
@@ -259,8 +305,11 @@ class ShieldsRoutingTable(CommonRoutingTableImpl, Shields):
     async def list_shields(self) -> ListShieldsResponse:
         return ListShieldsResponse(data=await self.get_all_with_type(ResourceType.shield.value))
 
-    async def get_shield(self, identifier: str) -> Optional[Shield]:
-        return await self.get_object_by_identifier("shield", identifier)
+    async def get_shield(self, identifier: str) -> Shield:
+        shield = await self.get_object_by_identifier("shield", identifier)
+        if shield is None:
+            raise ValueError(f"Shield '{identifier}' not found")
+        return shield
 
     async def register_shield(
         self,
@@ -281,7 +330,7 @@ class ShieldsRoutingTable(CommonRoutingTableImpl, Shields):
                 )
         if params is None:
             params = {}
-        shield = Shield(
+        shield = ShieldWithACL(
             identifier=shield_id,
             provider_resource_id=provider_shield_id,
             provider_id=provider_id,
@@ -295,8 +344,11 @@ class VectorDBsRoutingTable(CommonRoutingTableImpl, VectorDBs):
     async def list_vector_dbs(self) -> ListVectorDBsResponse:
         return ListVectorDBsResponse(data=await self.get_all_with_type("vector_db"))
 
-    async def get_vector_db(self, vector_db_id: str) -> Optional[VectorDB]:
-        return await self.get_object_by_identifier("vector_db", vector_db_id)
+    async def get_vector_db(self, vector_db_id: str) -> VectorDB:
+        vector_db = await self.get_object_by_identifier("vector_db", vector_db_id)
+        if vector_db is None:
+            raise ValueError(f"Vector DB '{vector_db_id}' not found")
+        return vector_db
 
     async def register_vector_db(
         self,
@@ -332,7 +384,7 @@ class VectorDBsRoutingTable(CommonRoutingTableImpl, VectorDBs):
             "embedding_model": embedding_model,
             "embedding_dimension": model.metadata["embedding_dimension"],
         }
-        vector_db = TypeAdapter(VectorDB).validate_python(vector_db_data)
+        vector_db = TypeAdapter(VectorDBWithACL).validate_python(vector_db_data)
         await self.register_object(vector_db)
         return vector_db
 
@@ -347,39 +399,56 @@ class DatasetsRoutingTable(CommonRoutingTableImpl, Datasets):
     async def list_datasets(self) -> ListDatasetsResponse:
         return ListDatasetsResponse(data=await self.get_all_with_type(ResourceType.dataset.value))
 
-    async def get_dataset(self, dataset_id: str) -> Optional[Dataset]:
-        return await self.get_object_by_identifier("dataset", dataset_id)
+    async def get_dataset(self, dataset_id: str) -> Dataset:
+        dataset = await self.get_object_by_identifier("dataset", dataset_id)
+        if dataset is None:
+            raise ValueError(f"Dataset '{dataset_id}' not found")
+        return dataset
 
     async def register_dataset(
         self,
-        dataset_id: str,
-        dataset_schema: Dict[str, ParamType],
-        url: URL,
-        provider_dataset_id: Optional[str] = None,
-        provider_id: Optional[str] = None,
+        purpose: DatasetPurpose,
+        source: DataSource,
         metadata: Optional[Dict[str, Any]] = None,
-    ) -> None:
-        if provider_dataset_id is None:
-            provider_dataset_id = dataset_id
-        if provider_id is None:
-            # If provider_id not specified, use the only provider if it supports this dataset
-            if len(self.impls_by_provider_id) == 1:
-                provider_id = list(self.impls_by_provider_id.keys())[0]
+        dataset_id: Optional[str] = None,
+    ) -> Dataset:
+        if isinstance(source, dict):
+            if source["type"] == "uri":
+                source = URIDataSource.parse_obj(source)
+            elif source["type"] == "rows":
+                source = RowsDataSource.parse_obj(source)
+
+        if not dataset_id:
+            dataset_id = f"dataset-{str(uuid.uuid4())}"
+
+        provider_dataset_id = dataset_id
+
+        # infer provider from source
+        if source.type == DatasetType.rows.value:
+            provider_id = "localfs"
+        elif source.type == DatasetType.uri.value:
+            # infer provider from uri
+            if source.uri.startswith("huggingface"):
+                provider_id = "huggingface"
             else:
-                raise ValueError(
-                    f"No provider specified and multiple providers available. Please specify a provider_id. Available providers: {self.impls_by_provider_id.keys()}"
-                )
+                provider_id = "localfs"
+        else:
+            raise ValueError(f"Unknown data source type: {source.type}")
+
         if metadata is None:
             metadata = {}
-        dataset = Dataset(
+
+        dataset = DatasetWithACL(
             identifier=dataset_id,
             provider_resource_id=provider_dataset_id,
             provider_id=provider_id,
-            dataset_schema=dataset_schema,
-            url=url,
+            purpose=purpose,
+            source=source,
             metadata=metadata,
         )
+
         await self.register_object(dataset)
+        return dataset
 
     async def unregister_dataset(self, dataset_id: str) -> None:
         dataset = await self.get_dataset(dataset_id)
@@ -392,8 +461,11 @@ class ScoringFunctionsRoutingTable(CommonRoutingTableImpl, ScoringFunctions):
     async def list_scoring_functions(self) -> ListScoringFunctionsResponse:
         return ListScoringFunctionsResponse(data=await self.get_all_with_type(ResourceType.scoring_function.value))
 
-    async def get_scoring_function(self, scoring_fn_id: str) -> Optional[ScoringFn]:
-        return await self.get_object_by_identifier("scoring_function", scoring_fn_id)
+    async def get_scoring_function(self, scoring_fn_id: str) -> ScoringFn:
+        scoring_fn = await self.get_object_by_identifier("scoring_function", scoring_fn_id)
+        if scoring_fn is None:
+            raise ValueError(f"Scoring function '{scoring_fn_id}' not found")
+        return scoring_fn
 
     async def register_scoring_function(
         self,
@@ -413,7 +485,7 @@ class ScoringFunctionsRoutingTable(CommonRoutingTableImpl, ScoringFunctions):
                 raise ValueError(
                     "No provider specified and multiple providers available. Please specify a provider_id."
                 )
-        scoring_fn = ScoringFn(
+        scoring_fn = ScoringFnWithACL(
             identifier=scoring_fn_id,
             description=description,
             return_type=return_type,
@@ -429,8 +501,11 @@ class BenchmarksRoutingTable(CommonRoutingTableImpl, Benchmarks):
     async def list_benchmarks(self) -> ListBenchmarksResponse:
         return ListBenchmarksResponse(data=await self.get_all_with_type("benchmark"))
 
-    async def get_benchmark(self, benchmark_id: str) -> Optional[Benchmark]:
-        return await self.get_object_by_identifier("benchmark", benchmark_id)
+    async def get_benchmark(self, benchmark_id: str) -> Benchmark:
+        benchmark = await self.get_object_by_identifier("benchmark", benchmark_id)
+        if benchmark is None:
+            raise ValueError(f"Benchmark '{benchmark_id}' not found")
+        return benchmark
 
     async def register_benchmark(
         self,
@@ -452,7 +527,7 @@ class BenchmarksRoutingTable(CommonRoutingTableImpl, Benchmarks):
                 )
         if provider_benchmark_id is None:
             provider_benchmark_id = benchmark_id
-        benchmark = Benchmark(
+        benchmark = BenchmarkWithACL(
             identifier=benchmark_id,
             dataset_id=dataset_id,
             scoring_functions=scoring_functions,
@@ -474,7 +549,10 @@ class ToolGroupsRoutingTable(CommonRoutingTableImpl, ToolGroups):
         return ListToolGroupsResponse(data=await self.get_all_with_type("tool_group"))
 
     async def get_tool_group(self, toolgroup_id: str) -> ToolGroup:
-        return await self.get_object_by_identifier("tool_group", toolgroup_id)
+        tool_group = await self.get_object_by_identifier("tool_group", toolgroup_id)
+        if tool_group is None:
+            raise ValueError(f"Tool group '{toolgroup_id}' not found")
+        return tool_group
 
     async def get_tool(self, tool_name: str) -> Tool:
         return await self.get_object_by_identifier("tool", tool_name)
@@ -492,7 +570,7 @@ class ToolGroupsRoutingTable(CommonRoutingTableImpl, ToolGroups):
 
         for tool_def in tool_defs:
             tools.append(
-                Tool(
+                ToolWithACL(
                     identifier=tool_def.name,
                     toolgroup_id=toolgroup_id,
                     description=tool_def.description or "",
@@ -517,7 +595,7 @@ class ToolGroupsRoutingTable(CommonRoutingTableImpl, ToolGroups):
             await self.register_object(tool)
 
         await self.dist_registry.register(
-            ToolGroup(
+            ToolGroupWithACL(
                 identifier=toolgroup_id,
                 provider_id=provider_id,
                 provider_resource_id=toolgroup_id,
@@ -530,7 +608,7 @@ class ToolGroupsRoutingTable(CommonRoutingTableImpl, ToolGroups):
         tool_group = await self.get_tool_group(toolgroup_id)
         if tool_group is None:
             raise ValueError(f"Tool group {toolgroup_id} not found")
-        tools = await self.list_tools(toolgroup_id).data
+        tools = (await self.list_tools(toolgroup_id)).data
         for tool in tools:
             await self.unregister_object(tool)
         await self.unregister_object(tool_group)

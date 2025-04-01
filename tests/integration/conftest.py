@@ -6,11 +6,23 @@
 import inspect
 import itertools
 import os
+import platform
 import textwrap
+import time
 
 from dotenv import load_dotenv
 
+from llama_stack.log import get_logger
+
 from .report import Report
+
+logger = get_logger(__name__, category="tests")
+
+
+def pytest_runtest_teardown(item):
+    interval_seconds = os.getenv("LLAMA_STACK_TEST_INTERVAL_SECONDS")
+    if interval_seconds:
+        time.sleep(float(interval_seconds))
 
 
 def pytest_configure(config):
@@ -23,6 +35,10 @@ def pytest_configure(config):
     for env_var in env_vars:
         key, value = env_var.split("=", 1)
         os.environ[key] = value
+
+    if platform.system() == "Darwin":  # Darwin is the system name for macOS
+        os.environ["DISABLE_CODE_SANDBOX"] = "1"
+        logger.info("Setting DISABLE_CODE_SANDBOX=1 for macOS")
 
     if config.getoption("--report"):
         config.pluginmanager.register(Report(config))

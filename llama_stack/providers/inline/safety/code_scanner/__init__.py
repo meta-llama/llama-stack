@@ -4,10 +4,12 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+from typing import Any, Dict
+
 from .config import CodeScannerConfig
 
 
-async def get_provider_impl(config: CodeScannerConfig, deps):
+async def get_provider_impl(config: CodeScannerConfig, deps: Dict[str, Any]):
     from .code_scanner import MetaReferenceCodeScannerSafetyImpl
 
     impl = MetaReferenceCodeScannerSafetyImpl(config, deps)

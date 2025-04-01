@@ -13,6 +13,7 @@ LLAMA_CHECKPOINT_DIR=${LLAMA_CHECKPOINT_DIR:-}
 LLAMA_STACK_DIR=${LLAMA_STACK_DIR:-}
 TEST_PYPI_VERSION=${TEST_PYPI_VERSION:-}
 PYPI_VERSION=${PYPI_VERSION:-}
+VIRTUAL_ENV=${VIRTUAL_ENV:-}
 
 set -euo pipefail
 
@@ -69,22 +70,25 @@ while [[ $# -gt 0 ]]; do
     ;;
   esac
 done
-
 PYTHON_BINARY="python"
 case "$env_type" in
   "venv")
-    # Activate virtual environment
-    if [ ! -d "$env_path_or_name" ]; then
-        echo -e "${RED}Error: Virtual environment not found at $env_path_or_name${NC}" >&2
-        exit 1
-    fi
+    if [ -n "$VIRTUAL_ENV" && "$VIRTUAL_ENV" == "$env_path_or_name" ]; then
+        echo -e "${GREEN}Virtual environment already activated${NC}" >&2
+    else
+        # Activate virtual environment
+        if [ ! -d "$env_path_or_name" ]; then
+            echo -e "${RED}Error: Virtual environment not found at $env_path_or_name${NC}" >&2
+            exit 1
+        fi
 
-    if [ ! -f "$env_path_or_name/bin/activate" ]; then
-        echo -e "${RED}Error: Virtual environment activate binary not found at $env_path_or_name/bin/activate" >&2
-        exit 1
-    fi
+        if [ ! -f "$env_path_or_name/bin/activate" ]; then
+            echo -e "${RED}Error: Virtual environment activate binary not found at $env_path_or_name/bin/activate" >&2
+            exit 1
+        fi
 
-    source "$env_path_or_name/bin/activate"
+        source "$env_path_or_name/bin/activate"
+    fi
     ;;
   "conda")
     if ! is_command_available conda; then

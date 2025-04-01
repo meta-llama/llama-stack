@@ -14,6 +14,7 @@ from llama_stack.schema_utils import json_schema_type
 
 @json_schema_type
 class Api(Enum):
+    providers = "providers"
     inference = "inference"
     safety = "safety"
     agents = "agents"
@@ -33,6 +34,7 @@ class Api(Enum):
     scoring_functions = "scoring_functions"
     benchmarks = "benchmarks"
     tool_groups = "tool_groups"
+    files = "files"
 
     # built-in API
     inspect = "inspect"

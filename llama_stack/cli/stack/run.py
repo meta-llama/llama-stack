@@ -8,6 +8,7 @@ import argparse
 import os
 from pathlib import Path
 
+from llama_stack.cli.stack.utils import ImageType
 from llama_stack.cli.subcommand import Subcommand
 from llama_stack.log import get_logger
 
@@ -72,15 +73,30 @@ class StackRun(Subcommand):
             "--image-type",
             type=str,
             help="Image Type used during the build. This can be either conda or container or venv.",
-            choices=["conda", "container", "venv"],
+            choices=[e.value for e in ImageType],
         )
+
+    # If neither image type nor image name is provided, but at the same time
+    # the current environment has conda breadcrumbs, then assume what the user
+    # wants to use conda mode and not the usual default mode (using
+    # pre-installed system packages).
+    #
+    # Note: yes, this is hacky. It's implemented this way to keep the existing
+    # conda users unaffected by the switch of the default behavior to using
+    # system packages.
+    def _get_image_type_and_name(self, args: argparse.Namespace) -> tuple[str, str]:
+        conda_env = os.environ.get("CONDA_DEFAULT_ENV")
+        if conda_env and args.image_name == conda_env:
+            logger.warning(f"Conda detected. Using conda environment {conda_env} for the run.")
+            return ImageType.CONDA.value, args.image_name
+        return args.image_type, args.image_name
 
     def _run_stack_run_cmd(self, args: argparse.Namespace) -> None:
         import yaml
 
         from llama_stack.distribution.configure import parse_and_maybe_upgrade_config
         from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
-        from llama_stack.distribution.utils.exec import formulate_run_args, run_with_pty
+        from llama_stack.distribution.utils.exec import formulate_run_args, run_command
 
         config_file = Path(args.config)
         has_yaml_suffix = args.config.endswith(".yaml")
@@ -118,9 +134,11 @@ class StackRun(Subcommand):
         except AttributeError as e:
             self.parser.error(f"failed to parse config file '{config_file}':\n {e}")
 
+        image_type, image_name = self._get_image_type_and_name(args)
+
         # If neither image type nor image name is provided, assume the server should be run directly
         # using the current environment packages.
-        if not args.image_type and not args.image_name:
+        if not image_type and not image_name:
             logger.info("No image type or image name provided. Assuming environment packages.")
             from llama_stack.distribution.server.server import main as server_main
 
@@ -137,7 +155,7 @@ class StackRun(Subcommand):
             # Run the server
             server_main(server_args)
         else:
-            run_args = formulate_run_args(args.image_type, args.image_name, config, template_name)
+            run_args = formulate_run_args(image_type, image_name, config, template_name)
 
             run_args.extend([str(config_file), str(args.port)])
             if args.disable_ipv6:
@@ -156,4 +174,4 @@ class StackRun(Subcommand):
 
             if args.tls_keyfile and args.tls_certfile:
                 run_args.extend(["--tls-keyfile", args.tls_keyfile, "--tls-certfile", args.tls_certfile])
-            run_with_pty(run_args)
+            run_command(run_args)

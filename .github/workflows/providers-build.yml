@@ -1,0 +1,83 @@
+name: Test Llama Stack Build
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'llama_stack/cli/stack/build.py'
+      - 'llama_stack/cli/stack/_build.py'
+      - 'llama_stack/distribution/build.*'
+      - 'llama_stack/distribution/*.sh'
+      - '.github/workflows/providers-build.yml'
+  pull_request:
+    paths:
+      - 'llama_stack/cli/stack/build.py'
+      - 'llama_stack/cli/stack/_build.py'
+      - 'llama_stack/distribution/build.*'
+      - 'llama_stack/distribution/*.sh'
+      - '.github/workflows/providers-build.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  generate-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      templates: ${{ steps.set-matrix.outputs.templates }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate Template List
+        id: set-matrix
+        run: |
+          templates=$(ls llama_stack/templates/*/*build.yaml | awk -F'/' '{print $(NF-1)}' | jq -R -s -c 'split("\n")[:-1]')
+          echo "templates=$templates" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: generate-matrix
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        template: ${{ fromJson(needs.generate-matrix.outputs.templates) }}
+        image-type: [venv, container]
+      fail-fast: false # We want to run all jobs even if some fail
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install LlamaStack
+        run: |
+          uv venv
+          source .venv/bin/activate
+          uv pip install -e .
+
+      - name: Print build dependencies
+        run: |
+          uv run llama stack build --template ${{ matrix.template }} --image-type ${{ matrix.image-type }} --image-name test --print-deps-only
+
+      - name: Run Llama Stack Build
+        run: |
+          # USE_COPY_NOT_MOUNT is set to true since mounting is not supported by docker buildx, we use COPY instead
+          # LLAMA_STACK_DIR is set to the current directory so we are building from the source
+          USE_COPY_NOT_MOUNT=true LLAMA_STACK_DIR=. uv run llama stack build --template ${{ matrix.template }} --image-type ${{ matrix.image-type }} --image-name test
+
+      - name: Print dependencies in the image
+        if: matrix.image-type == 'venv'
+        run: |
+          source test/bin/activate
+          uv pip list
