@@ -145,7 +145,7 @@ mailing list. A vote must stay open for at least 7 days.
 
 #### Earning a Nomination
 
-Given the early stage of the project, the process of becoming a maintainer is still evolving and we expect it to change
+The process of becoming a maintainer is still evolving and we expect it to change
 as the project matures.
 
 The nomination is at the discretion of the existing maintainers and there is no single path of earning a nomination for,
