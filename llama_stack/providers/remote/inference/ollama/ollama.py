@@ -91,6 +91,11 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
     async def unregister_model(self, model_id: str) -> None:
         pass
 
+    async def _get_model(self, model_id: str) -> Model:
+        if not self.model_store:
+            raise ValueError("Model store not set")
+        return await self.model_store.get_model(model_id)
+
     async def completion(
         self,
         model_id: str,
@@ -100,10 +105,9 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> CompletionResponse | AsyncGenerator[CompletionResponseStreamChunk, None]:
-        assert self.model_store is not None
         if sampling_params is None:
             sampling_params = SamplingParams()
-        model = await self.model_store.get_model(model_id)
+        model = await self._get_model(model_id)
         request = CompletionRequest(
             model=model.provider_resource_id,
             content=content,
@@ -164,10 +168,9 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         logprobs: Optional[LogProbConfig] = None,
         tool_config: Optional[ToolConfig] = None,
     ) -> ChatCompletionResponse | AsyncGenerator[ChatCompletionResponseStreamChunk, None]:
-        assert self.model_store is not None
         if sampling_params is None:
             sampling_params = SamplingParams()
-        model = await self.model_store.get_model(model_id)
+        model = await self._get_model(model_id)
         request = ChatCompletionRequest(
             model=model.provider_resource_id,
             messages=messages,
@@ -286,8 +289,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         output_dimension: Optional[int] = None,
         task_type: Optional[EmbeddingTaskType] = None,
     ) -> EmbeddingsResponse:
-        assert self.model_store is not None
-        model = await self.model_store.get_model(model_id)
+        model = await self._get_model(model_id)
 
         assert all(not content_has_media(content) for content in contents), (
             "Ollama does not support media for embeddings"
