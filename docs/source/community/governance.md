@@ -20,7 +20,7 @@ A formal governance structure helps us to
 At a high level, the key moving parts of the community are:
 - **GitHub activity** (issues + pull requests + discussions)
 - **RFCs** for detailed discussions on new features or changes
-- **Maintainer syncs** (monthly) for [maintainers](https://github.com/meta-llama/MAINTAINERS.md) to discuss project direction and health
+- **Maintainer syncs** (monthly) for [maintainers](https://github.com/meta-llama/llama-stack/blob/main/MAINTAINERS.md) to discuss project direction and health
 
 With this structure, users and contributors largely self-organize and contribute changes as per [lazy consensus](#lazy-consensus). If there is active opposition and unresolvable conflict, then maintainers step in to break ties or make decisions.
 
