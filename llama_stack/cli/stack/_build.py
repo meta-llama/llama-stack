@@ -89,6 +89,43 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
                 color="red",
             )
             sys.exit(1)
+    elif args.providers:
+        providers = dict()
+        for api_provider in args.providers.split(","):
+            if "=" not in api_provider:
+                cprint(
+                    "Could not parse `--providers`. Please ensure the list is in the format api1=provider1,api2=provider2",
+                    color="red",
+                )
+                sys.exit(1)
+            api, provider = api_provider.split("=")
+            providers_for_api = get_provider_registry().get(Api(api), None)
+            if providers_for_api is None:
+                cprint(
+                    f"{api} is not a valid API.",
+                    color="red",
+                )
+                sys.exit(1)
+            if provider in providers_for_api:
+                providers.setdefault(api, []).append(provider)
+            else:
+                cprint(
+                    f"{provider} is not a valid provider for the {api} API.",
+                    color="red",
+                )
+                sys.exit(1)
+        distribution_spec = DistributionSpec(
+            providers=providers,
+            description=",".join(args.providers),
+        )
+        if not args.image_type:
+            cprint(
+                f"Please specify a image-type (container | conda | venv) for {args.template}",
+                color="red",
+            )
+            sys.exit(1)
+
+        build_config = BuildConfig(image_type=args.image_type, distribution_spec=distribution_spec)
     elif not args.config and not args.template:
         name = prompt(
             "> Enter a name for your Llama Stack (e.g. my-local-stack): ",
