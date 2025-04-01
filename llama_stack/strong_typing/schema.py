@@ -463,10 +463,14 @@ class JsonSchemaGenerator:
             ret: Schema = {"oneOf": [self.type_to_schema(union_type) for union_type in typing.get_args(typ)]}
             if discriminator:
                 # for each union type, we need to read the value of the discriminator
-                mapping: JsonType = {}
+                mapping: dict[str, JsonType] = {}
                 for union_type in typing.get_args(typ):
                     props = self.type_to_schema(union_type, force_expand=True)["properties"]
-                    mapping[props[discriminator]["default"]] = self.type_to_schema(union_type)["$ref"]  # type: ignore
+                    # mypy is confused here because JsonType allows multiple types, some of them
+                    # not indexable (bool?) or not indexable by string (list?). The correctness of
+                    # types depends on correct model definitions. Hence multiple ignore statements below.
+                    discriminator_value = props[discriminator]["default"]  # type: ignore[index,call-overload]
+                    mapping[discriminator_value] = self.type_to_schema(union_type)["$ref"]  # type: ignore[index]
 
                 ret["discriminator"] = {
                     "propertyName": discriminator,
