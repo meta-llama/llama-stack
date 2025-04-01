@@ -257,6 +257,7 @@ class TracingMiddleware:
             _, _, trace_path = find_matching_endpoint(scope.get("method", "GET"), path, self.endpoint_impls)
         except ValueError:
             # If no matching endpoint is found, pass through to FastAPI
+            logger.debug(f"No matching endpoint found for path: {path}, falling back to FastAPI")
             return await self.app(scope, receive, send)
 
         trace_context = await start_trace(trace_path, {"__location__": "server", "raw_path": path})
