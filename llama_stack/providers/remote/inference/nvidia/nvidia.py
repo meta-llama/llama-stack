@@ -205,7 +205,7 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
             extra_body["input_type"] = task_type_options[task_type]
 
         try:
-            response = await self._client.embeddings.create(
+            response = await self._get_client(model).embeddings.create(
                 model=model,
                 input=input,
                 extra_body=extra_body,
