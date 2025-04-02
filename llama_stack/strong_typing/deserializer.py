@@ -627,7 +627,8 @@ class NamedTupleDeserializer(ClassDeserializer[NamedTuple]):
         super().assign(property_parsers)
 
     def create(self, **field_values: Any) -> NamedTuple:
-        return self.class_type(**field_values)
+        # mypy fails to deduce that this class returns NamedTuples only, hence the `ignore` directive
+        return self.class_type(**field_values)  # type: ignore[no-any-return]
 
 
 class DataclassDeserializer(ClassDeserializer[T]):

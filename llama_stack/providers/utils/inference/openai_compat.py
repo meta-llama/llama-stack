@@ -137,7 +137,10 @@ def get_sampling_strategy_options(params: SamplingParams) -> dict:
     return options
 
 
-def get_sampling_options(params: SamplingParams) -> dict:
+def get_sampling_options(params: SamplingParams | None) -> dict:
+    if not params:
+        return {}
+
     options = {}
     if params:
         options.update(get_sampling_strategy_options(params))
@@ -297,7 +300,7 @@ def process_chat_completion_response(
 
 async def process_completion_stream_response(
     stream: AsyncGenerator[OpenAICompatCompletionResponse, None],
-) -> AsyncGenerator:
+) -> AsyncGenerator[CompletionResponseStreamChunk, None]:
     stop_reason = None
 
     async for chunk in stream:
@@ -334,7 +337,7 @@ async def process_completion_stream_response(
 async def process_chat_completion_stream_response(
     stream: AsyncGenerator[OpenAICompatCompletionResponse, None],
     request: ChatCompletionRequest,
-) -> AsyncGenerator:
+) -> AsyncGenerator[ChatCompletionResponseStreamChunk, None]:
     yield ChatCompletionResponseStreamChunk(
         event=ChatCompletionResponseEvent(
             event_type=ChatCompletionResponseEventType.start,

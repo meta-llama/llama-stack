@@ -77,7 +77,9 @@ def typeannotation(
     """
 
     def wrap(cls: Type[T]) -> Type[T]:
-        cls.__repr__ = _compact_dataclass_repr
+        # mypy fails to equate bound-y functions (first argument interpreted as
+        # the bound object) with class methods, hence the `ignore` directive.
+        cls.__repr__ = _compact_dataclass_repr  # type: ignore[method-assign]
         if not dataclasses.is_dataclass(cls):
             cls = dataclasses.dataclass(  # type: ignore[call-overload]
                 cls,
