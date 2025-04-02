@@ -52,11 +52,6 @@ def get_distribution_template() -> DistributionTemplate:
         model_id="${env.SAFETY_MODEL}",
         provider_id="nvidia",
     )
-    datasetio_provider = Provider(
-        provider_id="nvidia",
-        provider_type="remote::nvidia",
-        config=NvidiaDatasetIOConfig.sample_run_config(),
-    )
 
     available_models = {
         "nvidia": MODEL_ENTRIES,
