@@ -1,4 +1,4 @@
-<h1> Llama Stack Governance</h1>
+# Llama Stack Governance
 
 ## Introduction
 
@@ -83,7 +83,8 @@ Contributors should follow the following guides when creating PRs:
 - [Contribution Process](CONTRIBUTING.md)
 
 As contributors gain experience and familiarity with the project, their profile and commitment within the community will
-increase. At some stage, they may find themselves being nominated for being a maintainer.
+increase. At some stage, they may find themselves being nominated to become a Triager, Code Owner, or Maintainer by an
+existing Maintainer.
 
 ### Triagers
 Triagers are contributors who have shown that they are committed to Llama Stack's continued development by helping to
@@ -126,10 +127,10 @@ its objectives, and its strategy. They will also have provided valuable contribu
 time. Maintainers must also act in the interest of the community.
 
 #### Process
-Any existing maintainer can nominate new maintainers. Once they have been nominated, there will be a vote by the rest
-of the maintainers. Maintainer voting is one of the few activities that takes place in private. This is to allow
-maintainers to express their opinions about a nominee without causing embarrassment freely. The approval requires a
-unanimous vote from the maintainers.
+Any existing maintainer can nominate new triagers, code owners, or maintainers. Once they have been nominated,
+there will be a vote by the rest of the maintainers. Maintainer voting is one of the few activities that takes place in
+private. This is to allow maintainers to express their opinions about a nominee without causing embarrassment freely.
+The approval requires majority vote (>50%) from the maintainers.
 
 The nominee is entitled to request an explanation of any ‘no’ votes against them, regardless of the vote's outcome.
 This explanation will be provided by the maintainers and will be anonymous and constructive.
@@ -199,10 +200,10 @@ agreed to the proposal's implementation.
 Lazy consensus is a fundamental concept within the project. This process allows a large group of people to reach
 consensus efficiently as someone with no objections to a proposal need not spend time stating their position.
 
-For lazy consensus to be effective, it is necessary to allow at least 48 hours before assuming that there are no
-objections to the proposal. This requirement ensures that everyone is given enough time to read, digest, and respond to
-the proposal. This time period is chosen to be as inclusive as possible of all participants, regardless of their
-location and time commitments.
+For lazy consensus to be effective, it is necessary to allow at least 48 hours (excluding weekends) before assuming that
+there are no objections to the proposal. This requirement ensures that everyone is given enough time to read, digest,
+and respond to the proposal. This time period is chosen to be as inclusive as possible of all participants, regardless
+of their location and time commitments.
 
 ### Voting
 
@@ -233,7 +234,7 @@ this end, the rules that apply to modifications to the Llama Stack Governance st
 ### Roadmap Creation
 
 Our public roadmap gives an overview of what we are currently working on and what we want to tackle next. This
-helps potential contributors understand your project's current status and where it's going next, as well as giving a
+helps potential contributors understand our project's current status and where it's going next, as well as giving a
 chance to be part of the planning.
 
 In this section, we describe the process we follow to create it, using request for comments documents (RFCs).
@@ -263,7 +264,7 @@ What constitutes a "substantial" change is evolving based on the community, but 
 
 Some changes do not require an RFC:
 *   Reorganizing or refactoring code or documentation
-*   Improvements that tackle objective quality criteria (speedup, better browser support)
+*   Improvements that tackle objective quality criteria (speedup, bug fixes)
 *   Changes noticeable only by contributors or maintainers
 
 If you submit a pull request to implement a new feature without going through the RFC process, it may be closed with a

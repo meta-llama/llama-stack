@@ -7,12 +7,12 @@ look at [Contributing!](../contributing/index)
 
 ## Communication
 
-We primarily communicate on GitHub and Discord. You can join our [Discord server here](https://discord.gg/llamastack).
+We primarily communicate on GitHub and Discord. You can join our [Discord server here](https://discord.gg/llama-stack).
 
 ## Weekly Meeting
 
 We have a weekly community meeting every Thursday at 9:00 AM PT. The meeting is open to everyone, and we discuss the
-latest updates, roadmap, and community contributions. You can join the meeting by joining our discord.
+latest updates, roadmap, and community contributions. You can join the meeting by joining our Discord.
 
 ## Governance
 
