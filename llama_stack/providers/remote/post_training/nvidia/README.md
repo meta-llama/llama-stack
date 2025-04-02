@@ -125,6 +125,20 @@ client.post_training.job.cancel(job_uuid="your-job-id")
 
 ### Inference with the fine-tuned model
 
+#### 1. Register the model
+
+```python
+model = Model(
+    identifier="test-example-model@v1",
+    provider_id="nvidia",
+    provider_model_id="test-example-model@v1",
+    model_type=ModelType.llm,
+)
+client.register_model(model)
+```
+
+#### 2. Inference with the fine-tuned model
+
 ```python
 response = client.inference.completion(
     content="Complete the sentence using one word: Roses are red, violets are ",
