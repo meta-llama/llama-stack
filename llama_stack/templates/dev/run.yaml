@@ -38,7 +38,7 @@ providers:
     provider_type: remote::sambanova
     config:
       url: https://api.sambanova.ai/v1
-      api_key: ${env.SAMBANOVA_API_KEY}
+      api_key: ${env.SAMBANOVA_API_KEY:}
   - provider_id: sentence-transformers
     provider_type: inline::sentence-transformers
     config: {}

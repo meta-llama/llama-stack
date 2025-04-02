@@ -6,7 +6,7 @@
 
 from typing import Any, Dict, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, SecretStr
 
 from llama_stack.schema_utils import json_schema_type
 
@@ -24,14 +24,14 @@ class SambaNovaImplConfig(BaseModel):
         default="https://api.sambanova.ai/v1",
         description="The URL for the SambaNova AI server",
     )
-    api_key: Optional[str] = Field(
+    api_key: Optional[SecretStr] = Field(
         default=None,
         description="The SambaNova cloud API Key",
     )
 
     @classmethod
-    def sample_run_config(cls, **kwargs) -> Dict[str, Any]:
+    def sample_run_config(cls, api_key: str = "${env.SAMBANOVA_API_KEY}", **kwargs) -> Dict[str, Any]:
         return {
             "url": "https://api.sambanova.ai/v1",
-            "api_key": "${env.SAMBANOVA_API_KEY}",
+            "api_key": api_key,
         }
