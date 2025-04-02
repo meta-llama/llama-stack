@@ -34,7 +34,9 @@ class SystemDefaultGenerator(PromptTemplateGeneratorBase):
         )
         return PromptTemplate(
             template_str.lstrip("\n"),
-            {"today": datetime.now().strftime("%d %B %Y")},
+            {
+                "today": datetime.now().strftime("%d %B %Y")  # noqa: DTZ005 - we don't care about timezones here since we are displaying the date
+            },
         )
 
     def data_examples(self) -> List[Any]:
@@ -242,6 +244,7 @@ class PythonListCustomToolGenerator(PromptTemplateGeneratorBase):  # noqa: N801
         template_str = textwrap.dedent(
             """
             If you decide to invoke any of the function(s), you MUST put it in the format of [func_name1(params_name1=params_value1, params_name2=params_value2...), func_name2(params)]
+            For a boolean parameter, be sure to use `True` or `False` (capitalized) for the value.
             You SHOULD NOT include any other text in the response.
 
             Here is a list of functions in JSON format that you can invoke.

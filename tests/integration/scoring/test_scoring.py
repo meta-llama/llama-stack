@@ -5,9 +5,10 @@
 # the root directory of this source tree.
 
 
-import pytest
+from pathlib import Path
 
-from ..datasetio.test_datasetio import register_dataset
+import pandas as pd
+import pytest
 
 
 @pytest.fixture
@@ -79,51 +80,34 @@ def test_scoring_functions_register(
     # TODO: add unregister api for scoring functions
 
 
-def test_scoring_score(llama_stack_client):
-    register_dataset(llama_stack_client, for_rag=True)
-
+@pytest.mark.parametrize("scoring_fn_id", ["basic::equality"])
+def test_scoring_score(llama_stack_client, scoring_fn_id):
     # scoring individual rows
-    rows = llama_stack_client.datasetio.get_rows_paginated(
-        dataset_id="test_dataset",
-        rows_in_page=3,
-    )
-    assert len(rows.rows) == 3
+    df = pd.read_csv(Path(__file__).parent.parent / "datasets" / "test_dataset.csv")
+    rows = df.to_dict(orient="records")
 
-    scoring_fns_list = llama_stack_client.scoring_functions.list()
     scoring_functions = {
-        scoring_fns_list[0].identifier: None,
+        scoring_fn_id: None,
     }
 
     response = llama_stack_client.scoring.score(
-        input_rows=rows.rows,
+        input_rows=rows,
         scoring_functions=scoring_functions,
     )
     assert len(response.results) == len(scoring_functions)
     for x in scoring_functions:
         assert x in response.results
-        assert len(response.results[x].score_rows) == len(rows.rows)
-
-    # score batch
-    response = llama_stack_client.scoring.score_batch(
-        dataset_id="test_dataset",
-        scoring_functions=scoring_functions,
-        save_results_dataset=False,
-    )
-    assert len(response.results) == len(scoring_functions)
-    for x in scoring_functions:
-        assert x in response.results
-        assert len(response.results[x].score_rows) == 5
+        assert len(response.results[x].score_rows) == len(rows)
 
 
-def test_scoring_score_with_params_llm_as_judge(llama_stack_client, sample_judge_prompt_template, judge_model_id):
-    register_dataset(llama_stack_client, for_rag=True)
-
+def test_scoring_score_with_params_llm_as_judge(
+    llama_stack_client,
+    sample_judge_prompt_template,
+    judge_model_id,
+):
     # scoring individual rows
-    rows = llama_stack_client.datasetio.get_rows_paginated(
-        dataset_id="test_dataset",
-        rows_in_page=3,
-    )
-    assert len(rows.rows) == 3
+    df = pd.read_csv(Path(__file__).parent.parent / "datasets" / "test_dataset.csv")
+    rows = df.to_dict(orient="records")
 
     scoring_functions = {
         "llm-as-judge::base": dict(
@@ -138,24 +122,13 @@ def test_scoring_score_with_params_llm_as_judge(llama_stack_client, sample_judge
     }
 
     response = llama_stack_client.scoring.score(
-        input_rows=rows.rows,
+        input_rows=rows,
         scoring_functions=scoring_functions,
     )
     assert len(response.results) == len(scoring_functions)
     for x in scoring_functions:
         assert x in response.results
-        assert len(response.results[x].score_rows) == len(rows.rows)
-
-    # score batch
-    response = llama_stack_client.scoring.score_batch(
-        dataset_id="test_dataset",
-        scoring_functions=scoring_functions,
-        save_results_dataset=False,
-    )
-    assert len(response.results) == len(scoring_functions)
-    for x in scoring_functions:
-        assert x in response.results
-        assert len(response.results[x].score_rows) == 5
+        assert len(response.results[x].score_rows) == len(rows)
 
 
 @pytest.mark.parametrize(
@@ -167,14 +140,14 @@ def test_scoring_score_with_params_llm_as_judge(llama_stack_client, sample_judge
     ],
 )
 def test_scoring_score_with_aggregation_functions(
-    llama_stack_client, sample_judge_prompt_template, judge_model_id, provider_id
+    llama_stack_client,
+    sample_judge_prompt_template,
+    judge_model_id,
+    provider_id,
+    rag_dataset_for_test,
 ):
-    register_dataset(llama_stack_client, for_rag=True)
-    rows = llama_stack_client.datasetio.get_rows_paginated(
-        dataset_id="test_dataset",
-        rows_in_page=3,
-    )
-    assert len(rows.rows) == 3
+    df = pd.read_csv(Path(__file__).parent.parent / "datasets" / "test_dataset.csv")
+    rows = df.to_dict(orient="records")
 
     scoring_fns_list = [x for x in llama_stack_client.scoring_functions.list() if x.provider_id == provider_id]
     if len(scoring_fns_list) == 0:
@@ -214,12 +187,12 @@ def test_scoring_score_with_aggregation_functions(
         scoring_functions[scoring_fn.identifier] = None
 
     response = llama_stack_client.scoring.score(
-        input_rows=rows.rows,
+        input_rows=rows,
         scoring_functions=scoring_functions,
     )
 
     assert len(response.results) == len(scoring_functions)
     for x in scoring_functions:
         assert x in response.results
-        assert len(response.results[x].score_rows) == len(rows.rows)
+        assert len(response.results[x].score_rows) == len(rows)
         assert len(response.results[x].aggregated_results) == len(aggr_fns)

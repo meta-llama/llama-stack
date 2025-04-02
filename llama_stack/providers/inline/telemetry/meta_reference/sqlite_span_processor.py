@@ -8,10 +8,11 @@ import json
 import os
 import sqlite3
 import threading
-from datetime import datetime
+from datetime import datetime, timezone
 
 from opentelemetry.sdk.trace import SpanProcessor
 from opentelemetry.trace import Span
+from opentelemetry.trace.span import format_span_id, format_trace_id
 
 
 class SQLiteSpanProcessor(SpanProcessor):
@@ -100,14 +101,14 @@ class SQLiteSpanProcessor(SpanProcessor):
             conn = self._get_connection()
             cursor = conn.cursor()
 
-            trace_id = format(span.get_span_context().trace_id, "032x")
-            span_id = format(span.get_span_context().span_id, "016x")
+            trace_id = format_trace_id(span.get_span_context().trace_id)
+            span_id = format_span_id(span.get_span_context().span_id)
             service_name = span.resource.attributes.get("service.name", "unknown")
 
             parent_span_id = None
             parent_context = span.parent
             if parent_context:
-                parent_span_id = format(parent_context.span_id, "016x")
+                parent_span_id = format_span_id(parent_context.span_id)
 
             # Insert into traces
             cursor.execute(
@@ -123,9 +124,9 @@ class SQLiteSpanProcessor(SpanProcessor):
                 (
                     trace_id,
                     service_name,
-                    (span_id if not parent_span_id else None),
-                    datetime.fromtimestamp(span.start_time / 1e9).isoformat(),
-                    datetime.fromtimestamp(span.end_time / 1e9).isoformat(),
+                    (span_id if span.attributes.get("__root_span__") == "true" else None),
+                    datetime.fromtimestamp(span.start_time / 1e9, timezone.utc).isoformat(),
+                    datetime.fromtimestamp(span.end_time / 1e9, timezone.utc).isoformat(),
                 ),
             )
 
@@ -143,8 +144,8 @@ class SQLiteSpanProcessor(SpanProcessor):
                     trace_id,
                     parent_span_id,
                     span.name,
-                    datetime.fromtimestamp(span.start_time / 1e9).isoformat(),
-                    datetime.fromtimestamp(span.end_time / 1e9).isoformat(),
+                    datetime.fromtimestamp(span.start_time / 1e9, timezone.utc).isoformat(),
+                    datetime.fromtimestamp(span.end_time / 1e9, timezone.utc).isoformat(),
                     json.dumps(dict(span.attributes)),
                     span.status.status_code.name,
                     span.kind.name,
@@ -161,7 +162,7 @@ class SQLiteSpanProcessor(SpanProcessor):
                     (
                         span_id,
                         event.name,
-                        datetime.fromtimestamp(event.timestamp / 1e9).isoformat(),
+                        datetime.fromtimestamp(event.timestamp / 1e9, timezone.utc).isoformat(),
                         json.dumps(dict(event.attributes)),
                     ),
                 )

@@ -36,6 +36,8 @@ class InclineSimpleChunkingImpl(Preprocessing, PreprocessorsProtocolPrivate):
     input_types = [PreprocessingDataType.raw_text_document]
     output_types = [PreprocessingDataType.chunks]
 
+    preprocessor_store = None
+
     def __init__(self, config: InclineSimpleChunkingConfig) -> None:
         self.config = config
 
@@ -59,7 +61,7 @@ class InclineSimpleChunkingImpl(Preprocessing, PreprocessorsProtocolPrivate):
 
         for inp in preprocessor_inputs:
             new_chunks = self.make_overlapped_chunks(
-                inp.data_element_id, inp.data_element_path_or_content, window_len, overlap_len
+                inp.data_element_id, str(inp.data_element_path_or_content), window_len, overlap_len
             )
             for i, chunk in enumerate(new_chunks):
                 new_chunk_data_element = PreprocessingDataElement(
@@ -79,7 +81,7 @@ class InclineSimpleChunkingImpl(Preprocessing, PreprocessorsProtocolPrivate):
     ) -> PreprocessorResponse:
         return await self.do_preprocess(preprocessor_id="", preprocessor_inputs=preprocessor_inputs)
 
-    def _resolve_chunk_size_params(self, options: PreprocessorOptions) -> Tuple[int, int]:
+    def _resolve_chunk_size_params(self, options: PreprocessorOptions | None) -> Tuple[int, int]:
         window_len = (options or {}).get(
             str(SimpleChunkingOptions.chunk_size_in_tokens), self.config.chunk_size_in_tokens
         )

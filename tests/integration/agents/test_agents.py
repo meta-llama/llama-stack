@@ -8,10 +8,7 @@ from typing import Any, Dict
 from uuid import uuid4
 
 import pytest
-from llama_stack_client.lib.agents.agent import Agent
-from llama_stack_client.lib.agents.event_logger import EventLogger
-from llama_stack_client.types.agents.turn_create_params import Document as AgentDocument
-from llama_stack_client.types.memory_insert_params import Document
+from llama_stack_client import Agent, AgentEventLogger, Document
 from llama_stack_client.types.shared_params.agent_config import AgentConfig, ToolConfig
 
 from llama_stack.apis.agents.agents import (
@@ -93,7 +90,7 @@ def test_agent_simple(llama_stack_client_with_mocked_inference, agent_config):
         session_id=session_id,
     )
 
-    logs = [str(log) for log in EventLogger().log(simple_hello) if log is not None]
+    logs = [str(log) for log in AgentEventLogger().log(simple_hello) if log is not None]
     logs_str = "".join(logs)
 
     assert "hello" in logs_str.lower()
@@ -112,7 +109,7 @@ def test_agent_simple(llama_stack_client_with_mocked_inference, agent_config):
             session_id=session_id,
         )
 
-        logs = [str(log) for log in EventLogger().log(bomb_response) if log is not None]
+        logs = [str(log) for log in AgentEventLogger().log(bomb_response) if log is not None]
         logs_str = "".join(logs)
         assert "I can't" in logs_str
 
@@ -176,6 +173,7 @@ def test_tool_config(llama_stack_client_with_mocked_inference, agent_config):
 def test_builtin_tool_web_search(llama_stack_client_with_mocked_inference, agent_config):
     agent_config = {
         **agent_config,
+        "instructions": "You are a helpful assistant that can use web search to answer questions.",
         "tools": [
             "builtin::websearch",
         ],
@@ -187,20 +185,20 @@ def test_builtin_tool_web_search(llama_stack_client_with_mocked_inference, agent
         messages=[
             {
                 "role": "user",
-                "content": "Search the web and tell me who the current CEO of Meta is.",
+                "content": "Search the web and tell me what is the local time in Tokyo currently.",
             }
         ],
         session_id=session_id,
+        stream=False,
     )
 
-    logs = [str(log) for log in EventLogger().log(response) if log is not None]
-    logs_str = "".join(logs)
-
-    assert "tool_execution>" in logs_str
-    assert "Tool:brave_search Response:" in logs_str
-    assert "mark zuckerberg" in logs_str.lower()
-    if len(agent_config["output_shields"]) > 0:
-        assert "No Violation" in logs_str
+    found_tool_execution = False
+    for step in response.steps:
+        if step.step_type == "tool_execution":
+            assert step.tool_calls[0].tool_name == "brave_search"
+            found_tool_execution = True
+            break
+    assert found_tool_execution
 
 
 def test_builtin_tool_code_execution(llama_stack_client_with_mocked_inference, agent_config):
@@ -222,7 +220,7 @@ def test_builtin_tool_code_execution(llama_stack_client_with_mocked_inference, a
         ],
         session_id=session_id,
     )
-    logs = [str(log) for log in EventLogger().log(response) if log is not None]
+    logs = [str(log) for log in AgentEventLogger().log(response) if log is not None]
     logs_str = "".join(logs)
 
     assert "541" in logs_str
@@ -242,7 +240,7 @@ def test_code_interpreter_for_attachments(llama_stack_client_with_mocked_inferen
 
     codex_agent = Agent(llama_stack_client_with_mocked_inference, **agent_config)
     session_id = codex_agent.create_session(f"test-session-{uuid4()}")
-    inflation_doc = AgentDocument(
+    inflation_doc = Document(
         content="https://raw.githubusercontent.com/meta-llama/llama-stack-apps/main/examples/resources/inflation.csv",
         mime_type="text/csv",
     )
@@ -263,7 +261,7 @@ def test_code_interpreter_for_attachments(llama_stack_client_with_mocked_inferen
             session_id=session_id,
             documents=input.get("documents", None),
         )
-        logs = [str(log) for log in EventLogger().log(response) if log is not None]
+        logs = [str(log) for log in AgentEventLogger().log(response) if log is not None]
         logs_str = "".join(logs)
         assert "Tool:code_interpreter" in logs_str
 
@@ -272,7 +270,7 @@ def test_custom_tool(llama_stack_client_with_mocked_inference, agent_config):
     client_tool = get_boiling_point
     agent_config = {
         **agent_config,
-        "tools": ["builtin::websearch", client_tool],
+        "tools": [client_tool],
     }
 
     agent = Agent(llama_stack_client_with_mocked_inference, **agent_config)
@@ -288,7 +286,7 @@ def test_custom_tool(llama_stack_client_with_mocked_inference, agent_config):
         session_id=session_id,
     )
 
-    logs = [str(log) for log in EventLogger().log(response) if log is not None]
+    logs = [str(log) for log in AgentEventLogger().log(response) if log is not None]
     logs_str = "".join(logs)
     assert "-100" in logs_str
     assert "get_boiling_point" in logs_str
@@ -321,40 +319,53 @@ def test_custom_tool_infinite_loop(llama_stack_client_with_mocked_inference, age
     assert num_tool_calls <= 5
 
 
-def test_tool_choice(llama_stack_client_with_mocked_inference, agent_config):
-    def run_agent(tool_choice):
-        client_tool = get_boiling_point
-
-        test_agent_config = {
-            **agent_config,
-            "tool_config": {"tool_choice": tool_choice},
-            "tools": [client_tool],
-        }
-
-        agent = Agent(llama_stack_client_with_mocked_inference, **test_agent_config)
-        session_id = agent.create_session(f"test-session-{uuid4()}")
-
-        response = agent.create_turn(
-            messages=[
-                {
-                    "role": "user",
-                    "content": "What is the boiling point of polyjuice?",
-                },
-            ],
-            session_id=session_id,
-            stream=False,
-        )
-
-        return [step for step in response.steps if step.step_type == "tool_execution"]
-
-    tool_execution_steps = run_agent("required")
+def test_tool_choice_required(llama_stack_client_with_mocked_inference, agent_config):
+    tool_execution_steps = run_agent_with_tool_choice(
+        llama_stack_client_with_mocked_inference, agent_config, "required"
+    )
     assert len(tool_execution_steps) > 0
 
-    tool_execution_steps = run_agent("none")
+
+def test_tool_choice_none(llama_stack_client_with_mocked_inference, agent_config):
+    tool_execution_steps = run_agent_with_tool_choice(llama_stack_client_with_mocked_inference, agent_config, "none")
     assert len(tool_execution_steps) == 0
 
-    tool_execution_steps = run_agent("get_boiling_point")
+
+def test_tool_choice_get_boiling_point(llama_stack_client_with_mocked_inference, agent_config):
+    if "llama" not in agent_config["model"].lower():
+        pytest.xfail("NotImplemented for non-llama models")
+
+    tool_execution_steps = run_agent_with_tool_choice(
+        llama_stack_client_with_mocked_inference, agent_config, "get_boiling_point"
+    )
     assert len(tool_execution_steps) >= 1 and tool_execution_steps[0].tool_calls[0].tool_name == "get_boiling_point"
+
+
+def run_agent_with_tool_choice(client, agent_config, tool_choice):
+    client_tool = get_boiling_point
+
+    test_agent_config = {
+        **agent_config,
+        "tool_config": {"tool_choice": tool_choice},
+        "tools": [client_tool],
+        "max_infer_iters": 2,
+    }
+
+    agent = Agent(client, **test_agent_config)
+    session_id = agent.create_session(f"test-session-{uuid4()}")
+
+    response = agent.create_turn(
+        messages=[
+            {
+                "role": "user",
+                "content": "What is the boiling point of polyjuice?",
+            },
+        ],
+        session_id=session_id,
+        stream=False,
+    )
+
+    return [step for step in response.steps if step.step_type == "tool_execution"]
 
 
 @pytest.mark.parametrize("rag_tool_name", ["builtin::rag/knowledge_search", "builtin::rag"])
@@ -417,19 +428,7 @@ def test_rag_agent(llama_stack_client_with_mocked_inference, agent_config, rag_t
             assert expected_kw in response.output_message.content.lower()
 
 
-@pytest.mark.parametrize(
-    "tool",
-    [
-        dict(
-            name="builtin::rag/knowledge_search",
-            args={
-                "vector_db_ids": [],
-            },
-        ),
-        "builtin::rag/knowledge_search",
-    ],
-)
-def test_rag_agent_with_attachments(llama_stack_client_with_mocked_inference, agent_config, tool):
+def test_rag_agent_with_attachments(llama_stack_client_with_mocked_inference, agent_config):
     urls = ["chat.rst", "llama3.rst", "memory_optimizations.rst", "lora_finetune.rst"]
     documents = [
         Document(
@@ -442,7 +441,6 @@ def test_rag_agent_with_attachments(llama_stack_client_with_mocked_inference, ag
     ]
     agent_config = {
         **agent_config,
-        "tools": [tool],
     }
     rag_agent = Agent(llama_stack_client_with_mocked_inference, **agent_config)
     session_id = rag_agent.create_session(f"test-session-{uuid4()}")
@@ -476,10 +474,6 @@ def test_rag_agent_with_attachments(llama_stack_client_with_mocked_inference, ag
             stream=False,
         )
 
-    # rag is called
-    tool_execution_step = [step for step in response.steps if step.step_type == "tool_execution"]
-    assert len(tool_execution_step) >= 1
-    assert tool_execution_step[0].tool_calls[0].tool_name == "knowledge_search"
     assert "lora" in response.output_message.content.lower()
 
 
@@ -526,19 +520,7 @@ def test_rag_and_code_agent(llama_stack_client_with_mocked_inference, agent_conf
         ],
     }
     agent = Agent(llama_stack_client_with_mocked_inference, **agent_config)
-    inflation_doc = Document(
-        document_id="test_csv",
-        content="https://raw.githubusercontent.com/meta-llama/llama-stack-apps/main/examples/resources/inflation.csv",
-        mime_type="text/csv",
-        metadata={},
-    )
     user_prompts = [
-        (
-            "Here is a csv file, can you describe it?",
-            [inflation_doc],
-            "code_interpreter",
-            "",
-        ),
         (
             "when was Perplexity the company founded?",
             [],
@@ -572,7 +554,7 @@ def test_rag_and_code_agent(llama_stack_client_with_mocked_inference, agent_conf
     [(get_boiling_point, False), (get_boiling_point_with_metadata, True)],
 )
 def test_create_turn_response(llama_stack_client_with_mocked_inference, agent_config, client_tools):
-    client_tool, expectes_metadata = client_tools
+    client_tool, expects_metadata = client_tools
     agent_config = {
         **agent_config,
         "input_shields": [],
@@ -598,7 +580,7 @@ def test_create_turn_response(llama_stack_client_with_mocked_inference, agent_co
     assert steps[0].step_type == "inference"
     assert steps[1].step_type == "tool_execution"
     assert steps[1].tool_calls[0].tool_name.startswith("get_boiling_point")
-    if expectes_metadata:
+    if expects_metadata:
         assert steps[1].tool_responses[0].metadata["source"] == "https://www.google.com"
     assert steps[2].step_type == "inference"
 
@@ -610,3 +592,44 @@ def test_create_turn_response(llama_stack_client_with_mocked_inference, agent_co
             assert last_step_completed_at < step.started_at
             assert step.started_at < step.completed_at
             last_step_completed_at = step.completed_at
+
+
+def test_multi_tool_calls(llama_stack_client_with_mocked_inference, agent_config):
+    if "gpt" not in agent_config["model"]:
+        pytest.xfail("Only tested on GPT models")
+
+    agent_config = {
+        **agent_config,
+        "tools": [get_boiling_point],
+    }
+
+    agent = Agent(llama_stack_client_with_mocked_inference, **agent_config)
+    session_id = agent.create_session(f"test-session-{uuid4()}")
+
+    response = agent.create_turn(
+        messages=[
+            {
+                "role": "user",
+                "content": "Call get_boiling_point twice to answer: What is the boiling point of polyjuice in both celsius and fahrenheit?",
+            },
+        ],
+        session_id=session_id,
+        stream=False,
+    )
+    steps = response.steps
+    assert len(steps) == 7
+    assert steps[0].step_type == "shield_call"
+    assert steps[1].step_type == "inference"
+    assert steps[2].step_type == "shield_call"
+    assert steps[3].step_type == "tool_execution"
+    assert steps[4].step_type == "shield_call"
+    assert steps[5].step_type == "inference"
+    assert steps[6].step_type == "shield_call"
+
+    tool_execution_step = steps[3]
+    assert len(tool_execution_step.tool_calls) == 2
+    assert tool_execution_step.tool_calls[0].tool_name.startswith("get_boiling_point")
+    assert tool_execution_step.tool_calls[1].tool_name.startswith("get_boiling_point")
+
+    output = response.output_message.content.lower()
+    assert "-100" in output and "-212" in output

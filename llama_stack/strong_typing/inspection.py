@@ -260,7 +260,8 @@ def extend_enum(
         values: Dict[str, Any] = {}
         values.update((e.name, e.value) for e in source)
         values.update((e.name, e.value) for e in extend)
-        enum_class: Type[enum.Enum] = enum.Enum(extend.__name__, values)  # type: ignore
+        # mypy fails to determine that __name__ is always a string; hence the `ignore` directive.
+        enum_class: Type[enum.Enum] = enum.Enum(extend.__name__, values)  # type: ignore[misc]
 
         # assign the newly created type to the same module where the extending class is defined
         enum_class.__module__ = extend.__module__
@@ -327,9 +328,7 @@ def _unwrap_optional_type(typ: Type[Optional[T]]) -> Type[T]:
         raise TypeError("optional type must have un-subscripted type of Union")
 
     # will automatically unwrap Union[T] into T
-    return Union[
-        tuple(filter(lambda item: item is not type(None), typing.get_args(typ)))  # type: ignore
-    ]
+    return Union[tuple(filter(lambda item: item is not type(None), typing.get_args(typ)))]  # type: ignore[return-value]
 
 
 def is_type_union(typ: object) -> bool:
@@ -431,7 +430,7 @@ def _unwrap_generic_list(typ: Type[List[T]]) -> Type[T]:
     "Extracts the item type of a list type (e.g. returns `T` for `List[T]`)."
 
     (list_type,) = typing.get_args(typ)  # unpack single tuple element
-    return list_type
+    return list_type  # type: ignore[no-any-return]
 
 
 def is_generic_set(typ: object) -> TypeGuard[Type[set]]:
@@ -456,7 +455,7 @@ def _unwrap_generic_set(typ: Type[Set[T]]) -> Type[T]:
     "Extracts the item type of a set type (e.g. returns `T` for `Set[T]`)."
 
     (set_type,) = typing.get_args(typ)  # unpack single tuple element
-    return set_type
+    return set_type  # type: ignore[no-any-return]
 
 
 def is_generic_dict(typ: object) -> TypeGuard[Type[dict]]:
@@ -513,7 +512,7 @@ def unwrap_annotated_type(typ: T) -> T:
 
     if is_type_annotated(typ):
         # type is Annotated[T, ...]
-        return typing.get_args(typ)[0]
+        return typing.get_args(typ)[0]  # type: ignore[no-any-return]
     else:
         # type is a regular type
         return typ
@@ -538,7 +537,7 @@ def rewrap_annotated_type(transform: Callable[[Type[S]], Type[T]], typ: Type[S])
     transformed_type = transform(inner_type)
 
     if metadata is not None:
-        return Annotated[(transformed_type, *metadata)]  # type: ignore
+        return Annotated[(transformed_type, *metadata)]  # type: ignore[return-value]
     else:
         return transformed_type
 
@@ -563,7 +562,7 @@ else:
         return typing.get_type_hints(typ)
 
 
-def get_class_properties(typ: type) -> Iterable[Tuple[str, type]]:
+def get_class_properties(typ: type) -> Iterable[Tuple[str, type | str]]:
     "Returns all properties of a class."
 
     if is_dataclass_type(typ):
@@ -573,7 +572,7 @@ def get_class_properties(typ: type) -> Iterable[Tuple[str, type]]:
         return resolved_hints.items()
 
 
-def get_class_property(typ: type, name: str) -> Optional[type]:
+def get_class_property(typ: type, name: str) -> Optional[type | str]:
     "Looks up the annotated type of a property in a class by its property name."
 
     for property_name, property_type in get_class_properties(typ):

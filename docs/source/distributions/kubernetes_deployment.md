@@ -1,6 +1,9 @@
 # Kubernetes Deployment Guide
 
-Instead of starting the Llama Stack and vLLM servers locally. We can deploy them in a Kubernetes cluster. In this guide, we'll use a local [Kind](https://kind.sigs.k8s.io/) cluster and a vLLM inference service in the same cluster for demonstration purposes.
+Instead of starting the Llama Stack and vLLM servers locally. We can deploy them in a Kubernetes cluster.
+
+### Prerequisites
+In this guide, we'll use a local [Kind](https://kind.sigs.k8s.io/) cluster and a vLLM inference service in the same cluster for demonstration purposes.
 
 First, create a local Kubernetes cluster via Kind:
 
@@ -8,7 +11,7 @@ First, create a local Kubernetes cluster via Kind:
 kind create cluster --image kindest/node:v1.32.0 --name llama-stack-test
 ```
 
-Start vLLM server as a Kubernetes Pod and Service:
+First, create a Kubernetes PVC and Secret for downloading and storing Hugging Face model:
 
 ```bash
 cat <<EOF |kubectl apply -f -
@@ -31,7 +34,13 @@ metadata:
 type: Opaque
 data:
   token: $(HF_TOKEN)
----
+```
+
+
+Next, start the vLLM server as a Kubernetes Deployment and Service:
+
+```bash
+cat <<EOF |kubectl apply -f -
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -47,28 +56,23 @@ spec:
         app.kubernetes.io/name: vllm
     spec:
       containers:
-      - name: llama-stack
-        image: $(VLLM_IMAGE)
-        command:
-            - bash
-            - -c
-            - |
-              MODEL="meta-llama/Llama-3.2-1B-Instruct"
-              MODEL_PATH=/app/model/$(basename $MODEL)
-              huggingface-cli login --token $HUGGING_FACE_HUB_TOKEN
-              huggingface-cli download $MODEL --local-dir $MODEL_PATH --cache-dir $MODEL_PATH
-              python3 -m vllm.entrypoints.openai.api_server --model $MODEL_PATH --served-model-name $MODEL --port 8000
+      - name: vllm
+        image: vllm/vllm-openai:latest
+        command: ["/bin/sh", "-c"]
+        args: [
+          "vllm serve meta-llama/Llama-3.2-1B-Instruct"
+        ]
+        env:
+        - name: HUGGING_FACE_HUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: hf-token-secret
+              key: token
         ports:
           - containerPort: 8000
         volumeMounts:
           - name: llama-storage
-            mountPath: /app/model
-        env:
-          - name: HUGGING_FACE_HUB_TOKEN
-            valueFrom:
-              secretKeyRef:
-                name: hf-token-secret
-                key: token
+            mountPath: /root/.cache/huggingface
       volumes:
       - name: llama-storage
         persistentVolumeClaim:
@@ -127,6 +131,7 @@ EOF
 podman build -f /tmp/test-vllm-llama-stack/Containerfile.llama-stack-run-k8s -t llama-stack-run-k8s /tmp/test-vllm-llama-stack
 ```
 
+### Deploying Llama Stack Server in Kubernetes
 
 We can then start the Llama Stack server by deploying a Kubernetes Pod and Service:
 
@@ -187,6 +192,7 @@ spec:
 EOF
 ```
 
+### Verifying the Deployment
 We can check that the LlamaStack server has started:
 
 ```bash

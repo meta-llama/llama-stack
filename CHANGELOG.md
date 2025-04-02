@@ -1,5 +1,76 @@
 # Changelog
 
+# v0.1.8
+Published on: 2025-03-24T01:28:50Z
+
+# v0.1.8 Release Notes
+
+### Build and Test Agents
+* Safety: Integrated NVIDIA as a safety provider.
+* VectorDB: Added Qdrant as an inline provider.
+* Agents: Added support for multiple tool groups in agents.
+* Agents: Simplified imports for Agents in client package
+
+
+### Agent Evals and Model Customization
+* Introduced DocVQA and IfEval benchmarks.
+
+### Deploying and Monitoring Agents
+* Introduced a Containerfile and image workflow for the Playground.
+* Implemented support for Bearer (API Key) authentication.
+* Added attribute-based access control for resources.
+* Fixes on docker deployments: use --pull always and standardized the default port to 8321
+* Deprecated: /v1/inspect/providers use /v1/providers/ instead
+
+### Better Engineering
+* Consolidated scripts under the ./scripts directory.
+* Addressed mypy violations in various modules.
+* Added Dependabot scans for Python dependencies.
+* Implemented a scheduled workflow to update the changelog automatically.
+* Enforced concurrency to reduce CI loads.
+
+
+### New Contributors
+* @cmodi-meta made their first contribution in https://github.com/meta-llama/llama-stack/pull/1650
+* @jeffmaury made their first contribution in https://github.com/meta-llama/llama-stack/pull/1671
+* @derekhiggins made their first contribution in https://github.com/meta-llama/llama-stack/pull/1698
+* @Bobbins228 made their first contribution in https://github.com/meta-llama/llama-stack/pull/1745
+
+**Full Changelog**: https://github.com/meta-llama/llama-stack/compare/v0.1.7...v0.1.8
+
+---
+
+# v0.1.7
+Published on: 2025-03-14T22:30:51Z
+
+## 0.1.7 Release Notes
+
+###  Build and Test Agents
+* Inference: ImageType is now refactored to LlamaStackImageType
+* Inference: Added tests to measure TTFT
+* Inference: Bring back usage metrics
+* Agents: Added endpoint for get agent, list agents and list sessions
+* Agents: Automated conversion of type hints in client tool for lite llm format
+* Agents: Deprecated ToolResponseMessage in agent.resume API
+* Added Provider API for listing and inspecting provider info
+
+### Agent Evals and Model Customization
+* Eval: Added new eval benchmarks Math 500 and BFCL v3
+* Deploy and Monitoring of Agents
+* Telemetry: Fix tracing to work across coroutines
+
+###  Better Engineering
+* Display code coverage for unit tests
+* Updated call sites (inference, tool calls, agents) to move to async non blocking calls
+* Unit tests also run on Python 3.11, 3.12, and 3.13
+* Added ollama inference to Integration tests CI
+* Improved documentation across examples, testing, CLI, updated providers table )
+
+
+
+
+---
+
 # v0.1.6
 Published on: 2025-03-08T04:35:08Z
 

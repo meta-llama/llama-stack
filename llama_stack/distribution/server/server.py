@@ -15,7 +15,7 @@ import warnings
 from contextlib import asynccontextmanager
 from importlib.metadata import version as parse_version
 from pathlib import Path
-from typing import Any, List, Union
+from typing import Any, List, Optional, Union
 
 import yaml
 from fastapi import Body, FastAPI, HTTPException, Request
@@ -25,19 +25,24 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, ValidationError
 from typing_extensions import Annotated
 
-from llama_stack.distribution.datatypes import StackRunConfig
+from llama_stack.distribution.datatypes import LoggingConfig, StackRunConfig
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
 from llama_stack.distribution.request_headers import (
-    preserve_headers_context_async_generator,
+    PROVIDER_DATA_VAR,
     request_provider_data_context,
 )
 from llama_stack.distribution.resolver import InvalidProviderError
+from llama_stack.distribution.server.endpoints import (
+    find_matching_endpoint,
+    initialize_endpoint_impls,
+)
 from llama_stack.distribution.stack import (
     construct_stack,
     redact_sensitive_fields,
     replace_env_vars,
     validate_env_pair,
 )
+from llama_stack.distribution.utils.context import preserve_contexts_async_generator
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import Api
 from llama_stack.providers.inline.telemetry.meta_reference.config import TelemetryConfig
@@ -45,11 +50,13 @@ from llama_stack.providers.inline.telemetry.meta_reference.telemetry import (
     TelemetryAdapter,
 )
 from llama_stack.providers.utils.telemetry.tracing import (
+    CURRENT_TRACE_CONTEXT,
     end_trace,
     setup_logger,
     start_trace,
 )
 
+from .auth import AuthenticationMiddleware
 from .endpoints import get_all_api_endpoints
 
 REPO_ROOT = Path(__file__).parent.parent.parent.parent
@@ -176,13 +183,18 @@ async def sse_generator(event_gen):
 
 def create_dynamic_typed_route(func: Any, method: str, route: str):
     async def endpoint(request: Request, **kwargs):
-        # Use context manager for request provider data
-        with request_provider_data_context(request.headers):
+        # Get auth attributes from the request scope
+        user_attributes = request.scope.get("user_attributes", {})
+
+        # Use context manager with both provider data and auth attributes
+        with request_provider_data_context(request.headers, user_attributes):
             is_streaming = is_streaming_request(func.__name__, request, **kwargs)
 
             try:
                 if is_streaming:
-                    gen = preserve_headers_context_async_generator(sse_generator(func(**kwargs)))
+                    gen = preserve_contexts_async_generator(
+                        sse_generator(func(**kwargs)), [CURRENT_TRACE_CONTEXT, PROVIDER_DATA_VAR]
+                    )
                     return StreamingResponse(gen, media_type="text/event-stream")
                 else:
                     value = func(**kwargs)
@@ -214,14 +226,30 @@ def create_dynamic_typed_route(func: Any, method: str, route: str):
 
 
 class TracingMiddleware:
-    def __init__(self, app):
+    def __init__(self, app, impls):
         self.app = app
+        self.impls = impls
 
     async def __call__(self, scope, receive, send):
-        path = scope.get("path", "")
-        await start_trace(path, {"__location__": "server"})
-        try:
+        if scope.get("type") == "lifespan":
             return await self.app(scope, receive, send)
+
+        path = scope.get("path", "")
+        if not hasattr(self, "endpoint_impls"):
+            self.endpoint_impls = initialize_endpoint_impls(self.impls)
+        _, _, trace_path = find_matching_endpoint(scope.get("method", "GET"), path, self.endpoint_impls)
+
+        trace_context = await start_trace(trace_path, {"__location__": "server", "raw_path": path})
+
+        async def send_with_trace_id(message):
+            if message["type"] == "http.response.start":
+                headers = message.get("headers", [])
+                headers.append([b"x-trace-id", str(trace_context.trace_id).encode()])
+                message["headers"] = headers
+            await send(message)
+
+        try:
+            return await self.app(scope, receive, send_with_trace_id)
         finally:
             await end_trace()
 
@@ -266,11 +294,17 @@ class ClientVersionMiddleware:
         return await self.app(scope, receive, send)
 
 
-def main():
+def main(args: Optional[argparse.Namespace] = None):
     """Start the LlamaStack server."""
     parser = argparse.ArgumentParser(description="Start the LlamaStack server.")
     parser.add_argument(
         "--yaml-config",
+        dest="config",
+        help="(Deprecated) Path to YAML configuration file - use --config instead",
+    )
+    parser.add_argument(
+        "--config",
+        dest="config",
         help="Path to YAML configuration file",
     )
     parser.add_argument(
@@ -300,44 +334,68 @@ def main():
         required="--tls-keyfile" in sys.argv,
     )
 
-    args = parser.parse_args()
+    # Determine whether the server args are being passed by the "run" command, if this is the case
+    # the args will be passed as a Namespace object to the main function, otherwise they will be
+    # parsed from the command line
+    if args is None:
+        args = parser.parse_args()
 
-    if args.env:
-        for env_pair in args.env:
-            try:
-                key, value = validate_env_pair(env_pair)
-                logger.info(f"Setting CLI environment variable {key} => {value}")
-                os.environ[key] = value
-            except ValueError as e:
-                logger.error(f"Error: {str(e)}")
-                sys.exit(1)
+    # Check for deprecated argument usage
+    if "--yaml-config" in sys.argv:
+        warnings.warn(
+            "The '--yaml-config' argument is deprecated and will be removed in a future version. Use '--config' instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
 
-    if args.yaml_config:
+    log_line = ""
+    if args.config:
         # if the user provided a config file, use it, even if template was specified
-        config_file = Path(args.yaml_config)
+        config_file = Path(args.config)
         if not config_file.exists():
             raise ValueError(f"Config file {config_file} does not exist")
-        logger.info(f"Using config file: {config_file}")
+        log_line = f"Using config file: {config_file}"
     elif args.template:
         config_file = Path(REPO_ROOT) / "llama_stack" / "templates" / args.template / "run.yaml"
         if not config_file.exists():
             raise ValueError(f"Template {args.template} does not exist")
-        logger.info(f"Using template {args.template} config file: {config_file}")
+        log_line = f"Using template {args.template} config file: {config_file}"
     else:
         raise ValueError("Either --yaml-config or --template must be provided")
 
+    logger_config = None
     with open(config_file, "r") as fp:
-        config = replace_env_vars(yaml.safe_load(fp))
+        config_contents = yaml.safe_load(fp)
+        if isinstance(config_contents, dict) and (cfg := config_contents.get("logging_config")):
+            logger_config = LoggingConfig(**cfg)
+        logger = get_logger(name=__name__, category="server", config=logger_config)
+        if args.env:
+            for env_pair in args.env:
+                try:
+                    key, value = validate_env_pair(env_pair)
+                    logger.info(f"Setting CLI environment variable {key} => {value}")
+                    os.environ[key] = value
+                except ValueError as e:
+                    logger.error(f"Error: {str(e)}")
+                    sys.exit(1)
+        config = replace_env_vars(config_contents)
         config = StackRunConfig(**config)
+
+    # now that the logger is initialized, print the line about which type of config we are using.
+    logger.info(log_line)
 
     logger.info("Run configuration:")
     safe_config = redact_sensitive_fields(config.model_dump())
     logger.info(yaml.dump(safe_config, indent=2))
 
     app = FastAPI(lifespan=lifespan)
-    app.add_middleware(TracingMiddleware)
     if not os.environ.get("LLAMA_STACK_DISABLE_VERSION_CHECK"):
         app.add_middleware(ClientVersionMiddleware)
+
+    # Add authentication middleware if configured
+    if config.server.auth and config.server.auth.endpoint:
+        logger.info(f"Enabling authentication with endpoint: {config.server.auth.endpoint}")
+        app.add_middleware(AuthenticationMiddleware, auth_endpoint=config.server.auth.endpoint)
 
     try:
         impls = asyncio.run(construct_stack(config))
@@ -348,7 +406,7 @@ def main():
     if Api.telemetry in impls:
         setup_logger(impls[Api.telemetry])
     else:
-        setup_logger(TelemetryAdapter(TelemetryConfig()))
+        setup_logger(TelemetryAdapter(TelemetryConfig(), {}))
 
     all_endpoints = get_all_api_endpoints()
 
@@ -364,6 +422,7 @@ def main():
         apis_to_serve.add(inf.routing_table_api.value)
 
     apis_to_serve.add("inspect")
+    apis_to_serve.add("providers")
     for api_str in apis_to_serve:
         api = Api(api_str)
 
@@ -393,6 +452,7 @@ def main():
     app.exception_handler(Exception)(global_exception_handler)
 
     app.__llama_stack_impls__ = impls
+    app.add_middleware(TracingMiddleware, impls=impls)
 
     import uvicorn
 
@@ -422,6 +482,7 @@ def main():
         "host": listen_host,
         "port": port,
         "lifespan": "on",
+        "log_level": logger.getEffectiveLevel(),
     }
     if ssl_config:
         uvicorn_config.update(ssl_config)

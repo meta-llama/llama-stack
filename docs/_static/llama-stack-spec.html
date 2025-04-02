@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>OpenAPI specification</title>
     <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700" rel="stylesheet">
-    <script type="module" src="https://unpkg.com/@stoplight/elements/web-components.min.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/@stoplight/elements/styles.min.css">
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@stoplight/elements/web-components.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@stoplight/elements/styles.min.css">
     <style>
         body {
             margin: 0;
@@ -40,75 +40,7 @@
         }
     ],
     "paths": {
-        "/v1/datasetio/rows": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PaginatedRowsResult"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest400"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/TooManyRequests429"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError500"
-                    },
-                    "default": {
-                        "$ref": "#/components/responses/DefaultError"
-                    }
-                },
-                "tags": [
-                    "DatasetIO"
-                ],
-                "description": "Get a paginated list of rows from a dataset.",
-                "parameters": [
-                    {
-                        "name": "dataset_id",
-                        "in": "query",
-                        "description": "The ID of the dataset to get the rows from.",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "rows_in_page",
-                        "in": "query",
-                        "description": "The number of rows to get per page.",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "page_token",
-                        "in": "query",
-                        "description": "The token to get the next page of rows.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "filter_condition",
-                        "in": "query",
-                        "description": "(Optional) A condition to filter the rows by.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
-            },
+        "/v1/datasetio/append-rows/{dataset_id}": {
             "post": {
                 "responses": {
                     "200": {
@@ -131,7 +63,16 @@
                     "DatasetIO"
                 ],
                 "description": "",
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "dataset_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -583,7 +524,7 @@
                     }
                 },
                 "tags": [
-                    "Files (Coming Soon)"
+                    "Files"
                 ],
                 "description": "List all buckets.",
                 "parameters": [
@@ -623,7 +564,7 @@
                     }
                 },
                 "tags": [
-                    "Files (Coming Soon)"
+                    "Files"
                 ],
                 "description": "Create a new upload session for a file identified by a bucket and key.",
                 "parameters": [],
@@ -850,7 +791,7 @@
                     }
                 },
                 "tags": [
-                    "Files (Coming Soon)"
+                    "Files"
                 ],
                 "description": "Get a file info identified by a bucket and key.",
                 "parameters": [
@@ -877,14 +818,7 @@
             "delete": {
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/FileResponse"
-                                }
-                            }
-                        }
+                        "description": "OK"
                     },
                     "400": {
                         "$ref": "#/components/responses/BadRequest400"
@@ -900,7 +834,7 @@
                     }
                 },
                 "tags": [
-                    "Files (Coming Soon)"
+                    "Files"
                 ],
                 "description": "Delete a file identified by a bucket and key.",
                 "parameters": [
@@ -1160,14 +1094,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/Benchmark"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/Benchmark"
                                 }
                             }
                         }
@@ -1209,14 +1136,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/Dataset"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/Dataset"
                                 }
                             }
                         }
@@ -1291,14 +1211,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/Model"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/Model"
                                 }
                             }
                         }
@@ -1373,14 +1286,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/Preprocessor"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/Preprocessor"
                                 }
                             }
                         }
@@ -1455,14 +1361,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/ScoringFn"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/ScoringFn"
                                 }
                             }
                         }
@@ -1504,14 +1403,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/Shield"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/Shield"
                                 }
                             }
                         }
@@ -1814,14 +1706,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/PostTrainingJobArtifactsResponse"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/PostTrainingJobArtifactsResponse"
                                 }
                             }
                         }
@@ -1863,14 +1748,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/PostTrainingJobStatusResponse"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/PostTrainingJobStatusResponse"
                                 }
                             }
                         }
@@ -1945,14 +1823,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/FileUploadResponse"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/FileUploadResponse"
                                 }
                             }
                         }
@@ -1971,7 +1842,7 @@
                     }
                 },
                 "tags": [
-                    "Files (Coming Soon)"
+                    "Files"
                 ],
                 "description": "Returns information about an existsing upload session",
                 "parameters": [
@@ -2019,7 +1890,7 @@
                     }
                 },
                 "tags": [
-                    "Files (Coming Soon)"
+                    "Files"
                 ],
                 "description": "Upload file content to an existing upload session. On the server, request body will have the raw bytes that are uploaded.",
                 "parameters": [
@@ -2054,14 +1925,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/VectorDB"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/VectorDB"
                                 }
                             }
                         }
@@ -2233,6 +2097,48 @@
                 }
             }
         },
+        "/v1/providers/{provider_id}": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProviderInfo"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Providers"
+                ],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "provider_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
         "/v1/tool-runtime/invoke": {
             "post": {
                 "responses": {
@@ -2276,6 +2182,67 @@
                 }
             }
         },
+        "/v1/datasetio/iterrows/{dataset_id}": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "DatasetIO"
+                ],
+                "description": "Get a paginated list of rows from a dataset.\nUses offset-based pagination where:\n- start_index: The starting index (0-based). If None, starts from beginning.\n- limit: Number of items to return. If None or -1, returns all items.\n\nThe response includes:\n- data: List of items for the current page\n- has_more: Whether there are more items available after this set",
+                "parameters": [
+                    {
+                        "name": "dataset_id",
+                        "in": "path",
+                        "description": "The ID of the dataset to get the rows from.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "start_index",
+                        "in": "query",
+                        "description": "Index into dataset for the first row to get. Get all rows if None.",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "The number of rows to get.",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ]
+            }
+        },
         "/v1/eval/benchmarks/{benchmark_id}/jobs/{job_id}": {
             "get": {
                 "responses": {
@@ -2284,14 +2251,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/JobStatus"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/Job"
                                 }
                             }
                         }
@@ -2575,7 +2535,14 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Dataset"
+                                }
+                            }
+                        }
                     },
                     "400": {
                         "$ref": "#/components/responses/BadRequest400"
@@ -2593,7 +2560,7 @@
                 "tags": [
                     "Datasets"
                 ],
-                "description": "",
+                "description": "Register a new dataset.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -2634,7 +2601,7 @@
                     }
                 },
                 "tags": [
-                    "Files (Coming Soon)"
+                    "Files"
                 ],
                 "description": "List all files in a bucket.",
                 "parameters": [
@@ -2798,7 +2765,7 @@
                 }
             }
         },
-        "/v1/inspect/providers": {
+        "/v1/providers": {
             "get": {
                 "responses": {
                     "200": {
@@ -2825,7 +2792,7 @@
                     }
                 },
                 "tags": [
-                    "Inspect"
+                    "Providers"
                 ],
                 "description": "",
                 "parameters": []
@@ -2870,9 +2837,9 @@
                     "200": {
                         "description": "OK",
                         "content": {
-                            "application/jsonl": {
+                            "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ToolDef"
+                                    "$ref": "#/components/schemas/ListToolDefsResponse"
                                 }
                             }
                         }
@@ -3981,9 +3948,6 @@
             "AppendRowsRequest": {
                 "type": "object",
                 "properties": {
-                    "dataset_id": {
-                        "type": "string"
-                    },
                     "rows": {
                         "type": "array",
                         "items": {
@@ -4015,7 +3979,6 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "dataset_id",
                     "rows"
                 ],
                 "title": "AppendRowsRequest"
@@ -4275,22 +4238,33 @@
                 "type": "object",
                 "properties": {
                     "strategy": {
-                        "$ref": "#/components/schemas/SamplingStrategy"
+                        "$ref": "#/components/schemas/SamplingStrategy",
+                        "description": "The sampling strategy."
                     },
                     "max_tokens": {
                         "type": "integer",
-                        "default": 0
+                        "default": 0,
+                        "description": "The maximum number of tokens that can be generated in the completion. The token count of your prompt plus max_tokens cannot exceed the model's context length."
                     },
                     "repetition_penalty": {
                         "type": "number",
-                        "default": 1.0
+                        "default": 1.0,
+                        "description": "Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics."
+                    },
+                    "stop": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "Up to 4 sequences where the API will stop generating further tokens. The returned text will not contain the stop sequence."
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "strategy"
                 ],
-                "title": "SamplingParams"
+                "title": "SamplingParams",
+                "description": "Sampling parameters."
             },
             "SamplingStrategy": {
                 "oneOf": [
@@ -4381,70 +4355,80 @@
                         ]
                     },
                     "arguments": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "integer"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "array",
-                                    "items": {
-                                        "oneOf": [
-                                            {
-                                                "type": "string"
-                                            },
-                                            {
-                                                "type": "integer"
-                                            },
-                                            {
-                                                "type": "number"
-                                            },
-                                            {
-                                                "type": "boolean"
-                                            },
-                                            {
-                                                "type": "null"
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "integer"
+                                        },
+                                        {
+                                            "type": "number"
+                                        },
+                                        {
+                                            "type": "boolean"
+                                        },
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "type": "array",
+                                            "items": {
+                                                "oneOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "integer"
+                                                    },
+                                                    {
+                                                        "type": "number"
+                                                    },
+                                                    {
+                                                        "type": "boolean"
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
                                             }
-                                        ]
-                                    }
-                                },
-                                {
-                                    "type": "object",
-                                    "additionalProperties": {
-                                        "oneOf": [
-                                            {
-                                                "type": "string"
-                                            },
-                                            {
-                                                "type": "integer"
-                                            },
-                                            {
-                                                "type": "number"
-                                            },
-                                            {
-                                                "type": "boolean"
-                                            },
-                                            {
-                                                "type": "null"
+                                        },
+                                        {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "oneOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "integer"
+                                                    },
+                                                    {
+                                                        "type": "number"
+                                                    },
+                                                    {
+                                                        "type": "boolean"
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
                                             }
-                                        ]
-                                    }
+                                        }
+                                    ]
                                 }
-                            ]
-                        }
+                            }
+                        ]
+                    },
+                    "arguments_json": {
+                        "type": "string"
                     }
                 },
                 "additionalProperties": false,
@@ -4546,24 +4530,6 @@
                         "type": "string",
                         "description": "Unique identifier for the tool call this response is for"
                     },
-                    "tool_name": {
-                        "oneOf": [
-                            {
-                                "type": "string",
-                                "enum": [
-                                    "brave_search",
-                                    "wolfram_alpha",
-                                    "photogen",
-                                    "code_interpreter"
-                                ],
-                                "title": "BuiltinTool"
-                            },
-                            {
-                                "type": "string"
-                            }
-                        ],
-                        "description": "Name of the tool that was called"
-                    },
                     "content": {
                         "$ref": "#/components/schemas/InterleavedContent",
                         "description": "The response content from the tool"
@@ -4573,7 +4539,6 @@
                 "required": [
                     "role",
                     "call_id",
-                    "tool_name",
                     "content"
                 ],
                 "title": "ToolResponseMessage",
@@ -4748,7 +4713,7 @@
                     "metrics": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/MetricEvent"
+                            "$ref": "#/components/schemas/MetricInResponse"
                         }
                     },
                     "completion_message": {
@@ -4770,46 +4735,9 @@
                 "title": "ChatCompletionResponse",
                 "description": "Response from a chat completion request."
             },
-            "MetricEvent": {
+            "MetricInResponse": {
                 "type": "object",
                 "properties": {
-                    "trace_id": {
-                        "type": "string"
-                    },
-                    "span_id": {
-                        "type": "string"
-                    },
-                    "timestamp": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "attributes": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "integer"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "null"
-                                }
-                            ]
-                        }
-                    },
-                    "type": {
-                        "type": "string",
-                        "const": "metric",
-                        "default": "metric"
-                    },
                     "metric": {
                         "type": "string"
                     },
@@ -4829,15 +4757,10 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "trace_id",
-                    "span_id",
-                    "timestamp",
-                    "type",
                     "metric",
-                    "value",
-                    "unit"
+                    "value"
                 ],
-                "title": "MetricEvent"
+                "title": "MetricInResponse"
             },
             "TokenLogProbs": {
                 "type": "object",
@@ -4917,7 +4840,7 @@
                     "metrics": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/MetricEvent"
+                            "$ref": "#/components/schemas/MetricInResponse"
                         }
                     },
                     "content": {
@@ -5129,7 +5052,7 @@
                     "metrics": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/MetricEvent"
+                            "$ref": "#/components/schemas/MetricInResponse"
                         }
                     },
                     "event": {
@@ -5290,7 +5213,7 @@
                     "metrics": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/MetricEvent"
+                            "$ref": "#/components/schemas/MetricInResponse"
                         }
                     },
                     "delta": {
@@ -6402,46 +6325,6 @@
                 "title": "FileUploadResponse",
                 "description": "Response after initiating a file upload session."
             },
-            "FileResponse": {
-                "type": "object",
-                "properties": {
-                    "bucket": {
-                        "type": "string",
-                        "description": "Bucket under which the file is stored (valid chars: a-zA-Z0-9_-)"
-                    },
-                    "key": {
-                        "type": "string",
-                        "description": "Key under which the file is stored (valid chars: a-zA-Z0-9_-/.)"
-                    },
-                    "mime_type": {
-                        "type": "string",
-                        "description": "MIME type of the file"
-                    },
-                    "url": {
-                        "type": "string",
-                        "description": "Upload URL for the file contents"
-                    },
-                    "bytes": {
-                        "type": "integer",
-                        "description": "Size of the file in bytes"
-                    },
-                    "created_at": {
-                        "type": "integer",
-                        "description": "Timestamp of when the file was created"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "bucket",
-                    "key",
-                    "mime_type",
-                    "url",
-                    "bytes",
-                    "created_at"
-                ],
-                "title": "FileResponse",
-                "description": "Response representing a file entry."
-            },
             "EmbeddingsRequest": {
                 "type": "object",
                 "properties": {
@@ -6541,6 +6424,7 @@
                 "type": "string",
                 "enum": [
                     "average",
+                    "weighted_average",
                     "median",
                     "categorical_count",
                     "accuracy"
@@ -7042,6 +6926,327 @@
                 ],
                 "title": "Benchmark"
             },
+            "DataSource": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/URIDataSource"
+                    },
+                    {
+                        "$ref": "#/components/schemas/RowsDataSource"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "uri": "#/components/schemas/URIDataSource",
+                        "rows": "#/components/schemas/RowsDataSource"
+                    }
+                }
+            },
+            "Dataset": {
+                "type": "object",
+                "properties": {
+                    "identifier": {
+                        "type": "string"
+                    },
+                    "provider_resource_id": {
+                        "type": "string"
+                    },
+                    "provider_id": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "dataset",
+                        "default": "dataset"
+                    },
+                    "purpose": {
+                        "type": "string",
+                        "enum": [
+                            "post-training/messages",
+                            "eval/question-answer",
+                            "eval/messages-answer"
+                        ],
+                        "title": "DatasetPurpose",
+                        "description": "Purpose of the dataset. Each purpose has a required input data schema."
+                    },
+                    "source": {
+                        "$ref": "#/components/schemas/DataSource"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "identifier",
+                    "provider_resource_id",
+                    "provider_id",
+                    "type",
+                    "purpose",
+                    "source",
+                    "metadata"
+                ],
+                "title": "Dataset"
+            },
+            "RowsDataSource": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "rows",
+                        "default": "rows"
+                    },
+                    "rows": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "oneOf": [
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "type": "boolean"
+                                    },
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array"
+                                    },
+                                    {
+                                        "type": "object"
+                                    }
+                                ]
+                            }
+                        },
+                        "description": "The dataset is stored in rows. E.g. - [ {\"messages\": [{\"role\": \"user\", \"content\": \"Hello, world!\"}, {\"role\": \"assistant\", \"content\": \"Hello, world!\"}]} ]"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "rows"
+                ],
+                "title": "RowsDataSource",
+                "description": "A dataset stored in rows."
+            },
+            "URIDataSource": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "uri",
+                        "default": "uri"
+                    },
+                    "uri": {
+                        "type": "string",
+                        "description": "The dataset can be obtained from a URI. E.g. - \"https://mywebsite.com/mydata.jsonl\" - \"lsfs://mydata.jsonl\" - \"data:csv;base64,{base64_content}\""
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "uri"
+                ],
+                "title": "URIDataSource",
+                "description": "A dataset that can be obtained from a URI."
+            },
+            "FileResponse": {
+                "type": "object",
+                "properties": {
+                    "bucket": {
+                        "type": "string",
+                        "description": "Bucket under which the file is stored (valid chars: a-zA-Z0-9_-)"
+                    },
+                    "key": {
+                        "type": "string",
+                        "description": "Key under which the file is stored (valid chars: a-zA-Z0-9_-/.)"
+                    },
+                    "mime_type": {
+                        "type": "string",
+                        "description": "MIME type of the file"
+                    },
+                    "url": {
+                        "type": "string",
+                        "description": "Upload URL for the file contents"
+                    },
+                    "bytes": {
+                        "type": "integer",
+                        "description": "Size of the file in bytes"
+                    },
+                    "created_at": {
+                        "type": "integer",
+                        "description": "Timestamp of when the file was created"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "bucket",
+                    "key",
+                    "mime_type",
+                    "url",
+                    "bytes",
+                    "created_at"
+                ],
+                "title": "FileResponse",
+                "description": "Response representing a file entry."
+            },
+            "Model": {
+                "type": "object",
+                "properties": {
+                    "identifier": {
+                        "type": "string"
+                    },
+                    "provider_resource_id": {
+                        "type": "string"
+                    },
+                    "provider_id": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "model",
+                        "default": "model"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    },
+                    "model_type": {
+                        "$ref": "#/components/schemas/ModelType",
+                        "default": "llm"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "identifier",
+                    "provider_resource_id",
+                    "provider_id",
+                    "type",
+                    "metadata",
+                    "model_type"
+                ],
+                "title": "Model"
+            },
+            "ModelType": {
+                "type": "string",
+                "enum": [
+                    "llm",
+                    "embedding"
+                ],
+                "title": "ModelType"
+            },
+            "Preprocessor": {
+                "type": "object",
+                "properties": {
+                    "identifier": {
+                        "type": "string"
+                    },
+                    "provider_resource_id": {
+                        "type": "string"
+                    },
+                    "provider_id": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "model",
+                            "shield",
+                            "vector_db",
+                            "dataset",
+                            "scoring_function",
+                            "benchmark",
+                            "tool",
+                            "tool_group",
+                            "preprocessor"
+                        ],
+                        "title": "ResourceType",
+                        "default": "preprocessor"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "identifier",
+                    "provider_resource_id",
+                    "provider_id",
+                    "type"
+                ],
+                "title": "Preprocessor"
+            },
             "AgentTurnInputType": {
                 "type": "object",
                 "properties": {
@@ -7116,70 +7321,6 @@
                     "type"
                 ],
                 "title": "CompletionInputType"
-            },
-            "Dataset": {
-                "type": "object",
-                "properties": {
-                    "identifier": {
-                        "type": "string"
-                    },
-                    "provider_resource_id": {
-                        "type": "string"
-                    },
-                    "provider_id": {
-                        "type": "string"
-                    },
-                    "type": {
-                        "type": "string",
-                        "const": "dataset",
-                        "default": "dataset"
-                    },
-                    "dataset_schema": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "$ref": "#/components/schemas/ParamType"
-                        }
-                    },
-                    "url": {
-                        "$ref": "#/components/schemas/URL"
-                    },
-                    "metadata": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "identifier",
-                    "provider_resource_id",
-                    "provider_id",
-                    "type",
-                    "dataset_schema",
-                    "url",
-                    "metadata"
-                ],
-                "title": "Dataset"
             },
             "JsonType": {
                 "type": "object",
@@ -7275,203 +7416,6 @@
                     }
                 }
             },
-            "StringType": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "string",
-                        "default": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type"
-                ],
-                "title": "StringType"
-            },
-            "UnionType": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "union",
-                        "default": "union"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type"
-                ],
-                "title": "UnionType"
-            },
-            "Model": {
-                "type": "object",
-                "properties": {
-                    "identifier": {
-                        "type": "string"
-                    },
-                    "provider_resource_id": {
-                        "type": "string"
-                    },
-                    "provider_id": {
-                        "type": "string"
-                    },
-                    "type": {
-                        "type": "string",
-                        "const": "model",
-                        "default": "model"
-                    },
-                    "metadata": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    },
-                    "model_type": {
-                        "$ref": "#/components/schemas/ModelType",
-                        "default": "llm"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "identifier",
-                    "provider_resource_id",
-                    "provider_id",
-                    "type",
-                    "metadata",
-                    "model_type"
-                ],
-                "title": "Model"
-            },
-            "ModelType": {
-                "type": "string",
-                "enum": [
-                    "llm",
-                    "embedding"
-                ],
-                "title": "ModelType"
-            },
-            "Preprocessor": {
-                "type": "object",
-                "properties": {
-                    "identifier": {
-                        "type": "string"
-                    },
-                    "provider_resource_id": {
-                        "type": "string"
-                    },
-                    "provider_id": {
-                        "type": "string"
-                    },
-                    "type": {
-                        "type": "string",
-                        "const": "preprocessor",
-                        "default": "preprocessor"
-                    },
-                    "metadata": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "identifier",
-                    "provider_resource_id",
-                    "provider_id",
-                    "type"
-                ],
-                "title": "Preprocessor"
-            },
-            "PaginatedRowsResult": {
-                "type": "object",
-                "properties": {
-                    "rows": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "oneOf": [
-                                    {
-                                        "type": "null"
-                                    },
-                                    {
-                                        "type": "boolean"
-                                    },
-                                    {
-                                        "type": "number"
-                                    },
-                                    {
-                                        "type": "string"
-                                    },
-                                    {
-                                        "type": "array"
-                                    },
-                                    {
-                                        "type": "object"
-                                    }
-                                ]
-                            }
-                        },
-                        "description": "The rows in the current page."
-                    },
-                    "total_count": {
-                        "type": "integer",
-                        "description": "The total number of rows in the dataset."
-                    },
-                    "next_page_token": {
-                        "type": "string",
-                        "description": "The token to get the next page of rows."
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "rows",
-                    "total_count"
-                ],
-                "title": "PaginatedRowsResult",
-                "description": "A paginated list of rows from a dataset."
-            },
             "ScoringFn": {
                 "type": "object",
                 "properties": {
@@ -7534,6 +7478,36 @@
                     "return_type"
                 ],
                 "title": "ScoringFn"
+            },
+            "StringType": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "string",
+                        "default": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ],
+                "title": "StringType"
+            },
+            "UnionType": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "union",
+                        "default": "union"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ],
+                "title": "UnionType"
             },
             "Shield": {
                 "type": "object",
@@ -7933,16 +7907,6 @@
                 "title": "PostTrainingJobArtifactsResponse",
                 "description": "Artifacts of a finetuning job."
             },
-            "JobStatus": {
-                "type": "string",
-                "enum": [
-                    "completed",
-                    "in_progress",
-                    "failed",
-                    "scheduled"
-                ],
-                "title": "JobStatus"
-            },
             "PostTrainingJobStatusResponse": {
                 "type": "object",
                 "properties": {
@@ -7950,7 +7914,15 @@
                         "type": "string"
                     },
                     "status": {
-                        "$ref": "#/components/schemas/JobStatus"
+                        "type": "string",
+                        "enum": [
+                            "completed",
+                            "in_progress",
+                            "failed",
+                            "scheduled",
+                            "cancelled"
+                        ],
+                        "title": "JobStatus"
                     },
                     "scheduled_at": {
                         "type": "string",
@@ -8121,7 +8093,8 @@
                 "type": "object",
                 "properties": {
                     "document_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The unique identifier for the document."
                     },
                     "content": {
                         "oneOf": [
@@ -8140,10 +8113,12 @@
                             {
                                 "$ref": "#/components/schemas/URL"
                             }
-                        ]
+                        ],
+                        "description": "The content of the document."
                     },
                     "mime_type": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The MIME type of the document."
                     },
                     "metadata": {
                         "type": "object",
@@ -8168,7 +8143,8 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "Additional metadata for the document."
                     }
                 },
                 "additionalProperties": false,
@@ -8177,7 +8153,8 @@
                     "content",
                     "metadata"
                 ],
-                "title": "RAGDocument"
+                "title": "RAGDocument",
+                "description": "A document to be used for document ingestion in the RAG Tool."
             },
             "InsertRequest": {
                 "type": "object",
@@ -8268,6 +8245,53 @@
                 ],
                 "title": "InsertChunksRequest"
             },
+            "ProviderInfo": {
+                "type": "object",
+                "properties": {
+                    "api": {
+                        "type": "string"
+                    },
+                    "provider_id": {
+                        "type": "string"
+                    },
+                    "provider_type": {
+                        "type": "string"
+                    },
+                    "config": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "api",
+                    "provider_id",
+                    "provider_type",
+                    "config"
+                ],
+                "title": "ProviderInfo"
+            },
             "InvokeToolRequest": {
                 "type": "object",
                 "properties": {
@@ -8346,10 +8370,77 @@
                     }
                 },
                 "additionalProperties": false,
-                "required": [
-                    "content"
-                ],
                 "title": "ToolInvocationResult"
+            },
+            "PaginatedResponse": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "oneOf": [
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "type": "boolean"
+                                    },
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array"
+                                    },
+                                    {
+                                        "type": "object"
+                                    }
+                                ]
+                            }
+                        },
+                        "description": "The list of items for the current page"
+                    },
+                    "has_more": {
+                        "type": "boolean",
+                        "description": "Whether there are more items available after this set"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "data",
+                    "has_more"
+                ],
+                "title": "PaginatedResponse",
+                "description": "A generic paginated response that follows a simple format."
+            },
+            "Job": {
+                "type": "object",
+                "properties": {
+                    "job_id": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "completed",
+                            "in_progress",
+                            "failed",
+                            "scheduled",
+                            "cancelled"
+                        ],
+                        "title": "JobStatus"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "job_id",
+                    "status"
+                ],
+                "title": "Job"
             },
             "ListAgentSessionsResponse": {
                 "type": "object",
@@ -8496,27 +8587,6 @@
                 ],
                 "title": "ListPreprocessorsResponse"
             },
-            "ProviderInfo": {
-                "type": "object",
-                "properties": {
-                    "api": {
-                        "type": "string"
-                    },
-                    "provider_id": {
-                        "type": "string"
-                    },
-                    "provider_type": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "api",
-                    "provider_id",
-                    "provider_type"
-                ],
-                "title": "ProviderInfo"
-            },
             "ListProvidersResponse": {
                 "type": "object",
                 "properties": {
@@ -8572,6 +8642,22 @@
                     "data"
                 ],
                 "title": "ListRoutesResponse"
+            },
+            "ListToolDefsResponse": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ToolDef"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "data"
+                ],
+                "title": "ListToolDefsResponse"
             },
             "ListScoringFunctionsResponse": {
                 "type": "object",
@@ -8685,6 +8771,75 @@
                     "critical"
                 ],
                 "title": "LogSeverity"
+            },
+            "MetricEvent": {
+                "type": "object",
+                "properties": {
+                    "trace_id": {
+                        "type": "string"
+                    },
+                    "span_id": {
+                        "type": "string"
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "attributes": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "integer"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ]
+                        }
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "metric",
+                        "default": "metric"
+                    },
+                    "metric": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "oneOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "number"
+                            }
+                        ]
+                    },
+                    "unit": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "trace_id",
+                    "span_id",
+                    "timestamp",
+                    "type",
+                    "metric",
+                    "value",
+                    "unit"
+                ],
+                "title": "MetricEvent"
             },
             "SpanEndPayload": {
                 "type": "object",
@@ -9275,8 +9430,7 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "success",
-                    "output_data_type"
+                    "success"
                 ],
                 "title": "PreprocessorResponse"
             },
@@ -9716,23 +9870,18 @@
             "RegisterDatasetRequest": {
                 "type": "object",
                 "properties": {
-                    "dataset_id": {
-                        "type": "string"
+                    "purpose": {
+                        "type": "string",
+                        "enum": [
+                            "post-training/messages",
+                            "eval/question-answer",
+                            "eval/messages-answer"
+                        ],
+                        "description": "The purpose of the dataset. One of - \"post-training/messages\": The dataset contains a messages column with list of messages for post-training. { \"messages\": [ {\"role\": \"user\", \"content\": \"Hello, world!\"}, {\"role\": \"assistant\", \"content\": \"Hello, world!\"}, ] } - \"eval/question-answer\": The dataset contains a question column and an answer column for evaluation. { \"question\": \"What is the capital of France?\", \"answer\": \"Paris\" } - \"eval/messages-answer\": The dataset contains a messages column with list of messages and an answer column for evaluation. { \"messages\": [ {\"role\": \"user\", \"content\": \"Hello, my name is John Doe.\"}, {\"role\": \"assistant\", \"content\": \"Hello, John Doe. How can I help you today?\"}, {\"role\": \"user\", \"content\": \"What's my name?\"}, ], \"answer\": \"John Doe\" }"
                     },
-                    "dataset_schema": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "$ref": "#/components/schemas/ParamType"
-                        }
-                    },
-                    "url": {
-                        "$ref": "#/components/schemas/URL"
-                    },
-                    "provider_dataset_id": {
-                        "type": "string"
-                    },
-                    "provider_id": {
-                        "type": "string"
+                    "source": {
+                        "$ref": "#/components/schemas/DataSource",
+                        "description": "The data source of the dataset. Ensure that the data source schema is compatible with the purpose of the dataset. Examples: - { \"type\": \"uri\", \"uri\": \"https://mywebsite.com/mydata.jsonl\" } - { \"type\": \"uri\", \"uri\": \"lsfs://mydata.jsonl\" } - { \"type\": \"uri\", \"uri\": \"data:csv;base64,{base64_content}\" } - { \"type\": \"uri\", \"uri\": \"huggingface://llamastack/simpleqa?split=train\" } - { \"type\": \"rows\", \"rows\": [ { \"messages\": [ {\"role\": \"user\", \"content\": \"Hello, world!\"}, {\"role\": \"assistant\", \"content\": \"Hello, world!\"}, ] } ] }"
                     },
                     "metadata": {
                         "type": "object",
@@ -9757,14 +9906,18 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "The metadata for the dataset. - E.g. {\"description\": \"My dataset\"}"
+                    },
+                    "dataset_id": {
+                        "type": "string",
+                        "description": "The ID of the dataset. If not provided, an ID will be generated."
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "dataset_id",
-                    "dataset_schema",
-                    "url"
+                    "purpose",
+                    "source"
                 ],
                 "title": "RegisterDatasetRequest"
             },
@@ -10005,21 +10158,11 @@
                 "type": "object",
                 "properties": {
                     "tool_responses": {
-                        "oneOf": [
-                            {
-                                "type": "array",
-                                "items": {
-                                    "$ref": "#/components/schemas/ToolResponse"
-                                }
-                            },
-                            {
-                                "type": "array",
-                                "items": {
-                                    "$ref": "#/components/schemas/ToolResponseMessage"
-                                }
-                            }
-                        ],
-                        "description": "The tool call responses to resume the turn with. NOTE: ToolResponseMessage will be deprecated. Use ToolResponse."
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ToolResponse"
+                        },
+                        "description": "The tool call responses to resume the turn with."
                     },
                     "stream": {
                         "type": "boolean",
@@ -10045,19 +10188,6 @@
                     "benchmark_config"
                 ],
                 "title": "RunEvalRequest"
-            },
-            "Job": {
-                "type": "object",
-                "properties": {
-                    "job_id": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "job_id"
-                ],
-                "title": "Job"
             },
             "RunShieldRequest": {
                 "type": "object",
@@ -10634,7 +10764,7 @@
             "x-displayName": "Llama Stack Evaluation API for running evaluations on model and agent candidates."
         },
         {
-            "name": "Files (Coming Soon)"
+            "name": "Files"
         },
         {
             "name": "Inference",
@@ -10655,6 +10785,10 @@
         },
         {
             "name": "Preprocessors"
+        },
+        {
+            "name": "Providers",
+            "x-displayName": "Providers API for inspecting, listing, and modifying providers and their configurations."
         },
         {
             "name": "Safety"
@@ -10697,13 +10831,14 @@
                 "DatasetIO",
                 "Datasets",
                 "Eval",
-                "Files (Coming Soon)",
+                "Files",
                 "Inference",
                 "Inspect",
                 "Models",
                 "PostTraining (Coming Soon)",
                 "Preprocessing",
                 "Preprocessors",
+                "Providers",
                 "Safety",
                 "Scoring",
                 "ScoringFunctions",

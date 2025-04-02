@@ -61,6 +61,7 @@ outlined on that page and do not file a public issue.
 
 We use [uv](https://github.com/astral-sh/uv) to manage python dependencies and virtual environments.
 You can install `uv` by following this [guide](https://docs.astral.sh/uv/getting-started/installation/).
+
 You can install the dependencies by running:
 
 ```bash
@@ -70,17 +71,24 @@ uv pip install -e .
 source .venv/bin/activate
 ```
 
+> [!NOTE]
+> You can pin a specific version of Python to use for `uv` by adding a `.python-version` file in the root project directory.
+> Otherwise, `uv` will automatically select a Python version according to the `requires-python` section of the `pyproject.toml`.
+> For more info, see the [uv docs around Python versions](https://docs.astral.sh/uv/concepts/python-versions/).
+
 Note that you can create a dotenv file `.env` that includes necessary environment variables:
 ```
 LLAMA_STACK_BASE_URL=http://localhost:8321
 LLAMA_STACK_CLIENT_LOG=debug
 LLAMA_STACK_PORT=8321
-LLAMA_STACK_CONFIG=
+LLAMA_STACK_CONFIG=<provider-name>
+TAVILY_SEARCH_API_KEY=
+BRAVE_SEARCH_API_KEY=
 ```
 
 And then use this dotenv file when running client SDK tests via the following:
 ```bash
-uv run --env-file .env -- pytest -v tests/api/inference/test_text_inference.py
+uv run --env-file .env -- pytest -v tests/integration/inference/test_text_inference.py --text-model=meta-llama/Llama-3.1-8B-Instruct
 ```
 
 ## Pre-commit Hooks
@@ -102,6 +110,26 @@ uv run pre-commit run --all-files
 > [!CAUTION]
 > Before pushing your changes, make sure that the pre-commit hooks have passed successfully.
 
+## Running unit tests
+
+You can run the unit tests by running:
+
+```bash
+source .venv/bin/activate
+./scripts/unit-tests.sh
+```
+
+If you'd like to run for a non-default version of Python (currently 3.10), pass `PYTHON_VERSION` variable as follows:
+
+```
+source .venv/bin/activate
+PYTHON_VERSION=3.13 ./scripts/unit-tests.sh
+```
+
+## Running integration tests
+
+You can run integration tests following the instructions [here](tests/integration/README.md).
+
 ## Adding a new dependency to the project
 
 To add a new dependency to the project, you can use the `uv` command. For example, to add `foo` to the project, you can run:
@@ -113,9 +141,11 @@ uv sync
 
 ## Coding Style
 
+* Comments should provide meaningful insights into the code. Avoid filler comments that simply describe the next step, as they create unnecessary clutter, same goes for docstrings.
+* Prefer comments to clarify surprising behavior and/or relationships between parts of the code rather than explain what the next line of code does.
+* Catching exceptions, prefer using a specific exception type rather than a broad catch-all like `Exception`.
+* Error messages should be prefixed with "Failed to ..."
 * 4 spaces for indentation rather than tabs
-* 80 character line length
-* ...
 
 ## Common Tasks
 
@@ -137,14 +167,14 @@ LLAMA_STACK_DIR=$(pwd) LLAMA_STACK_CLIENT_DIR=../llama-stack-client-python llama
 
 ### Updating Provider Configurations
 
-If you have made changes to a provider's configuration in any form (introducing a new config key, or changing models, etc.), you should run `python llama_stack/scripts/distro_codegen.py` to re-generate various YAML files as well as the documentation. You should not change `docs/source/.../distributions/` files manually as they are auto-generated.
+If you have made changes to a provider's configuration in any form (introducing a new config key, or changing models, etc.), you should run `./scripts/distro_codegen.py` to re-generate various YAML files as well as the documentation. You should not change `docs/source/.../distributions/` files manually as they are auto-generated.
 
 ### Building the Documentation
 
 If you are making changes to the documentation at [https://llama-stack.readthedocs.io/en/latest/](https://llama-stack.readthedocs.io/en/latest/), you can use the following command to build the documentation and preview your changes. You will need [Sphinx](https://www.sphinx-doc.org/en/master/) and the readthedocs theme.
 
 ```bash
-cd llama-stack/docs
+cd docs
 uv sync --extra docs
 
 # This rebuilds the documentation pages.

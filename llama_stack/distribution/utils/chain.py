@@ -41,10 +41,10 @@ async def execute_preprocessor_chain(
     preprocessor_inputs: List[PreprocessingDataElement],
 ) -> PreprocessorResponse:
     if not validate_chain(preprocessor_chain_impls):
-        return PreprocessorResponse(success=False, results=[])
+        return PreprocessorResponse(success=False, output_data_type=None, results=[])
 
     current_inputs = preprocessor_inputs
-    current_outputs = []
+    current_outputs: List[PreprocessingDataElement] | None = []
     current_result_type = None
 
     # TODO: replace with a parallel implementation
@@ -59,6 +59,9 @@ async def execute_preprocessor_chain(
             log.error(f"Preprocessor {current_params.preprocessor_id} returned an error")
             return PreprocessorResponse(success=False, output_data_type=response.output_data_type, results=[])
         current_outputs = response.results
+        if current_outputs is None:
+            log.error(f"Preprocessor {current_params.preprocessor_id} returned invalid results")
+            return PreprocessorResponse(success=False, output_data_type=response.output_data_type, results=[])
         current_inputs = current_outputs
         current_result_type = response.output_data_type
 

@@ -25,6 +25,7 @@ from llama_stack.apis.models import Models
 from llama_stack.apis.post_training import PostTraining
 from llama_stack.apis.preprocessing import Preprocessing
 from llama_stack.apis.preprocessing.preprocessors import Preprocessors
+from llama_stack.apis.providers import Providers
 from llama_stack.apis.safety import Safety
 from llama_stack.apis.scoring import Scoring
 from llama_stack.apis.scoring_functions import ScoringFunctions
@@ -46,6 +47,7 @@ logger = get_logger(name=__name__, category="core")
 
 
 class LlamaStack(
+    Providers,
     VectorDBs,
     Inference,
     BatchInference,

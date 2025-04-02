@@ -16,15 +16,17 @@ providers:
   - provider_id: vllm-inference
     provider_type: remote::vllm
     config:
-      url: ${env.VLLM_URL}
+      url: ${env.VLLM_URL:http://localhost:8000/v1}
       max_tokens: ${env.VLLM_MAX_TOKENS:4096}
       api_token: ${env.VLLM_API_TOKEN:fake}
+      tls_verify: ${env.VLLM_TLS_VERIFY:true}
   - provider_id: vllm-safety
     provider_type: remote::vllm
     config:
       url: ${env.SAFETY_VLLM_URL}
       max_tokens: ${env.VLLM_MAX_TOKENS:4096}
       api_token: ${env.VLLM_API_TOKEN:fake}
+      tls_verify: ${env.VLLM_TLS_VERIFY:true}
   - provider_id: sentence-transformers
     provider_type: inline::sentence-transformers
     config: {}
@@ -39,7 +41,8 @@ providers:
   safety:
   - provider_id: llama-guard
     provider_type: inline::llama-guard
-    config: {}
+    config:
+      excluded_categories: []
   agents:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -51,14 +54,26 @@ providers:
   eval:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
-    config: {}
+    config:
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/remote-vllm}/meta_reference_eval.db
   datasetio:
   - provider_id: huggingface
     provider_type: remote::huggingface
-    config: {}
+    config:
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/remote-vllm}/huggingface_datasetio.db
   - provider_id: localfs
     provider_type: inline::localfs
-    config: {}
+    config:
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/remote-vllm}/localfs_datasetio.db
   scoring:
   - provider_id: basic
     provider_type: inline::basic
@@ -74,7 +89,7 @@ providers:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
     config:
-      service_name: ${env.OTEL_SERVICE_NAME:llama-stack}
+      service_name: "${env.OTEL_SERVICE_NAME:\u200B}"
       sinks: ${env.TELEMETRY_SINKS:console,sqlite}
       sqlite_db_path: ${env.SQLITE_DB_PATH:~/.llama/distributions/remote-vllm/trace_store.db}
   tool_runtime:
@@ -99,7 +114,8 @@ providers:
     config: {}
   - provider_id: wolfram-alpha
     provider_type: remote::wolfram-alpha
-    config: {}
+    config:
+      api_key: ${env.WOLFRAM_ALPHA_API_KEY:}
   preprocessing:
   - provider_id: basic
     provider_type: inline::basic

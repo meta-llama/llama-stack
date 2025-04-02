@@ -15,6 +15,7 @@ from pydantic import TypeAdapter
 from llama_stack.apis.common.content_types import (
     URL,
     InterleavedContent,
+    InterleavedContentItem,
     TextContentItem,
 )
 from llama_stack.apis.inference import Inference
@@ -27,10 +28,12 @@ from llama_stack.apis.preprocessing import (
     PreprocessorChainElement,
 )
 from llama_stack.apis.tools import (
+    ListToolDefsResponse,
     RAGDocument,
     RAGQueryConfig,
     RAGQueryResult,
     RAGToolRuntime,
+    Tool,
     ToolDef,
     ToolInvocationResult,
     ToolParameter,
@@ -73,6 +76,12 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
     async def shutdown(self):
         pass
 
+    async def register_tool(self, tool: Tool) -> None:
+        pass
+
+    async def unregister_tool(self, tool_id: str) -> None:
+        return
+
     async def insert(
         self,
         documents: List[RAGDocument],
@@ -103,7 +112,7 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
 
         actual_chunks = [chunk.data_element_path_or_content for chunk in chunks]
         await self.vector_io_api.insert_chunks(
-            chunks=actual_chunks,
+            chunks=actual_chunks,  # type: ignore
             vector_db_id=vector_db_id,
         )
 
@@ -140,11 +149,11 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
             return RAGQueryResult(content=None)
 
         # sort by score
-        chunks, scores = zip(*sorted(zip(chunks, scores, strict=False), key=lambda x: x[1], reverse=True), strict=False)
+        chunks, scores = zip(*sorted(zip(chunks, scores, strict=False), key=lambda x: x[1], reverse=True), strict=False)  # type: ignore
         chunks = chunks[: query_config.max_chunks]
 
         tokens = 0
-        picked = [
+        picked: list[InterleavedContentItem] = [
             TextContentItem(
                 text=f"knowledge_search tool found {len(chunks)} chunks:\nBEGIN of knowledge_search tool results.\n"
             )
@@ -173,27 +182,29 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
 
     async def list_runtime_tools(
         self, tool_group_id: Optional[str] = None, mcp_endpoint: Optional[URL] = None
-    ) -> List[ToolDef]:
+    ) -> ListToolDefsResponse:
         # Parameters are not listed since these methods are not yet invoked automatically
         # by the LLM. The method is only implemented so things like /tools can list without
         # encountering fatals.
-        return [
-            ToolDef(
-                name="insert_into_memory",
-                description="Insert documents into memory",
-            ),
-            ToolDef(
-                name="knowledge_search",
-                description="Search for information in a database.",
-                parameters=[
-                    ToolParameter(
-                        name="query",
-                        description="The query to search for. Can be a natural language sentence or keywords.",
-                        parameter_type="string",
-                    ),
-                ],
-            ),
-        ]
+        return ListToolDefsResponse(
+            data=[
+                ToolDef(
+                    name="insert_into_memory",
+                    description="Insert documents into memory",
+                ),
+                ToolDef(
+                    name="knowledge_search",
+                    description="Search for information in a database.",
+                    parameters=[
+                        ToolParameter(
+                            name="query",
+                            description="The query to search for. Can be a natural language sentence or keywords.",
+                            parameter_type="string",
+                        ),
+                    ],
+                ),
+            ]
+        )
 
     async def invoke_tool(self, tool_name: str, kwargs: Dict[str, Any]) -> ToolInvocationResult:
         vector_db_ids = kwargs.get("vector_db_ids", [])

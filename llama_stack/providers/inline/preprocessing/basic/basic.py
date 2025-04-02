@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 import logging
 import re
-from typing import List, Optional
+from typing import Any, List, Optional
 
 import httpx
 
@@ -39,18 +39,24 @@ class InclineBasicPreprocessorImpl(Preprocessing, PreprocessorsProtocolPrivate):
     # this preprocessor optionally retrieves the documents and converts them into plain text
     output_types = [PreprocessingDataType.raw_text_document]
 
+    preprocessor_store = None
+
     URL_VALIDATION_PATTERN = re.compile("^(https?://|file://|data:)")
 
     def __init__(self, config: InlineBasicPreprocessorConfig) -> None:
         self.config = config
 
-    async def initialize(self) -> None: ...
+    async def initialize(self) -> None:
+        pass
 
-    async def shutdown(self) -> None: ...
+    async def shutdown(self) -> None:
+        pass
 
-    async def register_preprocessor(self, preprocessor: Preprocessor) -> None: ...
+    async def register_preprocessor(self, preprocessor: Preprocessor) -> None:
+        pass
 
-    async def unregister_preprocessor(self, preprocessor_id: str) -> None: ...
+    async def unregister_preprocessor(self, preprocessor_id: str) -> None:
+        pass
 
     async def do_preprocess(
         self,
@@ -78,7 +84,7 @@ class InclineBasicPreprocessorImpl(Preprocessing, PreprocessorsProtocolPrivate):
                     )
                     continue
             elif input_type == PreprocessingDataType.raw_text_document:
-                document = interleaved_content_as_str(inp.data_element_path_or_content)
+                document = interleaved_content_as_str(inp.data_element_path_or_content)  # type: ignore
             else:
                 log.error(f"Unexpected preprocessor input type: {input_type}")
                 continue
@@ -112,7 +118,9 @@ class InclineBasicPreprocessorImpl(Preprocessing, PreprocessorsProtocolPrivate):
 
         if isinstance(preprocessor_input.data_element_path_or_content, URL):
             return PreprocessingDataType.document_uri
-        if InclineBasicPreprocessorImpl.URL_VALIDATION_PATTERN.match(preprocessor_input.data_element_path_or_content):
+        if InclineBasicPreprocessorImpl.URL_VALIDATION_PATTERN.match(
+            str(preprocessor_input.data_element_path_or_content)
+        ):
             return PreprocessingDataType.document_uri
         if preprocessor_input.data_element_format == PreprocessingDataFormat.pdf:
             return PreprocessingDataType.binary_document
@@ -120,7 +128,7 @@ class InclineBasicPreprocessorImpl(Preprocessing, PreprocessorsProtocolPrivate):
         return PreprocessingDataType.raw_text_document
 
     @staticmethod
-    async def _fetch_document(preprocessor_input: PreprocessingDataElement) -> str | None:
+    async def _fetch_document(preprocessor_input: PreprocessingDataElement) -> Any:
         if isinstance(preprocessor_input.data_element_path_or_content, str):
             url = preprocessor_input.data_element_path_or_content
             if not InclineBasicPreprocessorImpl.URL_VALIDATION_PATTERN.match(url):

@@ -6,14 +6,12 @@
 
 import copy
 import json
-import os
 import re
 import secrets
 import string
 import uuid
-from datetime import datetime
-from typing import Any, AsyncGenerator, Dict, List, Optional, Tuple, Union
-from urllib.parse import urlparse
+from datetime import datetime, timezone
+from typing import AsyncGenerator, List, Optional, Union
 
 import httpx
 
@@ -59,12 +57,7 @@ from llama_stack.apis.inference import (
     UserMessage,
 )
 from llama_stack.apis.safety import Safety
-from llama_stack.apis.tools import (
-    RAGDocument,
-    ToolGroups,
-    ToolInvocationResult,
-    ToolRuntime,
-)
+from llama_stack.apis.tools import ToolGroups, ToolInvocationResult, ToolRuntime
 from llama_stack.apis.vector_io import VectorIO
 from llama_stack.log import get_logger
 from llama_stack.models.llama.datatypes import (
@@ -153,7 +146,6 @@ class ChatAgent(ShieldRunnerMixin):
                     messages.append(
                         ToolResponseMessage(
                             call_id=response.call_id,
-                            tool_name=response.tool_name,
                             content=response.content,
                         )
                     )
@@ -181,23 +173,29 @@ class ChatAgent(ShieldRunnerMixin):
         return messages
 
     async def create_and_execute_turn(self, request: AgentTurnCreateRequest) -> AsyncGenerator:
-        async with tracing.span("create_and_execute_turn") as span:
+        span = tracing.get_current_span()
+        if span:
             span.set_attribute("session_id", request.session_id)
             span.set_attribute("agent_id", self.agent_id)
             span.set_attribute("request", request.model_dump_json())
             turn_id = str(uuid.uuid4())
             span.set_attribute("turn_id", turn_id)
-            async for chunk in self._run_turn(request, turn_id):
-                yield chunk
+
+        await self._initialize_tools(request.toolgroups)
+        async for chunk in self._run_turn(request, turn_id):
+            yield chunk
 
     async def resume_turn(self, request: AgentTurnResumeRequest) -> AsyncGenerator:
-        async with tracing.span("resume_turn") as span:
+        span = tracing.get_current_span()
+        if span:
             span.set_attribute("agent_id", self.agent_id)
             span.set_attribute("session_id", request.session_id)
-            span.set_attribute("turn_id", request.turn_id)
             span.set_attribute("request", request.model_dump_json())
-            async for chunk in self._run_turn(request):
-                yield chunk
+            span.set_attribute("turn_id", request.turn_id)
+
+        await self._initialize_tools()
+        async for chunk in self._run_turn(request):
+            yield chunk
 
     async def _run_turn(
         self,
@@ -218,18 +216,9 @@ class ChatAgent(ShieldRunnerMixin):
         steps = []
         messages = await self.get_messages_from_turns(turns)
         if is_resume:
-            if isinstance(request.tool_responses[0], ToolResponseMessage):
-                tool_response_messages = request.tool_responses
-                tool_responses = [
-                    ToolResponse(call_id=x.call_id, tool_name=x.tool_name, content=x.content)
-                    for x in request.tool_responses
-                ]
-            else:
-                tool_response_messages = [
-                    ToolResponseMessage(call_id=x.call_id, tool_name=x.tool_name, content=x.content)
-                    for x in request.tool_responses
-                ]
-                tool_responses = request.tool_responses
+            tool_response_messages = [
+                ToolResponseMessage(call_id=x.call_id, content=x.content) for x in request.tool_responses
+            ]
             messages.extend(tool_response_messages)
             last_turn = turns[-1]
             last_turn_messages = self.turn_to_messages(last_turn)
@@ -247,12 +236,12 @@ class ChatAgent(ShieldRunnerMixin):
             in_progress_tool_call_step = await self.storage.get_in_progress_tool_call_step(
                 request.session_id, request.turn_id
             )
-            now = datetime.now().astimezone().isoformat()
+            now = datetime.now(timezone.utc).isoformat()
             tool_execution_step = ToolExecutionStep(
                 step_id=(in_progress_tool_call_step.step_id if in_progress_tool_call_step else str(uuid.uuid4())),
                 turn_id=request.turn_id,
                 tool_calls=(in_progress_tool_call_step.tool_calls if in_progress_tool_call_step else []),
-                tool_responses=tool_responses,
+                tool_responses=request.tool_responses,
                 completed_at=now,
                 started_at=(in_progress_tool_call_step.started_at if in_progress_tool_call_step else now),
             )
@@ -272,7 +261,7 @@ class ChatAgent(ShieldRunnerMixin):
             start_time = last_turn.started_at
         else:
             messages.extend(request.messages)
-            start_time = datetime.now().astimezone().isoformat()
+            start_time = datetime.now(timezone.utc).isoformat()
             input_messages = request.messages
 
         output_message = None
@@ -283,7 +272,6 @@ class ChatAgent(ShieldRunnerMixin):
             sampling_params=self.agent_config.sampling_params,
             stream=request.stream,
             documents=request.documents if not is_resume else None,
-            toolgroups_for_turn=request.toolgroups if not is_resume else None,
         ):
             if isinstance(chunk, CompletionMessage):
                 output_message = chunk
@@ -304,7 +292,7 @@ class ChatAgent(ShieldRunnerMixin):
             input_messages=input_messages,
             output_message=output_message,
             started_at=start_time,
-            completed_at=datetime.now().astimezone().isoformat(),
+            completed_at=datetime.now(timezone.utc).isoformat(),
             steps=steps,
         )
         await self.storage.add_turn_to_session(request.session_id, turn)
@@ -335,7 +323,6 @@ class ChatAgent(ShieldRunnerMixin):
         sampling_params: SamplingParams,
         stream: bool = False,
         documents: Optional[List[Document]] = None,
-        toolgroups_for_turn: Optional[List[AgentToolGroup]] = None,
     ) -> AsyncGenerator:
         # Doing async generators makes downstream code much simpler and everything amenable to
         # streaming. However, it also makes things complicated here because AsyncGenerators cannot
@@ -358,7 +345,6 @@ class ChatAgent(ShieldRunnerMixin):
             sampling_params,
             stream,
             documents,
-            toolgroups_for_turn,
         ):
             if isinstance(res, bool):
                 return
@@ -397,7 +383,7 @@ class ChatAgent(ShieldRunnerMixin):
                 return
 
             step_id = str(uuid.uuid4())
-            shield_call_start_time = datetime.now().astimezone().isoformat()
+            shield_call_start_time = datetime.now(timezone.utc).isoformat()
             try:
                 yield AgentTurnResponseStreamChunk(
                     event=AgentTurnResponseEvent(
@@ -421,7 +407,7 @@ class ChatAgent(ShieldRunnerMixin):
                                 turn_id=turn_id,
                                 violation=e.violation,
                                 started_at=shield_call_start_time,
-                                completed_at=datetime.now().astimezone().isoformat(),
+                                completed_at=datetime.now(timezone.utc).isoformat(),
                             ),
                         )
                     )
@@ -444,7 +430,7 @@ class ChatAgent(ShieldRunnerMixin):
                             turn_id=turn_id,
                             violation=None,
                             started_at=shield_call_start_time,
-                            completed_at=datetime.now().astimezone().isoformat(),
+                            completed_at=datetime.now(timezone.utc).isoformat(),
                         ),
                     )
                 )
@@ -459,30 +445,35 @@ class ChatAgent(ShieldRunnerMixin):
         sampling_params: SamplingParams,
         stream: bool = False,
         documents: Optional[List[Document]] = None,
-        toolgroups_for_turn: Optional[List[AgentToolGroup]] = None,
     ) -> AsyncGenerator:
-        # TODO: simplify all of this code, it can be simpler
-        toolgroup_args = {}
-        toolgroups = set()
-        for toolgroup in self.agent_config.toolgroups + (toolgroups_for_turn or []):
-            if isinstance(toolgroup, AgentToolGroupWithArgs):
-                tool_group_name, tool_name = self._parse_toolgroup_name(toolgroup.name)
-                toolgroups.add(tool_group_name)
-                toolgroup_args[tool_group_name] = toolgroup.args
-            else:
-                toolgroups.add(toolgroup)
-
-        tool_defs, tool_to_group = await self._get_tool_defs(toolgroups_for_turn)
+        # if document is passed in a turn, we parse the raw text of the document
+        # and sent it as a user message
         if documents:
-            await self.handle_documents(session_id, documents, input_messages, tool_defs)
+            contexts = []
+            for document in documents:
+                raw_document_text = await get_raw_document_text(document)
+                contexts.append(raw_document_text)
+
+            attached_context = "\n".join(contexts)
+            if isinstance(input_messages[-1].content, str):
+                input_messages[-1].content += attached_context
+            elif isinstance(input_messages[-1].content, list):
+                input_messages[-1].content.append(TextContentItem(text=attached_context))
+            else:
+                input_messages[-1].content = [
+                    input_messages[-1].content,
+                    TextContentItem(text=attached_context),
+                ]
 
         session_info = await self.storage.get_session_info(session_id)
         # if the session has a memory bank id, let the memory tool use it
         if session_info and session_info.vector_db_id:
-            if RAG_TOOL_GROUP not in toolgroup_args:
-                toolgroup_args[RAG_TOOL_GROUP] = {"vector_db_ids": [session_info.vector_db_id]}
-            else:
-                toolgroup_args[RAG_TOOL_GROUP]["vector_db_ids"].append(session_info.vector_db_id)
+            for tool_name in self.tool_name_to_args.keys():
+                if tool_name == MEMORY_QUERY_TOOL:
+                    if "vector_db_ids" not in self.tool_name_to_args[tool_name]:
+                        self.tool_name_to_args[tool_name]["vector_db_ids"] = [session_info.vector_db_id]
+                    else:
+                        self.tool_name_to_args[tool_name]["vector_db_ids"].append(session_info.vector_db_id)
 
         output_attachments = []
 
@@ -494,7 +485,7 @@ class ChatAgent(ShieldRunnerMixin):
             client_tools[tool.name] = tool
         while True:
             step_id = str(uuid.uuid4())
-            inference_start_time = datetime.now().astimezone().isoformat()
+            inference_start_time = datetime.now(timezone.utc).isoformat()
             yield AgentTurnResponseStreamChunk(
                 event=AgentTurnResponseEvent(
                     payload=AgentTurnResponseStepStartPayload(
@@ -512,7 +503,7 @@ class ChatAgent(ShieldRunnerMixin):
                 async for chunk in await self.inference_api.chat_completion(
                     self.agent_config.model,
                     input_messages,
-                    tools=tool_defs,
+                    tools=self.tool_defs,
                     tool_prompt_format=self.agent_config.tool_config.tool_prompt_format,
                     response_format=self.agent_config.response_format,
                     stream=True,
@@ -604,7 +595,7 @@ class ChatAgent(ShieldRunnerMixin):
                             turn_id=turn_id,
                             model_response=copy.deepcopy(message),
                             started_at=inference_start_time,
-                            completed_at=datetime.now().astimezone().isoformat(),
+                            completed_at=datetime.now(timezone.utc).isoformat(),
                         ),
                     )
                 )
@@ -636,125 +627,143 @@ class ChatAgent(ShieldRunnerMixin):
                     logger.debug(f"completion message with EOM (iter: {n_iter}): {str(message)}")
                     input_messages = input_messages + [message]
             else:
-                logger.debug(f"completion message (iter: {n_iter}) from the model: {str(message)}")
-                # 1. Start the tool execution step and progress
-                step_id = str(uuid.uuid4())
-                yield AgentTurnResponseStreamChunk(
-                    event=AgentTurnResponseEvent(
-                        payload=AgentTurnResponseStepStartPayload(
-                            step_type=StepType.tool_execution.value,
-                            step_id=step_id,
-                        )
-                    )
-                )
-                tool_call = message.tool_calls[0]
-                yield AgentTurnResponseStreamChunk(
-                    event=AgentTurnResponseEvent(
-                        payload=AgentTurnResponseStepProgressPayload(
-                            step_type=StepType.tool_execution.value,
-                            step_id=step_id,
-                            tool_call=tool_call,
-                            delta=ToolCallDelta(
-                                parse_status=ToolCallParseStatus.in_progress,
-                                tool_call=tool_call,
-                            ),
-                        )
-                    )
-                )
+                input_messages = input_messages + [message]
 
-                # If tool is a client tool, yield CompletionMessage and return
-                if tool_call.tool_name in client_tools:
-                    # NOTE: mark end_of_message to indicate to client that it may
-                    # call the tool and continue the conversation with the tool's response.
-                    message.stop_reason = StopReason.end_of_message
+                # Process tool calls in the message
+                client_tool_calls = []
+                non_client_tool_calls = []
+
+                # Separate client and non-client tool calls
+                for tool_call in message.tool_calls:
+                    if tool_call.tool_name in client_tools:
+                        client_tool_calls.append(tool_call)
+                    else:
+                        non_client_tool_calls.append(tool_call)
+
+                # Process non-client tool calls first
+                for tool_call in non_client_tool_calls:
+                    step_id = str(uuid.uuid4())
+                    yield AgentTurnResponseStreamChunk(
+                        event=AgentTurnResponseEvent(
+                            payload=AgentTurnResponseStepStartPayload(
+                                step_type=StepType.tool_execution.value,
+                                step_id=step_id,
+                            )
+                        )
+                    )
+
+                    yield AgentTurnResponseStreamChunk(
+                        event=AgentTurnResponseEvent(
+                            payload=AgentTurnResponseStepProgressPayload(
+                                step_type=StepType.tool_execution.value,
+                                step_id=step_id,
+                                delta=ToolCallDelta(
+                                    parse_status=ToolCallParseStatus.in_progress,
+                                    tool_call=tool_call,
+                                ),
+                            )
+                        )
+                    )
+
+                    # Execute the tool call
+                    async with tracing.span(
+                        "tool_execution",
+                        {
+                            "tool_name": tool_call.tool_name,
+                            "input": message.model_dump_json(),
+                        },
+                    ) as span:
+                        tool_execution_start_time = datetime.now(timezone.utc).isoformat()
+                        tool_result = await self.execute_tool_call_maybe(
+                            session_id,
+                            tool_call,
+                        )
+                        if tool_result.content is None:
+                            raise ValueError(
+                                f"Tool call result (id: {tool_call.call_id}, name: {tool_call.tool_name}) does not have any content"
+                            )
+                        result_message = ToolResponseMessage(
+                            call_id=tool_call.call_id,
+                            content=tool_result.content,
+                        )
+                        span.set_attribute("output", result_message.model_dump_json())
+
+                        # Store tool execution step
+                        tool_execution_step = ToolExecutionStep(
+                            step_id=step_id,
+                            turn_id=turn_id,
+                            tool_calls=[tool_call],
+                            tool_responses=[
+                                ToolResponse(
+                                    call_id=tool_call.call_id,
+                                    tool_name=tool_call.tool_name,
+                                    content=tool_result.content,
+                                    metadata=tool_result.metadata,
+                                )
+                            ],
+                            started_at=tool_execution_start_time,
+                            completed_at=datetime.now(timezone.utc).isoformat(),
+                        )
+
+                        # Yield the step completion event
+                        yield AgentTurnResponseStreamChunk(
+                            event=AgentTurnResponseEvent(
+                                payload=AgentTurnResponseStepCompletePayload(
+                                    step_type=StepType.tool_execution.value,
+                                    step_id=step_id,
+                                    step_details=tool_execution_step,
+                                )
+                            )
+                        )
+
+                        # Add the result message to input_messages for the next iteration
+                        input_messages.append(result_message)
+
+                        # TODO: add tool-input touchpoint and a "start" event for this step also
+                        # but that needs a lot more refactoring of Tool code potentially
+                        if (type(result_message.content) is str) and (
+                            out_attachment := _interpret_content_as_attachment(result_message.content)
+                        ):
+                            # NOTE: when we push this message back to the model, the model may ignore the
+                            # attached file path etc. since the model is trained to only provide a user message
+                            # with the summary. We keep all generated attachments and then attach them to final message
+                            output_attachments.append(out_attachment)
+
+                # If there are client tool calls, yield a message with only those tool calls
+                if client_tool_calls:
                     await self.storage.set_in_progress_tool_call_step(
                         session_id,
                         turn_id,
                         ToolExecutionStep(
                             step_id=step_id,
                             turn_id=turn_id,
-                            tool_calls=[tool_call],
+                            tool_calls=client_tool_calls,
                             tool_responses=[],
-                            started_at=datetime.now().astimezone().isoformat(),
+                            started_at=datetime.now(timezone.utc).isoformat(),
                         ),
                     )
-                    yield message
+
+                    # Create a copy of the message with only client tool calls
+                    client_message = message.model_copy(deep=True)
+                    client_message.tool_calls = client_tool_calls
+                    # NOTE: mark end_of_message to indicate to client that it may
+                    # call the tool and continue the conversation with the tool's response.
+                    client_message.stop_reason = StopReason.end_of_message
+
+                    # Yield the message with client tool calls
+                    yield client_message
                     return
 
-                # If tool is a builtin server tool, execute it
-                tool_name = tool_call.tool_name
-                if isinstance(tool_name, BuiltinTool):
-                    tool_name = tool_name.value
-                async with tracing.span(
-                    "tool_execution",
-                    {
-                        "tool_name": tool_name,
-                        "input": message.model_dump_json(),
-                    },
-                ) as span:
-                    tool_execution_start_time = datetime.now().astimezone().isoformat()
-                    tool_call = message.tool_calls[0]
-                    tool_result = await execute_tool_call_maybe(
-                        self.tool_runtime_api,
-                        session_id,
-                        tool_call,
-                        toolgroup_args,
-                        tool_to_group,
-                    )
-                    if tool_result.content is None:
-                        raise ValueError(
-                            f"Tool call result (id: {tool_call.call_id}, name: {tool_call.tool_name}) does not have any content"
-                        )
-                    result_messages = [
-                        ToolResponseMessage(
-                            call_id=tool_call.call_id,
-                            tool_name=tool_call.tool_name,
-                            content=tool_result.content,
-                        )
-                    ]
-                    assert len(result_messages) == 1, "Currently not supporting multiple messages"
-                    result_message = result_messages[0]
-                    span.set_attribute("output", result_message.model_dump_json())
+    async def _initialize_tools(
+        self,
+        toolgroups_for_turn: Optional[List[AgentToolGroup]] = None,
+    ) -> None:
+        toolgroup_to_args = {}
+        for toolgroup in (self.agent_config.toolgroups or []) + (toolgroups_for_turn or []):
+            if isinstance(toolgroup, AgentToolGroupWithArgs):
+                tool_group_name, _ = self._parse_toolgroup_name(toolgroup.name)
+                toolgroup_to_args[tool_group_name] = toolgroup.args
 
-                yield AgentTurnResponseStreamChunk(
-                    event=AgentTurnResponseEvent(
-                        payload=AgentTurnResponseStepCompletePayload(
-                            step_type=StepType.tool_execution.value,
-                            step_id=step_id,
-                            step_details=ToolExecutionStep(
-                                step_id=step_id,
-                                turn_id=turn_id,
-                                tool_calls=[tool_call],
-                                tool_responses=[
-                                    ToolResponse(
-                                        call_id=result_message.call_id,
-                                        tool_name=result_message.tool_name,
-                                        content=result_message.content,
-                                        metadata=tool_result.metadata,
-                                    )
-                                ],
-                                started_at=tool_execution_start_time,
-                                completed_at=datetime.now().astimezone().isoformat(),
-                            ),
-                        )
-                    )
-                )
-
-                # TODO: add tool-input touchpoint and a "start" event for this step also
-                # but that needs a lot more refactoring of Tool code potentially
-                if (type(result_message.content) is str) and (
-                    out_attachment := _interpret_content_as_attachment(result_message.content)
-                ):
-                    # NOTE: when we push this message back to the model, the model may ignore the
-                    # attached file path etc. since the model is trained to only provide a user message
-                    # with the summary. We keep all generated attachments and then attach them to final message
-                    output_attachments.append(out_attachment)
-
-                input_messages = input_messages + [message, result_message]
-
-    async def _get_tool_defs(
-        self, toolgroups_for_turn: Optional[List[AgentToolGroup]] = None
-    ) -> Tuple[List[ToolDefinition], Dict[str, str]]:
         # Determine which tools to include
         tool_groups_to_include = toolgroups_for_turn or self.agent_config.toolgroups or []
         agent_config_toolgroups = []
@@ -763,8 +772,10 @@ class ChatAgent(ShieldRunnerMixin):
             if name not in agent_config_toolgroups:
                 agent_config_toolgroups.append(name)
 
+        toolgroup_to_args = toolgroup_to_args or {}
+
         tool_name_to_def = {}
-        tool_to_group = {}
+        tool_name_to_args = {}
 
         for tool_def in self.agent_config.client_tools:
             if tool_name_to_def.get(tool_def.name, None):
@@ -782,53 +793,38 @@ class ChatAgent(ShieldRunnerMixin):
                     for param in tool_def.parameters
                 },
             )
-            tool_to_group[tool_def.name] = "__client_tools__"
         for toolgroup_name_with_maybe_tool_name in agent_config_toolgroups:
-            toolgroup_name, tool_name = self._parse_toolgroup_name(toolgroup_name_with_maybe_tool_name)
+            toolgroup_name, input_tool_name = self._parse_toolgroup_name(toolgroup_name_with_maybe_tool_name)
             tools = await self.tool_groups_api.list_tools(toolgroup_id=toolgroup_name)
             if not tools.data:
                 available_tool_groups = ", ".join(
                     [t.identifier for t in (await self.tool_groups_api.list_tool_groups()).data]
                 )
                 raise ValueError(f"Toolgroup {toolgroup_name} not found, available toolgroups: {available_tool_groups}")
-            if tool_name is not None and not any(tool.identifier == tool_name for tool in tools.data):
+            if input_tool_name is not None and not any(tool.identifier == input_tool_name for tool in tools.data):
                 raise ValueError(
-                    f"Tool {tool_name} not found in toolgroup {toolgroup_name}. Available tools: {', '.join([tool.identifier for tool in tools.data])}"
+                    f"Tool {input_tool_name} not found in toolgroup {toolgroup_name}. Available tools: {', '.join([tool.identifier for tool in tools.data])}"
                 )
 
             for tool_def in tools.data:
                 if toolgroup_name.startswith("builtin") and toolgroup_name != RAG_TOOL_GROUP:
-                    tool_name = tool_def.identifier
-                    built_in_type = BuiltinTool.brave_search
-                    if tool_name == "web_search":
-                        built_in_type = BuiltinTool.brave_search
+                    identifier: str | BuiltinTool | None = tool_def.identifier
+                    if identifier == "web_search":
+                        identifier = BuiltinTool.brave_search
                     else:
-                        built_in_type = BuiltinTool(tool_name)
+                        identifier = BuiltinTool(identifier)
+                else:
+                    # add if tool_name is unspecified or the tool_def identifier is the same as the tool_name
+                    if input_tool_name in (None, tool_def.identifier):
+                        identifier = tool_def.identifier
+                    else:
+                        identifier = None
 
-                    if tool_name_to_def.get(built_in_type, None):
-                        raise ValueError(f"Tool {built_in_type} already exists")
-
-                    tool_name_to_def[built_in_type] = ToolDefinition(
-                        tool_name=built_in_type,
-                        description=tool_def.description,
-                        parameters={
-                            param.name: ToolParamDefinition(
-                                param_type=param.parameter_type,
-                                description=param.description,
-                                required=param.required,
-                                default=param.default,
-                            )
-                            for param in tool_def.parameters
-                        },
-                    )
-                    tool_to_group[built_in_type] = tool_def.toolgroup_id
-                    continue
-
-                if tool_name_to_def.get(tool_def.identifier, None):
-                    raise ValueError(f"Tool {tool_def.identifier} already exists")
-                if tool_name in (None, tool_def.identifier):
+                if tool_name_to_def.get(identifier, None):
+                    raise ValueError(f"Tool {identifier} already exists")
+                if identifier:
                     tool_name_to_def[tool_def.identifier] = ToolDefinition(
-                        tool_name=tool_def.identifier,
+                        tool_name=identifier,
                         description=tool_def.description,
                         parameters={
                             param.name: ToolParamDefinition(
@@ -840,9 +836,12 @@ class ChatAgent(ShieldRunnerMixin):
                             for param in tool_def.parameters
                         },
                     )
-                    tool_to_group[tool_def.identifier] = tool_def.toolgroup_id
+                    tool_name_to_args[tool_def.identifier] = toolgroup_to_args.get(toolgroup_name, {})
 
-        return list(tool_name_to_def.values()), tool_to_group
+        self.tool_defs, self.tool_name_to_args = (
+            list(tool_name_to_def.values()),
+            tool_name_to_args,
+        )
 
     def _parse_toolgroup_name(self, toolgroup_name_with_maybe_tool_name: str) -> tuple[str, Optional[str]]:
         """Parse a toolgroup name into its components.
@@ -861,176 +860,59 @@ class ChatAgent(ShieldRunnerMixin):
             tool_group, tool_name = split_names[0], None
         return tool_group, tool_name
 
-    async def handle_documents(
+    async def execute_tool_call_maybe(
         self,
         session_id: str,
-        documents: List[Document],
-        input_messages: List[Message],
-        tool_defs: Dict[str, ToolDefinition],
-    ) -> None:
-        memory_tool = any(tool_def.tool_name == MEMORY_QUERY_TOOL for tool_def in tool_defs)
-        code_interpreter_tool = any(tool_def.tool_name == BuiltinTool.code_interpreter for tool_def in tool_defs)
-        content_items = []
-        url_items = []
-        pattern = re.compile("^(https?://|file://|data:)")
-        for d in documents:
-            if isinstance(d.content, URL):
-                url_items.append(d.content)
-            elif pattern.match(d.content):
-                url_items.append(URL(uri=d.content))
+        tool_call: ToolCall,
+    ) -> ToolInvocationResult:
+        tool_name = tool_call.tool_name
+        registered_tool_names = [tool_def.tool_name for tool_def in self.tool_defs]
+        if tool_name not in registered_tool_names:
+            raise ValueError(
+                f"Tool {tool_name} not found in provided tools, registered tools: {', '.join([str(x) for x in registered_tool_names])}"
+            )
+        if isinstance(tool_name, BuiltinTool):
+            if tool_name == BuiltinTool.brave_search:
+                tool_name_str = WEB_SEARCH_TOOL
             else:
-                content_items.append(d)
-
-        # Save the contents to a tempdir and use its path as a URL if code interpreter is present
-        if code_interpreter_tool:
-            for c in content_items:
-                temp_file_path = os.path.join(self.tempdir, f"{make_random_string()}.txt")
-                with open(temp_file_path, "w") as temp_file:
-                    temp_file.write(c.content)
-                url_items.append(URL(uri=f"file://{temp_file_path}"))
-
-        if memory_tool and code_interpreter_tool:
-            # if both memory and code_interpreter are available, we download the URLs
-            # and attach the data to the last message.
-            msg = await attachment_message(self.tempdir, url_items)
-            input_messages.append(msg)
-            # Since memory is present, add all the data to the memory bank
-            await self.add_to_session_vector_db(session_id, documents)
-        elif code_interpreter_tool:
-            # if only code_interpreter is available, we download the URLs to a tempdir
-            # and attach the path to them as a message to inference with the
-            # assumption that the model invokes the code_interpreter tool with the path
-            msg = await attachment_message(self.tempdir, url_items)
-            input_messages.append(msg)
-        elif memory_tool:
-            # if only memory is available, we load the data from the URLs and content items to the memory bank
-            await self.add_to_session_vector_db(session_id, documents)
+                tool_name_str = tool_name.value
         else:
-            # if no memory or code_interpreter tool is available,
-            # we try to load the data from the URLs and content items as a message to inference
-            # and add it to the last message's context
-            input_messages[-1].context = "\n".join(
-                [doc.content for doc in content_items] + await load_data_from_urls(url_items)
-            )
+            tool_name_str = tool_name
 
-    async def _ensure_vector_db(self, session_id: str) -> str:
-        session_info = await self.storage.get_session_info(session_id)
-        if session_info is None:
-            raise ValueError(f"Session {session_id} not found")
-
-        if session_info.vector_db_id is None:
-            vector_db_id = f"vector_db_{session_id}"
-
-            # TODO: the semantic for registration is definitely not "creation"
-            # so we need to fix it if we expect the agent to create a new vector db
-            # for each session
-            await self.vector_io_api.register_vector_db(
-                vector_db_id=vector_db_id,
-                embedding_model="all-MiniLM-L6-v2",
-            )
-            await self.storage.add_vector_db_to_session(session_id, vector_db_id)
-        else:
-            vector_db_id = session_info.vector_db_id
-
-        return vector_db_id
-
-    async def add_to_session_vector_db(self, session_id: str, data: List[Document]) -> None:
-        vector_db_id = await self._ensure_vector_db(session_id)
-        documents = [
-            RAGDocument(
-                document_id=str(uuid.uuid4()),
-                content=a.content,
-                mime_type=a.mime_type,
-                metadata={},
-            )
-            for a in data
-        ]
-        await self.tool_runtime_api.rag_tool.insert(
-            documents=documents,
-            vector_db_id=vector_db_id,
-            chunk_size_in_tokens=512,
+        logger.info(f"executing tool call: {tool_name_str} with args: {tool_call.arguments}")
+        result = await self.tool_runtime_api.invoke_tool(
+            tool_name=tool_name_str,
+            kwargs={
+                "session_id": session_id,
+                # get the arguments generated by the model and augment with toolgroup arg overrides for the agent
+                **tool_call.arguments,
+                **self.tool_name_to_args.get(tool_name_str, {}),
+            },
         )
+        logger.debug(f"tool call {tool_name_str} completed with result: {result}")
+        return result
 
 
-async def load_data_from_urls(urls: List[URL]) -> List[str]:
-    data = []
-    for url in urls:
-        uri = url.uri
-        if uri.startswith("file://"):
-            filepath = uri[len("file://") :]
-            with open(filepath, "r") as f:
-                data.append(f.read())
-        elif uri.startswith("http"):
-            async with httpx.AsyncClient() as client:
-                r = await client.get(uri)
-                resp = r.text
-                data.append(resp)
-    return data
+async def load_data_from_url(url: str) -> str:
+    if url.startswith("http"):
+        async with httpx.AsyncClient() as client:
+            r = await client.get(url)
+            resp = r.text
+            return resp
+    raise ValueError(f"Unexpected URL: {type(url)}")
 
 
-async def attachment_message(tempdir: str, urls: List[URL]) -> ToolResponseMessage:
-    content = []
-
-    for url in urls:
-        uri = url.uri
-        if uri.startswith("file://"):
-            filepath = uri[len("file://") :]
-        elif uri.startswith("http"):
-            path = urlparse(uri).path
-            basename = os.path.basename(path)
-            filepath = f"{tempdir}/{make_random_string() + basename}"
-            logger.info(f"Downloading {url} -> {filepath}")
-
-            async with httpx.AsyncClient() as client:
-                r = await client.get(uri)
-                resp = r.text
-                with open(filepath, "w") as fp:
-                    fp.write(resp)
-        else:
-            raise ValueError(f"Unsupported URL {url}")
-
-        content.append(
-            TextContentItem(
-                text=f'# User provided a file accessible to you at "{filepath}"\nYou can use code_interpreter to load and inspect it.'
-            )
-        )
-
-    return ToolResponseMessage(
-        call_id="",
-        tool_name=BuiltinTool.code_interpreter,
-        content=content,
-    )
-
-
-async def execute_tool_call_maybe(
-    tool_runtime_api: ToolRuntime,
-    session_id: str,
-    tool_call: ToolCall,
-    toolgroup_args: Dict[str, Dict[str, Any]],
-    tool_to_group: Dict[str, str],
-) -> ToolInvocationResult:
-    name = tool_call.tool_name
-    group_name = tool_to_group.get(name, None)
-    if group_name is None:
-        raise ValueError(f"Tool {name} not found in any tool group")
-    if isinstance(name, BuiltinTool):
-        if name == BuiltinTool.brave_search:
-            name = WEB_SEARCH_TOOL
-        else:
-            name = name.value
-
-    logger.info(f"executing tool call: {name} with args: {tool_call.arguments}")
-    result = await tool_runtime_api.invoke_tool(
-        tool_name=name,
-        kwargs={
-            "session_id": session_id,
-            # get the arguments generated by the model and augment with toolgroup arg overrides for the agent
-            **tool_call.arguments,
-            **toolgroup_args.get(group_name, {}),
-        },
-    )
-    logger.info(f"tool call {name} completed with result: {result}")
-    return result
+async def get_raw_document_text(document: Document) -> str:
+    if not document.mime_type.startswith("text/"):
+        raise ValueError(f"Unexpected document mime type: {document.mime_type}")
+    if isinstance(document.content, URL):
+        return await load_data_from_url(document.content.uri)
+    elif isinstance(document.content, str):
+        return document.content
+    elif isinstance(document.content, TextContentItem):
+        return document.content.text
+    else:
+        raise ValueError(f"Unexpected document content type: {type(document.content)}")
 
 
 def _interpret_content_as_attachment(

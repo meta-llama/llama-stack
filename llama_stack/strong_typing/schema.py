@@ -17,6 +17,7 @@ import enum
 import functools
 import inspect
 import json
+import types
 import typing
 import uuid
 from copy import deepcopy
@@ -455,17 +456,21 @@ class JsonSchemaGenerator:
                 "maxItems": len(args),
                 "prefixItems": [self.type_to_schema(member_type) for member_type in args],
             }
-        elif origin_type is Union:
+        elif origin_type in (Union, types.UnionType):
             discriminator = None
             if typing.get_origin(data_type) is Annotated:
                 discriminator = typing.get_args(data_type)[1].discriminator
-            ret = {"oneOf": [self.type_to_schema(union_type) for union_type in typing.get_args(typ)]}
+            ret: Schema = {"oneOf": [self.type_to_schema(union_type) for union_type in typing.get_args(typ)]}
             if discriminator:
                 # for each union type, we need to read the value of the discriminator
-                mapping = {}
+                mapping: dict[str, JsonType] = {}
                 for union_type in typing.get_args(typ):
                     props = self.type_to_schema(union_type, force_expand=True)["properties"]
-                    mapping[props[discriminator]["default"]] = self.type_to_schema(union_type)["$ref"]
+                    # mypy is confused here because JsonType allows multiple types, some of them
+                    # not indexable (bool?) or not indexable by string (list?). The correctness of
+                    # types depends on correct model definitions. Hence multiple ignore statements below.
+                    discriminator_value = props[discriminator]["default"]  # type: ignore[index,call-overload]
+                    mapping[discriminator_value] = self.type_to_schema(union_type)["$ref"]  # type: ignore[index]
 
                 ret["discriminator"] = {
                     "propertyName": discriminator,

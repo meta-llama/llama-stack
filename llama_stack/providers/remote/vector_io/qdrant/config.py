@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from pydantic import BaseModel
 
@@ -23,4 +23,9 @@ class QdrantVectorIOConfig(BaseModel):
     prefix: Optional[str] = None
     timeout: Optional[int] = None
     host: Optional[str] = None
-    path: Optional[str] = None
+
+    @classmethod
+    def sample_run_config(cls, **kwargs: Any) -> Dict[str, Any]:
+        return {
+            "api_key": "${env.QDRANT_API_KEY}",
+        }

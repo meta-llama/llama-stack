@@ -16,6 +16,7 @@ from docutils import nodes
 from pathlib import Path
 import requests
 import json
+from datetime import datetime
 
 # Read version from pyproject.toml
 with Path(__file__).parent.parent.parent.joinpath("pyproject.toml").open("rb") as f:
@@ -28,7 +29,7 @@ with Path(__file__).parent.parent.parent.joinpath("pyproject.toml").open("rb") a
     llama_stack_version_link = f"<a href='{llama_stack_version_url}'>release notes</a>"
 
 project = "llama-stack"
-copyright = "2025, Meta"
+copyright = f"{datetime.now().year}, Meta"
 author = "Meta"
 
 # -- General configuration ---------------------------------------------------
@@ -37,6 +38,7 @@ author = "Meta"
 extensions = [
     "myst_parser",
     "sphinx_rtd_theme",
+    "sphinx_rtd_dark_mode",
     "sphinx_copybutton",
     "sphinx_tabs.tabs",
     "sphinx_design",
@@ -103,6 +105,8 @@ source_suffix = {
 # html_theme = "alabaster"
 html_theme_options = {
     "canonical_url": "https://github.com/meta-llama/llama-stack",
+    'collapse_navigation': False,
+
     # "style_nav_header_background": "#c3c9d4",
 }
 

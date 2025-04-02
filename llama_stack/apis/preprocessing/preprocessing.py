@@ -58,7 +58,7 @@ PreprocessorChain = List[PreprocessorChainElement]
 @json_schema_type
 class PreprocessorResponse(BaseModel):
     success: bool
-    output_data_type: PreprocessingDataType
+    output_data_type: PreprocessingDataType | None
     results: Optional[List[PreprocessingDataElement]] = None
 
 
@@ -68,7 +68,7 @@ class PreprocessorStore(Protocol):
 
 @runtime_checkable
 class Preprocessing(Protocol):
-    preprocessor_store: PreprocessorStore
+    preprocessor_store: PreprocessorStore | None
 
     @webmethod(route="/preprocess", method="POST")
     async def preprocess(
