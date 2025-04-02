@@ -12,7 +12,6 @@ from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.common.responses import PaginatedResponse
 from llama_stack.apis.common.type_system import ParamType
 from llama_stack.apis.datasets import Dataset
-from llama_stack.schema_utils import webmethod
 
 from .config import NvidiaDatasetIOConfig
 
@@ -54,14 +53,14 @@ class NvidiaDatasetIOAdapter:
         """Register a new dataset.
 
         Args:
-            dataset_def : The dataset definition.
-                dataset_id: The ID of the dataset.
-                source: The source of the dataset.
-                metadata: The metadata of the dataset.
-                    format: The format of the dataset.
-                    description: The description of the dataset.
+            dataset_def [Dataset]: The dataset definition.
+                dataset_id [str]: The ID of the dataset.
+                source [DataSource]: The source of the dataset.
+                metadata [Dict[str, Any]]: The metadata of the dataset.
+                    format [str]: The format of the dataset.
+                    description [str]: The description of the dataset.
         Returns:
-            None
+            Dataset
         """
         ## add warnings for unsupported params
         request_body = {
@@ -78,8 +77,8 @@ class NvidiaDatasetIOAdapter:
             "/v1/datasets",
             json=request_body,
         )
+        return dataset_def
 
-    @webmethod(route="/datasets/{dataset_id:path}", method="POST")
     async def update_dataset(
         self,
         dataset_id: str,
@@ -91,7 +90,6 @@ class NvidiaDatasetIOAdapter:
     ) -> None:
         raise NotImplementedError("Not implemented")
 
-    @webmethod(route="/datasets/{dataset_id:path}", method="DELETE")
     async def unregister_dataset(
         self,
         dataset_id: str,
