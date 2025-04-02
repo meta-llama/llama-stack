@@ -230,13 +230,13 @@ class TracingMiddleware:
         self.app = app
         self.impls = impls
         # FastAPI built-in paths that should bypass custom routing
-        self.fastapi_paths = [
+        self.fastapi_paths = (
             "/docs", 
             "/redoc", 
             "/openapi.json",
             "/favicon.ico",
             "/static"
-        ]
+        )
 
     async def __call__(self, scope, receive, send):
         if scope.get("type") == "lifespan":
@@ -245,7 +245,7 @@ class TracingMiddleware:
         path = scope.get("path", "")
         
         # Check if the path is a FastAPI built-in path
-        if any(path.startswith(fastapi_path) for fastapi_path in self.fastapi_paths):
+        if path.startswith(self.fastapi_paths):
             # Pass through to FastAPI's built-in handlers
             logger.debug(f"Bypassing custom routing for FastAPI built-in path: {path}")
             return await self.app(scope, receive, send)
