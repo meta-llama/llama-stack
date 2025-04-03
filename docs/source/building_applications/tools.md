@@ -41,7 +41,7 @@ client.toolgroups.register(
 
 The tool requires an API key which can be provided either in the configuration or through the request header `X-LlamaStack-Provider-Data`. The format of the header is `{"<provider_name>_api_key": <your api key>}`.
 
-
+> **NOTE:** When using Tavily Search and Bing Search, the inference output will still display "Brave Search." This is because Llama models have been trained with Brave Search as a built-in tool. Tavily and bing is just being used in lieu of Brave search.
 
 #### Code Interpreter
 
@@ -213,4 +213,53 @@ response = agent.create_turn(
     messages=[{"role": "user", "content": "Run this code: print(3 ** 4 - 5 * 2)"}],
     session_id=session_id,
 )
+```
+## Simple Example 2: Using an Agent with the Web Search Tool
+1. Start by registering a Tavily API key at [Tavily](https://tavily.com/). 
+2. When starting the Llama Stack server, ensure the API key is provided as an environment variable:
+```
+--env TAVILY_SEARCH_API_KEY=${TAVILY_SEARCH_API_KEY}
+```
+3. run the following script.
+```python
+from llama_stack_client.lib.agents.agent import Agent
+from llama_stack_client.types.agent_create_params import AgentConfig
+from llama_stack_client.lib.agents.event_logger import EventLogger
+from llama_stack_client import LlamaStackClient
+
+client = LlamaStackClient(base_url=f"http://localhost:8321")  
+
+agent = Agent(
+    client, 
+    model="meta-llama/Llama-3.2-3B-Instruct",
+    instructions=(
+        "You are a web search assistant, must use websearch tool to look up the most current and precise information available. "
+    ),
+    tools=["builtin::websearch"], 
+    )
+
+session_id = agent.create_session("websearch-session")
+
+response = agent.create_turn(
+    messages=[{"role": "user", "content": "How did the USA perform in the last Olympics?"}],
+    session_id=session_id,
+)
+for log in EventLogger().log(response):
+    log.print()
+```
+
+## Simple Example3: Using an Agent with the WolframAlpha Tool
+1. Start by registering for a WolframAlpha API key at [WolframAlpha Developer Portal](https://developer.wolframalpha.com/access).
+2. When starting the Llama Stack server, ensure the API key is provided as an environment variable:
+    ```bash
+    --env WOLFRAM_ALPHA_API_KEY=${WOLFRAM_ALPHA_API_KEY}
+    ```
+3. Configure the tools in the Agent by setting `tools=["builtin::wolfram_alpha"]`.
+4. Example user query:
+    ```python
+    response = agent.create_turn(
+         messages=[{"role": "user", "content": "Solve x^2 + 2x + 1 = 0 using WolframAlpha"}],
+         session_id=session_id,
+    )
+    ```
 ```
