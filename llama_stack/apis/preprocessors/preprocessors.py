@@ -15,7 +15,7 @@ from llama_stack.schema_utils import json_schema_type, webmethod
 
 @json_schema_type
 class Preprocessor(Resource):
-    type: Literal[ResourceType.preprocessor] = ResourceType.preprocessor
+    type: Literal[ResourceType.preprocessor.value] = ResourceType.preprocessor.value  # type: ignore
 
     @property
     def preprocessor_id(self) -> str:
