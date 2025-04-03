@@ -150,9 +150,8 @@ class PodmanAILabInferenceAdapter(Inference, ModelsProtocolPrivate):
     ) -> AsyncGenerator:
         if sampling_params is None:
             sampling_params = SamplingParams()
-        model = await self.model_store.get_model(model_id)
         request = ChatCompletionRequest(
-            model=model.provider_resource_id,
+            model=model_id,
             messages=messages,
             sampling_params=sampling_params,
             tools=tools or [],
@@ -175,7 +174,7 @@ class PodmanAILabInferenceAdapter(Inference, ModelsProtocolPrivate):
 
         input_dict = {}
         media_present = request_has_media(request)
-        llama_model = self.register_helper.get_llama_model(request.model)
+        llama_model = request.model
         if isinstance(request, ChatCompletionRequest):
             if media_present or not llama_model:
                 contents = [await convert_message_to_openai_dict_for_podman_ai_lab(m) for m in request.messages]
@@ -292,3 +291,7 @@ async def convert_message_to_openai_dict_for_podman_ai_lab(message: Message) -> 
         return [await _convert_content(c) for c in message.content]
     else:
         return [await _convert_content(message.content)]
+    
+    async def register_model(self, model: Model) -> Model:
+        return model
+
