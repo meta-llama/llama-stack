@@ -6,7 +6,6 @@
 
 from pathlib import Path
 
-from llama_stack.apis.preprocessors.preprocessors import PreprocessorInput
 from llama_stack.distribution.datatypes import ModelInput, Provider, ShieldInput, ToolGroupInput
 from llama_stack.providers.remote.inference.nvidia import NVIDIAConfig
 from llama_stack.providers.remote.inference.nvidia.models import MODEL_ENTRIES
@@ -26,7 +25,6 @@ def get_distribution_template() -> DistributionTemplate:
         "datasetio": ["inline::localfs"],
         "scoring": ["inline::basic"],
         "tool_runtime": ["inline::rag-runtime"],
-        "preprocessing": ["inline::basic", "inline::simple_chunking"],
     }
 
     inference_provider = Provider(
@@ -57,16 +55,6 @@ def get_distribution_template() -> DistributionTemplate:
             provider_id="rag-runtime",
         ),
     ]
-    default_preprocessors = [
-        PreprocessorInput(
-            preprocessor_id="builtin::basic",
-            provider_id="basic",
-        ),
-        PreprocessorInput(
-            preprocessor_id="builtin::chunking",
-            provider_id="simple_chunking",
-        ),
-    ]
 
     default_models = get_model_registry(available_models)
     return DistributionTemplate(
@@ -84,7 +72,6 @@ def get_distribution_template() -> DistributionTemplate:
                 },
                 default_models=default_models,
                 default_tool_groups=default_tool_groups,
-                default_preprocessors=default_preprocessors,
             ),
             "run-with-safety.yaml": RunConfigSettings(
                 provider_overrides={
@@ -96,7 +83,6 @@ def get_distribution_template() -> DistributionTemplate:
                 default_models=[inference_model, safety_model],
                 default_shields=[ShieldInput(shield_id="${env.SAFETY_MODEL}", provider_id="nvidia")],
                 default_tool_groups=default_tool_groups,
-                default_preprocessors=default_preprocessors,
             ),
         },
         run_config_env_vars={

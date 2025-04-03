@@ -7,7 +7,6 @@
 from pathlib import Path
 
 from llama_stack.apis.models.models import ModelType
-from llama_stack.apis.preprocessors.preprocessors import PreprocessorInput
 from llama_stack.distribution.datatypes import (
     ModelInput,
     Provider,
@@ -45,7 +44,6 @@ def get_distribution_template() -> DistributionTemplate:
             "remote::model-context-protocol",
             "remote::wolfram-alpha",
         ],
-        "preprocessing": ["inline::basic", "inline::simple_chunking"],
     }
     name = "together"
     inference_provider = Provider(
@@ -85,16 +83,6 @@ def get_distribution_template() -> DistributionTemplate:
             provider_id="wolfram-alpha",
         ),
     ]
-    default_preprocessors = [
-        PreprocessorInput(
-            preprocessor_id="builtin::basic",
-            provider_id="basic",
-        ),
-        PreprocessorInput(
-            preprocessor_id="builtin::chunking",
-            provider_id="simple_chunking",
-        ),
-    ]
     embedding_model = ModelInput(
         model_id="all-MiniLM-L6-v2",
         provider_id="sentence-transformers",
@@ -120,7 +108,6 @@ def get_distribution_template() -> DistributionTemplate:
                 },
                 default_models=default_models + [embedding_model],
                 default_tool_groups=default_tool_groups,
-                default_preprocessors=default_preprocessors,
                 default_shields=[ShieldInput(shield_id="meta-llama/Llama-Guard-3-8B")],
             ),
             "run-with-safety.yaml": RunConfigSettings(
@@ -167,7 +154,6 @@ def get_distribution_template() -> DistributionTemplate:
                     ),
                 ],
                 default_tool_groups=default_tool_groups,
-                default_preprocessors=default_preprocessors,
             ),
         },
         run_config_env_vars={

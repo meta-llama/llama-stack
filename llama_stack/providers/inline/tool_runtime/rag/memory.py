@@ -19,14 +19,6 @@ from llama_stack.apis.common.content_types import (
     TextContentItem,
 )
 from llama_stack.apis.inference import Inference
-from llama_stack.apis.preprocessing import (
-    Preprocessing,
-    PreprocessingDataElement,
-    PreprocessingDataFormat,
-    PreprocessingDataType,
-    PreprocessorChain,
-    PreprocessorChainElement,
-)
 from llama_stack.apis.tools import (
     ListToolDefsResponse,
     RAGDocument,
@@ -41,6 +33,10 @@ from llama_stack.apis.tools import (
 )
 from llama_stack.apis.vector_io import QueryChunksResponse, VectorIO
 from llama_stack.providers.datatypes import ToolsProtocolPrivate
+from llama_stack.providers.utils.memory.vector_store import (
+    content_from_doc,
+    make_overlapped_chunks,
+)
 
 from .config import RagToolRuntimeConfig
 from .context_retriever import generate_rag_query
@@ -53,22 +49,15 @@ def make_random_string(length: int = 8):
 
 
 class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
-    DEFAULT_PREPROCESSING_CHAIN = [
-        PreprocessorChainElement(preprocessor_id="builtin::basic"),
-        PreprocessorChainElement(preprocessor_id="builtin::chunking"),
-    ]
-
     def __init__(
         self,
         config: RagToolRuntimeConfig,
         vector_io_api: VectorIO,
         inference_api: Inference,
-        preprocessing_api: Preprocessing,
     ):
         self.config = config
         self.vector_io_api = vector_io_api
         self.inference_api = inference_api
-        self.preprocessing_api = preprocessing_api
 
     async def initialize(self):
         pass
@@ -87,32 +76,24 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
         documents: List[RAGDocument],
         vector_db_id: str,
         chunk_size_in_tokens: int = 512,
-        preprocessor_chain: Optional[PreprocessorChain] = None,
     ) -> None:
-        preprocessor_inputs = [self._rag_document_to_preprocessor_input(d) for d in documents]
-        preprocessor_response = await self.preprocessing_api.preprocess(
-            preprocessors=preprocessor_chain or self.DEFAULT_PREPROCESSING_CHAIN,
-            preprocessor_inputs=preprocessor_inputs,
-        )
-
-        if not preprocessor_response.success:
-            log.error("Preprocessor chain returned an error")
-            return
-
-        if preprocessor_response.output_data_type != PreprocessingDataType.chunks:
-            log.error(
-                f"Preprocessor chain returned {preprocessor_response.output_data_type} instead of {PreprocessingDataType.chunks}"
+        chunks = []
+        for doc in documents:
+            content = await content_from_doc(doc)
+            chunks.extend(
+                make_overlapped_chunks(
+                    doc.document_id,
+                    content,
+                    chunk_size_in_tokens,
+                    chunk_size_in_tokens // 4,
+                )
             )
-            return
 
-        chunks = preprocessor_response.results
         if not chunks:
-            log.error("No chunks returned by the preprocessor chain")
             return
 
-        actual_chunks = [chunk.data_element_path_or_content for chunk in chunks]
         await self.vector_io_api.insert_chunks(
-            chunks=actual_chunks,  # type: ignore
+            chunks=chunks,
             vector_db_id=vector_db_id,
         )
 
@@ -225,17 +206,4 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
         return ToolInvocationResult(
             content=result.content,
             metadata=result.metadata,
-        )
-
-    @staticmethod
-    def _rag_document_to_preprocessor_input(document: RAGDocument) -> PreprocessingDataElement:
-        if document.mime_type == "application/pdf":
-            data_element_format = PreprocessingDataFormat.pdf
-        else:
-            data_element_format = None
-
-        return PreprocessingDataElement(
-            data_element_id=document.document_id,
-            data_element_format=data_element_format,
-            data_element_path_or_content=document.content,
         )

@@ -22,7 +22,4 @@ distribution_spec:
     - inline::basic
     tool_runtime:
     - inline::rag-runtime
-    preprocessing:
-    - inline::basic
-    - inline::simple_chunking
 image_type: conda

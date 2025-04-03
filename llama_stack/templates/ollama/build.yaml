@@ -30,7 +30,4 @@ distribution_spec:
     - inline::rag-runtime
     - remote::model-context-protocol
     - remote::wolfram-alpha
-    preprocessing:
-    - inline::basic
-    - inline::simple_chunking
 image_type: conda

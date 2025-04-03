@@ -3,7 +3,6 @@ image_name: sambanova
 apis:
 - agents
 - inference
-- preprocessing
 - safety
 - telemetry
 - tool_runtime
@@ -71,13 +70,6 @@ providers:
     config: {}
   - provider_id: rag-runtime
     provider_type: inline::rag-runtime
-    config: {}
-  preprocessing:
-  - provider_id: basic
-    provider_type: inline::basic
-    config: {}
-  - provider_id: simple_chunking
-    provider_type: inline::simple_chunking
     config: {}
 metadata_store:
   type: sqlite
@@ -186,10 +178,6 @@ tool_groups:
   provider_id: rag-runtime
 - toolgroup_id: builtin::code_interpreter
   provider_id: code-interpreter
-preprocessors:
-- preprocessor_id: builtin::basic
-  provider_id: basic
-- preprocessor_id: builtin::chunking
-  provider_id: simple_chunking
+preprocessors: []
 server:
   port: 8321

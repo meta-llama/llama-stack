@@ -7,7 +7,6 @@
 from pathlib import Path
 
 from llama_stack.apis.models.models import ModelType
-from llama_stack.apis.preprocessors.preprocessors import PreprocessorInput
 from llama_stack.distribution.datatypes import ModelInput, Provider, ToolGroupInput
 from llama_stack.providers.inline.inference.sentence_transformers import (
     SentenceTransformersInferenceConfig,
@@ -37,7 +36,6 @@ def get_distribution_template() -> DistributionTemplate:
             "inline::code-interpreter",
             "inline::rag-runtime",
         ],
-        "preprocessing": ["inline::basic", "inline::simple_chunking"],
     }
     name = "groq"
 
@@ -79,16 +77,6 @@ def get_distribution_template() -> DistributionTemplate:
             provider_id="code-interpreter",
         ),
     ]
-    default_preprocessors = [
-        PreprocessorInput(
-            preprocessor_id="builtin::basic",
-            provider_id="basic",
-        ),
-        PreprocessorInput(
-            preprocessor_id="builtin::chunking",
-            provider_id="simple_chunking",
-        ),
-    ]
 
     return DistributionTemplate(
         name=name,
@@ -105,7 +93,6 @@ def get_distribution_template() -> DistributionTemplate:
                 },
                 default_models=default_models + [embedding_model],
                 default_tool_groups=default_tool_groups,
-                default_preprocessors=default_preprocessors,
             ),
         },
         run_config_env_vars={

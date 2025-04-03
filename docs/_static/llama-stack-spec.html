@@ -8052,44 +8052,6 @@
                 ],
                 "title": "HealthInfo"
             },
-            "PreprocessorChainElement": {
-                "type": "object",
-                "properties": {
-                    "preprocessor_id": {
-                        "type": "string"
-                    },
-                    "options": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "preprocessor_id"
-                ],
-                "title": "PreprocessorChainElement"
-            },
             "RAGDocument": {
                 "type": "object",
                 "properties": {
@@ -8171,12 +8133,6 @@
                     },
                     "chunk_size_in_tokens": {
                         "type": "integer"
-                    },
-                    "preprocessor_chain": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/PreprocessorChainElement"
-                        }
                     }
                 },
                 "additionalProperties": false,
@@ -9381,6 +9337,44 @@
                     "data_element_id"
                 ],
                 "title": "PreprocessingDataElement"
+            },
+            "PreprocessorChainElement": {
+                "type": "object",
+                "properties": {
+                    "preprocessor_id": {
+                        "type": "string"
+                    },
+                    "options": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "preprocessor_id"
+                ],
+                "title": "PreprocessorChainElement"
             },
             "PreprocessRequest": {
                 "type": "object",

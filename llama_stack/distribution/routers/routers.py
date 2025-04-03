@@ -677,13 +677,12 @@ class ToolRuntimeRouter(ToolRuntime):
             documents: List[RAGDocument],
             vector_db_id: str,
             chunk_size_in_tokens: int = 512,
-            preprocessor_chain: Optional[PreprocessorChain] = None,
         ) -> None:
             logger.debug(
                 f"ToolRuntimeRouter.RagToolImpl.insert: {vector_db_id}, {len(documents)} documents, chunk_size={chunk_size_in_tokens}"
             )
             return await self.routing_table.get_provider_impl("insert_into_memory").insert(
-                documents, vector_db_id, chunk_size_in_tokens, preprocessor_chain
+                documents, vector_db_id, chunk_size_in_tokens
             )
 
     def __init__(

@@ -7,28 +7,9 @@
 from typing import List
 
 from llama_stack.providers.datatypes import (
-    Api,
-    InlineProviderSpec,
     ProviderSpec,
 )
 
 
 def available_providers() -> List[ProviderSpec]:
-    return [
-        InlineProviderSpec(
-            api=Api.preprocessing,
-            provider_type="inline::basic",
-            pip_packages=["httpx", "pypdf"],
-            module="llama_stack.providers.inline.preprocessing.basic",
-            config_class="llama_stack.providers.inline.preprocessing.basic.InlineBasicPreprocessorConfig",
-            api_dependencies=[],
-        ),
-        InlineProviderSpec(
-            api=Api.preprocessing,
-            provider_type="inline::simple_chunking",
-            pip_packages=[],
-            module="llama_stack.providers.inline.preprocessing.simple_chunking",
-            config_class="llama_stack.providers.inline.preprocessing.simple_chunking.InclineSimpleChunkingConfig",
-            api_dependencies=[],
-        ),
-    ]
+    return []

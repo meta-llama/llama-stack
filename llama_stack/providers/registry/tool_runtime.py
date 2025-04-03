@@ -34,7 +34,7 @@ def available_providers() -> List[ProviderSpec]:
             ],
             module="llama_stack.providers.inline.tool_runtime.rag",
             config_class="llama_stack.providers.inline.tool_runtime.rag.config.RagToolRuntimeConfig",
-            api_dependencies=[Api.vector_io, Api.inference, Api.preprocessing],
+            api_dependencies=[Api.vector_io, Api.inference],
         ),
         InlineProviderSpec(
             api=Api.tool_runtime,

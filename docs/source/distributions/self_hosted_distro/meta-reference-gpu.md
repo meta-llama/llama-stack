@@ -19,7 +19,6 @@ The `llamastack/distribution-meta-reference-gpu` distribution consists of the fo
 | datasetio | `remote::huggingface`, `inline::localfs` |
 | eval | `inline::meta-reference` |
 | inference | `inline::meta-reference` |
-| preprocessing | `inline::basic`, `inline::simple_chunking` |
 | safety | `inline::llama-guard` |
 | scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |
 | telemetry | `inline::meta-reference` |

@@ -10,7 +10,6 @@ The `llamastack/distribution-nvidia` distribution consists of the following prov
 | eval | `inline::meta-reference` |
 | inference | `remote::nvidia` |
 | post_training | `remote::nvidia` |
-| preprocessing | `inline::basic`, `inline::simple_chunking` |
 | safety | `remote::nvidia` |
 | scoring | `inline::basic` |
 | telemetry | `inline::meta-reference` |

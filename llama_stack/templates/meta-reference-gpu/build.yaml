@@ -29,7 +29,4 @@ distribution_spec:
     - inline::code-interpreter
     - inline::rag-runtime
     - remote::model-context-protocol
-    preprocessing:
-    - inline::basic
-    - inline::simple_chunking
 image_type: conda

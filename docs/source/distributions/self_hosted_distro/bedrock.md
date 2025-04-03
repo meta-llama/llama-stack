@@ -16,7 +16,6 @@ The `llamastack/distribution-bedrock` distribution consists of the following pro
 | datasetio | `remote::huggingface`, `inline::localfs` |
 | eval | `inline::meta-reference` |
 | inference | `remote::bedrock` |
-| preprocessing | `inline::basic`, `inline::simple_chunking` |
 | safety | `remote::bedrock` |
 | scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |
 | telemetry | `inline::meta-reference` |

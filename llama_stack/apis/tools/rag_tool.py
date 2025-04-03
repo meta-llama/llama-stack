@@ -11,7 +11,6 @@ from pydantic import BaseModel, Field
 from typing_extensions import Annotated, Protocol, runtime_checkable
 
 from llama_stack.apis.common.content_types import URL, InterleavedContent
-from llama_stack.apis.preprocessing import PreprocessorChain
 from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
 from llama_stack.schema_utils import json_schema_type, register_schema, webmethod
 
@@ -87,7 +86,6 @@ class RAGToolRuntime(Protocol):
         documents: List[RAGDocument],
         vector_db_id: str,
         chunk_size_in_tokens: int = 512,
-        preprocessor_chain: Optional[PreprocessorChain] = None,
     ) -> None:
         """Index documents so they can be used by the RAG system"""
         ...

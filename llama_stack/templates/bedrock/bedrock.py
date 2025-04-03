@@ -6,7 +6,6 @@
 
 from pathlib import Path
 
-from llama_stack.apis.preprocessors.preprocessors import PreprocessorInput
 from llama_stack.distribution.datatypes import Provider, ToolGroupInput
 from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOConfig
 from llama_stack.providers.remote.inference.bedrock.models import MODEL_ENTRIES
@@ -34,7 +33,6 @@ def get_distribution_template() -> DistributionTemplate:
             "inline::rag-runtime",
             "remote::model-context-protocol",
         ],
-        "preprocessing": ["inline::basic", "inline::simple_chunking"],
     }
     name = "bedrock"
     vector_io_provider = Provider(
@@ -63,17 +61,6 @@ def get_distribution_template() -> DistributionTemplate:
         ),
     ]
 
-    default_preprocessors = [
-        PreprocessorInput(
-            preprocessor_id="builtin::basic",
-            provider_id="basic",
-        ),
-        PreprocessorInput(
-            preprocessor_id="builtin::chunking",
-            provider_id="simple_chunking",
-        ),
-    ]
-
     return DistributionTemplate(
         name=name,
         distro_type="self_hosted",
@@ -89,7 +76,6 @@ def get_distribution_template() -> DistributionTemplate:
                 },
                 default_models=default_models,
                 default_tool_groups=default_tool_groups,
-                default_preprocessors=default_preprocessors,
             ),
         },
         run_config_env_vars={
