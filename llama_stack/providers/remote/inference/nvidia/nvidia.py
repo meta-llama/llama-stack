@@ -243,7 +243,7 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
         provider_model_id = self.get_provider_model_id(model_id)
         request = await convert_chat_completion_request(
             request=ChatCompletionRequest(
-                model=self.get_provider_model_id(model_id),
+                model=provider_model_id,
                 messages=messages,
                 sampling_params=sampling_params,
                 response_format=response_format,
