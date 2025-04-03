@@ -60,7 +60,7 @@ export CUDA_VISIBLE_DEVICES=0
 export VLLM_DIMG="rocm/vllm-dev:main"
 
 docker run \
-	--pull always \
+    --pull always \
     --ipc=host \
     --privileged \
     --shm-size 16g \
@@ -77,8 +77,8 @@ docker run \
     -v ~/.cache/huggingface:/root/.cache/huggingface \
     $VLLM_DIMG \
     python -m vllm.entrypoints.openai.api_server \
-	--model $INFERENCE_MODEL \
-	--port $INFERENCE_PORT
+    --model $INFERENCE_MODEL \
+    --port $INFERENCE_PORT
 ```
 
 Note that you'll also need to set `--enable-auto-tool-choice` and `--tool-call-parser` to [enable tool calling in vLLM](https://docs.vllm.ai/en/latest/features/tool_calling.html).
@@ -92,7 +92,7 @@ export CUDA_VISIBLE_DEVICES=1
 export VLLM_DIMG="rocm/vllm-dev:main"
 
 docker run \
-	--pull always \
+    --pull always \
     --ipc=host \
     --privileged \
     --shm-size 16g \
@@ -109,8 +109,8 @@ docker run \
     -v ~/.cache/huggingface:/root/.cache/huggingface \
     $VLLM_DIMG \
     python -m vllm.entrypoints.openai.api_server \
-	--model $SAFETY_MODEL \
-	--port $SAFETY_PORT
+    --model $SAFETY_MODEL \
+    --port $SAFETY_PORT
 ```
 
 
