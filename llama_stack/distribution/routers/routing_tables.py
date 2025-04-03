@@ -24,7 +24,7 @@ from llama_stack.apis.datasets import (
     URIDataSource,
 )
 from llama_stack.apis.models import ListModelsResponse, Model, Models, ModelType
-from llama_stack.apis.preprocessing.preprocessors import ListPreprocessorsResponse, Preprocessor, Preprocessors
+from llama_stack.apis.preprocessors.preprocessors import ListPreprocessorsResponse, Preprocessor, Preprocessors
 from llama_stack.apis.resource import ResourceType
 from llama_stack.apis.scoring_functions import (
     ListScoringFunctionsResponse,

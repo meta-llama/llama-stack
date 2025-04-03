@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
 from pydantic import BaseModel
 
 from llama_stack.apis.common.content_types import URL, InterleavedContent
-from llama_stack.apis.preprocessing.preprocessors import Preprocessor
+from llama_stack.apis.preprocessors.preprocessors import Preprocessor
 from llama_stack.apis.vector_io import Chunk
 from llama_stack.schema_utils import json_schema_type, webmethod
 

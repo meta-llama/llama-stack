@@ -6,7 +6,7 @@
 
 
 from llama_stack.apis.models.models import ModelType
-from llama_stack.apis.preprocessing.preprocessors import PreprocessorInput
+from llama_stack.apis.preprocessors.preprocessors import PreprocessorInput
 from llama_stack.distribution.datatypes import (
     ModelInput,
     Provider,

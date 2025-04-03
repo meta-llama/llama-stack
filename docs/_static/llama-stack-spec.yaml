@@ -5033,6 +5033,7 @@ components:
             - tool_group
             - preprocessor
           title: ResourceType
+          const: preprocessor
           default: preprocessor
         metadata:
           type: object

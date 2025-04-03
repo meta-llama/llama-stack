@@ -6,7 +6,7 @@
 
 from pathlib import Path
 
-from llama_stack.apis.preprocessing.preprocessors import PreprocessorInput
+from llama_stack.apis.preprocessors.preprocessors import PreprocessorInput
 from llama_stack.distribution.datatypes import Provider, ToolGroupInput
 from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOConfig
 from llama_stack.providers.remote.inference.bedrock.models import MODEL_ENTRIES

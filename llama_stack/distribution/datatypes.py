@@ -15,7 +15,7 @@ from llama_stack.apis.eval import Eval
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.models import Model, ModelInput
 from llama_stack.apis.preprocessing import Preprocessing, Preprocessor
-from llama_stack.apis.preprocessing.preprocessors import PreprocessorInput
+from llama_stack.apis.preprocessors.preprocessors import PreprocessorInput
 from llama_stack.apis.resource import Resource
 from llama_stack.apis.safety import Safety
 from llama_stack.apis.scoring import Scoring

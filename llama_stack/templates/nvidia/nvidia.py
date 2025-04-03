@@ -6,7 +6,7 @@
 
 from pathlib import Path
 
-from llama_stack.apis.preprocessing.preprocessors import PreprocessorInput
+from llama_stack.apis.preprocessors.preprocessors import PreprocessorInput
 from llama_stack.distribution.datatypes import ModelInput, Provider, ShieldInput, ToolGroupInput
 from llama_stack.providers.remote.inference.nvidia import NVIDIAConfig
 from llama_stack.providers.remote.inference.nvidia.models import MODEL_ENTRIES

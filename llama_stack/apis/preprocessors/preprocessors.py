@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
+from typing import Any, Dict, List, Literal, Optional, Protocol, runtime_checkable
 
 from pydantic import BaseModel
 
@@ -15,7 +15,7 @@ from llama_stack.schema_utils import json_schema_type, webmethod
 
 @json_schema_type
 class Preprocessor(Resource):
-    type: ResourceType = ResourceType.preprocessor
+    type: Literal[ResourceType.preprocessor] = ResourceType.preprocessor
 
     @property
     def preprocessor_id(self) -> str:
