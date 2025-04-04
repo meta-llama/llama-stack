@@ -1,7 +1,6 @@
 # Agents
 
 An Agent in Llama Stack is a powerful abstraction that allows you to build complex AI applications.
-:w
 
 The Llama Stack agent framework is built on a modular architecture that allows for flexible and powerful AI
 applications. This document explains the key components and how they work together.
