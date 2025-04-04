@@ -60,11 +60,11 @@ class EfficiencyConfig(BaseModel):
 @json_schema_type
 class TrainingConfig(BaseModel):
     n_epochs: int
-    max_steps_per_epoch: int
-    gradient_accumulation_steps: int
-    max_validation_steps: int
-    data_config: DataConfig
-    optimizer_config: OptimizerConfig
+    max_steps_per_epoch: int = 1
+    gradient_accumulation_steps: int = 1
+    max_validation_steps: Optional[int] = 1
+    data_config: Optional[DataConfig] = None
+    optimizer_config: Optional[OptimizerConfig] = None
     efficiency_config: Optional[EfficiencyConfig] = None
     dtype: Optional[str] = "bf16"
 
@@ -177,9 +177,9 @@ class PostTraining(Protocol):
         training_config: TrainingConfig,
         hyperparam_search_config: Dict[str, Any],
         logger_config: Dict[str, Any],
-        model: str = Field(
-            default="Llama3.2-3B-Instruct",
-            description="Model descriptor from `llama model list`",
+        model: Optional[str] = Field(
+            default=None,
+            description="Model descriptor for training if not in provider config`",
         ),
         checkpoint_dir: Optional[str] = None,
         algorithm_config: Optional[AlgorithmConfig] = None,
