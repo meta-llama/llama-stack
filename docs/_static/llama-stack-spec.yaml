@@ -3484,6 +3484,50 @@ paths:
             schema:
               $ref: '#/components/schemas/SyntheticDataGenerateRequest'
         required: true
+  /v1/providers/{api}/{provider_id}/{provider_type}:
+    post:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderInfo'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Providers
+      description: ''
+      parameters:
+        - name: api
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: provider_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: provider_type
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProviderRequest'
+        required: true
   /v1/version:
     get:
       responses:
@@ -11234,6 +11278,23 @@ components:
       description: >-
         Response from the synthetic data generation. Batch of (prompt, response, score)
         tuples that pass the threshold.
+    UpdateProviderRequest:
+      type: object
+      properties:
+        config:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+      additionalProperties: false
+      required:
+        - config
+      title: UpdateProviderRequest
     VersionInfo:
       type: object
       properties:

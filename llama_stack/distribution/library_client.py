@@ -25,6 +25,7 @@ from llama_stack_client import (
     AsyncStream,
     LlamaStackClient,
 )
+from llama_stack_client.types import provider_info
 from pydantic import BaseModel, TypeAdapter
 from rich.console import Console
 from termcolor import cprint
@@ -293,6 +294,22 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
                     cast_to=cast_to,
                     options=options,
                 )
+            # Check if response is of a certain type
+            # this indicates we have done a provider update
+            if (
+                isinstance(response, provider_info.ProviderInfo)
+                and hasattr(response, "config")
+                and options.method.lower() == "put"
+            ):
+                # patch in the new provider config
+                for api, providers in self.config.providers.items():
+                    if api != response.api:
+                        continue
+                    for prov in providers:
+                        if prov.provider_id == response.provider_id:
+                            prov.config = response.config
+                            break
+                await self.initialize()
             return response
 
     async def _call_non_streaming(
