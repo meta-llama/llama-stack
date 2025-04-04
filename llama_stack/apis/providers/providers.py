@@ -47,3 +47,8 @@ class Providers(Protocol):
         :returns: A ProviderInfo object containing the provider's details.
         """
         ...
+
+    @webmethod(route="/providers/{api}/{provider_id}/{provider_type}", method="PUT")
+    async def update_provider(
+        self, api: str, provider_id: str, provider_type: str, config: dict[str, Any]
+    ) -> ProviderInfo: ...
