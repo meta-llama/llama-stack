@@ -4,21 +4,17 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+from collections.abc import AsyncIterator
 from enum import Enum
 from typing import (
+    Annotated,
     Any,
-    AsyncIterator,
-    Dict,
-    List,
     Literal,
-    Optional,
     Protocol,
-    Union,
     runtime_checkable,
 )
 
 from pydantic import BaseModel, Field, field_validator
-from typing_extensions import Annotated
 
 from llama_stack.apis.common.content_types import ContentDelta, InterleavedContent, InterleavedContentItem
 from llama_stack.apis.models import Model
@@ -41,7 +37,7 @@ class LogProbConfig(BaseModel):
     :param top_k: How many tokens (for each position) to return log probabilities for.
     """
 
-    top_k: Optional[int] = 0
+    top_k: int | None = 0
 
 
 class QuantizationType(Enum):
@@ -76,11 +72,11 @@ class Int4QuantizationConfig(BaseModel):
     """
 
     type: Literal["int4"] = "int4"
-    scheme: Optional[str] = "int4_weight_int8_dynamic_activation"
+    scheme: str | None = "int4_weight_int8_dynamic_activation"
 
 
 QuantizationConfig = Annotated[
-    Union[Bf16QuantizationConfig, Fp8QuantizationConfig, Int4QuantizationConfig],
+    Bf16QuantizationConfig | Fp8QuantizationConfig | Int4QuantizationConfig,
     Field(discriminator="type"),
 ]
 
@@ -96,7 +92,7 @@ class UserMessage(BaseModel):
 
     role: Literal["user"] = "user"
     content: InterleavedContent
-    context: Optional[InterleavedContent] = None
+    context: InterleavedContent | None = None
 
 
 @json_schema_type
@@ -141,16 +137,11 @@ class CompletionMessage(BaseModel):
     role: Literal["assistant"] = "assistant"
     content: InterleavedContent
     stop_reason: StopReason
-    tool_calls: Optional[List[ToolCall]] = Field(default_factory=list)
+    tool_calls: list[ToolCall] | None = Field(default_factory=list)
 
 
 Message = Annotated[
-    Union[
-        UserMessage,
-        SystemMessage,
-        ToolResponseMessage,
-        CompletionMessage,
-    ],
+    UserMessage | SystemMessage | ToolResponseMessage | CompletionMessage,
     Field(discriminator="role"),
 ]
 register_schema(Message, name="Message")
@@ -159,9 +150,9 @@ register_schema(Message, name="Message")
 @json_schema_type
 class ToolResponse(BaseModel):
     call_id: str
-    tool_name: Union[BuiltinTool, str]
+    tool_name: BuiltinTool | str
     content: InterleavedContent
-    metadata: Optional[Dict[str, Any]] = None
+    metadata: dict[str, Any] | None = None
 
     @field_validator("tool_name", mode="before")
     @classmethod
@@ -194,7 +185,7 @@ class TokenLogProbs(BaseModel):
     :param logprobs_by_token: Dictionary mapping tokens to their log probabilities
     """
 
-    logprobs_by_token: Dict[str, float]
+    logprobs_by_token: dict[str, float]
 
 
 class ChatCompletionResponseEventType(Enum):
@@ -222,8 +213,8 @@ class ChatCompletionResponseEvent(BaseModel):
 
     event_type: ChatCompletionResponseEventType
     delta: ContentDelta
-    logprobs: Optional[List[TokenLogProbs]] = None
-    stop_reason: Optional[StopReason] = None
+    logprobs: list[TokenLogProbs] | None = None
+    stop_reason: StopReason | None = None
 
 
 class ResponseFormatType(Enum):
@@ -246,7 +237,7 @@ class JsonSchemaResponseFormat(BaseModel):
     """
 
     type: Literal[ResponseFormatType.json_schema.value] = ResponseFormatType.json_schema.value
-    json_schema: Dict[str, Any]
+    json_schema: dict[str, Any]
 
 
 @json_schema_type
@@ -258,11 +249,11 @@ class GrammarResponseFormat(BaseModel):
     """
 
     type: Literal[ResponseFormatType.grammar.value] = ResponseFormatType.grammar.value
-    bnf: Dict[str, Any]
+    bnf: dict[str, Any]
 
 
 ResponseFormat = Annotated[
-    Union[JsonSchemaResponseFormat, GrammarResponseFormat],
+    JsonSchemaResponseFormat | GrammarResponseFormat,
     Field(discriminator="type"),
 ]
 register_schema(ResponseFormat, name="ResponseFormat")
@@ -272,10 +263,10 @@ register_schema(ResponseFormat, name="ResponseFormat")
 class CompletionRequest(BaseModel):
     model: str
     content: InterleavedContent
-    sampling_params: Optional[SamplingParams] = Field(default_factory=SamplingParams)
-    response_format: Optional[ResponseFormat] = None
-    stream: Optional[bool] = False
-    logprobs: Optional[LogProbConfig] = None
+    sampling_params: SamplingParams | None = Field(default_factory=SamplingParams)
+    response_format: ResponseFormat | None = None
+    stream: bool | None = False
+    logprobs: LogProbConfig | None = None
 
 
 @json_schema_type
@@ -289,7 +280,7 @@ class CompletionResponse(MetricResponseMixin):
 
     content: str
     stop_reason: StopReason
-    logprobs: Optional[List[TokenLogProbs]] = None
+    logprobs: list[TokenLogProbs] | None = None
 
 
 @json_schema_type
@@ -302,8 +293,8 @@ class CompletionResponseStreamChunk(MetricResponseMixin):
     """
 
     delta: str
-    stop_reason: Optional[StopReason] = None
-    logprobs: Optional[List[TokenLogProbs]] = None
+    stop_reason: StopReason | None = None
+    logprobs: list[TokenLogProbs] | None = None
 
 
 class SystemMessageBehavior(Enum):
@@ -334,9 +325,9 @@ class ToolConfig(BaseModel):
             '{{function_definitions}}' to indicate where the function definitions should be inserted.
     """
 
-    tool_choice: Optional[ToolChoice | str] = Field(default=ToolChoice.auto)
-    tool_prompt_format: Optional[ToolPromptFormat] = Field(default=None)
-    system_message_behavior: Optional[SystemMessageBehavior] = Field(default=SystemMessageBehavior.append)
+    tool_choice: ToolChoice | str | None = Field(default=ToolChoice.auto)
+    tool_prompt_format: ToolPromptFormat | None = Field(default=None)
+    system_message_behavior: SystemMessageBehavior | None = Field(default=SystemMessageBehavior.append)
 
     def model_post_init(self, __context: Any) -> None:
         if isinstance(self.tool_choice, str):
@@ -350,15 +341,15 @@ class ToolConfig(BaseModel):
 @json_schema_type
 class ChatCompletionRequest(BaseModel):
     model: str
-    messages: List[Message]
-    sampling_params: Optional[SamplingParams] = Field(default_factory=SamplingParams)
+    messages: list[Message]
+    sampling_params: SamplingParams | None = Field(default_factory=SamplingParams)
 
-    tools: Optional[List[ToolDefinition]] = Field(default_factory=list)
-    tool_config: Optional[ToolConfig] = Field(default_factory=ToolConfig)
+    tools: list[ToolDefinition] | None = Field(default_factory=list)
+    tool_config: ToolConfig | None = Field(default_factory=ToolConfig)
 
-    response_format: Optional[ResponseFormat] = None
-    stream: Optional[bool] = False
-    logprobs: Optional[LogProbConfig] = None
+    response_format: ResponseFormat | None = None
+    stream: bool | None = False
+    logprobs: LogProbConfig | None = None
 
 
 @json_schema_type
@@ -380,7 +371,7 @@ class ChatCompletionResponse(MetricResponseMixin):
     """
 
     completion_message: CompletionMessage
-    logprobs: Optional[List[TokenLogProbs]] = None
+    logprobs: list[TokenLogProbs] | None = None
 
 
 @json_schema_type
@@ -390,7 +381,7 @@ class EmbeddingsResponse(BaseModel):
     :param embeddings: List of embedding vectors, one per input content. Each embedding is a list of floats. The dimensionality of the embedding is model-specific; you can check model metadata using /models/{model_id}
     """
 
-    embeddings: List[List[float]]
+    embeddings: list[list[float]]
 
 
 class ModelStore(Protocol):
@@ -438,11 +429,11 @@ class Inference(Protocol):
         self,
         model_id: str,
         content: InterleavedContent,
-        sampling_params: Optional[SamplingParams] = None,
-        response_format: Optional[ResponseFormat] = None,
-        stream: Optional[bool] = False,
-        logprobs: Optional[LogProbConfig] = None,
-    ) -> Union[CompletionResponse, AsyncIterator[CompletionResponseStreamChunk]]:
+        sampling_params: SamplingParams | None = None,
+        response_format: ResponseFormat | None = None,
+        stream: bool | None = False,
+        logprobs: LogProbConfig | None = None,
+    ) -> CompletionResponse | AsyncIterator[CompletionResponseStreamChunk]:
         """Generate a completion for the given content using the specified model.
 
         :param model_id: The identifier of the model to use. The model must be registered with Llama Stack and available via the /models endpoint.
@@ -460,16 +451,16 @@ class Inference(Protocol):
     async def chat_completion(
         self,
         model_id: str,
-        messages: List[Message],
-        sampling_params: Optional[SamplingParams] = None,
-        tools: Optional[List[ToolDefinition]] = None,
-        tool_choice: Optional[ToolChoice] = ToolChoice.auto,
-        tool_prompt_format: Optional[ToolPromptFormat] = None,
-        response_format: Optional[ResponseFormat] = None,
-        stream: Optional[bool] = False,
-        logprobs: Optional[LogProbConfig] = None,
-        tool_config: Optional[ToolConfig] = None,
-    ) -> Union[ChatCompletionResponse, AsyncIterator[ChatCompletionResponseStreamChunk]]:
+        messages: list[Message],
+        sampling_params: SamplingParams | None = None,
+        tools: list[ToolDefinition] | None = None,
+        tool_choice: ToolChoice | None = ToolChoice.auto,
+        tool_prompt_format: ToolPromptFormat | None = None,
+        response_format: ResponseFormat | None = None,
+        stream: bool | None = False,
+        logprobs: LogProbConfig | None = None,
+        tool_config: ToolConfig | None = None,
+    ) -> ChatCompletionResponse | AsyncIterator[ChatCompletionResponseStreamChunk]:
         """Generate a chat completion for the given messages using the specified model.
 
         :param model_id: The identifier of the model to use. The model must be registered with Llama Stack and available via the /models endpoint.
@@ -500,10 +491,10 @@ class Inference(Protocol):
     async def embeddings(
         self,
         model_id: str,
-        contents: List[str] | List[InterleavedContentItem],
-        text_truncation: Optional[TextTruncation] = TextTruncation.none,
-        output_dimension: Optional[int] = None,
-        task_type: Optional[EmbeddingTaskType] = None,
+        contents: list[str] | list[InterleavedContentItem],
+        text_truncation: TextTruncation | None = TextTruncation.none,
+        output_dimension: int | None = None,
+        task_type: EmbeddingTaskType | None = None,
     ) -> EmbeddingsResponse:
         """Generate embeddings for content pieces using the specified model.
 

@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel, field_validator
 
@@ -17,8 +17,8 @@ class MetaReferenceInferenceConfig(BaseModel):
     # the actual inference model id is dtermined by the moddel id in the request
     # Note: you need to register the model before using it for inference
     # models in the resouce list in the run.yaml config will be registered automatically
-    model: Optional[str] = None
-    torch_seed: Optional[int] = None
+    model: str | None = None
+    torch_seed: int | None = None
     max_seq_len: int = 4096
     max_batch_size: int = 1
 
@@ -29,7 +29,7 @@ class MetaReferenceInferenceConfig(BaseModel):
 
     # By default, the implementation will look at ~/.llama/checkpoints/<model> but you
     # can override by specifying the directory explicitly
-    checkpoint_dir: Optional[str] = None
+    checkpoint_dir: str | None = None
 
     @field_validator("model")
     @classmethod
@@ -48,7 +48,7 @@ class MetaReferenceInferenceConfig(BaseModel):
         model: str = "Llama3.2-3B-Instruct",
         checkpoint_dir: str = "${env.CHECKPOINT_DIR:null}",
         **kwargs,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         return {
             "model": model,
             "max_seq_len": 4096,
@@ -65,7 +65,7 @@ class MetaReferenceQuantizedInferenceConfig(MetaReferenceInferenceConfig):
         model: str = "Llama3.2-3B-Instruct",
         checkpoint_dir: str = "${env.CHECKPOINT_DIR:null}",
         **kwargs,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         config = super().sample_run_config(model, checkpoint_dir, **kwargs)
         config["quantization"] = {
             "type": "fp8",

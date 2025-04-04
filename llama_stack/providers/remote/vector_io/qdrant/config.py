@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel
 
@@ -13,19 +13,19 @@ from llama_stack.schema_utils import json_schema_type
 
 @json_schema_type
 class QdrantVectorIOConfig(BaseModel):
-    location: Optional[str] = None
-    url: Optional[str] = None
-    port: Optional[int] = 6333
+    location: str | None = None
+    url: str | None = None
+    port: int | None = 6333
     grpc_port: int = 6334
     prefer_grpc: bool = False
-    https: Optional[bool] = None
-    api_key: Optional[str] = None
-    prefix: Optional[str] = None
-    timeout: Optional[int] = None
-    host: Optional[str] = None
+    https: bool | None = None
+    api_key: str | None = None
+    prefix: str | None = None
+    timeout: int | None = None
+    host: str | None = None
 
     @classmethod
-    def sample_run_config(cls, **kwargs: Any) -> Dict[str, Any]:
+    def sample_run_config(cls, **kwargs: Any) -> dict[str, Any]:
         return {
             "api_key": "${env.QDRANT_API_KEY}",
         }

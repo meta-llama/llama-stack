@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from autoevals.llm import Factuality
 from autoevals.ragas import (
@@ -132,7 +132,7 @@ class BraintrustScoringImpl(
 
     async def shutdown(self) -> None: ...
 
-    async def list_scoring_functions(self) -> List[ScoringFn]:
+    async def list_scoring_functions(self) -> list[ScoringFn]:
         scoring_fn_defs_list = list(self.supported_fn_defs_registry.values())
         for f in scoring_fn_defs_list:
             assert f.identifier.startswith("braintrust"), (
@@ -159,7 +159,7 @@ class BraintrustScoringImpl(
     async def score_batch(
         self,
         dataset_id: str,
-        scoring_functions: Dict[str, Optional[ScoringFnParams]],
+        scoring_functions: dict[str, ScoringFnParams | None],
         save_results_dataset: bool = False,
     ) -> ScoreBatchResponse:
         await self.set_api_key()
@@ -181,9 +181,7 @@ class BraintrustScoringImpl(
             results=res.results,
         )
 
-    async def score_row(
-        self, input_row: Dict[str, Any], scoring_fn_identifier: Optional[str] = None
-    ) -> ScoringResultRow:
+    async def score_row(self, input_row: dict[str, Any], scoring_fn_identifier: str | None = None) -> ScoringResultRow:
         validate_row_schema(input_row, get_valid_schemas(Api.scoring.value))
         await self.set_api_key()
         assert scoring_fn_identifier is not None, "scoring_fn_identifier cannot be None"
@@ -203,8 +201,8 @@ class BraintrustScoringImpl(
 
     async def score(
         self,
-        input_rows: List[Dict[str, Any]],
-        scoring_functions: Dict[str, Optional[ScoringFnParams]],
+        input_rows: list[dict[str, Any]],
+        scoring_functions: dict[str, ScoringFnParams | None],
     ) -> ScoreResponse:
         await self.set_api_key()
         res = {}

@@ -14,10 +14,9 @@
 import base64
 from enum import Enum
 from io import BytesIO
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_serializer, field_validator
-from typing_extensions import Annotated
 
 from llama_stack.schema_utils import json_schema_type, register_schema
 
@@ -40,21 +39,21 @@ class BuiltinTool(Enum):
     code_interpreter = "code_interpreter"
 
 
-Primitive = Union[str, int, float, bool, None]
-RecursiveType = Union[Primitive, List[Primitive], Dict[str, Primitive]]
+Primitive = str | int | float | bool | None
+RecursiveType = Primitive | list[Primitive] | dict[str, Primitive]
 
 
 class ToolCall(BaseModel):
     call_id: str
-    tool_name: Union[BuiltinTool, str]
+    tool_name: BuiltinTool | str
     # Plan is to deprecate the Dict in favor of a JSON string
     # that is parsed on the client side instead of trying to manage
     # the recursive type here.
     # Making this a union so that client side can start prepping for this change.
     # Eventually, we will remove both the Dict and arguments_json field,
     # and arguments will just be a str
-    arguments: Union[str, Dict[str, RecursiveType]]
-    arguments_json: Optional[str] = None
+    arguments: str | dict[str, RecursiveType]
+    arguments_json: str | None = None
 
     @field_validator("tool_name", mode="before")
     @classmethod
@@ -105,7 +104,7 @@ class RawMediaItem(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     @field_serializer("data")
-    def serialize_data(self, data: Optional[bytes], _info):
+    def serialize_data(self, data: bytes | None, _info):
         if data is None:
             return None
         return base64.b64encode(data).decode("utf-8")
@@ -123,9 +122,9 @@ class RawTextItem(BaseModel):
     text: str
 
 
-RawContentItem = Annotated[Union[RawTextItem, RawMediaItem], Field(discriminator="type")]
+RawContentItem = Annotated[RawTextItem | RawMediaItem, Field(discriminator="type")]
 
-RawContent = str | RawContentItem | List[RawContentItem]
+RawContent = str | RawContentItem | list[RawContentItem]
 
 
 class RawMessage(BaseModel):
@@ -133,11 +132,11 @@ class RawMessage(BaseModel):
     content: RawContent
 
     # This is for RAG but likely should be absorbed into content
-    context: Optional[RawContent] = None
+    context: RawContent | None = None
 
     # These are for the output message coming from the assistant
-    stop_reason: Optional[StopReason] = None
-    tool_calls: List[ToolCall] = Field(default_factory=list)
+    stop_reason: StopReason | None = None
+    tool_calls: list[ToolCall] = Field(default_factory=list)
 
 
 register_schema(ToolCall)
@@ -146,16 +145,16 @@ register_schema(ToolCall)
 @json_schema_type
 class ToolParamDefinition(BaseModel):
     param_type: str
-    description: Optional[str] = None
-    required: Optional[bool] = True
-    default: Optional[Any] = None
+    description: str | None = None
+    required: bool | None = True
+    default: Any | None = None
 
 
 @json_schema_type
 class ToolDefinition(BaseModel):
-    tool_name: Union[BuiltinTool, str]
-    description: Optional[str] = None
-    parameters: Optional[Dict[str, ToolParamDefinition]] = None
+    tool_name: BuiltinTool | str
+    description: str | None = None
+    parameters: dict[str, ToolParamDefinition] | None = None
 
     @field_validator("tool_name", mode="before")
     @classmethod
@@ -176,8 +175,8 @@ class GreedySamplingStrategy(BaseModel):
 @json_schema_type
 class TopPSamplingStrategy(BaseModel):
     type: Literal["top_p"] = "top_p"
-    temperature: Optional[float] = Field(..., gt=0.0)
-    top_p: Optional[float] = 0.95
+    temperature: float | None = Field(..., gt=0.0)
+    top_p: float | None = 0.95
 
 
 @json_schema_type
@@ -187,7 +186,7 @@ class TopKSamplingStrategy(BaseModel):
 
 
 SamplingStrategy = Annotated[
-    Union[GreedySamplingStrategy, TopPSamplingStrategy, TopKSamplingStrategy],
+    GreedySamplingStrategy | TopPSamplingStrategy | TopKSamplingStrategy,
     Field(discriminator="type"),
 ]
 register_schema(SamplingStrategy, name="SamplingStrategy")
@@ -208,9 +207,9 @@ class SamplingParams(BaseModel):
 
     strategy: SamplingStrategy = Field(default_factory=GreedySamplingStrategy)
 
-    max_tokens: Optional[int] = 0
-    repetition_penalty: Optional[float] = 1.0
-    stop: Optional[List[str]] = None
+    max_tokens: int | None = 0
+    repetition_penalty: float | None = 1.0
+    stop: list[str] | None = None
 
 
 class CheckpointQuantizationFormat(Enum):
@@ -346,14 +345,14 @@ def model_family(model_id) -> ModelFamily:
 class Model(BaseModel):
     core_model_id: CoreModelId
     description: str
-    huggingface_repo: Optional[str] = None
-    recommended_sampling_params: Optional[SamplingParams] = None
-    arch_args: Dict[str, Any]
+    huggingface_repo: str | None = None
+    recommended_sampling_params: SamplingParams | None = None
+    arch_args: dict[str, Any]
     variant: str = ""
 
     quantization_format: CheckpointQuantizationFormat = CheckpointQuantizationFormat.bf16
     pth_file_count: int
-    metadata: Optional[Dict[str, Any]] = Field(default_factory=dict)
+    metadata: dict[str, Any] | None = Field(default_factory=dict)
 
     # silence pydantic until we remove the `model_` fields
     model_config = ConfigDict(protected_namespaces=())

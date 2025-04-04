@@ -5,7 +5,8 @@
 # the root directory of this source tree.
 
 
-from typing import Any, AsyncGenerator, List, Optional, Union
+from collections.abc import AsyncGenerator
+from typing import Any
 
 import httpx
 from ollama import AsyncClient
@@ -100,10 +101,10 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         self,
         model_id: str,
         content: InterleavedContent,
-        sampling_params: Optional[SamplingParams] = None,
-        response_format: Optional[ResponseFormat] = None,
-        stream: Optional[bool] = False,
-        logprobs: Optional[LogProbConfig] = None,
+        sampling_params: SamplingParams | None = None,
+        response_format: ResponseFormat | None = None,
+        stream: bool | None = False,
+        logprobs: LogProbConfig | None = None,
     ) -> CompletionResponse | AsyncGenerator[CompletionResponseStreamChunk, None]:
         if sampling_params is None:
             sampling_params = SamplingParams()
@@ -158,15 +159,15 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
     async def chat_completion(
         self,
         model_id: str,
-        messages: List[Message],
-        sampling_params: Optional[SamplingParams] = None,
-        tools: Optional[List[ToolDefinition]] = None,
-        tool_choice: Optional[ToolChoice] = ToolChoice.auto,
-        tool_prompt_format: Optional[ToolPromptFormat] = None,
-        response_format: Optional[ResponseFormat] = None,
-        stream: Optional[bool] = False,
-        logprobs: Optional[LogProbConfig] = None,
-        tool_config: Optional[ToolConfig] = None,
+        messages: list[Message],
+        sampling_params: SamplingParams | None = None,
+        tools: list[ToolDefinition] | None = None,
+        tool_choice: ToolChoice | None = ToolChoice.auto,
+        tool_prompt_format: ToolPromptFormat | None = None,
+        response_format: ResponseFormat | None = None,
+        stream: bool | None = False,
+        logprobs: LogProbConfig | None = None,
+        tool_config: ToolConfig | None = None,
     ) -> ChatCompletionResponse | AsyncGenerator[ChatCompletionResponseStreamChunk, None]:
         if sampling_params is None:
             sampling_params = SamplingParams()
@@ -186,7 +187,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         else:
             return await self._nonstream_chat_completion(request)
 
-    async def _get_params(self, request: Union[ChatCompletionRequest, CompletionRequest]) -> dict:
+    async def _get_params(self, request: ChatCompletionRequest | CompletionRequest) -> dict:
         sampling_options = get_sampling_options(request.sampling_params)
         # This is needed since the Ollama API expects num_predict to be set
         # for early truncation instead of max_tokens.
@@ -284,10 +285,10 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
     async def embeddings(
         self,
         model_id: str,
-        contents: List[str] | List[InterleavedContentItem],
-        text_truncation: Optional[TextTruncation] = TextTruncation.none,
-        output_dimension: Optional[int] = None,
-        task_type: Optional[EmbeddingTaskType] = None,
+        contents: list[str] | list[InterleavedContentItem],
+        text_truncation: TextTruncation | None = TextTruncation.none,
+        output_dimension: int | None = None,
+        task_type: EmbeddingTaskType | None = None,
     ) -> EmbeddingsResponse:
         model = await self._get_model(model_id)
 
@@ -319,7 +320,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         return model
 
 
-async def convert_message_to_openai_dict_for_ollama(message: Message) -> List[dict]:
+async def convert_message_to_openai_dict_for_ollama(message: Message) -> list[dict]:
     async def _convert_content(content) -> dict:
         if isinstance(content, ImageContentItem):
             return {

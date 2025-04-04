@@ -6,7 +6,7 @@
 
 import json
 import logging
-from typing import Any, Dict, List
+from typing import Any
 
 from llama_stack.apis.inference import Message
 from llama_stack.apis.safety import (
@@ -53,7 +53,7 @@ class BedrockSafetyAdapter(Safety, ShieldsProtocolPrivate):
             )
 
     async def run_shield(
-        self, shield_id: str, messages: List[Message], params: Dict[str, Any] = None
+        self, shield_id: str, messages: list[Message], params: dict[str, Any] = None
     ) -> RunShieldResponse:
         shield = await self.shield_store.get_shield(shield_id)
         if not shield:

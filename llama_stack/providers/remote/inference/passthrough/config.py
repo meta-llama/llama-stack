@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field, SecretStr
 
@@ -18,13 +18,13 @@ class PassthroughImplConfig(BaseModel):
         description="The URL for the passthrough endpoint",
     )
 
-    api_key: Optional[SecretStr] = Field(
+    api_key: SecretStr | None = Field(
         default=None,
         description="API Key for the passthrouth endpoint",
     )
 
     @classmethod
-    def sample_run_config(cls, **kwargs) -> Dict[str, Any]:
+    def sample_run_config(cls, **kwargs) -> dict[str, Any]:
         return {
             "url": "${env.PASSTHROUGH_URL}",
             "api_key": "${env.PASSTHROUGH_API_KEY}",
