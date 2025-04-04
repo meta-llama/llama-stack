@@ -58,6 +58,8 @@ def get_all_api_endpoints() -> Dict[Api, List[ApiEndpoint]]:
                 method = "get"
             elif webmethod.method == "DELETE":
                 method = "delete"
+            elif webmethod.method == "PUT":
+                method = "put"
             else:
                 method = "post"
             endpoints.append(

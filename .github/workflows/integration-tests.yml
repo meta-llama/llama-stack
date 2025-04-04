@@ -50,6 +50,11 @@ jobs:
         run: |
           nohup ollama run llama3.2:3b-instruct-fp16 > ollama.log 2>&1 &
 
+      - name: Start Second Ollama server in background
+        run: |
+          # we need two ollama servers to test provider updating
+          nohup OLLAMA_HOST=http://localhost:12345 ollama run llama3.2:3b-instruct-fp16 > ollama.log 2>&1 &
+
       - name: Set Up Environment and Install Dependencies
         run: |
           uv sync --extra dev --extra test
