@@ -1,6 +1,5 @@
 ## Agent Execution Loop
 
-
 Agents are the heart of Llama Stack applications. They combine inference, memory, safety, and tool usage into coherent
 workflows. At its core, an agent follows a sophisticated execution loop that enables multi-step reasoning, tool usage,
 and safety checks.
