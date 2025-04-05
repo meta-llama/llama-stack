@@ -15,6 +15,9 @@ We release [Version 0.2.0](https://github.com/meta-llama/llama-stack/releases/ta
 
 You can now run Llama 4 models on Llama Stack.
 
+*Note you need 8xH100 GPU-host to run these models*
+
+
 ```bash
 pip install -U llama_stack
 
