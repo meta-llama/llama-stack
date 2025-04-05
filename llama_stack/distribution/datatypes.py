@@ -312,6 +312,11 @@ a default SQLite store will be used.""",
         description="Configuration for the HTTP(S) server",
     )
 
+    external_providers_dir: Optional[str] = Field(
+        default=None,
+        description="Path to directory containing external provider implementations.",
+    )
+
 
 class BuildConfig(BaseModel):
     version: str = LLAMA_STACK_BUILD_CONFIG_VERSION
