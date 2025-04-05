@@ -6,6 +6,7 @@
 
 from pathlib import Path
 
+from llama_stack.apis.preprocessors.preprocessors import PreprocessorInput
 from llama_stack.distribution.datatypes import Provider, ShieldInput, ToolGroupInput
 from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOConfig
 from llama_stack.providers.remote.inference.sambanova import SambaNovaImplConfig
@@ -34,6 +35,7 @@ def get_distribution_template() -> DistributionTemplate:
             "inline::code-interpreter",
             "inline::rag-runtime",
         ],
+        "preprocessing": ["inline::basic", "inline::simple_chunking"],
     }
     name = "sambanova"
 
@@ -85,6 +87,16 @@ def get_distribution_template() -> DistributionTemplate:
             provider_id="code-interpreter",
         ),
     ]
+    default_preprocessors = [
+        PreprocessorInput(
+            preprocessor_id="builtin::basic",
+            provider_id="basic",
+        ),
+        PreprocessorInput(
+            preprocessor_id="builtin::chunking",
+            provider_id="simple_chunking",
+        ),
+    ]
 
     return DistributionTemplate(
         name=name,
@@ -103,6 +115,7 @@ def get_distribution_template() -> DistributionTemplate:
                 default_models=default_models,
                 default_shields=[ShieldInput(shield_id="meta-llama/Llama-Guard-3-8B")],
                 default_tool_groups=default_tool_groups,
+                default_preprocessors=default_preprocessors,
             ),
         },
         run_config_env_vars={
