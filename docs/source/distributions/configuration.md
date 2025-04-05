@@ -2,7 +2,7 @@
 
 The Llama Stack runtime configuration is specified as a YAML file. Here is a simplified version of an example configuration file for the Ollama distribution:
 
-```{dropdown} Sample Configuration File
+```{dropdown} 👋 Click here for a Sample Configuration File
 
 ```yaml
 version: 2
