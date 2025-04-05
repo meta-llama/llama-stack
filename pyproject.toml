@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "llama_stack"
-version = "0.1.9"
+version = "0.2.0"
 authors = [{ name = "Meta Llama", email = "llama-oss@meta.com" }]
 description = "Llama Stack"
 readme = "README.md"
@@ -201,6 +201,7 @@ exclude = [
     "^llama_stack/distribution/routers/",
     "^llama_stack/distribution/server/endpoints\\.py$",
     "^llama_stack/distribution/server/server\\.py$",
+    "^llama_stack/distribution/server/websocket_server\\.py$",
     "^llama_stack/distribution/stack\\.py$",
     "^llama_stack/distribution/store/registry\\.py$",
     "^llama_stack/distribution/ui/page/playground/chat\\.py$",
@@ -213,6 +214,7 @@ exclude = [
     "^llama_stack/models/llama/llama3/tokenizer\\.py$",
     "^llama_stack/models/llama/llama3/tool_utils\\.py$",
     "^llama_stack/models/llama/llama3_3/prompts\\.py$",
+    "^llama_stack/models/llama/llama4/",
     "^llama_stack/models/llama/sku_list\\.py$",
     "^llama_stack/providers/inline/agents/meta_reference/",
     "^llama_stack/providers/inline/agents/meta_reference/agent_instance\\.py$",
@@ -224,6 +226,7 @@ exclude = [
     "^llama_stack/providers/inline/inference/meta_reference/inference\\.py$",
     "^llama_stack/providers/inline/inference/meta_reference/llama3/generation\\.py$",
     "^llama_stack/providers/inline/inference/meta_reference/llama3/multimodal/model\\.py$",
+    "^llama_stack/providers/inline/inference/meta_reference/llama4/",
     "^llama_stack/providers/inline/inference/meta_reference/parallel_utils\\.py$",
     "^llama_stack/providers/inline/inference/meta_reference/quantization/fp8_impls\\.py$",
     "^llama_stack/providers/inline/inference/meta_reference/quantization/loader\\.py$",
@@ -289,6 +292,12 @@ exclude = [
     "^llama_stack/providers/utils/telemetry/dataset_mixin\\.py$",
     "^llama_stack/providers/utils/telemetry/trace_protocol\\.py$",
     "^llama_stack/providers/utils/telemetry/tracing\\.py$",
+    "^llama_stack/scripts/",
+    "^llama_stack/strong_typing/auxiliary\\.py$",
+    "^llama_stack/strong_typing/deserializer\\.py$",
+    "^llama_stack/strong_typing/inspection\\.py$",
+    "^llama_stack/strong_typing/schema\\.py$",
+    "^llama_stack/strong_typing/serializer\\.py$",
     "^llama_stack/templates/dev/dev\\.py$",
     "^llama_stack/templates/groq/groq\\.py$",
     "^llama_stack/templates/sambanova/sambanova\\.py$",

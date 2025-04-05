@@ -231,6 +231,7 @@ class ModelFamily(Enum):
     llama3_1 = "llama3_1"
     llama3_2 = "llama3_2"
     llama3_3 = "llama3_3"
+    llama4 = "llama4"
     safety = "safety"
 
 
@@ -271,6 +272,12 @@ class CoreModelId(Enum):
 
     # Llama 3.3 family
     llama3_3_70b_instruct = "Llama3.3-70B-Instruct"
+
+    # Llama 4 family
+    llama4_scout_17b_16e = "Llama-4-Scout-17B-16E"
+    llama4_scout_17b_16e_instruct = "Llama-4-Scout-17B-16E-Instruct"
+    llama4_maverick_17b_128e = "Llama-4-Maverick-17B-128E"
+    llama4_maverick_17b_128e_instruct = "Llama-4-Maverick-17B-128E-Instruct"
 
     # Safety models
     llama_guard_3_8b = "Llama-Guard-3-8B"
@@ -333,6 +340,13 @@ def model_family(model_id) -> ModelFamily:
     ]:
         return ModelFamily.llama3_3
     elif model_id in [
+        CoreModelId.llama4_scout_17b_16e,
+        CoreModelId.llama4_scout_17b_16e_instruct,
+        CoreModelId.llama4_maverick_17b_128e,
+        CoreModelId.llama4_maverick_17b_128e_instruct,
+    ]:
+        return ModelFamily.llama4
+    elif model_id in [
         CoreModelId.llama_guard_3_8b,
         CoreModelId.llama_guard_2_8b,
         CoreModelId.llama_guard_3_11b_vision,
@@ -379,6 +393,7 @@ class Model(BaseModel):
             ModelFamily.llama3_1,
             ModelFamily.llama3_2,
             ModelFamily.llama3_3,
+            ModelFamily.llama4,
             ModelFamily.safety,
         ]
 
@@ -396,6 +411,16 @@ class Model(BaseModel):
             if self.quantization_format == CheckpointQuantizationFormat.int4:
                 return 8192
             return 131072
+        elif self.model_family == ModelFamily.llama4:
+            if self.core_model_id in {
+                CoreModelId.llama4_scout_17b_16e,
+                CoreModelId.llama4_maverick_17b_128e,
+            }:
+                return 262144
+            if self.core_model_id == CoreModelId.llama4_scout_17b_16e_instruct:
+                return 10485760
+            if self.core_model_id == CoreModelId.llama4_maverick_17b_128e_instruct:
+                return 1048576
         elif self.core_model_id in [
             CoreModelId.llama_guard_3_8b,
             CoreModelId.llama_guard_3_11b_vision,

@@ -19,6 +19,7 @@ from .datatypes import (
     CheckpointQuantizationFormat,
     CoreModelId,
     Model,
+    ModelFamily,
     SamplingParams,
     TopPSamplingStrategy,
 )
@@ -36,7 +37,13 @@ def resolve_model(descriptor: str) -> Optional[Model]:
 
 def all_registered_models() -> List[Model]:
     return (
-        llama2_family() + llama3_family() + llama3_1_family() + llama3_2_family() + llama3_3_family() + safety_models()
+        llama2_family()
+        + llama3_family()
+        + llama3_1_family()
+        + llama3_2_family()
+        + llama3_3_family()
+        + llama4_family()
+        + safety_models()
     )
 
 
@@ -80,6 +87,60 @@ def llama3_2_family() -> List[Model]:
 def llama3_3_family() -> List[Model]:
     return [
         *llama3_3_instruct_models(),
+    ]
+
+
+def llama4_family() -> List[Model]:
+    return [
+        *llama4_base_models(),
+        *llama4_instruct_models(),
+    ]
+
+
+def llama4_base_models() -> List[Model]:
+    return [
+        Model(
+            core_model_id=CoreModelId.llama4_scout_17b_16e,
+            description="Llama 4 Scout (17b 16 experts model)",
+            huggingface_repo="meta-llama/Llama-4-Scout-17B-16E",
+            pth_file_count=8,
+            arch_args={},
+        ),
+        Model(
+            core_model_id=CoreModelId.llama4_maverick_17b_128e,
+            description="Llama 4 Maverick (17b 128 experts model)",
+            huggingface_repo="meta-llama/Llama-4-Maverick-17B-128E",
+            pth_file_count=8,
+            arch_args={},
+        ),
+    ]
+
+
+def llama4_instruct_models() -> List[Model]:
+    return [
+        Model(
+            core_model_id=CoreModelId.llama4_scout_17b_16e_instruct,
+            description="Llama 4 Scout (17b 16 experts instruct model)",
+            huggingface_repo="meta-llama/Llama-4-Scout-17B-16E-Instruct",
+            pth_file_count=8,
+            arch_args={},
+        ),
+        Model(
+            core_model_id=CoreModelId.llama4_maverick_17b_128e_instruct,
+            description="Llama 4 Maverick (17b 128 experts instruct model)",
+            huggingface_repo="meta-llama/Llama-4-Maverick-17B-128E-Instruct",
+            pth_file_count=8,
+            arch_args={},
+        ),
+        Model(
+            core_model_id=CoreModelId.llama4_maverick_17b_128e_instruct,
+            description="Llama 4 Maverick (FP8 quantized)",
+            huggingface_repo="meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
+            quantization_format=CheckpointQuantizationFormat.fp8_mixed,
+            pth_file_count=8,
+            variant="fp8",
+            arch_args={},
+        ),
     ]
 
 
@@ -989,12 +1050,24 @@ def llama_meta_pth_size(model: Model) -> int:
     if model.core_model_id not in (
         CoreModelId.llama3_1_405b,
         CoreModelId.llama3_1_405b_instruct,
+        CoreModelId.llama4_maverick_17b_128e,
+        CoreModelId.llama4_maverick_17b_128e_instruct,
     ):
         return 0
 
-    if model.pth_file_count == 16:
-        return 51268302389
-    elif model.quantization_format == CheckpointQuantizationFormat.fp8_mixed:
-        return 60903742309
-    else:
-        return 101470976045
+    if model.model_family == ModelFamily.llama3_1:
+        if model.pth_file_count == 16:
+            return 51268302389
+        elif model.quantization_format == CheckpointQuantizationFormat.fp8_mixed:
+            return 60903742309
+        else:
+            return 101470976045
+
+    if model.model_family == ModelFamily.llama4:
+        if model.core_model_id == CoreModelId.llama4_maverick_17b_128e:
+            return 100458118386
+        elif model.core_model_id == CoreModelId.llama4_maverick_17b_128e_instruct:
+            if model.quantization_format == CheckpointQuantizationFormat.fp8_mixed:
+                return 54121549657
+            else:
+                return 100426653046
