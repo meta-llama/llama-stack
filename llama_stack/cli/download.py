@@ -162,6 +162,10 @@ class ParallelDownloader:
         raise last_exception
 
     async def get_file_info(self, client: httpx.AsyncClient, task: DownloadTask) -> None:
+        if task.total_size > 0:
+            self.progress.update(task.task_id, total=task.total_size)
+            return
+
         async def _get_info():
             response = await client.head(task.url, headers={"Accept-Encoding": "identity"}, **self.client_options)
             response.raise_for_status()
@@ -282,7 +286,7 @@ class ParallelDownloader:
         if not tasks:
             raise ValueError("No download tasks provided")
 
-        if not self.has_disk_space(tasks):
+        if not os.environ.get("LLAMA_DOWNLOAD_NO_SPACE_CHECK") and not self.has_disk_space(tasks):
             raise DownloadError("Insufficient disk space for downloads")
 
         failed_tasks = []

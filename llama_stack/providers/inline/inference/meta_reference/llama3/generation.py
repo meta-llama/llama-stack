@@ -4,17 +4,13 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-# Copyright (c) Meta Platforms, Inc. and affiliates.
-# This software may be used and distributed in accordance with the terms of the Llama 3 Community License Agreement.
 
 import json
-import logging
-import math
 import os
 import sys
 import time
 from pathlib import Path
-from typing import Generator, List, Optional, Tuple, Union
+from typing import Callable, Generator, Optional, Union
 
 import torch
 import torch.nn.functional as F
@@ -23,27 +19,16 @@ from fairscale.nn.model_parallel.initialize import (
     initialize_model_parallel,
     model_parallel_is_initialized,
 )
-from lmformatenforcer import JsonSchemaParser, TokenEnforcer, TokenEnforcerTokenizerData
 
 from llama_stack.apis.inference import (
     Fp8QuantizationConfig,
     Int4QuantizationConfig,
-    ResponseFormat,
-    ResponseFormatType,
 )
-from llama_stack.models.llama.datatypes import (
-    GreedySamplingStrategy,
-    Model,
-    SamplingParams,
-    TopPSamplingStrategy,
-)
+from llama_stack.log import get_logger
+from llama_stack.models.llama.datatypes import Model
 from llama_stack.models.llama.llama3.chat_format import ChatFormat, LLMInput
 from llama_stack.models.llama.llama3.tokenizer import Tokenizer
 from llama_stack.models.llama.sku_list import resolve_model
-from llama_stack.providers.utils.inference.prompt_adapter import (
-    ChatCompletionRequestWithRawContent,
-    CompletionRequestWithRawContent,
-)
 
 from ..common import TokenResult, model_checkpoint_dir
 from ..config import MetaReferenceInferenceConfig, MetaReferenceQuantizedInferenceConfig
@@ -51,7 +36,7 @@ from .args import ModelArgs
 from .model import Transformer
 from .multimodal.model import CrossAttentionTransformer
 
-log = logging.getLogger(__name__)
+log = get_logger(__name__, category="inference")
 
 
 class Llama3:
@@ -146,7 +131,7 @@ class Llama3:
 
         if isinstance(config, MetaReferenceQuantizedInferenceConfig):
             if isinstance(config.quantization, Fp8QuantizationConfig):
-                from ..quantization.loader import convert_to_fp8_quantized_model
+                from .quantization.loader import convert_to_fp8_quantized_model
 
                 # load on CPU in bf16 so that fp8 conversion does not find an
                 # unexpected (fp32, e.g.) datatype
@@ -159,7 +144,7 @@ class Llama3:
                 model.load_state_dict(state_dict, strict=False)
                 model = convert_to_fp8_quantized_model(model, config, ckpt_dir)
             elif isinstance(config.quantization, Int4QuantizationConfig):
-                from ..quantization.loader import convert_to_int4_quantized_model
+                from .quantization.loader import convert_to_int4_quantized_model
 
                 model = Transformer(model_args)
                 model = convert_to_int4_quantized_model(model, model_args, config)
@@ -169,7 +154,7 @@ class Llama3:
                     # Add a wrapper for adding hadamard transform for spinquant.
                     # This needs to be done after loading the state dict otherwise an error will be raised while
                     # loading the state dict.
-                    from ..quantization.hadamard_utils import (
+                    from ..hadamard_utils import (
                         add_hadamard_transform_for_spinquant,
                     )
 
@@ -222,9 +207,8 @@ class Llama3:
         top_p: float = 0.9,
         logprobs: bool = False,
         echo: bool = False,
-        include_stop_token: bool = False,
         print_input_tokens: bool = False,
-        logits_processor: Optional["LogitsProcessor"] = None,
+        logits_processor: Optional[Callable[[torch.Tensor, torch.Tensor], torch.Tensor]] = None,
     ) -> Generator:
         params = self.model.params
 
@@ -292,7 +276,7 @@ class Llama3:
                 logits = self.model.forward(tokens[:, prev_pos:cur_pos], prev_pos)
 
             if logits_processor is not None:
-                logits = logits_processor.process_logits(tokens[:, :cur_pos], logits)
+                logits = logits_processor(tokens[:, :cur_pos], logits)
 
             if temperature > 0:
                 probs = torch.softmax(logits[:, -1] / temperature, dim=-1)
@@ -336,58 +320,6 @@ class Llama3:
             if all(eos_reached):
                 break
 
-    def completion(
-        self,
-        request: CompletionRequestWithRawContent,
-    ) -> Generator:
-        sampling_params = request.sampling_params
-        max_gen_len = sampling_params.max_tokens
-        if max_gen_len is None or max_gen_len == 0 or max_gen_len >= self.model.params.max_seq_len:
-            max_gen_len = self.model.params.max_seq_len - 1
-
-        model_input = self.formatter.encode_content(request.content)
-        temperature, top_p = _infer_sampling_params(sampling_params)
-        yield from self.generate(
-            model_input=model_input,
-            max_gen_len=max_gen_len,
-            temperature=temperature,
-            top_p=top_p,
-            logprobs=bool(request.logprobs),
-            include_stop_token=True,
-            logits_processor=get_logits_processor(
-                self.tokenizer,
-                self.args.vocab_size,
-                request.response_format,
-            ),
-        )
-
-    def chat_completion(
-        self,
-        request: ChatCompletionRequestWithRawContent,
-    ) -> Generator:
-        sampling_params = request.sampling_params
-        max_gen_len = sampling_params.max_tokens
-        if max_gen_len is None or max_gen_len == 0 or max_gen_len >= self.model.params.max_seq_len:
-            max_gen_len = self.model.params.max_seq_len - 1
-
-        temperature, top_p = _infer_sampling_params(sampling_params)
-        yield from self.generate(
-            model_input=self.formatter.encode_dialog_prompt(
-                request.messages,
-                request.tool_config.tool_prompt_format,
-            ),
-            max_gen_len=max_gen_len,
-            temperature=temperature,
-            top_p=top_p,
-            logprobs=bool(request.logprobs),
-            include_stop_token=True,
-            logits_processor=get_logits_processor(
-                self.tokenizer,
-                self.args.vocab_size,
-                request.response_format,
-            ),
-        )
-
 
 def sample_top_p(probs, p):
     """
@@ -412,72 +344,3 @@ def sample_top_p(probs, p):
     next_token = torch.multinomial(probs_sort, num_samples=1)
     next_token = torch.gather(probs_idx, -1, next_token)
     return next_token
-
-
-class LogitsProcessor:
-    def __init__(self, token_enforcer: TokenEnforcer):
-        self.token_enforcer = token_enforcer
-        self.mask: Optional[torch.Tensor] = None
-
-    def process_logits(self, tokens: torch.Tensor, scores: torch.Tensor) -> torch.Tensor:
-        token_sequence = tokens[0, :].tolist()
-        allowed_tokens = self.token_enforcer.get_allowed_tokens(token_sequence)
-
-        if self.mask is not None:
-            self.mask.fill_(-math.inf)
-        else:
-            self.mask = torch.full_like(scores, -math.inf)
-
-        self.mask[:, :, allowed_tokens] = 0
-        scores = scores + self.mask
-        return scores
-
-
-def get_logits_processor(
-    tokenizer: Tokenizer,
-    vocab_size: int,
-    response_format: Optional[ResponseFormat],
-) -> Optional["LogitsProcessor"]:
-    if response_format is None:
-        return None
-
-    if response_format.type != ResponseFormatType.json_schema.value:
-        raise ValueError(f"Unsupported response format type {response_format.type}")
-
-    parser = JsonSchemaParser(response_format.json_schema)
-    data = TokenEnforcerTokenizerData(
-        _build_regular_tokens_list(tokenizer, vocab_size),
-        tokenizer.decode,
-        tokenizer.stop_tokens,
-    )
-    token_enforcer = TokenEnforcer(data, parser)
-    return LogitsProcessor(token_enforcer)
-
-
-def _build_regular_tokens_list(tokenizer: Tokenizer, vocab_size: int) -> List[Tuple[int, str, bool]]:
-    token_0 = tokenizer.encode("0", bos=False, eos=False)[-1]
-    regular_tokens = []
-
-    special_token_ids = set(tokenizer.special_tokens.values())
-    for token_idx in range(vocab_size):
-        if token_idx in special_token_ids:
-            continue
-
-        # We prepend token 0 and skip the first letter of the result to get a space if the token is a start word.
-        decoded_after_0 = tokenizer.decode([token_0, token_idx])[1:]
-        decoded_regular = tokenizer.decode([token_idx])
-        is_word_start_token = len(decoded_after_0) > len(decoded_regular)
-        regular_tokens.append((token_idx, decoded_after_0, is_word_start_token))
-    return regular_tokens
-
-
-def _infer_sampling_params(sampling_params: SamplingParams):
-    if isinstance(sampling_params.strategy, GreedySamplingStrategy):
-        temperature = 0.0
-        top_p = 1.0
-    elif isinstance(sampling_params.strategy, TopPSamplingStrategy):
-        temperature = sampling_params.strategy.temperature
-        top_p = sampling_params.strategy.top_p
-    else:
-        raise ValueError(f"Unsupported sampling strategy {sampling_params.strategy}")
-    return temperature, top_p

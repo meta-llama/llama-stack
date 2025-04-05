@@ -23,7 +23,12 @@ def skip_if_model_doesnt_support_completion(client_with_models, model_id):
     provider_id = models[model_id].provider_id
     providers = {p.provider_id: p for p in client_with_models.providers.list()}
     provider = providers[provider_id]
-    if provider.provider_type in ("remote::openai", "remote::anthropic", "remote::gemini", "remote::groq"):
+    if provider.provider_type in (
+        "remote::openai",
+        "remote::anthropic",
+        "remote::gemini",
+        "remote::groq",
+    ):
         pytest.skip(f"Model {model_id} hosted by {provider.provider_type} doesn't support completion")
 
 

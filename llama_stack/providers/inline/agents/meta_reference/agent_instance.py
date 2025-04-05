@@ -255,7 +255,7 @@ class ChatAgent(ShieldRunnerMixin):
                     )
                 )
             )
-            input_messages = last_turn_messages
+            input_messages = last_turn.input_messages
 
             turn_id = request.turn_id
             start_time = last_turn.started_at
