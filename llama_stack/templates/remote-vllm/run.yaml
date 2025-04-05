@@ -135,5 +135,6 @@ tool_groups:
   provider_id: code-interpreter
 - toolgroup_id: builtin::wolfram_alpha
   provider_id: wolfram-alpha
+preprocessors: []
 server:
   port: 8321
