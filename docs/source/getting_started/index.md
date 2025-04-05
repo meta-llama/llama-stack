@@ -1,6 +1,6 @@
 # Quick Start
 
-In this guide, we'll walk through how you can use the Llama Stack (server and client SDK) to test a simple RAG agent.
+In this guide, we'll walk through how you can use the Llama Stack (server and client SDK) to test a simple agent.
 A Llama Stack agent is a simple integrated system that can perform tasks by combining a Llama model for reasoning with
 tools (e.g., RAG, web search, code execution, etc.) for taking actions.
 In Llama Stack, we provide a server exposing multiple APIs. These APIs are backed by implementations from different providers.
@@ -58,11 +58,7 @@ Llama Stack is a server that exposes multiple APIs, you connect with it using th
 ```bash
 uv pip install llama-stack
 ```
-
-### Install the Llama Stack Client
-```bash
-uv pip install llama-stack-client
-```
+Note the Llama Stack Server includes the client SDK as well.
 
 ## Step 3: Build and Run Llama Stack
 Llama Stack uses a [configuration file](../distributions/configuration.md) to define the stack.
@@ -91,10 +87,10 @@ Setup venv (llama-stack already includes the client package)
 ```bash
 source .venv/bin/activate
 ```
-Let's use the `llama-stack-client` CLI to check the connectivity to the server.
+Now let's use the `llama-stack-client` CLI to check the connectivity to the server.
 
 ```bash
-llama-stack-client configure --endpoint http://localhost:$LLAMA_STACK_PORT --api-key none
+llama-stack-client configure --endpoint http://localhost:8321 --api-key none
 ```
 You will see the below:
 ```
@@ -105,7 +101,6 @@ Done! You can now use the Llama Stack Client CLI with endpoint http://localhost:
 List the models
 ```
 llama-stack-client models list
-```
 Available Models
 
 ┏━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━┓
@@ -143,13 +138,13 @@ ChatCompletionResponse(
     ],
 )
 ```
+### i. Create a Script used by the Llama Stack Client
 
-#### 4.1 Basic Inference
 Create a file `inference.py` and add the following code:
 ```python
 from llama_stack_client import LlamaStackClient
 
-client = LlamaStackClient(base_url=f"http://localhost:8321")
+client = LlamaStackClient(base_url="http://localhost:8321")
 
 # List available models
 models = client.models.list()
@@ -169,6 +164,7 @@ response = client.inference.chat_completion(
 )
 print(response.completion_message.content)
 ```
+### ii. Run the Script
 Let's run the script using `uv`
 ```bash
 uv run python inference.py
@@ -183,9 +179,10 @@ Logic flows through digital night
 Beauty in the bits
 ```
 
-#### 4.2. Basic Agent
-
+## Step 5: Run Your First Agent
+Now we can move beyond simple inference and build an agent that can perform tasks using the Llama Stack server.
 Create a file `agent.py` and add the following code:
+
 ```python
 from llama_stack_client import LlamaStackClient
 from llama_stack_client import Agent, AgentEventLogger
@@ -224,12 +221,11 @@ stream = agent.create_turn(
 for event in AgentEventLogger().log(stream):
     event.print()
 ```
-
+### ii. Run the Script
 Let's run the script using `uv`
 ```bash
 uv run python agent.py
 ```
-
 :::{dropdown} `Sample output`
 ```
 Non-streaming ...
@@ -352,8 +348,10 @@ So, who am I? I'm just a computer program designed to help you!
 ```
 :::
 
-#### 4.3. RAG agent
-
+## Step 6: Build a RAG Agent
+### i. Create the Script
+For our last demo, we can build a RAG agent that can answer questions about the Torchtune project using the documents
+in a vector database.
 Create a file `rag_agent.py` and add the following code:
 
 ```python
@@ -361,6 +359,7 @@ from llama_stack_client import LlamaStackClient
 from llama_stack_client import Agent, AgentEventLogger
 from llama_stack_client.types import Document
 import uuid
+from termcolor import cprint
 
 client = LlamaStackClient(base_url=f"http://localhost:8321")
 
@@ -404,7 +403,7 @@ llm = next(m for m in client.models.list() if m.model_type == "llm")
 model = llm.identifier
 
 # Create RAG agent
-ragagent = Agent(
+rag_agent = Agent(
     client,
     model=model,
     instructions="You are a helpful assistant. Use the RAG tool to answer questions as needed.",
@@ -416,7 +415,7 @@ ragagent = Agent(
     ],
 )
 
-s_id = ragagent.create_session(session_name=f"s{uuid.uuid4().hex}")
+session_id = rag_agent.create_session(session_name=f"s{uuid.uuid4().hex}")
 
 user_prompts = [
     "How to optimize memory usage in torchtune? use the knowledge_search tool to get information.",
@@ -429,12 +428,13 @@ for prompt in user_prompts:
         messages=[{"role": "user", "content": prompt}],
         session_id=session_id,
     )
-    for event in AgentEventLogger().log(stream):
+    for event in AgentEventLogger().log(response):
         event.print()
 ```
+### ii. Run the Script
 Let's run the script using `uv`
 ```bash
-uv run python lsagent.py
+uv run python rag_agent.py
 ```
 :::{dropdown} `Sample output`
 ```
