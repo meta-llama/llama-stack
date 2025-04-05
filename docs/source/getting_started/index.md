@@ -1,6 +1,6 @@
 # Quick Start
 
-In this guide, we'll walk through how you can use the Llama Stack (server and client SDK) to test a simple RAG agent.
+In this guide, we'll walk through how you can use the Llama Stack (both the server and client SDK) to build a RAG agent.
 A Llama Stack agent is a simple integrated system that can perform tasks by combining a Llama model for reasoning with tools (e.g., RAG, web search, code execution, etc.) for taking actions.
 In Llama Stack, we provide a server exposing multiple APIs. These APIs are backed by implementations from different providers.
 
@@ -53,11 +53,7 @@ Llama Stack is a server that exposes multiple APIs, you connect with it using th
 ```bash
 uv pip install llama-stack
 ```
-
-### Install the Llama Stack Client
-```bash
-uv pip install llama-stack-client
-```
+Note the Llama Stack Server includes the client SDK as well.
 
 ## Step 3: Build and Run Llama Stack
 Llama Stack uses a [configuration file](../distributions/configuration.md) to define the stack.
@@ -71,8 +67,7 @@ llama stack build --template ollama --image-type venv
 ### ii. Run the Llama Stack Server
 ```bash
 # Use the model from ollama. Run `ollama ps` to see if its still running
-INFERENCE_MODEL=llama3.2:3b-instruct-fp16 \
-    llama stack run ollama --image-type venv
+INFERENCE_MODEL=llama3.2:3b-instruct-fp16 llama stack run ollama --image-type venv
 ```
 
 You will see the output like below:
@@ -84,18 +79,18 @@ INFO:     Uvicorn running on http://['::', '0.0.0.0']:8321 (Press CTRL+C to quit
 
 Now you can use the llama stack client to run inference and build agents!
 
-:::{dropdown} Installing the Llama Stack client CLI and SDK
+### iii. Run the Llama Stack Client
 
 Open a new terminal and navigate to the same directory you started the server from.
 
-Setup venv (llama-stack already includes the client package)
+Source the existing virtual environment
 ```bash
 source .venv/bin/activate
 ```
-Let's use the `llama-stack-client` CLI to check the connectivity to the server.
+Now let's use the `llama-stack-client` CLI to check the connectivity to the server.
 
 ```bash
-llama-stack-client configure --endpoint http://localhost:$LLAMA_STACK_PORT --api-key none
+llama-stack-client configure --endpoint http://localhost:8321 --api-key none
 ```
 You will see the below:
 ```
@@ -142,13 +137,11 @@ ChatCompletionResponse(
     ]
 )
 ```
-:::
-
-&nbsp;
 
 ## Step 4: Run Inference with Llama Stack
 
-Let's go through a simple example to perform chat completions using the SDK.
+### i. Create a Script used by the Llama Stack Client
+Let's go through a simple example to perform chat completions using the SDK by creating a script `lstest.py`:
 ```python
 ## lstest.py
 from llama_stack_client import LlamaStackClient
@@ -173,6 +166,7 @@ response = client.inference.chat_completion(
 )
 print(response.completion_message.content)
 ```
+### ii. Run the Script
 Let's run the script using `uv`
 ```bash
 uv run python lstest.py
@@ -188,7 +182,9 @@ Beauty in the bits
 ```
 
 ## Step 5. Run Your First Agent
+### i. Create the Script
 Now we can move beyond simple inference and build an agent that can perform tasks using the Llama Stack server.
+Let's create a script `lsagent.py` to build a simple agent that can answer questions about the Torchtune project.
 ```python
 ## lsagent.py
 
@@ -237,7 +233,7 @@ stream = agent.create_turn(
 for event in stream:
     pprint(event)
 ```
-
+### ii. Run the Script
 Let's run the script using `uv`
 ```bash
 uv run python lsagent.py
@@ -265,8 +261,9 @@ AgentTurnResponseStreamChunk(event=TurnResponseEvent(payload=AgentTurnResponseTu
 ```
 
 ## Step 6. Build a RAG Agent
+### i. Create the Script
 For our last demo, we can build a RAG agent that can answer questions about the Torchtune project using the documents
-in a vector database.
+in a vector database. Let's call this script `lsragagent.py` and populate it with the code below.
 ```python
 ## rag_agent.py
 
@@ -345,10 +342,12 @@ for t in turns:
         if event_type == "step_progress":
             print(chunk.event.payload.delta.text, end="", flush=True)
 ```
+### ii. Run the Script
+And we can run it again with
 ```
-python lsragagent.py
+uv run python lsragagent.py
 ```
-Sample output:
+Which should produce output like below:
 ```
 user> what is torchtune
 inference> [knowledge_search(query='TorchTune')]
