@@ -513,7 +513,11 @@ def test_text_chat_completion_with_tool_calling_loop_non_streaming(client_with_m
     # 2. no messages bust last message is tool response
     while len(tc["messages"]) > 0 or (len(messages) > 0 and messages[-1]["role"] == "tool"):
         # do not take new messages if last message is tool response
-        if len(messages) == 0 or messages[-1]["role"] != "tool":
+        if (
+            len(messages) == 0
+            or (isinstance(messages[-1], dict) and messages[-1]["role"] != "tool")
+            or (not isinstance(messages[-1], dict) and messages[-1].role != "tool")
+        ):
             new_messages = tc["messages"].pop(0)
             messages += new_messages
 
@@ -523,9 +527,16 @@ def test_text_chat_completion_with_tool_calling_loop_non_streaming(client_with_m
             messages=messages,
             tools=tc["tools"],
             stream=False,
+            # sampling_params={
+            #     "strategy": {
+            #         "type": "top_p",
+            #         "top_p": 0.9,
+            #         "temperature": 0.6,
+            #     }
+            # },
         )
         op_msg = response.completion_message
-        messages.append(op_msg)
+        messages.append(op_msg.model_dump())
         pprint(op_msg)
 
         assert op_msg.role == "assistant"
@@ -535,8 +546,6 @@ def test_text_chat_completion_with_tool_calling_loop_non_streaming(client_with_m
         if expected["num_tool_calls"] > 0:
             assert op_msg.tool_calls[0].tool_name == expected["tool_name"]
             assert op_msg.tool_calls[0].arguments == expected["tool_arguments"]
-
-            # messages.append(op_msg)
 
             tool_response = tc["tool_responses"].pop(0)
             messages.append(
