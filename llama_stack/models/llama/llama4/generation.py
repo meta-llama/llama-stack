@@ -23,17 +23,16 @@ from fairscale.nn.model_parallel.initialize import (
 )
 from termcolor import cprint
 
-from llama_stack.models.llama.llama4.chat_format import (
+from ..common import TokenResult
+from .args import ModelArgs
+from .chat_format import (
     ChatFormat,
     RawContent,
     RawMessage,
 )
-from llama_stack.models.llama.llama4.tokenizer import Tokenizer
-
-from ..common import TokenResult
-from .args import ModelArgs
 from .datatypes import LLMInput, MaskedEmbedding, TransformerInput
 from .model import Transformer
+from .tokenizer import Tokenizer
 
 torch.serialization.add_safe_globals([io.BytesIO, codecs.encode])
 

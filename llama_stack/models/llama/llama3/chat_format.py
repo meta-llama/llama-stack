@@ -19,7 +19,7 @@ from typing import Dict, List, Optional, Tuple
 
 from PIL import Image as PIL_Image
 
-from llama_stack.models.llama.datatypes import (
+from ..datatypes import (
     BuiltinTool,
     RawContent,
     RawMediaItem,
@@ -30,7 +30,6 @@ from llama_stack.models.llama.datatypes import (
     ToolCall,
     ToolPromptFormat,
 )
-
 from .tokenizer import Tokenizer
 from .tool_utils import ToolUtils
 

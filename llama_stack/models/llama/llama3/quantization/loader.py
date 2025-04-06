@@ -20,16 +20,16 @@ from torchao.quantization.GPTQ import Int8DynActInt4WeightLinear
 
 from llama_stack.apis.inference import QuantizationType
 from llama_stack.log import get_logger
-from llama_stack.models.llama.datatypes import CheckpointQuantizationFormat
 from llama_stack.models.llama.sku_list import resolve_model
-from llama_stack.providers.inline.inference.meta_reference.quantize_impls import (
+
+from ...config import MetaReferenceQuantizedInferenceConfig
+from ...datatypes import CheckpointQuantizationFormat
+from ...quantize_impls import (
     Fp8ScaledWeights,
     ffn_swiglu,
     load_fp8,
     quantize_fp8,
 )
-
-from ...config import MetaReferenceQuantizedInferenceConfig
 from ..args import ModelArgs
 from ..model import Transformer, TransformerBlock
 
@@ -292,7 +292,6 @@ def _prepare_model_int4_weight_int8_dynamic_activation(
 def convert_to_int4_quantized_model(
     model: Transformer,
     model_args: ModelArgs,
-    config: MetaReferenceQuantizedInferenceConfig,
 ) -> Transformer:
     """Convert the model to int4 quantized model."""
 

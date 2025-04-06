@@ -12,8 +12,7 @@ from typing import Dict, List, Optional, Tuple
 import torch
 from PIL import Image as PIL_Image
 
-# TODO: either fork these or move them to the common package
-from llama_stack.models.llama.datatypes import (
+from ..datatypes import (
     BuiltinTool,
     RawContent,
     RawMediaItem,
@@ -24,16 +23,13 @@ from llama_stack.models.llama.datatypes import (
     ToolCall,
     ToolPromptFormat,
 )
-from llama_stack.models.llama.llama3.tool_utils import ToolUtils
-from llama_stack.providers.inline.inference.meta_reference.llama4.args import VisionArgs
-from llama_stack.providers.inline.inference.meta_reference.llama4.datatypes import (
-    LLMInput,
-)
-from llama_stack.providers.inline.inference.meta_reference.llama4.preprocess import (
+from ..llama3.tool_utils import ToolUtils
+from .args import VisionArgs
+from .datatypes import LLMInput
+from .preprocess import (
     ResizeNormalizeImageTransform,
     VariableSizeImageTransform,
 )
-
 from .tokenizer import Tokenizer
 
 

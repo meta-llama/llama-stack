@@ -22,7 +22,9 @@ from llama_stack.models.llama.datatypes import (
     SamplingParams,
     TopPSamplingStrategy,
 )
+from llama_stack.models.llama.llama3.generation import Llama3
 from llama_stack.models.llama.llama3.tokenizer import Tokenizer as Llama3Tokenizer
+from llama_stack.models.llama.llama4.generation import Llama4
 from llama_stack.models.llama.llama4.tokenizer import Tokenizer as Llama4Tokenizer
 from llama_stack.providers.utils.inference.prompt_adapter import (
     ChatCompletionRequestWithRawContent,
@@ -33,8 +35,6 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 from .common import model_checkpoint_dir
 from .config import MetaReferenceInferenceConfig, MetaReferenceQuantizedInferenceConfig
 from .inference import resolve_model
-from .llama3.generation import Llama3
-from .llama4.generation import Llama4
 
 Tokenizer = Llama4Tokenizer | Llama3Tokenizer
 
@@ -212,14 +212,34 @@ class Llama3Generator:
         model_id: str,
         llama_model: Model,
     ):
+        if config.checkpoint_dir and config.checkpoint_dir != "null":
+            ckpt_dir = config.checkpoint_dir
+        else:
+            resolved_model = resolve_model(model_id)
+            if resolved_model is None:
+                # if the model is not a native llama model, get the default checkpoint_dir based on model id
+                ckpt_dir = model_checkpoint_dir(model_id)
+            else:
+                # if the model is a native llama model, get the default checkpoint_dir based on model core_model_id value
+                ckpt_dir = model_checkpoint_dir(resolved_model.descriptor())
+
+        if isinstance(config, MetaReferenceQuantizedInferenceConfig):
+            if isinstance(config.quantization, Fp8QuantizationConfig):
+                quantization_mode = "fp8_mixed"
+            elif isinstance(config.quantization, Int4QuantizationConfig):
+                quantization_mode = "int4_mixed"
+            else:
+                raise ValueError(f"Unsupported quantization mode {config.quantization}")
+        else:
+            quantization_mode = None
+
         self.inner_generator = Llama3.build(
-            config=config,
-            model_id=model_id,
-            llama_model=llama_model,
+            ckpt_dir=ckpt_dir,
+            max_seq_len=config.max_seq_len,
+            max_batch_size=config.max_batch_size,
+            world_size=llama_model.pth_file_count,
+            quantization_mode=quantization_mode,
         )
-        self.tokenizer = self.inner_generator.tokenizer
-        self.args = self.inner_generator.args
-        self.formatter = self.inner_generator.formatter
 
     def completion(
         self,

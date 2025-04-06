@@ -16,8 +16,8 @@ from io import BytesIO
 from pathlib import Path
 from typing import List
 
-from llama_stack.models.llama.datatypes import RawMediaItem, RawMessage, RawTextItem
-from llama_stack.models.llama.prompt_format import (
+from ..datatypes import RawMediaItem, RawMessage, RawTextItem
+from ..prompt_format import (
     Llama4UseCase,
     TextCompletionContent,
     UseCase,
