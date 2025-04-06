@@ -104,10 +104,6 @@
       "messages": [
         [
           {
-            "role": "system",
-            "content": "You are a helpful assistant who can answer general questions or invoke tools when necessary. In addition to tool calls, you should also augement your responses by using the tool outputs."
-          },
-          {
             "role": "user",
             "content": "What's the name of the Sun in latin?"
           }
@@ -160,10 +156,6 @@
       "messages": [
         [
           {
-            "role": "system",
-            "content": "You are a helpful assistant who can answer general questions or invoke tools when necessary. In addition to tool calls, you should also augement your responses by using the tool outputs."
-          },
-          {
             "role": "user",
             "content": "What's the weather like in San Francisco?"
           }
@@ -205,10 +197,6 @@
     "data": {
       "messages": [
         [
-          {
-            "role": "system",
-            "content": "You are a helpful assistant who can answer general questions or invoke tools when necessary. In addition to tool calls, you should also augement your responses by using the tool outputs."
-          },
           {
             "role": "user",
             "content": "Please add a new product with name 'Widget', price 19.99, in stock, and tags ['new', 'sale'] and give me the product id."
@@ -271,7 +259,7 @@
         [
           {
             "role": "system",
-            "content": "Todays date is 2025-03-01.\n\nYou are a helpful assistant who can answer general questions or invoke tools when necessary. In addition to tool calls, you should also augement your responses by using the tool outputs."
+            "content": "Todays date is 2025-03-01."
           },
           {
             "role": "user",
@@ -376,7 +364,7 @@
         [
           {
             "role": "system",
-            "content": "Todays date is 2025-03-01.\n\nYou are a helpful assistant who can answer general questions or invoke tools when necessary. In addition to tool calls, you should also augement your responses by using the tool outputs."
+            "content": "Todays date is 2025-03-01."
           },
           {
             "role": "user",
