@@ -201,6 +201,247 @@
       ]
     }
   },
+  "multi_turn_tool_calling_03": {
+    "data": {
+      "messages": [
+        [
+          {
+            "role": "system",
+            "content": "You are a helpful assistant with tools. NEVER invoke the same function with the same argumennts twice. Use the response of the first call instead."
+          },
+          {
+            "role": "user",
+            "content": "Please add a new product with name 'Widget', price 19.99, in stock, and tags ['new', 'sale']."
+          }
+        ]
+      ],
+      "tools": [
+        {
+          "tool_name": "addProduct",
+          "description": "Get the current weather",
+          "parameters": {
+            "name": {
+              "param_type": "string",
+              "description": "Name of the product"
+            },
+            "price": {
+              "param_type": "number",
+              "description": "Price of the product"
+            },
+            "inStock": {
+              "param_type": "boolean",
+              "description": "Availability status of the product."
+            },
+            "tags": {
+              "param_type": "list",
+              "description": "List of product tags"
+            }
+          }
+        }
+      ],
+      "tool_responses": [
+        {
+          "response": "Successfully added product with id: 123"
+        }
+      ],
+      "expected": [
+        {
+          "num_tool_calls": 1,
+          "tool_name": "addProduct",
+          "tool_arguments": {
+            "name": "Widget",
+            "price": 19.99,
+            "inStock": true,
+            "tags": [
+              "new",
+              "sale"
+            ]
+          }
+        },
+        {
+          "num_tool_calls": 0,
+          "answer": "123"
+        }
+      ]
+    }
+  },
+  "multi_turn_tool_calling_04": {
+    "data": {
+      "messages": [
+        [
+          {
+            "role": "system",
+            "content": "You are a peronal assistant with tools. Todays date is 2025-03-01."
+          },
+          {
+            "role": "user",
+            "content": "Do i have any meetings on March 3rd at 10 am ?"
+          }
+        ],
+        [
+          {
+            "role": "user",
+            "content": "Alright then, Create an event named 'Team Building', scheduled for that time same time, in the 'Main Conference Room' and add Alice, Bob, Charlie to it. Give me the created event id."
+          }
+        ]
+      ],
+      "tools": [
+        {
+          "tool_name": "create_event",
+          "description": "Create a new event",
+          "parameters": {
+            "name": {
+              "param_type": "string",
+              "description": "Name of the event"
+            },
+            "date": {
+              "param_type": "string",
+              "description": "Date of the event in ISO format"
+            },
+            "time": {
+              "param_type": "string",
+              "description": "Event Time (HH:MM)"
+            },
+            "location": {
+              "param_type": "string",
+              "description": "Location of the event"
+            },
+            "participants": {
+              "param_type": "list",
+              "description": "List of participant names"
+            }
+          }
+        },
+        {
+          "tool_name": "get_event",
+          "description": "Get an event by date and time",
+          "parameters": {
+            "date": {
+              "param_type": "string",
+              "description": "Date of the event in ISO format"
+            },
+            "time": {
+              "param_type": "string",
+              "description": "Event Time (HH:MM)"
+            }
+          }
+        }
+      ],
+      "tool_responses": [
+        {
+          "response": "No meetings found"
+        },
+        {
+          "response": "Successfully created new event with id: e_123"
+        }
+      ],
+      "expected": [
+        {
+          "num_tool_calls": 1,
+          "tool_name": "get_event",
+          "tool_arguments": {
+            "date": "2025-03-03",
+            "time": "10:00"
+          }
+        },
+        {
+          "num_tool_calls": 0,
+          "answer": "no"
+        },
+        {
+          "num_tool_calls": 1,
+          "tool_name": "create_event",
+          "tool_arguments": {
+            "name": "Team Building",
+            "date": "2025-03-03",
+            "time": "10:00",
+            "location": "Main Conference Room",
+            "participants": [
+              "Alice",
+              "Bob",
+              "Charlie"
+            ]
+          }
+        },
+        {
+          "num_tool_calls": 0,
+          "answer": "e_123"
+        }
+      ]
+    }
+  },
+  "multi_turn_tool_calling_05": {
+    "data": {
+      "messages": [
+        [
+          {
+            "role": "system",
+            "content": "You are a helpful assistant with tools. Todays date is 2025-03-01."
+          },
+          {
+            "role": "user",
+            "content": "what was my monthly expense in Jan of this year?"
+          }
+        ],
+        [
+          {
+            "role": "user",
+            "content": "Was is less than Feb of last year? Only answer with yes or no."
+          }
+        ]
+      ],
+      "tools": [
+        {
+          "tool_name": "getMonthlyExpenseSummary",
+          "description": "Get monthly expense summary",
+          "parameters": {
+            "month": {
+              "param_type": "number",
+              "description": "Month of the year (1-12)"
+            },
+            "year": {
+              "param_type": "number",
+              "description": "Year"
+            }
+          }
+        }
+      ],
+      "tool_responses": [
+        {
+          "response": "Total expenses for January 2025: $1000"
+        },
+        {
+          "response": "Total expenses for February 2024: $2000"
+        }
+      ],
+      "expected": [
+        {
+          "num_tool_calls": 1,
+          "tool_name": "getMonthlyExpenseSummary",
+          "tool_arguments": {
+            "month": 1,
+            "year": 2025
+          }
+        },
+        {
+          "num_tool_calls": 0,
+          "answer": "1000"
+        },
+        {
+          "num_tool_calls": 1,
+          "tool_name": "getMonthlyExpenseSummary",
+          "tool_arguments": {
+            "month": 2,
+            "year": 2024
+          }
+        },
+        {
+          "num_tool_calls": 0,
+          "answer": "yes"
+        }
+      ]
+    }
+  },
   "sample_messages_tool_calling": {
     "data": {
       "messages": [

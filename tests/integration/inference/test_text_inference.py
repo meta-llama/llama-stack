@@ -496,8 +496,11 @@ def test_text_chat_completion_tool_calling_tools_not_in_request(
 @pytest.mark.parametrize(
     "test_case",
     [
-        # "inference:chat_completion:multi_turn_tool_calling_01",
+        "inference:chat_completion:multi_turn_tool_calling_01",
         "inference:chat_completion:multi_turn_tool_calling_02",
+        "inference:chat_completion:multi_turn_tool_calling_03",
+        "inference:chat_completion:multi_turn_tool_calling_04",
+        "inference:chat_completion:multi_turn_tool_calling_05",
     ],
 )
 def test_text_chat_completion_with_tool_calling_loop_non_streaming(client_with_models, text_model_id, test_case):
