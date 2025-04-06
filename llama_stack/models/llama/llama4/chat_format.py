@@ -203,13 +203,7 @@ class ChatFormat:
             tokens.extend(toks)
             images.extend(imgs)
 
-        if message.role == "assistant" and len(message.tool_calls) > 0:
-            tokens.append(self.tokenizer.special_tokens["<|python_start|>"])
-
         _process_content(message.content)
-
-        if message.role == "assistant" and len(message.tool_calls) > 0:
-            tokens.append(self.tokenizer.special_tokens["<|python_end|>"])
 
         if message.role == "user" and message.context is not None:
             # This is RAG context; why is it here in the chat format? I don't think
