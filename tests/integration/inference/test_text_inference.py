@@ -566,4 +566,3 @@ def test_multi_turn_chat_completion(client_with_models, text_model_id):
     )
 
     assert "rain" in response.completion_message.content.lower()
-
