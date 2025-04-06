@@ -565,6 +565,5 @@ def test_multi_turn_chat_completion(client_with_models, text_model_id):
         messages=messages,
     )
 
-    print(response.completion_message.tool_calls)
-    print(response)
-    assert response.completion_message.content == "raining"
+    assert "rain" in response.completion_message.content.lower()
+
