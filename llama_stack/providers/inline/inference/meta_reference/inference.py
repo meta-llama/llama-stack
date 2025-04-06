@@ -338,6 +338,10 @@ class MetaReferenceInferenceImpl(
             stop_reason = None
 
             for token_result in self.generator.chat_completion(request):
+                from termcolor import cprint
+
+                cprint(token_result.text, "cyan", end="")
+
                 tokens.append(token_result.token)
 
                 if token_result.token == tokenizer.eot_id:
@@ -386,6 +390,10 @@ class MetaReferenceInferenceImpl(
             ipython = False
 
             for token_result in self.generator.chat_completion(request):
+                from termcolor import cprint
+
+                cprint(token_result.text, "cyan", end="")
+
                 tokens.append(token_result.token)
 
                 if not ipython and token_result.text.startswith("<|python_tag|>"):
