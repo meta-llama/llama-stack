@@ -23,8 +23,8 @@ Model parameters can be influenced by the following options:
 - `--judge-model`: comma-separated list of judge models.
 - `--embedding-dimension`: output dimensionality of the embedding model to use for testing. Default: 384
 
-Each of these are comma-separated lists and can be used to generate multiple parameter combinations.
-
+Each of these are comma-separated lists and can be used to generate multiple parameter combinations. Note that tests will be skipped
+if no model is specified.
 
 Experimental, under development, options:
 - `--record-responses`: record new API responses instead of using cached ones
@@ -36,7 +36,7 @@ Experimental, under development, options:
 Run all text inference tests with the `together` distribution:
 
 ```bash
-pytest -s -v tests/api/inference/test_text_inference.py \
+pytest -s -v tests/integration/inference/test_text_inference.py \
    --stack-config=together \
    --text-model=meta-llama/Llama-3.1-8B-Instruct
 ```
@@ -44,7 +44,7 @@ pytest -s -v tests/api/inference/test_text_inference.py \
 Run all text inference tests with the `together` distribution and `meta-llama/Llama-3.1-8B-Instruct`:
 
 ```bash
-pytest -s -v tests/api/inference/test_text_inference.py \
+pytest -s -v tests/integration/inference/test_text_inference.py \
    --stack-config=together \
    --text-model=meta-llama/Llama-3.1-8B-Instruct
 ```
@@ -57,7 +57,7 @@ VISION_MODELS=meta-llama/Llama-3.2-11B-Vision-Instruct
 EMBEDDING_MODELS=all-MiniLM-L6-v2
 export TOGETHER_API_KEY=<together_api_key>
 
-pytest -s -v tests/api/inference/ \
+pytest -s -v tests/integration/inference/ \
    --stack-config=together \
    --text-model=$TEXT_MODELS \
    --vision-model=$VISION_MODELS \
@@ -69,7 +69,7 @@ Same thing but instead of using the distribution, use an adhoc stack with just o
 ```bash
 export FIREWORKS_API_KEY=<fireworks_api_key>
 
-pytest -s -v tests/api/inference/ \
+pytest -s -v tests/integration/inference/ \
    --stack-config=inference=fireworks \
    --text-model=$TEXT_MODELS \
    --vision-model=$VISION_MODELS \
@@ -81,7 +81,7 @@ Running Vector IO tests for a number of embedding models:
 ```bash
 EMBEDDING_MODELS=all-MiniLM-L6-v2
 
-pytest -s -v tests/api/vector_io/ \
+pytest -s -v tests/integration/vector_io/ \
    --stack-config=inference=sentence-transformers,vector_io=sqlite-vec \
    --embedding-model=$EMBEDDING_MODELS
 ```

@@ -328,8 +328,9 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
 
         body = self._convert_body(path, options.method, body)
 
+        await start_trace(route, {"__location__": "library_client"})
+
         async def gen():
-            await start_trace(route, {"__location__": "library_client"})
             try:
                 async for chunk in await func(**body):
                     data = json.dumps(convert_pydantic_to_json_value(chunk))

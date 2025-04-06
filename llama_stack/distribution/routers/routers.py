@@ -12,7 +12,8 @@ from llama_stack.apis.common.content_types import (
     InterleavedContent,
     InterleavedContentItem,
 )
-from llama_stack.apis.datasetio import DatasetIO, IterrowsResponse
+from llama_stack.apis.common.responses import PaginatedResponse
+from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import DatasetPurpose, DataSource
 from llama_stack.apis.eval import BenchmarkConfig, Eval, EvaluateResponse, Job
 from llama_stack.apis.inference import (
@@ -45,11 +46,11 @@ from llama_stack.apis.scoring import (
 from llama_stack.apis.shields import Shield
 from llama_stack.apis.telemetry import MetricEvent, MetricInResponse, Telemetry
 from llama_stack.apis.tools import (
+    ListToolDefsResponse,
     RAGDocument,
     RAGQueryConfig,
     RAGQueryResult,
     RAGToolRuntime,
-    ToolDef,
     ToolRuntime,
 )
 from llama_stack.apis.vector_io import Chunk, QueryChunksResponse, VectorIO
@@ -497,7 +498,7 @@ class DatasetIORouter(DatasetIO):
         dataset_id: str,
         start_index: Optional[int] = None,
         limit: Optional[int] = None,
-    ) -> IterrowsResponse:
+    ) -> PaginatedResponse:
         logger.debug(
             f"DatasetIORouter.iterrows: {dataset_id}, {start_index=} {limit=}",
         )
@@ -706,6 +707,6 @@ class ToolRuntimeRouter(ToolRuntime):
 
     async def list_runtime_tools(
         self, tool_group_id: Optional[str] = None, mcp_endpoint: Optional[URL] = None
-    ) -> List[ToolDef]:
+    ) -> ListToolDefsResponse:
         logger.debug(f"ToolRuntimeRouter.list_runtime_tools: {tool_group_id}")
         return await self.routing_table.get_provider_impl(tool_group_id).list_tools(tool_group_id, mcp_endpoint)

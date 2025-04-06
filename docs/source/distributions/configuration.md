@@ -1,4 +1,4 @@
-# Configuring a Stack
+# Configuring a "Stack"
 
 The Llama Stack runtime configuration is specified as a YAML file. Here is a simplified version of an example configuration file for the Ollama distribution:
 

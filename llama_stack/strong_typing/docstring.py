@@ -48,7 +48,7 @@ class DocstringParam:
 
     name: str
     description: str
-    param_type: type = inspect.Signature.empty
+    param_type: type | str = inspect.Signature.empty
 
     def __str__(self) -> str:
         return f":param {self.name}: {self.description}"

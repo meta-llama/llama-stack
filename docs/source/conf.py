@@ -12,10 +12,12 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-from docutils import nodes
-from pathlib import Path
-import requests
 import json
+from datetime import datetime
+from pathlib import Path
+
+import requests
+from docutils import nodes
 
 # Read version from pyproject.toml
 with Path(__file__).parent.parent.parent.joinpath("pyproject.toml").open("rb") as f:
@@ -24,11 +26,13 @@ with Path(__file__).parent.parent.parent.joinpath("pyproject.toml").open("rb") a
     print(f"{version_tag=}")
 
     # generate the full link including text and url here
-    llama_stack_version_url = f"https://github.com/meta-llama/llama-stack/releases/tag/v{version_tag}"
+    llama_stack_version_url = (
+        f"https://github.com/meta-llama/llama-stack/releases/tag/v{version_tag}"
+    )
     llama_stack_version_link = f"<a href='{llama_stack_version_url}'>release notes</a>"
 
 project = "llama-stack"
-copyright = "2025, Meta"
+copyright = f"{datetime.now().year}, Meta"
 author = "Meta"
 
 # -- General configuration ---------------------------------------------------
@@ -36,10 +40,11 @@ author = "Meta"
 
 extensions = [
     "myst_parser",
-    "sphinx_rtd_theme",
     "sphinx_copybutton",
-    "sphinx_tabs.tabs",
     "sphinx_design",
+    "sphinx_rtd_theme",
+    "sphinx_rtd_dark_mode",
+    "sphinx_tabs.tabs",
     "sphinxcontrib.redoc",
     "sphinxcontrib.mermaid",
     "sphinxcontrib.video",
@@ -83,7 +88,7 @@ myst_substitutions = {
     "llama_stack_version_link": llama_stack_version_link,
 }
 
-suppress_warnings = ['myst.header']
+suppress_warnings = ["myst.header"]
 
 # Copy button settings
 copybutton_prompt_text = "$ "  # for bash prompts
@@ -103,6 +108,7 @@ source_suffix = {
 # html_theme = "alabaster"
 html_theme_options = {
     "canonical_url": "https://github.com/meta-llama/llama-stack",
+    "collapse_navigation": False,
     # "style_nav_header_background": "#c3c9d4",
 }
 
@@ -110,8 +116,10 @@ html_static_path = ["../_static"]
 # html_logo = "../_static/llama-stack-logo.png"
 # html_style = "../_static/css/my_theme.css"
 
+
 def setup(app):
     app.add_css_file("css/my_theme.css")
+
     def dockerhub_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
         url = f"https://hub.docker.com/r/llamastack/{text}"
         node = nodes.reference(rawtext, text, refuri=url, **options)

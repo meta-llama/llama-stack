@@ -2115,7 +2115,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/IterrowsResponse"
+                                    "$ref": "#/components/schemas/PaginatedResponse"
                                 }
                             }
                         }
@@ -2136,7 +2136,7 @@
                 "tags": [
                     "DatasetIO"
                 ],
-                "description": "Get a paginated list of rows from a dataset. Uses cursor-based pagination.",
+                "description": "Get a paginated list of rows from a dataset.\nUses offset-based pagination where:\n- start_index: The starting index (0-based). If None, starts from beginning.\n- limit: Number of items to return. If None or -1, returns all items.\n\nThe response includes:\n- data: List of items for the current page\n- has_more: Whether there are more items available after this set",
                 "parameters": [
                     {
                         "name": "dataset_id",
@@ -2688,9 +2688,9 @@
                     "200": {
                         "description": "OK",
                         "content": {
-                            "application/jsonl": {
+                            "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ToolDef"
+                                    "$ref": "#/components/schemas/ListToolDefsResponse"
                                 }
                             }
                         }
@@ -8073,7 +8073,7 @@
                 "additionalProperties": false,
                 "title": "ToolInvocationResult"
             },
-            "IterrowsResponse": {
+            "PaginatedResponse": {
                 "type": "object",
                 "properties": {
                     "data": {
@@ -8103,19 +8103,20 @@
                                 ]
                             }
                         },
-                        "description": "The rows in the current page."
+                        "description": "The list of items for the current page"
                     },
-                    "next_start_index": {
-                        "type": "integer",
-                        "description": "Index into dataset for the first row in the next page. None if there are no more rows."
+                    "has_more": {
+                        "type": "boolean",
+                        "description": "Whether there are more items available after this set"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "data"
+                    "data",
+                    "has_more"
                 ],
-                "title": "IterrowsResponse",
-                "description": "A paginated list of rows from a dataset."
+                "title": "PaginatedResponse",
+                "description": "A generic paginated response that follows a simple format."
             },
             "Job": {
                 "type": "object",
@@ -8326,6 +8327,22 @@
                     "data"
                 ],
                 "title": "ListRoutesResponse"
+            },
+            "ListToolDefsResponse": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ToolDef"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "data"
+                ],
+                "title": "ListToolDefsResponse"
             },
             "ListScoringFunctionsResponse": {
                 "type": "object",

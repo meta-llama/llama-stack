@@ -9,10 +9,11 @@ import asyncio
 import logging
 import os
 import tempfile
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.tools import (
+    ListToolDefsResponse,
     Tool,
     ToolDef,
     ToolInvocationResult,
@@ -46,20 +47,22 @@ class CodeInterpreterToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime):
 
     async def list_runtime_tools(
         self, tool_group_id: Optional[str] = None, mcp_endpoint: Optional[URL] = None
-    ) -> List[ToolDef]:
-        return [
-            ToolDef(
-                name="code_interpreter",
-                description="Execute code",
-                parameters=[
-                    ToolParameter(
-                        name="code",
-                        description="The code to execute",
-                        parameter_type="string",
-                    ),
-                ],
-            )
-        ]
+    ) -> ListToolDefsResponse:
+        return ListToolDefsResponse(
+            data=[
+                ToolDef(
+                    name="code_interpreter",
+                    description="Execute code",
+                    parameters=[
+                        ToolParameter(
+                            name="code",
+                            description="The code to execute",
+                            parameter_type="string",
+                        ),
+                    ],
+                )
+            ]
+        )
 
     async def invoke_tool(self, tool_name: str, kwargs: Dict[str, Any]) -> ToolInvocationResult:
         script = kwargs["code"]

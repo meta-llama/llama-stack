@@ -126,7 +126,7 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
     def _log_unstructured(self, event: UnstructuredLogEvent, ttl_seconds: int) -> None:
         with self._lock:
             # Use global storage instead of instance storage
-            span_id = event.span_id
+            span_id = int(event.span_id, 16)
             span = _GLOBAL_STORAGE["active_spans"].get(span_id)
 
             if span:
@@ -203,16 +203,6 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
                     parent_span = _GLOBAL_STORAGE["active_spans"].get(parent_span_id)
                     context = trace.set_span_in_context(parent_span)
                 else:
-                    context = trace.set_span_in_context(
-                        trace.NonRecordingSpan(
-                            trace.SpanContext(
-                                trace_id=int(event.trace_id, 16),
-                                span_id=span_id,
-                                is_remote=False,
-                                trace_flags=trace.TraceFlags(trace.TraceFlags.SAMPLED),
-                            )
-                        )
-                    )
                     event.attributes["__root_span__"] = "true"
 
                 span = tracer.start_span(

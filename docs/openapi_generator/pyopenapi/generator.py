@@ -519,7 +519,7 @@ class Generator:
         )
 
     def _build_extra_tag_groups(
-        self, extra_types: Dict[str, List[type]]
+        self, extra_types: Dict[str, Dict[str, type]]
     ) -> Dict[str, List[Tag]]:
         """
         Creates a dictionary of tag group captions as keys, and tag lists as values.
@@ -532,9 +532,8 @@ class Generator:
         for category_name, category_items in extra_types.items():
             tag_list: List[Tag] = []
 
-            for extra_type in category_items:
-                name = python_type_to_name(extra_type)
-                schema = self.schema_builder.classdef_to_named_schema(name, extra_type)
+            for name, extra_type in category_items.items():
+                schema = self.schema_builder.classdef_to_schema(extra_type)
                 tag_list.append(self._build_type_tag(name, schema))
 
             if tag_list:
@@ -863,7 +862,7 @@ class Generator:
         for caption, extra_tag_group in extra_tag_groups.items():
             tag_groups.append(
                 TagGroup(
-                    name=self.options.map(caption),
+                    name=caption,
                     tags=sorted(tag.name for tag in extra_tag_group),
                 )
             )

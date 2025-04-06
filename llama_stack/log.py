@@ -139,7 +139,7 @@ def setup_logging(category_levels: Dict[str, int], log_file: str | None) -> None
         category_levels (Dict[str, int]): A dictionary mapping categories to their log levels.
         log_file (str): Path to a log file to additionally pipe the logs into
     """
-    log_format = "[dim]%(asctime)s %(name)s:%(lineno)d[/] [yellow dim]%(category)s[/]: %(message)s"
+    log_format = "%(asctime)s %(name)s:%(lineno)d %(category)s: %(message)s"
 
     class CategoryFilter(logging.Filter):
         """Ensure category is always present in log records."""
