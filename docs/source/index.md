@@ -1,3 +1,8 @@
+```{admonition} Llama 4 is here!
+:class: tip
+
+Check out [Getting Started with Llama 4](https://colab.research.google.com/github/meta-llama/llama-stack/blob/main/docs/getting_started_llama4.ipynb)
+```
 ```{admonition} News
 :class: tip
 
@@ -24,19 +29,17 @@ Llama Stack defines and standardizes the core building blocks needed to bring ge
 Our goal is to provide pre-packaged implementations (aka "distributions") which can be run in a variety of deployment environments. LlamaStack can assist you in your entire app development lifecycle - start iterating on local, mobile or desktop and seamlessly transition to on-prem or public cloud deployments. At every point in this transition, the same set of APIs and the same developer experience is available.
 
 ## How does Llama Stack work?
-Llama Stack consists of a [server](./distributions/index.md) (with multiple pluggable API [providers](./providers/index.md)) and [client SDKs](#available-sdks) meant to
+Llama Stack consists of a [server](./distributions/index.md) (with multiple pluggable API [providers](./providers/index.md)) and Client SDKs (see below) meant to
 be used in your applications. The server can be run in a variety of environments, including local (inline)
 development, on-premises, and cloud. The client SDKs are available for Python, Swift, Node, and
 Kotlin.
 
 ## Quick Links
 
-- New to Llama Stack? Start with the [Introduction](introduction/index) to understand our motivation and vision.
 - Ready to build? Check out the [Quick Start](getting_started/index) to get started.
-- Need specific providers? Browse [Distributions](distributions/selection) to see all the options available.
 - Want to contribute? See the [Contributing](contributing/index) guide.
 
-## Available SDKs
+## Client SDKs
 
 We have a number of client-side SDKs available for different languages.
 
