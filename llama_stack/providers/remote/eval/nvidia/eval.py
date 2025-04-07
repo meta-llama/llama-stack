@@ -58,9 +58,7 @@ class NVIDIAEvalImpl(
 
     async def register_benchmark(self, task_def: Benchmark) -> None:
         """Register a benchmark as an evaluation configuration."""
-
-        print(task_def.metadata)
-        res = await self._evaluator_post(
+        await self._evaluator_post(
             "/v1/evaluation/configs",
             {
                 "namespace": "nvidia",
@@ -69,7 +67,6 @@ class NVIDIAEvalImpl(
                 **task_def.metadata,
             },
         )
-        print(res)
 
     async def run_eval(
         self,
