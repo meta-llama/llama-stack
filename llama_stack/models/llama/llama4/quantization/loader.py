@@ -91,7 +91,7 @@ def convert_to_quantized_model(
             log_status(f"Rank {rank}: Quantizing int4 weights from bf16")
 
             def apply_quantization(_, weight):
-                return quantize_int4(weight, output_device=torch.device("cuda"))
+                return quantize_int4(weight, fp8_activation_scale_ub, output_device=torch.device("cuda"))
 
     else:
         fp8_scales_path = os.path.join(checkpoint_dir, f"fp8_scales_{rank}.pt")

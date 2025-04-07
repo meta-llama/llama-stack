@@ -133,9 +133,9 @@ class Llama4Generator:
                 ckpt_dir = model_checkpoint_dir(resolved_model.descriptor())
 
         if config.quantization:
-            if config.quantization.type == "fp8":
+            if config.quantization.type == "fp8_mixed":
                 quantization_mode = QuantizationMode.fp8_mixed
-            elif config.quantization.type == "int4":
+            elif config.quantization.type == "int4_mixed":
                 quantization_mode = QuantizationMode.int4_mixed
             elif config.quantization.type == "bf16":
                 quantization_mode = None
@@ -226,9 +226,9 @@ class Llama3Generator:
                 ckpt_dir = model_checkpoint_dir(resolved_model.descriptor())
 
         if config.quantization:
-            if config.quantization.type == "fp8":
+            if config.quantization.type == "fp8_mixed":
                 quantization_mode = QuantizationMode.fp8_mixed
-            elif config.quantization.type == "int4":
+            elif config.quantization.type == "int4_mixed":
                 quantization_mode = QuantizationMode.int4_mixed
             elif config.quantization.type == "bf16":
                 quantization_mode = None

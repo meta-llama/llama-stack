@@ -97,18 +97,18 @@ class QuantizationType(Enum):
     """Type of model quantization to run inference with.
 
     :cvar bf16: BFloat16 typically this means _no_ quantization
-    :cvar fp8: 8-bit floating point quantization
-    :cvar int4: 4-bit integer quantization
+    :cvar fp8_mixed: 8-bit floating point quantization with mixed precision
+    :cvar int4_mixed: 4-bit integer quantization with mixed precision
     """
 
     bf16 = "bf16"
-    fp8 = "fp8"
-    int4 = "int4"
+    fp8_mixed = "fp8_mixed"
+    int4_mixed = "int4_mixed"
 
 
 @json_schema_type
 class Fp8QuantizationConfig(BaseModel):
-    type: Literal["fp8"] = "fp8"
+    type: Literal["fp8_mixed"] = "fp8_mixed"
 
 
 @json_schema_type
@@ -124,7 +124,7 @@ class Int4QuantizationConfig(BaseModel):
     :param scheme: Quantization scheme to use. Defaults to "int4_weight_int8_dynamic_activation"
     """
 
-    type: Literal["int4"] = "int4"
+    type: Literal["int4_mixed"] = "int4_mixed"
     scheme: Optional[str] = "int4_weight_int8_dynamic_activation"
 
 
