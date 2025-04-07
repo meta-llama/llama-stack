@@ -33,7 +33,7 @@ def available_providers() -> List[ProviderSpec]:
                     "requests",
                 ],
                 module="llama_stack.providers.remote.eval.nvidia",
-                config_class="llama_stack.providers.remote.eval.nvidia.NVIDIAConfig",
+                config_class="llama_stack.providers.remote.eval.nvidia.NVIDIAEvalConfig",
             ),
             api_dependencies=[
                 Api.datasetio,
