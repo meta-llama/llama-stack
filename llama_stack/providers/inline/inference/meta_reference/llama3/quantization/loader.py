@@ -7,9 +7,9 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 # This software may be used and distributed in accordance with the terms of the Llama 3 Community License Agreement.
 
-import logging
+# type: ignore
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, cast
 
 import torch
 from fairscale.nn.model_parallel.initialize import get_model_parallel_rank
@@ -19,22 +19,27 @@ from torch import Tensor, nn
 from torchao.quantization.GPTQ import Int8DynActInt4WeightLinear
 
 from llama_stack.apis.inference import QuantizationType
+from llama_stack.log import get_logger
 from llama_stack.models.llama.datatypes import CheckpointQuantizationFormat
 from llama_stack.models.llama.sku_list import resolve_model
+from llama_stack.providers.inline.inference.meta_reference.quantize_impls import (
+    Fp8ScaledWeights,
+    ffn_swiglu,
+    load_fp8,
+    quantize_fp8,
+)
 
-from ...llama3.args import ModelArgs
-from ...llama3.model import Transformer, TransformerBlock
-from ..config import MetaReferenceQuantizedInferenceConfig
+from ...config import MetaReferenceQuantizedInferenceConfig
+from ..args import ModelArgs
+from ..model import Transformer, TransformerBlock
 
-log = logging.getLogger(__name__)
+log = get_logger(__name__, category="quantization")
 
 
 def swiglu_wrapper(
     self,
     x: Tensor,
 ):
-    from .fp8_impls import ffn_swiglu
-
     out = ffn_swiglu(x, self.w1.weight, self.w3.weight, self.w2.weight)
     return reduce_from_model_parallel_region(out)
 
@@ -51,8 +56,7 @@ def convert_to_fp8_quantized_model(
     elif config.quantization.type != QuantizationType.fp8.value:
         raise ValueError("Only FP8 quantization is supported")
 
-    from .fp8_impls import Fp8ScaledWeights, load_fp8, quantize_fp8
-
+    assert config.model is not None, "Model must be specified for quantized inference"
     llama_model = resolve_model(config.model)
     assert llama_model is not None, f"Model {config.model} not found"
 
@@ -82,7 +86,7 @@ def convert_to_fp8_quantized_model(
             if isinstance(block, TransformerBlock):
                 if block.layer_id == 0 or block.layer_id == (model.n_layers - 1):
                     continue
-                block.feed_forward.forward = swiglu_wrapper.__get__(block.feed_forward)
+                block.feed_forward.forward = swiglu_wrapper.__get__(block.feed_forward)  # type: ignore
                 for key in ("w1", "w3", "w2"):
                     param = getattr(block.feed_forward, key)
                     param.weight = quantize_fp8(
@@ -136,6 +140,8 @@ class Int8DynActInt4WeightLinearLoRA(Int8DynActInt4WeightLinear):
             precision=precision,
             scales_precision=scales_precision,
         )
+        self.lora_scale: Optional[float] = None
+        self.adaptor: Optional[nn.Sequential] = None
         if lora_rank is not None:
             assert lora_scale is not None, "Please specify lora scale for LoRA."
             # Low-rank adaptation. See paper for more details: https://arxiv.org/abs/2106.09685
@@ -143,9 +149,6 @@ class Int8DynActInt4WeightLinearLoRA(Int8DynActInt4WeightLinear):
             self.adaptor.add_module("A", nn.Linear(in_features, lora_rank, bias=False))
             self.adaptor.add_module("B", nn.Linear(lora_rank, out_features, bias=False))
             self.lora_scale = lora_scale
-        else:
-            self.adaptor = None
-            self.lora_scale = None
         self._register_load_state_dict_pre_hook(self.load_hook)
 
     def load_hook(
@@ -293,10 +296,10 @@ def convert_to_int4_quantized_model(
 ) -> Transformer:
     """Convert the model to int4 quantized model."""
 
-    if model_args.quantization_args is None:
-        raise ValueError("'quantization_args' cannot be None. Please specify it.")
-
+    assert model_args.quantization_args is not None, "Quantization args must be specified."
     quantization_args = model_args.quantization_args
+    if quantization_args.scheme is None:
+        raise ValueError("Quantization scheme must be specified in 'quantization_args'.")
 
     if quantization_args.scheme.value != "int4_weight_int8_dynamic_activation":
         raise NotImplementedError(
@@ -317,4 +320,4 @@ def convert_to_int4_quantized_model(
 
     _prepare_model_int4_weight_int8_dynamic_activation(model, group_size, lora_rank, lora_scale)
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-    return model.to(device)
+    return cast(Transformer, model.to(device))
