@@ -209,5 +209,6 @@ benchmarks: []
 tool_groups:
 - toolgroup_id: builtin::rag
   provider_id: rag-runtime
+preprocessors: []
 server:
   port: 8321

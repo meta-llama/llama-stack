@@ -24,6 +24,7 @@ class Api(Enum):
     eval = "eval"
     post_training = "post_training"
     tool_runtime = "tool_runtime"
+    preprocessing = "preprocessing"
 
     telemetry = "telemetry"
 
@@ -35,6 +36,7 @@ class Api(Enum):
     benchmarks = "benchmarks"
     tool_groups = "tool_groups"
     files = "files"
+    preprocessors = "preprocessors"
 
     # built-in API
     inspect = "inspect"

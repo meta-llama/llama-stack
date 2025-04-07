@@ -14,6 +14,8 @@ from llama_stack.apis.datasets import Dataset, DatasetInput
 from llama_stack.apis.eval import Eval
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.models import Model, ModelInput
+from llama_stack.apis.preprocessing import Preprocessing, Preprocessor
+from llama_stack.apis.preprocessors.preprocessors import PreprocessorInput
 from llama_stack.apis.resource import Resource
 from llama_stack.apis.safety import Safety
 from llama_stack.apis.scoring import Scoring
@@ -141,6 +143,10 @@ class ToolGroupWithACL(ToolGroup, ResourceWithACL):
     pass
 
 
+class PreprocessorWithACL(Preprocessor, ResourceWithACL):
+    pass
+
+
 RoutableObject = Union[
     Model,
     Shield,
@@ -150,6 +156,7 @@ RoutableObject = Union[
     Benchmark,
     Tool,
     ToolGroup,
+    Preprocessor,
 ]
 
 
@@ -163,6 +170,7 @@ RoutableObjectWithProvider = Annotated[
         BenchmarkWithACL,
         ToolWithACL,
         ToolGroupWithACL,
+        PreprocessorWithACL,
     ],
     Field(discriminator="type"),
 ]
@@ -175,6 +183,7 @@ RoutedProtocol = Union[
     Scoring,
     Eval,
     ToolRuntime,
+    Preprocessing,
 ]
 
 
@@ -304,6 +313,7 @@ a default SQLite store will be used.""",
     scoring_fns: List[ScoringFnInput] = Field(default_factory=list)
     benchmarks: List[BenchmarkInput] = Field(default_factory=list)
     tool_groups: List[ToolGroupInput] = Field(default_factory=list)
+    preprocessors: List[PreprocessorInput] = Field(default_factory=list)
 
     logging: Optional[LoggingConfig] = Field(default=None, description="Configuration for Llama Stack Logging")
 
