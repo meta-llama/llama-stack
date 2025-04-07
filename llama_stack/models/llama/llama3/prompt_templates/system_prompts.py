@@ -280,7 +280,7 @@ class PythonListCustomToolGenerator(PromptTemplateGeneratorBase):  # noqa: N801
                 {%- endfor %}
             ]
 
-            You are a helpful assisant who can can answer general questions or invoke tools when necessary.
+            You can answer general questions or invoke tools when necessary.
             In addition to tool calls, you should also augment your responses by using the tool outputs.
 
             """
