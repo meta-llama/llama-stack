@@ -24,6 +24,8 @@ META_REFERENCE_DEPS = [
     "zmq",
     "lm-format-enforcer",
     "sentence-transformers",
+    "torchao==0.5.0",
+    "fbgemm-gpu-genai==1.1.2",
 ]
 
 
@@ -35,13 +37,6 @@ def available_providers() -> List[ProviderSpec]:
             pip_packages=META_REFERENCE_DEPS,
             module="llama_stack.providers.inline.inference.meta_reference",
             config_class="llama_stack.providers.inline.inference.meta_reference.MetaReferenceInferenceConfig",
-        ),
-        InlineProviderSpec(
-            api=Api.inference,
-            provider_type="inline::meta-reference-quantized",
-            pip_packages=META_REFERENCE_DEPS + ["fbgemm-gpu", "torchao==0.5.0"],
-            module="llama_stack.providers.inline.inference.meta_reference",
-            config_class="llama_stack.providers.inline.inference.meta_reference.MetaReferenceQuantizedInferenceConfig",
         ),
         InlineProviderSpec(
             api=Api.inference,

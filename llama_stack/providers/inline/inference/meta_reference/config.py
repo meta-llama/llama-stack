@@ -31,6 +31,8 @@ class MetaReferenceInferenceConfig(BaseModel):
     # can override by specifying the directory explicitly
     checkpoint_dir: Optional[str] = None
 
+    quantization: Optional[QuantizationConfig] = None
+
     @field_validator("model")
     @classmethod
     def validate_model(cls, model: str) -> str:
@@ -47,27 +49,14 @@ class MetaReferenceInferenceConfig(BaseModel):
         cls,
         model: str = "Llama3.2-3B-Instruct",
         checkpoint_dir: str = "${env.CHECKPOINT_DIR:null}",
+        quantization_type: str = "${env.QUANTIZATION_TYPE:bf16}",
         **kwargs,
     ) -> Dict[str, Any]:
         return {
             "model": model,
             "max_seq_len": 4096,
             "checkpoint_dir": checkpoint_dir,
+            "quantization": {
+                "type": quantization_type,
+            },
         }
-
-
-class MetaReferenceQuantizedInferenceConfig(MetaReferenceInferenceConfig):
-    quantization: QuantizationConfig
-
-    @classmethod
-    def sample_run_config(
-        cls,
-        model: str = "Llama3.2-3B-Instruct",
-        checkpoint_dir: str = "${env.CHECKPOINT_DIR:null}",
-        **kwargs,
-    ) -> Dict[str, Any]:
-        config = super().sample_run_config(model, checkpoint_dir, **kwargs)
-        config["quantization"] = {
-            "type": "fp8",
-        }
-        return config

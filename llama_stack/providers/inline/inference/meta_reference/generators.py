@@ -11,9 +11,7 @@ import torch
 from lmformatenforcer import JsonSchemaParser, TokenEnforcer, TokenEnforcerTokenizerData
 
 from llama_stack.apis.inference import (
-    Fp8QuantizationConfig,
     GreedySamplingStrategy,
-    Int4QuantizationConfig,
     JsonSchemaResponseFormat,
     ResponseFormat,
     SamplingParams,
@@ -32,7 +30,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 )
 
 from .common import model_checkpoint_dir
-from .config import MetaReferenceInferenceConfig, MetaReferenceQuantizedInferenceConfig
+from .config import MetaReferenceInferenceConfig
 from .inference import resolve_model
 
 Tokenizer = Llama4Tokenizer | Llama3Tokenizer
@@ -118,7 +116,7 @@ def _infer_tool_prompt_format(request: ChatCompletionRequestWithRawContent):
 class Llama4Generator:
     def __init__(
         self,
-        config: MetaReferenceInferenceConfig | MetaReferenceQuantizedInferenceConfig,
+        config: MetaReferenceInferenceConfig,
         model_id: str,
         llama_model: Model,
     ):
@@ -133,11 +131,13 @@ class Llama4Generator:
                 # if the model is a native llama model, get the default checkpoint_dir based on model core_model_id value
                 ckpt_dir = model_checkpoint_dir(resolved_model.descriptor())
 
-        if isinstance(config, MetaReferenceQuantizedInferenceConfig):
-            if isinstance(config.quantization, Fp8QuantizationConfig):
+        if config.quantization:
+            if config.quantization.type == "fp8":
                 quantization_mode = QuantizationMode.fp8_mixed
-            elif isinstance(config.quantization, Int4QuantizationConfig):
+            elif config.quantization.type == "int4":
                 quantization_mode = QuantizationMode.int4_mixed
+            elif config.quantization.type == "bf16":
+                quantization_mode = None
             else:
                 raise ValueError(f"Unsupported quantization mode {config.quantization}")
         else:
@@ -207,7 +207,7 @@ class Llama4Generator:
 class Llama3Generator:
     def __init__(
         self,
-        config: MetaReferenceInferenceConfig | MetaReferenceQuantizedInferenceConfig,
+        config: MetaReferenceInferenceConfig,
         model_id: str,
         llama_model: Model,
     ):
@@ -222,11 +222,13 @@ class Llama3Generator:
                 # if the model is a native llama model, get the default checkpoint_dir based on model core_model_id value
                 ckpt_dir = model_checkpoint_dir(resolved_model.descriptor())
 
-        if isinstance(config, MetaReferenceQuantizedInferenceConfig):
-            if isinstance(config.quantization, Fp8QuantizationConfig):
+        if config.quantization:
+            if config.quantization.type == "fp8":
                 quantization_mode = QuantizationMode.fp8_mixed
-            elif isinstance(config.quantization, Int4QuantizationConfig):
+            elif config.quantization.type == "int4":
                 quantization_mode = QuantizationMode.int4_mixed
+            elif config.quantization.type == "bf16":
+                quantization_mode = None
             else:
                 raise ValueError(f"Unsupported quantization mode {config.quantization}")
         else:
