@@ -18,6 +18,7 @@ class ResourceType(Enum):
     benchmark = "benchmark"
     tool = "tool"
     tool_group = "tool_group"
+    preprocessor = "preprocessor"
 
 
 class Resource(BaseModel):
