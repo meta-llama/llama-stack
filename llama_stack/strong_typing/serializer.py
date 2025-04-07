@@ -134,7 +134,10 @@ class IPv6Serializer(Serializer[ipaddress.IPv6Address]):
 
 class EnumSerializer(Serializer[enum.Enum]):
     def generate(self, obj: enum.Enum) -> Union[int, str]:
-        return obj.value
+        value = obj.value
+        if isinstance(value, int):
+            return value
+        return str(value)
 
 
 class UntypedListSerializer(Serializer[list]):

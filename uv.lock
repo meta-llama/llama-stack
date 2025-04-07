@@ -1,5 +1,4 @@
 version = 1
-revision = 1
 requires-python = ">=3.10"
 resolution-markers = [
     "(python_full_version < '3.11' and platform_machine != 'aarch64' and sys_platform == 'linux') or (python_full_version < '3.11' and sys_platform != 'darwin' and sys_platform != 'linux')",
@@ -1316,7 +1315,7 @@ wheels = [
 
 [[package]]
 name = "llama-stack"
-version = "0.1.9"
+version = "0.2.1"
 source = { editable = "." }
 dependencies = [
     { name = "blobfile" },
@@ -1416,7 +1415,7 @@ requires-dist = [
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "jinja2", marker = "extra == 'codegen'", specifier = ">=3.1.6" },
     { name = "jsonschema" },
-    { name = "llama-stack-client", specifier = ">=0.1.9" },
+    { name = "llama-stack-client", specifier = ">=0.2.1" },
     { name = "mcp", marker = "extra == 'test'" },
     { name = "myst-parser", marker = "extra == 'docs'" },
     { name = "nbval", marker = "extra == 'dev'" },
@@ -1462,11 +1461,10 @@ requires-dist = [
     { name = "types-setuptools", marker = "extra == 'dev'" },
     { name = "uvicorn", marker = "extra == 'dev'" },
 ]
-provides-extras = ["dev", "unit", "test", "docs", "codegen"]
 
 [[package]]
 name = "llama-stack-client"
-version = "0.1.9"
+version = "0.2.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -1483,9 +1481,9 @@ dependencies = [
     { name = "tqdm" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d0/e8/0007ce2142cb504391f8f7362361f389fd6cc5cd5e438690d17fdec97ada/llama_stack_client-0.1.9.tar.gz", hash = "sha256:7580250aa3b755f072a09ae49e643bfddd353e75104d2c7bbf73ef67c691b111", size = 242827 }
+sdist = { url = "https://files.pythonhosted.org/packages/bb/5c/5fed03a18bfd6fb27dcf531504dfdaa5e9b79447f4530196baf16bbdddfe/llama_stack_client-0.2.1.tar.gz", hash = "sha256:2be016898ad9f12e57d6125cae26253b8cce7d894c028b9e42f58d421e7825ce", size = 242809 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/9a/01/6904480da963861e79b05bfd082c814a74865a206e330d704181796d59a0/llama_stack_client-0.1.9-py3-none-any.whl", hash = "sha256:87c3f660dd14585a99897fa47a60c3cacbf75683a378577a28738173a5938b62", size = 274296 },
+    { url = "https://files.pythonhosted.org/packages/90/e7/23051fe5073f2fda3f509b19d0e4d7e76e3a8cfaa3606077a2bcef9a0bf0/llama_stack_client-0.2.1-py3-none-any.whl", hash = "sha256:8db3179aab48d6abf82b89ef0a2014e404faf4a72f825c0ffd467fdc4ab5f02c", size = 274293 },
 ]
 
 [[package]]

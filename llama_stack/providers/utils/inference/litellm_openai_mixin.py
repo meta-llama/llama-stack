@@ -33,9 +33,7 @@ from llama_stack.apis.inference import (
 from llama_stack.apis.models.models import Model
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.log import get_logger
-from llama_stack.providers.utils.inference.model_registry import (
-    ModelRegistryHelper,
-)
+from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
 from llama_stack.providers.utils.inference.openai_compat import (
     convert_message_to_openai_dict_new,
     convert_openai_chat_completion_choice,
@@ -55,10 +53,22 @@ class LiteLLMOpenAIMixin(
     Inference,
     NeedsRequestProviderData,
 ):
-    def __init__(self, model_entries, api_key_from_config: str, provider_data_api_key_field: str):
+    def __init__(
+        self,
+        model_entries,
+        api_key_from_config: Optional[str],
+        provider_data_api_key_field: str,
+        openai_compat_api_base: str | None = None,
+    ):
         ModelRegistryHelper.__init__(self, model_entries)
         self.api_key_from_config = api_key_from_config
         self.provider_data_api_key_field = provider_data_api_key_field
+        self.api_base = openai_compat_api_base
+
+        if openai_compat_api_base:
+            self.is_openai_compat = True
+        else:
+            self.is_openai_compat = False
 
     async def initialize(self):
         pass
@@ -98,6 +108,7 @@ class LiteLLMOpenAIMixin(
     ) -> Union[ChatCompletionResponse, AsyncIterator[ChatCompletionResponseStreamChunk]]:
         if sampling_params is None:
             sampling_params = SamplingParams()
+
         model = await self.model_store.get_model(model_id)
         request = ChatCompletionRequest(
             model=model.provider_resource_id,
@@ -111,6 +122,9 @@ class LiteLLMOpenAIMixin(
         )
 
         params = await self._get_params(request)
+        if self.is_openai_compat:
+            params["model"] = "openai/" + params["model"]
+
         logger.debug(f"params to litellm (openai compat): {params}")
         # unfortunately, we need to use synchronous litellm.completion here because litellm
         # caches various httpx.client objects in a non-eventloop aware manner
@@ -208,6 +222,7 @@ class LiteLLMOpenAIMixin(
         return {
             "model": request.model,
             "api_key": api_key,
+            "api_base": self.api_base,
             **input_dict,
             "stream": request.stream,
             **get_sampling_options(request.sampling_params),

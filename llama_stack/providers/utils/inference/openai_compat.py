@@ -137,7 +137,10 @@ def get_sampling_strategy_options(params: SamplingParams) -> dict:
     return options
 
 
-def get_sampling_options(params: SamplingParams) -> dict:
+def get_sampling_options(params: SamplingParams | None) -> dict:
+    if not params:
+        return {}
+
     options = {}
     if params:
         options.update(get_sampling_strategy_options(params))
@@ -297,7 +300,7 @@ def process_chat_completion_response(
 
 async def process_completion_stream_response(
     stream: AsyncGenerator[OpenAICompatCompletionResponse, None],
-) -> AsyncGenerator:
+) -> AsyncGenerator[CompletionResponseStreamChunk, None]:
     stop_reason = None
 
     async for chunk in stream:
@@ -334,7 +337,7 @@ async def process_completion_stream_response(
 async def process_chat_completion_stream_response(
     stream: AsyncGenerator[OpenAICompatCompletionResponse, None],
     request: ChatCompletionRequest,
-) -> AsyncGenerator:
+) -> AsyncGenerator[ChatCompletionResponseStreamChunk, None]:
     yield ChatCompletionResponseStreamChunk(
         event=ChatCompletionResponseEvent(
             event_type=ChatCompletionResponseEventType.start,
@@ -570,21 +573,24 @@ async def convert_message_to_openai_dict_new(
             content=await _convert_message_content(message.content),
         )
     elif isinstance(message, CompletionMessage):
+        tool_calls = [
+            OpenAIChatCompletionMessageToolCall(
+                id=tool.call_id,
+                function=OpenAIFunction(
+                    name=(tool.tool_name if not isinstance(tool.tool_name, BuiltinTool) else tool.tool_name.value),
+                    arguments=json.dumps(tool.arguments),
+                ),
+                type="function",
+            )
+            for tool in message.tool_calls
+        ]
+        params = {}
+        if tool_calls:
+            params = {"tool_calls": tool_calls}
         out = OpenAIChatCompletionAssistantMessage(
             role="assistant",
             content=await _convert_message_content(message.content),
-            tool_calls=[
-                OpenAIChatCompletionMessageToolCall(
-                    id=tool.call_id,
-                    function=OpenAIFunction(
-                        name=(tool.tool_name if not isinstance(tool.tool_name, BuiltinTool) else tool.tool_name.value),
-                        arguments=json.dumps(tool.arguments),
-                    ),
-                    type="function",
-                )
-                for tool in message.tool_calls
-            ]
-            or None,
+            **params,
         )
     elif isinstance(message, ToolResponseMessage):
         out = OpenAIChatCompletionToolMessage(
@@ -798,7 +804,7 @@ def _convert_openai_logprobs(
          - token, logprob
 
     """
-    if not logprobs:
+    if not logprobs or not logprobs.content:
         return None
 
     return [
