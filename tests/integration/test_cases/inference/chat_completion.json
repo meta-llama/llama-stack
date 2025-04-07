@@ -94,8 +94,7 @@
         }
       ],
       "expected": {
-        "num_tool_calls": 1,
-        "expected": "San Francisco, CA"
+        "location": "San Francisco, CA"
       }
     }
   },
