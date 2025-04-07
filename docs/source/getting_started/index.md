@@ -432,7 +432,7 @@ Let's run the script using `uv`
 ```bash
 uv run python rag_agent.py
 ```
-:::{dropdown} `👋 Click here to see the sample output`
+Which will output:
 ```
 user> what is torchtune
 inference> [knowledge_search(query='TorchTune')]
@@ -446,11 +446,13 @@ PyTorch Tune provides a recipe for LoRA (Low-Rank Adaptation) finetuning, which 
 ...
 Overall, DORA is a powerful reinforcement learning algorithm that can learn complex tasks from human demonstrations. However, it requires careful consideration of the challenges and limitations to achieve optimal results.
 ```
-:::
+
+Congrats! 🥳 Now you're ready to build your own Llama Stack applications! 🚀
+
 ## Next Steps
 - Go through the [Getting Started Notebook](https://github.com/meta-llama/llama-stack/blob/main/docs/getting_started.ipynb)
 - Checkout more [Notebooks on GitHub](https://github.com/meta-llama/llama-stack/tree/main/docs/notebooks)
 - Learn more about Llama Stack [Concepts](../concepts/index.md)
 - Learn how to [Build Llama Stacks](../distributions/index.md)
-- See [References](../references/index.md) for more details about the llama CLI and Python SDK
-- For example applications and more detailed tutorials, visit our [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main/examples) repository.
+- Learn from our [References](../references/index.md) for more details about the Llama CLI and Python SDK
+- Visit our [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main/examples) repository for more example applications and more detailed tutorials
