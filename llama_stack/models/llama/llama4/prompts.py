@@ -131,11 +131,11 @@ def usecases(base_model: bool = False) -> List[UseCase | str]:
                     ]
                 ],
                 notes="""Notice the structure of the image section:
-        ```
-        <|image_start|><|image|><|patch|>...<|patch|><|image_end|>
-        ```
-        This is due to the image being smaller than the tile size.
-        """,
+                    ```
+                    <|image_start|><|image|><|patch|>...<|patch|><|image_end|>
+                    ```
+                    This is due to the image being smaller than the tile size.
+                    """,
                 max_gen_len=512,
             ),
             Llama4UseCase(
@@ -153,10 +153,10 @@ def usecases(base_model: bool = False) -> List[UseCase | str]:
                     ]
                 ],
                 notes="""With a bigger image, the image will include the tile separator tokens. Additionally, the image tag now separates a scaled down version of the image from the regular sized image.
-        ```
-        <|image_start|><|patch|>...<|patch|><|tile_x_separator|><|patch|>...<|patch|><|tile_y_separator|><|patch|>...<|patch|><|image|><|patch|>...<|patch|><|image_end|>
-        ```
-        """,
+                    ```
+                    <|image_start|><|patch|>...<|patch|><|tile_x_separator|><|patch|>...<|patch|><|tile_y_separator|><|patch|>...<|patch|><|image|><|patch|>...<|patch|><|image_end|>
+                    ```
+                    """,
                 max_gen_len=1024,
             ),
             Llama4UseCase(
@@ -185,38 +185,35 @@ def usecases(base_model: bool = False) -> List[UseCase | str]:
                         RawMessage(
                             role="system",
                             content="""You are an expert in composing functions. You are given a question and a set of possible functions.
-Based on the question, you will need to make one or more function/tool calls to achieve the purpose.
-If none of the function can be used, point it out. If the given question lacks the parameters required by the function,
-also point it out. You should only return the function call in tools call sections.
-
-If you decide to invoke any of the function(s), you MUST put it in the format of [func_name1(params_name1=params_value1, params_name2=params_value2...), func_name2(params)]
-You SHOULD NOT include any other text in the response.
-
-Here is a list of functions in JSON format that you can invoke.
-
-[
-    {
-        "name": "get_weather",
-        "description": "Get weather info for places",
-        "parameters": {
-            "type": "dict",
-            "required": [
-                "city"
-            ],
-            "properties": {
-                "city": {
-                    "type": "string",
-                    "description": "The name of the city to get the weather for"
-                },
-                "metric": {
-                    "type": "string",
-                    "description": "The metric for weather. Options are: celsius, fahrenheit",
-                    "default": "celsius"
+            Based on the question, you will need to make one or more function/tool calls to achieve the purpose.
+            If none of the function can be used, point it out. If the given question lacks the parameters required by the function,
+            also point it out. You should only return the function call in tools call sections.
+            If you decide to invoke any of the function(s), you MUST put it in the format of [func_name1(params_name1=params_value1, params_name2=params_value2...), func_name2(params)]
+            You SHOULD NOT include any other text in the response.
+            Here is a list of functions in JSON format that you can invoke.
+            [
+                {
+                    "name": "get_weather",
+                    "description": "Get weather info for places",
+                    "parameters": {
+                        "type": "dict",
+                        "required": [
+                            "city"
+                        ],
+                        "properties": {
+                            "city": {
+                                "type": "string",
+                                "description": "The name of the city to get the weather for"
+                            },
+                            "metric": {
+                                "type": "string",
+                                "description": "The metric for weather. Options are: celsius, fahrenheit",
+                                "default": "celsius"
+                            }
+                        }
+                    }
                 }
-            }
-        }
-    }
-""",
+            """,
                         ),
                         RawMessage(
                             role="user",
@@ -226,79 +223,77 @@ Here is a list of functions in JSON format that you can invoke.
                 ],
                 notes=textwrap.dedent(
                     """
-                - The output supports multiple, and parallel tool calls natively
-                - JSON format for defining the functions in the system prompt is similar to Llama3.1
-                """
+                    - The output supports multiple, and parallel tool calls natively
+                    - JSON format for defining the functions in the system prompt is similar to Llama3.1
+                    """
                 ),
             ),
             Llama4UseCase(
                 title="Zero shot function calling - user message",
                 description=textwrap.dedent(
                     """
-        Similar to the above example, you can also provide information for all the available tools in the user message.
-        """
+                    Similar to the above example, you can also provide information for all the available tools in the user message.
+                    """
                 ),
                 dialogs=[
                     [
                         RawMessage(
                             role="user",
                             content="""Questions: Can you retrieve the details for the user with the ID 7890, who has black as their special request?
-Here is a list of functions in JSON format that you can invoke:
-[
-    {
-        "name": "get_user_info",
-        "description": "Retrieve details for a specific user by their unique identifier. Note that the provided function is in Python 3 syntax.",
-        "parameters": {
-            "type": "dict",
-            "required": [
-                "user_id"
-            ],
-            "properties": {
-                "user_id": {
-                "type": "integer",
-                "description": "The unique identifier of the user. It is used to fetch the specific user details from the database."
-            },
-            "special": {
-                "type": "string",
-                "description": "Any special information or parameters that need to be considered while fetching user details.",
-                "default": "none"
+            Here is a list of functions in JSON format that you can invoke:
+            [
+                {
+                    "name": "get_user_info",
+                    "description": "Retrieve details for a specific user by their unique identifier. Note that the provided function is in Python 3 syntax.",
+                    "parameters": {
+                        "type": "dict",
+                        "required": [
+                            "user_id"
+                        ],
+                        "properties": {
+                            "user_id": {
+                            "type": "integer",
+                            "description": "The unique identifier of the user. It is used to fetch the specific user details from the database."
+                        },
+                        "special": {
+                            "type": "string",
+                            "description": "Any special information or parameters that need to be considered while fetching user details.",
+                            "default": "none"
+                            }
+                        }
+                    }
                 }
-            }
-        }
-    }
-]
-
-Should you decide to return the function call(s), put them in the format of [func1(params_name=params_value, params_name2=params_value2...), func2(params)]
-
-You SHOULD NOT include any other text in the response.""",
+            ]
+            Should you decide to return the function call(s), put them in the format of [func1(params_name=params_value, params_name2=params_value2...), func2(params)]
+            You SHOULD NOT include any other text in the response.""",
                         ),
                     ]
                 ],
                 notes=textwrap.dedent(
                     """
-        - The tool call format for the model is the same whether your function calls are provided in the system or user message.
-        """
+                    - The tool call format for the model is the same whether your function calls are provided in the system or user message.
+                    """
                 ),
             ),
             Llama4UseCase(
                 title="Tool calling with custom formats",
                 description=textwrap.dedent(
                     """
-                Here is an example of how you could also write custom instructions for model to do zero shot tool calling.
-                In this example, we define a custom tool calling format using the `<function>` tag.
-                """
+                            Here is an example of how you could also write custom instructions for model to do zero shot tool calling.
+                            In this example, we define a custom tool calling format using the `<function>` tag.
+                            """
                 ),
                 dialogs=[
                     [
                         RawMessage(
                             role="user",
                             content="""You have access to the following functions:\nUse the function 'trending_songs' to 'Returns the trending songs on a Music site':\n{"name": "trending_songs", "description": "Returns the trending songs on a Music site", "parameters": {"genre": {"description": "The genre of the songs to return", "param_type": "str", "required": false}, "n": {"description": "The number of songs to return", "param_type": "int", "required": true}}}\n\nThink very carefully before calling functions.\nIf you choose to call a function ONLY reply in the following format with no prefix or suffix:\n\n<function=example_function_name>{"example_name": "example_value"}</function>
-Reminder:
-- If looking for real time information use relevant functions before falling back to brave_search
-- Function calls MUST follow the specified format, start with <function= and end with </function>
-- Required parameters MUST be specified
-- Only call one function at a time
-- Put the entire function call reply on one line<|eot_id|>""",
+            Reminder:
+            - If looking for real time information use relevant functions before falling back to brave_search
+            - Function calls MUST follow the specified format, start with <function= and end with </function>
+            - Required parameters MUST be specified
+            - Only call one function at a time
+            - Put the entire function call reply on one line""",
                         ),
                         RawMessage(
                             role="user",
@@ -306,6 +301,44 @@ Reminder:
                         ),
                     ]
                 ],
+            ),
+            Llama4UseCase(
+                title="Parsing tool outputs",
+                description=textwrap.dedent(
+                    """This example shows how the model interprets the output of a tool call and synthesizes it into a response."""
+                ),
+                dialogs=[
+                    [
+                        RawMessage(
+                            role="system",
+                            content="""You are an expert assistant who can answer general questions or invoke tools when necessary. You have access to the following functions:\nUse the function 'trending_songs' to 'Returns the trending songs on a Music site':\n{"name": "trending_songs", "description": "Returns the trending songs on a Music site", "parameters": {"genre": {"description": "The genre of the songs to return", "param_type": "str", "required": false}, "n": {"description": "The number of songs to return", "param_type": "int", "required": true}}}\n\nThink very carefully before calling functions.\nIf you choose to call a function ONLY reply in the following format with no prefix or suffix:\n\n<function=example_function_name>{"example_name": "example_value"}</function>
+Reminder:
+- Function calls MUST follow the specified format, start with <function= and end with </function>
+- Required parameters MUST be specified
+- Only call one function at a time
+- Put the entire function call reply on one line
+- In addition to tool calls, you should also augment your responses by using the tool outputs.""",
+                        ),
+                        RawMessage(
+                            role="user",
+                            content="Get the top 2 latest trending songs",
+                        ),
+                        RawMessage(
+                            role="assistant",
+                            content='<function=trending_songs>{"n": "2"}</function>',
+                        ),
+                        RawMessage(
+                            role="tool",
+                            content='[{"name": "Song 1", "artist": "Artist 1", "genre": "Genre 1"}, {"name": "Song 2", "artist": "Artist 2", "genre": "Genre 2"}]',
+                        ),
+                    ]
+                ],
+                notes=textwrap.dedent(
+                    """
+                    - Tool outputs should be passed back to the model in the `tool` role, which uses the `<|ipython|>` tag.
+                    - The model parses the tool output contents until it encounters the `<|eom|>` tag. It uses this to synthesize an appropriate response to the query.
+                    """
+                ),
             ),
         ]
     )

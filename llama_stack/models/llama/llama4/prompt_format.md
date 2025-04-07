@@ -70,10 +70,10 @@ The image depicts a dog standing on a skateboard, with its front paws positioned
 
 ##### Notes
 Notice the structure of the image section:
-        ```
-        <|image_start|><|image|><|patch|>...<|patch|><|image_end|>
-        ```
-        This is due to the image being smaller than the tile size.
+                    ```
+                    <|image_start|><|image|><|patch|>...<|patch|><|image_end|>
+                    ```
+                    This is due to the image being smaller than the tile size.
 
 
 ## Single image prompt format
@@ -97,9 +97,9 @@ This image shows a dog standing on a skateboard, with its front paws positioned 
 
 ##### Notes
 With a bigger image, the image will include the tile separator tokens. Additionally, the image tag now separates a scaled down version of the image from the regular sized image.
-        ```
-        <|image_start|><|patch|>...<|patch|><|tile_x_separator|><|patch|>...<|patch|><|tile_y_separator|><|patch|>...<|patch|><|image|><|patch|>...<|patch|><|image_end|>
-        ```
+                    ```
+                    <|image_start|><|patch|>...<|patch|><|tile_x_separator|><|patch|>...<|patch|><|tile_y_separator|><|patch|>...<|patch|><|image|><|patch|>...<|patch|><|image_end|>
+                    ```
 
 
 ## Multiple images prompt format
@@ -136,38 +136,35 @@ We are continuing the format for zero shot function calling used in previous ver
 <|begin_of_text|><|header_start|>system<|header_end|>
 
 You are an expert in composing functions. You are given a question and a set of possible functions.
-Based on the question, you will need to make one or more function/tool calls to achieve the purpose.
-If none of the function can be used, point it out. If the given question lacks the parameters required by the function,
-also point it out. You should only return the function call in tools call sections.
-
-If you decide to invoke any of the function(s), you MUST put it in the format of [func_name1(params_name1=params_value1, params_name2=params_value2...), func_name2(params)]
-You SHOULD NOT include any other text in the response.
-
-Here is a list of functions in JSON format that you can invoke.
-
-[
-    {
-        "name": "get_weather",
-        "description": "Get weather info for places",
-        "parameters": {
-            "type": "dict",
-            "required": [
-                "city"
-            ],
-            "properties": {
-                "city": {
-                    "type": "string",
-                    "description": "The name of the city to get the weather for"
-                },
-                "metric": {
-                    "type": "string",
-                    "description": "The metric for weather. Options are: celsius, fahrenheit",
-                    "default": "celsius"
+            Based on the question, you will need to make one or more function/tool calls to achieve the purpose.
+            If none of the function can be used, point it out. If the given question lacks the parameters required by the function,
+            also point it out. You should only return the function call in tools call sections.
+            If you decide to invoke any of the function(s), you MUST put it in the format of [func_name1(params_name1=params_value1, params_name2=params_value2...), func_name2(params)]
+            You SHOULD NOT include any other text in the response.
+            Here is a list of functions in JSON format that you can invoke.
+            [
+                {
+                    "name": "get_weather",
+                    "description": "Get weather info for places",
+                    "parameters": {
+                        "type": "dict",
+                        "required": [
+                            "city"
+                        ],
+                        "properties": {
+                            "city": {
+                                "type": "string",
+                                "description": "The name of the city to get the weather for"
+                            },
+                            "metric": {
+                                "type": "string",
+                                "description": "The metric for weather. Options are: celsius, fahrenheit",
+                                "default": "celsius"
+                            }
+                        }
+                    }
                 }
-            }
-        }
-    }
-<|eot|><|header_start|>user<|header_end|>
+            <|eot|><|header_start|>user<|header_end|>
 
 What is the weather in SF and Seattle?<|eot|><|header_start|>assistant<|header_end|>
 
@@ -197,34 +194,32 @@ Similar to the above example, you can also provide information for all the avail
 <|begin_of_text|><|header_start|>user<|header_end|>
 
 Questions: Can you retrieve the details for the user with the ID 7890, who has black as their special request?
-Here is a list of functions in JSON format that you can invoke:
-[
-    {
-        "name": "get_user_info",
-        "description": "Retrieve details for a specific user by their unique identifier. Note that the provided function is in Python 3 syntax.",
-        "parameters": {
-            "type": "dict",
-            "required": [
-                "user_id"
-            ],
-            "properties": {
-                "user_id": {
-                "type": "integer",
-                "description": "The unique identifier of the user. It is used to fetch the specific user details from the database."
-            },
-            "special": {
-                "type": "string",
-                "description": "Any special information or parameters that need to be considered while fetching user details.",
-                "default": "none"
+            Here is a list of functions in JSON format that you can invoke:
+            [
+                {
+                    "name": "get_user_info",
+                    "description": "Retrieve details for a specific user by their unique identifier. Note that the provided function is in Python 3 syntax.",
+                    "parameters": {
+                        "type": "dict",
+                        "required": [
+                            "user_id"
+                        ],
+                        "properties": {
+                            "user_id": {
+                            "type": "integer",
+                            "description": "The unique identifier of the user. It is used to fetch the specific user details from the database."
+                        },
+                        "special": {
+                            "type": "string",
+                            "description": "Any special information or parameters that need to be considered while fetching user details.",
+                            "default": "none"
+                            }
+                        }
+                    }
                 }
-            }
-        }
-    }
-]
-
-Should you decide to return the function call(s), put them in the format of [func1(params_name=params_value, params_name2=params_value2...), func2(params)]
-
-You SHOULD NOT include any other text in the response.<|eot|><|header_start|>assistant<|header_end|>
+            ]
+            Should you decide to return the function call(s), put them in the format of [func1(params_name=params_value, params_name2=params_value2...), func2(params)]
+            You SHOULD NOT include any other text in the response.<|eot|><|header_start|>assistant<|header_end|>
 
 
 ```
@@ -259,12 +254,12 @@ Think very carefully before calling functions.
 If you choose to call a function ONLY reply in the following format with no prefix or suffix:
 
 <function=example_function_name>{"example_name": "example_value"}</function>
-Reminder:
-- If looking for real time information use relevant functions before falling back to brave_search
-- Function calls MUST follow the specified format, start with <function= and end with </function>
-- Required parameters MUST be specified
-- Only call one function at a time
-- Put the entire function call reply on one line<|eot_id|><|eot|><|header_start|>user<|header_end|>
+            Reminder:
+            - If looking for real time information use relevant functions before falling back to brave_search
+            - Function calls MUST follow the specified format, start with <function= and end with </function>
+            - Required parameters MUST be specified
+            - Only call one function at a time
+            - Put the entire function call reply on one line<|eot|><|header_start|>user<|header_end|>
 
 Use tools to get latest trending songs<|eot|><|header_start|>assistant<|header_end|>
 
@@ -273,5 +268,54 @@ Use tools to get latest trending songs<|eot|><|header_start|>assistant<|header_e
 
 ##### Model Response Format
 ```
-<function=trending_songs>{"n": "10"}</function><|eot|>
+<function=trending_songs>{"n": 10}</function><|eot|>
 ```
+
+
+
+
+## Parsing tool outputs
+
+This example shows how the model interprets the output of a tool call and synthesizes it into a response.
+
+##### Input Prompt Format
+```
+<|begin_of_text|><|header_start|>system<|header_end|>
+
+You are an expert assistant who can answer general questions or invoke tools when necessary. You have access to the following functions:
+Use the function 'trending_songs' to 'Returns the trending songs on a Music site':
+{"name": "trending_songs", "description": "Returns the trending songs on a Music site", "parameters": {"genre": {"description": "The genre of the songs to return", "param_type": "str", "required": false}, "n": {"description": "The number of songs to return", "param_type": "int", "required": true}}}
+
+Think very carefully before calling functions.
+If you choose to call a function ONLY reply in the following format with no prefix or suffix:
+
+<function=example_function_name>{"example_name": "example_value"}</function>
+Reminder:
+- Function calls MUST follow the specified format, start with <function= and end with </function>
+- Required parameters MUST be specified
+- Only call one function at a time
+- Put the entire function call reply on one line
+- In addition to tool calls, you should also augment your responses by using the tool outputs.<|eot|><|header_start|>user<|header_end|>
+
+Get the top 2 latest trending songs<|eot|><|header_start|>assistant<|header_end|>
+
+<function=trending_songs>{"n": "2"}</function><|eot|><|header_start|>ipython<|header_end|>
+
+[{"name": "Song 1", "artist": "Artist 1", "genre": "Genre 1"}, {"name": "Song 2", "artist": "Artist 2", "genre": "Genre 2"}]<|eom|><|header_start|>assistant<|header_end|>
+
+
+```
+
+##### Model Response Format
+```
+The top 2 latest trending songs are:
+
+1. Song 1 by Artist 1 (Genre 1)
+2. Song 2 by Artist 2 (Genre 2)<|eot|>
+```
+
+
+##### Notes
+
+- Tool outputs should be passed back to the model in the `tool` role, which uses the `<|ipython|>` tag.
+- The model parses the tool output contents until it encounters the `<|eom|>` tag. It uses this to synthesize an appropriate response to the query.
