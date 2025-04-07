@@ -216,9 +216,12 @@ class ChatFormat:
                 content = ToolUtils.encode_tool_call(t, tool_prompt_format)
                 _process_content(content)
 
+        # Tool calls and Tool Response messages should be eom
         eom = False
         if message.role == "assistant":
-            eom = message.stop_reason == StopReason.end_of_message
+            eom = message.stop_reason == StopReason.end_of_message or message.tool_calls
+        elif message.role == "tool":
+            eom = True
 
         tokens.append(self.tokenizer.special_tokens["<|eom|>" if eom else "<|eot|>"])
         return tokens, images
