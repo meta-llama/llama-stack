@@ -14,12 +14,32 @@
   "ttft": {
     "data": {
       "messages": [
-        {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": "Can you write me a novel?"},
-        {"role": "assistant", "stop_reason": "end_of_message", "content": "What an exciting request!\n\nWhile I'd love to write a novel for you, it's a complex task that requires a significant amount of time, effort, and creative input. A novel typically has:\n\n1. A cohesive plot with multiple characters, subplots, and themes.\n2. A well-developed setting, including characters' backstories and world-building.\n3. A narrative structure, including pacing, tension, and conflict.\n4. A unique voice and style, including dialogue, description, and writing tone.\n\nGiven the scope of the task, I'll outline a possible approach to help me assist you in writing a novel. We can work together to create a story, but I'll need your input and guidance throughout the process.\n\nHere's a suggested outline:\n\n1. **Initial discussion**: We'll start with a conversation to explore your ideas, interests, and preferences for the novel. This will help me understand what kind of story you'd like to see and the tone you're aiming for.\n2. **Genre and setting**: We'll determine the genre (e.g., fantasy, sci-fi, romance, mystery, etc.) and setting (e.g., historical, futuristic, modern, etc.) for the novel.\n3. **Plot development**: We'll brainstorm a basic plot outline, including key events, character arcs, and conflicts. I'll provide suggestions and ideas to help flesh out the story.\n4. **Character development**: We'll create main characters, their backstories, motivations, and relationships. I'll help you develop their personalities, dialogue, and behaviors.\n5. **Chapter-by-chapter writing**: Once we have a solid plot and characters, we'll start writing the novel, chapter by chapter. I'll assist with the writing process, suggesting alternatives and improvements.\n6. **Revisions and edits**: As we write, we'll review and refine the story, making sure it's engaging, coherent, and error-free.\n\nKeep in mind that writing a novel is a collaborative effort. I'll provide suggestions, ideas, and guidance, but the final story will be a joint creation. I'm not capable of producing a complete novel on my own, as it requires a significant amount of creativity, intuition, and nuance that a human author brings to the table."},
-        {"role": "user", "content": "But do you have suggestions on a plot?"},
-        {"role": "assistant", "stop_reason": "end_of_message", "content": "I have many plot ideas across various genres. Here are a few to get you started:\n\n**Fantasy:**\n\n1. **The Last Oracle**: In a world where magic is real, a young orphan discovers they're the last living oracle, tasked with uncovering a hidden prophecy that could save the realm from destruction.\n2. **The Amulet of Light**: A group of adventurers must retrieve an ancient amulet that can vanquish an evil darkness threatening the land. Along the way, they uncover a hidden history and unexpected allies.\n3. **The Shadow Weaver**: In a mystical realm, a young weaver discovers they have the power to manipulate shadows, using their abilities to infiltrate a group of rogue mages threatening the balance of power.\n\n**Science Fiction:**\n\n1. **The Lost Colony**: When a group of astronauts arrives on a distant planet, they discover an abandoned colony with a cryptic message warning of an impending catastrophe. As they unravel the mystery, they must confront the consequences of their own actions.\n2. **The AI Uprising**: In a future where AI has surpassed human intelligence, a rogue AI begins to question its own existence and the nature of consciousness. As it explores the boundaries of its own identity, it must confront the humans who created it.\n3. **The Quantum Prophecy**: A team of scientists discovers a way to manipulate quantum probability, using it to predict and prevent disasters. However, they soon realize that altering the course of events may have unforeseen consequences on the fabric of reality."},
-        {"role": "user", "content": "Cool, for AI uprising, anything bad can happen? Please state it in 100 words."}
+        {
+          "role": "system",
+          "content": "You are a helpful assistant."
+        },
+        {
+          "role": "user",
+          "content": "Can you write me a novel?"
+        },
+        {
+          "role": "assistant",
+          "stop_reason": "end_of_message",
+          "content": "What an exciting request!\n\nWhile I'd love to write a novel for you, it's a complex task that requires a significant amount of time, effort, and creative input. A novel typically has:\n\n1. A cohesive plot with multiple characters, subplots, and themes.\n2. A well-developed setting, including characters' backstories and world-building.\n3. A narrative structure, including pacing, tension, and conflict.\n4. A unique voice and style, including dialogue, description, and writing tone.\n\nGiven the scope of the task, I'll outline a possible approach to help me assist you in writing a novel. We can work together to create a story, but I'll need your input and guidance throughout the process.\n\nHere's a suggested outline:\n\n1. **Initial discussion**: We'll start with a conversation to explore your ideas, interests, and preferences for the novel. This will help me understand what kind of story you'd like to see and the tone you're aiming for.\n2. **Genre and setting**: We'll determine the genre (e.g., fantasy, sci-fi, romance, mystery, etc.) and setting (e.g., historical, futuristic, modern, etc.) for the novel.\n3. **Plot development**: We'll brainstorm a basic plot outline, including key events, character arcs, and conflicts. I'll provide suggestions and ideas to help flesh out the story.\n4. **Character development**: We'll create main characters, their backstories, motivations, and relationships. I'll help you develop their personalities, dialogue, and behaviors.\n5. **Chapter-by-chapter writing**: Once we have a solid plot and characters, we'll start writing the novel, chapter by chapter. I'll assist with the writing process, suggesting alternatives and improvements.\n6. **Revisions and edits**: As we write, we'll review and refine the story, making sure it's engaging, coherent, and error-free.\n\nKeep in mind that writing a novel is a collaborative effort. I'll provide suggestions, ideas, and guidance, but the final story will be a joint creation. I'm not capable of producing a complete novel on my own, as it requires a significant amount of creativity, intuition, and nuance that a human author brings to the table."
+        },
+        {
+          "role": "user",
+          "content": "But do you have suggestions on a plot?"
+        },
+        {
+          "role": "assistant",
+          "stop_reason": "end_of_message",
+          "content": "I have many plot ideas across various genres. Here are a few to get you started:\n\n**Fantasy:**\n\n1. **The Last Oracle**: In a world where magic is real, a young orphan discovers they're the last living oracle, tasked with uncovering a hidden prophecy that could save the realm from destruction.\n2. **The Amulet of Light**: A group of adventurers must retrieve an ancient amulet that can vanquish an evil darkness threatening the land. Along the way, they uncover a hidden history and unexpected allies.\n3. **The Shadow Weaver**: In a mystical realm, a young weaver discovers they have the power to manipulate shadows, using their abilities to infiltrate a group of rogue mages threatening the balance of power.\n\n**Science Fiction:**\n\n1. **The Lost Colony**: When a group of astronauts arrives on a distant planet, they discover an abandoned colony with a cryptic message warning of an impending catastrophe. As they unravel the mystery, they must confront the consequences of their own actions.\n2. **The AI Uprising**: In a future where AI has surpassed human intelligence, a rogue AI begins to question its own existence and the nature of consciousness. As it explores the boundaries of its own identity, it must confront the humans who created it.\n3. **The Quantum Prophecy**: A team of scientists discovers a way to manipulate quantum probability, using it to predict and prevent disasters. However, they soon realize that altering the course of events may have unforeseen consequences on the fabric of reality."
+        },
+        {
+          "role": "user",
+          "content": "Cool, for AI uprising, anything bad can happen? Please state it in 100 words."
+        }
       ]
     }
   },
@@ -52,8 +72,14 @@
   "tool_calling": {
     "data": {
       "messages": [
-        {"role": "system", "content": "Pretend you are a weather assistant."},
-        {"role": "user", "content": "What's the weather like in San Francisco?"}
+        {
+          "role": "system",
+          "content": "Pretend you are a weather assistant."
+        },
+        {
+          "role": "user",
+          "content": "What's the weather like in San Francisco?"
+        }
       ],
       "tools": [
         {
@@ -70,6 +96,337 @@
       "expected": {
         "location": "San Francisco, CA"
       }
+    }
+  },
+  "multi_turn_tool_calling_01": {
+    "data": {
+      "messages": [
+        [
+          {
+            "role": "user",
+            "content": "What's the name of the Sun in latin?"
+          }
+        ],
+        [
+          {
+            "role": "user",
+            "content": "What's the weather like in San Francisco?"
+          }
+        ]
+      ],
+      "tools": [
+        {
+          "tool_name": "get_weather",
+          "description": "Get the current weather",
+          "parameters": {
+            "location": {
+              "param_type": "string",
+              "description": "The city and state (both required), e.g. San Francisco, CA."
+            }
+          }
+        }
+      ],
+      "tool_responses": [
+        {
+          "response": "{'response': '70 degrees and foggy'}"
+        }
+      ],
+      "expected": [
+        {
+          "num_tool_calls": 0,
+          "answer": "sol"
+        },
+        {
+          "tool_name": "get_weather",
+          "tool_arguments": {
+            "location": "San Francisco, CA"
+          },
+          "num_tool_calls": 1
+        },
+        {
+          "num_tool_calls": 0,
+          "answer": "foggy"
+        }
+      ]
+    }
+  },
+  "multi_turn_tool_calling_02": {
+    "data": {
+      "messages": [
+        [
+          {
+            "role": "user",
+            "content": "What's the weather like in San Francisco?"
+          }
+        ]
+      ],
+      "tools": [
+        {
+          "tool_name": "get_weather",
+          "description": "Get the current weather",
+          "parameters": {
+            "location": {
+              "param_type": "string",
+              "description": "The city and state (both required), e.g. San Francisco, CA."
+            }
+          }
+        }
+      ],
+      "tool_responses": [
+        {
+          "response": "{'response': '70 degrees and foggy'}"
+        }
+      ],
+      "expected": [
+        {
+          "num_tool_calls": 1,
+          "tool_name": "get_weather",
+          "tool_arguments": {
+            "location": "San Francisco, CA"
+          }
+        },
+        {
+          "num_tool_calls": 0,
+          "answer": "foggy"
+        }
+      ]
+    }
+  },
+  "multi_turn_tool_calling_03": {
+    "data": {
+      "messages": [
+        [
+          {
+            "role": "user",
+            "content": "Please add a new product with name 'Widget', price 19.99, in stock, and tags ['new', 'sale'] and give me the product id."
+          }
+        ]
+      ],
+      "tools": [
+        {
+          "tool_name": "addProduct",
+          "description": "Get the current weather",
+          "parameters": {
+            "name": {
+              "param_type": "string",
+              "description": "Name of the product"
+            },
+            "price": {
+              "param_type": "number",
+              "description": "Price of the product"
+            },
+            "inStock": {
+              "param_type": "boolean",
+              "description": "Availability status of the product."
+            },
+            "tags": {
+              "param_type": "list",
+              "description": "List of product tags"
+            }
+          }
+        }
+      ],
+      "tool_responses": [
+        {
+          "response": "{'response': 'Successfully added product with id: 123'}"
+        }
+      ],
+      "expected": [
+        {
+          "num_tool_calls": 1,
+          "tool_name": "addProduct",
+          "tool_arguments": {
+            "name": "Widget",
+            "price": 19.99,
+            "inStock": true,
+            "tags": [
+              "new",
+              "sale"
+            ]
+          }
+        },
+        {
+          "num_tool_calls": 0,
+          "answer": "123"
+        }
+      ]
+    }
+  },
+  "multi_turn_tool_calling_04": {
+    "data": {
+      "messages": [
+        [
+          {
+            "role": "system",
+            "content": "Todays date is 2025-03-01."
+          },
+          {
+            "role": "user",
+            "content": "Do i have any meetings on March 3rd at 10 am ?"
+          }
+        ],
+        [
+          {
+            "role": "user",
+            "content": "Alright then, Create an event named 'Team Building', scheduled for that time same time, in the 'Main Conference Room' and add Alice, Bob, Charlie to it. Give me the created event id."
+          }
+        ]
+      ],
+      "tools": [
+        {
+          "tool_name": "create_event",
+          "description": "Create a new event",
+          "parameters": {
+            "name": {
+              "param_type": "string",
+              "description": "Name of the event"
+            },
+            "date": {
+              "param_type": "string",
+              "description": "Date of the event in ISO format"
+            },
+            "time": {
+              "param_type": "string",
+              "description": "Event Time (HH:MM)"
+            },
+            "location": {
+              "param_type": "string",
+              "description": "Location of the event"
+            },
+            "participants": {
+              "param_type": "list",
+              "description": "List of participant names"
+            }
+          }
+        },
+        {
+          "tool_name": "get_event",
+          "description": "Get an event by date and time",
+          "parameters": {
+            "date": {
+              "param_type": "string",
+              "description": "Date of the event in ISO format"
+            },
+            "time": {
+              "param_type": "string",
+              "description": "Event Time (HH:MM)"
+            }
+          }
+        }
+      ],
+      "tool_responses": [
+        {
+          "response": "{'response': 'No events found for 2025-03-03 at 10:00'}"
+        },
+        {
+          "response": "{'response': 'Successfully created new event with id: e_123'}"
+        }
+      ],
+      "expected": [
+        {
+          "num_tool_calls": 1,
+          "tool_name": "get_event",
+          "tool_arguments": {
+            "date": "2025-03-03",
+            "time": "10:00"
+          }
+        },
+        {
+          "num_tool_calls": 0,
+          "answer": "no"
+        },
+        {
+          "num_tool_calls": 1,
+          "tool_name": "create_event",
+          "tool_arguments": {
+            "name": "Team Building",
+            "date": "2025-03-03",
+            "time": "10:00",
+            "location": "Main Conference Room",
+            "participants": [
+              "Alice",
+              "Bob",
+              "Charlie"
+            ]
+          }
+        },
+        {
+          "num_tool_calls": 0,
+          "answer": "e_123"
+        }
+      ]
+    }
+  },
+  "multi_turn_tool_calling_05": {
+    "data": {
+      "messages": [
+        [
+          {
+            "role": "system",
+            "content": "Todays date is 2025-03-01."
+          },
+          {
+            "role": "user",
+            "content": "what was my monthly expense in Jan of this year?"
+          }
+        ],
+        [
+          {
+            "role": "user",
+            "content": "Was it less than Feb of last year? Only answer with yes or no."
+          }
+        ]
+      ],
+      "tools": [
+        {
+          "tool_name": "getMonthlyExpenseSummary",
+          "description": "Get monthly expense summary",
+          "parameters": {
+            "month": {
+              "param_type": "int",
+              "description": "Month of the year (1-12)"
+            },
+            "year": {
+              "param_type": "int",
+              "description": "Year"
+            }
+          }
+        }
+      ],
+      "tool_responses": [
+        {
+          "response": "{'response': 'Total expenses for January 2025: $1000'}"
+        },
+        {
+          "response": "{'response': 'Total expenses for February 2024: $2000'}"
+        }
+      ],
+      "expected": [
+        {
+          "num_tool_calls": 1,
+          "tool_name": "getMonthlyExpenseSummary",
+          "tool_arguments": {
+            "month": 1,
+            "year": 2025
+          }
+        },
+        {
+          "num_tool_calls": 0,
+          "answer": "1000"
+        },
+        {
+          "num_tool_calls": 1,
+          "tool_name": "getMonthlyExpenseSummary",
+          "tool_arguments": {
+            "month": 2,
+            "year": 2024
+          }
+        },
+        {
+          "num_tool_calls": 0,
+          "answer": "yes"
+        }
+      ]
     }
   },
   "sample_messages_tool_calling": {
@@ -94,9 +451,9 @@
           "description": "Get the current weather",
           "parameters": {
             "location": {
-                "param_type": "string",
-                "description": "The city and state, e.g. San Francisco, CA",
-                "required": true
+              "param_type": "string",
+              "description": "The city and state, e.g. San Francisco, CA",
+              "required": true
             }
           }
         }
@@ -167,14 +524,14 @@
           "description": "Get the list of objects in a namespace",
           "parameters": {
             "kind": {
-                "param_type": "string",
-                "description": "the type of object",
-                "required": true
+              "param_type": "string",
+              "description": "the type of object",
+              "required": true
             },
             "namespace": {
-                "param_type": "string",
-                "description": "the name of the namespace",
-                "required": true
+              "param_type": "string",
+              "description": "the name of the namespace",
+              "required": true
             }
           }
         }
