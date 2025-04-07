@@ -4,9 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-# Copyright (c) Meta Platforms, Inc. and affiliates.
-# This software may be used and distributed in accordance with the terms of the Llama 3 Community License Agreement.
-
 # type: ignore
 import os
 from typing import Any, Dict, List, Optional, cast
@@ -18,22 +15,15 @@ from fairscale.nn.model_parallel.mappings import reduce_from_model_parallel_regi
 from torch import Tensor, nn
 from torchao.quantization.GPTQ import Int8DynActInt4WeightLinear
 
-from llama_stack.apis.inference import QuantizationType
-from llama_stack.log import get_logger
-from llama_stack.models.llama.sku_list import resolve_model
-
-from ...config import MetaReferenceQuantizedInferenceConfig
-from ...datatypes import CheckpointQuantizationFormat
+from ...datatypes import QuantizationMode
 from ...quantize_impls import (
     Fp8ScaledWeights,
     ffn_swiglu,
     load_fp8,
     quantize_fp8,
 )
-from ..args import ModelArgs
 from ..model import Transformer, TransformerBlock
-
-log = get_logger(__name__, category="quantization")
+from ..multimodal.model import CrossAttentionTransformer
 
 
 def swiglu_wrapper(
@@ -44,30 +34,34 @@ def swiglu_wrapper(
     return reduce_from_model_parallel_region(out)
 
 
+def convert_to_quantized_model(
+    model: Transformer | CrossAttentionTransformer,
+    checkpoint_dir: str,
+    quantization_mode: Optional[str] = None,
+    fp8_activation_scale_ub: Optional[float] = 1200.0,
+    device: Optional[torch.device] = None,
+) -> Transformer | CrossAttentionTransformer:
+    if quantization_mode == QuantizationMode.fp8_mixed:
+        return convert_to_fp8_quantized_model(model, checkpoint_dir, fp8_activation_scale_ub, device)
+    elif quantization_mode == QuantizationMode.int4_mixed:
+        return convert_to_int4_quantized_model(model, checkpoint_dir, device)
+    else:
+        raise ValueError(f"Unsupported quantization mode: {quantization_mode}")
+
+
 def convert_to_fp8_quantized_model(
     model: Transformer,
-    config: MetaReferenceQuantizedInferenceConfig,
     checkpoint_dir: str,
     fp8_activation_scale_ub: Optional[float] = 1200.0,
+    device: Optional[torch.device] = None,
 ) -> Transformer:
-    if config.quantization.type == QuantizationType.bf16.value:
-        return model
-
-    elif config.quantization.type != QuantizationType.fp8.value:
-        raise ValueError("Only FP8 quantization is supported")
-
-    assert config.model is not None, "Model must be specified for quantized inference"
-    llama_model = resolve_model(config.model)
-    assert llama_model is not None, f"Model {config.model} not found"
-
     # Move weights to GPU with quantization
-    if llama_model.quantization_format == CheckpointQuantizationFormat.fp8_mixed.value:
-        log.info("Loading fp8 scales...")
-        fp8_scales_path = os.path.join(checkpoint_dir, f"fp8_scales_{get_model_parallel_rank()}.pt")
-        assert os.path.isfile(fp8_scales_path), f"fp8_scales_path not found for rank {get_model_parallel_rank()}"
+    fp8_scales_path = os.path.join(checkpoint_dir, f"fp8_scales_{get_model_parallel_rank()}.pt")
+    if os.path.isfile(fp8_scales_path):
+        print("Loading fp8 scales...")
         fp8_scales = torch.load(fp8_scales_path, weights_only=True)
 
-        for block in model.layers:
+        for _, block in model.named_modules():
             if isinstance(block, TransformerBlock):
                 if block.layer_id == 0 or block.layer_id == (model.n_layers - 1):
                     continue
@@ -81,8 +75,8 @@ def convert_to_fp8_quantized_model(
                         fp8_activation_scale_ub,
                     )
     else:
-        log.info("Quantizing fp8 weights from bf16...")
-        for block in model.layers:
+        print("Quantizing fp8 weights from bf16...")
+        for _, block in model.named_modules():
             if isinstance(block, TransformerBlock):
                 if block.layer_id == 0 or block.layer_id == (model.n_layers - 1):
                     continue
@@ -92,12 +86,12 @@ def convert_to_fp8_quantized_model(
                     param.weight = quantize_fp8(
                         param.weight,
                         fp8_activation_scale_ub,
-                        output_device=torch.device("cuda"),
+                        output_device=device,
                     )
 
     for _, parameter in model.named_parameters():
         if not isinstance(parameter, Fp8ScaledWeights):
-            parameter.data = parameter.to(device="cuda")
+            parameter.data = parameter.to(device=device)
     return model
 
 
@@ -290,11 +284,12 @@ def _prepare_model_int4_weight_int8_dynamic_activation(
 
 
 def convert_to_int4_quantized_model(
-    model: Transformer,
-    model_args: ModelArgs,
-) -> Transformer:
+    model: Transformer | CrossAttentionTransformer,
+    checkpoint_dir: str,
+    device: Optional[torch.device] = None,
+) -> Transformer | CrossAttentionTransformer:
     """Convert the model to int4 quantized model."""
-
+    model_args = model.params
     assert model_args.quantization_args is not None, "Quantization args must be specified."
     quantization_args = model_args.quantization_args
     if quantization_args.scheme is None:
@@ -318,5 +313,4 @@ def convert_to_int4_quantized_model(
         lora_scale = model_args.lora_args.scale
 
     _prepare_model_int4_weight_int8_dynamic_activation(model, group_size, lora_rank, lora_scale)
-    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-    return cast(Transformer, model.to(device))
+    return cast(Transformer | CrossAttentionTransformer, model.to(device=device))

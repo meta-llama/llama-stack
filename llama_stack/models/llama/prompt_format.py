@@ -28,9 +28,6 @@ from llama_stack.models.llama.datatypes import (
     ToolPromptFormat,
 )
 from llama_stack.models.llama.llama4.tokenizer import Tokenizer
-from llama_stack.providers.inline.inference.meta_reference.llama4.datatypes import (
-    LLMInput,
-)
 
 from .llama3.interface import LLama31Interface
 from .llama3.template_data import (
@@ -38,6 +35,7 @@ from .llama3.template_data import (
     system_message_builtin_tools_only,
     system_message_custom_tools_only,
 )
+from .llama4.datatypes import LLMInput
 
 
 class TextCompletionContent(BaseModel):

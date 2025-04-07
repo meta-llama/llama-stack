@@ -25,14 +25,63 @@ from llama_stack.apis.models import Model
 from llama_stack.apis.telemetry.telemetry import MetricResponseMixin
 from llama_stack.models.llama.datatypes import (
     BuiltinTool,
-    SamplingParams,
     StopReason,
     ToolCall,
     ToolDefinition,
+    ToolParamDefinition,
     ToolPromptFormat,
 )
 from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
 from llama_stack.schema_utils import json_schema_type, register_schema, webmethod
+
+register_schema(ToolCall)
+register_schema(ToolParamDefinition)
+register_schema(ToolDefinition)
+
+
+@json_schema_type
+class GreedySamplingStrategy(BaseModel):
+    type: Literal["greedy"] = "greedy"
+
+
+@json_schema_type
+class TopPSamplingStrategy(BaseModel):
+    type: Literal["top_p"] = "top_p"
+    temperature: Optional[float] = Field(..., gt=0.0)
+    top_p: Optional[float] = 0.95
+
+
+@json_schema_type
+class TopKSamplingStrategy(BaseModel):
+    type: Literal["top_k"] = "top_k"
+    top_k: int = Field(..., ge=1)
+
+
+SamplingStrategy = Annotated[
+    Union[GreedySamplingStrategy, TopPSamplingStrategy, TopKSamplingStrategy],
+    Field(discriminator="type"),
+]
+register_schema(SamplingStrategy, name="SamplingStrategy")
+
+
+@json_schema_type
+class SamplingParams(BaseModel):
+    """Sampling parameters.
+
+    :param strategy: The sampling strategy.
+    :param max_tokens: The maximum number of tokens that can be generated in the completion. The token count of
+        your prompt plus max_tokens cannot exceed the model's context length.
+    :param repetition_penalty: Number between -2.0 and 2.0. Positive values penalize new tokens
+        based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics.
+    :param stop: Up to 4 sequences where the API will stop generating further tokens.
+        The returned text will not contain the stop sequence.
+    """
+
+    strategy: SamplingStrategy = Field(default_factory=GreedySamplingStrategy)
+
+    max_tokens: Optional[int] = 0
+    repetition_penalty: Optional[float] = 1.0
+    stop: Optional[List[str]] = None
 
 
 class LogProbConfig(BaseModel):

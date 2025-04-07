@@ -21,6 +21,7 @@ from llama_stack.apis.inference import (
     CompletionMessage,
     EmbeddingsResponse,
     EmbeddingTaskType,
+    GreedySamplingStrategy,
     Inference,
     LogProbConfig,
     Message,
@@ -35,12 +36,9 @@ from llama_stack.apis.inference import (
     ToolDefinition,
     ToolPromptFormat,
     ToolResponseMessage,
-    UserMessage,
-)
-from llama_stack.models.llama.datatypes import (
-    GreedySamplingStrategy,
     TopKSamplingStrategy,
     TopPSamplingStrategy,
+    UserMessage,
 )
 from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
 from llama_stack.providers.utils.inference.openai_compat import (

@@ -4,16 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-# Copyright (c) Meta Platforms, Inc. and affiliates.
-# All rights reserved.
-#
-# This source code is licensed under the terms described in the LICENSE file in
-# top-level folder for each specific model found within the models/ directory at
-# the top-level of this source tree.
-
-# Copyright (c) Meta Platforms, Inc. and affiliates.
-# This software may be used and distributed in accordance with the terms of the Llama 3 Community License Agreement.
-
 import math
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -184,7 +174,6 @@ class Attention(nn.Module):
                 self.head_dim,
             )
         ).cuda()
-
         self.qk_norm = None
         if self.use_qk_norm:
             self.qk_norm = L2Norm(args.norm_eps)

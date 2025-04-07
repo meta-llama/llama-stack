@@ -96,7 +96,6 @@ def _convert_to_vllm_tool_calls_in_response(
             call_id=call.id,
             tool_name=call.function.name,
             arguments=json.loads(call.function.arguments),
-            arguments_json=call.function.arguments,
         )
         for call in tool_calls
     ]
@@ -176,7 +175,6 @@ async def _process_vllm_chat_completion_stream_response(
                                 call_id=tool_call_buf.call_id,
                                 tool_name=tool_call_buf.tool_name,
                                 arguments=args,
-                                arguments_json=args_str,
                             ),
                             parse_status=ToolCallParseStatus.succeeded,
                         ),

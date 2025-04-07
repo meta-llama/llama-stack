@@ -34,7 +34,6 @@ from llama_stack.apis.inference import (
 )
 from llama_stack.log import get_logger
 from llama_stack.models.llama.datatypes import (
-    ModelFamily,
     RawContent,
     RawContentItem,
     RawMediaItem,
@@ -43,7 +42,6 @@ from llama_stack.models.llama.datatypes import (
     Role,
     StopReason,
     ToolPromptFormat,
-    is_multimodal,
 )
 from llama_stack.models.llama.llama3.chat_format import ChatFormat
 from llama_stack.models.llama.llama3.prompt_templates import (
@@ -55,6 +53,7 @@ from llama_stack.models.llama.llama3.prompt_templates import (
 )
 from llama_stack.models.llama.llama3.tokenizer import Tokenizer
 from llama_stack.models.llama.sku_list import resolve_model
+from llama_stack.models.llama.sku_types import ModelFamily, is_multimodal
 from llama_stack.providers.utils.inference import supported_inference_models
 
 log = get_logger(name=__name__, category="inference")
