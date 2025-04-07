@@ -349,7 +349,7 @@ Reminder:
                 ],
                 notes=textwrap.dedent(
                     """
-                    - Tool outputs should be passed back to the model in the `tool` role, which uses the `<|ipython|>` tag.
+                    - Tool outputs should be passed back to the model in the `tool` (a.k.a. `ipython`) role.
                     - The model parses the tool output contents until it encounters the `<|eom|>` tag. It uses this to synthesize an appropriate response to the query.
                     """
                 ),
