@@ -20,7 +20,7 @@ providers:
       checkpoint_dir: ${env.INFERENCE_CHECKPOINT_DIR:null}
       quantization:
         type: ${env.QUANTIZATION_TYPE:bf16}
-      model_parallel_size: ${env.MODEL_PARALLEL_SIZE:null}
+      model_parallel_size: ${env.MODEL_PARALLEL_SIZE:0}
   - provider_id: sentence-transformers
     provider_type: inline::sentence-transformers
     config: {}
@@ -32,7 +32,7 @@ providers:
       checkpoint_dir: ${env.SAFETY_CHECKPOINT_DIR:null}
       quantization:
         type: ${env.QUANTIZATION_TYPE:bf16}
-      model_parallel_size: ${env.MODEL_PARALLEL_SIZE:null}
+      model_parallel_size: ${env.MODEL_PARALLEL_SIZE:0}
   vector_io:
   - provider_id: faiss
     provider_type: inline::faiss

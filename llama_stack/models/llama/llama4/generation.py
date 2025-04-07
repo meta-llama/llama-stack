@@ -135,7 +135,7 @@ class Llama4:
         if print_model_input:
             cprint("Input to model:\n", "yellow")
             for inp in llm_inputs:
-                cprint(self.tokenizer.decode(inp.tokens.tolist()), "grey")
+                cprint(self.tokenizer.decode(inp.tokens), "grey")
         prompt_tokens = [inp.tokens for inp in llm_inputs]
 
         bsz = len(llm_inputs)

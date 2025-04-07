@@ -51,7 +51,7 @@ class MetaReferenceInferenceConfig(BaseModel):
         model: str = "Llama3.2-3B-Instruct",
         checkpoint_dir: str = "${env.CHECKPOINT_DIR:null}",
         quantization_type: str = "${env.QUANTIZATION_TYPE:bf16}",
-        model_parallel_size: str = "${env.MODEL_PARALLEL_SIZE:null}",
+        model_parallel_size: str = "${env.MODEL_PARALLEL_SIZE:0}",
         **kwargs,
     ) -> Dict[str, Any]:
         return {

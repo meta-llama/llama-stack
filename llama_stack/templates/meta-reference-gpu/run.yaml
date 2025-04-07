@@ -20,7 +20,7 @@ providers:
       checkpoint_dir: ${env.INFERENCE_CHECKPOINT_DIR:null}
       quantization:
         type: ${env.QUANTIZATION_TYPE:bf16}
-      model_parallel_size: ${env.MODEL_PARALLEL_SIZE:null}
+      model_parallel_size: ${env.MODEL_PARALLEL_SIZE:0}
   - provider_id: sentence-transformers
     provider_type: inline::sentence-transformers
     config: {}

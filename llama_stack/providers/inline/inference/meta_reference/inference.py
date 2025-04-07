@@ -149,7 +149,7 @@ class MetaReferenceInferenceImpl(
 
         if self.config.create_distributed_process_group:
             self.generator = LlamaModelParallelGenerator(
-                model_parallel_size=llama_model.pth_file_count,
+                model_parallel_size=self.config.model_parallel_size or llama_model.pth_file_count,
                 builder_fn=builder_fn,
                 builder_params=builder_params,
                 formatter=(

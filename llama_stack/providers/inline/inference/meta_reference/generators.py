@@ -113,6 +113,7 @@ def _infer_tool_prompt_format(request: ChatCompletionRequestWithRawContent):
         return get_default_tool_prompt_format(request.model)
 
 
+# TODO: combine Llama3 and Llama4 generators since they are almost identical now
 class Llama4Generator:
     def __init__(
         self,
@@ -165,8 +166,8 @@ class Llama4Generator:
             max_gen_len = self.args.max_seq_len - 1
 
         temperature, top_p = _infer_sampling_params(sampling_params)
-        yield from self.inner_generator.generate(
-            llm_input=self.formatter.encode_content(request.content),
+        for result in self.inner_generator.generate(
+            llm_inputs=[self.formatter.encode_content(request.content)],
             max_gen_len=max_gen_len,
             temperature=temperature,
             top_p=top_p,
@@ -177,7 +178,8 @@ class Llama4Generator:
                 self.args.vocab_size,
                 request.response_format,
             ),
-        )
+        ):
+            yield result[0]
 
     def chat_completion(
         self,
@@ -189,8 +191,8 @@ class Llama4Generator:
             max_gen_len = self.args.max_seq_len - 1
 
         temperature, top_p = _infer_sampling_params(sampling_params)
-        yield from self.inner_generator.generate(
-            llm_input=self.formatter.encode_dialog_prompt(request.messages, _infer_tool_prompt_format(request)),
+        for result in self.inner_generator.generate(
+            llm_inputs=[self.formatter.encode_dialog_prompt(request.messages, _infer_tool_prompt_format(request))],
             max_gen_len=max_gen_len,
             temperature=temperature,
             top_p=top_p,
@@ -201,7 +203,8 @@ class Llama4Generator:
                 self.args.vocab_size,
                 request.response_format,
             ),
-        )
+        ):
+            yield result[0]
 
 
 class Llama3Generator:
@@ -255,8 +258,8 @@ class Llama3Generator:
             max_gen_len = self.args.max_seq_len - 1
 
         temperature, top_p = _infer_sampling_params(sampling_params)
-        yield from self.inner_generator.generate(
-            model_input=self.formatter.encode_content(request.content),
+        for result in self.inner_generator.generate(
+            llm_inputs=[self.formatter.encode_content(request.content)],
             max_gen_len=max_gen_len,
             temperature=temperature,
             top_p=top_p,
@@ -267,7 +270,8 @@ class Llama3Generator:
                 self.args.vocab_size,
                 request.response_format,
             ),
-        )
+        ):
+            yield result[0]
 
     def chat_completion(
         self,
@@ -279,8 +283,8 @@ class Llama3Generator:
             max_gen_len = self.args.max_seq_len - 1
 
         temperature, top_p = _infer_sampling_params(sampling_params)
-        yield from self.inner_generator.generate(
-            model_input=self.formatter.encode_dialog_prompt(request.messages, _infer_tool_prompt_format(request)),
+        for result in self.inner_generator.generate(
+            llm_inputs=[self.formatter.encode_dialog_prompt(request.messages, _infer_tool_prompt_format(request))],
             max_gen_len=max_gen_len,
             temperature=temperature,
             top_p=top_p,
@@ -291,4 +295,5 @@ class Llama3Generator:
                 self.args.vocab_size,
                 request.response_format,
             ),
-        )
+        ):
+            yield result[0]
