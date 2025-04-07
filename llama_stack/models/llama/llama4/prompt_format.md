@@ -76,7 +76,7 @@ Notice the structure of the image section:
                     <|image_start|><|image|><|patch|>...<|patch|><|image_end|>
                     ```
                     This is due to the image being smaller than the tile size.
-                    
+
 
 ## Single image prompt format
 
@@ -102,7 +102,7 @@ With a bigger image, the image will include the tile separator tokens. Additiona
                     ```
                     <|image_start|><|patch|>...<|patch|><|tile_x_separator|><|patch|>...<|patch|><|tile_y_separator|><|patch|>...<|patch|><|image|><|patch|>...<|patch|><|image_end|>
                     ```
-                    
+
 
 ## Multiple images prompt format
 
@@ -321,5 +321,3 @@ The top 2 latest trending songs are:
 
 - Tool outputs should be passed back to the model in the `tool` (a.k.a. `ipython`) role.
 - The model parses the tool output contents until it encounters the `<|eom|>` tag. It uses this to synthesize an appropriate response to the query.
-
-

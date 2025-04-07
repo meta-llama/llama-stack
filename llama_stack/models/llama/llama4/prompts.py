@@ -74,17 +74,13 @@ def usecases(base_model: bool = False) -> List[UseCase | str]:
                 Llama4UseCase(
                     title="Text completion - Paris information",
                     description="Text completion for Llama 4 base model uses this format.",
-                    dialogs=[
-                        TextCompletionContent(content="The capital of France is Paris")
-                    ],
+                    dialogs=[TextCompletionContent(content="The capital of France is Paris")],
                 ),
                 Llama4UseCase(
                     title="Text completion - The color of the sky",
                     description="Text completion for Llama 4 base model uses this format.",
                     dialogs=[
-                        TextCompletionContent(
-                            content="The color of the sky is blue but sometimes it can also be"
-                        )
+                        TextCompletionContent(content="The color of the sky is blue but sometimes it can also be")
                     ],
                     notes="",
                 ),
@@ -111,9 +107,7 @@ def usecases(base_model: bool = False) -> List[UseCase | str]:
                 description="Here is a regular multi-turn user assistant conversation and how its formatted.",
                 dialogs=[
                     [
-                        RawMessage(
-                            role="system", content="You are a helpful assistant"
-                        ),
+                        RawMessage(role="system", content="You are a helpful assistant"),
                         RawMessage(
                             role="user",
                             content="Answer who are you in the form of jeopardy?",
@@ -133,9 +127,7 @@ def usecases(base_model: bool = False) -> List[UseCase | str]:
                             role="user",
                             content=[
                                 RawMediaItem(data=BytesIO(img_small_dog)),
-                                RawTextItem(
-                                    text="Describe this image in two sentences"
-                                ),
+                                RawTextItem(text="Describe this image in two sentences"),
                             ],
                         )
                     ]
@@ -157,9 +149,7 @@ def usecases(base_model: bool = False) -> List[UseCase | str]:
                             role="user",
                             content=[
                                 RawMediaItem(data=BytesIO(img_dog)),
-                                RawTextItem(
-                                    text="Describe this image in two sentences"
-                                ),
+                                RawTextItem(text="Describe this image in two sentences"),
                             ],
                         )
                     ]
@@ -181,9 +171,7 @@ def usecases(base_model: bool = False) -> List[UseCase | str]:
                             content=[
                                 RawMediaItem(data=BytesIO(img_dog)),
                                 RawMediaItem(data=BytesIO(img_pasta)),
-                                RawTextItem(
-                                    text="Describe these images in two sentences"
-                                ),
+                                RawTextItem(text="Describe these images in two sentences"),
                             ],
                         )
                     ]
