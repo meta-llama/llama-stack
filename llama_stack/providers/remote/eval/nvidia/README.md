@@ -18,9 +18,7 @@ POST /eval/benchmarks
   "dataset_id": "",
   "scoring_functions": [],
   "metadata": {
-    "config": {
-      "type": "mmlu"
-    }
+    "type": "mmlu"
   }
 }
 ```
@@ -36,31 +34,29 @@ POST /eval/benchmarks
   "dataset_id": "",
   "scoring_functions": [],
   "metadata": {
-    "config": {
-      "type": "custom",
-      "params": {
-        "parallelism": 8
-      },
-      "tasks": {
-        "qa": {
-          "type": "completion",
-          "params": {
-            "template": {
-              "prompt": "{{prompt}}",
-              "max_tokens": 200
-            }
-          },
-          "dataset": {
-            "files_url": "hf://datasets/default/sample-basic-test/testing/testing.jsonl"
-          },
-          "metrics": {
-            "bleu": {
-              "type": "bleu",
-              "params": {
-                "references": [
-                  "{{ideal_response}}"
-                ]
-              }
+    "type": "custom",
+    "params": {
+      "parallelism": 8
+    },
+    "tasks": {
+      "qa": {
+        "type": "completion",
+        "params": {
+          "template": {
+            "prompt": "{{prompt}}",
+            "max_tokens": 200
+          }
+        },
+        "dataset": {
+          "files_url": "hf://datasets/default/sample-basic-test/testing/testing.jsonl"
+        },
+        "metrics": {
+          "bleu": {
+            "type": "bleu",
+            "params": {
+              "references": [
+                "{{ideal_response}}"
+              ]
             }
           }
         }
@@ -78,12 +74,16 @@ POST /eval/benchmarks/{benchmark_id}/jobs
 ```json
 {
   "benchmark_id": "my-custom-benchmark",
-  "task_config": {
+  "benchmark_config": {
     "eval_candidate": {
       "type": "model",
-      "model": "meta/llama-3.1-8b-instruct"
+      "model": "meta/llama-3.1-8b-instruct",
+      "sampling_params": {
+        "max_tokens": 100,
+        "temperature": 0.7
+      }
     },
-    "scoring_params": []
+    "scoring_params": {}
   }
 }
 ```
@@ -91,7 +91,8 @@ POST /eval/benchmarks/{benchmark_id}/jobs
 Response example:
 ```json
 {
-    "job_id": "1234"
+    "job_id": "1234",
+    "status": "in_progress"
 }
 ```
 
@@ -100,9 +101,14 @@ Response example:
 GET /eval/benchmarks/{benchmark_id}/jobs/{job_id}
 ```
 
+### Example for cancelling a job
+```
+POST /eval/benchmarks/{benchmark_id}/jobs/{job_id}/cancel
+```
+
 ### Example for getting the results
 ```
-GET /eval/benchmarks/{benchmark_id}/result
+GET /eval/benchmarks/{benchmark_id}/results
 ```
 ```json
 {
