@@ -203,13 +203,7 @@ class ChatFormat:
             tokens.extend(toks)
             images.extend(imgs)
 
-        # if message.role == "assistant" and len(message.tool_calls) > 0:
-        #     tokens.append(self.tokenizer.special_tokens["<|python_start|>"])
-
         _process_content(message.content)
-
-        # if message.role == "assistant" and len(message.tool_calls) > 0:
-        #     tokens.append(self.tokenizer.special_tokens["<|python_end|>"])
 
         if message.role == "user" and message.context is not None:
             # This is RAG context; why is it here in the chat format? I don't think
@@ -222,6 +216,7 @@ class ChatFormat:
                 content = ToolUtils.encode_tool_call(t, tool_prompt_format)
                 _process_content(content)
 
+        # Tool calls and Tool Response messages should be eom
         eom = False
         if message.role == "assistant":
             eom = message.stop_reason == StopReason.end_of_message or message.tool_calls

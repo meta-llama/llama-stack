@@ -6,7 +6,10 @@
 
 import asyncio
 import logging
+import os
 from typing import AsyncGenerator, List, Optional, Union
+
+from termcolor import cprint
 
 from llama_stack.apis.common.content_types import (
     TextDelta,
@@ -338,9 +341,8 @@ class MetaReferenceInferenceImpl(
             stop_reason = None
 
             for token_result in self.generator.chat_completion(request):
-                from termcolor import cprint
-
-                cprint(token_result.text, "cyan", end="")
+                if os.environ.get("LLAMA_MODELS_DEBUG", "0") == "1":
+                    cprint(token_result.text, "cyan", end="")
 
                 tokens.append(token_result.token)
 
@@ -390,9 +392,8 @@ class MetaReferenceInferenceImpl(
             ipython = False
 
             for token_result in self.generator.chat_completion(request):
-                from termcolor import cprint
-
-                cprint(token_result.text, "cyan", end="")
+                if os.environ.get("LLAMA_MODELS_DEBUG", "0") == "1":
+                    cprint(token_result.text, "cyan", end="")
 
                 tokens.append(token_result.token)
 

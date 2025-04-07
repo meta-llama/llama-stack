@@ -128,7 +128,7 @@
       ],
       "tool_responses": [
         {
-          "response": "{'resposne': '70 degrees and foggy'}"
+          "response": "{'response': '70 degrees and foggy'}"
         }
       ],
       "expected": [
@@ -174,7 +174,7 @@
       ],
       "tool_responses": [
         {
-          "response": "{'resposne': '70 degrees and foggy'}"
+          "response": "{'response': '70 degrees and foggy'}"
         }
       ],
       "expected": [
@@ -398,7 +398,7 @@
           "response": "{'response': 'Total expenses for January 2025: $1000'}"
         },
         {
-          "response": "{'resposne': 'Total expenses for February 2024: $2000'}"
+          "response": "{'response': 'Total expenses for February 2024: $2000'}"
         }
       ],
       "expected": [
