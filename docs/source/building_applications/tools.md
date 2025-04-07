@@ -208,18 +208,24 @@ response = agent.create_turn(
 ```
 ## Simple Example 2: Using an Agent with the Web Search Tool
 1. Start by registering a Tavily API key at [Tavily](https://tavily.com/). 
-2. When starting the Llama Stack server, ensure the API key is provided as an environment variable:
+2. [Optional] Provide the API key directly to the Llama Stack server
+```bash
+export TAVILY_SEARCH_API_KEY="your key"
 ```
+```bash
 --env TAVILY_SEARCH_API_KEY=${TAVILY_SEARCH_API_KEY}
 ```
-3. run the following script.
+3. Run the following script.
 ```python
 from llama_stack_client.lib.agents.agent import Agent
 from llama_stack_client.types.agent_create_params import AgentConfig
 from llama_stack_client.lib.agents.event_logger import EventLogger
 from llama_stack_client import LlamaStackClient
 
-client = LlamaStackClient(base_url=f"http://localhost:8321")  
+client = LlamaStackClient(
+    base_url=f"http://localhost:8321",
+    provider_data = {"tavily_search_api_key": "your_TAVILY_SEARCH_API_KEY"}  # Set this from the client side. No need to provide it if it has already been configured on the Llama Stack server.
+    )   
 
 agent = Agent(
     client, 
@@ -242,9 +248,16 @@ for log in EventLogger().log(response):
 
 ## Simple Example3: Using an Agent with the WolframAlpha Tool
 1. Start by registering for a WolframAlpha API key at [WolframAlpha Developer Portal](https://developer.wolframalpha.com/access).
-2. When starting the Llama Stack server, ensure the API key is provided as an environment variable:
+2. Provide the API key either when starting the Llama Stack server:
     ```bash
     --env WOLFRAM_ALPHA_API_KEY=${WOLFRAM_ALPHA_API_KEY}
+    ```
+    or from the client side:
+    ```python
+    client = LlamaStackClient(
+        base_url="http://localhost:8321",
+        provider_data={"wolfram_alpha_api_key": wolfram_api_key}
+    )
     ```
 3. Configure the tools in the Agent by setting `tools=["builtin::wolfram_alpha"]`.
 4. Example user query:
