@@ -147,7 +147,7 @@ class Llama4Generator:
             ckpt_dir=ckpt_dir,
             max_seq_len=config.max_seq_len,
             max_batch_size=config.max_batch_size,
-            world_size=llama_model.pth_file_count,
+            world_size=config.model_parallel_size or llama_model.pth_file_count,
             quantization_mode=quantization_mode,
         )
 
@@ -238,7 +238,7 @@ class Llama3Generator:
             ckpt_dir=ckpt_dir,
             max_seq_len=config.max_seq_len,
             max_batch_size=config.max_batch_size,
-            world_size=llama_model.pth_file_count,
+            world_size=config.model_parallel_size or llama_model.pth_file_count,
             quantization_mode=quantization_mode,
         )
         self.tokenizer = self.inner_generator.tokenizer
