@@ -73,21 +73,21 @@ from llama_stack.apis.inference import (
     CompletionMessage,
     CompletionResponse,
     CompletionResponseStreamChunk,
+    GreedySamplingStrategy,
     Message,
+    SamplingParams,
     SystemMessage,
     TokenLogProbs,
     ToolResponseMessage,
+    TopKSamplingStrategy,
+    TopPSamplingStrategy,
     UserMessage,
 )
 from llama_stack.models.llama.datatypes import (
     BuiltinTool,
-    GreedySamplingStrategy,
-    SamplingParams,
     StopReason,
     ToolCall,
     ToolDefinition,
-    TopKSamplingStrategy,
-    TopPSamplingStrategy,
 )
 from llama_stack.providers.utils.inference.prompt_adapter import (
     convert_image_content_to_url,

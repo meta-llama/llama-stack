@@ -4,16 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-# Copyright (c) Meta Platforms, Inc. and affiliates.
-# All rights reserved.
-#
-# This source code is licensed under the terms described in the LICENSE file in
-# top-level folder for each specific model found within the models/ directory at
-# the top-level of this source tree.
-
-# Copyright (c) Meta Platforms, Inc. and affiliates.
-# This software may be used and distributed according to the terms of the Llama 2 Community License Agreement.
-
 import logging
 import math
 from functools import partial
@@ -180,14 +170,14 @@ class ImageAttention(nn.Module):
         n_heads,
     ):
         super().__init__()
-        model_parallel_size = fs_init.get_model_parallel_world_size()
+        world_size = fs_init.get_model_parallel_world_size()
         qkvo_replication = 1
-        if model_parallel_size > 16:
-            qkvo_replication = model_parallel_size // 8
+        if world_size > 16:
+            qkvo_replication = world_size // 8
 
         self.n_kv_heads = n_heads
-        self.n_local_heads = n_heads * qkvo_replication // model_parallel_size
-        self.n_local_kv_heads = self.n_kv_heads * qkvo_replication // model_parallel_size
+        self.n_local_heads = n_heads * qkvo_replication // world_size
+        self.n_local_kv_heads = self.n_kv_heads * qkvo_replication // world_size
         self.n_rep = self.n_local_heads // self.n_local_kv_heads
         self.head_dim = dim // n_heads
 
@@ -536,16 +526,16 @@ class Attention(nn.Module):
             cache_v (torch.Tensor): Cached values for attention.
         """
         super().__init__()
-        model_parallel_size = fs_init.get_model_parallel_world_size()
+        world_size = fs_init.get_model_parallel_world_size()
         replication_factor = 1
-        if model_parallel_size > 8:
-            replication_factor = model_parallel_size // MP_SCALE
+        if world_size > 8:
+            replication_factor = world_size // MP_SCALE
 
         self.n_kv_heads = args.n_heads if args.n_kv_heads is None else args.n_kv_heads
         self.n_kv_heads *= replication_factor
 
-        self.n_local_heads = args.n_heads // model_parallel_size
-        self.n_local_kv_heads = self.n_kv_heads // model_parallel_size
+        self.n_local_heads = args.n_heads // world_size
+        self.n_local_kv_heads = self.n_kv_heads // world_size
         self.n_rep = self.n_local_heads // self.n_local_kv_heads
         self.head_dim = args.dim // args.n_heads
         self.max_seq_len = args.max_seq_len
@@ -587,13 +577,11 @@ class Attention(nn.Module):
             self.n_local_kv_heads,
             self.head_dim,
         )
-        device = next(self.parameters()).device
         self.register_buffer(
             "key_cache",
             torch.zeros(
                 cache_shape,
                 dtype=dtype,
-                device=device,
             ),
             persistent=False,
         )
@@ -602,7 +590,6 @@ class Attention(nn.Module):
             torch.zeros(
                 cache_shape,
                 dtype=dtype,
-                device=device,
             ),
             persistent=False,
         )
@@ -614,6 +601,9 @@ class Attention(nn.Module):
         freqs_cis: torch.Tensor,
         position_ids: torch.LongTensor,
     ):
+        self.key_cache = self.key_cache.to(x.device)
+        self.value_cache = self.value_cache.to(x.device)
+
         xq, xk, xv = [F.linear(x, w) for w in [self.wq.weight, self.wk.weight, self.wv.weight]]
 
         bs, slen, _ = xq.shape
@@ -832,10 +822,10 @@ class CrossAttention(torch.nn.Module):
         norm_eps: float,
     ):
         super().__init__()
-        self.model_parallel_size = fs_init.get_model_parallel_world_size()
+        self.world_size = fs_init.get_model_parallel_world_size()
         replication_factor = 1
-        if self.model_parallel_size > 8:
-            replication_factor = self.model_parallel_size // MP_SCALE
+        if self.world_size > 8:
+            replication_factor = self.world_size // MP_SCALE
         n_kv_heads *= replication_factor
 
         assert n_heads % n_kv_heads == 0
@@ -889,10 +879,10 @@ class CrossAttention(torch.nn.Module):
         # trunk LLM (i.e., group query attention) -- @dubeya
         # local heads
         assert self.n_heads % self.n_kv_heads == 0
-        assert self.n_heads % self.model_parallel_size == 0
-        assert self.n_kv_heads % self.model_parallel_size == 0
-        self.n_local_heads = self.n_heads // self.model_parallel_size
-        self.n_local_kv_heads = self.n_kv_heads // self.model_parallel_size
+        assert self.n_heads % self.world_size == 0
+        assert self.n_kv_heads % self.world_size == 0
+        self.n_local_heads = self.n_heads // self.world_size
+        self.n_local_kv_heads = self.n_kv_heads // self.world_size
         self.n_rep = self.n_local_heads // self.n_local_kv_heads
 
     def _compute_xattn_kv_cache(self, xattn_tokens: torch.Tensor) -> torch.Tensor:
@@ -1041,7 +1031,7 @@ class CrossAttentionTransformerVision(torch.nn.Module):
         self.image_res = args.vision_chunk_size
         self.max_num_chunks = args.vision_max_num_chunks
         if return_intermediate is not None:
-            return_intermediate = [int(level) for level in return_intermediate.split(",")]
+            return_intermediate = [int(layer) for layer in return_intermediate.split(",")]
             self.vision_input_dim = (len(return_intermediate) + 1) * self.vision_input_dim
         self.patch_size = 14
         self.vision_encoder = VisionEncoder(
@@ -1076,15 +1066,15 @@ class CrossAttentionTransformerText(torch.nn.Module):
 
     def __init__(self, args: ModelArgs) -> None:
         super().__init__()
-        self.model_parallel_size = fs_init.get_model_parallel_world_size()
+        self.world_size = fs_init.get_model_parallel_world_size()
         assert args.vocab_size > 0
         self.vocab_size = args.vocab_size
         self.n_layers = args.n_layers
         self.dim = args.dim
         self.head_dim = args.dim // args.n_heads
         self.n_kv_heads = args.n_heads if args.n_kv_heads is None else args.n_kv_heads
-        self.n_local_kv_heads = self.n_kv_heads // self.model_parallel_size
-        assert self.vocab_size % self.model_parallel_size == 0
+        self.n_local_kv_heads = self.n_kv_heads // self.world_size
+        assert self.vocab_size % self.world_size == 0
         self.tok_embeddings = VocabParallelEmbedding(args.vocab_size, args.dim, init_method=lambda x: x)
         self.pos_embeddings = None
         # final norm layer (not necessary for post-norm)
@@ -1184,6 +1174,8 @@ class CrossAttentionTransformerText(torch.nn.Module):
         text_only_inference: bool = False,
     ):
         assert self.cache_is_setup, "Please set up cache before calling forward"
+        self.mask_cache = self.mask_cache.to(h.device)
+        self.freqs_cis = self.freqs_cis.to(h.device)
         mask = self.mask_cache.index_select(2, position_ids)
         freqs_cis = self.freqs_cis.index_select(0, position_ids)
 
@@ -1212,9 +1204,8 @@ class CrossAttentionTransformerText(torch.nn.Module):
         output = gather_from_tensor_model_parallel_region(output)
         return output.float()
 
-    def setup_cache(self, max_batch_size: int, dtype=torch.bfloat16):
+    def setup_cache(self, max_batch_size: int, device: torch.device, dtype=torch.bfloat16):
         # Set up the text kv caches
-        device = next(self.parameters()).device
         ones = torch.ones(
             (self.max_seq_len, self.max_seq_len),
             dtype=torch.bool,
@@ -1265,7 +1256,7 @@ class CrossAttentionTransformerText(torch.nn.Module):
 
         return (
             cross_attention_masks.to(device=text_device, dtype=text_dtype),
-            full_text_row_masked_out_mask,
+            full_text_row_masked_out_mask.to(device=text_device),
         )
 
 
@@ -1284,14 +1275,15 @@ class CrossAttentionTransformer(torch.nn.Module):
             max_num_chunks=args.vision_max_num_chunks,
         )
 
-    def setup_cache(self, max_batch_size: int, dtype: torch.dtype):
-        self.text_model.setup_cache(max_batch_size, dtype)
+    def setup_cache(self, max_batch_size: int, device: torch.device, dtype: torch.dtype):
+        self.text_model.setup_cache(max_batch_size, device, dtype)
 
     def compute_vision_tokens_masks(
         self,
         batch_images: List[List[PIL_Image.Image]],
         batch_masks: List[List[List[int]]],
         total_len: int,
+        device: torch.device,
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         skip_vision_encoder = False
 
@@ -1318,6 +1310,7 @@ class CrossAttentionTransformer(torch.nn.Module):
                 image_res=self.params.vision_chunk_size,
                 max_num_images=max_num_images,
             )
+            stacked_images = stacked_images.to(device=device)
 
         if skip_vision_encoder:
             vision_tokens = torch.zeros(
@@ -1330,7 +1323,7 @@ class CrossAttentionTransformer(torch.nn.Module):
                 ),
             )
         else:
-            vision_tokens = self.vision_model(stacked_images, aspect_ratios)
+            vision_tokens = self.vision_model(stacked_images, aspect_ratios).to(device=device)
 
         bsz, nimg, nchunk, ntok, image_token_dim = tuple(vision_tokens.shape)
         xattn_caches = torch.stack(

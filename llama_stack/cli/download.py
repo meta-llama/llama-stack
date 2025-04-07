@@ -29,8 +29,8 @@ from rich.progress import (
 from termcolor import cprint
 
 from llama_stack.cli.subcommand import Subcommand
-from llama_stack.models.llama.datatypes import Model
 from llama_stack.models.llama.sku_list import LlamaDownloadInfo
+from llama_stack.models.llama.sku_types import Model
 
 
 class Download(Subcommand):

@@ -16,7 +16,7 @@ from typing import List, Optional
 
 from termcolor import colored
 
-from llama_stack.models.llama.datatypes import (
+from ..datatypes import (
     BuiltinTool,
     RawMessage,
     StopReason,
@@ -24,7 +24,6 @@ from llama_stack.models.llama.datatypes import (
     ToolDefinition,
     ToolPromptFormat,
 )
-
 from . import template_data
 from .chat_format import ChatFormat
 from .prompt_templates import (

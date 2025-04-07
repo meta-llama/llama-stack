@@ -4,16 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-# Copyright (c) Meta Platforms, Inc. and affiliates.
-# All rights reserved.
-#
-# This source code is licensed under the terms described in the LICENSE file in
-# top-level folder for each specific model found within the models/ directory at
-# the top-level of this source tree.
-
-# Copyright (c) Meta Platforms, Inc. and affiliates.
-# This software may be used and distributed in accordance with the terms of the Llama 3 Community License Agreement.
-
 import math
 from typing import Optional, Tuple
 
@@ -28,6 +18,10 @@ from fairscale.nn.model_parallel.layers import (
 from torch import nn
 
 from .args import ModelArgs
+
+# **NOTE**: This code is not runnable without installing `torch` and `fairscale`
+# dependencies. These dependencies are not part of the default dependencies
+# (requirements.txt) of the `llama-models` package.
 
 
 class RMSNorm(torch.nn.Module):
@@ -111,9 +105,9 @@ class Attention(nn.Module):
     def __init__(self, args: ModelArgs):
         super().__init__()
         self.n_kv_heads = args.n_heads if args.n_kv_heads is None else args.n_kv_heads
-        model_parallel_size = fs_init.get_model_parallel_world_size()
-        self.n_local_heads = args.n_heads // model_parallel_size
-        self.n_local_kv_heads = self.n_kv_heads // model_parallel_size
+        world_size = fs_init.get_model_parallel_world_size()
+        self.n_local_heads = args.n_heads // world_size
+        self.n_local_kv_heads = self.n_kv_heads // world_size
         self.n_rep = self.n_local_heads // self.n_local_kv_heads
         self.head_dim = args.dim // args.n_heads
 

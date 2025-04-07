@@ -11,7 +11,6 @@ import pytest
 from pytest import CollectReport
 from termcolor import cprint
 
-from llama_stack.models.llama.datatypes import CoreModelId
 from llama_stack.models.llama.sku_list import (
     all_registered_models,
     llama3_1_instruct_models,
@@ -20,6 +19,7 @@ from llama_stack.models.llama.sku_list import (
     llama3_instruct_models,
     safety_models,
 )
+from llama_stack.models.llama.sku_types import CoreModelId
 from llama_stack.providers.datatypes import Api
 
 from .metadata import API_MAPS

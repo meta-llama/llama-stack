@@ -13,7 +13,7 @@ import torch
 from PIL import Image as PIL_Image
 
 # TODO: either fork these or move them to the common package
-from llama_stack.models.llama.datatypes import (
+from ..datatypes import (
     BuiltinTool,
     RawContent,
     RawMediaItem,
@@ -24,16 +24,10 @@ from llama_stack.models.llama.datatypes import (
     ToolCall,
     ToolPromptFormat,
 )
-from llama_stack.models.llama.llama3.tool_utils import ToolUtils
-from llama_stack.providers.inline.inference.meta_reference.llama4.args import VisionArgs
-from llama_stack.providers.inline.inference.meta_reference.llama4.datatypes import (
-    LLMInput,
-)
-from llama_stack.providers.inline.inference.meta_reference.llama4.preprocess import (
-    ResizeNormalizeImageTransform,
-    VariableSizeImageTransform,
-)
-
+from ..llama3.tool_utils import ToolUtils
+from .args import VisionArgs
+from .datatypes import LLMInput
+from .preprocess import ResizeNormalizeImageTransform, VariableSizeImageTransform
 from .tokenizer import Tokenizer
 
 
@@ -54,7 +48,7 @@ class TransformedImage:
     aspect_ratio: Tuple[int, int]
 
 
-def convert_rgba_to_rgb(image: PIL_Image.Image, bg: Tuple[int, int, int] = (255, 255, 255)) -> PIL_Image.Image:
+def convert_image_to_rgb(image: PIL_Image.Image, bg: Tuple[int, int, int] = (255, 255, 255)) -> PIL_Image.Image:
     if image.mode == "RGBA":
         image.load()  # for png.split()
         new_img = PIL_Image.new("RGB", image.size, bg)
@@ -171,7 +165,7 @@ class ChatFormat:
 
                 bytes_io = io.BytesIO(c.data) if isinstance(c.data, bytes) else c.data
                 image = PIL_Image.open(bytes_io)
-                image = convert_rgba_to_rgb(image)
+                image = convert_image_to_rgb(image)
                 image_tiles, ar = self.dynamic_image_transform(image, max_num_chunks=self.max_num_chunks)
 
                 if image_tiles.shape[0] > 1:
