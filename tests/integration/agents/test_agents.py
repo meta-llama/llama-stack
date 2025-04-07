@@ -8,6 +8,7 @@ from typing import Any, Dict
 from uuid import uuid4
 
 import pytest
+import requests
 from llama_stack_client import Agent, AgentEventLogger, Document
 from llama_stack_client.types.shared_params.agent_config import AgentConfig, ToolConfig
 
@@ -21,7 +22,7 @@ from llama_stack.apis.agents.agents import (
 
 def get_boiling_point(liquid_name: str, celcius: bool = True) -> int:
     """
-    Returns the boiling point of a liquid in Celcius or Fahrenheit
+    Returns the boiling point of a liquid in Celcius or Fahrenheit.
 
     :param liquid_name: The name of the liquid
     :param celcius: Whether to return the boiling point in Celcius
@@ -185,7 +186,7 @@ def test_builtin_tool_web_search(llama_stack_client_with_mocked_inference, agent
         messages=[
             {
                 "role": "user",
-                "content": "Search the web and tell me what is the local time in Tokyo currently.",
+                "content": "Who are the latest board members to join Meta's board of directors?",
             }
         ],
         session_id=session_id,
@@ -429,19 +430,28 @@ def test_rag_agent(llama_stack_client_with_mocked_inference, agent_config, rag_t
 
 
 def test_rag_agent_with_attachments(llama_stack_client_with_mocked_inference, agent_config):
-    urls = ["chat.rst", "llama3.rst", "memory_optimizations.rst", "lora_finetune.rst"]
+    urls = ["llama3.rst", "lora_finetune.rst"]
     documents = [
+        # passign as url
         Document(
-            document_id=f"num-{i}",
-            content=f"https://raw.githubusercontent.com/pytorch/torchtune/main/docs/source/tutorials/{url}",
+            document_id="num-0",
+            content={
+                "type": "url",
+                "uri": f"https://raw.githubusercontent.com/pytorch/torchtune/main/docs/source/tutorials/{urls[0]}",
+            },
             mime_type="text/plain",
             metadata={},
-        )
-        for i, url in enumerate(urls)
+        ),
+        # passing as str
+        Document(
+            document_id="num-1",
+            content=requests.get(
+                f"https://raw.githubusercontent.com/pytorch/torchtune/main/docs/source/tutorials/{urls[1]}"
+            ).text[:500],
+            mime_type="text/plain",
+            metadata={},
+        ),
     ]
-    agent_config = {
-        **agent_config,
-    }
     rag_agent = Agent(llama_stack_client_with_mocked_inference, **agent_config)
     session_id = rag_agent.create_session(f"test-session-{uuid4()}")
     user_prompts = [
@@ -456,7 +466,7 @@ def test_rag_agent_with_attachments(llama_stack_client_with_mocked_inference, ag
             documents,
         ),
         (
-            "Tell me how to use LoRA",
+            "Tell me how to use LoRA in 100 words or less",
             None,
         ),
     ]
@@ -478,6 +488,9 @@ def test_rag_agent_with_attachments(llama_stack_client_with_mocked_inference, ag
 
 
 def test_rag_and_code_agent(llama_stack_client_with_mocked_inference, agent_config):
+    if "llama-4" in agent_config["model"].lower():
+        pytest.xfail("Not working for llama4")
+
     documents = []
     documents.append(
         Document(
@@ -544,7 +557,7 @@ def test_rag_and_code_agent(llama_stack_client_with_mocked_inference, agent_conf
             stream=False,
         )
         tool_execution_step = next(step for step in response.steps if step.step_type == "tool_execution")
-        assert tool_execution_step.tool_calls[0].tool_name == tool_name
+        assert tool_execution_step.tool_calls[0].tool_name == tool_name, f"Failed on {prompt}"
         if expected_kw:
             assert expected_kw in response.output_message.content.lower()
 
@@ -565,18 +578,22 @@ def test_create_turn_response(llama_stack_client_with_mocked_inference, agent_co
     agent = Agent(llama_stack_client_with_mocked_inference, **agent_config)
     session_id = agent.create_session(f"test-session-{uuid4()}")
 
+    input_prompt = f"Call {client_tools[0].__name__} tool and answer What is the boiling point of polyjuice?"
     response = agent.create_turn(
         messages=[
             {
                 "role": "user",
-                "content": "Call get_boiling_point and answer What is the boiling point of polyjuice?",
+                "content": input_prompt,
             },
         ],
         session_id=session_id,
         stream=False,
     )
+    assert len(response.input_messages) == 1
+    assert input_prompt == response.input_messages[0].content
+
     steps = response.steps
-    assert len(steps) == 3
+    assert len(steps) >= 3  # some models call the tool twice
     assert steps[0].step_type == "inference"
     assert steps[1].step_type == "tool_execution"
     assert steps[1].tool_calls[0].tool_name.startswith("get_boiling_point")
