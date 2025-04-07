@@ -68,10 +68,8 @@ The config file is a YAML file that specifies the providers and their configurat
 ```bash
 INFERENCE_MODEL=llama3.2:3b llama stack build --template ollama --image-type venv --run
 ```
-
 You will see output like below:
 ```
-...
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://['::', '0.0.0.0']:8321 (Press CTRL+C to quit)
 ```
@@ -79,7 +77,7 @@ INFO:     Uvicorn running on http://['::', '0.0.0.0']:8321 (Press CTRL+C to quit
 ### ii. Using the Llama Stack Client
 Now you can use the llama stack client to run inference and build agents!
 
-:::{dropdown} You can reuse the server setup or the Llama Stack Client
+_Note: You can reuse the server setup or the Llama Stack Client_
 
 Open a new terminal and navigate to the same directory you started the server from.
 
@@ -138,7 +136,7 @@ ChatCompletionResponse(
     ],
 )
 ```
-### i. Create a Script used by the Llama Stack Client
+### i. Create the Script
 
 Create a file `inference.py` and add the following code:
 ```python
@@ -180,6 +178,7 @@ Beauty in the bits
 ```
 
 ## Step 5: Run Your First Agent
+### i. Create the Script
 Now we can move beyond simple inference and build an agent that can perform tasks using the Llama Stack server.
 Create a file `agent.py` and add the following code:
 
@@ -226,7 +225,7 @@ Let's run the script using `uv`
 ```bash
 uv run python agent.py
 ```
-:::{dropdown} `Sample output`
+:::{dropdown} `👋 Click here to see the sample output`
 ```
 Non-streaming ...
 agent> I'm an artificial intelligence designed to assist and communicate with users like you. I don't have a personal identity, but I'm here to provide information, answer questions, and help with tasks to the best of my abilities.
@@ -436,7 +435,7 @@ Let's run the script using `uv`
 ```bash
 uv run python rag_agent.py
 ```
-:::{dropdown} `Sample output`
+:::{dropdown} `👋 Click here to see the sample output`
 ```
 user> what is torchtune
 inference> [knowledge_search(query='TorchTune')]
