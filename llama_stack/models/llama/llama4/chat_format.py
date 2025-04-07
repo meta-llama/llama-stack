@@ -210,9 +210,12 @@ class ChatFormat:
                 content = ToolUtils.encode_tool_call(t, tool_prompt_format)
                 _process_content(content)
 
+        # Tool calls and Tool Response messages should be eom
         eom = False
         if message.role == "assistant":
-            eom = message.stop_reason == StopReason.end_of_message
+            eom = message.stop_reason == StopReason.end_of_message or message.tool_calls
+        elif message.role == "tool":
+            eom = True
 
         tokens.append(self.tokenizer.special_tokens["<|eom|>" if eom else "<|eot|>"])
         return tokens, images
@@ -247,6 +250,11 @@ class ChatFormat:
         if content.startswith(header_str):
             content = content[len(header_str) :]
 
+        ipython = content.startswith("<|python_start|>")
+        if ipython:
+            content = content[len("<|python_start|>") :]
+            content = content.replace("<|python_end|>", "")
+
         if content.endswith("<|eot|>"):
             content = content[: -len("<|eot|>")]
             stop_reason = StopReason.end_of_turn
@@ -277,6 +285,11 @@ class ChatFormat:
                 }
                 if tool_name in BuiltinTool.__members__:
                     tool_name = BuiltinTool[tool_name]
+            elif ipython:
+                tool_name = BuiltinTool.code_interpreter
+                tool_arguments = {
+                    "code": content,
+                }
 
         tool_calls = []
         if tool_name is not None and tool_arguments is not None:
