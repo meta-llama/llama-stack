@@ -1,3 +1,8 @@
+```{admonition} Llama 4 is here!
+:class: tip
+
+Check out [Getting Started with Llama 4](https://colab.research.google.com/github/meta-llama/llama-stack/blob/main/docs/getting_started_llama4.ipynb)
+```
 ```{admonition} News
 :class: tip
 
