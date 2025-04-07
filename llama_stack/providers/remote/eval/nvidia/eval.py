@@ -19,6 +19,8 @@ from .....apis.common.job_types import Job, JobStatus
 from .....apis.eval.eval import BenchmarkConfig, Eval, EvaluateResponse
 from .config import NVIDIAEvalConfig
 
+DEFAULT_NAMESPACE = "nvidia"
+
 
 class NVIDIAEvalImpl(
     Eval,
@@ -45,13 +47,13 @@ class NVIDIAEvalImpl(
     async def shutdown(self) -> None: ...
 
     async def _evaluator_get(self, path):
-        """Helper for making GET requests to the evaluator service"""
+        """Helper for making GET requests to the evaluator service."""
         response = requests.get(url=f"{self.config.evaluator_service_url}/{path}")
         response.raise_for_status()
         return response.json()
 
     async def _evaluator_post(self, path, data):
-        """Helper for making POST requests to the evaluator service"""
+        """Helper for making POST requests to the evaluator service."""
         response = requests.post(url=f"{self.config.evaluator_service_url}/{path}", json=data)
         response.raise_for_status()
         return response.json()
@@ -61,9 +63,9 @@ class NVIDIAEvalImpl(
         await self._evaluator_post(
             "/v1/evaluation/configs",
             {
-                "namespace": "nvidia",
+                "namespace": DEFAULT_NAMESPACE,
                 "name": task_def.benchmark_id,
-                # The rest of the metadata is copied as is
+                # metadata is copied to request body as-is
                 **task_def.metadata,
             },
         )
@@ -82,7 +84,7 @@ class NVIDIAEvalImpl(
         result = await self._evaluator_post(
             "/v1/evaluation/jobs",
             {
-                "config": "nvidia/" + benchmark_id,
+                "config": f"{DEFAULT_NAMESPACE}/{benchmark_id}",
                 "target": {"type": "model", "model": model},
             },
         )
@@ -104,7 +106,6 @@ class NVIDIAEvalImpl(
         EvaluatorStatus: "created", "pending", "running", "cancelled", "cancelling", "failed", "completed".
         JobStatus: "scheduled", "in_progress", "completed", "cancelled", "failed"
         """
-
         result = await self._evaluator_get(f"/v1/evaluation/jobs/{job_id}")
         result_status = result["status"]
 
