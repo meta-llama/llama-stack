@@ -1,100 +1,110 @@
 # Quick Start
 
+In this guide, we'll walk through how you can use the Llama Stack (server and client SDK) to test a simple RAG agent.
+A Llama Stack agent is a simple integrated system that can perform tasks by combining a Llama model for reasoning with
+tools (e.g., RAG, web search, code execution, etc.) for taking actions.
+In Llama Stack, we provide a server exposing multiple APIs. These APIs are backed by implementations from different providers.
 
 Llama Stack is a stateful service with REST APIs to support seamless transition of AI applications across different environments. The server can be run in a variety of ways, including as a standalone binary, Docker container, or hosted service. You can build and test using a local server first and deploy to a hosted endpoint for production.
 
-In this guide, we'll walk through how to build a RAG agent locally using Llama Stack with [Ollama](https://ollama.com/) to run inference on a Llama Model.
+In this guide, we'll walk through how to build a RAG agent locally using Llama Stack with [Ollama](https://ollama.com/)
+as the inference [provider](../providers/index.md#inference) for a Llama Model.
+
+## Step 1: Installation and Setup
 
 
-### 1. Start Ollama
+### i. Install and Start Ollama for Inference
 
+Install Ollama by following the instructions on the [Ollama website](https://ollama.com/download).
+
+To start Ollama run:
 ```bash
 ollama run llama3.2:3b --keepalive 60m
 ```
 
 By default, Ollama keeps the model loaded in memory for 5 minutes which can be too short. We set the `--keepalive` flag to 60 minutes to ensure the model remains loaded for sometime.
 
-```{admonition} Note
-:class: tip
+### ii. Install `uv` to Manage your Python packages
 
-If you do not have ollama, you can install it from [here](https://ollama.com/download).
-```
+Install [uv](https://docs.astral.sh/uv/) to setup your virtual environment
 
-### 2. Run Llama Stack locally
+::::{tab-set}
 
-We use `uv` to setup a virtual environment and install the Llama Stack package.
-
-:::{dropdown} [Click to Open] Instructions to setup uv
-
-Install [uv](https://docs.astral.sh/uv/) to setup your virtual environment.
-
-
-#### For macOS and Linux:
-```bash
+:::{tab-item} macOS and Linux
+Use `curl` to download the script and execute it with `sh`:
+```console
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
-#### For Windows:
+:::
+
+:::{tab-item} Windows
 Use `irm` to download the script and execute it with `iex`:
-```powershell
+
+```console
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
+:::
+::::
 
-Setup venv
+### iii. Setup your Virtual Environment
 ```bash
 uv venv --python 3.10
 source .venv/bin/activate
 ```
-:::
+## Step 2: Install Llama Stack
+Llama Stack is a server that exposes multiple APIs, you connect with it using the Llama Stack client SDK.
 
-**Install the Llama Stack package**
+### Install the Llama Stack Server
 ```bash
-uv pip install -U llama-stack
+uv pip install llama-stack
 ```
 
-**Build and Run the Llama Stack server for Ollama.**
+### Install the Llama Stack Client
+```bash
+uv pip install llama-stack-client
+```
+
+## Step 3: Build and Run Llama Stack
+Llama Stack uses a [configuration file](../distributions/configuration.md) to define the stack.
+The config file is a YAML file that specifies the providers and their configurations.
+
+### i. Build and Run the Llama Stack Config for Ollama
 ```bash
 INFERENCE_MODEL=llama3.2:3b llama stack build --template ollama --image-type venv --run
 ```
 
-You will see the output end like below:
+You will see output like below:
 ```
 ...
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://['::', '0.0.0.0']:8321 (Press CTRL+C to quit)
 ```
 
+### ii. Using the Llama Stack Client
 Now you can use the llama stack client to run inference and build agents!
 
-### 3. Client CLI
+:::{dropdown} You can reuse the server setup or the Llama Stack Client
 
-Install the client package
-```bash
-pip install llama-stack-client
-```
-
-:::{dropdown} OR reuse server setup
 Open a new terminal and navigate to the same directory you started the server from.
 
-Setup venv (llama-stack already includes the llama-stack-client package)
+Setup venv (llama-stack already includes the client package)
 ```bash
 source .venv/bin/activate
 ```
-:::
+Let's use the `llama-stack-client` CLI to check the connectivity to the server.
 
-#### 3.1 Configure the client to point to the local server
 ```bash
-llama-stack-client configure --endpoint http://localhost:8321 --api-key none
+llama-stack-client configure --endpoint http://localhost:$LLAMA_STACK_PORT --api-key none
 ```
 You will see the below:
 ```
 Done! You can now use the Llama Stack Client CLI with endpoint http://localhost:8321
 ```
 
-#### 3.2 List available models
+#### iii. List available models
+List the models
 ```
 llama-stack-client models list
-```
-
 ```
 Available Models
 
@@ -110,7 +120,9 @@ Total models: 2
 
 ```
 
-#### 3.3 Test basic inference
+## Step 4: Run Inference with Llama Stack
+You can test basic Llama inference completion using the CLI too.
+
 ```bash
 llama-stack-client inference chat-completion --message "tell me a joke"
 ```
@@ -132,19 +144,6 @@ ChatCompletionResponse(
 )
 ```
 
-### 4. Python SDK
-Install the python client
-```bash
-pip install llama-stack-client
-```
-:::{dropdown} OR reuse server setup
-Open a new terminal and navigate to the same directory you started the server from.
-
-Setup venv (llama-stack already includes the llama-stack-client package)
-```bash
-source .venv/bin/activate
-```
-:::
 #### 4.1 Basic Inference
 Create a file `inference.py` and add the following code:
 ```python
@@ -170,11 +169,11 @@ response = client.inference.chat_completion(
 )
 print(response.completion_message.content)
 ```
-Run the script
+Let's run the script using `uv`
 ```bash
-python inference.py
+uv run python inference.py
 ```
-Sample output:
+Which will output:
 ```
 Model: llama3.2:3b-instruct-fp16
 Here is a haiku about coding:
@@ -226,9 +225,9 @@ for event in AgentEventLogger().log(stream):
     event.print()
 ```
 
-Run the script:
+Let's run the script using `uv`
 ```bash
-python agent.py
+uv run python agent.py
 ```
 
 :::{dropdown} `Sample output`
@@ -419,19 +418,23 @@ ragagent = Agent(
 
 s_id = ragagent.create_session(session_name=f"s{uuid.uuid4().hex}")
 
-turns = ["what is torchtune", "tell me about dora"]
+user_prompts = [
+    "How to optimize memory usage in torchtune? use the knowledge_search tool to get information.",
+]
 
-for t in turns:
-    print("user>", t)
-    stream = ragagent.create_turn(
-        messages=[{"role": "user", "content": t}], session_id=s_id, stream=True
+# Run the agent loop by calling the `create_turn` method
+for prompt in user_prompts:
+    cprint(f"User> {prompt}", "green")
+    response = rag_agent.create_turn(
+        messages=[{"role": "user", "content": prompt}],
+        session_id=session_id,
     )
     for event in AgentEventLogger().log(stream):
         event.print()
 ```
-Run the script:
-```
-python rag_agent.py
+Let's run the script using `uv`
+```bash
+uv run python lsagent.py
 ```
 :::{dropdown} `Sample output`
 ```
@@ -451,5 +454,7 @@ Overall, DORA is a powerful reinforcement learning algorithm that can learn comp
 ## Next Steps
 - Go through the [Getting Started Notebook](https://github.com/meta-llama/llama-stack/blob/main/docs/getting_started.ipynb)
 - Checkout more [Notebooks on GitHub](https://github.com/meta-llama/llama-stack/tree/main/docs/notebooks)
+- Learn more about Llama Stack [Concepts](../concepts/index.md)
+- Learn how to [Build Llama Stacks](../distributions/index.md)
 - See [References](../references/index.md) for more details about the llama CLI and Python SDK
 - For example applications and more detailed tutorials, visit our [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main/examples) repository.
