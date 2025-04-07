@@ -514,6 +514,9 @@ def test_text_chat_completion_tool_calling_tools_not_in_request(
 )
 def test_text_chat_completion_with_multi_turn_tool_calling(client_with_models, text_model_id, test_case):
     """This test tests the model's tool calling loop in various scenarios"""
+    if "llama-4" not in text_model_id.lower():
+        pytest.xfail("Not tested for non-llama4 models yet")
+
     tc = TestCase(test_case)
     messages = []
 
