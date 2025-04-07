@@ -11,7 +11,7 @@
 
 
 ### ✨🎉 Llama 4 Support  🎉✨
-We release [Version 0.2.0](https://github.com/meta-llama/llama-stack/releases/tag/v0.2.0) with support for the Llama 4 herd of models released by Meta.
+We released [Version 0.2.0](https://github.com/meta-llama/llama-stack/releases/tag/v0.2.0) with support for the Llama 4 herd of models released by Meta.
 
 You can now run Llama 4 models on Llama Stack.
 
