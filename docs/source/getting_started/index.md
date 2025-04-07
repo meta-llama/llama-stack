@@ -75,13 +75,13 @@ INFO:     Uvicorn running on http://['::', '0.0.0.0']:8321 (Press CTRL+C to quit
 ```
 
 ### ii. Using the Llama Stack Client
-Now you can use the llama stack client to run inference and build agents!
+Now you can use the llama stack client to run inference and build agents! You can reuse the server setup or use the
+[Llama Stack Client](https://github.com/meta-llama/llama-stack-client-python/). Note that the client package is already
+included in the `llama-stack` package.
 
-_Note: You can reuse the server setup or the Llama Stack Client_
+Open a new terminal and navigate to the same directory you started the server from. Then set up or activate your
+virtual environment.
 
-Open a new terminal and navigate to the same directory you started the server from.
-
-Setup venv (llama-stack already includes the client package)
 ```bash
 source .venv/bin/activate
 ```
@@ -113,8 +113,8 @@ Total models: 2
 
 ```
 
-## Step 4: Run Inference with Llama Stack
-You can test basic Llama inference completion using the CLI too.
+## Step 4: Run Basic Inference
+You can test basic Llama inference completion using the CLI.
 
 ```bash
 llama-stack-client inference chat-completion --message "tell me a joke"
@@ -136,8 +136,9 @@ ChatCompletionResponse(
     ],
 )
 ```
-### i. Create the Script
+Alternatively, you can run inference using the Llama Stack client SDK.
 
+### i. Create the Script
 Create a file `inference.py` and add the following code:
 ```python
 from llama_stack_client import LlamaStackClient
@@ -177,9 +178,9 @@ Logic flows through digital night
 Beauty in the bits
 ```
 
-## Step 5: Run Your First Agent
-### i. Create the Script
+## Step 5: Build a Simple Agent
 Now we can move beyond simple inference and build an agent that can perform tasks using the Llama Stack server.
+### i. Create the Script
 Create a file `agent.py` and add the following code:
 
 ```python
@@ -348,9 +349,9 @@ So, who am I? I'm just a computer program designed to help you!
 :::
 
 ## Step 6: Build a RAG Agent
-### i. Create the Script
 For our last demo, we can build a RAG agent that can answer questions about the Torchtune project using the documents
 in a vector database.
+### i. Create the Script
 Create a file `rag_agent.py` and add the following code:
 
 ```python
@@ -360,11 +361,11 @@ from llama_stack_client.types import Document
 import uuid
 from termcolor import cprint
 
-client = LlamaStackClient(base_url=f"http://localhost:8321")
+client = LlamaStackClient(base_url="http://localhost:8321")
 
 # Create a vector database instance
-embedlm = next(m for m in client.models.list() if m.model_type == "embedding")
-embedding_model = embedlm.identifier
+embed_lm = next(m for m in client.models.list() if m.model_type == "embedding")
+embedding_model = embed_lm.identifier
 vector_db_id = f"v{uuid.uuid4().hex}"
 client.vector_dbs.register(
     vector_db_id=vector_db_id,
@@ -401,7 +402,7 @@ client.tool_runtime.rag_tool.insert(
 llm = next(m for m in client.models.list() if m.model_type == "llm")
 model = llm.identifier
 
-# Create RAG agent
+# Create the RAG agent
 rag_agent = Agent(
     client,
     model=model,
@@ -416,18 +417,14 @@ rag_agent = Agent(
 
 session_id = rag_agent.create_session(session_name=f"s{uuid.uuid4().hex}")
 
-user_prompts = [
-    "How to optimize memory usage in torchtune? use the knowledge_search tool to get information.",
-]
+turns = ["what is torchtune", "tell me about dora"]
 
-# Run the agent loop by calling the `create_turn` method
-for prompt in user_prompts:
-    cprint(f"User> {prompt}", "green")
-    response = rag_agent.create_turn(
-        messages=[{"role": "user", "content": prompt}],
-        session_id=session_id,
+for t in turns:
+    print("user>", t)
+    stream = rag_agent.create_turn(
+        messages=[{"role": "user", "content": t}], session_id=session_id, stream=True
     )
-    for event in AgentEventLogger().log(response):
+    for event in AgentEventLogger().log(stream):
         event.print()
 ```
 ### ii. Run the Script
