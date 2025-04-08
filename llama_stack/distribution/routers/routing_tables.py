@@ -609,7 +609,7 @@ class ToolGroupsRoutingTable(CommonRoutingTableImpl, ToolGroups):
         if tool_group is None:
             raise ValueError(f"Tool group {toolgroup_id} not found")
         tools = await self.list_tools(toolgroup_id)
-        for tool in tools.data:
+        for tool in getattr(tools, "data", []):
             await self.unregister_object(tool)
         await self.unregister_object(tool_group)
 
