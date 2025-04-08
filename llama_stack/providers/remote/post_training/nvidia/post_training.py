@@ -95,7 +95,9 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
 
         for _ in range(self.config.max_retries):
             # TODO: Remove `verify_ssl=False`. Added for testing purposes to call NMP int environment from `docs/notebooks/nvidia/`
-            async with self.session.request(method, url, params=params, json=json, verify_ssl=False, **kwargs) as response:
+            async with self.session.request(
+                method, url, params=params, json=json, verify_ssl=False, **kwargs
+            ) as response:
                 if response.status >= 400:
                     error_data = await response.json()
                     raise Exception(f"API request failed: {error_data}")
