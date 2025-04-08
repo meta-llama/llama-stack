@@ -40,6 +40,8 @@ from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
+    OpenAIChatCompletionUnsupportedMixin,
+    OpenAICompletionUnsupportedMixin,
     convert_openai_chat_completion_choice,
     convert_openai_chat_completion_stream,
 )
@@ -58,7 +60,12 @@ from .utils import _is_nvidia_hosted
 logger = logging.getLogger(__name__)
 
 
-class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
+class NVIDIAInferenceAdapter(
+    Inference,
+    OpenAIChatCompletionUnsupportedMixin,
+    OpenAICompletionUnsupportedMixin,
+    ModelRegistryHelper,
+):
     def __init__(self, config: NVIDIAConfig) -> None:
         # TODO(mf): filter by available models
         ModelRegistryHelper.__init__(self, model_entries=MODEL_ENTRIES)
