@@ -17,6 +17,8 @@ from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import DatasetPurpose, DataSource
 from llama_stack.apis.eval import BenchmarkConfig, Eval, EvaluateResponse, Job
 from llama_stack.apis.inference import (
+    BatchChatCompletionResponse,
+    BatchCompletionResponse,
     ChatCompletionResponse,
     ChatCompletionResponseEventType,
     ChatCompletionResponseStreamChunk,
@@ -334,6 +336,30 @@ class InferenceRouter(Inference):
             response.metrics = metrics if response.metrics is None else response.metrics + metrics
             return response
 
+    async def batch_chat_completion(
+        self,
+        model_id: str,
+        messages_batch: List[List[Message]],
+        tools: Optional[List[ToolDefinition]] = None,
+        tool_config: Optional[ToolConfig] = None,
+        sampling_params: Optional[SamplingParams] = None,
+        response_format: Optional[ResponseFormat] = None,
+        logprobs: Optional[LogProbConfig] = None,
+    ) -> BatchChatCompletionResponse:
+        logger.debug(
+            f"InferenceRouter.batch_chat_completion: {model_id=}, {len(messages_batch)=}, {sampling_params=}, {response_format=}, {logprobs=}",
+        )
+        provider = self.routing_table.get_provider_impl(model_id)
+        return await provider.batch_chat_completion(
+            model_id=model_id,
+            messages_batch=messages_batch,
+            tools=tools,
+            tool_config=tool_config,
+            sampling_params=sampling_params,
+            response_format=response_format,
+            logprobs=logprobs,
+        )
+
     async def completion(
         self,
         model_id: str,
@@ -397,6 +423,20 @@ class InferenceRouter(Inference):
             )
             response.metrics = metrics if response.metrics is None else response.metrics + metrics
             return response
+
+    async def batch_completion(
+        self,
+        model_id: str,
+        content_batch: List[InterleavedContent],
+        sampling_params: Optional[SamplingParams] = None,
+        response_format: Optional[ResponseFormat] = None,
+        logprobs: Optional[LogProbConfig] = None,
+    ) -> BatchCompletionResponse:
+        logger.debug(
+            f"InferenceRouter.batch_completion: {model_id=}, {len(content_batch)=}, {sampling_params=}, {response_format=}, {logprobs=}",
+        )
+        provider = self.routing_table.get_provider_impl(model_id)
+        return await provider.batch_completion(model_id, content_batch, sampling_params, response_format, logprobs)
 
     async def embeddings(
         self,

@@ -400,6 +400,9 @@ def check_protocol_compliance(obj: Any, protocol: Any) -> None:
     mro = type(obj).__mro__
     for name, value in inspect.getmembers(protocol):
         if inspect.isfunction(value) and hasattr(value, "__webmethod__"):
+            if value.__webmethod__.experimental:
+                continue
+
             if not hasattr(obj, name):
                 missing_methods.append((name, "missing"))
             elif not callable(getattr(obj, name)):

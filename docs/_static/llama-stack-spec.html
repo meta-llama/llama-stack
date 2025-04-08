@@ -85,7 +85,50 @@
                 }
             }
         },
-        "/v1/batch-inference/chat-completion": {
+        "/v1/inference/batch-chat-completion": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BatchChatCompletionResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Inference"
+                ],
+                "description": "",
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BatchChatCompletionRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/v1/batch-inference/chat-completion-inline": {
             "post": {
                 "responses": {
                     "200": {
@@ -120,7 +163,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/BatchChatCompletionRequest"
+                                "$ref": "#/components/schemas/BatchChatCompletionInlineRequest"
                             }
                         }
                     },
@@ -128,7 +171,50 @@
                 }
             }
         },
-        "/v1/batch-inference/completion": {
+        "/v1/inference/batch-completion": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BatchCompletionResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Inference"
+                ],
+                "description": "",
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BatchCompletionRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/v1/batch-inference/completion-inline": {
             "post": {
                 "responses": {
                     "200": {
@@ -163,7 +249,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/BatchCompletionRequest"
+                                "$ref": "#/components/schemas/BatchCompletionInlineRequest"
                             }
                         }
                     },
@@ -4366,6 +4452,51 @@
                 ],
                 "title": "ToolCall"
             },
+            "ToolConfig": {
+                "type": "object",
+                "properties": {
+                    "tool_choice": {
+                        "oneOf": [
+                            {
+                                "type": "string",
+                                "enum": [
+                                    "auto",
+                                    "required",
+                                    "none"
+                                ],
+                                "title": "ToolChoice",
+                                "description": "Whether tool use is required or automatic. This is a hint to the model which may not be followed. It depends on the Instruction Following capabilities of the model."
+                            },
+                            {
+                                "type": "string"
+                            }
+                        ],
+                        "default": "auto",
+                        "description": "(Optional) Whether tool use is automatic, required, or none. Can also specify a tool name to use a specific tool. Defaults to ToolChoice.auto."
+                    },
+                    "tool_prompt_format": {
+                        "type": "string",
+                        "enum": [
+                            "json",
+                            "function_tag",
+                            "python_list"
+                        ],
+                        "description": "(Optional) Instructs the model how to format tool calls. By default, Llama Stack will attempt to use a format that is best adapted to the model. - `ToolPromptFormat.json`: The tool calls are formatted as a JSON object. - `ToolPromptFormat.function_tag`: The tool calls are enclosed in a <function=function_name> tag. - `ToolPromptFormat.python_list`: The tool calls are output as Python syntax -- a list of function calls."
+                    },
+                    "system_message_behavior": {
+                        "type": "string",
+                        "enum": [
+                            "append",
+                            "replace"
+                        ],
+                        "description": "(Optional) Config for how to override the default system prompt. - `SystemMessageBehavior.append`: Appends the provided system message to the default system prompt. - `SystemMessageBehavior.replace`: Replaces the default system prompt with the provided system message. The system message can include the string '{{function_definitions}}' to indicate where the function definitions should be inserted.",
+                        "default": "append"
+                    }
+                },
+                "additionalProperties": false,
+                "title": "ToolConfig",
+                "description": "Configuration for tool use."
+            },
             "ToolDefinition": {
                 "type": "object",
                 "properties": {
@@ -4554,7 +4685,7 @@
             "BatchChatCompletionRequest": {
                 "type": "object",
                 "properties": {
-                    "model": {
+                    "model_id": {
                         "type": "string"
                     },
                     "messages_batch": {
@@ -4575,25 +4706,8 @@
                             "$ref": "#/components/schemas/ToolDefinition"
                         }
                     },
-                    "tool_choice": {
-                        "type": "string",
-                        "enum": [
-                            "auto",
-                            "required",
-                            "none"
-                        ],
-                        "title": "ToolChoice",
-                        "description": "Whether tool use is required or automatic. This is a hint to the model which may not be followed. It depends on the Instruction Following capabilities of the model."
-                    },
-                    "tool_prompt_format": {
-                        "type": "string",
-                        "enum": [
-                            "json",
-                            "function_tag",
-                            "python_list"
-                        ],
-                        "title": "ToolPromptFormat",
-                        "description": "Prompt format for calling custom / zero shot tools."
+                    "tool_config": {
+                        "$ref": "#/components/schemas/ToolConfig"
                     },
                     "response_format": {
                         "$ref": "#/components/schemas/ResponseFormat"
@@ -4613,7 +4727,7 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "model",
+                    "model_id",
                     "messages_batch"
                 ],
                 "title": "BatchChatCompletionRequest"
@@ -4707,10 +4821,60 @@
                 "title": "TokenLogProbs",
                 "description": "Log probabilities for generated tokens."
             },
-            "BatchCompletionRequest": {
+            "BatchChatCompletionInlineRequest": {
                 "type": "object",
                 "properties": {
                     "model": {
+                        "type": "string"
+                    },
+                    "messages_batch": {
+                        "type": "array",
+                        "items": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/components/schemas/Message"
+                            }
+                        }
+                    },
+                    "sampling_params": {
+                        "$ref": "#/components/schemas/SamplingParams"
+                    },
+                    "tools": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ToolDefinition"
+                        }
+                    },
+                    "tool_config": {
+                        "$ref": "#/components/schemas/ToolConfig"
+                    },
+                    "response_format": {
+                        "$ref": "#/components/schemas/ResponseFormat"
+                    },
+                    "logprobs": {
+                        "type": "object",
+                        "properties": {
+                            "top_k": {
+                                "type": "integer",
+                                "default": 0,
+                                "description": "How many tokens (for each position) to return log probabilities for."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "title": "LogProbConfig"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "model",
+                    "messages_batch"
+                ],
+                "title": "BatchChatCompletionInlineRequest"
+            },
+            "BatchCompletionRequest": {
+                "type": "object",
+                "properties": {
+                    "model_id": {
                         "type": "string"
                     },
                     "content_batch": {
@@ -4740,7 +4904,7 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "model",
+                    "model_id",
                     "content_batch"
                 ],
                 "title": "BatchCompletionRequest"
@@ -4799,6 +4963,44 @@
                 "title": "CompletionResponse",
                 "description": "Response from a completion request."
             },
+            "BatchCompletionInlineRequest": {
+                "type": "object",
+                "properties": {
+                    "model": {
+                        "type": "string"
+                    },
+                    "content_batch": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/InterleavedContent"
+                        }
+                    },
+                    "sampling_params": {
+                        "$ref": "#/components/schemas/SamplingParams"
+                    },
+                    "response_format": {
+                        "$ref": "#/components/schemas/ResponseFormat"
+                    },
+                    "logprobs": {
+                        "type": "object",
+                        "properties": {
+                            "top_k": {
+                                "type": "integer",
+                                "default": 0,
+                                "description": "How many tokens (for each position) to return log probabilities for."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "title": "LogProbConfig"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "model",
+                    "content_batch"
+                ],
+                "title": "BatchCompletionInlineRequest"
+            },
             "CancelTrainingJobRequest": {
                 "type": "object",
                 "properties": {
@@ -4811,51 +5013,6 @@
                     "job_uuid"
                 ],
                 "title": "CancelTrainingJobRequest"
-            },
-            "ToolConfig": {
-                "type": "object",
-                "properties": {
-                    "tool_choice": {
-                        "oneOf": [
-                            {
-                                "type": "string",
-                                "enum": [
-                                    "auto",
-                                    "required",
-                                    "none"
-                                ],
-                                "title": "ToolChoice",
-                                "description": "Whether tool use is required or automatic. This is a hint to the model which may not be followed. It depends on the Instruction Following capabilities of the model."
-                            },
-                            {
-                                "type": "string"
-                            }
-                        ],
-                        "default": "auto",
-                        "description": "(Optional) Whether tool use is automatic, required, or none. Can also specify a tool name to use a specific tool. Defaults to ToolChoice.auto."
-                    },
-                    "tool_prompt_format": {
-                        "type": "string",
-                        "enum": [
-                            "json",
-                            "function_tag",
-                            "python_list"
-                        ],
-                        "description": "(Optional) Instructs the model how to format tool calls. By default, Llama Stack will attempt to use a format that is best adapted to the model. - `ToolPromptFormat.json`: The tool calls are formatted as a JSON object. - `ToolPromptFormat.function_tag`: The tool calls are enclosed in a <function=function_name> tag. - `ToolPromptFormat.python_list`: The tool calls are output as Python syntax -- a list of function calls."
-                    },
-                    "system_message_behavior": {
-                        "type": "string",
-                        "enum": [
-                            "append",
-                            "replace"
-                        ],
-                        "description": "(Optional) Config for how to override the default system prompt. - `SystemMessageBehavior.append`: Appends the provided system message to the default system prompt. - `SystemMessageBehavior.replace`: Replaces the default system prompt with the provided system message. The system message can include the string '{{function_definitions}}' to indicate where the function definitions should be inserted.",
-                        "default": "append"
-                    }
-                },
-                "additionalProperties": false,
-                "title": "ToolConfig",
-                "description": "Configuration for tool use."
             },
             "ChatCompletionRequest": {
                 "type": "object",
