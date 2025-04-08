@@ -1052,6 +1052,11 @@ async def convert_openai_chat_completion_stream(
     )
 
 
+async def prepare_openai_completion_params(**params):
+    completion_params = {k: v for k, v in params.items() if v is not None}
+    return completion_params
+
+
 class OpenAICompletionUnsupportedMixin:
     async def openai_completion(
         self,

@@ -59,6 +59,7 @@ from llama_stack.providers.utils.inference.openai_compat import (
     convert_message_to_openai_dict,
     convert_tool_call,
     get_sampling_options,
+    prepare_openai_completion_params,
     process_chat_completion_stream_response,
     process_completion_response,
     process_completion_stream_response,
@@ -441,29 +442,25 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         user: Optional[str] = None,
     ) -> OpenAICompletion:
         model_obj = await self._get_model(model)
-        params = {
-            k: v
-            for k, v in {
-                "model": model_obj.provider_resource_id,
-                "prompt": prompt,
-                "best_of": best_of,
-                "echo": echo,
-                "frequency_penalty": frequency_penalty,
-                "logit_bias": logit_bias,
-                "logprobs": logprobs,
-                "max_tokens": max_tokens,
-                "n": n,
-                "presence_penalty": presence_penalty,
-                "seed": seed,
-                "stop": stop,
-                "stream": stream,
-                "stream_options": stream_options,
-                "temperature": temperature,
-                "top_p": top_p,
-                "user": user,
-            }.items()
-            if v is not None
-        }
+        params = await prepare_openai_completion_params(
+            model=model_obj.provider_resource_id,
+            prompt=prompt,
+            best_of=best_of,
+            echo=echo,
+            frequency_penalty=frequency_penalty,
+            logit_bias=logit_bias,
+            logprobs=logprobs,
+            max_tokens=max_tokens,
+            n=n,
+            presence_penalty=presence_penalty,
+            seed=seed,
+            stop=stop,
+            stream=stream,
+            stream_options=stream_options,
+            temperature=temperature,
+            top_p=top_p,
+            user=user,
+        )
         return await self.client.completions.create(**params)  # type: ignore
 
     async def openai_chat_completion(
@@ -493,33 +490,29 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         user: Optional[str] = None,
     ) -> OpenAIChatCompletion:
         model_obj = await self._get_model(model)
-        params = {
-            k: v
-            for k, v in {
-                "model": model_obj.provider_resource_id,
-                "messages": messages,
-                "frequency_penalty": frequency_penalty,
-                "function_call": function_call,
-                "functions": functions,
-                "logit_bias": logit_bias,
-                "logprobs": logprobs,
-                "max_completion_tokens": max_completion_tokens,
-                "max_tokens": max_tokens,
-                "n": n,
-                "parallel_tool_calls": parallel_tool_calls,
-                "presence_penalty": presence_penalty,
-                "response_format": response_format,
-                "seed": seed,
-                "stop": stop,
-                "stream": stream,
-                "stream_options": stream_options,
-                "temperature": temperature,
-                "tool_choice": tool_choice,
-                "tools": tools,
-                "top_logprobs": top_logprobs,
-                "top_p": top_p,
-                "user": user,
-            }.items()
-            if v is not None
-        }
+        params = await prepare_openai_completion_params(
+            model=model_obj.provider_resource_id,
+            messages=messages,
+            frequency_penalty=frequency_penalty,
+            function_call=function_call,
+            functions=functions,
+            logit_bias=logit_bias,
+            logprobs=logprobs,
+            max_completion_tokens=max_completion_tokens,
+            max_tokens=max_tokens,
+            n=n,
+            parallel_tool_calls=parallel_tool_calls,
+            presence_penalty=presence_penalty,
+            response_format=response_format,
+            seed=seed,
+            stop=stop,
+            stream=stream,
+            stream_options=stream_options,
+            temperature=temperature,
+            tool_choice=tool_choice,
+            tools=tools,
+            top_logprobs=top_logprobs,
+            top_p=top_p,
+            user=user,
+        )
         return await self.client.chat.completions.create(**params)  # type: ignore
