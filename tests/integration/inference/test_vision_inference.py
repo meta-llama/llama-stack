@@ -76,8 +76,9 @@ def multi_image_data():
 
 @pytest.mark.parametrize("stream", [True, False])
 def test_image_chat_completion_multiple_images(client_with_models, vision_model_id, multi_image_data, stream):
-    if "llama-4" not in vision_model_id.lower() and "gpt-4o" not in vision_model_id.lower():
-        pytest.skip("Skip for non-llama4, gpt4o models")
+    supported_models = ["llama-4", "gpt-4o", "llama4"]
+    if not any(model in vision_model_id.lower() for model in supported_models):
+        pytest.skip(f"Skip for non-supported model: {vision_model_id}")
 
     messages = [
         {

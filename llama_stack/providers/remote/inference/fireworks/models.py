@@ -48,6 +48,14 @@ MODEL_ENTRIES = [
         "accounts/fireworks/models/llama-guard-3-11b-vision",
         CoreModelId.llama_guard_3_11b_vision.value,
     ),
+    build_hf_repo_model_entry(
+        "accounts/fireworks/models/llama4-scout-instruct-basic",
+        CoreModelId.llama4_scout_17b_16e_instruct.value,
+    ),
+    build_hf_repo_model_entry(
+        "accounts/fireworks/models/llama4-maverick-instruct-basic",
+        CoreModelId.llama4_maverick_17b_128e_instruct.value,
+    ),
     ProviderModelEntry(
         provider_model_id="nomic-ai/nomic-embed-text-v1.5",
         model_type=ModelType.embedding,

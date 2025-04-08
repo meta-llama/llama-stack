@@ -43,6 +43,7 @@ The following models are available by default:
 - `Llama-3.2-11B-Vision-Instruct (aliases: meta-llama/Llama-3.2-11B-Vision-Instruct)`
 - `Llama-3.2-90B-Vision-Instruct (aliases: meta-llama/Llama-3.2-90B-Vision-Instruct)`
 - `Meta-Llama-Guard-3-8B (aliases: meta-llama/Llama-Guard-3-8B)`
+- `Llama-4-Scout-17B-16E-Instruct (aliases: meta-llama/Llama-4-Scout-17B-16E-Instruct)`
 
 
 ### Prerequisite: API Keys
