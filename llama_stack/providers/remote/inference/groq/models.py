@@ -35,4 +35,12 @@ MODEL_ENTRIES = [
         "groq/llama-3.2-3b-preview",
         CoreModelId.llama3_2_3b_instruct.value,
     ),
+    build_hf_repo_model_entry(
+        "groq/llama-4-scout-17b-16e-instruct",
+        CoreModelId.llama4_scout_17b_16e_instruct.value,
+    ),
+    build_hf_repo_model_entry(
+        "groq/llama-4-maverick-17b-128e-instruct",
+        CoreModelId.llama4_maverick_17b_128e_instruct.value,
+    ),
 ]

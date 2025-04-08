@@ -118,7 +118,7 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
 
     async def _stream_completion(self, request: CompletionRequest) -> AsyncGenerator:
         params = await self._get_params(request)
-        client = await self._get_client()
+        client = self._get_client()
         stream = await client.completions.create(**params)
         async for chunk in process_completion_stream_response(stream):
             yield chunk

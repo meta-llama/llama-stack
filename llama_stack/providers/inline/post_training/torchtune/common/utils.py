@@ -22,8 +22,8 @@ from torchtune.models.llama3_2 import lora_llama3_2_3b
 from torchtune.modules.transforms import Transform
 
 from llama_stack.apis.post_training import DatasetFormat
-from llama_stack.models.llama.datatypes import Model
 from llama_stack.models.llama.sku_list import resolve_model
+from llama_stack.models.llama.sku_types import Model
 
 BuildLoraModelCallable = Callable[..., torch.nn.Module]
 BuildTokenizerCallable = Callable[..., Llama3Tokenizer]

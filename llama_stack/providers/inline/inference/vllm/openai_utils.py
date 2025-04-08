@@ -14,9 +14,10 @@ from llama_stack.apis.inference import (
     JsonSchemaResponseFormat,
     Message,
     ToolChoice,
+    ToolDefinition,
     UserMessage,
 )
-from llama_stack.models.llama.datatypes import BuiltinTool, ToolDefinition
+from llama_stack.models.llama.datatypes import BuiltinTool
 from llama_stack.providers.utils.inference.openai_compat import (
     convert_message_to_openai_dict,
     get_sampling_options,

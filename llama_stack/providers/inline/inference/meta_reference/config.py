@@ -21,6 +21,7 @@ class MetaReferenceInferenceConfig(BaseModel):
     torch_seed: Optional[int] = None
     max_seq_len: int = 4096
     max_batch_size: int = 1
+    model_parallel_size: Optional[int] = None
 
     # when this is False, we assume that the distributed process group is setup by someone
     # outside of this code (e.g., when run inside `torchrun`). that is useful for clients
@@ -30,6 +31,8 @@ class MetaReferenceInferenceConfig(BaseModel):
     # By default, the implementation will look at ~/.llama/checkpoints/<model> but you
     # can override by specifying the directory explicitly
     checkpoint_dir: Optional[str] = None
+
+    quantization: Optional[QuantizationConfig] = None
 
     @field_validator("model")
     @classmethod
@@ -47,27 +50,16 @@ class MetaReferenceInferenceConfig(BaseModel):
         cls,
         model: str = "Llama3.2-3B-Instruct",
         checkpoint_dir: str = "${env.CHECKPOINT_DIR:null}",
+        quantization_type: str = "${env.QUANTIZATION_TYPE:bf16}",
+        model_parallel_size: str = "${env.MODEL_PARALLEL_SIZE:0}",
         **kwargs,
     ) -> Dict[str, Any]:
         return {
             "model": model,
             "max_seq_len": 4096,
             "checkpoint_dir": checkpoint_dir,
+            "quantization": {
+                "type": quantization_type,
+            },
+            "model_parallel_size": model_parallel_size,
         }
-
-
-class MetaReferenceQuantizedInferenceConfig(MetaReferenceInferenceConfig):
-    quantization: QuantizationConfig
-
-    @classmethod
-    def sample_run_config(
-        cls,
-        model: str = "Llama3.2-3B-Instruct",
-        checkpoint_dir: str = "${env.CHECKPOINT_DIR:null}",
-        **kwargs,
-    ) -> Dict[str, Any]:
-        config = super().sample_run_config(model, checkpoint_dir, **kwargs)
-        config["quantization"] = {
-            "type": "fp8",
-        }
-        return config
