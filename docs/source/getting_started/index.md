@@ -10,8 +10,11 @@ Llama Stack is a stateful service with REST APIs to support seamless transition 
 In this guide, we'll walk through how to build a RAG agent locally using Llama Stack with [Ollama](https://ollama.com/)
 as the inference [provider](../providers/index.md#inference) for a Llama Model.
 
+```{admonition} Note
+:class: tip
+These instructions outlined are for a
+```
 ## Step 1: Installation and Setup
-
 
 ### i. Install and Start Ollama for Inference
 
@@ -60,11 +63,14 @@ uv pip install llama-stack
 ```
 Note the Llama Stack Server includes the client SDK as well.
 
-## Step 3: Build and Run Llama Stack
+## Step 3: Build and Run the Llama Stack Server
 Llama Stack uses a [configuration file](../distributions/configuration.md) to define the stack.
 The config file is a YAML file that specifies the providers and their configurations.
 
 ### i. Build and Run the Llama Stack Config for Ollama
+::::{tab-set}
+
+:::{tab-item} Using Python
 ```bash
 INFERENCE_MODEL=llama3.2:3b llama stack build --template ollama --image-type venv --run
 ```
@@ -73,18 +79,94 @@ You will see output like below:
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://['::', '0.0.0.0']:8321 (Press CTRL+C to quit)
 ```
+:::
+
+:::{tab-item} Using a Container
+To get started quickly, we provide various container images for the server component that work with different inference
+providers out of the box. For this guide, we will use `llamastack/distribution-ollama` as the container image. If you'd
+like to build your own image or customize the configurations, please check out [this guide](../references/index.md).
+
+Lets setup some environment variables and create a local directory to mount into the container’s file system.
+```bash
+export INFERENCE_MODEL="meta-llama/Llama-3.2-3B-Instruct"
+export LLAMA_STACK_PORT=8321
+mkdir -p ~/.llama
+```
+Then start the server using the container tool of your choice.  For example, if you are running Docker you can use the
+following command:
+```bash
+docker run -it \
+  --pull always \
+  -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
+  -v ~/.llama:/root/.llama \
+  llamastack/distribution-ollama \
+  --port $LLAMA_STACK_PORT \
+  --env INFERENCE_MODEL=$INFERENCE_MODEL \
+  --env OLLAMA_URL=http://host.docker.internal:11434
+```
+Note to start the container with Podman, you can do the same but replace `docker` at the start of the command with
+`podman`. If you are using `podman` older than `4.7.0`, please also replace `host.docker.internal` in the `OLLAMA_URL`
+with `host.containers.internal`.
+
+As another example, to start the container with Podman, you can do the same but replace `docker` at the start of the command with `podman`. If you are using `podman` older than `4.7.0`, please also replace `host.docker.internal` in the `OLLAMA_URL` with `host.containers.internal`.
+
+Configuration for this is available at `distributions/ollama/run.yaml`.
+
+```{admonition} Note
+:class: note
+
+Docker containers run in their own isolated network namespaces on Linux. To allow the container to communicate with services running on the host via `localhost`, you need `--network=host`. This makes the container use the host’s network directly so it can connect to Ollama running on `localhost:11434`.
+
+Linux users having issues running the above command should instead try the following:
+```bash
+docker run -it \
+  --pull always \
+  -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
+  -v ~/.llama:/root/.llama \
+  --network=host \
+  llamastack/distribution-ollama \
+  --port $LLAMA_STACK_PORT \
+  --env INFERENCE_MODEL=$INFERENCE_MODEL \
+  --env OLLAMA_URL=http://localhost:11434
+```
+:::
+::::
+
+
 
 ### ii. Using the Llama Stack Client
-Now you can use the llama stack client to run inference and build agents! You can reuse the server setup or use the
-[Llama Stack Client](https://github.com/meta-llama/llama-stack-client-python/). Note that the client package is already
-included in the `llama-stack` package.
+Now you can use the llama stack client to run inference and build agents!
+You can reuse the server setup or use the [Llama Stack Client](https://github.com/meta-llama/llama-stack-client-python/).
+Note that the client package is already included in the `llama-stack` package.
 
-Open a new terminal and navigate to the same directory you started the server from. Then set up or activate your
-virtual environment.
+Open a new terminal and navigate to the same directory you started the server from. Then set up a new or activate your
+existing server virtual environment.
 
+::::{tab-set}
+
+:::{tab-item} Reuse the Server Setup
 ```bash
 source .venv/bin/activate
 ```
+:::
+
+:::{tab-item} Install the Llama Stack Client (venv)
+```bash
+uv venv client --python 3.10
+source client/bin/activate
+pip install llama-stack-client
+```
+:::
+
+:::{tab-item} Install the Llama Stack Client (conda)
+```bash
+yes | conda create -n stack-client python=3.10
+conda activate stack-client
+pip install llama-stack-client
+```
+:::
+::::
+
 Now let's use the `llama-stack-client` CLI to check the connectivity to the server.
 
 ```bash
@@ -95,7 +177,7 @@ You will see the below:
 Done! You can now use the Llama Stack Client CLI with endpoint http://localhost:8321
 ```
 
-#### iii. List available models
+#### iii. List Available Models
 List the models
 ```
 llama-stack-client models list
@@ -163,6 +245,7 @@ response = client.inference.chat_completion(
 )
 print(response.completion_message.content)
 ```
+
 ### ii. Run the Script
 Let's run the script using `uv`
 ```bash
@@ -432,7 +515,8 @@ Let's run the script using `uv`
 ```bash
 uv run python rag_agent.py
 ```
-Which will output:
+:::{dropdown} `👋 Click here to see the sample output`
+
 ```
 user> what is torchtune
 inference> [knowledge_search(query='TorchTune')]
@@ -446,6 +530,7 @@ PyTorch Tune provides a recipe for LoRA (Low-Rank Adaptation) finetuning, which 
 ...
 Overall, DORA is a powerful reinforcement learning algorithm that can learn complex tasks from human demonstrations. However, it requires careful consideration of the challenges and limitations to achieve optimal results.
 ```
+:::
 
 Congrats! 🥳 Now you're ready to build your own Llama Stack applications! 🚀
 
