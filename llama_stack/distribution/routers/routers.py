@@ -8,7 +8,6 @@ import time
 from typing import Any, AsyncGenerator, AsyncIterator, Dict, List, Optional, Union
 
 from openai.types.chat import ChatCompletion as OpenAIChatCompletion
-from openai.types.chat import ChatCompletionMessageParam as OpenAIChatCompletionMessageParam
 from openai.types.completion import Completion as OpenAICompletion
 
 from llama_stack.apis.common.content_types import (
@@ -39,6 +38,7 @@ from llama_stack.apis.inference import (
     ToolDefinition,
     ToolPromptFormat,
 )
+from llama_stack.apis.inference.inference import OpenAIMessageParam
 from llama_stack.apis.models import Model, ModelType
 from llama_stack.apis.safety import RunShieldResponse, Safety
 from llama_stack.apis.scoring import (
@@ -478,7 +478,7 @@ class InferenceRouter(Inference):
     async def openai_chat_completion(
         self,
         model: str,
-        messages: List[OpenAIChatCompletionMessageParam],
+        messages: List[OpenAIMessageParam],
         frequency_penalty: Optional[float] = None,
         function_call: Optional[Union[str, Dict[str, Any]]] = None,
         functions: Optional[List[Dict[str, Any]]] = None,

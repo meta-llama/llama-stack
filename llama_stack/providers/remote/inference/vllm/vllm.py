@@ -10,7 +10,6 @@ from typing import Any, AsyncGenerator, Dict, List, Optional, Union
 import httpx
 from openai import AsyncOpenAI
 from openai.types.chat import ChatCompletion as OpenAIChatCompletion
-from openai.types.chat import ChatCompletionMessageParam as OpenAIChatCompletionMessageParam
 from openai.types.chat.chat_completion_chunk import (
     ChatCompletionChunk as OpenAIChatCompletionChunk,
 )
@@ -48,6 +47,7 @@ from llama_stack.apis.inference import (
     ToolDefinition,
     ToolPromptFormat,
 )
+from llama_stack.apis.inference.inference import OpenAIMessageParam
 from llama_stack.apis.models import Model, ModelType
 from llama_stack.models.llama.datatypes import BuiltinTool, StopReason, ToolCall
 from llama_stack.models.llama.sku_list import all_registered_models
@@ -471,7 +471,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
     async def openai_chat_completion(
         self,
         model: str,
-        messages: List[OpenAIChatCompletionMessageParam],
+        messages: List[OpenAIMessageParam],
         frequency_penalty: Optional[float] = None,
         function_call: Optional[Union[str, Dict[str, Any]]] = None,
         functions: Optional[List[Dict[str, Any]]] = None,

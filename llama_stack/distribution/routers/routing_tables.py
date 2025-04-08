@@ -9,7 +9,6 @@ import time
 import uuid
 from typing import Any, Dict, List, Optional
 
-from openai.types.model import Model as OpenAIModel
 from pydantic import TypeAdapter
 
 from llama_stack.apis.benchmarks import Benchmark, Benchmarks, ListBenchmarksResponse
@@ -25,7 +24,7 @@ from llama_stack.apis.datasets import (
     RowsDataSource,
     URIDataSource,
 )
-from llama_stack.apis.models import ListModelsResponse, Model, Models, ModelType, OpenAIListModelsResponse
+from llama_stack.apis.models import ListModelsResponse, Model, Models, ModelType, OpenAIListModelsResponse, OpenAIModel
 from llama_stack.apis.resource import ResourceType
 from llama_stack.apis.scoring_functions import (
     ListScoringFunctionsResponse,

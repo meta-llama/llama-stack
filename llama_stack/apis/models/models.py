@@ -7,7 +7,6 @@
 from enum import Enum
 from typing import Any, Dict, List, Literal, Optional, Protocol, runtime_checkable
 
-from openai.types.model import Model as OpenAIModel
 from pydantic import BaseModel, ConfigDict, Field
 
 from llama_stack.apis.resource import Resource, ResourceType
@@ -55,6 +54,22 @@ class ModelInput(CommonModelFields):
 
 class ListModelsResponse(BaseModel):
     data: List[Model]
+
+
+@json_schema_type
+class OpenAIModel(BaseModel):
+    """A model from OpenAI.
+
+    :id: The ID of the model
+    :object: The object type, which will be "model"
+    :created: The Unix timestamp in seconds when the model was created
+    :owned_by: The owner of the model
+    """
+
+    id: str
+    object: Literal["model"] = "model"
+    created: int
+    owned_by: str
 
 
 class OpenAIListModelsResponse(BaseModel):
