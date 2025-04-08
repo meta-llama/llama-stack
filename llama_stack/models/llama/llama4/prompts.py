@@ -4,20 +4,13 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-# Copyright (c) Meta Platforms, Inc. and affiliates.
-# All rights reserved.
-#
-# This source code is licensed under the terms described in the LICENSE file in
-# top-level folder for each specific model found within the models/ directory at
-# the top-level of this source tree.
-
 import textwrap
 from io import BytesIO
 from pathlib import Path
 from typing import List
 
-from llama_stack.models.llama.datatypes import RawMediaItem, RawMessage, RawTextItem
-from llama_stack.models.llama.prompt_format import (
+from ..datatypes import RawMediaItem, RawMessage, RawTextItem
+from ..prompt_format import (
     Llama4UseCase,
     TextCompletionContent,
     UseCase,

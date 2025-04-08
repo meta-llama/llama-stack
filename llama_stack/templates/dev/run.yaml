@@ -256,6 +256,26 @@ models:
   provider_id: fireworks
   provider_model_id: accounts/fireworks/models/llama-guard-3-11b-vision
   model_type: llm
+- metadata: {}
+  model_id: accounts/fireworks/models/llama4-scout-instruct-basic
+  provider_id: fireworks
+  provider_model_id: accounts/fireworks/models/llama4-scout-instruct-basic
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-4-Scout-17B-16E-Instruct
+  provider_id: fireworks
+  provider_model_id: accounts/fireworks/models/llama4-scout-instruct-basic
+  model_type: llm
+- metadata: {}
+  model_id: accounts/fireworks/models/llama4-maverick-instruct-basic
+  provider_id: fireworks
+  provider_model_id: accounts/fireworks/models/llama4-maverick-instruct-basic
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-4-Maverick-17B-128E-Instruct
+  provider_id: fireworks
+  provider_model_id: accounts/fireworks/models/llama4-maverick-instruct-basic
+  model_type: llm
 - metadata:
     embedding_dimension: 768
     context_length: 8192
@@ -362,6 +382,26 @@ models:
   provider_model_id: groq/llama-3.2-3b-preview
   model_type: llm
 - metadata: {}
+  model_id: groq/llama-4-scout-17b-16e-instruct
+  provider_id: groq
+  provider_model_id: groq/llama-4-scout-17b-16e-instruct
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-4-Scout-17B-16E-Instruct
+  provider_id: groq
+  provider_model_id: groq/llama-4-scout-17b-16e-instruct
+  model_type: llm
+- metadata: {}
+  model_id: groq/llama-4-maverick-17b-128e-instruct
+  provider_id: groq
+  provider_model_id: groq/llama-4-maverick-17b-128e-instruct
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-4-Maverick-17B-128E-Instruct
+  provider_id: groq
+  provider_model_id: groq/llama-4-maverick-17b-128e-instruct
+  model_type: llm
+- metadata: {}
   model_id: sambanova/Meta-Llama-3.1-8B-Instruct
   provider_id: sambanova
   provider_model_id: sambanova/Meta-Llama-3.1-8B-Instruct
@@ -450,6 +490,16 @@ models:
   model_id: meta-llama/Llama-Guard-3-8B
   provider_id: sambanova
   provider_model_id: sambanova/Meta-Llama-Guard-3-8B
+  model_type: llm
+- metadata: {}
+  model_id: sambanova/Llama-4-Scout-17B-16E-Instruct
+  provider_id: sambanova
+  provider_model_id: sambanova/Llama-4-Scout-17B-16E-Instruct
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-4-Scout-17B-16E-Instruct
+  provider_id: sambanova
+  provider_model_id: sambanova/Llama-4-Scout-17B-16E-Instruct
   model_type: llm
 - metadata:
     embedding_dimension: 384

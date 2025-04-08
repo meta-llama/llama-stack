@@ -52,6 +52,7 @@ from llama_stack.apis.inference import (
     StopReason,
     SystemMessage,
     ToolDefinition,
+    ToolParamDefinition,
     ToolResponse,
     ToolResponseMessage,
     UserMessage,
@@ -63,7 +64,6 @@ from llama_stack.log import get_logger
 from llama_stack.models.llama.datatypes import (
     BuiltinTool,
     ToolCall,
-    ToolParamDefinition,
 )
 from llama_stack.providers.utils.kvstore import KVStore
 from llama_stack.providers.utils.telemetry import tracing
