@@ -47,7 +47,7 @@ MODEL_ENTRIES = [
         CoreModelId.llama_guard_3_8b.value,
     ),
     build_hf_repo_model_entry(
-        "Llama-4-Scout-17B-16E-Instruct",
+        "sambanova/Llama-4-Scout-17B-16E-Instruct",
         CoreModelId.llama4_scout_17b_16e_instruct.value,
     ),
 ]
