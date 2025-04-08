@@ -225,6 +225,56 @@ def available_providers() -> List[ProviderSpec]:
         remote_provider_spec(
             api=Api.inference,
             adapter=AdapterSpec(
+                adapter_type="fireworks-openai-compat",
+                pip_packages=["litellm"],
+                module="llama_stack.providers.remote.inference.fireworks_openai_compat",
+                config_class="llama_stack.providers.remote.inference.fireworks_openai_compat.config.FireworksCompatConfig",
+                provider_data_validator="llama_stack.providers.remote.inference.fireworks_openai_compat.config.FireworksProviderDataValidator",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
+                adapter_type="together-openai-compat",
+                pip_packages=["litellm"],
+                module="llama_stack.providers.remote.inference.together_openai_compat",
+                config_class="llama_stack.providers.remote.inference.together_openai_compat.config.TogetherCompatConfig",
+                provider_data_validator="llama_stack.providers.remote.inference.together_openai_compat.config.TogetherProviderDataValidator",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
+                adapter_type="groq-openai-compat",
+                pip_packages=["litellm"],
+                module="llama_stack.providers.remote.inference.groq_openai_compat",
+                config_class="llama_stack.providers.remote.inference.groq_openai_compat.config.GroqCompatConfig",
+                provider_data_validator="llama_stack.providers.remote.inference.groq_openai_compat.config.GroqProviderDataValidator",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
+                adapter_type="sambanova-openai-compat",
+                pip_packages=["litellm"],
+                module="llama_stack.providers.remote.inference.sambanova_openai_compat",
+                config_class="llama_stack.providers.remote.inference.sambanova_openai_compat.config.SambaNovaCompatConfig",
+                provider_data_validator="llama_stack.providers.remote.inference.sambanova_openai_compat.config.SambaNovaProviderDataValidator",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
+                adapter_type="cerebras-openai-compat",
+                pip_packages=["litellm"],
+                module="llama_stack.providers.remote.inference.cerebras_openai_compat",
+                config_class="llama_stack.providers.remote.inference.cerebras_openai_compat.config.CerebrasCompatConfig",
+                provider_data_validator="llama_stack.providers.remote.inference.cerebras_openai_compat.config.CerebrasProviderDataValidator",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
                 adapter_type="sambanova",
                 pip_packages=[
                     "openai",

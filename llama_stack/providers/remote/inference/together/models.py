@@ -64,4 +64,18 @@ MODEL_ENTRIES = [
             "context_length": 32768,
         },
     ),
+    build_hf_repo_model_entry(
+        "meta-llama/Llama-4-Scout-17B-16E-Instruct",
+        CoreModelId.llama4_scout_17b_16e_instruct.value,
+        additional_aliases=[
+            "together/meta-llama/Llama-4-Scout-17B-16E-Instruct",
+        ],
+    ),
+    build_hf_repo_model_entry(
+        "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
+        CoreModelId.llama4_maverick_17b_128e_instruct.value,
+        additional_aliases=[
+            "together/meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
+        ],
+    ),
 ]

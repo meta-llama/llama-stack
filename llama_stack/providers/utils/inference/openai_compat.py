@@ -642,6 +642,36 @@ PYTHON_TYPE_TO_LITELLM_TYPE = {
 }
 
 
+def to_openai_param_type(param_type: str) -> dict:
+    """
+    Convert Python type hints to OpenAI parameter type format.
+
+    Examples:
+        'str' -> {'type': 'string'}
+        'int' -> {'type': 'integer'}
+        'list[str]' -> {'type': 'array', 'items': {'type': 'string'}}
+        'list[int]' -> {'type': 'array', 'items': {'type': 'integer'}}
+    """
+    # Handle basic types first
+    basic_types = {
+        "str": "string",
+        "int": "integer",
+        "float": "number",
+        "bool": "boolean",
+    }
+
+    if param_type in basic_types:
+        return {"type": basic_types[param_type]}
+
+    # Handle list/array types
+    if param_type.startswith("list[") and param_type.endswith("]"):
+        inner_type = param_type[5:-1]
+        if inner_type in basic_types:
+            return {"type": "array", "items": {"type": basic_types.get(inner_type, inner_type)}}
+
+    return {"type": param_type}
+
+
 def convert_tooldef_to_openai_tool(tool: ToolDefinition) -> dict:
     """
     Convert a ToolDefinition to an OpenAI API-compatible dictionary.
@@ -702,7 +732,7 @@ def convert_tooldef_to_openai_tool(tool: ToolDefinition) -> dict:
         properties = parameters["properties"]
         required = []
         for param_name, param in tool.parameters.items():
-            properties[param_name] = {"type": PYTHON_TYPE_TO_LITELLM_TYPE.get(param.param_type, param.param_type)}
+            properties[param_name] = to_openai_param_type(param.param_type)
             if param.description:
                 properties[param_name].update(description=param.description)
             if param.default:
