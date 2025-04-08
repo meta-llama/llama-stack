@@ -5,13 +5,16 @@
 # the root directory of this source tree.
 import json
 import logging
-from typing import Any, AsyncGenerator, List, Optional, Union
+from typing import Any, AsyncGenerator, Dict, List, Optional, Union
 
 import httpx
 from openai import AsyncOpenAI
+from openai.types.chat import ChatCompletion as OpenAIChatCompletion
+from openai.types.chat import ChatCompletionMessageParam as OpenAIChatCompletionMessageParam
 from openai.types.chat.chat_completion_chunk import (
     ChatCompletionChunk as OpenAIChatCompletionChunk,
 )
+from openai.types.completion import Completion as OpenAICompletion
 
 from llama_stack.apis.common.content_types import (
     InterleavedContent,
@@ -418,3 +421,107 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
 
         embeddings = [data.embedding for data in response.data]
         return EmbeddingsResponse(embeddings=embeddings)
+
+    async def openai_completion(
+        self,
+        model: str,
+        prompt: str,
+        best_of: Optional[int] = None,
+        echo: Optional[bool] = None,
+        frequency_penalty: Optional[float] = None,
+        logit_bias: Optional[Dict[str, float]] = None,
+        logprobs: Optional[bool] = None,
+        max_tokens: Optional[int] = None,
+        n: Optional[int] = None,
+        presence_penalty: Optional[float] = None,
+        seed: Optional[int] = None,
+        stop: Optional[Union[str, List[str]]] = None,
+        stream: Optional[bool] = None,
+        stream_options: Optional[Dict[str, Any]] = None,
+        temperature: Optional[float] = None,
+        top_p: Optional[float] = None,
+        user: Optional[str] = None,
+    ) -> OpenAICompletion:
+        model_obj = await self._get_model(model)
+        params = {
+            k: v
+            for k, v in {
+                "model": model_obj.provider_resource_id,
+                "prompt": prompt,
+                "best_of": best_of,
+                "echo": echo,
+                "frequency_penalty": frequency_penalty,
+                "logit_bias": logit_bias,
+                "logprobs": logprobs,
+                "max_tokens": max_tokens,
+                "n": n,
+                "presence_penalty": presence_penalty,
+                "seed": seed,
+                "stop": stop,
+                "stream": stream,
+                "stream_options": stream_options,
+                "temperature": temperature,
+                "top_p": top_p,
+                "user": user,
+            }.items()
+            if v is not None
+        }
+        return await self.client.completions.create(**params)  # type: ignore
+
+    async def openai_chat_completion(
+        self,
+        model: str,
+        messages: List[OpenAIChatCompletionMessageParam],
+        frequency_penalty: Optional[float] = None,
+        function_call: Optional[Union[str, Dict[str, Any]]] = None,
+        functions: Optional[List[Dict[str, Any]]] = None,
+        logit_bias: Optional[Dict[str, float]] = None,
+        logprobs: Optional[bool] = None,
+        max_completion_tokens: Optional[int] = None,
+        max_tokens: Optional[int] = None,
+        n: Optional[int] = None,
+        parallel_tool_calls: Optional[bool] = None,
+        presence_penalty: Optional[float] = None,
+        response_format: Optional[Dict[str, str]] = None,
+        seed: Optional[int] = None,
+        stop: Optional[Union[str, List[str]]] = None,
+        stream: Optional[bool] = None,
+        stream_options: Optional[Dict[str, Any]] = None,
+        temperature: Optional[float] = None,
+        tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
+        tools: Optional[List[Dict[str, Any]]] = None,
+        top_logprobs: Optional[int] = None,
+        top_p: Optional[float] = None,
+        user: Optional[str] = None,
+    ) -> OpenAIChatCompletion:
+        model_obj = await self._get_model(model)
+        params = {
+            k: v
+            for k, v in {
+                "model": model_obj.provider_resource_id,
+                "messages": messages,
+                "frequency_penalty": frequency_penalty,
+                "function_call": function_call,
+                "functions": functions,
+                "logit_bias": logit_bias,
+                "logprobs": logprobs,
+                "max_completion_tokens": max_completion_tokens,
+                "max_tokens": max_tokens,
+                "n": n,
+                "parallel_tool_calls": parallel_tool_calls,
+                "presence_penalty": presence_penalty,
+                "response_format": response_format,
+                "seed": seed,
+                "stop": stop,
+                "stream": stream,
+                "stream_options": stream_options,
+                "temperature": temperature,
+                "tool_choice": tool_choice,
+                "tools": tools,
+                "top_logprobs": top_logprobs,
+                "top_p": top_p,
+                "user": user,
+            }.items()
+            if v is not None
+        }
+        return await self.client.chat.completions.create(**params)  # type: ignore

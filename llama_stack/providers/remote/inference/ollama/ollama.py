@@ -45,8 +45,10 @@ from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
+    OpenAIChatCompletionUnsupportedMixin,
     OpenAICompatCompletionChoice,
     OpenAICompatCompletionResponse,
+    OpenAICompletionUnsupportedMixin,
     get_sampling_options,
     process_chat_completion_response,
     process_chat_completion_stream_response,
@@ -67,7 +69,12 @@ from .models import model_entries
 logger = get_logger(name=__name__, category="inference")
 
 
-class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
+class OllamaInferenceAdapter(
+    OpenAICompletionUnsupportedMixin,
+    OpenAIChatCompletionUnsupportedMixin,
+    Inference,
+    ModelsProtocolPrivate,
+):
     def __init__(self, url: str) -> None:
         self.register_helper = ModelRegistryHelper(model_entries)
         self.url = url

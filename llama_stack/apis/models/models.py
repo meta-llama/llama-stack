@@ -7,6 +7,7 @@
 from enum import Enum
 from typing import Any, Dict, List, Literal, Optional, Protocol, runtime_checkable
 
+from openai.types.model import Model as OpenAIModel
 from pydantic import BaseModel, ConfigDict, Field
 
 from llama_stack.apis.resource import Resource, ResourceType
@@ -56,11 +57,18 @@ class ListModelsResponse(BaseModel):
     data: List[Model]
 
 
+class OpenAIListModelsResponse(BaseModel):
+    data: List[OpenAIModel]
+
+
 @runtime_checkable
 @trace_protocol
 class Models(Protocol):
     @webmethod(route="/models", method="GET")
     async def list_models(self) -> ListModelsResponse: ...
+
+    @webmethod(route="/openai/v1/models", method="GET")
+    async def openai_list_models(self) -> OpenAIListModelsResponse: ...
 
     @webmethod(route="/models/{model_id:path}", method="GET")
     async def get_model(

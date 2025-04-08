@@ -6,9 +6,10 @@
 import json
 import logging
 import warnings
-from typing import AsyncGenerator, Dict, Iterable, List, Optional, Union
+from typing import Any, AsyncGenerator, Dict, Iterable, List, Optional, Union
 
 from openai import AsyncStream
+from openai.types.chat import ChatCompletion as OpenAIChatCompletion
 from openai.types.chat import (
     ChatCompletionAssistantMessageParam as OpenAIChatCompletionAssistantMessage,
 )
@@ -54,6 +55,7 @@ from openai.types.chat.chat_completion_content_part_image_param import (
 from openai.types.chat.chat_completion_message_tool_call_param import (
     Function as OpenAIFunction,
 )
+from openai.types.completion import Completion as OpenAICompletion
 from pydantic import BaseModel
 
 from llama_stack.apis.common.content_types import (
@@ -1049,3 +1051,57 @@ async def convert_openai_chat_completion_stream(
             stop_reason=stop_reason,
         )
     )
+
+
+class OpenAICompletionUnsupportedMixin:
+    async def openai_completion(
+        self,
+        model: str,
+        prompt: str,
+        best_of: Optional[int] = None,
+        echo: Optional[bool] = None,
+        frequency_penalty: Optional[float] = None,
+        logit_bias: Optional[Dict[str, float]] = None,
+        logprobs: Optional[bool] = None,
+        max_tokens: Optional[int] = None,
+        n: Optional[int] = None,
+        presence_penalty: Optional[float] = None,
+        seed: Optional[int] = None,
+        stop: Optional[Union[str, List[str]]] = None,
+        stream: Optional[bool] = None,
+        stream_options: Optional[Dict[str, Any]] = None,
+        temperature: Optional[float] = None,
+        top_p: Optional[float] = None,
+        user: Optional[str] = None,
+    ) -> OpenAICompletion:
+        raise ValueError(f"{self.__class__.__name__} doesn't support openai completion")
+
+
+class OpenAIChatCompletionUnsupportedMixin:
+    async def openai_chat_completion(
+        self,
+        model: str,
+        messages: List[OpenAIChatCompletionMessage],
+        frequency_penalty: Optional[float] = None,
+        function_call: Optional[Union[str, Dict[str, Any]]] = None,
+        functions: Optional[List[Dict[str, Any]]] = None,
+        logit_bias: Optional[Dict[str, float]] = None,
+        logprobs: Optional[bool] = None,
+        max_completion_tokens: Optional[int] = None,
+        max_tokens: Optional[int] = None,
+        n: Optional[int] = None,
+        parallel_tool_calls: Optional[bool] = None,
+        presence_penalty: Optional[float] = None,
+        response_format: Optional[Dict[str, str]] = None,
+        seed: Optional[int] = None,
+        stop: Optional[Union[str, List[str]]] = None,
+        stream: Optional[bool] = None,
+        stream_options: Optional[Dict[str, Any]] = None,
+        temperature: Optional[float] = None,
+        tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
+        tools: Optional[List[Dict[str, Any]]] = None,
+        top_logprobs: Optional[int] = None,
+        top_p: Optional[float] = None,
+        user: Optional[str] = None,
+    ) -> OpenAIChatCompletion:
+        raise ValueError(f"{self.__class__.__name__} doesn't support openai chat completion")

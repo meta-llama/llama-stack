@@ -17,6 +17,9 @@ from typing import (
     runtime_checkable,
 )
 
+from openai.types.chat import ChatCompletion as OpenAIChatCompletion
+from openai.types.chat import ChatCompletionMessageParam as OpenAIChatCompletionMessageParam
+from openai.types.completion import Completion as OpenAICompletion
 from pydantic import BaseModel, Field, field_validator
 from typing_extensions import Annotated
 
@@ -563,4 +566,58 @@ class Inference(Protocol):
         :param task_type: (Optional) How is the embedding being used? This is only supported by asymmetric embedding models.
         :returns: An array of embeddings, one for each content. Each embedding is a list of floats. The dimensionality of the embedding is model-specific; you can check model metadata using /models/{model_id}
         """
+        ...
+
+    @webmethod(route="/openai/v1/completions", method="POST")
+    async def openai_completion(
+        self,
+        model: str,
+        prompt: str,
+        best_of: Optional[int] = None,
+        echo: Optional[bool] = None,
+        frequency_penalty: Optional[float] = None,
+        logit_bias: Optional[Dict[str, float]] = None,
+        logprobs: Optional[bool] = None,
+        max_tokens: Optional[int] = None,
+        n: Optional[int] = None,
+        presence_penalty: Optional[float] = None,
+        seed: Optional[int] = None,
+        stop: Optional[Union[str, List[str]]] = None,
+        stream: Optional[bool] = None,
+        stream_options: Optional[Dict[str, Any]] = None,
+        temperature: Optional[float] = None,
+        top_p: Optional[float] = None,
+        user: Optional[str] = None,
+    ) -> OpenAICompletion:
+        """Generate an OpenAI-compatible completion for the given prompt using the specified model."""
+        ...
+
+    @webmethod(route="/openai/v1/chat/completions", method="POST")
+    async def openai_chat_completion(
+        self,
+        model: str,
+        messages: List[OpenAIChatCompletionMessageParam],
+        frequency_penalty: Optional[float] = None,
+        function_call: Optional[Union[str, Dict[str, Any]]] = None,
+        functions: Optional[List[Dict[str, Any]]] = None,
+        logit_bias: Optional[Dict[str, float]] = None,
+        logprobs: Optional[bool] = None,
+        max_completion_tokens: Optional[int] = None,
+        max_tokens: Optional[int] = None,
+        n: Optional[int] = None,
+        parallel_tool_calls: Optional[bool] = None,
+        presence_penalty: Optional[float] = None,
+        response_format: Optional[Dict[str, str]] = None,
+        seed: Optional[int] = None,
+        stop: Optional[Union[str, List[str]]] = None,
+        stream: Optional[bool] = None,
+        stream_options: Optional[Dict[str, Any]] = None,
+        temperature: Optional[float] = None,
+        tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
+        tools: Optional[List[Dict[str, Any]]] = None,
+        top_logprobs: Optional[int] = None,
+        top_p: Optional[float] = None,
+        user: Optional[str] = None,
+    ) -> OpenAIChatCompletion:
+        """Generate an OpenAI-compatible chat completion for the given messages using the specified model."""
         ...
