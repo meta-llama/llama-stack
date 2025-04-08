@@ -7,9 +7,6 @@
 import time
 from typing import Any, AsyncGenerator, AsyncIterator, Dict, List, Optional, Union
 
-from openai.types.chat import ChatCompletion as OpenAIChatCompletion
-from openai.types.completion import Completion as OpenAICompletion
-
 from llama_stack.apis.common.content_types import (
     URL,
     InterleavedContent,
@@ -38,7 +35,7 @@ from llama_stack.apis.inference import (
     ToolDefinition,
     ToolPromptFormat,
 )
-from llama_stack.apis.inference.inference import OpenAIMessageParam
+from llama_stack.apis.inference.inference import OpenAIChatCompletion, OpenAICompletion, OpenAIMessageParam
 from llama_stack.apis.models import Model, ModelType
 from llama_stack.apis.safety import RunShieldResponse, Safety
 from llama_stack.apis.scoring import (

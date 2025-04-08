@@ -9,7 +9,6 @@ import warnings
 from typing import Any, AsyncGenerator, Dict, Iterable, List, Optional, Union
 
 from openai import AsyncStream
-from openai.types.chat import ChatCompletion as OpenAIChatCompletion
 from openai.types.chat import (
     ChatCompletionAssistantMessageParam as OpenAIChatCompletionAssistantMessage,
 )
@@ -55,7 +54,6 @@ from openai.types.chat.chat_completion_content_part_image_param import (
 from openai.types.chat.chat_completion_message_tool_call_param import (
     Function as OpenAIFunction,
 )
-from openai.types.completion import Completion as OpenAICompletion
 from pydantic import BaseModel
 
 from llama_stack.apis.common.content_types import (
@@ -85,6 +83,7 @@ from llama_stack.apis.inference import (
     TopPSamplingStrategy,
     UserMessage,
 )
+from llama_stack.apis.inference.inference import OpenAIChatCompletion, OpenAICompletion
 from llama_stack.models.llama.datatypes import (
     BuiltinTool,
     StopReason,

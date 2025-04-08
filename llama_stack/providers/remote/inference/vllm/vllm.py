@@ -9,11 +9,9 @@ from typing import Any, AsyncGenerator, Dict, List, Optional, Union
 
 import httpx
 from openai import AsyncOpenAI
-from openai.types.chat import ChatCompletion as OpenAIChatCompletion
 from openai.types.chat.chat_completion_chunk import (
     ChatCompletionChunk as OpenAIChatCompletionChunk,
 )
-from openai.types.completion import Completion as OpenAICompletion
 
 from llama_stack.apis.common.content_types import (
     InterleavedContent,
@@ -47,7 +45,7 @@ from llama_stack.apis.inference import (
     ToolDefinition,
     ToolPromptFormat,
 )
-from llama_stack.apis.inference.inference import OpenAIMessageParam
+from llama_stack.apis.inference.inference import OpenAIChatCompletion, OpenAICompletion, OpenAIMessageParam
 from llama_stack.apis.models import Model, ModelType
 from llama_stack.models.llama.datatypes import BuiltinTool, StopReason, ToolCall
 from llama_stack.models.llama.sku_list import all_registered_models
