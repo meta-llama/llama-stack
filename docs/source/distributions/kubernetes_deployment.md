@@ -7,13 +7,13 @@ In this guide, we'll use a local [Kind](https://kind.sigs.k8s.io/) cluster and a
 
 First, create a local Kubernetes cluster via Kind:
 
-```bash
+```
 kind create cluster --image kindest/node:v1.32.0 --name llama-stack-test
 ```
 
 First, create a Kubernetes PVC and Secret for downloading and storing Hugging Face model:
 
-```bash
+```
 cat <<EOF |kubectl apply -f -
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -39,7 +39,7 @@ data:
 
 Next, start the vLLM server as a Kubernetes Deployment and Service:
 
-```bash
+```
 cat <<EOF |kubectl apply -f -
 apiVersion: apps/v1
 kind: Deployment
@@ -95,7 +95,7 @@ EOF
 
 We can verify that the vLLM server has started successfully via the logs (this might take a couple of minutes to download the model):
 
-```bash
+```
 $ kubectl logs -l app.kubernetes.io/name=vllm
 ...
 INFO:     Started server process [1]
@@ -119,7 +119,7 @@ providers:
 
 Once we have defined the run configuration for Llama Stack, we can build an image with that configuration and the server source code:
 
-```bash
+```
 cat >/tmp/test-vllm-llama-stack/Containerfile.llama-stack-run-k8s <<EOF
 FROM distribution-myenv:dev
 
@@ -135,7 +135,7 @@ podman build -f /tmp/test-vllm-llama-stack/Containerfile.llama-stack-run-k8s -t 
 
 We can then start the Llama Stack server by deploying a Kubernetes Pod and Service:
 
-```bash
+```
 cat <<EOF |kubectl apply -f -
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -195,7 +195,7 @@ EOF
 ### Verifying the Deployment
 We can check that the LlamaStack server has started:
 
-```bash
+```
 $ kubectl logs -l app.kubernetes.io/name=llama-stack
 ...
 INFO:     Started server process [1]
@@ -207,7 +207,7 @@ INFO:     Uvicorn running on http://['::', '0.0.0.0']:5000 (Press CTRL+C to quit
 
 Finally, we forward the Kubernetes service to a local port and test some inference requests against it via the Llama Stack Client:
 
-```bash
+```
 kubectl port-forward service/llama-stack-service 5000:5000
 llama-stack-client --endpoint http://localhost:5000 inference chat-completion --message "hello, what model are you?"
 ```
