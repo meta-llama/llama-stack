@@ -126,7 +126,7 @@ providers:
 Once we have defined the run configuration for Llama Stack, we can build an image with that configuration and the server source code:
 
 ```
-mkdir -p /tmp/test-vllm-llama-stack && cat >/tmp/test-vllm-llama-stack/Containerfile.llama-stack-run-k8s <<EOF
+tmp_dir=$(mktemp -d) && cat >$tmp_dir/Containerfile.llama-stack-run-k8s <<EOF
 FROM distribution-myenv:dev
 
 RUN apt-get update && apt-get install -y git
@@ -134,7 +134,7 @@ RUN git clone https://github.com/meta-llama/llama-stack.git /app/llama-stack-sou
 
 ADD ./vllm-llama-stack-run-k8s.yaml /app/config.yaml
 EOF
-podman build -f /tmp/test-vllm-llama-stack/Containerfile.llama-stack-run-k8s -t llama-stack-run-k8s /tmp/test-vllm-llama-stack
+podman build -f $tmp_dir/Containerfile.llama-stack-run-k8s -t llama-stack-run-k8s $tmp_dir
 ```
 
 ### Deploying Llama Stack Server in Kubernetes
