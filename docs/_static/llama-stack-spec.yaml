@@ -6482,6 +6482,14 @@ components:
             - type: array
               items:
                 type: string
+            - type: array
+              items:
+                type: integer
+            - type: array
+              items:
+                type: array
+                items:
+                  type: integer
           description: The prompt to generate a completion for
         best_of:
           type: integer
