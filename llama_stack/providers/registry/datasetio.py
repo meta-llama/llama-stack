@@ -41,10 +41,8 @@ def available_providers() -> List[ProviderSpec]:
             adapter=AdapterSpec(
                 adapter_type="postgresql",
                 pip_packages=[
-#                    "asyncpg",
-#                    "datasets",
-                "psycopg",
-                "psycopg[pool]",
+                    "psycopg",
+                    "psycopg_pool",
                 ],
                 module="llama_stack.providers.remote.datasetio.postgresql",
                 config_class="llama_stack.providers.remote.datasetio.postgresql.PostgreSQLDatasetIOConfig",
