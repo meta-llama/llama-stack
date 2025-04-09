@@ -113,6 +113,16 @@ def available_providers() -> List[ProviderSpec]:
         remote_provider_spec(
             Api.vector_io,
             AdapterSpec(
+                adapter_type="mongodb",
+                pip_packages=["pymongo"],
+                module="llama_stack.providers.remote.vector_io.mongodb",
+                config_class="llama_stack.providers.remote.vector_io.mongodb.MongoDBVectorIOConfig",
+            ),
+            api_dependencies=[Api.inference],
+        ),
+        remote_provider_spec(
+            Api.vector_io,
+            AdapterSpec(
                 adapter_type="milvus",
                 pip_packages=["pymilvus"],
                 module="llama_stack.providers.remote.vector_io.milvus",
