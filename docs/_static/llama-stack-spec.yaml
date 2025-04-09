@@ -6556,6 +6556,12 @@ components:
         user:
           type: string
           description: (Optional) The user to use
+        guided_choice:
+          type: array
+          items:
+            type: string
+        prompt_logprobs:
+          type: integer
       additionalProperties: false
       required:
         - model

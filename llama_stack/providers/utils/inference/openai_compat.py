@@ -1104,6 +1104,8 @@ class OpenAICompletionUnsupportedMixin:
         temperature: Optional[float] = None,
         top_p: Optional[float] = None,
         user: Optional[str] = None,
+        guided_choice: Optional[List[str]] = None,
+        prompt_logprobs: Optional[int] = None,
     ) -> OpenAICompletion:
         if stream:
             raise ValueError(f"{self.__class__.__name__} doesn't support streaming openai completions")

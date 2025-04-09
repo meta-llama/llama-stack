@@ -779,6 +779,7 @@ class Inference(Protocol):
     @webmethod(route="/openai/v1/completions", method="POST")
     async def openai_completion(
         self,
+        # Standard OpenAI completion parameters
         model: str,
         prompt: Union[str, List[str], List[int], List[List[int]]],
         best_of: Optional[int] = None,
@@ -796,6 +797,9 @@ class Inference(Protocol):
         temperature: Optional[float] = None,
         top_p: Optional[float] = None,
         user: Optional[str] = None,
+        # vLLM-specific parameters
+        guided_choice: Optional[List[str]] = None,
+        prompt_logprobs: Optional[int] = None,
     ) -> OpenAICompletion:
         """Generate an OpenAI-compatible completion for the given prompt using the specified model.
 

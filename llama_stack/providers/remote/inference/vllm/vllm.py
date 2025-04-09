@@ -440,8 +440,17 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         temperature: Optional[float] = None,
         top_p: Optional[float] = None,
         user: Optional[str] = None,
+        guided_choice: Optional[List[str]] = None,
+        prompt_logprobs: Optional[int] = None,
     ) -> OpenAICompletion:
         model_obj = await self._get_model(model)
+
+        extra_body: Dict[str, Any] = {}
+        if prompt_logprobs:
+            extra_body["prompt_logprobs"] = prompt_logprobs
+        if guided_choice:
+            extra_body["guided_choice"] = guided_choice
+
         params = await prepare_openai_completion_params(
             model=model_obj.provider_resource_id,
             prompt=prompt,
@@ -460,6 +469,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
             temperature=temperature,
             top_p=top_p,
             user=user,
+            extra_body=extra_body,
         )
         return await self.client.completions.create(**params)  # type: ignore
 

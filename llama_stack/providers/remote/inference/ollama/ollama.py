@@ -347,6 +347,8 @@ class OllamaInferenceAdapter(
         temperature: Optional[float] = None,
         top_p: Optional[float] = None,
         user: Optional[str] = None,
+        guided_choice: Optional[List[str]] = None,
+        prompt_logprobs: Optional[int] = None,
     ) -> OpenAICompletion:
         if not isinstance(prompt, str):
             raise ValueError("Ollama does not support non-string prompts for completion")

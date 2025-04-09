@@ -267,6 +267,8 @@ class LiteLLMOpenAIMixin(
         temperature: Optional[float] = None,
         top_p: Optional[float] = None,
         user: Optional[str] = None,
+        guided_choice: Optional[List[str]] = None,
+        prompt_logprobs: Optional[int] = None,
     ) -> OpenAICompletion:
         model_obj = await self._get_model(model)
         params = await prepare_openai_completion_params(
@@ -287,6 +289,8 @@ class LiteLLMOpenAIMixin(
             temperature=temperature,
             top_p=top_p,
             user=user,
+            guided_choice=guided_choice,
+            prompt_logprobs=prompt_logprobs,
         )
         return litellm.text_completion(**params)
 

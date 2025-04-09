@@ -222,6 +222,8 @@ class PassthroughInferenceAdapter(Inference):
         temperature: Optional[float] = None,
         top_p: Optional[float] = None,
         user: Optional[str] = None,
+        guided_choice: Optional[List[str]] = None,
+        prompt_logprobs: Optional[int] = None,
     ) -> OpenAICompletion:
         client = self._get_client()
         model_obj = await self.model_store.get_model(model)
@@ -244,6 +246,8 @@ class PassthroughInferenceAdapter(Inference):
             temperature=temperature,
             top_p=top_p,
             user=user,
+            guided_choice=guided_choice,
+            prompt_logprobs=prompt_logprobs,
         )
 
         return await client.inference.openai_completion(**params)
