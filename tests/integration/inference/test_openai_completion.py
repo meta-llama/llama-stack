@@ -129,3 +129,53 @@ def test_openai_completion_guided_choice(openai_client, client_with_models, text
     assert len(response.choices) > 0
     choice = response.choices[0]
     assert choice.text in ["joy", "sadness"]
+
+
+@pytest.mark.parametrize(
+    "test_case",
+    [
+        "inference:chat_completion:non_streaming_01",
+        "inference:chat_completion:non_streaming_02",
+    ],
+)
+def test_openai_chat_completion_non_streaming(openai_client, text_model_id, test_case):
+    tc = TestCase(test_case)
+    question = tc["question"]
+    expected = tc["expected"]
+
+    response = openai_client.chat.completions.create(
+        model=text_model_id,
+        messages=[
+            {
+                "role": "user",
+                "content": question,
+            }
+        ],
+        stream=False,
+    )
+    message_content = response.choices[0].message.content.lower().strip()
+    assert len(message_content) > 0
+    assert expected.lower() in message_content
+
+
+@pytest.mark.parametrize(
+    "test_case",
+    [
+        "inference:chat_completion:streaming_01",
+        "inference:chat_completion:streaming_02",
+    ],
+)
+def test_openai_chat_completion_streaming(openai_client, text_model_id, test_case):
+    tc = TestCase(test_case)
+    question = tc["question"]
+    expected = tc["expected"]
+
+    response = openai_client.chat.completions.create(
+        model=text_model_id,
+        messages=[{"role": "user", "content": question}],
+        stream=True,
+        timeout=120,  # Increase timeout to 2 minutes for large conversation history
+    )
+    streamed_content = [str(chunk.choices[0].delta.content.lower().strip()) for chunk in response]
+    assert len(streamed_content) > 0
+    assert expected.lower() in "".join(streamed_content)
