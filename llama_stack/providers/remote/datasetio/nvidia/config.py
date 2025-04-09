@@ -55,7 +55,7 @@ class NvidiaDatasetIOConfig(BaseModel):
     def sample_run_config(cls, **kwargs) -> Dict[str, Any]:
         return {
             "api_key": "${env.NVIDIA_API_KEY:}",
-            "user_id": "${env.NVIDIA_USER_ID:llama-stack-user}",
             "dataset_namespace": "${env.NVIDIA_DATASET_NAMESPACE:default}",
             "project_id": "${env.NVIDIA_PROJECT_ID:test-project}",
+            "datasets_url": "${env.NVIDIA_DATASETS_URL:http://nemo.test}",
         }
