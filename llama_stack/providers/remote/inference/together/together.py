@@ -260,7 +260,7 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
     async def openai_completion(
         self,
         model: str,
-        prompt: Union[str, List[str]],
+        prompt: Union[str, List[str], List[int], List[List[int]]],
         best_of: Optional[int] = None,
         echo: Optional[bool] = None,
         frequency_penalty: Optional[float] = None,
