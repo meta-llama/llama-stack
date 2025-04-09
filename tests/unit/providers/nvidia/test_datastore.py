@@ -93,6 +93,46 @@ class TestNvidiaDatastore(unittest.TestCase):
         self.mock_make_request.assert_called_once()
         self._assert_request(self.mock_make_request, "DELETE", "/v1/datasets/default/test-dataset")
 
+    def test_register_dataset_with_custom_namespace_project(self):
+        custom_config = NvidiaDatasetIOConfig(
+            datasets_url=os.environ["NVIDIA_DATASETS_URL"],
+            dataset_namespace="custom-namespace",
+            project_id="custom-project",
+        )
+        custom_adapter = NvidiaDatasetIOAdapter(custom_config)
+
+        self.mock_make_request.return_value = {
+            "id": "dataset-123456",
+            "name": "test-dataset",
+            "namespace": "custom-namespace",
+        }
+
+        dataset_def = Dataset(
+            identifier="test-dataset",
+            type="dataset",
+            provider_resource_id="",
+            provider_id="",
+            purpose=DatasetPurpose.post_training_messages,
+            source=URIDataSource(uri="https://example.com/data.jsonl"),
+            metadata={"format": "jsonl"},
+        )
+
+        self.run_async(custom_adapter.register_dataset(dataset_def))
+
+        self.mock_make_request.assert_called_once()
+        self._assert_request(
+            self.mock_make_request,
+            "POST",
+            "/v1/datasets",
+            expected_json={
+                "name": "test-dataset",
+                "namespace": "custom-namespace",
+                "files_url": "https://example.com/data.jsonl",
+                "project": "custom-project",
+                "format": "jsonl",
+            },
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
