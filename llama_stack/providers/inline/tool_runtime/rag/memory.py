@@ -104,7 +104,9 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
         query_config: Optional[RAGQueryConfig] = None,
     ) -> RAGQueryResult:
         if not vector_db_ids:
-            raise ValueError("No vector DBs were provided to the RAG tool. Please provide at least one vector DB ID.")
+            raise ValueError(
+                "No vector DBs were provided to the knowledge search tool. Please provide at least one vector DB ID."
+            )
 
         query_config = query_config or RAGQueryConfig()
         query = await generate_rag_query(
@@ -127,7 +129,7 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
         scores = [s for r in results for s in r.scores]
 
         if not chunks:
-            return RAGQueryResult(content=None)
+            raise ValueError("The knowledge search tool did not find any information relevant to the query.")
 
         # sort by score
         chunks, scores = zip(*sorted(zip(chunks, scores, strict=False), key=lambda x: x[1], reverse=True), strict=False)  # type: ignore
