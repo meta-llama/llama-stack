@@ -119,17 +119,16 @@ class Llama3:
             torch.set_default_device(device)
         else:
             print(f"Setting default device to {device}")
-            torch.set_default_device(device)
             if device.type == "cuda":
                 if torch.cuda.is_bf16_supported():
-                    torch.set_default_dtype(torch.bfloat16)
+                    torch.set_default_tensor_type(torch.cuda.BFloat16Tensor)
                 else:
-                    torch.set_default_dtype(torch.half)
+                    torch.set_default_tensor_type(torch.cuda.Float16Tensor)
             elif device.type == "xpu":
                 if torch.xpu.is_bf16_supported():
-                    torch.set_default_dtype(torch.bfloat16)
+                    torch.set_default_tensor_type(torch.xpu.BFloat16Tensor)
                 else:
-                    torch.set_default_dtype(torch.half)
+                    torch.set_default_tensor_type(torch.xpu.Float16Tensor)
 
             model = build_model()
             print("Loading state dict...")
