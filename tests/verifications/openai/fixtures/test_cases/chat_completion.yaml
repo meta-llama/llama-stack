@@ -1,0 +1,162 @@
+test_chat_basic:
+  test_name: test_chat_basic
+  test_params:
+    input_output:
+    - input:
+        messages:
+        - content: Which planet do humans live on?
+          role: user
+      output: Earth
+    - input:
+        messages:
+        - content: Which planet has rings around it with a name starting with letter
+            S?
+          role: user
+      output: Saturn
+    model:
+    - Llama-3.3-8B-Instruct
+    - Llama-3.3-70B-Instruct
+    - Llama-4-Scout-17B-16E
+    - Llama-4-Scout-17B-16E-Instruct
+    - Llama-4-Maverick-17B-128E
+    - Llama-4-Maverick-17B-128E-Instruct
+    - gpt-4o
+    - gpt-4o-mini
+test_chat_image:
+  test_name: test_chat_image
+  test_params:
+    input_output:
+    - input:
+        messages:
+        - content:
+          - text: What is in this image?
+            type: text
+          - image_url:
+              url: https://upload.wikimedia.org/wikipedia/commons/f/f7/Llamas%2C_Vernagt-Stausee%2C_Italy.jpg
+            type: image_url
+          role: user
+      output: llama
+    model:
+    - Llama-4-Scout-17B-16E
+    - Llama-4-Scout-17B-16E-Instruct
+    - Llama-4-Maverick-17B-128E
+    - Llama-4-Maverick-17B-128E-Instruct
+    - gpt-4o
+    - gpt-4o-mini
+test_chat_structured_output:
+  test_name: test_chat_structured_output
+  test_params:
+    input_output:
+    - input:
+        messages:
+        - content: Extract the event information.
+          role: system
+        - content: Alice and Bob are going to a science fair on Friday.
+          role: user
+        response_format:
+          json_schema:
+            name: calendar_event
+            schema:
+              properties:
+                date:
+                  title: Date
+                  type: string
+                name:
+                  title: Name
+                  type: string
+                participants:
+                  items:
+                    type: string
+                  title: Participants
+                  type: array
+              required:
+              - name
+              - date
+              - participants
+              title: CalendarEvent
+              type: object
+          type: json_schema
+      output: valid_calendar_event
+    - input:
+        messages:
+        - content: You are a helpful math tutor. Guide the user through the solution
+            step by step.
+          role: system
+        - content: how can I solve 8x + 7 = -23
+          role: user
+        response_format:
+          json_schema:
+            name: math_reasoning
+            schema:
+              $defs:
+                Step:
+                  properties:
+                    explanation:
+                      title: Explanation
+                      type: string
+                    output:
+                      title: Output
+                      type: string
+                  required:
+                  - explanation
+                  - output
+                  title: Step
+                  type: object
+              properties:
+                final_answer:
+                  title: Final Answer
+                  type: string
+                steps:
+                  items:
+                    $ref: '#/$defs/Step'
+                  title: Steps
+                  type: array
+              required:
+              - steps
+              - final_answer
+              title: MathReasoning
+              type: object
+          type: json_schema
+      output: valid_math_reasoning
+    model:
+    - Llama-3.3-8B-Instruct
+    - Llama-3.3-70B-Instruct
+    - Llama-4-Scout-17B-16E
+    - Llama-4-Scout-17B-16E-Instruct
+    - Llama-4-Maverick-17B-128E
+    - Llama-4-Maverick-17B-128E-Instruct
+    - gpt-4o
+    - gpt-4o-mini
+test_tool_calling:
+  test_name: test_tool_calling
+  test_params:
+    input_output:
+    - input:
+        messages:
+        - content: You are a helpful assistant that can use tools to get information.
+          role: system
+        - content: What's the weather like in San Francisco?
+          role: user
+        tools:
+        - function:
+            description: Get current temperature for a given location.
+            name: get_weather
+            parameters:
+              additionalProperties: false
+              properties:
+                location:
+                  description: "City and country e.g. Bogot\xE1, Colombia"
+                  type: string
+              required:
+              - location
+              type: object
+          type: function
+      output: get_weather_tool_call
+    model:
+    - Llama-3.3-70B-Instruct
+    - Llama-4-Scout-17B-16E
+    - Llama-4-Scout-17B-16E-Instruct
+    - Llama-4-Maverick-17B-128E
+    - Llama-4-Maverick-17B-128E-Instruct
+    - gpt-4o
+    - gpt-4o-mini
