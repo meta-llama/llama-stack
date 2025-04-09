@@ -2,27 +2,32 @@
 
 Get started with Llama Stack in minutes!
 
+Llama Stack is a stateful service with REST APIs to support the seamless transition of AI applications across different
+environments. You can build and test using a local server first and deploy to a hosted endpoint for production.
+
 In this guide, we'll walk through how to build a RAG application locally using Llama Stack with [Ollama](https://ollama.com/)
 as the inference [provider](../providers/index.md#inference) for a Llama Model.
 
-## Step 1. Install [uv](https://docs.astral.sh/uv/) and setup your virtual environment
+## Step 1. Install and Setup
+Install [uv](https://docs.astral.sh/uv/), setup your virtual environment, and run inference on a Llama model with
+[Ollama](https://ollama.com/download).
 ```bash
-uv pip install llama-stack aiosqlite faiss-cpu ollama \
-openai datasets opentelemetry-exporter-otlp-proto-http mcp autoevals
+uv pip install llama-stack aiosqlite faiss-cpu ollama openai datasets opentelemetry-exporter-otlp-proto-http mcp autoevals
 source .venv/bin/activate
 export INFERENCE_MODEL="llama3.2:3b"
-```
-## Step 2: Run inference locally with Ollama
-```bash
-# make sure to run this in a separate terminal
 ollama run llama3.2:3b --keepalive 60m
 ```
+## Step 2: Run the Llama Stack Server
+```bash
+INFERENCE_MODEL=llama3.2:3b llama stack build --template ollama --image-type venv --run
+```
 ## Step 3: Run the Demo
-You can run this with `uv run demo_script.py` or in an interactive shell.
+Now open up a new terminal using the same virtual environment and you can run this demo as a script using `uv run demo_script.py` or in an interactive shell.
 ```python
 from termcolor import cprint
-from llama_stack.distribution.library_client import LlamaStackAsLibraryClient
 from llama_stack_client.types import Document
+from llama_stack_client import LlamaStackClient
+
 
 vector_db = "faiss"
 vector_db_id = "test-vector-db"
@@ -37,8 +42,7 @@ documents = [
     )
 ]
 
-client = LlamaStackAsLibraryClient("ollama")
-_ = client.initialize()
+client = LlamaStackClient(base_url="http://localhost:8321")
 client.vector_dbs.register(
     provider_id=vector_db,
     vector_db_id=vector_db_id,
@@ -65,7 +69,7 @@ for chunk in response.content:
     cprint("" + "-" * 50, "yellow")
 ```
 And you should see output like below.
-```bash
+```
 --------------------------------------------------
 Query> Can you give me the arxiv link for Lora Fine Tuning in Pytorch?
 --------------------------------------------------
