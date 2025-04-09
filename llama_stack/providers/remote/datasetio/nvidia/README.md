@@ -29,12 +29,14 @@ llama stack build --template nvidia --image-type conda
 
 ```python
 import os
+
 os.environ["NVIDIA_API_KEY"] = "your-api-key"
 os.environ["NVIDIA_CUSTOMIZER_URL"] = "http://nemo.test"
 os.environ["NVIDIA_USER_ID"] = "llama-stack-user"
 os.environ["NVIDIA_DATASET_NAMESPACE"] = "default"
 os.environ["NVIDIA_PROJECT_ID"] = "test-project"
 from llama_stack.distribution.library_client import LlamaStackAsLibraryClient
+
 client = LlamaStackAsLibraryClient("nvidia")
 client.initialize()
 ```
@@ -43,17 +45,14 @@ client.initialize()
 
 ```python
 client.datasets.register(
-purpose="post-training/messages",
-dataset_id="my-training-dataset",
-source={
-"type": "uri",
-"uri": "hf://datasets/default/sample-dataset"
-},
-metadata={
-"format": "json",
-"description": "Dataset for LLM fine-tuning",
-"provider": "nvidia"
-}
+    purpose="post-training/messages",
+    dataset_id="my-training-dataset",
+    source={"type": "uri", "uri": "hf://datasets/default/sample-dataset"},
+    metadata={
+        "format": "json",
+        "description": "Dataset for LLM fine-tuning",
+        "provider": "nvidia",
+    },
 )
 ```
 
