@@ -6477,7 +6477,11 @@ components:
             The identifier of the model to use. The model must be registered with
             Llama Stack and available via the /models endpoint.
         prompt:
-          type: string
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
           description: The prompt to generate a completion for
         best_of:
           type: integer
