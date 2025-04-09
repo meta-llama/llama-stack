@@ -41,7 +41,7 @@ The following environment variables can be configured:
 
 ## Setting up vLLM server
 
-Both AMD and NVIDIA GPUs can serve as accelerators for the vLLM server, which acts as both the LLM inference provider and safety provider.
+Both AMD and NVIDIA GPUs can serve as accelerators for the vLLM server, which acts as both the LLM inference provider and the safety provider.
 
 ### Setting up vLLM server on AMD GPU
 
@@ -112,7 +112,6 @@ docker run \
     --model $SAFETY_MODEL \
     --port $SAFETY_PORT
 ```
-
 
 ### Setting up vLLM server on NVIDIA GPU
 
