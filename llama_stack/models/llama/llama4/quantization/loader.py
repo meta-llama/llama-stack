@@ -10,7 +10,7 @@ from typing import Callable, Optional
 
 import torch
 from fairscale.nn.model_parallel.initialize import get_model_parallel_rank
-from torch import nn, Tensor
+from torch import Tensor, nn
 from torch.nn import functional as F
 
 from ...datatypes import QuantizationMode
