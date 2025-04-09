@@ -111,6 +111,9 @@ html_theme_options = {
     "collapse_navigation": False,
     # "style_nav_header_background": "#c3c9d4",
 }
+html_context = {
+    "default_mode": "auto"
+}
 
 html_static_path = ["../_static"]
 # html_logo = "../_static/llama-stack-logo.png"
