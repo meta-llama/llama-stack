@@ -11,7 +11,12 @@ First, create a local Kubernetes cluster via Kind:
 kind create cluster --image kindest/node:v1.32.0 --name llama-stack-test
 ```
 
-First, create a Kubernetes PVC and Secret for downloading and storing Hugging Face model:
+First set your hugging face token as an environment variable.
+```
+export HF_TOKEN=<your_hf_token>
+```
+
+Now create a Kubernetes PVC and Secret for downloading and storing Hugging Face model:
 
 ```
 cat <<EOF |kubectl apply -f -
@@ -33,7 +38,8 @@ metadata:
   name: hf-token-secret
 type: Opaque
 data:
-  token: $(HF_TOKEN)
+  token: $(echo -n "$HF_TOKEN" | base64)
+EOF
 ```
 
 
@@ -120,7 +126,7 @@ providers:
 Once we have defined the run configuration for Llama Stack, we can build an image with that configuration and the server source code:
 
 ```
-cat >/tmp/test-vllm-llama-stack/Containerfile.llama-stack-run-k8s <<EOF
+mkdir -p /tmp/test-vllm-llama-stack && cat >/tmp/test-vllm-llama-stack/Containerfile.llama-stack-run-k8s <<EOF
 FROM distribution-myenv:dev
 
 RUN apt-get update && apt-get install -y git
