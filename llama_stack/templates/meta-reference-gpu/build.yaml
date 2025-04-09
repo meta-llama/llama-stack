@@ -19,6 +19,7 @@ distribution_spec:
     datasetio:
     - remote::huggingface
     - inline::localfs
+    - remote::postgresql
     scoring:
     - inline::basic
     - inline::llm-as-judge
