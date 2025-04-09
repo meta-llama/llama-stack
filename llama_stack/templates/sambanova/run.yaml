@@ -165,6 +165,16 @@ models:
   provider_id: sambanova
   provider_model_id: Meta-Llama-Guard-3-8B
   model_type: llm
+- metadata: {}
+  model_id: Llama-4-Scout-17B-16E-Instruct
+  provider_id: sambanova
+  provider_model_id: Llama-4-Scout-17B-16E-Instruct
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-4-Scout-17B-16E-Instruct
+  provider_id: sambanova
+  provider_model_id: Llama-4-Scout-17B-16E-Instruct
+  model_type: llm
 shields:
 - shield_id: meta-llama/Llama-Guard-3-8B
 vector_dbs: []

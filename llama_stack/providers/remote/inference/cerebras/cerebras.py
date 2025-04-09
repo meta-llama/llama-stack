@@ -28,8 +28,8 @@ from llama_stack.apis.inference import (
     ToolConfig,
     ToolDefinition,
     ToolPromptFormat,
+    TopKSamplingStrategy,
 )
-from llama_stack.models.llama.datatypes import TopKSamplingStrategy
 from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
 )

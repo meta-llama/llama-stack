@@ -48,6 +48,8 @@ The following models are available by default:
 - `meta-llama/Llama-Guard-3-11B-Vision-Turbo (aliases: meta-llama/Llama-Guard-3-11B-Vision)`
 - `togethercomputer/m2-bert-80M-8k-retrieval `
 - `togethercomputer/m2-bert-80M-32k-retrieval `
+- `meta-llama/Llama-4-Scout-17B-16E-Instruct (aliases: meta-llama/Llama-4-Scout-17B-16E-Instruct, together/meta-llama/Llama-4-Scout-17B-16E-Instruct)`
+- `meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8 (aliases: meta-llama/Llama-4-Maverick-17B-128E-Instruct, together/meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8)`
 
 
 ### Prerequisite: API Keys

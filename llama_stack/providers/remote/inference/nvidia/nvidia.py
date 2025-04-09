@@ -29,15 +29,13 @@ from llama_stack.apis.inference import (
     LogProbConfig,
     Message,
     ResponseFormat,
+    SamplingParams,
     TextTruncation,
     ToolChoice,
     ToolConfig,
-)
-from llama_stack.models.llama.datatypes import (
-    SamplingParams,
     ToolDefinition,
-    ToolPromptFormat,
 )
+from llama_stack.models.llama.datatypes import ToolPromptFormat
 from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
 )

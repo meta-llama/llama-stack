@@ -63,17 +63,6 @@ class ModelDescribe(Subcommand):
             ("Model params.json", json.dumps(model.arch_args, indent=4)),
         ]
 
-        if model.recommended_sampling_params is not None:
-            sampling_params = model.recommended_sampling_params.model_dump()
-            for k in ("max_tokens", "repetition_penalty"):
-                del sampling_params[k]
-            rows.append(
-                (
-                    "Recommended sampling params",
-                    json.dumps(sampling_params, indent=4),
-                )
-            )
-
         print_table(
             rows,
             headers,

@@ -28,6 +28,80 @@ The following environment variables can be configured:
 
 ## Setting up vLLM server
 
+Both AMD and NVIDIA GPUs can serve as accelerators for the vLLM server, which acts as both the LLM inference provider and the safety provider.
+
+### Setting up vLLM server on AMD GPU
+
+AMD provides two main vLLM container options:
+- rocm/vllm: Production-ready container
+- rocm/vllm-dev: Development container with the latest vLLM features
+
+Please check the [Blog about ROCm vLLM Usage](https://rocm.blogs.amd.com/software-tools-optimization/vllm-container/README.html) to get more details.
+
+Here is a sample script to start a ROCm vLLM server locally via Docker:
+
+```bash
+export INFERENCE_PORT=8000
+export INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct
+export CUDA_VISIBLE_DEVICES=0
+export VLLM_DIMG="rocm/vllm-dev:main"
+
+docker run \
+    --pull always \
+    --ipc=host \
+    --privileged \
+    --shm-size 16g \
+    --device=/dev/kfd \
+    --device=/dev/dri \
+    --group-add video \
+    --cap-add=SYS_PTRACE \
+    --cap-add=CAP_SYS_ADMIN \
+    --security-opt seccomp=unconfined \
+    --security-opt apparmor=unconfined \
+    --env "HUGGING_FACE_HUB_TOKEN=$HF_TOKEN" \
+    --env "HIP_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES" \
+    -p $INFERENCE_PORT:$INFERENCE_PORT \
+    -v ~/.cache/huggingface:/root/.cache/huggingface \
+    $VLLM_DIMG \
+    python -m vllm.entrypoints.openai.api_server \
+    --model $INFERENCE_MODEL \
+    --port $INFERENCE_PORT
+```
+
+Note that you'll also need to set `--enable-auto-tool-choice` and `--tool-call-parser` to [enable tool calling in vLLM](https://docs.vllm.ai/en/latest/features/tool_calling.html).
+
+If you are using Llama Stack Safety / Shield APIs, then you will need to also run another instance of a vLLM with a corresponding safety model like `meta-llama/Llama-Guard-3-1B` using a script like:
+
+```bash
+export SAFETY_PORT=8081
+export SAFETY_MODEL=meta-llama/Llama-Guard-3-1B
+export CUDA_VISIBLE_DEVICES=1
+export VLLM_DIMG="rocm/vllm-dev:main"
+
+docker run \
+    --pull always \
+    --ipc=host \
+    --privileged \
+    --shm-size 16g \
+    --device=/dev/kfd \
+    --device=/dev/dri \
+    --group-add video \
+    --cap-add=SYS_PTRACE \
+    --cap-add=CAP_SYS_ADMIN \
+    --security-opt seccomp=unconfined \
+    --security-opt apparmor=unconfined \
+    --env "HUGGING_FACE_HUB_TOKEN=$HF_TOKEN" \
+    --env "HIP_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES" \
+    -p $SAFETY_PORT:$SAFETY_PORT \
+    -v ~/.cache/huggingface:/root/.cache/huggingface \
+    $VLLM_DIMG \
+    python -m vllm.entrypoints.openai.api_server \
+    --model $SAFETY_MODEL \
+    --port $SAFETY_PORT
+```
+
+### Setting up vLLM server on NVIDIA GPU
+
 Please check the [vLLM Documentation](https://docs.vllm.ai/en/v0.5.5/serving/deploying_with_docker.html) to get a vLLM endpoint. Here is a sample script to start a vLLM server locally via Docker:
 
 ```bash

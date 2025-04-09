@@ -2,6 +2,14 @@
 
 Here's a collection of comprehensive guides, examples, and resources for building AI applications with Llama Stack. For the complete documentation, visit our [ReadTheDocs page](https://llama-stack.readthedocs.io/en/latest/index.html).
 
+## Render locally
+```bash
+pip install -r requirements.txt
+cd docs
+python -m sphinx_autobuild source _build
+```
+You can open up the docs in your browser at http://localhost:8000
+
 ## Content
 
 Try out Llama Stack's capabilities through our detailed Jupyter notebooks:

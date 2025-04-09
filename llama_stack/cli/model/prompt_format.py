@@ -11,7 +11,7 @@ from pathlib import Path
 
 from llama_stack.cli.subcommand import Subcommand
 from llama_stack.cli.table import print_table
-from llama_stack.models.llama.datatypes import CoreModelId, ModelFamily, is_multimodal, model_family
+from llama_stack.models.llama.sku_types import CoreModelId, ModelFamily, is_multimodal, model_family
 
 ROOT_DIR = Path(__file__).parent.parent.parent
 

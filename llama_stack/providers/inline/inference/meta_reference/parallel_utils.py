@@ -32,12 +32,11 @@ from pydantic import BaseModel, Field
 from torch.distributed.launcher.api import LaunchConfig, elastic_launch
 from typing_extensions import Annotated
 
+from llama_stack.models.llama.datatypes import GenerationResult
 from llama_stack.providers.utils.inference.prompt_adapter import (
     ChatCompletionRequestWithRawContent,
     CompletionRequestWithRawContent,
 )
-
-from .common import TokenResult
 
 log = logging.getLogger(__name__)
 
@@ -75,7 +74,7 @@ class TaskRequest(BaseModel):
 
 class TaskResponse(BaseModel):
     type: Literal[ProcessingMessageName.task_response] = ProcessingMessageName.task_response
-    result: TokenResult
+    result: GenerationResult
 
 
 class ExceptionResponse(BaseModel):

@@ -29,6 +29,11 @@ def preserve_contexts_async_generator(
                     context_var.set(initial_context_values[context_var.name])
 
                 item = await gen.__anext__()
+
+                # Update our tracked values with any changes made during this iteration
+                for context_var in context_vars:
+                    initial_context_values[context_var.name] = context_var.get()
+
                 yield item
 
             except StopAsyncIteration:

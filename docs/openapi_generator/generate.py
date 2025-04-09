@@ -51,6 +51,7 @@ def main(output_dir: str):
         "Converting the spec to YAML (openapi.yaml) and HTML (openapi.html) at " + now
     )
     print("")
+
     spec = Specification(
         LlamaStack,
         Options(

@@ -33,12 +33,17 @@ def get_huggingface_repo(model_descriptor: str) -> Optional[str]:
     return None
 
 
-def build_hf_repo_model_entry(provider_model_id: str, model_descriptor: str) -> ProviderModelEntry:
+def build_hf_repo_model_entry(
+    provider_model_id: str, model_descriptor: str, additional_aliases: Optional[List[str]] = None
+) -> ProviderModelEntry:
+    aliases = [
+        get_huggingface_repo(model_descriptor),
+    ]
+    if additional_aliases:
+        aliases.extend(additional_aliases)
     return ProviderModelEntry(
         provider_model_id=provider_model_id,
-        aliases=[
-            get_huggingface_repo(model_descriptor),
-        ],
+        aliases=aliases,
         llama_model=model_descriptor,
     )
 

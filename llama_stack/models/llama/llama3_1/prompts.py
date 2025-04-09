@@ -21,8 +21,7 @@ from llama_stack.models.llama.datatypes import (
     ToolCall,
     ToolPromptFormat,
 )
-
-from ..prompt_format import (
+from llama_stack.models.llama.prompt_format import (
     # llama3_1_e2e_tool_call_dialog,
     TextCompletionContent,
     UseCase,

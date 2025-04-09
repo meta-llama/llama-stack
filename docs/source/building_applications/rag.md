@@ -3,9 +3,9 @@
 RAG enables your applications to reference and recall information from previous interactions or external documents.
 
 Llama Stack organizes the APIs that enable RAG into three layers:
-- the lowermost APIs deal with raw storage and retrieval. These include Vector IO, KeyValue IO (coming soon) and Relational IO (also coming soon.)
-- next is the "Rag Tool", a first-class tool as part of the Tools API that allows you to ingest documents (from URLs, files, etc) with various chunking strategies and query them smartly.
-- finally, it all comes together with the top-level "Agents" API that allows you to create agents that can use the tools to answer questions, perform tasks, and more.
+1. The lowermost APIs deal with raw storage and retrieval. These include Vector IO, KeyValue IO (coming soon) and Relational IO (also coming soon.).
+2. The next is the "Rag Tool", a first-class tool as part of the [Tools API](tools.md) that allows you to ingest documents (from URLs, files, etc) with various chunking strategies and query them smartly.
+3. Finally, it all comes together with the top-level ["Agents" API](agent.md) that allows you to create agents that can use the tools to answer questions, perform tasks, and more.
 
 <img src="rag.png" alt="RAG System" width="50%">
 
@@ -17,13 +17,18 @@ We may add more storage types like Graph IO in the future.
 
 ### Setting up Vector DBs
 
+For this guide, we will use [Ollama](https://ollama.com/) as the inference provider.
+Ollama is an LLM runtime that allows you to run Llama models locally.
+
 Here's how to set up a vector database for RAG:
 
 ```python
 # Create http client
+import os
 from llama_stack_client import LlamaStackClient
 
 client = LlamaStackClient(base_url=f"http://localhost:{os.environ['LLAMA_STACK_PORT']}")
+
 
 # Register a vector db
 vector_db_id = "my_documents"
@@ -33,17 +38,27 @@ response = client.vector_dbs.register(
     embedding_dimension=384,
     provider_id="faiss",
 )
+```
 
+### Ingesting Documents
+You can ingest documents into the vector database using two methods: directly inserting pre-chunked
+documents or using the RAG Tool.
+```python
 # You can insert a pre-chunked document directly into the vector db
 chunks = [
     {
-        "document_id": "doc1",
         "content": "Your document text here",
         "mime_type": "text/plain",
+        "metadata": {
+            "document_id": "doc1",
+        },
     },
 ]
 client.vector_io.insert(vector_db_id=vector_db_id, chunks=chunks)
-
+```
+### Retrieval
+You can query the vector database to retrieve documents based on their embeddings.
+```python
 # You can then query for these chunks
 chunks_response = client.vector_io.query(
     vector_db_id=vector_db_id, query="What do you know about..."
@@ -52,7 +67,8 @@ chunks_response = client.vector_io.query(
 
 ### Using the RAG Tool
 
-A better way to ingest documents is to use the RAG Tool. This tool allows you to ingest documents from URLs, files, etc. and automatically chunks them into smaller pieces.
+A better way to ingest documents is to use the RAG Tool. This tool allows you to ingest documents from URLs, files, etc.
+and automatically chunks them into smaller pieces.
 
 ```python
 from llama_stack_client import RAGDocument

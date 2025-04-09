@@ -1,6 +1,10 @@
 ## Agent Execution Loop
 
-Agents are the heart of complex AI applications. They combine inference, memory, safety, and tool usage into coherent workflows. At its core, an agent follows a sophisticated execution loop that enables multi-step reasoning, tool usage, and safety checks.
+Agents are the heart of Llama Stack applications. They combine inference, memory, safety, and tool usage into coherent
+workflows. At its core, an agent follows a sophisticated execution loop that enables multi-step reasoning, tool usage,
+and safety checks.
+
+### Steps in the Agent Workflow
 
 Each agent turn follows these key steps:
 
@@ -64,7 +68,10 @@ sequenceDiagram
     S->>U: 5. Final Response
 ```
 
-Each step in this process can be monitored and controlled through configurations. Here's an example that demonstrates monitoring the agent's execution:
+Each step in this process can be monitored and controlled through configurations.
+
+### Agent Execution Loop Example
+Here's an example that demonstrates monitoring the agent's execution:
 
 ```python
 from llama_stack_client import LlamaStackClient, Agent, AgentEventLogger

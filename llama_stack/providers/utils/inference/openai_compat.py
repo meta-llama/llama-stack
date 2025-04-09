@@ -73,21 +73,21 @@ from llama_stack.apis.inference import (
     CompletionMessage,
     CompletionResponse,
     CompletionResponseStreamChunk,
+    GreedySamplingStrategy,
     Message,
+    SamplingParams,
     SystemMessage,
     TokenLogProbs,
     ToolResponseMessage,
+    TopKSamplingStrategy,
+    TopPSamplingStrategy,
     UserMessage,
 )
 from llama_stack.models.llama.datatypes import (
     BuiltinTool,
-    GreedySamplingStrategy,
-    SamplingParams,
     StopReason,
     ToolCall,
     ToolDefinition,
-    TopKSamplingStrategy,
-    TopPSamplingStrategy,
 )
 from llama_stack.providers.utils.inference.prompt_adapter import (
     convert_image_content_to_url,
@@ -573,21 +573,24 @@ async def convert_message_to_openai_dict_new(
             content=await _convert_message_content(message.content),
         )
     elif isinstance(message, CompletionMessage):
+        tool_calls = [
+            OpenAIChatCompletionMessageToolCall(
+                id=tool.call_id,
+                function=OpenAIFunction(
+                    name=(tool.tool_name if not isinstance(tool.tool_name, BuiltinTool) else tool.tool_name.value),
+                    arguments=json.dumps(tool.arguments),
+                ),
+                type="function",
+            )
+            for tool in message.tool_calls
+        ]
+        params = {}
+        if tool_calls:
+            params = {"tool_calls": tool_calls}
         out = OpenAIChatCompletionAssistantMessage(
             role="assistant",
             content=await _convert_message_content(message.content),
-            tool_calls=[
-                OpenAIChatCompletionMessageToolCall(
-                    id=tool.call_id,
-                    function=OpenAIFunction(
-                        name=(tool.tool_name if not isinstance(tool.tool_name, BuiltinTool) else tool.tool_name.value),
-                        arguments=json.dumps(tool.arguments),
-                    ),
-                    type="function",
-                )
-                for tool in message.tool_calls
-            ]
-            or None,
+            **params,
         )
     elif isinstance(message, ToolResponseMessage):
         out = OpenAIChatCompletionToolMessage(
@@ -637,6 +640,36 @@ PYTHON_TYPE_TO_LITELLM_TYPE = {
     "bool": "boolean",
     "str": "string",
 }
+
+
+def to_openai_param_type(param_type: str) -> dict:
+    """
+    Convert Python type hints to OpenAI parameter type format.
+
+    Examples:
+        'str' -> {'type': 'string'}
+        'int' -> {'type': 'integer'}
+        'list[str]' -> {'type': 'array', 'items': {'type': 'string'}}
+        'list[int]' -> {'type': 'array', 'items': {'type': 'integer'}}
+    """
+    # Handle basic types first
+    basic_types = {
+        "str": "string",
+        "int": "integer",
+        "float": "number",
+        "bool": "boolean",
+    }
+
+    if param_type in basic_types:
+        return {"type": basic_types[param_type]}
+
+    # Handle list/array types
+    if param_type.startswith("list[") and param_type.endswith("]"):
+        inner_type = param_type[5:-1]
+        if inner_type in basic_types:
+            return {"type": "array", "items": {"type": basic_types.get(inner_type, inner_type)}}
+
+    return {"type": param_type}
 
 
 def convert_tooldef_to_openai_tool(tool: ToolDefinition) -> dict:
@@ -699,7 +732,7 @@ def convert_tooldef_to_openai_tool(tool: ToolDefinition) -> dict:
         properties = parameters["properties"]
         required = []
         for param_name, param in tool.parameters.items():
-            properties[param_name] = {"type": PYTHON_TYPE_TO_LITELLM_TYPE.get(param.param_type, param.param_type)}
+            properties[param_name] = to_openai_param_type(param.param_type)
             if param.description:
                 properties[param_name].update(description=param.description)
             if param.default:
@@ -801,7 +834,7 @@ def _convert_openai_logprobs(
          - token, logprob
 
     """
-    if not logprobs:
+    if not logprobs or not logprobs.content:
         return None
 
     return [

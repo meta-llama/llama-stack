@@ -19,6 +19,7 @@ class LlamaStackApi:
                 "together_api_key": os.environ.get("TOGETHER_API_KEY", ""),
                 "sambanova_api_key": os.environ.get("SAMBANOVA_API_KEY", ""),
                 "openai_api_key": os.environ.get("OPENAI_API_KEY", ""),
+                "tavily_search_api_key": os.environ.get("TAVILY_SEARCH_API_KEY", ""),
             },
         )
 

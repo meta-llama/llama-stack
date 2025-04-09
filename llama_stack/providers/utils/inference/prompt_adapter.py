@@ -34,7 +34,6 @@ from llama_stack.apis.inference import (
 )
 from llama_stack.log import get_logger
 from llama_stack.models.llama.datatypes import (
-    ModelFamily,
     RawContent,
     RawContentItem,
     RawMediaItem,
@@ -43,7 +42,6 @@ from llama_stack.models.llama.datatypes import (
     Role,
     StopReason,
     ToolPromptFormat,
-    is_multimodal,
 )
 from llama_stack.models.llama.llama3.chat_format import ChatFormat
 from llama_stack.models.llama.llama3.prompt_templates import (
@@ -55,6 +53,7 @@ from llama_stack.models.llama.llama3.prompt_templates import (
 )
 from llama_stack.models.llama.llama3.tokenizer import Tokenizer
 from llama_stack.models.llama.sku_list import resolve_model
+from llama_stack.models.llama.sku_types import ModelFamily, is_multimodal
 from llama_stack.providers.utils.inference import supported_inference_models
 
 log = get_logger(name=__name__, category="inference")
@@ -224,7 +223,9 @@ async def completion_request_to_prompt(request: CompletionRequest) -> str:
     return formatter.tokenizer.decode(model_input.tokens)
 
 
-async def completion_request_to_prompt_model_input_info(request: CompletionRequest) -> Tuple[str, int]:
+async def completion_request_to_prompt_model_input_info(
+    request: CompletionRequest,
+) -> Tuple[str, int]:
     content = augment_content_with_response_format_prompt(request.response_format, request.content)
     request.content = content
     request = await convert_request_to_raw(request)
@@ -302,8 +303,12 @@ def chat_completion_request_to_messages(
     ):
         # llama3.1 and llama3.2 multimodal models follow the same tool prompt format
         messages = augment_messages_for_tools_llama_3_1(request)
-    elif model.model_family in (ModelFamily.llama3_2, ModelFamily.llama3_3):
-        # llama3.2 and llama3.3 models follow the same tool prompt format
+    elif model.model_family in (
+        ModelFamily.llama3_2,
+        ModelFamily.llama3_3,
+        ModelFamily.llama4,
+    ):
+        # llama3.2, llama3.3 and llama4 models follow the same tool prompt format
         messages = augment_messages_for_tools_llama_3_2(request)
     else:
         messages = request.messages
@@ -471,7 +476,11 @@ def get_default_tool_prompt_format(model: str) -> ToolPromptFormat:
     ):
         # llama3.1 and llama3.2 multimodal models follow the same tool prompt format
         return ToolPromptFormat.json
-    elif llama_model.model_family in (ModelFamily.llama3_2, ModelFamily.llama3_3):
+    elif llama_model.model_family in (
+        ModelFamily.llama3_2,
+        ModelFamily.llama3_3,
+        ModelFamily.llama4,
+    ):
         # llama3.2 and llama3.3 models follow the same tool prompt format
         return ToolPromptFormat.python_list
     else:
