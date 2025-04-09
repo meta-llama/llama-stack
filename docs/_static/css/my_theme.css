@@ -16,3 +16,7 @@
 .hide-title h1 {
     display: none;
 }
+
+h3 {
+    font-weight: normal;
+}

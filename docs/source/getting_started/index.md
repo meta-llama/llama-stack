@@ -71,6 +71,7 @@ The config file is a YAML file that specifies the providers and their configurat
 ::::{tab-set}
 
 :::{tab-item} Using Python
+You can use Python to build and run the Llama Stack server. This is useful for testing and development purposes.
 ```bash
 INFERENCE_MODEL=llama3.2:3b llama stack build --template ollama --image-type venv --run
 ```
@@ -82,11 +83,12 @@ INFO:     Uvicorn running on http://['::', '0.0.0.0']:8321 (Press CTRL+C to quit
 :::
 
 :::{tab-item} Using a Container
-To get started quickly, we provide various container images for the server component that work with different inference
-providers out of the box. For this guide, we will use `llamastack/distribution-ollama` as the container image. If you'd
-like to build your own image or customize the configurations, please check out [this guide](../references/index.md).
+You can use a container image to run the Llama Stack server. We provide several container images for the server
+component that works with different inference providers out of the box. For this guide, we will use
+`llamastack/distribution-ollama` as the container image. If you'd like to build your own image or customize the
+configurations, please check out [this guide](../references/index.md).
 
-Lets setup some environment variables and create a local directory to mount into the container’s file system.
+First lets setup some environment variables and create a local directory to mount into the container’s file system.
 ```bash
 export INFERENCE_MODEL="meta-llama/Llama-3.2-3B-Instruct"
 export LLAMA_STACK_PORT=8321
@@ -130,12 +132,12 @@ docker run -it \
 :::
 ::::
 
+Now you can use the Llama Stack client to run inference and build agents!
 
-
-### ii. Using the Llama Stack Client
-Now you can use the llama stack client to run inference and build agents!
 You can reuse the server setup or use the [Llama Stack Client](https://github.com/meta-llama/llama-stack-client-python/).
 Note that the client package is already included in the `llama-stack` package.
+
+### ii. Using the Llama Stack Client
 
 Open a new terminal and navigate to the same directory you started the server from. Then set up a new or activate your
 existing server virtual environment.
@@ -144,6 +146,7 @@ existing server virtual environment.
 
 :::{tab-item} Reuse the Server Setup
 ```bash
+# As mentioned, the client is included in the llama-stack package so we can just activate the server virtual environment
 source .venv/bin/activate
 ```
 :::
