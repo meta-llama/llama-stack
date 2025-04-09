@@ -351,6 +351,7 @@ async def instantiate_provider(
     if not hasattr(provider_spec, "module"):
         raise AttributeError(f"ProviderSpec of type {type(provider_spec)} does not have a 'module' attribute")
 
+    logger.debug(f"Instantiating provider {provider.provider_id} from {provider_spec.module}")
     module = importlib.import_module(provider_spec.module)
     args = []
     if isinstance(provider_spec, RemoteProviderSpec):
