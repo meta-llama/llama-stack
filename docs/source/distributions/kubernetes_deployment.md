@@ -13,7 +13,7 @@ kind create cluster --image kindest/node:v1.32.0 --name llama-stack-test
 
 First set your hugging face token as an environment variable.
 ```
-export HF_TOKEN=<your_hf_token>
+export HF_TOKEN=$(echo -n "your-hf-token" | base64)
 ```
 
 Now create a Kubernetes PVC and Secret for downloading and storing Hugging Face model:
@@ -38,7 +38,7 @@ metadata:
   name: hf-token-secret
 type: Opaque
 data:
-  token: $(echo -n "$HF_TOKEN" | base64)
+  token: $HF_TOKEN
 EOF
 ```
 
