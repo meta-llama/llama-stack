@@ -18,7 +18,7 @@ Install Ollama by following the instructions on the [Ollama website](https://oll
 
 Then download a Llama model with Ollama
 ```bash
-ollama pull llama3.2:3b-instruct-fp16
+ollama pull llama3.2:3b
 ```
 This will instruct the Ollama service to download the Llama 3.2 3B Instruct model, which we'll use in the rest of this guide.
 
@@ -254,7 +254,7 @@ uv run python inference.py
 ```
 Which will output:
 ```
-Model: llama3.2:3b-instruct-fp16
+Model: llama3.2:3b
 Here is a haiku about coding:
 
 Lines of code unfold
