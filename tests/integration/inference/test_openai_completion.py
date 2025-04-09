@@ -97,7 +97,14 @@ def test_openai_completion_streaming(openai_client, text_model_id, test_case):
     assert len(content_str) > 10
 
 
-def test_openai_completion_prompt_logprobs(openai_client, client_with_models, text_model_id):
+@pytest.mark.parametrize(
+    "prompt_logprobs",
+    [
+        1,
+        0,
+    ],
+)
+def test_openai_completion_prompt_logprobs(openai_client, client_with_models, text_model_id, prompt_logprobs):
     skip_if_provider_isnt_vllm(client_with_models, text_model_id)
 
     prompt = "Hello, world!"
@@ -106,7 +113,7 @@ def test_openai_completion_prompt_logprobs(openai_client, client_with_models, te
         prompt=prompt,
         stream=False,
         extra_body={
-            "prompt_logprobs": 1,
+            "prompt_logprobs": prompt_logprobs,
         },
     )
     assert len(response.choices) > 0

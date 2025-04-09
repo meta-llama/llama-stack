@@ -446,7 +446,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         model_obj = await self._get_model(model)
 
         extra_body: Dict[str, Any] = {}
-        if prompt_logprobs:
+        if prompt_logprobs is not None and prompt_logprobs >= 0:
             extra_body["prompt_logprobs"] = prompt_logprobs
         if guided_choice:
             extra_body["guided_choice"] = guided_choice
