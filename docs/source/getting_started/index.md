@@ -6,13 +6,13 @@ Llama Stack is a stateful service with REST APIs to support seamless transition 
 In this guide, we'll walk through how to build a RAG agent locally using Llama Stack with [Ollama](https://ollama.com/) to run inference on a Llama Model.
 
 
-### 1. Start Ollama
+### 1. Download a Llama model with Ollama
 
 ```bash
-ollama run llama3.2:3b --keepalive 60m
+ollama pull llama3.2:3b-instruct-fp16
 ```
 
-By default, Ollama keeps the model loaded in memory for 5 minutes which can be too short. We set the `--keepalive` flag to 60 minutes to ensure the model remains loaded for sometime.
+This will instruct the Ollama service to download the Llama 3.2 3B Instruct model, which we'll use in the rest of this guide.
 
 ```{admonition} Note
 :class: tip

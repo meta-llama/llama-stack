@@ -4,13 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-# Copyright (c) Meta Platforms, Inc. and affiliates.
-# All rights reserved.
-#
-# This source code is licensed under the terms described in the LICENSE file in
-# top-level folder for each specific model found within the models/ directory at
-# the top-level of this source tree.
-
 import io
 import json
 import uuid
@@ -19,7 +12,7 @@ from typing import Dict, List, Optional, Tuple
 
 from PIL import Image as PIL_Image
 
-from llama_stack.models.llama.datatypes import (
+from ..datatypes import (
     BuiltinTool,
     RawContent,
     RawMediaItem,
@@ -30,7 +23,6 @@ from llama_stack.models.llama.datatypes import (
     ToolCall,
     ToolPromptFormat,
 )
-
 from .tokenizer import Tokenizer
 from .tool_utils import ToolUtils
 

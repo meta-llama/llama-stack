@@ -16,7 +16,8 @@ import re
 from typing import Optional, Tuple
 
 from llama_stack.log import get_logger
-from llama_stack.models.llama.datatypes import BuiltinTool, RecursiveType, ToolCall, ToolPromptFormat
+
+from ..datatypes import BuiltinTool, RecursiveType, ToolCall, ToolPromptFormat
 
 logger = get_logger(name=__name__, category="inference")
 

@@ -218,7 +218,7 @@ async def construct_stack(
     run_config: StackRunConfig, provider_registry: Optional[ProviderRegistry] = None
 ) -> Dict[Api, Any]:
     dist_registry, _ = await create_dist_registry(run_config.metadata_store, run_config.image_name)
-    impls = await resolve_impls(run_config, provider_registry or get_provider_registry(), dist_registry)
+    impls = await resolve_impls(run_config, provider_registry or get_provider_registry(run_config), dist_registry)
     await register_resources(run_config, impls)
     return impls
 

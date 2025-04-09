@@ -28,7 +28,7 @@ from llama_stack.apis.inference import (
     ToolDefinition,
     ToolPromptFormat,
 )
-from llama_stack.models.llama.datatypes import CoreModelId
+from llama_stack.models.llama.sku_types import CoreModelId
 from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
     build_hf_repo_model_entry,

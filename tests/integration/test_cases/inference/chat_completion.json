@@ -220,7 +220,7 @@
               "description": "Availability status of the product."
             },
             "tags": {
-              "param_type": "list",
+              "param_type": "list[str]",
               "description": "List of product tags"
             }
           }
@@ -294,7 +294,7 @@
               "description": "Location of the event"
             },
             "participants": {
-              "param_type": "list",
+              "param_type": "list[str]",
               "description": "List of participant names"
             }
           }

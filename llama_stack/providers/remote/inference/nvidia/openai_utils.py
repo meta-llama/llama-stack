@@ -19,11 +19,9 @@ from llama_stack.apis.inference import (
     CompletionRequest,
     CompletionResponse,
     CompletionResponseStreamChunk,
+    GreedySamplingStrategy,
     JsonSchemaResponseFormat,
     TokenLogProbs,
-)
-from llama_stack.models.llama.datatypes import (
-    GreedySamplingStrategy,
     TopKSamplingStrategy,
     TopPSamplingStrategy,
 )
