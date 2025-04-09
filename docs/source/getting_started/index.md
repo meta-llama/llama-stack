@@ -10,10 +10,6 @@ Llama Stack is a stateful service with REST APIs to support seamless transition 
 In this guide, we'll walk through how to build a RAG agent locally using Llama Stack with [Ollama](https://ollama.com/)
 as the inference [provider](../providers/index.md#inference) for a Llama Model.
 
-```{admonition} Note
-:class: tip
-These instructions outlined are for a
-```
 ## Step 1: Installation and Setup
 
 ### i. Install and Start Ollama for Inference
@@ -108,9 +104,7 @@ Note to start the container with Podman, you can do the same but replace `docker
 `podman`. If you are using `podman` older than `4.7.0`, please also replace `host.docker.internal` in the `OLLAMA_URL`
 with `host.containers.internal`.
 
-As another example, to start the container with Podman, you can do the same but replace `docker` at the start of the command with `podman`. If you are using `podman` older than `4.7.0`, please also replace `host.docker.internal` in the `OLLAMA_URL` with `host.containers.internal`.
-
-Configuration for this is available at `distributions/ollama/run.yaml`.
+The configuration YAML for the Ollama distribution is available at `distributions/ollama/run.yaml`.
 
 ```{admonition} Note
 :class: note
