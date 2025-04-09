@@ -1,0 +1,2830 @@
+{
+  "created": 1744154470.9868789,
+  "duration": 59.6187219619751,
+  "exitcode": 1,
+  "root": "/Users/erichuang/projects/llama-stack",
+  "environment": {},
+  "summary": {
+    "skipped": 52,
+    "passed": 21,
+    "failed": 10,
+    "total": 83,
+    "collected": 83
+  },
+  "collectors": [
+    {
+      "nodeid": "",
+      "outcome": "passed",
+      "result": [
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py",
+          "type": "Module"
+        }
+      ]
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py",
+      "outcome": "passed",
+      "result": [
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_basic[input_output0-Llama-3.3-8B-Instruct]",
+          "type": "Function",
+          "lineno": 25
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_basic[input_output0-Llama-3.3-70B-Instruct]",
+          "type": "Function",
+          "lineno": 25
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_basic[input_output0-Llama-4-Scout-17B-16E]",
+          "type": "Function",
+          "lineno": 25
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_basic[input_output0-Llama-4-Scout-17B-16E-Instruct]",
+          "type": "Function",
+          "lineno": 25
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_basic[input_output0-Llama-4-Maverick-17B-128E]",
+          "type": "Function",
+          "lineno": 25
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_basic[input_output0-Llama-4-Maverick-17B-128E-Instruct]",
+          "type": "Function",
+          "lineno": 25
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_basic[input_output0-gpt-4o]",
+          "type": "Function",
+          "lineno": 25
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_basic[input_output0-gpt-4o-mini]",
+          "type": "Function",
+          "lineno": 25
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_basic[input_output1-Llama-3.3-8B-Instruct]",
+          "type": "Function",
+          "lineno": 25
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_basic[input_output1-Llama-3.3-70B-Instruct]",
+          "type": "Function",
+          "lineno": 25
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_basic[input_output1-Llama-4-Scout-17B-16E]",
+          "type": "Function",
+          "lineno": 25
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_basic[input_output1-Llama-4-Scout-17B-16E-Instruct]",
+          "type": "Function",
+          "lineno": 25
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_basic[input_output1-Llama-4-Maverick-17B-128E]",
+          "type": "Function",
+          "lineno": 25
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_basic[input_output1-Llama-4-Maverick-17B-128E-Instruct]",
+          "type": "Function",
+          "lineno": 25
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_basic[input_output1-gpt-4o]",
+          "type": "Function",
+          "lineno": 25
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_basic[input_output1-gpt-4o-mini]",
+          "type": "Function",
+          "lineno": 25
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_basic[input_output0-Llama-3.3-8B-Instruct]",
+          "type": "Function",
+          "lineno": 40
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_basic[input_output0-Llama-3.3-70B-Instruct]",
+          "type": "Function",
+          "lineno": 40
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_basic[input_output0-Llama-4-Scout-17B-16E]",
+          "type": "Function",
+          "lineno": 40
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_basic[input_output0-Llama-4-Scout-17B-16E-Instruct]",
+          "type": "Function",
+          "lineno": 40
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_basic[input_output0-Llama-4-Maverick-17B-128E]",
+          "type": "Function",
+          "lineno": 40
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_basic[input_output0-Llama-4-Maverick-17B-128E-Instruct]",
+          "type": "Function",
+          "lineno": 40
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_basic[input_output0-gpt-4o]",
+          "type": "Function",
+          "lineno": 40
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_basic[input_output0-gpt-4o-mini]",
+          "type": "Function",
+          "lineno": 40
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_basic[input_output1-Llama-3.3-8B-Instruct]",
+          "type": "Function",
+          "lineno": 40
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_basic[input_output1-Llama-3.3-70B-Instruct]",
+          "type": "Function",
+          "lineno": 40
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_basic[input_output1-Llama-4-Scout-17B-16E]",
+          "type": "Function",
+          "lineno": 40
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_basic[input_output1-Llama-4-Scout-17B-16E-Instruct]",
+          "type": "Function",
+          "lineno": 40
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_basic[input_output1-Llama-4-Maverick-17B-128E]",
+          "type": "Function",
+          "lineno": 40
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_basic[input_output1-Llama-4-Maverick-17B-128E-Instruct]",
+          "type": "Function",
+          "lineno": 40
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_basic[input_output1-gpt-4o]",
+          "type": "Function",
+          "lineno": 40
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_basic[input_output1-gpt-4o-mini]",
+          "type": "Function",
+          "lineno": 40
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_image[input_output0-Llama-4-Scout-17B-16E]",
+          "type": "Function",
+          "lineno": 60
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_image[input_output0-Llama-4-Scout-17B-16E-Instruct]",
+          "type": "Function",
+          "lineno": 60
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_image[input_output0-Llama-4-Maverick-17B-128E]",
+          "type": "Function",
+          "lineno": 60
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_image[input_output0-Llama-4-Maverick-17B-128E-Instruct]",
+          "type": "Function",
+          "lineno": 60
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_image[input_output0-gpt-4o]",
+          "type": "Function",
+          "lineno": 60
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_image[input_output0-gpt-4o-mini]",
+          "type": "Function",
+          "lineno": 60
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_image[input_output0-Llama-4-Scout-17B-16E]",
+          "type": "Function",
+          "lineno": 75
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_image[input_output0-Llama-4-Scout-17B-16E-Instruct]",
+          "type": "Function",
+          "lineno": 75
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_image[input_output0-Llama-4-Maverick-17B-128E]",
+          "type": "Function",
+          "lineno": 75
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_image[input_output0-Llama-4-Maverick-17B-128E-Instruct]",
+          "type": "Function",
+          "lineno": 75
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_image[input_output0-gpt-4o]",
+          "type": "Function",
+          "lineno": 75
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_image[input_output0-gpt-4o-mini]",
+          "type": "Function",
+          "lineno": 75
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_structured_output[input_output0-Llama-3.3-8B-Instruct]",
+          "type": "Function",
+          "lineno": 95
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_structured_output[input_output0-Llama-3.3-70B-Instruct]",
+          "type": "Function",
+          "lineno": 95
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_structured_output[input_output0-Llama-4-Scout-17B-16E]",
+          "type": "Function",
+          "lineno": 95
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_structured_output[input_output0-Llama-4-Scout-17B-16E-Instruct]",
+          "type": "Function",
+          "lineno": 95
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_structured_output[input_output0-Llama-4-Maverick-17B-128E]",
+          "type": "Function",
+          "lineno": 95
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_structured_output[input_output0-Llama-4-Maverick-17B-128E-Instruct]",
+          "type": "Function",
+          "lineno": 95
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_structured_output[input_output0-gpt-4o]",
+          "type": "Function",
+          "lineno": 95
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_structured_output[input_output0-gpt-4o-mini]",
+          "type": "Function",
+          "lineno": 95
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_structured_output[input_output1-Llama-3.3-8B-Instruct]",
+          "type": "Function",
+          "lineno": 95
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_structured_output[input_output1-Llama-3.3-70B-Instruct]",
+          "type": "Function",
+          "lineno": 95
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_structured_output[input_output1-Llama-4-Scout-17B-16E]",
+          "type": "Function",
+          "lineno": 95
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_structured_output[input_output1-Llama-4-Scout-17B-16E-Instruct]",
+          "type": "Function",
+          "lineno": 95
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_structured_output[input_output1-Llama-4-Maverick-17B-128E]",
+          "type": "Function",
+          "lineno": 95
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_structured_output[input_output1-Llama-4-Maverick-17B-128E-Instruct]",
+          "type": "Function",
+          "lineno": 95
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_structured_output[input_output1-gpt-4o]",
+          "type": "Function",
+          "lineno": 95
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_structured_output[input_output1-gpt-4o-mini]",
+          "type": "Function",
+          "lineno": 95
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_structured_output[input_output0-Llama-3.3-8B-Instruct]",
+          "type": "Function",
+          "lineno": 117
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_structured_output[input_output0-Llama-3.3-70B-Instruct]",
+          "type": "Function",
+          "lineno": 117
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_structured_output[input_output0-Llama-4-Scout-17B-16E]",
+          "type": "Function",
+          "lineno": 117
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_structured_output[input_output0-Llama-4-Scout-17B-16E-Instruct]",
+          "type": "Function",
+          "lineno": 117
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_structured_output[input_output0-Llama-4-Maverick-17B-128E]",
+          "type": "Function",
+          "lineno": 117
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_structured_output[input_output0-Llama-4-Maverick-17B-128E-Instruct]",
+          "type": "Function",
+          "lineno": 117
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_structured_output[input_output0-gpt-4o]",
+          "type": "Function",
+          "lineno": 117
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_structured_output[input_output0-gpt-4o-mini]",
+          "type": "Function",
+          "lineno": 117
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_structured_output[input_output1-Llama-3.3-8B-Instruct]",
+          "type": "Function",
+          "lineno": 117
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_structured_output[input_output1-Llama-3.3-70B-Instruct]",
+          "type": "Function",
+          "lineno": 117
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_structured_output[input_output1-Llama-4-Scout-17B-16E]",
+          "type": "Function",
+          "lineno": 117
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_structured_output[input_output1-Llama-4-Scout-17B-16E-Instruct]",
+          "type": "Function",
+          "lineno": 117
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_structured_output[input_output1-Llama-4-Maverick-17B-128E]",
+          "type": "Function",
+          "lineno": 117
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_structured_output[input_output1-Llama-4-Maverick-17B-128E-Instruct]",
+          "type": "Function",
+          "lineno": 117
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_structured_output[input_output1-gpt-4o]",
+          "type": "Function",
+          "lineno": 117
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_structured_output[input_output1-gpt-4o-mini]",
+          "type": "Function",
+          "lineno": 117
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_tool_calling[input_output0-Llama-3.3-70B-Instruct]",
+          "type": "Function",
+          "lineno": 138
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_tool_calling[input_output0-Llama-4-Scout-17B-16E]",
+          "type": "Function",
+          "lineno": 138
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_tool_calling[input_output0-Llama-4-Scout-17B-16E-Instruct]",
+          "type": "Function",
+          "lineno": 138
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_tool_calling[input_output0-Llama-4-Maverick-17B-128E]",
+          "type": "Function",
+          "lineno": 138
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_tool_calling[input_output0-Llama-4-Maverick-17B-128E-Instruct]",
+          "type": "Function",
+          "lineno": 138
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_tool_calling[input_output0-gpt-4o]",
+          "type": "Function",
+          "lineno": 138
+        },
+        {
+          "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_tool_calling[input_output0-gpt-4o-mini]",
+          "type": "Function",
+          "lineno": 138
+        }
+      ]
+    }
+  ],
+  "tests": [
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_basic[input_output0-Llama-3.3-8B-Instruct]",
+      "lineno": 25,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_non_streaming_basic[input_output0-Llama-3.3-8B-Instruct]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-Llama-3.3-8B-Instruct",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.39231995795853436,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 26, 'Skipped: Provider together does not support model Llama-3.3-8B-Instruct')"
+      },
+      "teardown": {
+        "duration": 0.0002014160854741931,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_basic[input_output0-Llama-3.3-70B-Instruct]",
+      "lineno": 25,
+      "outcome": "passed",
+      "keywords": [
+        "test_chat_non_streaming_basic[input_output0-Llama-3.3-70B-Instruct]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-Llama-3.3-70B-Instruct",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.0071710830088704824,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.7968309168936685,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.0004362498875707388,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_basic[input_output0-Llama-4-Scout-17B-16E]",
+      "lineno": 25,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_non_streaming_basic[input_output0-Llama-4-Scout-17B-16E]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-Llama-4-Scout-17B-16E",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.012780916062183678,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 26, 'Skipped: Provider together does not support model Llama-4-Scout-17B-16E')"
+      },
+      "teardown": {
+        "duration": 0.00029158301185816526,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_basic[input_output0-Llama-4-Scout-17B-16E-Instruct]",
+      "lineno": 25,
+      "outcome": "passed",
+      "keywords": [
+        "test_chat_non_streaming_basic[input_output0-Llama-4-Scout-17B-16E-Instruct]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-Llama-4-Scout-17B-16E-Instruct",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.013563874992541969,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.5071627920260653,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.0005456249928101897,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_basic[input_output0-Llama-4-Maverick-17B-128E]",
+      "lineno": 25,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_non_streaming_basic[input_output0-Llama-4-Maverick-17B-128E]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-Llama-4-Maverick-17B-128E",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.020708917058072984,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 26, 'Skipped: Provider together does not support model Llama-4-Maverick-17B-128E')"
+      },
+      "teardown": {
+        "duration": 0.00030325003899633884,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_basic[input_output0-Llama-4-Maverick-17B-128E-Instruct]",
+      "lineno": 25,
+      "outcome": "passed",
+      "keywords": [
+        "test_chat_non_streaming_basic[input_output0-Llama-4-Maverick-17B-128E-Instruct]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-Llama-4-Maverick-17B-128E-Instruct",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.014170082984492183,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 1.2383921250002459,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.0009597090538591146,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_basic[input_output0-gpt-4o]",
+      "lineno": 25,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_non_streaming_basic[input_output0-gpt-4o]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-gpt-4o",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.013402250013314188,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 26, 'Skipped: Provider together does not support model gpt-4o')"
+      },
+      "teardown": {
+        "duration": 0.00028245802968740463,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_basic[input_output0-gpt-4o-mini]",
+      "lineno": 25,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_non_streaming_basic[input_output0-gpt-4o-mini]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-gpt-4o-mini",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.008693707990460098,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 26, 'Skipped: Provider together does not support model gpt-4o-mini')"
+      },
+      "teardown": {
+        "duration": 0.00016249995678663254,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_basic[input_output1-Llama-3.3-8B-Instruct]",
+      "lineno": 25,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_non_streaming_basic[input_output1-Llama-3.3-8B-Instruct]",
+        "parametrize",
+        "pytestmark",
+        "input_output1-Llama-3.3-8B-Instruct",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.005904874997213483,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 26, 'Skipped: Provider together does not support model Llama-3.3-8B-Instruct')"
+      },
+      "teardown": {
+        "duration": 0.0001960420049726963,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_basic[input_output1-Llama-3.3-70B-Instruct]",
+      "lineno": 25,
+      "outcome": "passed",
+      "keywords": [
+        "test_chat_non_streaming_basic[input_output1-Llama-3.3-70B-Instruct]",
+        "parametrize",
+        "pytestmark",
+        "input_output1-Llama-3.3-70B-Instruct",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.006532749976031482,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.5410778749501333,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.00019516597967594862,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_basic[input_output1-Llama-4-Scout-17B-16E]",
+      "lineno": 25,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_non_streaming_basic[input_output1-Llama-4-Scout-17B-16E]",
+        "parametrize",
+        "pytestmark",
+        "input_output1-Llama-4-Scout-17B-16E",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.009374375105835497,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 26, 'Skipped: Provider together does not support model Llama-4-Scout-17B-16E')"
+      },
+      "teardown": {
+        "duration": 0.00015524995978921652,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_basic[input_output1-Llama-4-Scout-17B-16E-Instruct]",
+      "lineno": 25,
+      "outcome": "passed",
+      "keywords": [
+        "test_chat_non_streaming_basic[input_output1-Llama-4-Scout-17B-16E-Instruct]",
+        "parametrize",
+        "pytestmark",
+        "input_output1-Llama-4-Scout-17B-16E-Instruct",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.007205875008367002,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.42584729101508856,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.0009506250498816371,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_basic[input_output1-Llama-4-Maverick-17B-128E]",
+      "lineno": 25,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_non_streaming_basic[input_output1-Llama-4-Maverick-17B-128E]",
+        "parametrize",
+        "pytestmark",
+        "input_output1-Llama-4-Maverick-17B-128E",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.029625958995893598,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 26, 'Skipped: Provider together does not support model Llama-4-Maverick-17B-128E')"
+      },
+      "teardown": {
+        "duration": 0.0001860830234363675,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_basic[input_output1-Llama-4-Maverick-17B-128E-Instruct]",
+      "lineno": 25,
+      "outcome": "passed",
+      "keywords": [
+        "test_chat_non_streaming_basic[input_output1-Llama-4-Maverick-17B-128E-Instruct]",
+        "parametrize",
+        "pytestmark",
+        "input_output1-Llama-4-Maverick-17B-128E-Instruct",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.023576707928441465,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 1.2249365829629824,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.0004278330598026514,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_basic[input_output1-gpt-4o]",
+      "lineno": 25,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_non_streaming_basic[input_output1-gpt-4o]",
+        "parametrize",
+        "pytestmark",
+        "input_output1-gpt-4o",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.014816291979514062,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 26, 'Skipped: Provider together does not support model gpt-4o')"
+      },
+      "teardown": {
+        "duration": 0.00029558304231613874,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_basic[input_output1-gpt-4o-mini]",
+      "lineno": 25,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_non_streaming_basic[input_output1-gpt-4o-mini]",
+        "parametrize",
+        "pytestmark",
+        "input_output1-gpt-4o-mini",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.012769333901815116,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 26, 'Skipped: Provider together does not support model gpt-4o-mini')"
+      },
+      "teardown": {
+        "duration": 0.00024329195730388165,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_basic[input_output0-Llama-3.3-8B-Instruct]",
+      "lineno": 40,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_streaming_basic[input_output0-Llama-3.3-8B-Instruct]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-Llama-3.3-8B-Instruct",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.009145625052042305,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 41, 'Skipped: Provider together does not support model Llama-3.3-8B-Instruct')"
+      },
+      "teardown": {
+        "duration": 0.00021195888984948397,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_basic[input_output0-Llama-3.3-70B-Instruct]",
+      "lineno": 40,
+      "outcome": "passed",
+      "keywords": [
+        "test_chat_streaming_basic[input_output0-Llama-3.3-70B-Instruct]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-Llama-3.3-70B-Instruct",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.0133140409598127,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.7228892090497538,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.0004301250446587801,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_basic[input_output0-Llama-4-Scout-17B-16E]",
+      "lineno": 40,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_streaming_basic[input_output0-Llama-4-Scout-17B-16E]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-Llama-4-Scout-17B-16E",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.013998750015161932,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 41, 'Skipped: Provider together does not support model Llama-4-Scout-17B-16E')"
+      },
+      "teardown": {
+        "duration": 0.0002961249556392431,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_basic[input_output0-Llama-4-Scout-17B-16E-Instruct]",
+      "lineno": 40,
+      "outcome": "failed",
+      "keywords": [
+        "test_chat_streaming_basic[input_output0-Llama-4-Scout-17B-16E-Instruct]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-Llama-4-Scout-17B-16E-Instruct",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.012570249964483082,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.7193170419195667,
+        "outcome": "failed",
+        "crash": {
+          "path": "/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py",
+          "lineno": 54,
+          "message": "IndexError: list index out of range"
+        },
+        "traceback": [
+          {
+            "path": "tests/verifications/openai/test_chat_completion.py",
+            "lineno": 54,
+            "message": "IndexError"
+          }
+        ],
+        "longrepr": "openai_client = <openai.OpenAI object at 0x11be9e1a0>\ninput_output = {'input': {'messages': [{'content': 'Which planet do humans live on?', 'role': 'user'}]}, 'output': 'Earth'}\ncorrect_model_name = 'meta-llama/Llama-4-Scout-17B-16E-Instruct'\n\n    @pytest.mark.parametrize(\"model\", chat_completion_test_cases[\"test_chat_basic\"][\"test_params\"][\"model\"])\n    @pytest.mark.parametrize(\n        \"input_output\",\n        chat_completion_test_cases[\"test_chat_basic\"][\"test_params\"][\"input_output\"],\n    )\n    def test_chat_streaming_basic(openai_client, input_output, correct_model_name):\n        response = openai_client.chat.completions.create(\n            model=correct_model_name,\n            messages=input_output[\"input\"][\"messages\"],\n            stream=True,\n        )\n        content = \"\"\n        for chunk in response:\n>           content += chunk.choices[0].delta.content or \"\"\nE           IndexError: list index out of range\n\ntests/verifications/openai/test_chat_completion.py:54: IndexError"
+      },
+      "teardown": {
+        "duration": 0.00022504094522446394,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_basic[input_output0-Llama-4-Maverick-17B-128E]",
+      "lineno": 40,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_streaming_basic[input_output0-Llama-4-Maverick-17B-128E]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-Llama-4-Maverick-17B-128E",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.006660082959569991,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 41, 'Skipped: Provider together does not support model Llama-4-Maverick-17B-128E')"
+      },
+      "teardown": {
+        "duration": 0.0001445829402655363,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_basic[input_output0-Llama-4-Maverick-17B-128E-Instruct]",
+      "lineno": 40,
+      "outcome": "failed",
+      "keywords": [
+        "test_chat_streaming_basic[input_output0-Llama-4-Maverick-17B-128E-Instruct]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-Llama-4-Maverick-17B-128E-Instruct",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.021228999947197735,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 1.5670281670754775,
+        "outcome": "failed",
+        "crash": {
+          "path": "/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py",
+          "lineno": 54,
+          "message": "IndexError: list index out of range"
+        },
+        "traceback": [
+          {
+            "path": "tests/verifications/openai/test_chat_completion.py",
+            "lineno": 54,
+            "message": "IndexError"
+          }
+        ],
+        "longrepr": "openai_client = <openai.OpenAI object at 0x11c176c80>\ninput_output = {'input': {'messages': [{'content': 'Which planet do humans live on?', 'role': 'user'}]}, 'output': 'Earth'}\ncorrect_model_name = 'meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8'\n\n    @pytest.mark.parametrize(\"model\", chat_completion_test_cases[\"test_chat_basic\"][\"test_params\"][\"model\"])\n    @pytest.mark.parametrize(\n        \"input_output\",\n        chat_completion_test_cases[\"test_chat_basic\"][\"test_params\"][\"input_output\"],\n    )\n    def test_chat_streaming_basic(openai_client, input_output, correct_model_name):\n        response = openai_client.chat.completions.create(\n            model=correct_model_name,\n            messages=input_output[\"input\"][\"messages\"],\n            stream=True,\n        )\n        content = \"\"\n        for chunk in response:\n>           content += chunk.choices[0].delta.content or \"\"\nE           IndexError: list index out of range\n\ntests/verifications/openai/test_chat_completion.py:54: IndexError"
+      },
+      "teardown": {
+        "duration": 0.0004656669916585088,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_basic[input_output0-gpt-4o]",
+      "lineno": 40,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_streaming_basic[input_output0-gpt-4o]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-gpt-4o",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.009595917072147131,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 41, 'Skipped: Provider together does not support model gpt-4o')"
+      },
+      "teardown": {
+        "duration": 0.00025625003036111593,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_basic[input_output0-gpt-4o-mini]",
+      "lineno": 40,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_streaming_basic[input_output0-gpt-4o-mini]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-gpt-4o-mini",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.009242708911187947,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 41, 'Skipped: Provider together does not support model gpt-4o-mini')"
+      },
+      "teardown": {
+        "duration": 0.0002484159776940942,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_basic[input_output1-Llama-3.3-8B-Instruct]",
+      "lineno": 40,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_streaming_basic[input_output1-Llama-3.3-8B-Instruct]",
+        "parametrize",
+        "pytestmark",
+        "input_output1-Llama-3.3-8B-Instruct",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.00905474997125566,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 41, 'Skipped: Provider together does not support model Llama-3.3-8B-Instruct')"
+      },
+      "teardown": {
+        "duration": 0.00023312494158744812,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_basic[input_output1-Llama-3.3-70B-Instruct]",
+      "lineno": 40,
+      "outcome": "passed",
+      "keywords": [
+        "test_chat_streaming_basic[input_output1-Llama-3.3-70B-Instruct]",
+        "parametrize",
+        "pytestmark",
+        "input_output1-Llama-3.3-70B-Instruct",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.007183165987953544,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 1.0667660840554163,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.0005163750611245632,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_basic[input_output1-Llama-4-Scout-17B-16E]",
+      "lineno": 40,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_streaming_basic[input_output1-Llama-4-Scout-17B-16E]",
+        "parametrize",
+        "pytestmark",
+        "input_output1-Llama-4-Scout-17B-16E",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.05233616603072733,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 41, 'Skipped: Provider together does not support model Llama-4-Scout-17B-16E')"
+      },
+      "teardown": {
+        "duration": 0.0003471659729257226,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_basic[input_output1-Llama-4-Scout-17B-16E-Instruct]",
+      "lineno": 40,
+      "outcome": "failed",
+      "keywords": [
+        "test_chat_streaming_basic[input_output1-Llama-4-Scout-17B-16E-Instruct]",
+        "parametrize",
+        "pytestmark",
+        "input_output1-Llama-4-Scout-17B-16E-Instruct",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.015932541922666132,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.41540695796720684,
+        "outcome": "failed",
+        "crash": {
+          "path": "/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py",
+          "lineno": 54,
+          "message": "IndexError: list index out of range"
+        },
+        "traceback": [
+          {
+            "path": "tests/verifications/openai/test_chat_completion.py",
+            "lineno": 54,
+            "message": "IndexError"
+          }
+        ],
+        "longrepr": "openai_client = <openai.OpenAI object at 0x11befe2f0>\ninput_output = {'input': {'messages': [{'content': 'Which planet has rings around it with a name starting with letter S?', 'role': 'user'}]}, 'output': 'Saturn'}\ncorrect_model_name = 'meta-llama/Llama-4-Scout-17B-16E-Instruct'\n\n    @pytest.mark.parametrize(\"model\", chat_completion_test_cases[\"test_chat_basic\"][\"test_params\"][\"model\"])\n    @pytest.mark.parametrize(\n        \"input_output\",\n        chat_completion_test_cases[\"test_chat_basic\"][\"test_params\"][\"input_output\"],\n    )\n    def test_chat_streaming_basic(openai_client, input_output, correct_model_name):\n        response = openai_client.chat.completions.create(\n            model=correct_model_name,\n            messages=input_output[\"input\"][\"messages\"],\n            stream=True,\n        )\n        content = \"\"\n        for chunk in response:\n>           content += chunk.choices[0].delta.content or \"\"\nE           IndexError: list index out of range\n\ntests/verifications/openai/test_chat_completion.py:54: IndexError"
+      },
+      "teardown": {
+        "duration": 0.0002845840062946081,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_basic[input_output1-Llama-4-Maverick-17B-128E]",
+      "lineno": 40,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_streaming_basic[input_output1-Llama-4-Maverick-17B-128E]",
+        "parametrize",
+        "pytestmark",
+        "input_output1-Llama-4-Maverick-17B-128E",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.007243875064887106,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 41, 'Skipped: Provider together does not support model Llama-4-Maverick-17B-128E')"
+      },
+      "teardown": {
+        "duration": 0.00016258296091109514,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_basic[input_output1-Llama-4-Maverick-17B-128E-Instruct]",
+      "lineno": 40,
+      "outcome": "failed",
+      "keywords": [
+        "test_chat_streaming_basic[input_output1-Llama-4-Maverick-17B-128E-Instruct]",
+        "parametrize",
+        "pytestmark",
+        "input_output1-Llama-4-Maverick-17B-128E-Instruct",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.009275624994188547,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 1.43309554096777,
+        "outcome": "failed",
+        "crash": {
+          "path": "/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py",
+          "lineno": 54,
+          "message": "IndexError: list index out of range"
+        },
+        "traceback": [
+          {
+            "path": "tests/verifications/openai/test_chat_completion.py",
+            "lineno": 54,
+            "message": "IndexError"
+          }
+        ],
+        "longrepr": "openai_client = <openai.OpenAI object at 0x11c1898a0>\ninput_output = {'input': {'messages': [{'content': 'Which planet has rings around it with a name starting with letter S?', 'role': 'user'}]}, 'output': 'Saturn'}\ncorrect_model_name = 'meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8'\n\n    @pytest.mark.parametrize(\"model\", chat_completion_test_cases[\"test_chat_basic\"][\"test_params\"][\"model\"])\n    @pytest.mark.parametrize(\n        \"input_output\",\n        chat_completion_test_cases[\"test_chat_basic\"][\"test_params\"][\"input_output\"],\n    )\n    def test_chat_streaming_basic(openai_client, input_output, correct_model_name):\n        response = openai_client.chat.completions.create(\n            model=correct_model_name,\n            messages=input_output[\"input\"][\"messages\"],\n            stream=True,\n        )\n        content = \"\"\n        for chunk in response:\n>           content += chunk.choices[0].delta.content or \"\"\nE           IndexError: list index out of range\n\ntests/verifications/openai/test_chat_completion.py:54: IndexError"
+      },
+      "teardown": {
+        "duration": 0.0003690000157803297,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_basic[input_output1-gpt-4o]",
+      "lineno": 40,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_streaming_basic[input_output1-gpt-4o]",
+        "parametrize",
+        "pytestmark",
+        "input_output1-gpt-4o",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.011570582981221378,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 41, 'Skipped: Provider together does not support model gpt-4o')"
+      },
+      "teardown": {
+        "duration": 0.00024937500711530447,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_basic[input_output1-gpt-4o-mini]",
+      "lineno": 40,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_streaming_basic[input_output1-gpt-4o-mini]",
+        "parametrize",
+        "pytestmark",
+        "input_output1-gpt-4o-mini",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.010756584000773728,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 41, 'Skipped: Provider together does not support model gpt-4o-mini')"
+      },
+      "teardown": {
+        "duration": 0.00026183295994997025,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_image[input_output0-Llama-4-Scout-17B-16E]",
+      "lineno": 60,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_non_streaming_image[input_output0-Llama-4-Scout-17B-16E]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-Llama-4-Scout-17B-16E",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.008863041992299259,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 61, 'Skipped: Provider together does not support model Llama-4-Scout-17B-16E')"
+      },
+      "teardown": {
+        "duration": 0.00023283297196030617,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_image[input_output0-Llama-4-Scout-17B-16E-Instruct]",
+      "lineno": 60,
+      "outcome": "passed",
+      "keywords": [
+        "test_chat_non_streaming_image[input_output0-Llama-4-Scout-17B-16E-Instruct]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-Llama-4-Scout-17B-16E-Instruct",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.007975792046636343,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 2.1585817909799516,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.0005107080796733499,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_image[input_output0-Llama-4-Maverick-17B-128E]",
+      "lineno": 60,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_non_streaming_image[input_output0-Llama-4-Maverick-17B-128E]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-Llama-4-Maverick-17B-128E",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.05228079203516245,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 61, 'Skipped: Provider together does not support model Llama-4-Maverick-17B-128E')"
+      },
+      "teardown": {
+        "duration": 0.0017226670170202851,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_image[input_output0-Llama-4-Maverick-17B-128E-Instruct]",
+      "lineno": 60,
+      "outcome": "passed",
+      "keywords": [
+        "test_chat_non_streaming_image[input_output0-Llama-4-Maverick-17B-128E-Instruct]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-Llama-4-Maverick-17B-128E-Instruct",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.009964749915525317,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 4.6593364590080455,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.0009852920193225145,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_image[input_output0-gpt-4o]",
+      "lineno": 60,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_non_streaming_image[input_output0-gpt-4o]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-gpt-4o",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.023214041953906417,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 61, 'Skipped: Provider together does not support model gpt-4o')"
+      },
+      "teardown": {
+        "duration": 0.0003567079547792673,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_image[input_output0-gpt-4o-mini]",
+      "lineno": 60,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_non_streaming_image[input_output0-gpt-4o-mini]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-gpt-4o-mini",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.01705008395947516,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 61, 'Skipped: Provider together does not support model gpt-4o-mini')"
+      },
+      "teardown": {
+        "duration": 0.0003085409989580512,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_image[input_output0-Llama-4-Scout-17B-16E]",
+      "lineno": 75,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_streaming_image[input_output0-Llama-4-Scout-17B-16E]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-Llama-4-Scout-17B-16E",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.014711958006955683,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 76, 'Skipped: Provider together does not support model Llama-4-Scout-17B-16E')"
+      },
+      "teardown": {
+        "duration": 0.0003121249610558152,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_image[input_output0-Llama-4-Scout-17B-16E-Instruct]",
+      "lineno": 75,
+      "outcome": "failed",
+      "keywords": [
+        "test_chat_streaming_image[input_output0-Llama-4-Scout-17B-16E-Instruct]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-Llama-4-Scout-17B-16E-Instruct",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.01843333407305181,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 2.8683876669965684,
+        "outcome": "failed",
+        "crash": {
+          "path": "/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py",
+          "lineno": 89,
+          "message": "IndexError: list index out of range"
+        },
+        "traceback": [
+          {
+            "path": "tests/verifications/openai/test_chat_completion.py",
+            "lineno": 89,
+            "message": "IndexError"
+          }
+        ],
+        "longrepr": "openai_client = <openai.OpenAI object at 0x11c1a53f0>\ninput_output = {'input': {'messages': [{'content': [{'text': 'What is in this image?', 'type': 'text'}, {'image_url': {...}, 'type': 'image_url'}], 'role': 'user'}]}, 'output': 'llama'}\ncorrect_model_name = 'meta-llama/Llama-4-Scout-17B-16E-Instruct'\n\n    @pytest.mark.parametrize(\"model\", chat_completion_test_cases[\"test_chat_image\"][\"test_params\"][\"model\"])\n    @pytest.mark.parametrize(\n        \"input_output\",\n        chat_completion_test_cases[\"test_chat_image\"][\"test_params\"][\"input_output\"],\n    )\n    def test_chat_streaming_image(openai_client, input_output, correct_model_name):\n        response = openai_client.chat.completions.create(\n            model=correct_model_name,\n            messages=input_output[\"input\"][\"messages\"],\n            stream=True,\n        )\n        content = \"\"\n        for chunk in response:\n>           content += chunk.choices[0].delta.content or \"\"\nE           IndexError: list index out of range\n\ntests/verifications/openai/test_chat_completion.py:89: IndexError"
+      },
+      "teardown": {
+        "duration": 0.00028662499971687794,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_image[input_output0-Llama-4-Maverick-17B-128E]",
+      "lineno": 75,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_streaming_image[input_output0-Llama-4-Maverick-17B-128E]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-Llama-4-Maverick-17B-128E",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.00653208396397531,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 76, 'Skipped: Provider together does not support model Llama-4-Maverick-17B-128E')"
+      },
+      "teardown": {
+        "duration": 0.00021291698794811964,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_image[input_output0-Llama-4-Maverick-17B-128E-Instruct]",
+      "lineno": 75,
+      "outcome": "failed",
+      "keywords": [
+        "test_chat_streaming_image[input_output0-Llama-4-Maverick-17B-128E-Instruct]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-Llama-4-Maverick-17B-128E-Instruct",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.006028458010405302,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 4.981105040991679,
+        "outcome": "failed",
+        "crash": {
+          "path": "/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py",
+          "lineno": 89,
+          "message": "IndexError: list index out of range"
+        },
+        "traceback": [
+          {
+            "path": "tests/verifications/openai/test_chat_completion.py",
+            "lineno": 89,
+            "message": "IndexError"
+          }
+        ],
+        "longrepr": "openai_client = <openai.OpenAI object at 0x11beb7f70>\ninput_output = {'input': {'messages': [{'content': [{'text': 'What is in this image?', 'type': 'text'}, {'image_url': {...}, 'type': 'image_url'}], 'role': 'user'}]}, 'output': 'llama'}\ncorrect_model_name = 'meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8'\n\n    @pytest.mark.parametrize(\"model\", chat_completion_test_cases[\"test_chat_image\"][\"test_params\"][\"model\"])\n    @pytest.mark.parametrize(\n        \"input_output\",\n        chat_completion_test_cases[\"test_chat_image\"][\"test_params\"][\"input_output\"],\n    )\n    def test_chat_streaming_image(openai_client, input_output, correct_model_name):\n        response = openai_client.chat.completions.create(\n            model=correct_model_name,\n            messages=input_output[\"input\"][\"messages\"],\n            stream=True,\n        )\n        content = \"\"\n        for chunk in response:\n>           content += chunk.choices[0].delta.content or \"\"\nE           IndexError: list index out of range\n\ntests/verifications/openai/test_chat_completion.py:89: IndexError"
+      },
+      "teardown": {
+        "duration": 0.0010110830189660192,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_image[input_output0-gpt-4o]",
+      "lineno": 75,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_streaming_image[input_output0-gpt-4o]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-gpt-4o",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.01591233303770423,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 76, 'Skipped: Provider together does not support model gpt-4o')"
+      },
+      "teardown": {
+        "duration": 0.0003783750580623746,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_image[input_output0-gpt-4o-mini]",
+      "lineno": 75,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_streaming_image[input_output0-gpt-4o-mini]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-gpt-4o-mini",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.010691000032238662,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 76, 'Skipped: Provider together does not support model gpt-4o-mini')"
+      },
+      "teardown": {
+        "duration": 0.00027445796877145767,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_structured_output[input_output0-Llama-3.3-8B-Instruct]",
+      "lineno": 95,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_non_streaming_structured_output[input_output0-Llama-3.3-8B-Instruct]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-Llama-3.3-8B-Instruct",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.01258529198821634,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 96, 'Skipped: Provider together does not support model Llama-3.3-8B-Instruct')"
+      },
+      "teardown": {
+        "duration": 0.0002044580178335309,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_structured_output[input_output0-Llama-3.3-70B-Instruct]",
+      "lineno": 95,
+      "outcome": "passed",
+      "keywords": [
+        "test_chat_non_streaming_structured_output[input_output0-Llama-3.3-70B-Instruct]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-Llama-3.3-70B-Instruct",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.010904791066423059,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.8311828339938074,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.00048687495291233063,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_structured_output[input_output0-Llama-4-Scout-17B-16E]",
+      "lineno": 95,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_non_streaming_structured_output[input_output0-Llama-4-Scout-17B-16E]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-Llama-4-Scout-17B-16E",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.029216791968792677,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 96, 'Skipped: Provider together does not support model Llama-4-Scout-17B-16E')"
+      },
+      "teardown": {
+        "duration": 0.0002269580727443099,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_structured_output[input_output0-Llama-4-Scout-17B-16E-Instruct]",
+      "lineno": 95,
+      "outcome": "passed",
+      "keywords": [
+        "test_chat_non_streaming_structured_output[input_output0-Llama-4-Scout-17B-16E-Instruct]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-Llama-4-Scout-17B-16E-Instruct",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.013182583032175899,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 1.7446029160637408,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.0008087089518085122,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_structured_output[input_output0-Llama-4-Maverick-17B-128E]",
+      "lineno": 95,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_non_streaming_structured_output[input_output0-Llama-4-Maverick-17B-128E]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-Llama-4-Maverick-17B-128E",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.02009516698308289,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 96, 'Skipped: Provider together does not support model Llama-4-Maverick-17B-128E')"
+      },
+      "teardown": {
+        "duration": 0.000320291961543262,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_structured_output[input_output0-Llama-4-Maverick-17B-128E-Instruct]",
+      "lineno": 95,
+      "outcome": "passed",
+      "keywords": [
+        "test_chat_non_streaming_structured_output[input_output0-Llama-4-Maverick-17B-128E-Instruct]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-Llama-4-Maverick-17B-128E-Instruct",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.015216833096928895,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.8049291669158265,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.0005109170451760292,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_structured_output[input_output0-gpt-4o]",
+      "lineno": 95,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_non_streaming_structured_output[input_output0-gpt-4o]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-gpt-4o",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.0171551660168916,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 96, 'Skipped: Provider together does not support model gpt-4o')"
+      },
+      "teardown": {
+        "duration": 0.0005707499803975224,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_structured_output[input_output0-gpt-4o-mini]",
+      "lineno": 95,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_non_streaming_structured_output[input_output0-gpt-4o-mini]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-gpt-4o-mini",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.01131124992389232,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 96, 'Skipped: Provider together does not support model gpt-4o-mini')"
+      },
+      "teardown": {
+        "duration": 0.0003044159384444356,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_structured_output[input_output1-Llama-3.3-8B-Instruct]",
+      "lineno": 95,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_non_streaming_structured_output[input_output1-Llama-3.3-8B-Instruct]",
+        "parametrize",
+        "pytestmark",
+        "input_output1-Llama-3.3-8B-Instruct",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.0054290409898385406,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 96, 'Skipped: Provider together does not support model Llama-3.3-8B-Instruct')"
+      },
+      "teardown": {
+        "duration": 0.00014645792543888092,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_structured_output[input_output1-Llama-3.3-70B-Instruct]",
+      "lineno": 95,
+      "outcome": "passed",
+      "keywords": [
+        "test_chat_non_streaming_structured_output[input_output1-Llama-3.3-70B-Instruct]",
+        "parametrize",
+        "pytestmark",
+        "input_output1-Llama-3.3-70B-Instruct",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.011368000064976513,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 4.363120499998331,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.0003998749889433384,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_structured_output[input_output1-Llama-4-Scout-17B-16E]",
+      "lineno": 95,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_non_streaming_structured_output[input_output1-Llama-4-Scout-17B-16E]",
+        "parametrize",
+        "pytestmark",
+        "input_output1-Llama-4-Scout-17B-16E",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.04945958300959319,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 96, 'Skipped: Provider together does not support model Llama-4-Scout-17B-16E')"
+      },
+      "teardown": {
+        "duration": 0.0002401659730821848,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_structured_output[input_output1-Llama-4-Scout-17B-16E-Instruct]",
+      "lineno": 95,
+      "outcome": "passed",
+      "keywords": [
+        "test_chat_non_streaming_structured_output[input_output1-Llama-4-Scout-17B-16E-Instruct]",
+        "parametrize",
+        "pytestmark",
+        "input_output1-Llama-4-Scout-17B-16E-Instruct",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.011090958025306463,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 4.699277375009842,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.000689250067807734,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_structured_output[input_output1-Llama-4-Maverick-17B-128E]",
+      "lineno": 95,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_non_streaming_structured_output[input_output1-Llama-4-Maverick-17B-128E]",
+        "parametrize",
+        "pytestmark",
+        "input_output1-Llama-4-Maverick-17B-128E",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.020744459005072713,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 96, 'Skipped: Provider together does not support model Llama-4-Maverick-17B-128E')"
+      },
+      "teardown": {
+        "duration": 0.0001836250303313136,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_structured_output[input_output1-Llama-4-Maverick-17B-128E-Instruct]",
+      "lineno": 95,
+      "outcome": "passed",
+      "keywords": [
+        "test_chat_non_streaming_structured_output[input_output1-Llama-4-Maverick-17B-128E-Instruct]",
+        "parametrize",
+        "pytestmark",
+        "input_output1-Llama-4-Maverick-17B-128E-Instruct",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.005926624988205731,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 2.7814464160474017,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.0009554170537739992,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_structured_output[input_output1-gpt-4o]",
+      "lineno": 95,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_non_streaming_structured_output[input_output1-gpt-4o]",
+        "parametrize",
+        "pytestmark",
+        "input_output1-gpt-4o",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.03027112502604723,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 96, 'Skipped: Provider together does not support model gpt-4o')"
+      },
+      "teardown": {
+        "duration": 0.0003245410043746233,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_structured_output[input_output1-gpt-4o-mini]",
+      "lineno": 95,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_non_streaming_structured_output[input_output1-gpt-4o-mini]",
+        "parametrize",
+        "pytestmark",
+        "input_output1-gpt-4o-mini",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.009138708002865314,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 96, 'Skipped: Provider together does not support model gpt-4o-mini')"
+      },
+      "teardown": {
+        "duration": 0.0001919999485835433,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_structured_output[input_output0-Llama-3.3-8B-Instruct]",
+      "lineno": 117,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_streaming_structured_output[input_output0-Llama-3.3-8B-Instruct]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-Llama-3.3-8B-Instruct",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.0064505410846322775,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 118, 'Skipped: Provider together does not support model Llama-3.3-8B-Instruct')"
+      },
+      "teardown": {
+        "duration": 0.00015720794908702374,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_structured_output[input_output0-Llama-3.3-70B-Instruct]",
+      "lineno": 117,
+      "outcome": "passed",
+      "keywords": [
+        "test_chat_streaming_structured_output[input_output0-Llama-3.3-70B-Instruct]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-Llama-3.3-70B-Instruct",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.00582624995149672,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.8302567919017747,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.00020354206208139658,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_structured_output[input_output0-Llama-4-Scout-17B-16E]",
+      "lineno": 117,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_streaming_structured_output[input_output0-Llama-4-Scout-17B-16E]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-Llama-4-Scout-17B-16E",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.014151416951790452,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 118, 'Skipped: Provider together does not support model Llama-4-Scout-17B-16E')"
+      },
+      "teardown": {
+        "duration": 0.00034970801789313555,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_structured_output[input_output0-Llama-4-Scout-17B-16E-Instruct]",
+      "lineno": 117,
+      "outcome": "failed",
+      "keywords": [
+        "test_chat_streaming_structured_output[input_output0-Llama-4-Scout-17B-16E-Instruct]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-Llama-4-Scout-17B-16E-Instruct",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.012150791939347982,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.7078855830477551,
+        "outcome": "failed",
+        "crash": {
+          "path": "/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py",
+          "lineno": 135,
+          "message": "IndexError: list index out of range"
+        },
+        "traceback": [
+          {
+            "path": "tests/verifications/openai/test_chat_completion.py",
+            "lineno": 135,
+            "message": "IndexError"
+          }
+        ],
+        "longrepr": "openai_client = <openai.OpenAI object at 0x11beeb460>\ninput_output = {'input': {'messages': [{'content': 'Extract the event information.', 'role': 'system'}, {'content': 'Alice and Bob ar...articipants'], 'title': 'CalendarEvent', 'type': 'object'}}, 'type': 'json_schema'}}, 'output': 'valid_calendar_event'}\ncorrect_model_name = 'meta-llama/Llama-4-Scout-17B-16E-Instruct'\n\n    @pytest.mark.parametrize(\n        \"model\",\n        chat_completion_test_cases[\"test_chat_structured_output\"][\"test_params\"][\"model\"],\n    )\n    @pytest.mark.parametrize(\n        \"input_output\",\n        chat_completion_test_cases[\"test_chat_structured_output\"][\"test_params\"][\"input_output\"],\n    )\n    def test_chat_streaming_structured_output(openai_client, input_output, correct_model_name):\n        response = openai_client.chat.completions.create(\n            model=correct_model_name,\n            messages=input_output[\"input\"][\"messages\"],\n            response_format=input_output[\"input\"][\"response_format\"],\n            stream=True,\n        )\n        maybe_json_content = \"\"\n        for chunk in response:\n>           maybe_json_content += chunk.choices[0].delta.content or \"\"\nE           IndexError: list index out of range\n\ntests/verifications/openai/test_chat_completion.py:135: IndexError"
+      },
+      "teardown": {
+        "duration": 0.0008542909054085612,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_structured_output[input_output0-Llama-4-Maverick-17B-128E]",
+      "lineno": 117,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_streaming_structured_output[input_output0-Llama-4-Maverick-17B-128E]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-Llama-4-Maverick-17B-128E",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.022667833953164518,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 118, 'Skipped: Provider together does not support model Llama-4-Maverick-17B-128E')"
+      },
+      "teardown": {
+        "duration": 0.0006820419803261757,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_structured_output[input_output0-Llama-4-Maverick-17B-128E-Instruct]",
+      "lineno": 117,
+      "outcome": "failed",
+      "keywords": [
+        "test_chat_streaming_structured_output[input_output0-Llama-4-Maverick-17B-128E-Instruct]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-Llama-4-Maverick-17B-128E-Instruct",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.01285991701297462,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.6888671671040356,
+        "outcome": "failed",
+        "crash": {
+          "path": "/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py",
+          "lineno": 135,
+          "message": "IndexError: list index out of range"
+        },
+        "traceback": [
+          {
+            "path": "tests/verifications/openai/test_chat_completion.py",
+            "lineno": 135,
+            "message": "IndexError"
+          }
+        ],
+        "longrepr": "openai_client = <openai.OpenAI object at 0x11c19b4f0>\ninput_output = {'input': {'messages': [{'content': 'Extract the event information.', 'role': 'system'}, {'content': 'Alice and Bob ar...articipants'], 'title': 'CalendarEvent', 'type': 'object'}}, 'type': 'json_schema'}}, 'output': 'valid_calendar_event'}\ncorrect_model_name = 'meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8'\n\n    @pytest.mark.parametrize(\n        \"model\",\n        chat_completion_test_cases[\"test_chat_structured_output\"][\"test_params\"][\"model\"],\n    )\n    @pytest.mark.parametrize(\n        \"input_output\",\n        chat_completion_test_cases[\"test_chat_structured_output\"][\"test_params\"][\"input_output\"],\n    )\n    def test_chat_streaming_structured_output(openai_client, input_output, correct_model_name):\n        response = openai_client.chat.completions.create(\n            model=correct_model_name,\n            messages=input_output[\"input\"][\"messages\"],\n            response_format=input_output[\"input\"][\"response_format\"],\n            stream=True,\n        )\n        maybe_json_content = \"\"\n        for chunk in response:\n>           maybe_json_content += chunk.choices[0].delta.content or \"\"\nE           IndexError: list index out of range\n\ntests/verifications/openai/test_chat_completion.py:135: IndexError"
+      },
+      "teardown": {
+        "duration": 0.0007953330641612411,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_structured_output[input_output0-gpt-4o]",
+      "lineno": 117,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_streaming_structured_output[input_output0-gpt-4o]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-gpt-4o",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.015029000001959503,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 118, 'Skipped: Provider together does not support model gpt-4o')"
+      },
+      "teardown": {
+        "duration": 0.00015666603576391935,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_structured_output[input_output0-gpt-4o-mini]",
+      "lineno": 117,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_streaming_structured_output[input_output0-gpt-4o-mini]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-gpt-4o-mini",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.00622316705994308,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 118, 'Skipped: Provider together does not support model gpt-4o-mini')"
+      },
+      "teardown": {
+        "duration": 0.0001533749746158719,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_structured_output[input_output1-Llama-3.3-8B-Instruct]",
+      "lineno": 117,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_streaming_structured_output[input_output1-Llama-3.3-8B-Instruct]",
+        "parametrize",
+        "pytestmark",
+        "input_output1-Llama-3.3-8B-Instruct",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.005598834017291665,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 118, 'Skipped: Provider together does not support model Llama-3.3-8B-Instruct')"
+      },
+      "teardown": {
+        "duration": 0.00013062497600913048,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_structured_output[input_output1-Llama-3.3-70B-Instruct]",
+      "lineno": 117,
+      "outcome": "passed",
+      "keywords": [
+        "test_chat_streaming_structured_output[input_output1-Llama-3.3-70B-Instruct]",
+        "parametrize",
+        "pytestmark",
+        "input_output1-Llama-3.3-70B-Instruct",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.005876541952602565,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 7.561108374968171,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.0004579999949783087,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_structured_output[input_output1-Llama-4-Scout-17B-16E]",
+      "lineno": 117,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_streaming_structured_output[input_output1-Llama-4-Scout-17B-16E]",
+        "parametrize",
+        "pytestmark",
+        "input_output1-Llama-4-Scout-17B-16E",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.018791542039252818,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 118, 'Skipped: Provider together does not support model Llama-4-Scout-17B-16E')"
+      },
+      "teardown": {
+        "duration": 0.0004900830099359155,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_structured_output[input_output1-Llama-4-Scout-17B-16E-Instruct]",
+      "lineno": 117,
+      "outcome": "failed",
+      "keywords": [
+        "test_chat_streaming_structured_output[input_output1-Llama-4-Scout-17B-16E-Instruct]",
+        "parametrize",
+        "pytestmark",
+        "input_output1-Llama-4-Scout-17B-16E-Instruct",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.0065952910808846354,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 2.6826554159633815,
+        "outcome": "failed",
+        "crash": {
+          "path": "/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py",
+          "lineno": 135,
+          "message": "IndexError: list index out of range"
+        },
+        "traceback": [
+          {
+            "path": "tests/verifications/openai/test_chat_completion.py",
+            "lineno": 135,
+            "message": "IndexError"
+          }
+        ],
+        "longrepr": "openai_client = <openai.OpenAI object at 0x11c188640>\ninput_output = {'input': {'messages': [{'content': 'You are a helpful math tutor. Guide the user through the solution step by step.',... ['steps', 'final_answer'], 'title': 'MathReasoning', ...}}, 'type': 'json_schema'}}, 'output': 'valid_math_reasoning'}\ncorrect_model_name = 'meta-llama/Llama-4-Scout-17B-16E-Instruct'\n\n    @pytest.mark.parametrize(\n        \"model\",\n        chat_completion_test_cases[\"test_chat_structured_output\"][\"test_params\"][\"model\"],\n    )\n    @pytest.mark.parametrize(\n        \"input_output\",\n        chat_completion_test_cases[\"test_chat_structured_output\"][\"test_params\"][\"input_output\"],\n    )\n    def test_chat_streaming_structured_output(openai_client, input_output, correct_model_name):\n        response = openai_client.chat.completions.create(\n            model=correct_model_name,\n            messages=input_output[\"input\"][\"messages\"],\n            response_format=input_output[\"input\"][\"response_format\"],\n            stream=True,\n        )\n        maybe_json_content = \"\"\n        for chunk in response:\n>           maybe_json_content += chunk.choices[0].delta.content or \"\"\nE           IndexError: list index out of range\n\ntests/verifications/openai/test_chat_completion.py:135: IndexError"
+      },
+      "teardown": {
+        "duration": 0.0009669580031186342,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_structured_output[input_output1-Llama-4-Maverick-17B-128E]",
+      "lineno": 117,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_streaming_structured_output[input_output1-Llama-4-Maverick-17B-128E]",
+        "parametrize",
+        "pytestmark",
+        "input_output1-Llama-4-Maverick-17B-128E",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.019489208003506064,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 118, 'Skipped: Provider together does not support model Llama-4-Maverick-17B-128E')"
+      },
+      "teardown": {
+        "duration": 0.0007419160101562738,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_structured_output[input_output1-Llama-4-Maverick-17B-128E-Instruct]",
+      "lineno": 117,
+      "outcome": "failed",
+      "keywords": [
+        "test_chat_streaming_structured_output[input_output1-Llama-4-Maverick-17B-128E-Instruct]",
+        "parametrize",
+        "pytestmark",
+        "input_output1-Llama-4-Maverick-17B-128E-Instruct",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.012299792026169598,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 2.829678333015181,
+        "outcome": "failed",
+        "crash": {
+          "path": "/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py",
+          "lineno": 135,
+          "message": "IndexError: list index out of range"
+        },
+        "traceback": [
+          {
+            "path": "tests/verifications/openai/test_chat_completion.py",
+            "lineno": 135,
+            "message": "IndexError"
+          }
+        ],
+        "longrepr": "openai_client = <openai.OpenAI object at 0x11c1ed6c0>\ninput_output = {'input': {'messages': [{'content': 'You are a helpful math tutor. Guide the user through the solution step by step.',... ['steps', 'final_answer'], 'title': 'MathReasoning', ...}}, 'type': 'json_schema'}}, 'output': 'valid_math_reasoning'}\ncorrect_model_name = 'meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8'\n\n    @pytest.mark.parametrize(\n        \"model\",\n        chat_completion_test_cases[\"test_chat_structured_output\"][\"test_params\"][\"model\"],\n    )\n    @pytest.mark.parametrize(\n        \"input_output\",\n        chat_completion_test_cases[\"test_chat_structured_output\"][\"test_params\"][\"input_output\"],\n    )\n    def test_chat_streaming_structured_output(openai_client, input_output, correct_model_name):\n        response = openai_client.chat.completions.create(\n            model=correct_model_name,\n            messages=input_output[\"input\"][\"messages\"],\n            response_format=input_output[\"input\"][\"response_format\"],\n            stream=True,\n        )\n        maybe_json_content = \"\"\n        for chunk in response:\n>           maybe_json_content += chunk.choices[0].delta.content or \"\"\nE           IndexError: list index out of range\n\ntests/verifications/openai/test_chat_completion.py:135: IndexError"
+      },
+      "teardown": {
+        "duration": 0.0010418329620733857,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_structured_output[input_output1-gpt-4o]",
+      "lineno": 117,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_streaming_structured_output[input_output1-gpt-4o]",
+        "parametrize",
+        "pytestmark",
+        "input_output1-gpt-4o",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.016189916990697384,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 118, 'Skipped: Provider together does not support model gpt-4o')"
+      },
+      "teardown": {
+        "duration": 0.00027966592460870743,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_streaming_structured_output[input_output1-gpt-4o-mini]",
+      "lineno": 117,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_streaming_structured_output[input_output1-gpt-4o-mini]",
+        "parametrize",
+        "pytestmark",
+        "input_output1-gpt-4o-mini",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.010247125057503581,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 118, 'Skipped: Provider together does not support model gpt-4o-mini')"
+      },
+      "teardown": {
+        "duration": 0.00023291702382266521,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_tool_calling[input_output0-Llama-3.3-70B-Instruct]",
+      "lineno": 138,
+      "outcome": "passed",
+      "keywords": [
+        "test_chat_non_streaming_tool_calling[input_output0-Llama-3.3-70B-Instruct]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-Llama-3.3-70B-Instruct",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.012632582918740809,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.40774812502786517,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.0007319580763578415,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_tool_calling[input_output0-Llama-4-Scout-17B-16E]",
+      "lineno": 138,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_non_streaming_tool_calling[input_output0-Llama-4-Scout-17B-16E]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-Llama-4-Scout-17B-16E",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.019890791969373822,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 139, 'Skipped: Provider together does not support model Llama-4-Scout-17B-16E')"
+      },
+      "teardown": {
+        "duration": 0.0006391670322045684,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_tool_calling[input_output0-Llama-4-Scout-17B-16E-Instruct]",
+      "lineno": 138,
+      "outcome": "passed",
+      "keywords": [
+        "test_chat_non_streaming_tool_calling[input_output0-Llama-4-Scout-17B-16E-Instruct]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-Llama-4-Scout-17B-16E-Instruct",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.0178165000397712,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.38229950005188584,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.0010000420734286308,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_tool_calling[input_output0-Llama-4-Maverick-17B-128E]",
+      "lineno": 138,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_non_streaming_tool_calling[input_output0-Llama-4-Maverick-17B-128E]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-Llama-4-Maverick-17B-128E",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.024259291938506067,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 139, 'Skipped: Provider together does not support model Llama-4-Maverick-17B-128E')"
+      },
+      "teardown": {
+        "duration": 0.0003602079814299941,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_tool_calling[input_output0-Llama-4-Maverick-17B-128E-Instruct]",
+      "lineno": 138,
+      "outcome": "passed",
+      "keywords": [
+        "test_chat_non_streaming_tool_calling[input_output0-Llama-4-Maverick-17B-128E-Instruct]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-Llama-4-Maverick-17B-128E-Instruct",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.012425708002410829,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.7610744580160826,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.0005935420049354434,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_tool_calling[input_output0-gpt-4o]",
+      "lineno": 138,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_non_streaming_tool_calling[input_output0-gpt-4o]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-gpt-4o",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.018717541941441596,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 139, 'Skipped: Provider together does not support model gpt-4o')"
+      },
+      "teardown": {
+        "duration": 0.000659791985526681,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai/test_chat_completion.py::test_chat_non_streaming_tool_calling[input_output0-gpt-4o-mini]",
+      "lineno": 138,
+      "outcome": "skipped",
+      "keywords": [
+        "test_chat_non_streaming_tool_calling[input_output0-gpt-4o-mini]",
+        "parametrize",
+        "pytestmark",
+        "input_output0-gpt-4o-mini",
+        "test_chat_completion.py",
+        "openai",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "setup": {
+        "duration": 0.012784749967977405,
+        "outcome": "skipped",
+        "longrepr": "('/Users/erichuang/projects/llama-stack/tests/verifications/openai/test_chat_completion.py', 139, 'Skipped: Provider together does not support model gpt-4o-mini')"
+      },
+      "teardown": {
+        "duration": 0.0002145830076187849,
+        "outcome": "passed"
+      }
+    }
+  ]
+}

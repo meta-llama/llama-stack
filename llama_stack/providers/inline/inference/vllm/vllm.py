@@ -46,6 +46,8 @@ from llama_stack.apis.inference import (
     TokenLogProbs,
     ToolChoice,
     ToolConfig,
+    TopKSamplingStrategy,
+    TopPSamplingStrategy,
 )
 from llama_stack.apis.models import Model
 from llama_stack.log import get_logger
@@ -55,8 +57,6 @@ from llama_stack.models.llama.datatypes import (
     ToolCall,
     ToolDefinition,
     ToolPromptFormat,
-    TopKSamplingStrategy,
-    TopPSamplingStrategy,
 )
 from llama_stack.models.llama.llama3.chat_format import ChatFormat
 from llama_stack.models.llama.llama3.tokenizer import Tokenizer

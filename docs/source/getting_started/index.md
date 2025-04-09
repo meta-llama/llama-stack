@@ -12,16 +12,20 @@ as the inference [provider](../providers/index.md#inference) for a Llama Model.
 
 ## Step 1: Installation and Setup
 
-### i. Install and Start Ollama for Inference
+### i. Install and Setup Ollama for Inference
 
 Install Ollama by following the instructions on the [Ollama website](https://ollama.com/download).
 
-To start Ollama run:
+Then download a Llama model with Ollama
+```bash
+ollama pull llama3.2:3b-instruct-fp16
+```
+This will instruct the Ollama service to download the Llama 3.2 3B Instruct model, which we'll use in the rest of this guide.
+
+Then to start Ollama run:
 ```bash
 ollama run llama3.2:3b --keepalive 60m
 ```
-
-By default, Ollama keeps the model loaded in memory for 5 minutes which can be too short. We set the `--keepalive` flag to 60 minutes to ensure the model remains loaded for sometime.
 
 ### ii. Install `uv` to Manage your Python packages
 

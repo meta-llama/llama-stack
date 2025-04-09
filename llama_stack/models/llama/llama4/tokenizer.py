@@ -4,9 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-# Copyright (c) Meta Platforms, Inc. and affiliates.
-# This software may be used and distributed in accordance with the terms of the Llama 3 Community License Agreement.
-
 import os
 from logging import getLogger
 from pathlib import Path
@@ -59,11 +56,11 @@ LLAMA4_TEXT_POST_TRAIN_SPECIAL_TOKENS = [
     "<|text_post_train_reserved_special_token_3|>",
     "<|text_post_train_reserved_special_token_4|>",
     "<|text_post_train_reserved_special_token_5|>",
-    "<|python_start|>",
-    "<|python_end|>",
+    "<|text_post_train_reserved_special_token_6|>",
+    "<|text_post_train_reserved_special_token_7|>",
     "<|finetune_right_pad|>",
 ] + get_reserved_special_tokens(
-    "text_post_train", 61, 6
+    "text_post_train", 61, 8
 )  # <|text_post_train_reserved_special_token_6|>, ..., <|text_post_train_reserved_special_token_66|>
 
 # 200080, ..., 201133
@@ -85,8 +82,23 @@ LLAMA4_VISION_SPECIAL_TOKENS = [
     "vision", 1041, 7
 )  # <|vision_reserved_special_token_7|>, ..., <|vision_reserved_special_token_1047|>
 
+# 201134, ..., 201143
+LLAMA4_REASONING_SPECIAL_TOKENS = [
+    "<|reasoning_reserved_special_token_0|>",
+    "<|reasoning_reserved_special_token_1|>",
+    "<|reasoning_reserved_special_token_2|>",
+    "<|reasoning_reserved_special_token_3|>",
+    "<|reasoning_reserved_special_token_4|>",
+    "<|reasoning_reserved_special_token_5|>",
+    "<|reasoning_reserved_special_token_6|>",
+    "<|reasoning_reserved_special_token_7|>",
+    "<|reasoning_thinking_start|>",
+    "<|reasoning_thinking_end|>",
+]
 
-LLAMA4_SPECIAL_TOKENS = LLAMA4_TEXT_POST_TRAIN_SPECIAL_TOKENS + LLAMA4_VISION_SPECIAL_TOKENS
+LLAMA4_SPECIAL_TOKENS = (
+    LLAMA4_TEXT_POST_TRAIN_SPECIAL_TOKENS + LLAMA4_VISION_SPECIAL_TOKENS + LLAMA4_REASONING_SPECIAL_TOKENS
+)
 
 BASIC_SPECIAL_TOKENS = [
     "<|begin_of_text|>",
@@ -154,6 +166,9 @@ class Tokenizer:
         self.pad_id: int = self.special_tokens["<|finetune_right_pad|>"]
         self.eot_id: int = self.special_tokens["<|eot|>"]
         self.eom_id: int = self.special_tokens["<|eom|>"]
+
+        self.thinking_start_id: int = self.special_tokens["<|reasoning_thinking_start|>"]
+        self.thinking_end_id: int = self.special_tokens["<|reasoning_thinking_end|>"]
 
         self.stop_tokens = [
             self.eos_id,

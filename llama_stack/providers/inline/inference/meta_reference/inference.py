@@ -6,7 +6,10 @@
 
 import asyncio
 import logging
+import os
 from typing import AsyncGenerator, List, Optional, Union
+
+from termcolor import cprint
 
 from llama_stack.apis.common.content_types import (
     TextDelta,
@@ -28,23 +31,21 @@ from llama_stack.apis.inference import (
     LogProbConfig,
     Message,
     ResponseFormat,
+    SamplingParams,
+    StopReason,
     TokenLogProbs,
     ToolChoice,
     ToolConfig,
-)
-from llama_stack.apis.models import Model, ModelType
-from llama_stack.models.llama.datatypes import (
-    ModelFamily,
-    SamplingParams,
-    StopReason,
     ToolDefinition,
     ToolPromptFormat,
 )
+from llama_stack.apis.models import Model, ModelType
 from llama_stack.models.llama.llama3.chat_format import ChatFormat as Llama3ChatFormat
 from llama_stack.models.llama.llama3.tokenizer import Tokenizer as Llama3Tokenizer
 from llama_stack.models.llama.llama4.chat_format import ChatFormat as Llama4ChatFormat
 from llama_stack.models.llama.llama4.tokenizer import Tokenizer as Llama4Tokenizer
 from llama_stack.models.llama.sku_list import resolve_model
+from llama_stack.models.llama.sku_types import ModelFamily
 from llama_stack.providers.datatypes import ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.embedding_mixin import (
     SentenceTransformerEmbeddingMixin,
@@ -148,7 +149,7 @@ class MetaReferenceInferenceImpl(
 
         if self.config.create_distributed_process_group:
             self.generator = LlamaModelParallelGenerator(
-                model_parallel_size=llama_model.pth_file_count,
+                model_parallel_size=self.config.model_parallel_size or llama_model.pth_file_count,
                 builder_fn=builder_fn,
                 builder_params=builder_params,
                 formatter=(
@@ -338,6 +339,9 @@ class MetaReferenceInferenceImpl(
             stop_reason = None
 
             for token_result in self.generator.chat_completion(request):
+                if os.environ.get("LLAMA_MODELS_DEBUG", "0") == "1":
+                    cprint(token_result.text, "cyan", end="")
+
                 tokens.append(token_result.token)
 
                 if token_result.token == tokenizer.eot_id:
@@ -386,6 +390,9 @@ class MetaReferenceInferenceImpl(
             ipython = False
 
             for token_result in self.generator.chat_completion(request):
+                if os.environ.get("LLAMA_MODELS_DEBUG", "0") == "1":
+                    cprint(token_result.text, "cyan", end="")
+
                 tokens.append(token_result.token)
 
                 if not ipython and token_result.text.startswith("<|python_tag|>"):
