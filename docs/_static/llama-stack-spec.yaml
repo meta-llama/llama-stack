@@ -3615,18 +3615,28 @@ components:
           default: 10
         model:
           type: string
+          description: >-
+            The model identifier to use for the agent
         instructions:
           type: string
+          description: The system instructions for the agent
+        name:
+          type: string
+          description: >-
+            Optional name for the agent, used in telemetry and identification
         enable_session_persistence:
           type: boolean
           default: false
+          description: Whether to persist session data
         response_format:
           $ref: '#/components/schemas/ResponseFormat'
+          description: Optional response format configuration
       additionalProperties: false
       required:
         - model
         - instructions
       title: AgentConfig
+      description: Configuration for an agent.
     AgentTool:
       oneOf:
         - type: string
