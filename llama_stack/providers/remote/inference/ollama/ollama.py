@@ -348,6 +348,9 @@ class OllamaInferenceAdapter(
         top_p: Optional[float] = None,
         user: Optional[str] = None,
     ) -> OpenAICompletion:
+        if not isinstance(prompt, str):
+            raise ValueError("Ollama does not support non-string prompts for completion")
+
         model_obj = await self._get_model(model)
         params = {
             k: v

@@ -53,9 +53,11 @@ def openai_client(client_with_models, text_model_id):
 def test_openai_completion_non_streaming(openai_client, text_model_id, test_case):
     tc = TestCase(test_case)
 
+    # ollama needs more verbose prompting for some reason here...
+    prompt = "Respond to this question and explain your answer. " + tc["content"]
     response = openai_client.completions.create(
         model=text_model_id,
-        prompt=tc["content"],
+        prompt=prompt,
         stream=False,
     )
     assert len(response.choices) > 0
@@ -72,9 +74,11 @@ def test_openai_completion_non_streaming(openai_client, text_model_id, test_case
 def test_openai_completion_streaming(openai_client, text_model_id, test_case):
     tc = TestCase(test_case)
 
+    # ollama needs more verbose prompting for some reason here...
+    prompt = "Respond to this question and explain your answer. " + tc["content"]
     response = openai_client.completions.create(
         model=text_model_id,
-        prompt=tc["content"],
+        prompt=prompt,
         stream=True,
         max_tokens=50,
     )
