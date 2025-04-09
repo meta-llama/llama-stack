@@ -6420,6 +6420,7 @@ components:
             "uri": "https://mywebsite.com/mydata.jsonl" } - { "type": "uri", "uri":
             "lsfs://mydata.jsonl" } - { "type": "uri", "uri": "data:csv;base64,{base64_content}"
             } - { "type": "uri", "uri": "huggingface://llamastack/simpleqa?split=train"
+            } - { "type": "uri", "uri": "postgresql://<user>:<password>@<host>:<port>/<database>?table=<tablename>"
             } - { "type": "rows", "rows": [ { "messages": [ {"role": "user", "content":
             "Hello, world!"}, {"role": "assistant", "content": "Hello, world!"}, ]
             } ] }
