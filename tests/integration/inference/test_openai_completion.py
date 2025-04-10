@@ -208,6 +208,9 @@ def test_openai_chat_completion_streaming(openai_client, client_with_models, tex
         stream=True,
         timeout=120,  # Increase timeout to 2 minutes for large conversation history
     )
-    streamed_content = [str(chunk.choices[0].delta.content.lower().strip()) for chunk in response]
+    streamed_content = []
+    for chunk in response:
+        if chunk.choices[0].delta.content:
+            streamed_content.append(chunk.choices[0].delta.content.lower().strip())
     assert len(streamed_content) > 0
     assert expected.lower() in "".join(streamed_content)
