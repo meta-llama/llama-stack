@@ -9,10 +9,10 @@ In this guide, we'll walk through how to build a RAG agent locally using Llama S
 ### 1. Download a Llama model with Ollama
 
 ```bash
-ollama pull llama3.2:3b-instruct-fp16
+ollama pull llama3.2:3b
 ```
 
-This will instruct the Ollama service to download the Llama 3.2 3B Instruct model, which we'll use in the rest of this guide.
+This will instruct the Ollama service to download the Llama 3.2 3B model, which we'll use in the rest of this guide.
 
 ```{admonition} Note
 :class: tip
@@ -176,7 +176,7 @@ python inference.py
 ```
 Sample output:
 ```
-Model: llama3.2:3b-instruct-fp16
+Model: llama3.2:3b
 Here is a haiku about coding:
 
 Lines of code unfold
