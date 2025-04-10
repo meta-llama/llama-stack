@@ -48,13 +48,13 @@ class NVIDIAEvalImpl(
 
     async def _evaluator_get(self, path):
         """Helper for making GET requests to the evaluator service."""
-        response = requests.get(url=f"{self.config.evaluator_service_url}/{path}")
+        response = requests.get(url=f"{self.config.evaluator_service_url}{path}")
         response.raise_for_status()
         return response.json()
 
     async def _evaluator_post(self, path, data):
         """Helper for making POST requests to the evaluator service."""
-        response = requests.post(url=f"{self.config.evaluator_service_url}/{path}", json=data)
+        response = requests.post(url=f"{self.config.evaluator_service_url}{path}", json=data)
         response.raise_for_status()
         return response.json()
 

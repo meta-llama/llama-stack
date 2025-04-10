@@ -4468,7 +4468,17 @@ components:
           const: model
           default: model
         model:
-          type: string
+          oneOf:
+            - type: string
+            - type: object
+              additionalProperties:
+                oneOf:
+                  - type: 'null'
+                  - type: boolean
+                  - type: number
+                  - type: string
+                  - type: array
+                  - type: object
           description: The model ID to evaluate.
         sampling_params:
           $ref: '#/components/schemas/SamplingParams'
@@ -4482,7 +4492,6 @@ components:
       required:
         - type
         - model
-        - sampling_params
       title: ModelCandidate
       description: A model candidate for evaluation.
     RegexParserScoringFnParams:
