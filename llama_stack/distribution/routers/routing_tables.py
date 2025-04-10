@@ -302,6 +302,38 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
 
 
 class ShieldsRoutingTable(CommonRoutingTableImpl, Shields):
+    async def initialize(self) -> None:
+        """Initialize routing table and providers"""
+        # First do the common initialization
+        await super().initialize()
+
+        # Then explicitly initialize each safety provider
+        for provider_id, provider in self.impls_by_provider_id.items():
+            api = get_impl_api(provider)
+            if api == Api.safety:
+                logger.info(f"Explicitly initializing safety provider: {provider_id}")
+                await provider.initialize()
+
+                # Fetch shields after initialization - with robust error handling
+                try:
+                    # Check if the provider implements list_shields
+                    if hasattr(provider, "list_shields") and callable(getattr(provider, "list_shields")):
+                        shields_response = await provider.list_shields()
+                        if shields_response and hasattr(shields_response, "data") and shields_response.data:
+                            for shield in shields_response.data:
+                                # Ensure type is set
+                                if not hasattr(shield, "type") or not shield.type:
+                                    shield.type = ResourceType.shield.value
+                                await self.dist_registry.register(shield)
+                            logger.info(f"Registered {len(shields_response.data)} shields from provider {provider_id}")
+                        else:
+                            logger.info(f"No shields found for provider {provider_id}")
+                    else:
+                        logger.info(f"Provider {provider_id} does not support listing shields")
+                except Exception as e:
+                    # Log the error but continue initialization
+                    logger.warning(f"Error listing shields from provider {provider_id}: {str(e)}")
+
     async def list_shields(self) -> ListShieldsResponse:
         return ListShieldsResponse(data=await self.get_all_with_type(ResourceType.shield.value))
 
