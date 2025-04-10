@@ -27,8 +27,8 @@ class ModelCandidate(BaseModel):
     """
 
     type: Literal["model"] = "model"
-    model: str
-    sampling_params: SamplingParams
+    model: Union[str, Dict[str, Any]]
+    sampling_params: Optional[SamplingParams] = Field(default_factory=SamplingParams)
     system_message: Optional[SystemMessage] = None
 
 
