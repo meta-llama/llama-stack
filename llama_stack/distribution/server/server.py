@@ -15,14 +15,16 @@ import warnings
 from contextlib import asynccontextmanager
 from importlib.metadata import version as parse_version
 from pathlib import Path
-from typing import Any, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import yaml
 from fastapi import Body, FastAPI, HTTPException, Request
 from fastapi import Path as FastapiPath
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.routing import APIRoute
 from pydantic import BaseModel, ValidationError
+from starlette.types import Message
 from typing_extensions import Annotated
 
 from llama_stack.distribution.datatypes import LoggingConfig, StackRunConfig
@@ -181,11 +183,10 @@ async def sse_generator(event_gen):
         )
 
 
-def create_dynamic_typed_route(func: Any, method: str, route: str):
+def create_dynamic_typed_route(config: StackRunConfig, func: Any, method: str, route: str):
     async def endpoint(request: Request, **kwargs):
         # Get auth attributes from the request scope
         user_attributes = request.scope.get("user_attributes", {})
-
         # Use context manager with both provider data and auth attributes
         with request_provider_data_context(request.headers, user_attributes):
             is_streaming = is_streaming_request(func.__name__, request, **kwargs)
@@ -223,6 +224,84 @@ def create_dynamic_typed_route(func: Any, method: str, route: str):
     endpoint.__signature__ = sig.replace(parameters=new_params)
 
     return endpoint
+
+
+class RequestMiddleware:
+    def __init__(self, app, api, stack_run_config):
+        self.app = app
+        self.api = api
+        self.stack_run_config = stack_run_config
+
+    async def __call__(self, scope, receive, send):
+        import json
+
+        from fastapi import Request
+
+        from llama_stack.apis.providers import ProviderInfo
+
+        # from llama_stack.stack_utils import construct_stack  # or wherever you define it
+        if scope["type"] != "http":
+            return await self.app(scope, receive, send)
+
+        request = Request(scope, receive)
+        method = request.method
+        path = request.url.path
+
+        # Only intercept PUT /v1/providers/update
+        if method == "PUT" and "/v1/providers" in path:
+            # Clone the request body so FastAPI doesn't break
+
+            body = await request.body()
+            request = Request(scope, receive_from_body(body))
+
+            response_body = b""
+            status_code = 500
+            headers = []
+
+            async def send_wrapper(message: Message):
+                nonlocal response_body, status_code, headers
+
+                if message["type"] == "http.response.start":
+                    status_code = message["status"]
+                    headers = message.get("headers", [])
+
+                elif message["type"] == "http.response.body":
+                    response_body += message.get("body", b"")
+
+                    if not message.get("more_body", False):
+                        # Rebuild stack
+                        try:
+                            # Parse the request body (not response)
+                            payload = json.loads(response_body.decode("utf-8"))
+                            new_provider = ProviderInfo(**payload)
+                            for api, providers in self.stack_run_config.providers.items():
+                                if api != new_provider.api:
+                                    continue
+                                for prov in providers:
+                                    if prov.provider_id == new_provider.provider_id:
+                                        prov.config = new_provider.config
+                                        break
+
+                            _, impls = await construct(app=self.api, config=self.stack_run_config, reconstruct=True)
+                            self.api.__llama_stack_impls__ = impls
+                            print("✅ Stack rebuilt and updated.")
+                        except Exception as e:
+                            print(f"⚠️ Failed to rebuild stack: {e}")
+
+                await send(message)
+
+            return await self.app(scope, request.receive, send_wrapper)
+
+        # All other requests go through normally
+        return await self.app(scope, receive, send)
+
+
+# Helper to inject the saved body back into the request
+def receive_from_body(body: bytes):
+    async def receive() -> Message:
+        return {"type": "http.request", "body": body, "more_body": False}
+
+    return receive
 
 
 class TracingMiddleware:
@@ -397,61 +476,15 @@ def main(args: Optional[argparse.Namespace] = None):
         logger.info(f"Enabling authentication with endpoint: {config.server.auth.endpoint}")
         app.add_middleware(AuthenticationMiddleware, auth_endpoint=config.server.auth.endpoint)
 
-    try:
-        impls = asyncio.run(construct_stack(config))
-    except InvalidProviderError as e:
-        logger.error(f"Error: {str(e)}")
-        sys.exit(1)
-
-    if Api.telemetry in impls:
-        setup_logger(impls[Api.telemetry])
-    else:
-        setup_logger(TelemetryAdapter(TelemetryConfig(), {}))
-
-    all_endpoints = get_all_api_endpoints()
-
-    if config.apis:
-        apis_to_serve = set(config.apis)
-    else:
-        apis_to_serve = set(impls.keys())
-
-    for inf in builtin_automatically_routed_apis():
-        # if we do not serve the corresponding router API, we should not serve the routing table API
-        if inf.router_api.value not in apis_to_serve:
-            continue
-        apis_to_serve.add(inf.routing_table_api.value)
-
-    apis_to_serve.add("inspect")
-    apis_to_serve.add("providers")
-    for api_str in apis_to_serve:
-        api = Api(api_str)
-
-        endpoints = all_endpoints[api]
-        impl = impls[api]
-
-        for endpoint in endpoints:
-            if not hasattr(impl, endpoint.name):
-                # ideally this should be a typing violation already
-                raise ValueError(f"Could not find method {endpoint.name} on {impl}!!")
-
-            impl_method = getattr(impl, endpoint.name)
-
-            with warnings.catch_warnings():
-                warnings.filterwarnings("ignore", category=UserWarning, module="pydantic._internal._fields")
-                getattr(app, endpoint.method)(endpoint.route, response_model=None)(
-                    create_dynamic_typed_route(
-                        impl_method,
-                        endpoint.method,
-                        endpoint.route,
-                    )
-                )
-
+    apis_to_serve, impls = asyncio.run(construct(app=app, config=config))
     logger.debug(f"serving APIs: {apis_to_serve}")
 
     app.exception_handler(RequestValidationError)(global_exception_handler)
     app.exception_handler(Exception)(global_exception_handler)
 
     app.__llama_stack_impls__ = impls
+    # Add the custom middleware
+    app.add_middleware(RequestMiddleware, api=app, stack_run_config=config)
     app.add_middleware(TracingMiddleware, impls=impls)
 
     import uvicorn
@@ -496,6 +529,78 @@ def extract_path_params(route: str) -> List[str]:
     # to handle path params like {param:path}
     params = [param.split(":")[0] for param in params]
     return params
+
+
+async def construct(
+    app: FastAPI, config: StackRunConfig, reconstruct: bool = False
+) -> tuple[set[str] | set[Api], Dict[Api, Any]]:
+    try:
+        impls = await construct_stack(config)
+    except InvalidProviderError as e:
+        logger.error(f"Error: {str(e)}")
+        sys.exit(1)
+
+    if Api.telemetry in impls:
+        setup_logger(impls[Api.telemetry])
+    else:
+        setup_logger(TelemetryAdapter(TelemetryConfig(), {}))
+
+    all_endpoints = get_all_api_endpoints()
+
+    if config.apis:
+        apis_to_serve = set(config.apis)
+    else:
+        apis_to_serve = set(impls.keys())
+
+    for inf in builtin_automatically_routed_apis():
+        # if we do not serve the corresponding router API, we should not serve the routing table API
+        if inf.router_api.value not in apis_to_serve:
+            continue
+        apis_to_serve.add(inf.routing_table_api.value)
+
+    apis_to_serve.add("inspect")
+    apis_to_serve.add("providers")
+
+    for api_str in apis_to_serve:
+        api = Api(api_str)
+
+        endpoints = all_endpoints[api]
+        impl = impls[api]
+        for endpoint in endpoints:
+            if not hasattr(impl, endpoint.name):
+                # ideally this should be a typing violation already
+                raise ValueError(f"Could not find method {endpoint.name} on {impl}!!")
+
+            impl_method = getattr(impl, endpoint.name)
+
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", category=UserWarning, module="pydantic._internal._fields")
+                # Remove old route
+                if reconstruct:
+                    app.router.routes = [
+                        r
+                        for r in app.router.routes
+                        if not (r.path == endpoint.route and endpoint.method.upper() in r.methods)
+                    ]
+                new_endpoint = create_dynamic_typed_route(
+                    config,
+                    impl_method,
+                    endpoint.method,
+                    endpoint.route,
+                )
+                getattr(app, endpoint.method)(endpoint.route, response_model=None)(new_endpoint)
+                if reconstruct:
+                    route = APIRoute(
+                        response_model=None,
+                        path=endpoint.route,
+                        endpoint=new_endpoint,
+                        methods=[endpoint.method.upper()],
+                        name=impl_method.__name__,
+                    )
+                    # Add new route
+                    app.router.routes.append(route)
+
+    return apis_to_serve, impls
 
 
 if __name__ == "__main__":
