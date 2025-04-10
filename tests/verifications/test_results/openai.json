@@ -1,13 +1,13 @@
 {
-  "created": 1744264338.9923031,
-  "duration": 32.825536012649536,
+  "created": 1744328898.0248861,
+  "duration": 47.561042070388794,
   "exitcode": 0,
   "root": "/Users/erichuang/projects/llama-stack",
   "environment": {},
   "summary": {
-    "passed": 22,
-    "total": 22,
-    "collected": 22
+    "passed": 24,
+    "total": 24,
+    "collected": 24
   },
   "collectors": [
     {
@@ -27,112 +27,122 @@
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_basic[gpt-4o-earth]",
           "type": "Function",
-          "lineno": 72
+          "lineno": 73
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_basic[gpt-4o-saturn]",
           "type": "Function",
-          "lineno": 72
+          "lineno": 73
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_basic[gpt-4o-mini-earth]",
           "type": "Function",
-          "lineno": 72
+          "lineno": 73
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_basic[gpt-4o-mini-saturn]",
           "type": "Function",
-          "lineno": 72
+          "lineno": 73
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_basic[gpt-4o-earth]",
           "type": "Function",
-          "lineno": 91
+          "lineno": 92
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_basic[gpt-4o-saturn]",
           "type": "Function",
-          "lineno": 91
+          "lineno": 92
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_basic[gpt-4o-mini-earth]",
           "type": "Function",
-          "lineno": 91
+          "lineno": 92
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_basic[gpt-4o-mini-saturn]",
           "type": "Function",
-          "lineno": 91
+          "lineno": 92
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_image[gpt-4o-case0]",
           "type": "Function",
-          "lineno": 115
+          "lineno": 116
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_image[gpt-4o-mini-case0]",
           "type": "Function",
-          "lineno": 115
+          "lineno": 116
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_image[gpt-4o-case0]",
           "type": "Function",
-          "lineno": 134
+          "lineno": 135
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_image[gpt-4o-mini-case0]",
           "type": "Function",
-          "lineno": 134
+          "lineno": 135
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_structured_output[gpt-4o-calendar]",
           "type": "Function",
-          "lineno": 158
+          "lineno": 159
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_structured_output[gpt-4o-math]",
           "type": "Function",
-          "lineno": 158
+          "lineno": 159
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_structured_output[gpt-4o-mini-calendar]",
           "type": "Function",
-          "lineno": 158
+          "lineno": 159
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_structured_output[gpt-4o-mini-math]",
           "type": "Function",
-          "lineno": 158
+          "lineno": 159
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_structured_output[gpt-4o-calendar]",
           "type": "Function",
-          "lineno": 181
+          "lineno": 182
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_structured_output[gpt-4o-math]",
           "type": "Function",
-          "lineno": 181
+          "lineno": 182
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_structured_output[gpt-4o-mini-calendar]",
           "type": "Function",
-          "lineno": 181
+          "lineno": 182
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_structured_output[gpt-4o-mini-math]",
           "type": "Function",
-          "lineno": 181
+          "lineno": 182
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_tool_calling[gpt-4o-case0]",
           "type": "Function",
-          "lineno": 203
+          "lineno": 204
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_tool_calling[gpt-4o-mini-case0]",
           "type": "Function",
-          "lineno": 203
+          "lineno": 204
+        },
+        {
+          "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_tool_calling[gpt-4o-case0]",
+          "type": "Function",
+          "lineno": 228
+        },
+        {
+          "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_tool_calling[gpt-4o-mini-case0]",
+          "type": "Function",
+          "lineno": 228
         }
       ]
     }
@@ -140,7 +150,7 @@
   "tests": [
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_basic[gpt-4o-earth]",
-      "lineno": 72,
+      "lineno": 73,
       "outcome": "passed",
       "keywords": [
         "test_chat_non_streaming_basic[gpt-4o-earth]",
@@ -159,21 +169,21 @@
         "case_id": "earth"
       },
       "setup": {
-        "duration": 0.05381445901002735,
+        "duration": 0.0694252080284059,
         "outcome": "passed"
       },
       "call": {
-        "duration": 0.49848275003023446,
+        "duration": 0.5709165419684723,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.00018287496641278267,
+        "duration": 0.0007626248989254236,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_basic[gpt-4o-saturn]",
-      "lineno": 72,
+      "lineno": 73,
       "outcome": "passed",
       "keywords": [
         "test_chat_non_streaming_basic[gpt-4o-saturn]",
@@ -192,21 +202,21 @@
         "case_id": "saturn"
       },
       "setup": {
-        "duration": 0.007965500000864267,
+        "duration": 0.010281750001013279,
         "outcome": "passed"
       },
       "call": {
-        "duration": 0.9293275829404593,
+        "duration": 0.6309260830748826,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.00018229195848107338,
+        "duration": 0.0001824579667299986,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_basic[gpt-4o-mini-earth]",
-      "lineno": 72,
+      "lineno": 73,
       "outcome": "passed",
       "keywords": [
         "test_chat_non_streaming_basic[gpt-4o-mini-earth]",
@@ -225,21 +235,21 @@
         "case_id": "earth"
       },
       "setup": {
-        "duration": 0.00875679193995893,
+        "duration": 0.007922374992631376,
         "outcome": "passed"
       },
       "call": {
-        "duration": 0.5793640419142321,
+        "duration": 0.31756504194345325,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0005307920509949327,
+        "duration": 0.0005268750246614218,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_basic[gpt-4o-mini-saturn]",
-      "lineno": 72,
+      "lineno": 73,
       "outcome": "passed",
       "keywords": [
         "test_chat_non_streaming_basic[gpt-4o-mini-saturn]",
@@ -258,21 +268,21 @@
         "case_id": "saturn"
       },
       "setup": {
-        "duration": 0.01076845801435411,
+        "duration": 0.01643404201604426,
         "outcome": "passed"
       },
       "call": {
-        "duration": 0.8752291660057381,
+        "duration": 0.7479908330133185,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0004834589781239629,
+        "duration": 0.0004037501057609916,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_basic[gpt-4o-earth]",
-      "lineno": 91,
+      "lineno": 92,
       "outcome": "passed",
       "keywords": [
         "test_chat_streaming_basic[gpt-4o-earth]",
@@ -291,21 +301,21 @@
         "case_id": "earth"
       },
       "setup": {
-        "duration": 0.01662245800253004,
+        "duration": 0.021671707974746823,
         "outcome": "passed"
       },
       "call": {
-        "duration": 0.8336971249664202,
+        "duration": 0.6701172919711098,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0024086670018732548,
+        "duration": 0.0005569590721279383,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_basic[gpt-4o-saturn]",
-      "lineno": 91,
+      "lineno": 92,
       "outcome": "passed",
       "keywords": [
         "test_chat_streaming_basic[gpt-4o-saturn]",
@@ -324,21 +334,21 @@
         "case_id": "saturn"
       },
       "setup": {
-        "duration": 0.009416291955858469,
+        "duration": 0.015847125090658665,
         "outcome": "passed"
       },
       "call": {
-        "duration": 0.43594495789147913,
+        "duration": 0.636536999954842,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0009131249971687794,
+        "duration": 0.00029395800083875656,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_basic[gpt-4o-mini-earth]",
-      "lineno": 91,
+      "lineno": 92,
       "outcome": "passed",
       "keywords": [
         "test_chat_streaming_basic[gpt-4o-mini-earth]",
@@ -357,21 +367,21 @@
         "case_id": "earth"
       },
       "setup": {
-        "duration": 0.013155042077414691,
+        "duration": 0.011792832985520363,
         "outcome": "passed"
       },
       "call": {
-        "duration": 0.6119836670113727,
+        "duration": 0.5610962919890881,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.00023804197553545237,
+        "duration": 0.0003578749019652605,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_basic[gpt-4o-mini-saturn]",
-      "lineno": 91,
+      "lineno": 92,
       "outcome": "passed",
       "keywords": [
         "test_chat_streaming_basic[gpt-4o-mini-saturn]",
@@ -390,21 +400,21 @@
         "case_id": "saturn"
       },
       "setup": {
-        "duration": 0.009004916995763779,
+        "duration": 0.016500207944773138,
         "outcome": "passed"
       },
       "call": {
-        "duration": 0.8327413749648258,
+        "duration": 0.8060244580265135,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.00046841695439070463,
+        "duration": 0.0005296670133247972,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_image[gpt-4o-case0]",
-      "lineno": 115,
+      "lineno": 116,
       "outcome": "passed",
       "keywords": [
         "test_chat_non_streaming_image[gpt-4o-case0]",
@@ -423,21 +433,21 @@
         "case_id": "case0"
       },
       "setup": {
-        "duration": 0.009574208059348166,
+        "duration": 0.008338792016729712,
         "outcome": "passed"
       },
       "call": {
-        "duration": 2.221839000005275,
+        "duration": 7.009252917021513,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.00015945907216519117,
+        "duration": 0.0003042910248041153,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_image[gpt-4o-mini-case0]",
-      "lineno": 115,
+      "lineno": 116,
       "outcome": "passed",
       "keywords": [
         "test_chat_non_streaming_image[gpt-4o-mini-case0]",
@@ -456,21 +466,21 @@
         "case_id": "case0"
       },
       "setup": {
-        "duration": 0.0084402080392465,
+        "duration": 0.007238540914840996,
         "outcome": "passed"
       },
       "call": {
-        "duration": 2.298736457945779,
+        "duration": 3.134693874977529,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0002423750702291727,
+        "duration": 0.0003104590578004718,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_image[gpt-4o-case0]",
-      "lineno": 134,
+      "lineno": 135,
       "outcome": "passed",
       "keywords": [
         "test_chat_streaming_image[gpt-4o-case0]",
@@ -489,21 +499,21 @@
         "case_id": "case0"
       },
       "setup": {
-        "duration": 0.007330416003242135,
+        "duration": 0.0161851670127362,
         "outcome": "passed"
       },
       "call": {
-        "duration": 4.062959833070636,
+        "duration": 3.0745719589758664,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.00015470804646611214,
+        "duration": 0.00022620800882577896,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_image[gpt-4o-mini-case0]",
-      "lineno": 134,
+      "lineno": 135,
       "outcome": "passed",
       "keywords": [
         "test_chat_streaming_image[gpt-4o-mini-case0]",
@@ -522,21 +532,21 @@
         "case_id": "case0"
       },
       "setup": {
-        "duration": 0.019998832955025136,
+        "duration": 0.013220708002336323,
         "outcome": "passed"
       },
       "call": {
-        "duration": 2.609432084020227,
+        "duration": 3.624867417034693,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.005618917057290673,
+        "duration": 0.00020633300300687551,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_structured_output[gpt-4o-calendar]",
-      "lineno": 158,
+      "lineno": 159,
       "outcome": "passed",
       "keywords": [
         "test_chat_non_streaming_structured_output[gpt-4o-calendar]",
@@ -555,21 +565,21 @@
         "case_id": "calendar"
       },
       "setup": {
-        "duration": 0.00867662497330457,
+        "duration": 0.017596833989955485,
         "outcome": "passed"
       },
       "call": {
-        "duration": 0.6856697499752045,
+        "duration": 1.248568250099197,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.00018445902969688177,
+        "duration": 0.0004248750628903508,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_structured_output[gpt-4o-math]",
-      "lineno": 158,
+      "lineno": 159,
       "outcome": "passed",
       "keywords": [
         "test_chat_non_streaming_structured_output[gpt-4o-math]",
@@ -588,21 +598,21 @@
         "case_id": "math"
       },
       "setup": {
-        "duration": 0.01139050000347197,
+        "duration": 0.01512012502644211,
         "outcome": "passed"
       },
       "call": {
-        "duration": 2.764390083961189,
+        "duration": 8.170285542029887,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0003164170775562525,
+        "duration": 0.00043537491001188755,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_structured_output[gpt-4o-mini-calendar]",
-      "lineno": 158,
+      "lineno": 159,
       "outcome": "passed",
       "keywords": [
         "test_chat_non_streaming_structured_output[gpt-4o-mini-calendar]",
@@ -621,21 +631,21 @@
         "case_id": "calendar"
       },
       "setup": {
-        "duration": 0.01321374997496605,
+        "duration": 0.010376665974035859,
         "outcome": "passed"
       },
       "call": {
-        "duration": 0.8284227909753099,
+        "duration": 0.756480542011559,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.00030170800164341927,
+        "duration": 0.00025695806834846735,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_structured_output[gpt-4o-mini-math]",
-      "lineno": 158,
+      "lineno": 159,
       "outcome": "passed",
       "keywords": [
         "test_chat_non_streaming_structured_output[gpt-4o-mini-math]",
@@ -654,21 +664,21 @@
         "case_id": "math"
       },
       "setup": {
-        "duration": 0.013477458036504686,
+        "duration": 0.006846625008620322,
         "outcome": "passed"
       },
       "call": {
-        "duration": 2.4146235829684883,
+        "duration": 2.6833953330060467,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.00025754200760275126,
+        "duration": 0.00022558309137821198,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_structured_output[gpt-4o-calendar]",
-      "lineno": 181,
+      "lineno": 182,
       "outcome": "passed",
       "keywords": [
         "test_chat_streaming_structured_output[gpt-4o-calendar]",
@@ -687,21 +697,21 @@
         "case_id": "calendar"
       },
       "setup": {
-        "duration": 0.006940583931282163,
+        "duration": 0.009646040969528258,
         "outcome": "passed"
       },
       "call": {
-        "duration": 0.5102092920569703,
+        "duration": 0.6117532079806551,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.00023379107005894184,
+        "duration": 0.00015258300118148327,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_structured_output[gpt-4o-math]",
-      "lineno": 181,
+      "lineno": 182,
       "outcome": "passed",
       "keywords": [
         "test_chat_streaming_structured_output[gpt-4o-math]",
@@ -720,21 +730,21 @@
         "case_id": "math"
       },
       "setup": {
-        "duration": 0.007166999974288046,
+        "duration": 0.012024458032101393,
         "outcome": "passed"
       },
       "call": {
-        "duration": 3.5751801669830456,
+        "duration": 4.522625041077845,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.00015041697770357132,
+        "duration": 0.0004230838967487216,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_structured_output[gpt-4o-mini-calendar]",
-      "lineno": 181,
+      "lineno": 182,
       "outcome": "passed",
       "keywords": [
         "test_chat_streaming_structured_output[gpt-4o-mini-calendar]",
@@ -753,21 +763,21 @@
         "case_id": "calendar"
       },
       "setup": {
-        "duration": 0.010652625001966953,
+        "duration": 0.009566582972183824,
         "outcome": "passed"
       },
       "call": {
-        "duration": 0.6648182499920949,
+        "duration": 2.5591942919418216,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0008647920330986381,
+        "duration": 0.0007555419579148293,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_structured_output[gpt-4o-mini-math]",
-      "lineno": 181,
+      "lineno": 182,
       "outcome": "passed",
       "keywords": [
         "test_chat_streaming_structured_output[gpt-4o-mini-math]",
@@ -786,21 +796,21 @@
         "case_id": "math"
       },
       "setup": {
-        "duration": 0.007372208056040108,
+        "duration": 0.010828875005245209,
         "outcome": "passed"
       },
       "call": {
-        "duration": 2.80747462506406,
+        "duration": 2.495122667052783,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.00028124998789280653,
+        "duration": 0.0002802090020850301,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_tool_calling[gpt-4o-case0]",
-      "lineno": 203,
+      "lineno": 204,
       "outcome": "passed",
       "keywords": [
         "test_chat_non_streaming_tool_calling[gpt-4o-case0]",
@@ -819,21 +829,21 @@
         "case_id": "case0"
       },
       "setup": {
-        "duration": 0.01625587500166148,
+        "duration": 0.012762792059220374,
         "outcome": "passed"
       },
       "call": {
-        "duration": 0.6878769160248339,
+        "duration": 0.5655921660363674,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0002637499710544944,
+        "duration": 0.00022304197773337364,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_tool_calling[gpt-4o-mini-case0]",
-      "lineno": 203,
+      "lineno": 204,
       "outcome": "passed",
       "keywords": [
         "test_chat_non_streaming_tool_calling[gpt-4o-mini-case0]",
@@ -852,17 +862,84 @@
         "case_id": "case0"
       },
       "setup": {
-        "duration": 0.008817250025458634,
+        "duration": 0.03188708401285112,
         "outcome": "passed"
       },
       "call": {
-        "duration": 0.7181202919455245,
+        "duration": 0.6159415419679135,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0017147079342976213,
+        "duration": 0.0005549580091610551,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_tool_calling[gpt-4o-case0]",
+      "lineno": 228,
+      "outcome": "passed",
+      "keywords": [
+        "test_chat_streaming_tool_calling[gpt-4o-case0]",
+        "parametrize",
+        "pytestmark",
+        "gpt-4o-case0",
+        "test_chat_completion.py",
+        "openai_api",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "metadata": {
+        "model": "gpt-4o",
+        "case_id": "case0"
+      },
+      "setup": {
+        "duration": 0.014768208027817309,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.47373537498060614,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.0005811670562252402,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_tool_calling[gpt-4o-mini-case0]",
+      "lineno": 228,
+      "outcome": "passed",
+      "keywords": [
+        "test_chat_streaming_tool_calling[gpt-4o-mini-case0]",
+        "parametrize",
+        "pytestmark",
+        "gpt-4o-mini-case0",
+        "test_chat_completion.py",
+        "openai_api",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "metadata": {
+        "model": "gpt-4o-mini",
+        "case_id": "case0"
+      },
+      "setup": {
+        "duration": 0.010271625011228025,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.5656027499353513,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.0025699170073494315,
         "outcome": "passed"
       }
     }
-  ]
+  ],
+  "run_timestamp": 1744328848
 }
