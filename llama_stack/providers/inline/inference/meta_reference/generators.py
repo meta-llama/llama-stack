@@ -259,7 +259,7 @@ class Llama3Generator:
 
         temperature, top_p = _infer_sampling_params(sampling_params)
         for result in self.inner_generator.generate(
-            llm_inputs=[self.formatter.encode_content(request.content)],
+            model_inputs=[self.formatter.encode_content(request.content)],
             max_gen_len=max_gen_len,
             temperature=temperature,
             top_p=top_p,
@@ -284,7 +284,7 @@ class Llama3Generator:
 
         temperature, top_p = _infer_sampling_params(sampling_params)
         for result in self.inner_generator.generate(
-            llm_inputs=[self.formatter.encode_dialog_prompt(request.messages, _infer_tool_prompt_format(request))],
+            model_inputs=[self.formatter.encode_dialog_prompt(request.messages, _infer_tool_prompt_format(request))],
             max_gen_len=max_gen_len,
             temperature=temperature,
             top_p=top_p,

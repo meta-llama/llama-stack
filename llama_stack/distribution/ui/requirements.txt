@@ -1,4 +1,5 @@
 streamlit
 pandas
-llama-stack-client>=0.0.55
+llama-stack-client>=0.2.1
 streamlit-option-menu
+llama-stack>=0.2.1
