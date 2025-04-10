@@ -89,7 +89,6 @@ class ChatAgent(ShieldRunnerMixin):
         self,
         agent_id: str,
         agent_config: AgentConfig,
-        tempdir: str,
         inference_api: Inference,
         safety_api: Safety,
         tool_runtime_api: ToolRuntime,
@@ -99,7 +98,6 @@ class ChatAgent(ShieldRunnerMixin):
     ):
         self.agent_id = agent_id
         self.agent_config = agent_config
-        self.tempdir = tempdir
         self.inference_api = inference_api
         self.safety_api = safety_api
         self.vector_io_api = vector_io_api
