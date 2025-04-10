@@ -109,7 +109,7 @@ class NeMoGuardrails:
         headers = {
             "Accept": "application/json",
         }
-        response = requests.post(url=f"{self.guardrails_service_url}/{path}", headers=headers, json=data)
+        response = requests.post(url=f"{self.guardrails_service_url}{path}", headers=headers, json=data)
         response.raise_for_status()
         return response.json()
 
