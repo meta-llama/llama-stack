@@ -17,6 +17,9 @@
     display: none;
 }
 
+h3 {
+    font-weight: normal;
+}
 html[data-theme="dark"] .rst-content div[class^="highlight"] {
   background-color: #0b0b0b;
 }
