@@ -279,7 +279,7 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
         guided_choice: Optional[List[str]] = None,
         prompt_logprobs: Optional[int] = None,
     ) -> OpenAICompletion:
-        model_obj = await self._get_model(model)
+        model_obj = await self.model_store.get_model(model)
         params = await prepare_openai_completion_params(
             model=model_obj.provider_resource_id,
             prompt=prompt,
@@ -298,8 +298,6 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
             temperature=temperature,
             top_p=top_p,
             user=user,
-            guided_choice=guided_choice,
-            prompt_logprobs=prompt_logprobs,
         )
         return await self._get_openai_client().completions.create(**params)  # type: ignore
 
@@ -329,7 +327,7 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
         top_p: Optional[float] = None,
         user: Optional[str] = None,
     ) -> OpenAIChatCompletion:
-        model_obj = await self._get_model(model)
+        model_obj = await self.model_store.get_model(model)
         params = await prepare_openai_completion_params(
             model=model_obj.provider_resource_id,
             messages=messages,
