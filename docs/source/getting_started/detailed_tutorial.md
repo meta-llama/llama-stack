@@ -540,6 +540,6 @@ uv run python rag_agent.py
 
 ::::
 
-## Build Your Own Apps!
+## You're Ready to Build Your Own Apps!
 
 Congrats! 🥳 Now you're ready to [build your own Llama Stack applications](../building_applications/index)! 🚀
