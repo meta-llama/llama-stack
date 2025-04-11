@@ -483,6 +483,11 @@ async def convert_message_to_openai_dict(message: Message, download: bool = Fals
     if isinstance(message.content, list):
         content = [await _convert_content(c) for c in message.content]
     else:
+        if hasattr(message, "tool_calls") and message.tool_calls:
+            message.content = ""
+            for tc in message.tool_calls:
+                tc_json = {"name":tc.tool_name, "parameters": tc.arguments}
+                message.content += json.dumps(tc_json)
         content = [await _convert_content(message.content)]
 
     return {
