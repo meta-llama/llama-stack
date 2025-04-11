@@ -128,49 +128,6 @@
                 }
             }
         },
-        "/v1/batch-inference/chat-completion-inline": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/BatchChatCompletionResponse"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest400"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/TooManyRequests429"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError500"
-                    },
-                    "default": {
-                        "$ref": "#/components/responses/DefaultError"
-                    }
-                },
-                "tags": [
-                    "BatchInference (Coming Soon)"
-                ],
-                "description": "",
-                "parameters": [],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/BatchChatCompletionInlineRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
         "/v1/inference/batch-completion": {
             "post": {
                 "responses": {
@@ -207,49 +164,6 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/BatchCompletionRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/v1/batch-inference/completion-inline": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/BatchCompletionResponse"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest400"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/TooManyRequests429"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError500"
-                    },
-                    "default": {
-                        "$ref": "#/components/responses/DefaultError"
-                    }
-                },
-                "tags": [
-                    "BatchInference (Coming Soon)"
-                ],
-                "description": "",
-                "parameters": [],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/BatchCompletionInlineRequest"
                             }
                         }
                     },
@@ -325,7 +239,7 @@
                     }
                 },
                 "tags": [
-                    "Inference"
+                    "BatchInference (Coming Soon)"
                 ],
                 "description": "Generate a chat completion for the given messages using the specified model.",
                 "parameters": [],
@@ -373,7 +287,7 @@
                     }
                 },
                 "tags": [
-                    "Inference"
+                    "BatchInference (Coming Soon)"
                 ],
                 "description": "Generate a completion for the given content using the specified model.",
                 "parameters": [],
@@ -4821,56 +4735,6 @@
                 "title": "TokenLogProbs",
                 "description": "Log probabilities for generated tokens."
             },
-            "BatchChatCompletionInlineRequest": {
-                "type": "object",
-                "properties": {
-                    "model": {
-                        "type": "string"
-                    },
-                    "messages_batch": {
-                        "type": "array",
-                        "items": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/components/schemas/Message"
-                            }
-                        }
-                    },
-                    "sampling_params": {
-                        "$ref": "#/components/schemas/SamplingParams"
-                    },
-                    "tools": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/ToolDefinition"
-                        }
-                    },
-                    "tool_config": {
-                        "$ref": "#/components/schemas/ToolConfig"
-                    },
-                    "response_format": {
-                        "$ref": "#/components/schemas/ResponseFormat"
-                    },
-                    "logprobs": {
-                        "type": "object",
-                        "properties": {
-                            "top_k": {
-                                "type": "integer",
-                                "default": 0,
-                                "description": "How many tokens (for each position) to return log probabilities for."
-                            }
-                        },
-                        "additionalProperties": false,
-                        "title": "LogProbConfig"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "model",
-                    "messages_batch"
-                ],
-                "title": "BatchChatCompletionInlineRequest"
-            },
             "BatchCompletionRequest": {
                 "type": "object",
                 "properties": {
@@ -4962,44 +4826,6 @@
                 ],
                 "title": "CompletionResponse",
                 "description": "Response from a completion request."
-            },
-            "BatchCompletionInlineRequest": {
-                "type": "object",
-                "properties": {
-                    "model": {
-                        "type": "string"
-                    },
-                    "content_batch": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/InterleavedContent"
-                        }
-                    },
-                    "sampling_params": {
-                        "$ref": "#/components/schemas/SamplingParams"
-                    },
-                    "response_format": {
-                        "$ref": "#/components/schemas/ResponseFormat"
-                    },
-                    "logprobs": {
-                        "type": "object",
-                        "properties": {
-                            "top_k": {
-                                "type": "integer",
-                                "default": 0,
-                                "description": "How many tokens (for each position) to return log probabilities for."
-                            }
-                        },
-                        "additionalProperties": false,
-                        "title": "LogProbConfig"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "model",
-                    "content_batch"
-                ],
-                "title": "BatchCompletionInlineRequest"
             },
             "CancelTrainingJobRequest": {
                 "type": "object",
@@ -11331,7 +11157,9 @@
             "x-displayName": "Agents API for creating and interacting with agentic systems."
         },
         {
-            "name": "BatchInference (Coming Soon)"
+            "name": "BatchInference (Coming Soon)",
+            "description": "This is an asynchronous API. If the request is successful, the response will be a job which can be polled for completion.\n\nNOTE: This API is not yet implemented and is subject to change in concert with other asynchronous APIs\nincluding (post-training, evals, etc).",
+            "x-displayName": "Batch inference API for generating completions and chat completions."
         },
         {
             "name": "Benchmarks"
