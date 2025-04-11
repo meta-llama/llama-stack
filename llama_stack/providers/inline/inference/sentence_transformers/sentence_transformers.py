@@ -23,6 +23,10 @@ from llama_stack.providers.datatypes import Model, ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.embedding_mixin import (
     SentenceTransformerEmbeddingMixin,
 )
+from llama_stack.providers.utils.inference.openai_compat import (
+    OpenAIChatCompletionUnsupportedMixin,
+    OpenAICompletionUnsupportedMixin,
+)
 
 from .config import SentenceTransformersInferenceConfig
 
@@ -30,6 +34,8 @@ log = logging.getLogger(__name__)
 
 
 class SentenceTransformersInferenceImpl(
+    OpenAIChatCompletionUnsupportedMixin,
+    OpenAICompletionUnsupportedMixin,
     SentenceTransformerEmbeddingMixin,
     Inference,
     ModelsProtocolPrivate,

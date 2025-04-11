@@ -54,6 +54,10 @@ from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
     build_hf_repo_model_entry,
 )
+from llama_stack.providers.utils.inference.openai_compat import (
+    OpenAIChatCompletionUnsupportedMixin,
+    OpenAICompletionUnsupportedMixin,
+)
 from llama_stack.providers.utils.inference.prompt_adapter import (
     augment_content_with_response_format_prompt,
     chat_completion_request_to_messages,
@@ -79,6 +83,8 @@ def llama4_builder_fn(config: MetaReferenceInferenceConfig, model_id: str, llama
 
 
 class MetaReferenceInferenceImpl(
+    OpenAICompletionUnsupportedMixin,
+    OpenAIChatCompletionUnsupportedMixin,
     SentenceTransformerEmbeddingMixin,
     Inference,
     ModelsProtocolPrivate,
