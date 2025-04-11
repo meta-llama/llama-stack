@@ -99,8 +99,9 @@ A number of "adapters" are available for some popular Inference and Vector Store
 :maxdepth: 3
 
 self
-introduction/index
 getting_started/index
+getting_started/detailed_tutorial
+introduction/index
 concepts/index
 providers/index
 distributions/index

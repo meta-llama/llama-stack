@@ -8,20 +8,20 @@ environments. You can build and test using a local server first and deploy to a 
 In this guide, we'll walk through how to build a RAG application locally using Llama Stack with [Ollama](https://ollama.com/)
 as the inference [provider](../providers/index.md#inference) for a Llama Model.
 
-## Step 1. Install and Setup
-Install [uv](https://docs.astral.sh/uv/), setup your virtual environment, and run inference on a Llama model with
-[Ollama](https://ollama.com/download).
+#### Step 1: Install and setup
+1. Install [uv](https://docs.astral.sh/uv/)
+2. Run inference on a Llama model with [Ollama](https://ollama.com/download)
 ```bash
-uv pip install llama-stack
-source .venv/bin/activate
 ollama run llama3.2:3b --keepalive 60m
 ```
-## Step 2: Run the Llama Stack Server
+#### Step 2: Run the Llama Stack server
+We will use `uv` to run the Llama Stack server.
 ```bash
-INFERENCE_MODEL=llama3.2:3b llama stack build --template ollama --image-type venv --run
+INFERENCE_MODEL=llama3.2:3b uv run --with llama-stack llama stack build --template ollama --image-type venv --run
 ```
-## Step 3: Run the Demo
-Now open up a new terminal using the same virtual environment and you can run this demo as a script using `uv run demo_script.py` or in an interactive shell.
+#### Step 3: Run the demo
+Now open up a new terminal and copy the following script into a file named `demo_script.py`.
+
 ```python
 from llama_stack_client import Agent, AgentEventLogger, RAGDocument, LlamaStackClient
 
@@ -43,9 +43,11 @@ _ = client.vector_dbs.register(
     embedding_dimension=embedding_dimension,
     provider_id="faiss",
 )
+source = "https://www.paulgraham.com/greatwork.html"
+print("rag_tool> Ingesting document:", source)
 document = RAGDocument(
     document_id="document_1",
-    content="https://www.paulgraham.com/greatwork.html",
+    content=source,
     mime_type="text/html",
     metadata={},
 )
@@ -66,19 +68,44 @@ agent = Agent(
     ],
 )
 
+prompt = "How do you do great work?"
+print("prompt>", prompt)
+
 response = agent.create_turn(
-    messages=[{"role": "user", "content": "How do you do great work?"}],
+    messages=[{"role": "user", "content": prompt}],
     session_id=agent.create_session("rag_session"),
+    stream=True
 )
 
 for log in AgentEventLogger().log(response):
     log.print()
 ```
+We will use `uv` to run the script
+```
+uv run --with llama-stack-client demo_script.py
+```
 And you should see output like below.
-```bash
-inference> [knowledge_search(query="What does it mean to do great work")]
-tool_execution> Tool:knowledge_search Args:{'query': 'What does it mean to do great work'}
-tool_execution> Tool:knowledge_search Response:[TextContentItem(text='knowledge_search tool found 5 chunks:\nBEGIN of knowledge_search tool results.\n', type='text'), TextContentItem(text="Result 1:\nDocument_id:docum\nContent:  work. Doing great work means doing something important\nso well that you expand people's ideas of what's possible. But\nthere's no threshold for importance. It's a matter of degree, and\noften hard to judge at the time anyway.\n", type='text'), TextContentItem(text='Result 2:\nDocument_id:docum\nContent: [<a name="f1n"><font color=#000000>1</font></a>]\nI don\'t think you could give a precise definition of what\ncounts as great work. Doing great work means doing something important\nso well\n', type='text'), TextContentItem(text="Result 3:\nDocument_id:docum\nContent: . And if so\nyou're already further along than you might realize, because the\nset of people willing to want to is small.<br /><br />The factors in doing great work are factors in the literal,\nmathematical sense, and\n", type='text'), TextContentItem(text="Result 4:\nDocument_id:docum\nContent: \nincreases your morale and helps you do even better work. But this\ncycle also operates in the other direction: if you're not doing\ngood work, that can demoralize you and make it even harder to. Since\nit matters\n", type='text'), TextContentItem(text="Result 5:\nDocument_id:docum\nContent:  to try to do\ngreat work. But that's what's going on subconsciously; they shy\naway from the question.<br /><br />So I'm going to pull a sneaky trick on you. Do you want to do great\n", type='text'), TextContentItem(text='END of knowledge_search tool results.\n', type='text')]
+```
+rag_tool> Ingesting document: https://www.paulgraham.com/greatwork.html
+
+prompt> How do you do great work?
+
+inference> [knowledge_search(query="What is the key to doing great work")]
+
+tool_execution> Tool:knowledge_search Args:{'query': 'What is the key to doing great work'}
+
+tool_execution> Tool:knowledge_search Response:[TextContentItem(text='knowledge_search tool found 5 chunks:\nBEGIN of knowledge_search tool results.\n', type='text'), TextContentItem(text="Result 1:\nDocument_id:docum\nContent:  work. Doing great work means doing something important\nso well that you expand people's ideas of what's possible. But\nthere's no threshold for importance. It's a matter of degree, and\noften hard to judge at the time anyway.\n", type='text'), TextContentItem(text="Result 2:\nDocument_id:docum\nContent:  work. Doing great work means doing something important\nso well that you expand people's ideas of what's possible. But\nthere's no threshold for importance. It's a matter of degree, and\noften hard to judge at the time anyway.\n", type='text'), TextContentItem(text="Result 3:\nDocument_id:docum\nContent:  work. Doing great work means doing something important\nso well that you expand people's ideas of what's possible. But\nthere's no threshold for importance. It's a matter of degree, and\noften hard to judge at the time anyway.\n", type='text'), TextContentItem(text="Result 4:\nDocument_id:docum\nContent:  work. Doing great work means doing something important\nso well that you expand people's ideas of what's possible. But\nthere's no threshold for importance. It's a matter of degree, and\noften hard to judge at the time anyway.\n", type='text'), TextContentItem(text="Result 5:\nDocument_id:docum\nContent:  work. Doing great work means doing something important\nso well that you expand people's ideas of what's possible. But\nthere's no threshold for importance. It's a matter of degree, and\noften hard to judge at the time anyway.\n", type='text'), TextContentItem(text='END of knowledge_search tool results.\n', type='text')]
+
+inference> Based on the search results, it seems that doing great work means doing something important so well that you expand people's ideas of what's possible. However, there is no clear threshold for importance, and it can be difficult to judge at the time.
+
+To further clarify, I would suggest that doing great work involves:
+
+* Completing tasks with high quality and attention to detail
+* Expanding on existing knowledge or ideas
+* Making a positive impact on others through your work
+* Striving for excellence and continuous improvement
+
+Ultimately, great work is about making a meaningful contribution and leaving a lasting impression.
 ```
 Congratulations! You've successfully built your first RAG application using Llama Stack! 🎉🥳
 
@@ -92,10 +119,3 @@ Now you're ready to dive deeper into Llama Stack!
 - Discover how to [Build Llama Stacks](../distributions/index.md).
 - Refer to our [References](../references/index.md) for details on the Llama CLI and Python SDK.
 - Check out the [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main/examples) repository for example applications and tutorials.
-
-```{toctree}
-:maxdepth: 0
-:hidden:
-
-detailed_tutorial
-```
