@@ -69,7 +69,7 @@ which defines the providers and their settings.
 Now let's build and run the Llama Stack config for Ollama.
 
 ```bash
-INFERENCE_MODEL=llama3.2:3b llama stack build --template ollama --image-type conda --run
+INFERENCE_MODEL=llama3.2:3b llama stack build --template ollama --image-type conda  --image-name llama3-3b-conda --run
 ```
 :::
 :::{tab-item} Using a Container
@@ -77,10 +77,9 @@ You can use a container image to run the Llama Stack server. We provide several 
 component that works with different inference providers out of the box. For this guide, we will use
 `llamastack/distribution-ollama` as the container image. If you'd like to build your own image or customize the
 configurations, please check out [this guide](../references/index.md).
-
 First lets setup some environment variables and create a local directory to mount into the container’s file system.
 ```bash
-export INFERENCE_MODEL="meta-llama/Llama-3.2-3B-Instruct"
+export INFERENCE_MODEL="llama3.2:3b"
 export LLAMA_STACK_PORT=8321
 mkdir -p ~/.llama
 ```
@@ -223,6 +222,7 @@ Other SDKs are also available, please refer to the [Client SDK](../index.md#clie
 Now you can run inference using the Llama Stack client SDK.
 
 ### i. Create the Script
+
 Create a file `inference.py` and add the following code:
 ```python
 from llama_stack_client import LlamaStackClient
