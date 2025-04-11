@@ -96,7 +96,10 @@ async def register_resources(run_config: StackRunConfig, impls: Dict[Api, Any]):
 
         method = getattr(impls[api], register_method)
         for obj in objects:
-            await method(**obj.model_dump())
+            # we want to maintain the type information in arguments to method.
+            # instead of method(**obj.model_dump()), which may convert a typed attr to a dict,
+            # we use model_dump() to find all the attrs and then getattr to get the still typed value.
+            await method(**{k: getattr(obj, k) for k in obj.model_dump().keys()})
 
         method = getattr(impls[api], list_method)
         response = await method()
