@@ -34,3 +34,8 @@ class Providers(Protocol):
 
     @webmethod(route="/providers/{provider_id}", method="GET")
     async def inspect_provider(self, provider_id: str) -> ProviderInfo: ...
+
+    @webmethod(route="/providers/{api}/{provider_id}/{provider_type}", method="PUT")
+    async def update_provider(
+        self, api: str, provider_id: str, provider_type: str, config: Dict[str, Any]
+    ) -> ProviderInfo: ...
