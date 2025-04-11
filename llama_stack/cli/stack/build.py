@@ -57,7 +57,7 @@ class StackBuild(Subcommand):
             type=str,
             help=textwrap.dedent(
                 f"""[for image-type={"|".join(e.value for e in ImageType)}] Name of the conda or virtual environment to use for
-the build. If not specified, currently active Conda environment will be used if found.
+the build. If not specified, currently active environment will be used if found.
             """
             ),
             default=None,
