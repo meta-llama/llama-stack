@@ -36,4 +36,15 @@ def available_providers() -> List[ProviderSpec]:
                 config_class="llama_stack.providers.remote.datasetio.huggingface.HuggingfaceDatasetIOConfig",
             ),
         ),
+        remote_provider_spec(
+            api=Api.datasetio,
+            adapter=AdapterSpec(
+                adapter_type="nvidia",
+                pip_packages=[
+                    "datasets",
+                ],
+                module="llama_stack.providers.remote.datasetio.nvidia",
+                config_class="llama_stack.providers.remote.datasetio.nvidia.NvidiaDatasetIOConfig",
+            ),
+        ),
     ]
