@@ -74,7 +74,7 @@ print("prompt>", prompt)
 response = agent.create_turn(
     messages=[{"role": "user", "content": prompt}],
     session_id=agent.create_session("rag_session"),
-    stream=True
+    stream=True,
 )
 
 for log in AgentEventLogger().log(response):
