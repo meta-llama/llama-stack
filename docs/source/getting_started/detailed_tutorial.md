@@ -220,7 +220,7 @@ Other SDKs are also available, please refer to the [Client SDK](../index.md#clie
 ::::{tab-set}
 
 :::{tab-item} Basic Inference
-Alternatively, you can run inference using the Llama Stack client SDK.
+Now you can run inference using the Llama Stack client SDK.
 
 ### i. Create the Script
 Create a file `inference.py` and add the following code:
@@ -265,7 +265,7 @@ Beauty in the bits
 :::
 
 :::{tab-item} Build a Simple Agent
-Now we can move beyond simple inference and build an agent that can perform tasks using the Llama Stack server.
+Next we can move beyond simple inference and build an agent that can perform tasks using the Llama Stack server.
 ### i. Create the Script
 Create a file `agent.py` and add the following code:
 
