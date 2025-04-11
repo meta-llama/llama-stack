@@ -42,6 +42,8 @@ The following models are available by default:
 - `groq/llama3-70b-8192 (aliases: meta-llama/Llama-3-70B-Instruct)`
 - `groq/llama-3.3-70b-versatile (aliases: meta-llama/Llama-3.3-70B-Instruct)`
 - `groq/llama-3.2-3b-preview (aliases: meta-llama/Llama-3.2-3B-Instruct)`
+- `groq/llama-4-scout-17b-16e-instruct (aliases: meta-llama/Llama-4-Scout-17B-16E-Instruct)`
+- `groq/llama-4-maverick-17b-128e-instruct (aliases: meta-llama/Llama-4-Maverick-17B-128E-Instruct)`
 
 
 ### Prerequisite: API Keys

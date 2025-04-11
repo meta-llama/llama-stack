@@ -126,7 +126,7 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
     def _log_unstructured(self, event: UnstructuredLogEvent, ttl_seconds: int) -> None:
         with self._lock:
             # Use global storage instead of instance storage
-            span_id = event.span_id
+            span_id = int(event.span_id, 16)
             span = _GLOBAL_STORAGE["active_spans"].get(span_id)
 
             if span:

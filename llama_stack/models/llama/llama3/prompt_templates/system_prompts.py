@@ -15,7 +15,7 @@ import textwrap
 from datetime import datetime
 from typing import Any, List, Optional
 
-from llama_stack.models.llama.datatypes import (
+from llama_stack.apis.inference import (
     BuiltinTool,
     ToolDefinition,
     ToolParamDefinition,
@@ -279,6 +279,10 @@ class PythonListCustomToolGenerator(PromptTemplateGeneratorBase):  # noqa: N801
                 {% endif -%}
                 {%- endfor %}
             ]
+
+            You can answer general questions or invoke tools when necessary.
+            In addition to tool calls, you should also augment your responses by using the tool outputs.
+
             """
         )
         return PromptTemplate(

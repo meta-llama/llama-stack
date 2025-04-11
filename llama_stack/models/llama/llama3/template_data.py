@@ -12,8 +12,7 @@
 # the top-level of this source tree.
 
 
-from llama_stack.models.llama.datatypes import BuiltinTool, StopReason, ToolCall
-
+from ..datatypes import BuiltinTool, StopReason, ToolCall
 from .prompt_templates import (
     BuiltinToolGenerator,
     JsonCustomToolGenerator,

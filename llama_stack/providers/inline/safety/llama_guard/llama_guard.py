@@ -23,7 +23,8 @@ from llama_stack.apis.safety import (
 )
 from llama_stack.apis.shields import Shield
 from llama_stack.distribution.datatypes import Api
-from llama_stack.models.llama.datatypes import CoreModelId, Role
+from llama_stack.models.llama.datatypes import Role
+from llama_stack.models.llama.sku_types import CoreModelId
 from llama_stack.providers.datatypes import ShieldsProtocolPrivate
 from llama_stack.providers.utils.inference.prompt_adapter import (
     interleaved_content_as_str,

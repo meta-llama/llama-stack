@@ -4,12 +4,12 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from llama_stack.models.llama.datatypes import CheckpointQuantizationFormat, SamplingParams
 from llama_stack.models.llama.sku_list import LlamaDownloadInfo
+from llama_stack.models.llama.sku_types import CheckpointQuantizationFormat
 
 
 class PromptGuardModel(BaseModel):
@@ -23,7 +23,6 @@ class PromptGuardModel(BaseModel):
     is_instruct_model: bool = False
     quantization_format: CheckpointQuantizationFormat = CheckpointQuantizationFormat.bf16
     arch_args: Dict[str, Any] = Field(default_factory=dict)
-    recommended_sampling_params: Optional[SamplingParams] = None
 
     def descriptor(self) -> str:
         return self.model_id
