@@ -173,9 +173,8 @@ You will see the below:
 Done! You can now use the Llama Stack Client CLI with endpoint http://localhost:8321
 ```
 
-#### iii. List Available Models
 List the models
-```
+```bash
 llama-stack-client models list
 Available Models
 
@@ -190,15 +189,6 @@ Available Models
 Total models: 2
 
 ```
-
-## Step 4: Run the Demos
-
-Note that these demos show the [Python Client SDK](../references/python_sdk_reference/index.md).
-Other SDKs are also available, please refer to the [Client SDK](../index.md#client-sdks) list for the complete options.
-
-::::{tab-set}
-
-:::{tab-item} Basic Inference with the CLI
 You can test basic Llama inference completion using the CLI.
 
 ```bash
@@ -221,9 +211,15 @@ ChatCompletionResponse(
     ],
 )
 ```
-:::
 
-:::{tab-item} Basic Inference with a Script
+## Step 4: Run the Demos
+
+Note that these demos show the [Python Client SDK](../references/python_sdk_reference/index.md).
+Other SDKs are also available, please refer to the [Client SDK](../index.md#client-sdks) list for the complete options.
+
+::::{tab-set}
+
+:::{tab-item} Basic Inference
 Alternatively, you can run inference using the Llama Stack client SDK.
 
 ### i. Create the Script
