@@ -12,9 +12,8 @@ as the inference [provider](../providers/index.md#inference) for a Llama Model.
 Install [uv](https://docs.astral.sh/uv/), setup your virtual environment, and run inference on a Llama model with
 [Ollama](https://ollama.com/download).
 ```bash
-uv pip install llama-stack aiosqlite faiss-cpu ollama openai datasets opentelemetry-exporter-otlp-proto-http mcp autoevals
+uv pip install llama-stack
 source .venv/bin/activate
-export INFERENCE_MODEL="llama3.2:3b"
 ollama run llama3.2:3b --keepalive 60m
 ```
 ## Step 2: Run the Llama Stack Server
@@ -24,70 +23,62 @@ INFERENCE_MODEL=llama3.2:3b llama stack build --template ollama --image-type ven
 ## Step 3: Run the Demo
 Now open up a new terminal using the same virtual environment and you can run this demo as a script using `uv run demo_script.py` or in an interactive shell.
 ```python
-from termcolor import cprint
-from llama_stack_client.types import Document
-from llama_stack_client import LlamaStackClient
+from llama_stack_client import Agent, AgentEventLogger, RAGDocument, LlamaStackClient
 
-
-vector_db = "faiss"
-vector_db_id = "test-vector-db"
-model_id = "llama3.2:3b-instruct-fp16"
-query = "Can you give me the arxiv link for Lora Fine Tuning in Pytorch?"
-documents = [
-    Document(
-        document_id="document_1",
-        content=f"https://raw.githubusercontent.com/pytorch/torchtune/main/docs/source/tutorials/lora_finetune.rst",
-        mime_type="text/plain",
-        metadata={},
-    )
-]
-
+vector_db_id = "my_demo_vector_db"
 client = LlamaStackClient(base_url="http://localhost:8321")
-client.vector_dbs.register(
-    provider_id=vector_db,
-    vector_db_id=vector_db_id,
-    embedding_model="all-MiniLM-L6-v2",
-    embedding_dimension=384,
-)
 
+models = client.models.list()
+
+# Select the first LLM and first embedding models
+model_id = next(m for m in models if m.model_type == "llm").identifier
+embedding_model_id = (
+    em := next(m for m in models if m.model_type == "embedding")
+).identifier
+embedding_dimension = em.metadata["embedding_dimension"]
+
+_ = client.vector_dbs.register(
+    vector_db_id=vector_db_id,
+    embedding_model=embedding_model_id,
+    embedding_dimension=embedding_dimension,
+    provider_id="faiss",
+)
+document = RAGDocument(
+    document_id="document_1",
+    content="https://www.paulgraham.com/greatwork.html",
+    mime_type="text/html",
+    metadata={},
+)
 client.tool_runtime.rag_tool.insert(
-    documents=documents,
+    documents=[document],
     vector_db_id=vector_db_id,
     chunk_size_in_tokens=50,
 )
-
-response = client.tool_runtime.rag_tool.query(
-    vector_db_ids=[vector_db_id],
-    content=query,
+agent = Agent(
+    client,
+    model=model_id,
+    instructions="You are a helpful assistant",
+    tools=[
+        {
+            "name": "builtin::rag/knowledge_search",
+            "args": {"vector_db_ids": [vector_db_id]},
+        }
+    ],
 )
 
-cprint("" + "-" * 50, "yellow")
-cprint(f"Query> {query}", "red")
-cprint("" + "-" * 50, "yellow")
-for chunk in response.content:
-    cprint(f"Chunk ID> {chunk.text}", "green")
-    cprint("" + "-" * 50, "yellow")
+response = agent.create_turn(
+    messages=[{"role": "user", "content": "How do you do great work?"}],
+    session_id=agent.create_session("rag_session"),
+)
+
+for log in AgentEventLogger().log(response):
+    log.print()
 ```
 And you should see output like below.
-```
---------------------------------------------------
-Query> Can you give me the arxiv link for Lora Fine Tuning in Pytorch?
---------------------------------------------------
-Chunk ID> knowledge_search tool found 5 chunks:
-BEGIN of knowledge_search tool results.
-
---------------------------------------------------
-Chunk ID> Result 1:
-Document_id:docum
-Content: .. _lora_finetune_label:
-
-============================
-Fine-Tuning Llama2 with LoRA
-============================
-
-This guide will teach you about `LoRA <https://arxiv.org/abs/2106.09685>`_, a
-
---------------------------------------------------
+```bash
+inference> [knowledge_search(query="What does it mean to do great work")]
+tool_execution> Tool:knowledge_search Args:{'query': 'What does it mean to do great work'}
+tool_execution> Tool:knowledge_search Response:[TextContentItem(text='knowledge_search tool found 5 chunks:\nBEGIN of knowledge_search tool results.\n', type='text'), TextContentItem(text="Result 1:\nDocument_id:docum\nContent:  work. Doing great work means doing something important\nso well that you expand people's ideas of what's possible. But\nthere's no threshold for importance. It's a matter of degree, and\noften hard to judge at the time anyway.\n", type='text'), TextContentItem(text='Result 2:\nDocument_id:docum\nContent: [<a name="f1n"><font color=#000000>1</font></a>]\nI don\'t think you could give a precise definition of what\ncounts as great work. Doing great work means doing something important\nso well\n', type='text'), TextContentItem(text="Result 3:\nDocument_id:docum\nContent: . And if so\nyou're already further along than you might realize, because the\nset of people willing to want to is small.<br /><br />The factors in doing great work are factors in the literal,\nmathematical sense, and\n", type='text'), TextContentItem(text="Result 4:\nDocument_id:docum\nContent: \nincreases your morale and helps you do even better work. But this\ncycle also operates in the other direction: if you're not doing\ngood work, that can demoralize you and make it even harder to. Since\nit matters\n", type='text'), TextContentItem(text="Result 5:\nDocument_id:docum\nContent:  to try to do\ngreat work. But that's what's going on subconsciously; they shy\naway from the question.<br /><br />So I'm going to pull a sneaky trick on you. Do you want to do great\n", type='text'), TextContentItem(text='END of knowledge_search tool results.\n', type='text')]
 ```
 Congratulations! You've successfully built your first RAG application using Llama Stack! 🎉🥳
 
