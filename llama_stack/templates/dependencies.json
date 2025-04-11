@@ -583,10 +583,11 @@
     "fastapi",
     "fire",
     "httpx",
+    "litellm",
     "matplotlib",
+    "mcp",
     "nltk",
     "numpy",
-    "openai",
     "opentelemetry-exporter-otlp-proto-http",
     "opentelemetry-sdk",
     "pandas",
@@ -601,7 +602,9 @@
     "sentencepiece",
     "tqdm",
     "transformers",
-    "uvicorn"
+    "uvicorn",
+    "sentence-transformers --no-deps",
+    "torch torchvision --index-url https://download.pytorch.org/whl/cpu"
   ],
   "tgi": [
     "aiohttp",
