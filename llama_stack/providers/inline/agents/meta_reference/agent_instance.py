@@ -178,6 +178,8 @@ class ChatAgent(ShieldRunnerMixin):
             span.set_attribute("request", request.model_dump_json())
             turn_id = str(uuid.uuid4())
             span.set_attribute("turn_id", turn_id)
+            if self.agent_config.name:
+                span.set_attribute("agent_name", self.agent_config.name)
 
         await self._initialize_tools(request.toolgroups)
         async for chunk in self._run_turn(request, turn_id):
@@ -190,6 +192,8 @@ class ChatAgent(ShieldRunnerMixin):
             span.set_attribute("session_id", request.session_id)
             span.set_attribute("request", request.model_dump_json())
             span.set_attribute("turn_id", request.turn_id)
+            if self.agent_config.name:
+                span.set_attribute("agent_name", self.agent_config.name)
 
         await self._initialize_tools()
         async for chunk in self._run_turn(request):
@@ -498,6 +502,8 @@ class ChatAgent(ShieldRunnerMixin):
             stop_reason = None
 
             async with tracing.span("inference") as span:
+                if self.agent_config.name:
+                    span.set_attribute("agent_name", self.agent_config.name)
                 async for chunk in await self.inference_api.chat_completion(
                     self.agent_config.model,
                     input_messages,

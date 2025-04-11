@@ -225,8 +225,18 @@ class AgentConfigCommon(BaseModel):
 
 @json_schema_type
 class AgentConfig(AgentConfigCommon):
+    """Configuration for an agent.
+
+    :param model: The model identifier to use for the agent
+    :param instructions: The system instructions for the agent
+    :param name: Optional name for the agent, used in telemetry and identification
+    :param enable_session_persistence: Whether to persist session data
+    :param response_format: Optional response format configuration
+    """
+
     model: str
     instructions: str
+    name: Optional[str] = None
     enable_session_persistence: Optional[bool] = False
     response_format: Optional[ResponseFormat] = None
 
