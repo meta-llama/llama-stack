@@ -20,7 +20,6 @@ class WebMethod:
     raw_bytes_request_body: Optional[bool] = False
     # A descriptive name of the corresponding span created by tracing
     descriptive_name: Optional[str] = None
-    experimental: Optional[bool] = False
 
 
 T = TypeVar("T", bound=Callable[..., Any])
@@ -34,7 +33,6 @@ def webmethod(
     response_examples: Optional[List[Any]] = None,
     raw_bytes_request_body: Optional[bool] = False,
     descriptive_name: Optional[str] = None,
-    experimental: Optional[bool] = False,
 ) -> Callable[[T], T]:
     """
     Decorator that supplies additional metadata to an endpoint operation function.
@@ -54,7 +52,6 @@ def webmethod(
             response_examples=response_examples,
             raw_bytes_request_body=raw_bytes_request_body,
             descriptive_name=descriptive_name,
-            experimental=experimental,
         )
         return func
 
