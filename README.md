@@ -14,7 +14,7 @@ We released [Version 0.2.0](https://github.com/meta-llama/llama-stack/releases/t
 
 <details>
 
-<summary>:fast_forward: You can now run Llama 4 models on Llama Stack (click for details) </summary>
+<summary>👋 Click here to see how to run Llama 4 models on Llama Stack </summary>
 
 \
 *Note you need 8xH100 GPU-host to run these models*
