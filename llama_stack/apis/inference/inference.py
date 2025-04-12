@@ -443,6 +443,37 @@ class EmbeddingsResponse(BaseModel):
 
 
 @json_schema_type
+class OpenAIChatCompletionContentPartTextParam(BaseModel):
+    type: Literal["text"] = "text"
+    text: str
+
+
+@json_schema_type
+class OpenAIImageURL(BaseModel):
+    url: str
+    detail: Optional[str] = None
+
+
+@json_schema_type
+class OpenAIChatCompletionContentPartImageParam(BaseModel):
+    type: Literal["image_url"] = "image_url"
+    image_url: OpenAIImageURL
+
+
+OpenAIChatCompletionContentPartParam = Annotated[
+    Union[
+        OpenAIChatCompletionContentPartTextParam,
+        OpenAIChatCompletionContentPartImageParam,
+    ],
+    Field(discriminator="type"),
+]
+register_schema(OpenAIChatCompletionContentPartParam, name="OpenAIChatCompletionContentPartParam")
+
+
+OpenAIChatCompletionMessageContent = Union[str, List[OpenAIChatCompletionContentPartParam]]
+
+
+@json_schema_type
 class OpenAIUserMessageParam(BaseModel):
     """A message from the user in an OpenAI-compatible chat completion request.
 
@@ -452,7 +483,7 @@ class OpenAIUserMessageParam(BaseModel):
     """
 
     role: Literal["user"] = "user"
-    content: InterleavedContent
+    content: OpenAIChatCompletionMessageContent
     name: Optional[str] = None
 
 
@@ -466,7 +497,7 @@ class OpenAISystemMessageParam(BaseModel):
     """
 
     role: Literal["system"] = "system"
-    content: InterleavedContent
+    content: OpenAIChatCompletionMessageContent
     name: Optional[str] = None
 
 
@@ -481,7 +512,7 @@ class OpenAIAssistantMessageParam(BaseModel):
     """
 
     role: Literal["assistant"] = "assistant"
-    content: InterleavedContent
+    content: OpenAIChatCompletionMessageContent
     name: Optional[str] = None
     tool_calls: Optional[List[ToolCall]] = Field(default_factory=list)
 
@@ -497,7 +528,7 @@ class OpenAIToolMessageParam(BaseModel):
 
     role: Literal["tool"] = "tool"
     tool_call_id: str
-    content: InterleavedContent
+    content: OpenAIChatCompletionMessageContent
 
 
 @json_schema_type
@@ -510,7 +541,7 @@ class OpenAIDeveloperMessageParam(BaseModel):
     """
 
     role: Literal["developer"] = "developer"
-    content: InterleavedContent
+    content: OpenAIChatCompletionMessageContent
     name: Optional[str] = None
 
 

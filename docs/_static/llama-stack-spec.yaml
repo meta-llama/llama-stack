@@ -6057,7 +6057,11 @@ components:
           description: >-
             Must be "assistant" to identify this as the model's response
         content:
-          $ref: '#/components/schemas/InterleavedContent'
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                $ref: '#/components/schemas/OpenAIChatCompletionContentPartParam'
           description: The content of the model's response
         name:
           type: string
@@ -6077,6 +6081,44 @@ components:
       description: >-
         A message containing the model's (assistant) response in an OpenAI-compatible
         chat completion request.
+    "OpenAIChatCompletionContentPartImageParam":
+      type: object
+      properties:
+        type:
+          type: string
+          const: image_url
+          default: image_url
+        image_url:
+          $ref: '#/components/schemas/OpenAIImageURL'
+      additionalProperties: false
+      required:
+        - type
+        - image_url
+      title: >-
+        OpenAIChatCompletionContentPartImageParam
+    OpenAIChatCompletionContentPartParam:
+      oneOf:
+        - $ref: '#/components/schemas/OpenAIChatCompletionContentPartTextParam'
+        - $ref: '#/components/schemas/OpenAIChatCompletionContentPartImageParam'
+      discriminator:
+        propertyName: type
+        mapping:
+          text: '#/components/schemas/OpenAIChatCompletionContentPartTextParam'
+          image_url: '#/components/schemas/OpenAIChatCompletionContentPartImageParam'
+    OpenAIChatCompletionContentPartTextParam:
+      type: object
+      properties:
+        type:
+          type: string
+          const: text
+          default: text
+        text:
+          type: string
+      additionalProperties: false
+      required:
+        - type
+        - text
+      title: OpenAIChatCompletionContentPartTextParam
     OpenAIDeveloperMessageParam:
       type: object
       properties:
@@ -6087,7 +6129,11 @@ components:
           description: >-
             Must be "developer" to identify this as a developer message
         content:
-          $ref: '#/components/schemas/InterleavedContent'
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                $ref: '#/components/schemas/OpenAIChatCompletionContentPartParam'
           description: The content of the developer message
         name:
           type: string
@@ -6100,6 +6146,17 @@ components:
       title: OpenAIDeveloperMessageParam
       description: >-
         A message from the developer in an OpenAI-compatible chat completion request.
+    OpenAIImageURL:
+      type: object
+      properties:
+        url:
+          type: string
+        detail:
+          type: string
+      additionalProperties: false
+      required:
+        - url
+      title: OpenAIImageURL
     OpenAIMessageParam:
       oneOf:
         - $ref: '#/components/schemas/OpenAIUserMessageParam'
@@ -6125,7 +6182,11 @@ components:
           description: >-
             Must be "system" to identify this as a system message
         content:
-          $ref: '#/components/schemas/InterleavedContent'
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                $ref: '#/components/schemas/OpenAIChatCompletionContentPartParam'
           description: >-
             The content of the "system prompt". If multiple system messages are provided,
             they are concatenated. The underlying Llama Stack code may also add other
@@ -6155,7 +6216,11 @@ components:
           description: >-
             Unique identifier for the tool call this response is for
         content:
-          $ref: '#/components/schemas/InterleavedContent'
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                $ref: '#/components/schemas/OpenAIChatCompletionContentPartParam'
           description: The response content from the tool
       additionalProperties: false
       required:
@@ -6176,7 +6241,11 @@ components:
           description: >-
             Must be "user" to identify this as a user message
         content:
-          $ref: '#/components/schemas/InterleavedContent'
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                $ref: '#/components/schemas/OpenAIChatCompletionContentPartParam'
           description: >-
             The content of the message, which can include text and other media
         name:
