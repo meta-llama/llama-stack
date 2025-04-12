@@ -52,14 +52,17 @@ class MetaReferenceInferenceConfig(BaseModel):
         checkpoint_dir: str = "${env.CHECKPOINT_DIR:null}",
         quantization_type: str = "${env.QUANTIZATION_TYPE:bf16}",
         model_parallel_size: str = "${env.MODEL_PARALLEL_SIZE:0}",
+        max_batch_size: str = "${env.MAX_BATCH_SIZE:1}",
+        max_seq_len: str = "${env.MAX_SEQ_LEN:4096}",
         **kwargs,
     ) -> Dict[str, Any]:
         return {
             "model": model,
-            "max_seq_len": 4096,
             "checkpoint_dir": checkpoint_dir,
             "quantization": {
                 "type": quantization_type,
             },
             "model_parallel_size": model_parallel_size,
+            "max_batch_size": max_batch_size,
+            "max_seq_len": max_seq_len,
         }

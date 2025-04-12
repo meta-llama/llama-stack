@@ -681,6 +681,16 @@ class EmbeddingTaskType(Enum):
     document = "document"
 
 
+@json_schema_type
+class BatchCompletionResponse(BaseModel):
+    batch: List[CompletionResponse]
+
+
+@json_schema_type
+class BatchChatCompletionResponse(BaseModel):
+    batch: List[ChatCompletionResponse]
+
+
 @runtime_checkable
 @trace_protocol
 class Inference(Protocol):
@@ -715,6 +725,17 @@ class Inference(Protocol):
                  If stream=True, returns an SSE event stream of CompletionResponseStreamChunk
         """
         ...
+
+    @webmethod(route="/inference/batch-completion", method="POST")
+    async def batch_completion(
+        self,
+        model_id: str,
+        content_batch: List[InterleavedContent],
+        sampling_params: Optional[SamplingParams] = None,
+        response_format: Optional[ResponseFormat] = None,
+        logprobs: Optional[LogProbConfig] = None,
+    ) -> BatchCompletionResponse:
+        raise NotImplementedError("Batch completion is not implemented")
 
     @webmethod(route="/inference/chat-completion", method="POST")
     async def chat_completion(
@@ -755,6 +776,19 @@ class Inference(Protocol):
                  If stream=True, returns an SSE event stream of ChatCompletionResponseStreamChunk
         """
         ...
+
+    @webmethod(route="/inference/batch-chat-completion", method="POST")
+    async def batch_chat_completion(
+        self,
+        model_id: str,
+        messages_batch: List[List[Message]],
+        sampling_params: Optional[SamplingParams] = None,
+        tools: Optional[List[ToolDefinition]] = None,
+        tool_config: Optional[ToolConfig] = None,
+        response_format: Optional[ResponseFormat] = None,
+        logprobs: Optional[LogProbConfig] = None,
+    ) -> BatchChatCompletionResponse:
+        raise NotImplementedError("Batch chat completion is not implemented")
 
     @webmethod(route="/inference/embeddings", method="POST")
     async def embeddings(

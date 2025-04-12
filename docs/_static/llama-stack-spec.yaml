@@ -40,7 +40,7 @@ paths:
             schema:
               $ref: '#/components/schemas/AppendRowsRequest'
         required: true
-  /v1/batch-inference/chat-completion:
+  /v1/inference/batch-chat-completion:
     post:
       responses:
         '200':
@@ -60,7 +60,7 @@ paths:
         default:
           $ref: '#/components/responses/DefaultError'
       tags:
-        - BatchInference (Coming Soon)
+        - Inference
       description: ''
       parameters: []
       requestBody:
@@ -69,7 +69,7 @@ paths:
             schema:
               $ref: '#/components/schemas/BatchChatCompletionRequest'
         required: true
-  /v1/batch-inference/completion:
+  /v1/inference/batch-completion:
     post:
       responses:
         '200':
@@ -89,7 +89,7 @@ paths:
         default:
           $ref: '#/components/responses/DefaultError'
       tags:
-        - BatchInference (Coming Soon)
+        - Inference
       description: ''
       parameters: []
       requestBody:
@@ -148,7 +148,7 @@ paths:
         default:
           $ref: '#/components/responses/DefaultError'
       tags:
-        - Inference
+        - BatchInference (Coming Soon)
       description: >-
         Generate a chat completion for the given messages using the specified model.
       parameters: []
@@ -183,7 +183,7 @@ paths:
         default:
           $ref: '#/components/responses/DefaultError'
       tags:
-        - Inference
+        - BatchInference (Coming Soon)
       description: >-
         Generate a completion for the given content using the specified model.
       parameters: []
@@ -3009,6 +3009,54 @@ components:
         - tool_name
         - arguments
       title: ToolCall
+    ToolConfig:
+      type: object
+      properties:
+        tool_choice:
+          oneOf:
+            - type: string
+              enum:
+                - auto
+                - required
+                - none
+              title: ToolChoice
+              description: >-
+                Whether tool use is required or automatic. This is a hint to the model
+                which may not be followed. It depends on the Instruction Following
+                capabilities of the model.
+            - type: string
+          default: auto
+          description: >-
+            (Optional) Whether tool use is automatic, required, or none. Can also
+            specify a tool name to use a specific tool. Defaults to ToolChoice.auto.
+        tool_prompt_format:
+          type: string
+          enum:
+            - json
+            - function_tag
+            - python_list
+          description: >-
+            (Optional) Instructs the model how to format tool calls. By default, Llama
+            Stack will attempt to use a format that is best adapted to the model.
+            - `ToolPromptFormat.json`: The tool calls are formatted as a JSON object.
+            - `ToolPromptFormat.function_tag`: The tool calls are enclosed in a <function=function_name>
+            tag. - `ToolPromptFormat.python_list`: The tool calls are output as Python
+            syntax -- a list of function calls.
+        system_message_behavior:
+          type: string
+          enum:
+            - append
+            - replace
+          description: >-
+            (Optional) Config for how to override the default system prompt. - `SystemMessageBehavior.append`:
+            Appends the provided system message to the default system prompt. - `SystemMessageBehavior.replace`:
+            Replaces the default system prompt with the provided system message. The
+            system message can include the string '{{function_definitions}}' to indicate
+            where the function definitions should be inserted.
+          default: append
+      additionalProperties: false
+      title: ToolConfig
+      description: Configuration for tool use.
     ToolDefinition:
       type: object
       properties:
@@ -3145,7 +3193,7 @@ components:
     BatchChatCompletionRequest:
       type: object
       properties:
-        model:
+        model_id:
           type: string
         messages_batch:
           type: array
@@ -3159,26 +3207,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ToolDefinition'
-        tool_choice:
-          type: string
-          enum:
-            - auto
-            - required
-            - none
-          title: ToolChoice
-          description: >-
-            Whether tool use is required or automatic. This is a hint to the model
-            which may not be followed. It depends on the Instruction Following capabilities
-            of the model.
-        tool_prompt_format:
-          type: string
-          enum:
-            - json
-            - function_tag
-            - python_list
-          title: ToolPromptFormat
-          description: >-
-            Prompt format for calling custom / zero shot tools.
+        tool_config:
+          $ref: '#/components/schemas/ToolConfig'
         response_format:
           $ref: '#/components/schemas/ResponseFormat'
         logprobs:
@@ -3193,7 +3223,7 @@ components:
           title: LogProbConfig
       additionalProperties: false
       required:
-        - model
+        - model_id
         - messages_batch
       title: BatchChatCompletionRequest
     BatchChatCompletionResponse:
@@ -3261,7 +3291,7 @@ components:
     BatchCompletionRequest:
       type: object
       properties:
-        model:
+        model_id:
           type: string
         content_batch:
           type: array
@@ -3283,7 +3313,7 @@ components:
           title: LogProbConfig
       additionalProperties: false
       required:
-        - model
+        - model_id
         - content_batch
       title: BatchCompletionRequest
     BatchCompletionResponse:
@@ -3335,54 +3365,6 @@ components:
       required:
         - job_uuid
       title: CancelTrainingJobRequest
-    ToolConfig:
-      type: object
-      properties:
-        tool_choice:
-          oneOf:
-            - type: string
-              enum:
-                - auto
-                - required
-                - none
-              title: ToolChoice
-              description: >-
-                Whether tool use is required or automatic. This is a hint to the model
-                which may not be followed. It depends on the Instruction Following
-                capabilities of the model.
-            - type: string
-          default: auto
-          description: >-
-            (Optional) Whether tool use is automatic, required, or none. Can also
-            specify a tool name to use a specific tool. Defaults to ToolChoice.auto.
-        tool_prompt_format:
-          type: string
-          enum:
-            - json
-            - function_tag
-            - python_list
-          description: >-
-            (Optional) Instructs the model how to format tool calls. By default, Llama
-            Stack will attempt to use a format that is best adapted to the model.
-            - `ToolPromptFormat.json`: The tool calls are formatted as a JSON object.
-            - `ToolPromptFormat.function_tag`: The tool calls are enclosed in a <function=function_name>
-            tag. - `ToolPromptFormat.python_list`: The tool calls are output as Python
-            syntax -- a list of function calls.
-        system_message_behavior:
-          type: string
-          enum:
-            - append
-            - replace
-          description: >-
-            (Optional) Config for how to override the default system prompt. - `SystemMessageBehavior.append`:
-            Appends the provided system message to the default system prompt. - `SystemMessageBehavior.replace`:
-            Replaces the default system prompt with the provided system message. The
-            system message can include the string '{{function_definitions}}' to indicate
-            where the function definitions should be inserted.
-          default: append
-      additionalProperties: false
-      title: ToolConfig
-      description: Configuration for tool use.
     ChatCompletionRequest:
       type: object
       properties:
@@ -7632,6 +7614,17 @@ tags:
     x-displayName: >-
       Agents API for creating and interacting with agentic systems.
   - name: BatchInference (Coming Soon)
+    description: >-
+      This is an asynchronous API. If the request is successful, the response will
+      be a job which can be polled for completion.
+
+
+      NOTE: This API is not yet implemented and is subject to change in concert with
+      other asynchronous APIs
+
+      including (post-training, evals, etc).
+    x-displayName: >-
+      Batch inference API for generating completions and chat completions.
   - name: Benchmarks
   - name: DatasetIO
   - name: Datasets
