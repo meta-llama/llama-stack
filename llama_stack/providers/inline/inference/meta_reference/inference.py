@@ -452,7 +452,7 @@ class MetaReferenceInferenceImpl(
 
             for token_results in self.generator.chat_completion(request_batch):
                 first = token_results[0]
-                if not first.finished:
+                if not first.finished and not first.ignore_token:
                     if os.environ.get("LLAMA_MODELS_DEBUG", "0") in ("1", "2"):
                         cprint(first.text, "cyan", end="")
                     if os.environ.get("LLAMA_MODELS_DEBUG", "0") == "2":
