@@ -7,53 +7,17 @@
 
 import pytest
 
-from llama_stack.models.llama.sku_list import resolve_model
-
 from ..test_cases.test_case import TestCase
 
-PROVIDER_LOGPROBS_TOP_K = {"remote::together", "remote::fireworks", "remote::vllm"}
 
-
-def skip_if_model_doesnt_support_completion(client_with_models, model_id):
+def skip_if_provider_doesnt_support_batch_inference(client_with_models, model_id):
     models = {m.identifier: m for m in client_with_models.models.list()}
     models.update({m.provider_resource_id: m for m in client_with_models.models.list()})
     provider_id = models[model_id].provider_id
     providers = {p.provider_id: p for p in client_with_models.providers.list()}
     provider = providers[provider_id]
-    if provider.provider_type in (
-        "remote::openai",
-        "remote::anthropic",
-        "remote::gemini",
-        "remote::groq",
-        "remote::llama-openai-compat",
-    ):
-        pytest.skip(f"Model {model_id} hosted by {provider.provider_type} doesn't support completion")
-
-
-def get_llama_model(client_with_models, model_id):
-    models = {}
-    for m in client_with_models.models.list():
-        models[m.identifier] = m
-        models[m.provider_resource_id] = m
-
-    assert model_id in models, f"Model {model_id} not found"
-
-    model = models[model_id]
-    ids = (model.identifier, model.provider_resource_id)
-    for mid in ids:
-        if resolve_model(mid):
-            return mid
-
-    return model.metadata.get("llama_model", None)
-
-
-def get_llama_tokenizer():
-    from llama_models.llama3.api.chat_format import ChatFormat
-    from llama_models.llama3.api.tokenizer import Tokenizer
-
-    tokenizer = Tokenizer.get_instance()
-    formatter = ChatFormat(tokenizer)
-    return tokenizer, formatter
+    if provider.provider_type not in ("inline::meta-reference",):
+        pytest.skip(f"Model {model_id} hosted by {provider.provider_type} doesn't support batch inference")
 
 
 @pytest.mark.parametrize(
@@ -63,7 +27,7 @@ def get_llama_tokenizer():
     ],
 )
 def test_batch_completion_non_streaming(client_with_models, text_model_id, test_case):
-    skip_if_model_doesnt_support_completion(client_with_models, text_model_id)
+    skip_if_provider_doesnt_support_batch_inference(client_with_models, text_model_id)
     tc = TestCase(test_case)
 
     content_batch = tc["contents"]
@@ -87,6 +51,7 @@ def test_batch_completion_non_streaming(client_with_models, text_model_id, test_
     ],
 )
 def test_batch_chat_completion_non_streaming(client_with_models, text_model_id, test_case):
+    skip_if_provider_doesnt_support_batch_inference(client_with_models, text_model_id)
     tc = TestCase(test_case)
     qa_pairs = tc["qa_pairs"]
 
