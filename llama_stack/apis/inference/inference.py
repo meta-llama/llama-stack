@@ -726,7 +726,7 @@ class Inference(Protocol):
         """
         ...
 
-    @webmethod(route="/inference/batch-completion", method="POST")
+    @webmethod(route="/inference/batch-completion", method="POST", experimental=True)
     async def batch_completion(
         self,
         model_id: str,
@@ -777,7 +777,7 @@ class Inference(Protocol):
         """
         ...
 
-    @webmethod(route="/inference/batch-chat-completion", method="POST")
+    @webmethod(route="/inference/batch-chat-completion", method="POST", experimental=True)
     async def batch_chat_completion(
         self,
         model_id: str,
