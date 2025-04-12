@@ -231,7 +231,7 @@ options:
   -h, --help            show this help message and exit
   --port PORT           Port to run the server on. It can also be passed via the env var LLAMA_STACK_PORT. (default: 8321)
   --image-name IMAGE_NAME
-                        Name of the image to run. Defaults to the current conda environment (default: None)
+                        Name of the image to run. Defaults to the current environment (default: None)
   --disable-ipv6        Disable IPv6 support (default: False)
   --env KEY=VALUE       Environment variables to pass to the server in KEY=VALUE format. Can be specified multiple times. (default: [])
   --tls-keyfile TLS_KEYFILE
