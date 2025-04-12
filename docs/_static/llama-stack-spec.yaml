@@ -6744,10 +6744,13 @@ components:
           type: integer
         max_steps_per_epoch:
           type: integer
+          default: 1
         gradient_accumulation_steps:
           type: integer
+          default: 1
         max_validation_steps:
           type: integer
+          default: 1
         data_config:
           $ref: '#/components/schemas/DataConfig'
         optimizer_config:
@@ -6762,9 +6765,6 @@ components:
         - n_epochs
         - max_steps_per_epoch
         - gradient_accumulation_steps
-        - max_validation_steps
-        - data_config
-        - optimizer_config
       title: TrainingConfig
     PreferenceOptimizeRequest:
       type: object
@@ -7498,7 +7498,6 @@ components:
         - training_config
         - hyperparam_search_config
         - logger_config
-        - model
       title: SupervisedFineTuneRequest
     SyntheticDataGenerateRequest:
       type: object

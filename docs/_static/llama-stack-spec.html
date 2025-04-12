@@ -9778,13 +9778,16 @@
                         "type": "integer"
                     },
                     "max_steps_per_epoch": {
-                        "type": "integer"
+                        "type": "integer",
+                        "default": 1
                     },
                     "gradient_accumulation_steps": {
-                        "type": "integer"
+                        "type": "integer",
+                        "default": 1
                     },
                     "max_validation_steps": {
-                        "type": "integer"
+                        "type": "integer",
+                        "default": 1
                     },
                     "data_config": {
                         "$ref": "#/components/schemas/DataConfig"
@@ -9804,10 +9807,7 @@
                 "required": [
                     "n_epochs",
                     "max_steps_per_epoch",
-                    "gradient_accumulation_steps",
-                    "max_validation_steps",
-                    "data_config",
-                    "optimizer_config"
+                    "gradient_accumulation_steps"
                 ],
                 "title": "TrainingConfig"
             },
@@ -10983,8 +10983,7 @@
                     "job_uuid",
                     "training_config",
                     "hyperparam_search_config",
-                    "logger_config",
-                    "model"
+                    "logger_config"
                 ],
                 "title": "SupervisedFineTuneRequest"
             },
