@@ -115,7 +115,7 @@ def test_openai_completion_streaming(openai_client, client_with_models, text_mod
         stream=True,
         max_tokens=50,
     )
-    streamed_content = [chunk.choices[0].text for chunk in response]
+    streamed_content = [chunk.choices[0].text or "" for chunk in response]
     content_str = "".join(streamed_content).lower().strip()
     assert len(content_str) > 10
 
