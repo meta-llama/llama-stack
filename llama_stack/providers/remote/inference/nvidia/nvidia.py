@@ -35,7 +35,12 @@ from llama_stack.apis.inference import (
     ToolConfig,
     ToolDefinition,
 )
-from llama_stack.apis.inference.inference import OpenAIChatCompletion, OpenAICompletion, OpenAIMessageParam
+from llama_stack.apis.inference.inference import (
+    OpenAIChatCompletion,
+    OpenAICompletion,
+    OpenAIMessageParam,
+    OpenAIResponseFormatParam,
+)
 from llama_stack.models.llama.datatypes import ToolPromptFormat
 from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
@@ -329,7 +334,7 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
         n: Optional[int] = None,
         parallel_tool_calls: Optional[bool] = None,
         presence_penalty: Optional[float] = None,
-        response_format: Optional[Dict[str, str]] = None,
+        response_format: Optional[OpenAIResponseFormatParam] = None,
         seed: Optional[int] = None,
         stop: Optional[Union[str, List[str]]] = None,
         stream: Optional[bool] = None,

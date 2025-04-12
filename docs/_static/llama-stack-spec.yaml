@@ -6157,6 +6157,29 @@ components:
       required:
         - url
       title: OpenAIImageURL
+    OpenAIJSONSchema:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        strict:
+          type: boolean
+        schema:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+      additionalProperties: false
+      required:
+        - name
+      title: OpenAIJSONSchema
     OpenAIMessageParam:
       oneOf:
         - $ref: '#/components/schemas/OpenAIUserMessageParam'
@@ -6172,6 +6195,53 @@ components:
           assistant: '#/components/schemas/OpenAIAssistantMessageParam'
           tool: '#/components/schemas/OpenAIToolMessageParam'
           developer: '#/components/schemas/OpenAIDeveloperMessageParam'
+    OpenAIResponseFormatJSONObject:
+      type: object
+      properties:
+        type:
+          type: string
+          const: json_object
+          default: json_object
+      additionalProperties: false
+      required:
+        - type
+      title: OpenAIResponseFormatJSONObject
+    OpenAIResponseFormatJSONSchema:
+      type: object
+      properties:
+        type:
+          type: string
+          const: json_schema
+          default: json_schema
+        json_schema:
+          $ref: '#/components/schemas/OpenAIJSONSchema'
+      additionalProperties: false
+      required:
+        - type
+        - json_schema
+      title: OpenAIResponseFormatJSONSchema
+    OpenAIResponseFormatParam:
+      oneOf:
+        - $ref: '#/components/schemas/OpenAIResponseFormatText'
+        - $ref: '#/components/schemas/OpenAIResponseFormatJSONSchema'
+        - $ref: '#/components/schemas/OpenAIResponseFormatJSONObject'
+      discriminator:
+        propertyName: type
+        mapping:
+          text: '#/components/schemas/OpenAIResponseFormatText'
+          json_schema: '#/components/schemas/OpenAIResponseFormatJSONSchema'
+          json_object: '#/components/schemas/OpenAIResponseFormatJSONObject'
+    OpenAIResponseFormatText:
+      type: object
+      properties:
+        type:
+          type: string
+          const: text
+          default: text
+      additionalProperties: false
+      required:
+        - type
+      title: OpenAIResponseFormatText
     OpenAISystemMessageParam:
       type: object
       properties:
@@ -6331,9 +6401,7 @@ components:
           description: >-
             (Optional) The penalty for repeated tokens
         response_format:
-          type: object
-          additionalProperties:
-            type: string
+          $ref: '#/components/schemas/OpenAIResponseFormatParam'
           description: (Optional) The response format to use
         seed:
           type: integer

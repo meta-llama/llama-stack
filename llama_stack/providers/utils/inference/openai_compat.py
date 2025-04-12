@@ -85,7 +85,12 @@ from llama_stack.apis.inference import (
     TopPSamplingStrategy,
     UserMessage,
 )
-from llama_stack.apis.inference.inference import OpenAIChatCompletion, OpenAICompletion, OpenAICompletionChoice
+from llama_stack.apis.inference.inference import (
+    OpenAIChatCompletion,
+    OpenAICompletion,
+    OpenAICompletionChoice,
+    OpenAIResponseFormatParam,
+)
 from llama_stack.models.llama.datatypes import (
     BuiltinTool,
     StopReason,
@@ -1080,7 +1085,20 @@ async def convert_openai_chat_completion_stream(
 
 
 async def prepare_openai_completion_params(**params):
-    completion_params = {k: v for k, v in params.items() if v is not None}
+    async def _prepare_value(value: Any) -> Any:
+        new_value = value
+        if isinstance(value, list):
+            new_value = [await _prepare_value(v) for v in value]
+        elif isinstance(value, dict):
+            new_value = {k: await _prepare_value(v) for k, v in value.items()}
+        elif isinstance(value, BaseModel):
+            new_value = value.model_dump(exclude_none=True)
+        return new_value
+
+    completion_params = {}
+    for k, v in params.items():
+        if v is not None:
+            completion_params[k] = await _prepare_value(v)
     return completion_params
 
 
@@ -1167,7 +1185,7 @@ class OpenAIChatCompletionUnsupportedMixin:
         n: Optional[int] = None,
         parallel_tool_calls: Optional[bool] = None,
         presence_penalty: Optional[float] = None,
-        response_format: Optional[Dict[str, str]] = None,
+        response_format: Optional[OpenAIResponseFormatParam] = None,
         seed: Optional[int] = None,
         stop: Optional[Union[str, List[str]]] = None,
         stream: Optional[bool] = None,

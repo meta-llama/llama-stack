@@ -18,7 +18,7 @@ from typing import (
 )
 
 from pydantic import BaseModel, Field, field_validator
-from typing_extensions import Annotated
+from typing_extensions import Annotated, TypedDict
 
 from llama_stack.apis.common.content_types import ContentDelta, InterleavedContent, InterleavedContentItem
 from llama_stack.apis.models import Model
@@ -559,6 +559,46 @@ register_schema(OpenAIMessageParam, name="OpenAIMessageParam")
 
 
 @json_schema_type
+class OpenAIResponseFormatText(BaseModel):
+    type: Literal["text"] = "text"
+
+
+@json_schema_type
+class OpenAIJSONSchema(TypedDict, total=False):
+    name: str
+    description: Optional[str] = None
+    strict: Optional[bool] = None
+
+    # Pydantic BaseModel cannot be used with a schema param, since it already
+    # has one. And, we don't want to alias here because then have to handle
+    # that alias when converting to OpenAI params. So, to support schema,
+    # we use a TypedDict.
+    schema: Optional[Dict[str, Any]] = None
+
+
+@json_schema_type
+class OpenAIResponseFormatJSONSchema(BaseModel):
+    type: Literal["json_schema"] = "json_schema"
+    json_schema: OpenAIJSONSchema
+
+
+@json_schema_type
+class OpenAIResponseFormatJSONObject(BaseModel):
+    type: Literal["json_object"] = "json_object"
+
+
+OpenAIResponseFormatParam = Annotated[
+    Union[
+        OpenAIResponseFormatText,
+        OpenAIResponseFormatJSONSchema,
+        OpenAIResponseFormatJSONObject,
+    ],
+    Field(discriminator="type"),
+]
+register_schema(OpenAIResponseFormatParam, name="OpenAIResponseFormatParam")
+
+
+@json_schema_type
 class OpenAITopLogProb(BaseModel):
     """The top log probability for a token from an OpenAI-compatible chat completion response.
 
@@ -903,7 +943,7 @@ class Inference(Protocol):
         n: Optional[int] = None,
         parallel_tool_calls: Optional[bool] = None,
         presence_penalty: Optional[float] = None,
-        response_format: Optional[Dict[str, str]] = None,
+        response_format: Optional[OpenAIResponseFormatParam] = None,
         seed: Optional[int] = None,
         stop: Optional[Union[str, List[str]]] = None,
         stream: Optional[bool] = None,
