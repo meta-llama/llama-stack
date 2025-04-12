@@ -8,7 +8,7 @@ import logging
 import time
 import uuid
 import warnings
-from typing import Any, AsyncGenerator, Dict, Iterable, List, Optional, Union
+from typing import Any, AsyncGenerator, AsyncIterator, Dict, Iterable, List, Optional, Union
 
 from openai import AsyncStream
 from openai.types.chat import (
@@ -1196,5 +1196,5 @@ class OpenAIChatCompletionUnsupportedMixin:
         top_logprobs: Optional[int] = None,
         top_p: Optional[float] = None,
         user: Optional[str] = None,
-    ) -> OpenAIChatCompletion:
+    ) -> Union[OpenAIChatCompletion, AsyncIterator[OpenAIChatCompletionChunk]]:
         raise ValueError(f"{self.__class__.__name__} doesn't support openai chat completion")

@@ -37,6 +37,7 @@ from llama_stack.apis.inference import (
 )
 from llama_stack.apis.inference.inference import (
     OpenAIChatCompletion,
+    OpenAIChatCompletionChunk,
     OpenAICompletion,
     OpenAIMessageParam,
     OpenAIResponseFormatParam,
@@ -345,7 +346,7 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
         top_logprobs: Optional[int] = None,
         top_p: Optional[float] = None,
         user: Optional[str] = None,
-    ) -> OpenAIChatCompletion:
+    ) -> Union[OpenAIChatCompletion, AsyncIterator[OpenAIChatCompletionChunk]]:
         provider_model_id = self.get_provider_model_id(model)
 
         params = await prepare_openai_completion_params(

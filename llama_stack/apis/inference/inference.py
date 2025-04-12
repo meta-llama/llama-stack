@@ -675,6 +675,24 @@ class OpenAIChatCompletion(BaseModel):
 
 
 @json_schema_type
+class OpenAIChatCompletionChunk(BaseModel):
+    """Chunk from a streaming response to an OpenAI-compatible chat completion request.
+
+    :param id: The ID of the chat completion
+    :param choices: List of choices
+    :param object: The object type, which will be "chat.completion.chunk"
+    :param created: The Unix timestamp in seconds when the chat completion was created
+    :param model: The model that was used to generate the chat completion
+    """
+
+    id: str
+    choices: List[OpenAIChoice]
+    object: Literal["chat.completion.chunk"] = "chat.completion.chunk"
+    created: int
+    model: str
+
+
+@json_schema_type
 class OpenAICompletionLogprobs(BaseModel):
     """The log probabilities for the tokens in the message from an OpenAI-compatible completion response.
 
@@ -954,7 +972,7 @@ class Inference(Protocol):
         top_logprobs: Optional[int] = None,
         top_p: Optional[float] = None,
         user: Optional[str] = None,
-    ) -> OpenAIChatCompletion:
+    ) -> Union[OpenAIChatCompletion, AsyncIterator[OpenAIChatCompletionChunk]]:
         """Generate an OpenAI-compatible chat completion for the given messages using the specified model.
 
         :param model: The identifier of the model to use. The model must be registered with Llama Stack and available via the /models endpoint.

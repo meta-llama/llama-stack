@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, AsyncGenerator, Dict, List, Optional, Union
+from typing import Any, AsyncGenerator, AsyncIterator, Dict, List, Optional, Union
 
 from openai import AsyncOpenAI
 from together import AsyncTogether
@@ -33,6 +33,7 @@ from llama_stack.apis.inference import (
 )
 from llama_stack.apis.inference.inference import (
     OpenAIChatCompletion,
+    OpenAIChatCompletionChunk,
     OpenAICompletion,
     OpenAIMessageParam,
     OpenAIResponseFormatParam,
@@ -331,7 +332,7 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
         top_logprobs: Optional[int] = None,
         top_p: Optional[float] = None,
         user: Optional[str] = None,
-    ) -> OpenAIChatCompletion:
+    ) -> Union[OpenAIChatCompletion, AsyncIterator[OpenAIChatCompletionChunk]]:
         model_obj = await self.model_store.get_model(model)
         params = await prepare_openai_completion_params(
             model=model_obj.provider_resource_id,
@@ -358,4 +359,26 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
             top_p=top_p,
             user=user,
         )
+        if params.get("stream", True):
+            return self._stream_openai_chat_completion(params)
         return await self._get_openai_client().chat.completions.create(**params)  # type: ignore
+
+    async def _stream_openai_chat_completion(self, params: dict) -> AsyncGenerator:
+        # together.ai sometimes adds usage data to the stream, even if include_usage is False
+        # This causes an unexpected final chunk with empty choices array to be sent
+        # to clients that may not handle it gracefully.
+        include_usage = False
+        if params.get("stream_options", None):
+            include_usage = params["stream_options"].get("include_usage", False)
+        stream = await self._get_openai_client().chat.completions.create(**params)
+
+        seen_finish_reason = False
+        async for chunk in stream:
+            # Final usage chunk with no choices that the user didn't request, so discard
+            if not include_usage and seen_finish_reason and len(chunk.choices) == 0:
+                break
+            yield chunk
+            for choice in chunk.choices:
+                if choice.finish_reason:
+                    seen_finish_reason = True
+                    break

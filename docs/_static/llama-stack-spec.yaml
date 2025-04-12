@@ -2135,11 +2135,15 @@ paths:
     post:
       responses:
         '200':
-          description: OK
+          description: >-
+            Response from an OpenAI-compatible chat completion request. **OR** Chunk
+            from a streaming response to an OpenAI-compatible chat completion request.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OpenAIChatCompletion'
+                oneOf:
+                  - $ref: '#/components/schemas/OpenAIChatCompletion'
+                  - $ref: '#/components/schemas/OpenAIChatCompletionChunk'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -6507,6 +6511,41 @@ components:
       title: OpenAIChatCompletion
       description: >-
         Response from an OpenAI-compatible chat completion request.
+    OpenAIChatCompletionChunk:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The ID of the chat completion
+        choices:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpenAIChoice'
+          description: List of choices
+        object:
+          type: string
+          const: chat.completion.chunk
+          default: chat.completion.chunk
+          description: >-
+            The object type, which will be "chat.completion.chunk"
+        created:
+          type: integer
+          description: >-
+            The Unix timestamp in seconds when the chat completion was created
+        model:
+          type: string
+          description: >-
+            The model that was used to generate the chat completion
+      additionalProperties: false
+      required:
+        - id
+        - choices
+        - object
+        - created
+        - model
+      title: OpenAIChatCompletionChunk
+      description: >-
+        Chunk from a streaming response to an OpenAI-compatible chat completion request.
     OpenAIChoice:
       type: object
       properties:

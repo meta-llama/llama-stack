@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, AsyncGenerator, Dict, List, Optional, Union
+from typing import Any, AsyncGenerator, AsyncIterator, Dict, List, Optional, Union
 
 from llama_stack_client import AsyncLlamaStackClient
 
@@ -28,6 +28,7 @@ from llama_stack.apis.inference import (
 )
 from llama_stack.apis.inference.inference import (
     OpenAIChatCompletion,
+    OpenAIChatCompletionChunk,
     OpenAICompletion,
     OpenAIMessageParam,
     OpenAIResponseFormatParam,
@@ -282,7 +283,7 @@ class PassthroughInferenceAdapter(Inference):
         top_logprobs: Optional[int] = None,
         top_p: Optional[float] = None,
         user: Optional[str] = None,
-    ) -> OpenAIChatCompletion:
+    ) -> Union[OpenAIChatCompletion, AsyncIterator[OpenAIChatCompletionChunk]]:
         client = self._get_client()
         model_obj = await self.model_store.get_model(model)
 

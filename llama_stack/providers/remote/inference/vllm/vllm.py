@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 import json
 import logging
-from typing import Any, AsyncGenerator, Dict, List, Optional, Union
+from typing import Any, AsyncGenerator, AsyncIterator, Dict, List, Optional, Union
 
 import httpx
 from openai import AsyncOpenAI
@@ -503,7 +503,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         top_logprobs: Optional[int] = None,
         top_p: Optional[float] = None,
         user: Optional[str] = None,
-    ) -> OpenAIChatCompletion:
+    ) -> Union[OpenAIChatCompletion, AsyncIterator[OpenAIChatCompletionChunk]]:
         model_obj = await self._get_model(model)
         params = await prepare_openai_completion_params(
             model=model_obj.provider_resource_id,

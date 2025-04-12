@@ -32,6 +32,7 @@ from llama_stack.apis.inference import (
 )
 from llama_stack.apis.inference.inference import (
     OpenAIChatCompletion,
+    OpenAIChatCompletionChunk,
     OpenAICompletion,
     OpenAIMessageParam,
     OpenAIResponseFormatParam,
@@ -324,7 +325,7 @@ class LiteLLMOpenAIMixin(
         top_logprobs: Optional[int] = None,
         top_p: Optional[float] = None,
         user: Optional[str] = None,
-    ) -> OpenAIChatCompletion:
+    ) -> Union[OpenAIChatCompletion, AsyncIterator[OpenAIChatCompletionChunk]]:
         model_obj = await self.model_store.get_model(model)
         params = await prepare_openai_completion_params(
             model=model_obj.provider_resource_id,
