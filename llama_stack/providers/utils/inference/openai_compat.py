@@ -1354,14 +1354,7 @@ class OpenAIChatCompletionToLlamaStackMixin:
             i = 0
             async for chunk in response:
                 event = chunk.event
-                if event.stop_reason == StopReason.end_of_turn:
-                    finish_reason = "stop"
-                elif event.stop_reason == StopReason.end_of_message:
-                    finish_reason = "eos"
-                elif event.stop_reason == StopReason.out_of_tokens:
-                    finish_reason = "length"
-                else:
-                    finish_reason = None
+                finish_reason = _convert_stop_reason_to_openai_finish_reason(event.stop_reason)
 
                 if isinstance(event.delta, TextDelta):
                     text_delta = event.delta.text

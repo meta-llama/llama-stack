@@ -298,7 +298,7 @@ class LiteLLMOpenAIMixin(
             guided_choice=guided_choice,
             prompt_logprobs=prompt_logprobs,
         )
-        return litellm.text_completion(**params)
+        return await litellm.atext_completion(**params)
 
     async def openai_chat_completion(
         self,
@@ -352,7 +352,7 @@ class LiteLLMOpenAIMixin(
             top_p=top_p,
             user=user,
         )
-        return litellm.completion(**params)
+        return await litellm.acompletion(**params)
 
     async def batch_completion(
         self,

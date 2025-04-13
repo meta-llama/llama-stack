@@ -503,15 +503,16 @@ class OpenAISystemMessageParam(BaseModel):
 
 @json_schema_type
 class OpenAIChatCompletionToolCallFunction(BaseModel):
-    name: str
-    arguments: str
+    name: Optional[str] = None
+    arguments: Optional[str] = None
 
 
 @json_schema_type
 class OpenAIChatCompletionToolCall(BaseModel):
-    id: str
+    index: Optional[int] = None
+    id: Optional[str] = None
     type: Literal["function"] = "function"
-    function: OpenAIChatCompletionToolCallFunction
+    function: Optional[OpenAIChatCompletionToolCallFunction] = None
 
 
 @json_schema_type
@@ -645,12 +646,44 @@ class OpenAITokenLogProb(BaseModel):
 class OpenAIChoiceLogprobs(BaseModel):
     """The log probabilities for the tokens in the message from an OpenAI-compatible chat completion response.
 
-    :content: (Optional) The log probabilities for the tokens in the message
-    :refusal: (Optional) The log probabilities for the tokens in the message
+    :param content: (Optional) The log probabilities for the tokens in the message
+    :param refusal: (Optional) The log probabilities for the tokens in the message
     """
 
     content: Optional[List[OpenAITokenLogProb]] = None
     refusal: Optional[List[OpenAITokenLogProb]] = None
+
+
+@json_schema_type
+class OpenAIChoiceDelta(BaseModel):
+    """A delta from an OpenAI-compatible chat completion streaming response.
+
+    :param content: (Optional) The content of the delta
+    :param refusal: (Optional) The refusal of the delta
+    :param role: (Optional) The role of the delta
+    :param tool_calls: (Optional) The tool calls of the delta
+    """
+
+    content: Optional[str] = None
+    refusal: Optional[str] = None
+    role: Optional[str] = None
+    tool_calls: Optional[List[OpenAIChatCompletionToolCall]] = None
+
+
+@json_schema_type
+class OpenAIChunkChoice(BaseModel):
+    """A chunk choice from an OpenAI-compatible chat completion streaming response.
+
+    :param delta: The delta from the chunk
+    :param finish_reason: The reason the model stopped generating
+    :param index: The index of the choice
+    :param logprobs: (Optional) The log probabilities for the tokens in the message
+    """
+
+    delta: OpenAIChoiceDelta
+    finish_reason: str
+    index: int
+    logprobs: Optional[OpenAIChoiceLogprobs] = None
 
 
 @json_schema_type
@@ -659,8 +692,8 @@ class OpenAIChoice(BaseModel):
 
     :param message: The message from the model
     :param finish_reason: The reason the model stopped generating
-    :index: The index of the choice
-    :logprobs: (Optional) The log probabilities for the tokens in the message
+    :param index: The index of the choice
+    :param logprobs: (Optional) The log probabilities for the tokens in the message
     """
 
     message: OpenAIMessageParam
@@ -699,7 +732,7 @@ class OpenAIChatCompletionChunk(BaseModel):
     """
 
     id: str
-    choices: List[OpenAIChoice]
+    choices: List[OpenAIChunkChoice]
     object: Literal["chat.completion.chunk"] = "chat.completion.chunk"
     created: int
     model: str

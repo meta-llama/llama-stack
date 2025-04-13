@@ -75,6 +75,7 @@ PROVIDER_ORDER = [
     "openai",
     "together-llama-stack",
     "fireworks-llama-stack",
+    "groq-llama-stack",
     "openai-llama-stack",
 ]
 

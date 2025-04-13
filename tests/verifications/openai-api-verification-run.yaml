@@ -17,6 +17,11 @@ providers:
     config:
       url: https://api.fireworks.ai/inference/v1
       api_key: ${env.FIREWORKS_API_KEY}
+  - provider_id: groq
+    provider_type: remote::groq
+    config:
+      url: https://api.groq.com
+      api_key: ${env.GROQ_API_KEY}
   - provider_id: openai
     provider_type: remote::openai
     config:
@@ -97,6 +102,21 @@ models:
   model_id: fireworks/llama4-maverick-instruct-basic
   provider_id: fireworks
   provider_model_id: accounts/fireworks/models/llama4-maverick-instruct-basic
+  model_type: llm
+- metadata: {}
+  model_id: groq/llama-3.3-70b-versatile
+  provider_id: groq
+  provider_model_id: groq/llama-3.3-70b-versatile
+  model_type: llm
+- metadata: {}
+  model_id: groq/llama-4-scout-17b-16e-instruct
+  provider_id: groq
+  provider_model_id: groq/meta-llama/llama-4-scout-17b-16e-instruct
+  model_type: llm
+- metadata: {}
+  model_id: groq/llama-4-maverick-17b-128e-instruct
+  provider_id: groq
+  provider_model_id: groq/meta-llama/llama-4-maverick-17b-128e-instruct
   model_type: llm
 - metadata: {}
   model_id: openai/gpt-4o

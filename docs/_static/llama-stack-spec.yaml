@@ -6127,6 +6127,8 @@ components:
     OpenAIChatCompletionToolCall:
       type: object
       properties:
+        index:
+          type: integer
         id:
           type: string
         type:
@@ -6137,9 +6139,7 @@ components:
           $ref: '#/components/schemas/OpenAIChatCompletionToolCallFunction'
       additionalProperties: false
       required:
-        - id
         - type
-        - function
       title: OpenAIChatCompletionToolCall
     OpenAIChatCompletionToolCallFunction:
       type: object
@@ -6149,9 +6149,6 @@ components:
         arguments:
           type: string
       additionalProperties: false
-      required:
-        - name
-        - arguments
       title: OpenAIChatCompletionToolCallFunction
     OpenAIDeveloperMessageParam:
       type: object
@@ -6550,7 +6547,7 @@ components:
         choices:
           type: array
           items:
-            $ref: '#/components/schemas/OpenAIChoice'
+            $ref: '#/components/schemas/OpenAIChunkChoice'
           description: List of choices
         object:
           type: string
@@ -6587,8 +6584,11 @@ components:
           description: The reason the model stopped generating
         index:
           type: integer
+          description: The index of the choice
         logprobs:
           $ref: '#/components/schemas/OpenAIChoiceLogprobs'
+          description: >-
+            (Optional) The log probabilities for the tokens in the message
       additionalProperties: false
       required:
         - message
@@ -6597,6 +6597,27 @@ components:
       title: OpenAIChoice
       description: >-
         A choice from an OpenAI-compatible chat completion response.
+    OpenAIChoiceDelta:
+      type: object
+      properties:
+        content:
+          type: string
+          description: (Optional) The content of the delta
+        refusal:
+          type: string
+          description: (Optional) The refusal of the delta
+        role:
+          type: string
+          description: (Optional) The role of the delta
+        tool_calls:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpenAIChatCompletionToolCall'
+          description: (Optional) The tool calls of the delta
+      additionalProperties: false
+      title: OpenAIChoiceDelta
+      description: >-
+        A delta from an OpenAI-compatible chat completion streaming response.
     OpenAIChoiceLogprobs:
       type: object
       properties:
@@ -6604,15 +6625,43 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/OpenAITokenLogProb'
+          description: >-
+            (Optional) The log probabilities for the tokens in the message
         refusal:
           type: array
           items:
             $ref: '#/components/schemas/OpenAITokenLogProb'
+          description: >-
+            (Optional) The log probabilities for the tokens in the message
       additionalProperties: false
       title: OpenAIChoiceLogprobs
       description: >-
         The log probabilities for the tokens in the message from an OpenAI-compatible
         chat completion response.
+    OpenAIChunkChoice:
+      type: object
+      properties:
+        delta:
+          $ref: '#/components/schemas/OpenAIChoiceDelta'
+          description: The delta from the chunk
+        finish_reason:
+          type: string
+          description: The reason the model stopped generating
+        index:
+          type: integer
+          description: The index of the choice
+        logprobs:
+          $ref: '#/components/schemas/OpenAIChoiceLogprobs'
+          description: >-
+            (Optional) The log probabilities for the tokens in the message
+      additionalProperties: false
+      required:
+        - delta
+        - finish_reason
+        - index
+      title: OpenAIChunkChoice
+      description: >-
+        A chunk choice from an OpenAI-compatible chat completion streaming response.
     OpenAITokenLogProb:
       type: object
       properties:
