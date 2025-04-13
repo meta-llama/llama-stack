@@ -6074,9 +6074,10 @@ components:
         tool_calls:
           type: array
           items:
-            $ref: '#/components/schemas/ToolCall'
+            $ref: '#/components/schemas/OpenAIChatCompletionToolCall'
           description: >-
-            List of tool calls. Each tool call is a ToolCall object.
+            List of tool calls. Each tool call is an OpenAIChatCompletionToolCall
+            object.
       additionalProperties: false
       required:
         - role
@@ -6123,6 +6124,35 @@ components:
         - type
         - text
       title: OpenAIChatCompletionContentPartTextParam
+    OpenAIChatCompletionToolCall:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          const: function
+          default: function
+        function:
+          $ref: '#/components/schemas/OpenAIChatCompletionToolCallFunction'
+      additionalProperties: false
+      required:
+        - id
+        - type
+        - function
+      title: OpenAIChatCompletionToolCall
+    OpenAIChatCompletionToolCallFunction:
+      type: object
+      properties:
+        name:
+          type: string
+        arguments:
+          type: string
+      additionalProperties: false
+      required:
+        - name
+        - arguments
+      title: OpenAIChatCompletionToolCallFunction
     OpenAIDeveloperMessageParam:
       type: object
       properties:

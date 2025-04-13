@@ -45,6 +45,7 @@ from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
+    OpenAIChatCompletionToLlamaStackMixin,
     convert_message_to_openai_dict,
     get_sampling_options,
     prepare_openai_completion_params,
@@ -307,6 +308,11 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProv
         prompt_logprobs: Optional[int] = None,
     ) -> OpenAICompletion:
         model_obj = await self.model_store.get_model(model)
+
+        # Fireworks always prepends with BOS
+        if isinstance(prompt, str) and prompt.startswith("<|begin_of_text|>"):
+            prompt = prompt[len("<|begin_of_text|>") :]
+
         params = await prepare_openai_completion_params(
             model=model_obj.provider_resource_id,
             prompt=prompt,
@@ -326,6 +332,7 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProv
             top_p=top_p,
             user=user,
         )
+
         return await self._get_openai_client().completions.create(**params)
 
     async def openai_chat_completion(
@@ -356,7 +363,6 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProv
     ) -> Union[OpenAIChatCompletion, AsyncIterator[OpenAIChatCompletionChunk]]:
         model_obj = await self.model_store.get_model(model)
         params = await prepare_openai_completion_params(
-            model=model_obj.provider_resource_id,
             messages=messages,
             frequency_penalty=frequency_penalty,
             function_call=function_call,
@@ -380,4 +386,12 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProv
             top_p=top_p,
             user=user,
         )
-        return await self._get_openai_client().chat.completions.create(**params)
+
+        # Divert Llama Models through Llama Stack inference APIs because
+        # Fireworks chat completions OpenAI-compatible API does not support
+        # tool calls properly.
+        llama_model = self.get_llama_model(model_obj.provider_resource_id)
+        if llama_model:
+            return await OpenAIChatCompletionToLlamaStackMixin.openai_chat_completion(self, model=model, **params)
+
+        return await self._get_openai_client().chat.completions.create(model=model_obj.provider_resource_id, **params)

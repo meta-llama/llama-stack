@@ -99,6 +99,9 @@ def model_mapping(provider, providers_model_mapping):
 
 @pytest.fixture
 def openai_client(base_url, api_key):
+    # Simplify running against a local Llama Stack
+    if "localhost" in base_url and not api_key:
+        api_key = "empty"
     return OpenAI(
         base_url=base_url,
         api_key=api_key,

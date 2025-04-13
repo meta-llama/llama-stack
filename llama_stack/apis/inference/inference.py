@@ -502,19 +502,32 @@ class OpenAISystemMessageParam(BaseModel):
 
 
 @json_schema_type
+class OpenAIChatCompletionToolCallFunction(BaseModel):
+    name: str
+    arguments: str
+
+
+@json_schema_type
+class OpenAIChatCompletionToolCall(BaseModel):
+    id: str
+    type: Literal["function"] = "function"
+    function: OpenAIChatCompletionToolCallFunction
+
+
+@json_schema_type
 class OpenAIAssistantMessageParam(BaseModel):
     """A message containing the model's (assistant) response in an OpenAI-compatible chat completion request.
 
     :param role: Must be "assistant" to identify this as the model's response
     :param content: The content of the model's response
     :param name: (Optional) The name of the assistant message participant.
-    :param tool_calls: List of tool calls. Each tool call is a ToolCall object.
+    :param tool_calls: List of tool calls. Each tool call is an OpenAIChatCompletionToolCall object.
     """
 
     role: Literal["assistant"] = "assistant"
     content: OpenAIChatCompletionMessageContent
     name: Optional[str] = None
-    tool_calls: Optional[List[ToolCall]] = Field(default_factory=list)
+    tool_calls: Optional[List[OpenAIChatCompletionToolCall]] = Field(default_factory=list)
 
 
 @json_schema_type
