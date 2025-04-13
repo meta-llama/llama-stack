@@ -273,7 +273,6 @@ def sort_providers_by_deps(
     logger.debug(f"Resolved {len(sorted_providers)} providers")
     for api_str, provider in sorted_providers:
         logger.debug(f" {api_str} => {provider.provider_id}")
-        logger.debug("")
     return sorted_providers
 
 
