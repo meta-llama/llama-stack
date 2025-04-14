@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import asyncio
 import time
 from typing import Any, AsyncGenerator, AsyncIterator, Dict, List, Optional, Union
 
@@ -60,7 +61,7 @@ from llama_stack.apis.vector_io import Chunk, QueryChunksResponse, VectorIO
 from llama_stack.log import get_logger
 from llama_stack.models.llama.llama3.chat_format import ChatFormat
 from llama_stack.models.llama.llama3.tokenizer import Tokenizer
-from llama_stack.providers.datatypes import RoutingTable
+from llama_stack.providers.datatypes import HealthResponse, HealthStatus, RoutingTable
 from llama_stack.providers.utils.telemetry.tracing import get_current_span
 
 logger = get_logger(name=__name__, category="core")
@@ -579,6 +580,29 @@ class InferenceRouter(Inference):
 
         provider = self.routing_table.get_provider_impl(model_obj.identifier)
         return await provider.openai_chat_completion(**params)
+
+    async def health(self) -> Dict[str, HealthResponse]:
+        health_statuses = {}
+        timeout = 0.5
+        for provider_id, impl in self.routing_table.impls_by_provider_id.items():
+            try:
+                # check if the provider has a health method
+                if not hasattr(impl, "health"):
+                    continue
+                health = await asyncio.wait_for(impl.health(), timeout=timeout)
+                health_statuses[provider_id] = health
+            except asyncio.TimeoutError:
+                health_statuses[provider_id] = HealthResponse(
+                    status=HealthStatus.ERROR,
+                    message=f"Health check timed out after {timeout} seconds",
+                )
+            except NotImplementedError:
+                health_statuses[provider_id] = HealthResponse(status=HealthStatus.NOT_IMPLEMENTED)
+            except Exception as e:
+                health_statuses[provider_id] = HealthResponse(
+                    status=HealthStatus.ERROR, message=f"Health check failed: {str(e)}"
+                )
+        return health_statuses
 
 
 class SafetyRouter(Safety):

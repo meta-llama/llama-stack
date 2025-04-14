@@ -35,6 +35,8 @@ from llama_stack.apis.vector_dbs import VectorDBs
 from llama_stack.apis.vector_io import VectorIO
 from llama_stack.distribution.datatypes import Provider, StackRunConfig
 from llama_stack.distribution.distribution import get_provider_registry
+from llama_stack.distribution.inspect import DistributionInspectConfig, DistributionInspectImpl
+from llama_stack.distribution.providers import ProviderImpl, ProviderImplConfig
 from llama_stack.distribution.resolver import ProviderRegistry, resolve_impls
 from llama_stack.distribution.store.registry import create_dist_registry
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
@@ -119,26 +121,6 @@ class EnvVarError(Exception):
         super().__init__(f"Environment variable '{var_name}' not set or empty{f' at {path}' if path else ''}")
 
 
-def redact_sensitive_fields(data: Dict[str, Any]) -> Dict[str, Any]:
-    """Redact sensitive information from config before printing."""
-    sensitive_patterns = ["api_key", "api_token", "password", "secret"]
-
-    def _redact_dict(d: Dict[str, Any]) -> Dict[str, Any]:
-        result = {}
-        for k, v in d.items():
-            if isinstance(v, dict):
-                result[k] = _redact_dict(v)
-            elif isinstance(v, list):
-                result[k] = [_redact_dict(i) if isinstance(i, dict) else i for i in v]
-            elif any(pattern in k.lower() for pattern in sensitive_patterns):
-                result[k] = "********"
-            else:
-                result[k] = v
-        return result
-
-    return _redact_dict(data)
-
-
 def replace_env_vars(config: Any, path: str = "") -> Any:
     if isinstance(config, dict):
         result = {}
@@ -215,6 +197,26 @@ def validate_env_pair(env_pair: str) -> tuple[str, str]:
         ) from e
 
 
+def add_internal_implementations(impls: Dict[Api, Any], run_config: StackRunConfig) -> None:
+    """Add internal implementations (inspect and providers) to the implementations dictionary.
+
+    Args:
+        impls: Dictionary of API implementations
+        run_config: Stack run configuration
+    """
+    inspect_impl = DistributionInspectImpl(
+        DistributionInspectConfig(run_config=run_config),
+        deps=impls,
+    )
+    impls[Api.inspect] = inspect_impl
+
+    providers_impl = ProviderImpl(
+        ProviderImplConfig(run_config=run_config),
+        deps=impls,
+    )
+    impls[Api.providers] = providers_impl
+
+
 # Produces a stack of providers for the given run config. Not all APIs may be
 # asked for in the run config.
 async def construct_stack(
@@ -222,6 +224,10 @@ async def construct_stack(
 ) -> Dict[Api, Any]:
     dist_registry, _ = await create_dist_registry(run_config.metadata_store, run_config.image_name)
     impls = await resolve_impls(run_config, provider_registry or get_provider_registry(run_config), dist_registry)
+
+    # Add internal implementations after all other providers are resolved
+    add_internal_implementations(impls, run_config)
+
     await register_resources(run_config, impls)
     return impls
 
