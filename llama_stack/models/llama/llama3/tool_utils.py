@@ -204,7 +204,9 @@ class ToolUtils:
                 return None
         elif is_json(message_body):
             response = json.loads(message_body)
-            if ("type" in response and response["type"] == "function") or ("name" in response):
+            if ("type" in response and response["type"] == "function") or (
+                "name" in response and "parameters" in response
+            ):
                 function_name = response["name"]
                 args = response["parameters"]
                 return function_name, args
