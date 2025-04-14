@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 
-from typing import Any, AsyncGenerator, Dict, List, Optional, Union
+from typing import Any, AsyncGenerator, AsyncIterator, Dict, List, Optional, Union
 
 import httpx
 from ollama import AsyncClient
@@ -39,7 +39,13 @@ from llama_stack.apis.inference import (
     ToolDefinition,
     ToolPromptFormat,
 )
-from llama_stack.apis.inference.inference import OpenAIChatCompletion, OpenAICompletion, OpenAIMessageParam
+from llama_stack.apis.inference.inference import (
+    OpenAIChatCompletion,
+    OpenAIChatCompletionChunk,
+    OpenAICompletion,
+    OpenAIMessageParam,
+    OpenAIResponseFormatParam,
+)
 from llama_stack.apis.models import Model, ModelType
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import (
@@ -337,6 +343,12 @@ class OllamaInferenceAdapter(
         response = await self.client.list()
         available_models = [m["model"] for m in response["models"]]
         if model.provider_resource_id not in available_models:
+            available_models_latest = [m["model"].split(":latest")[0] for m in response["models"]]
+            if model.provider_resource_id in available_models_latest:
+                logger.warning(
+                    f"Imprecise provider resource id was used but 'latest' is available in Ollama - using '{model.provider_resource_id}:latest'"
+                )
+                return model
             raise ValueError(
                 f"Model '{model.provider_resource_id}' is not available in Ollama. Available models: {', '.join(available_models)}"
             )
@@ -408,7 +420,7 @@ class OllamaInferenceAdapter(
         n: Optional[int] = None,
         parallel_tool_calls: Optional[bool] = None,
         presence_penalty: Optional[float] = None,
-        response_format: Optional[Dict[str, str]] = None,
+        response_format: Optional[OpenAIResponseFormatParam] = None,
         seed: Optional[int] = None,
         stop: Optional[Union[str, List[str]]] = None,
         stream: Optional[bool] = None,
@@ -419,7 +431,7 @@ class OllamaInferenceAdapter(
         top_logprobs: Optional[int] = None,
         top_p: Optional[float] = None,
         user: Optional[str] = None,
-    ) -> OpenAIChatCompletion:
+    ) -> Union[OpenAIChatCompletion, AsyncIterator[OpenAIChatCompletionChunk]]:
         model_obj = await self._get_model(model)
         params = {
             k: v

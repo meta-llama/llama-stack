@@ -38,7 +38,13 @@ from llama_stack.apis.inference import (
     ToolDefinition,
     ToolPromptFormat,
 )
-from llama_stack.apis.inference.inference import OpenAIChatCompletion, OpenAICompletion, OpenAIMessageParam
+from llama_stack.apis.inference.inference import (
+    OpenAIChatCompletion,
+    OpenAIChatCompletionChunk,
+    OpenAICompletion,
+    OpenAIMessageParam,
+    OpenAIResponseFormatParam,
+)
 from llama_stack.apis.models import Model, ModelType
 from llama_stack.apis.safety import RunShieldResponse, Safety
 from llama_stack.apis.scoring import (
@@ -531,7 +537,7 @@ class InferenceRouter(Inference):
         n: Optional[int] = None,
         parallel_tool_calls: Optional[bool] = None,
         presence_penalty: Optional[float] = None,
-        response_format: Optional[Dict[str, str]] = None,
+        response_format: Optional[OpenAIResponseFormatParam] = None,
         seed: Optional[int] = None,
         stop: Optional[Union[str, List[str]]] = None,
         stream: Optional[bool] = None,
@@ -542,7 +548,7 @@ class InferenceRouter(Inference):
         top_logprobs: Optional[int] = None,
         top_p: Optional[float] = None,
         user: Optional[str] = None,
-    ) -> OpenAIChatCompletion:
+    ) -> Union[OpenAIChatCompletion, AsyncIterator[OpenAIChatCompletionChunk]]:
         logger.debug(
             f"InferenceRouter.openai_chat_completion: {model=}, {stream=}, {messages=}",
         )

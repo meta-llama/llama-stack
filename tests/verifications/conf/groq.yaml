@@ -2,12 +2,12 @@ base_url: https://api.groq.com/openai/v1
 api_key_var: GROQ_API_KEY
 models:
 - llama-3.3-70b-versatile
-- llama-4-scout-17b-16e-instruct
-- llama-4-maverick-17b-128e-instruct
+- meta-llama/llama-4-scout-17b-16e-instruct
+- meta-llama/llama-4-maverick-17b-128e-instruct
 model_display_names:
   llama-3.3-70b-versatile: Llama-3.3-70B-Instruct
-  llama-4-scout-17b-16e-instruct: Llama-4-Scout-Instruct
-  llama-4-maverick-17b-128e-instruct: Llama-4-Maverick-Instruct
+  meta-llama/llama-4-scout-17b-16e-instruct: Llama-4-Scout-Instruct
+  meta-llama/llama-4-maverick-17b-128e-instruct: Llama-4-Maverick-Instruct
 test_exclusions:
   llama-3.3-70b-versatile:
   - test_chat_non_streaming_image

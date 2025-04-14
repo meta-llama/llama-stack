@@ -67,7 +67,17 @@ RESULTS_DIR.mkdir(exist_ok=True)
 # Maximum number of test result files to keep per provider
 MAX_RESULTS_PER_PROVIDER = 1
 
-PROVIDER_ORDER = ["together", "fireworks", "groq", "cerebras", "openai"]
+PROVIDER_ORDER = [
+    "together",
+    "fireworks",
+    "groq",
+    "cerebras",
+    "openai",
+    "together-llama-stack",
+    "fireworks-llama-stack",
+    "groq-llama-stack",
+    "openai-llama-stack",
+]
 
 VERIFICATION_CONFIG = _load_all_verification_configs()
 

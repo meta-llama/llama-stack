@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, AsyncGenerator, Dict, List, Optional, Union
+from typing import Any, AsyncGenerator, AsyncIterator, Dict, List, Optional, Union
 
 from fireworks.client import Fireworks
 from openai import AsyncOpenAI
@@ -32,13 +32,20 @@ from llama_stack.apis.inference import (
     ToolDefinition,
     ToolPromptFormat,
 )
-from llama_stack.apis.inference.inference import OpenAIChatCompletion, OpenAICompletion, OpenAIMessageParam
+from llama_stack.apis.inference.inference import (
+    OpenAIChatCompletion,
+    OpenAIChatCompletionChunk,
+    OpenAICompletion,
+    OpenAIMessageParam,
+    OpenAIResponseFormatParam,
+)
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.log import get_logger
 from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
+    OpenAIChatCompletionToLlamaStackMixin,
     convert_message_to_openai_dict,
     get_sampling_options,
     prepare_openai_completion_params,
@@ -301,6 +308,11 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProv
         prompt_logprobs: Optional[int] = None,
     ) -> OpenAICompletion:
         model_obj = await self.model_store.get_model(model)
+
+        # Fireworks always prepends with BOS
+        if isinstance(prompt, str) and prompt.startswith("<|begin_of_text|>"):
+            prompt = prompt[len("<|begin_of_text|>") :]
+
         params = await prepare_openai_completion_params(
             model=model_obj.provider_resource_id,
             prompt=prompt,
@@ -320,6 +332,7 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProv
             top_p=top_p,
             user=user,
         )
+
         return await self._get_openai_client().completions.create(**params)
 
     async def openai_chat_completion(
@@ -336,7 +349,7 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProv
         n: Optional[int] = None,
         parallel_tool_calls: Optional[bool] = None,
         presence_penalty: Optional[float] = None,
-        response_format: Optional[Dict[str, str]] = None,
+        response_format: Optional[OpenAIResponseFormatParam] = None,
         seed: Optional[int] = None,
         stop: Optional[Union[str, List[str]]] = None,
         stream: Optional[bool] = None,
@@ -347,10 +360,9 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProv
         top_logprobs: Optional[int] = None,
         top_p: Optional[float] = None,
         user: Optional[str] = None,
-    ) -> OpenAIChatCompletion:
+    ) -> Union[OpenAIChatCompletion, AsyncIterator[OpenAIChatCompletionChunk]]:
         model_obj = await self.model_store.get_model(model)
         params = await prepare_openai_completion_params(
-            model=model_obj.provider_resource_id,
             messages=messages,
             frequency_penalty=frequency_penalty,
             function_call=function_call,
@@ -374,4 +386,12 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProv
             top_p=top_p,
             user=user,
         )
-        return await self._get_openai_client().chat.completions.create(**params)
+
+        # Divert Llama Models through Llama Stack inference APIs because
+        # Fireworks chat completions OpenAI-compatible API does not support
+        # tool calls properly.
+        llama_model = self.get_llama_model(model_obj.provider_resource_id)
+        if llama_model:
+            return await OpenAIChatCompletionToLlamaStackMixin.openai_chat_completion(self, model=model, **params)
+
+        return await self._get_openai_client().chat.completions.create(model=model_obj.provider_resource_id, **params)
