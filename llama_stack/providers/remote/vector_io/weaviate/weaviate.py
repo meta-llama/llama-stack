@@ -55,7 +55,9 @@ class WeaviateIndex(EmbeddingIndex):
         # TODO: make this async friendly
         collection.data.insert_many(data_objects)
 
-    async def query(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
+    async def query(
+        self, embedding: NDArray, query_string: Optional[str], k: int, score_threshold: float, mode: str
+    ) -> QueryChunksResponse:
         collection = self.client.collections.get(self.collection_name)
 
         results = collection.query.near_vector(

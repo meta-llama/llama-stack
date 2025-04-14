@@ -73,7 +73,9 @@ class MilvusIndex(EmbeddingIndex):
             logger.error(f"Error inserting chunks into Milvus collection {self.collection_name}: {e}")
             raise e
 
-    async def query(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
+    async def query(
+        self, embedding: NDArray, query_str: Optional[str], k: int, score_threshold: float, mode: str
+    ) -> QueryChunksResponse:
         search_res = await asyncio.to_thread(
             self.client.search,
             collection_name=self.collection_name,
