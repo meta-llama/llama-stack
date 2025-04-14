@@ -38,17 +38,15 @@ jobs:
         with:
           python-version: "3.10"
 
-      - name: Install Ollama
+      - name: Install and start Ollama
         run: |
+          # the ollama installer also starts the ollama service
           curl -fsSL https://ollama.com/install.sh | sh
 
       - name: Pull Ollama image
         run: |
+          # TODO: cache the model. OLLAMA_MODELS defaults to ~ollama/.ollama/models.
           ollama pull llama3.2:3b-instruct-fp16
-
-      - name: Start Ollama in background
-        run: |
-          nohup ollama run llama3.2:3b-instruct-fp16 > ollama.log 2>&1 &
 
       - name: Set Up Environment and Install Dependencies
         run: |
@@ -60,21 +58,6 @@ jobs:
           uv pip install git+https://github.com/meta-llama/llama-stack-client-python.git@main
           uv pip install -e .
           llama stack build --template ollama --image-type venv
-
-      - name: Wait for Ollama to start
-        run: |
-          echo "Waiting for Ollama..."
-          for i in {1..30}; do
-            if curl -s http://localhost:11434 | grep -q "Ollama is running"; then
-              echo "Ollama is running!"
-              exit 0
-            fi
-            sleep 1
-          done
-          echo "Ollama failed to start"
-          ollama ps
-          ollama.log
-          exit 1
 
       - name: Start Llama Stack server in background
         if: matrix.client-type == 'http'
