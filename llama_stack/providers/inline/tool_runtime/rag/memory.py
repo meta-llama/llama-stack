@@ -118,6 +118,7 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
                 query=query,
                 params={
                     "max_chunks": query_config.max_chunks,
+                    "mode": query_config.mode,
                 },
             )
             for vector_db_id in vector_db_ids
