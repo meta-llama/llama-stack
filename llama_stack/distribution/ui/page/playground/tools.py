@@ -56,6 +56,17 @@ def tool_chat_page():
         st.subheader(f"Active Tools: 🛠 {len(active_tool_list)}")
         st.json(active_tool_list)
 
+        st.subheader("Chat Configurations")
+        max_tokens = st.slider(
+            "Max Tokens",
+            min_value=0,
+            max_value=4096,
+            value=512,
+            step=1,
+            help="The maximum number of tokens to generate",
+            on_change=reset_agent,
+        )
+
     @st.cache_resource
     def create_agent():
         return Agent(
@@ -63,9 +74,7 @@ def tool_chat_page():
             model=model,
             instructions="You are a helpful assistant. When you use a tool always respond with a summary of the result.",
             tools=toolgroup_selection,
-            sampling_params={
-                "strategy": {"type": "greedy"},
-            },
+            sampling_params={"strategy": {"type": "greedy"}, "max_tokens": max_tokens},
         )
 
     agent = create_agent()
