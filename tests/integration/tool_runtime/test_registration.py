@@ -12,7 +12,6 @@ import httpx
 import mcp.types as types
 import pytest
 import uvicorn
-from llama_stack_client.types.shared_params.url import URL
 from mcp.server.fastmcp import Context, FastMCP
 from mcp.server.sse import SseServerTransport
 from starlette.applications import Starlette
@@ -97,7 +96,7 @@ def test_register_and_unregister_toolgroup(llama_stack_client, mcp_server):
     llama_stack_client.toolgroups.register(
         toolgroup_id=test_toolgroup_id,
         provider_id=provider_id,
-        mcp_endpoint=URL(uri=f"http://localhost:{port}/sse"),
+        mcp_endpoint=dict(uri=f"http://localhost:{port}/sse"),
     )
 
     # Verify registration

@@ -45,7 +45,7 @@ class StackRun(Subcommand):
             "--image-name",
             type=str,
             default=os.environ.get("CONDA_DEFAULT_ENV"),
-            help="Name of the image to run. Defaults to the current conda environment",
+            help="Name of the image to run. Defaults to the current environment",
         )
         self.parser.add_argument(
             "--disable-ipv6",

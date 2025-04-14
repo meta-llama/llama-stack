@@ -56,8 +56,8 @@ LLAMA4_TEXT_POST_TRAIN_SPECIAL_TOKENS = [
     "<|text_post_train_reserved_special_token_3|>",
     "<|text_post_train_reserved_special_token_4|>",
     "<|text_post_train_reserved_special_token_5|>",
-    "<|text_post_train_reserved_special_token_6|>",
-    "<|text_post_train_reserved_special_token_7|>",
+    "<|python_start|>",
+    "<|python_end|>",
     "<|finetune_right_pad|>",
 ] + get_reserved_special_tokens(
     "text_post_train", 61, 8
