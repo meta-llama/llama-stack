@@ -84,6 +84,7 @@ class RAGQueryConfig(BaseModel):
     max_tokens_in_context: int = 4096
     max_chunks: int = 5
     chunk_template: str = "Result {index}\nContent: {chunk.content}\nMetadata: {metadata}\n"
+    mode: str | None = None
 
     @field_validator("chunk_template")
     def validate_chunk_template(cls, v: str) -> str:

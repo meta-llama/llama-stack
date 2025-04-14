@@ -177,7 +177,9 @@ class EmbeddingIndex(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    async def query(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
+    async def query(
+        self, embedding: NDArray, query_string: Optional[str], k: int, score_threshold: float, mode: Optional[str]
+    ) -> QueryChunksResponse:
         raise NotImplementedError()
 
     @abstractmethod
@@ -210,9 +212,9 @@ class VectorDBWithIndex:
         if params is None:
             params = {}
         k = params.get("max_chunks", 3)
+        mode = params.get("mode")
         score_threshold = params.get("score_threshold", 0.0)
-
-        query_str = interleaved_content_as_str(query)
-        embeddings_response = await self.inference_api.embeddings(self.vector_db.embedding_model, [query_str])
+        query_string = interleaved_content_as_str(query)
+        embeddings_response = await self.inference_api.embeddings(self.vector_db.embedding_model, [query_string])
         query_vector = np.array(embeddings_response.embeddings[0], dtype=np.float32)
-        return await self.index.query(query_vector, k, score_threshold)
+        return await self.index.query(query_vector, query_string, k, score_threshold, mode)
