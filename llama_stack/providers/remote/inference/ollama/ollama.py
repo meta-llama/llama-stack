@@ -343,6 +343,12 @@ class OllamaInferenceAdapter(
         response = await self.client.list()
         available_models = [m["model"] for m in response["models"]]
         if model.provider_resource_id not in available_models:
+            available_models_latest = [m["model"].split(":latest")[0] for m in response["models"]]
+            if model.provider_resource_id in available_models_latest:
+                logger.warning(
+                    f"Imprecise provider resource id was used but 'latest' is available in Ollama - using '{model.provider_resource_id}:latest'"
+                )
+                return model
             raise ValueError(
                 f"Model '{model.provider_resource_id}' is not available in Ollama. Available models: {', '.join(available_models)}"
             )
