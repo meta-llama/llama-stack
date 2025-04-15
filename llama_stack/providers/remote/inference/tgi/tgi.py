@@ -40,8 +40,10 @@ from llama_stack.providers.utils.inference.model_registry import (
     build_hf_repo_model_entry,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
+    OpenAIChatCompletionToLlamaStackMixin,
     OpenAICompatCompletionChoice,
     OpenAICompatCompletionResponse,
+    OpenAICompletionToLlamaStackMixin,
     get_sampling_options,
     process_chat_completion_response,
     process_chat_completion_stream_response,
@@ -69,7 +71,12 @@ def build_hf_repo_model_entries():
     ]
 
 
-class _HfAdapter(Inference, ModelsProtocolPrivate):
+class _HfAdapter(
+    Inference,
+    OpenAIChatCompletionToLlamaStackMixin,
+    OpenAICompletionToLlamaStackMixin,
+    ModelsProtocolPrivate,
+):
     client: AsyncInferenceClient
     max_tokens: int
     model_id: str

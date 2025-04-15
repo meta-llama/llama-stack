@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import asyncio
 import time
 from typing import Any, AsyncGenerator, AsyncIterator, Dict, List, Optional, Union
 
@@ -17,6 +18,8 @@ from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import DatasetPurpose, DataSource
 from llama_stack.apis.eval import BenchmarkConfig, Eval, EvaluateResponse, Job
 from llama_stack.apis.inference import (
+    BatchChatCompletionResponse,
+    BatchCompletionResponse,
     ChatCompletionResponse,
     ChatCompletionResponseEventType,
     ChatCompletionResponseStreamChunk,
@@ -34,6 +37,13 @@ from llama_stack.apis.inference import (
     ToolConfig,
     ToolDefinition,
     ToolPromptFormat,
+)
+from llama_stack.apis.inference.inference import (
+    OpenAIChatCompletion,
+    OpenAIChatCompletionChunk,
+    OpenAICompletion,
+    OpenAIMessageParam,
+    OpenAIResponseFormatParam,
 )
 from llama_stack.apis.models import Model, ModelType
 from llama_stack.apis.safety import RunShieldResponse, Safety
@@ -57,7 +67,7 @@ from llama_stack.apis.vector_io import Chunk, QueryChunksResponse, VectorIO
 from llama_stack.log import get_logger
 from llama_stack.models.llama.llama3.chat_format import ChatFormat
 from llama_stack.models.llama.llama3.tokenizer import Tokenizer
-from llama_stack.providers.datatypes import RoutingTable
+from llama_stack.providers.datatypes import HealthResponse, HealthStatus, RoutingTable
 from llama_stack.providers.utils.telemetry.tracing import get_current_span
 
 logger = get_logger(name=__name__, category="core")
@@ -333,6 +343,30 @@ class InferenceRouter(Inference):
             response.metrics = metrics if response.metrics is None else response.metrics + metrics
             return response
 
+    async def batch_chat_completion(
+        self,
+        model_id: str,
+        messages_batch: List[List[Message]],
+        tools: Optional[List[ToolDefinition]] = None,
+        tool_config: Optional[ToolConfig] = None,
+        sampling_params: Optional[SamplingParams] = None,
+        response_format: Optional[ResponseFormat] = None,
+        logprobs: Optional[LogProbConfig] = None,
+    ) -> BatchChatCompletionResponse:
+        logger.debug(
+            f"InferenceRouter.batch_chat_completion: {model_id=}, {len(messages_batch)=}, {sampling_params=}, {response_format=}, {logprobs=}",
+        )
+        provider = self.routing_table.get_provider_impl(model_id)
+        return await provider.batch_chat_completion(
+            model_id=model_id,
+            messages_batch=messages_batch,
+            tools=tools,
+            tool_config=tool_config,
+            sampling_params=sampling_params,
+            response_format=response_format,
+            logprobs=logprobs,
+        )
+
     async def completion(
         self,
         model_id: str,
@@ -397,6 +431,20 @@ class InferenceRouter(Inference):
             response.metrics = metrics if response.metrics is None else response.metrics + metrics
             return response
 
+    async def batch_completion(
+        self,
+        model_id: str,
+        content_batch: List[InterleavedContent],
+        sampling_params: Optional[SamplingParams] = None,
+        response_format: Optional[ResponseFormat] = None,
+        logprobs: Optional[LogProbConfig] = None,
+    ) -> BatchCompletionResponse:
+        logger.debug(
+            f"InferenceRouter.batch_completion: {model_id=}, {len(content_batch)=}, {sampling_params=}, {response_format=}, {logprobs=}",
+        )
+        provider = self.routing_table.get_provider_impl(model_id)
+        return await provider.batch_completion(model_id, content_batch, sampling_params, response_format, logprobs)
+
     async def embeddings(
         self,
         model_id: str,
@@ -418,6 +466,149 @@ class InferenceRouter(Inference):
             output_dimension=output_dimension,
             task_type=task_type,
         )
+
+    async def openai_completion(
+        self,
+        model: str,
+        prompt: Union[str, List[str], List[int], List[List[int]]],
+        best_of: Optional[int] = None,
+        echo: Optional[bool] = None,
+        frequency_penalty: Optional[float] = None,
+        logit_bias: Optional[Dict[str, float]] = None,
+        logprobs: Optional[bool] = None,
+        max_tokens: Optional[int] = None,
+        n: Optional[int] = None,
+        presence_penalty: Optional[float] = None,
+        seed: Optional[int] = None,
+        stop: Optional[Union[str, List[str]]] = None,
+        stream: Optional[bool] = None,
+        stream_options: Optional[Dict[str, Any]] = None,
+        temperature: Optional[float] = None,
+        top_p: Optional[float] = None,
+        user: Optional[str] = None,
+        guided_choice: Optional[List[str]] = None,
+        prompt_logprobs: Optional[int] = None,
+    ) -> OpenAICompletion:
+        logger.debug(
+            f"InferenceRouter.openai_completion: {model=}, {stream=}, {prompt=}",
+        )
+        model_obj = await self.routing_table.get_model(model)
+        if model_obj is None:
+            raise ValueError(f"Model '{model}' not found")
+        if model_obj.model_type == ModelType.embedding:
+            raise ValueError(f"Model '{model}' is an embedding model and does not support completions")
+
+        params = dict(
+            model=model_obj.identifier,
+            prompt=prompt,
+            best_of=best_of,
+            echo=echo,
+            frequency_penalty=frequency_penalty,
+            logit_bias=logit_bias,
+            logprobs=logprobs,
+            max_tokens=max_tokens,
+            n=n,
+            presence_penalty=presence_penalty,
+            seed=seed,
+            stop=stop,
+            stream=stream,
+            stream_options=stream_options,
+            temperature=temperature,
+            top_p=top_p,
+            user=user,
+            guided_choice=guided_choice,
+            prompt_logprobs=prompt_logprobs,
+        )
+
+        provider = self.routing_table.get_provider_impl(model_obj.identifier)
+        return await provider.openai_completion(**params)
+
+    async def openai_chat_completion(
+        self,
+        model: str,
+        messages: List[OpenAIMessageParam],
+        frequency_penalty: Optional[float] = None,
+        function_call: Optional[Union[str, Dict[str, Any]]] = None,
+        functions: Optional[List[Dict[str, Any]]] = None,
+        logit_bias: Optional[Dict[str, float]] = None,
+        logprobs: Optional[bool] = None,
+        max_completion_tokens: Optional[int] = None,
+        max_tokens: Optional[int] = None,
+        n: Optional[int] = None,
+        parallel_tool_calls: Optional[bool] = None,
+        presence_penalty: Optional[float] = None,
+        response_format: Optional[OpenAIResponseFormatParam] = None,
+        seed: Optional[int] = None,
+        stop: Optional[Union[str, List[str]]] = None,
+        stream: Optional[bool] = None,
+        stream_options: Optional[Dict[str, Any]] = None,
+        temperature: Optional[float] = None,
+        tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
+        tools: Optional[List[Dict[str, Any]]] = None,
+        top_logprobs: Optional[int] = None,
+        top_p: Optional[float] = None,
+        user: Optional[str] = None,
+    ) -> Union[OpenAIChatCompletion, AsyncIterator[OpenAIChatCompletionChunk]]:
+        logger.debug(
+            f"InferenceRouter.openai_chat_completion: {model=}, {stream=}, {messages=}",
+        )
+        model_obj = await self.routing_table.get_model(model)
+        if model_obj is None:
+            raise ValueError(f"Model '{model}' not found")
+        if model_obj.model_type == ModelType.embedding:
+            raise ValueError(f"Model '{model}' is an embedding model and does not support chat completions")
+
+        params = dict(
+            model=model_obj.identifier,
+            messages=messages,
+            frequency_penalty=frequency_penalty,
+            function_call=function_call,
+            functions=functions,
+            logit_bias=logit_bias,
+            logprobs=logprobs,
+            max_completion_tokens=max_completion_tokens,
+            max_tokens=max_tokens,
+            n=n,
+            parallel_tool_calls=parallel_tool_calls,
+            presence_penalty=presence_penalty,
+            response_format=response_format,
+            seed=seed,
+            stop=stop,
+            stream=stream,
+            stream_options=stream_options,
+            temperature=temperature,
+            tool_choice=tool_choice,
+            tools=tools,
+            top_logprobs=top_logprobs,
+            top_p=top_p,
+            user=user,
+        )
+
+        provider = self.routing_table.get_provider_impl(model_obj.identifier)
+        return await provider.openai_chat_completion(**params)
+
+    async def health(self) -> Dict[str, HealthResponse]:
+        health_statuses = {}
+        timeout = 0.5
+        for provider_id, impl in self.routing_table.impls_by_provider_id.items():
+            try:
+                # check if the provider has a health method
+                if not hasattr(impl, "health"):
+                    continue
+                health = await asyncio.wait_for(impl.health(), timeout=timeout)
+                health_statuses[provider_id] = health
+            except asyncio.TimeoutError:
+                health_statuses[provider_id] = HealthResponse(
+                    status=HealthStatus.ERROR,
+                    message=f"Health check timed out after {timeout} seconds",
+                )
+            except NotImplementedError:
+                health_statuses[provider_id] = HealthResponse(status=HealthStatus.NOT_IMPLEMENTED)
+            except Exception as e:
+                health_statuses[provider_id] = HealthResponse(
+                    status=HealthStatus.ERROR, message=f"Health check failed: {str(e)}"
+                )
+        return health_statuses
 
 
 class SafetyRouter(Safety):

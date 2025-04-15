@@ -381,7 +381,7 @@
     "sentence-transformers",
     "sentencepiece",
     "torch",
-    "torchao==0.5.0",
+    "torchao==0.8.0",
     "torchvision",
     "tqdm",
     "transformers",

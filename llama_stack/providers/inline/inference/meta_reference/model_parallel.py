@@ -6,7 +6,7 @@
 
 from copy import deepcopy
 from functools import partial
-from typing import Any, Callable, Generator
+from typing import Any, Callable, Generator, List
 
 from llama_stack.models.llama.llama3.chat_format import ChatFormat as Llama3ChatFormat
 from llama_stack.models.llama.llama4.chat_format import ChatFormat as Llama4ChatFormat
@@ -23,13 +23,13 @@ class ModelRunner:
         self.llama = llama
 
     # the `task` object is the same that is sent to `ModelParallelProcessGroup.run_inference()`
-    def __call__(self, req: Any):
-        if isinstance(req, ChatCompletionRequestWithRawContent):
-            return self.llama.chat_completion(req)
-        elif isinstance(req, CompletionRequestWithRawContent):
-            return self.llama.completion(req)
+    def __call__(self, task: Any):
+        if task[0] == "chat_completion":
+            return self.llama.chat_completion(task[1])
+        elif task[0] == "completion":
+            return self.llama.completion(task[1])
         else:
-            raise ValueError(f"Unexpected task type {type(req)}")
+            raise ValueError(f"Unexpected task type {task[0]}")
 
 
 def init_model_cb(
@@ -82,16 +82,16 @@ class LlamaModelParallelGenerator:
 
     def completion(
         self,
-        request: CompletionRequestWithRawContent,
+        request_batch: List[CompletionRequestWithRawContent],
     ) -> Generator:
-        req_obj = deepcopy(request)
-        gen = self.group.run_inference(req_obj)
+        req_obj = deepcopy(request_batch)
+        gen = self.group.run_inference(("completion", req_obj))
         yield from gen
 
     def chat_completion(
         self,
-        request: ChatCompletionRequestWithRawContent,
+        request_batch: List[ChatCompletionRequestWithRawContent],
     ) -> Generator:
-        req_obj = deepcopy(request)
-        gen = self.group.run_inference(req_obj)
+        req_obj = deepcopy(request_batch)
+        gen = self.group.run_inference(("chat_completion", req_obj))
         yield from gen

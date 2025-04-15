@@ -5,8 +5,10 @@
 # the root directory of this source tree.
 import json
 import logging
+import time
+import uuid
 import warnings
-from typing import AsyncGenerator, Dict, Iterable, List, Optional, Union
+from typing import Any, AsyncGenerator, AsyncIterator, Awaitable, Dict, Iterable, List, Optional, Union
 
 from openai import AsyncStream
 from openai.types.chat import (
@@ -48,6 +50,18 @@ from openai.types.chat.chat_completion import (
 from openai.types.chat.chat_completion import (
     ChoiceLogprobs as OpenAIChoiceLogprobs,  # same as chat_completion_chunk ChoiceLogprobs
 )
+from openai.types.chat.chat_completion_chunk import (
+    Choice as OpenAIChatCompletionChunkChoice,
+)
+from openai.types.chat.chat_completion_chunk import (
+    ChoiceDelta as OpenAIChoiceDelta,
+)
+from openai.types.chat.chat_completion_chunk import (
+    ChoiceDeltaToolCall as OpenAIChoiceDeltaToolCall,
+)
+from openai.types.chat.chat_completion_chunk import (
+    ChoiceDeltaToolCallFunction as OpenAIChoiceDeltaToolCallFunction,
+)
 from openai.types.chat.chat_completion_content_part_image_param import (
     ImageURL as OpenAIImageURL,
 )
@@ -57,6 +71,7 @@ from openai.types.chat.chat_completion_message_tool_call_param import (
 from pydantic import BaseModel
 
 from llama_stack.apis.common.content_types import (
+    URL,
     ImageContentItem,
     InterleavedContent,
     TextContentItem,
@@ -83,11 +98,24 @@ from llama_stack.apis.inference import (
     TopPSamplingStrategy,
     UserMessage,
 )
+from llama_stack.apis.inference.inference import (
+    JsonSchemaResponseFormat,
+    OpenAIChatCompletion,
+    OpenAICompletion,
+    OpenAICompletionChoice,
+    OpenAIMessageParam,
+    OpenAIResponseFormatParam,
+    ToolConfig,
+)
+from llama_stack.apis.inference.inference import (
+    OpenAIChoice as OpenAIChatCompletionChoice,
+)
 from llama_stack.models.llama.datatypes import (
     BuiltinTool,
     StopReason,
     ToolCall,
     ToolDefinition,
+    ToolParamDefinition,
 )
 from llama_stack.providers.utils.inference.prompt_adapter import (
     convert_image_content_to_url,
@@ -748,6 +776,17 @@ def convert_tooldef_to_openai_tool(tool: ToolDefinition) -> dict:
     return out
 
 
+def _convert_stop_reason_to_openai_finish_reason(stop_reason: StopReason) -> str:
+    """
+    Convert a StopReason to an OpenAI chat completion finish_reason.
+    """
+    return {
+        StopReason.end_of_turn: "stop",
+        StopReason.end_of_message: "tool_calls",
+        StopReason.out_of_tokens: "length",
+    }.get(stop_reason, "stop")
+
+
 def _convert_openai_finish_reason(finish_reason: str) -> StopReason:
     """
     Convert an OpenAI chat completion finish_reason to a StopReason.
@@ -771,6 +810,56 @@ def _convert_openai_finish_reason(finish_reason: str) -> StopReason:
         "length": StopReason.out_of_tokens,
         "tool_calls": StopReason.end_of_message,
     }.get(finish_reason, StopReason.end_of_turn)
+
+
+def _convert_openai_request_tool_config(tool_choice: Optional[Union[str, Dict[str, Any]]] = None) -> ToolConfig:
+    tool_config = ToolConfig()
+    if tool_choice:
+        tool_config.tool_choice = tool_choice
+    return tool_config
+
+
+def _convert_openai_request_tools(tools: Optional[List[Dict[str, Any]]] = None) -> List[ToolDefinition]:
+    lls_tools = []
+    if not tools:
+        return lls_tools
+
+    for tool in tools:
+        tool_fn = tool.get("function", {})
+        tool_name = tool_fn.get("name", None)
+        tool_desc = tool_fn.get("description", None)
+
+        tool_params = tool_fn.get("parameters", None)
+        lls_tool_params = {}
+        if tool_params is not None:
+            tool_param_properties = tool_params.get("properties", {})
+            for tool_param_key, tool_param_value in tool_param_properties.items():
+                tool_param_def = ToolParamDefinition(
+                    param_type=tool_param_value.get("type", None),
+                    description=tool_param_value.get("description", None),
+                )
+                lls_tool_params[tool_param_key] = tool_param_def
+
+        lls_tool = ToolDefinition(
+            tool_name=tool_name,
+            description=tool_desc,
+            parameters=lls_tool_params,
+        )
+        lls_tools.append(lls_tool)
+    return lls_tools
+
+
+def _convert_openai_request_response_format(response_format: OpenAIResponseFormatParam = None):
+    if not response_format:
+        return None
+    # response_format can be a dict or a pydantic model
+    response_format = dict(response_format)
+    if response_format.get("type", "") == "json_schema":
+        return JsonSchemaResponseFormat(
+            type="json_schema",
+            json_schema=response_format.get("json_schema", {}).get("schema", ""),
+        )
+    return None
 
 
 def _convert_openai_tool_calls(
@@ -841,6 +930,65 @@ def _convert_openai_logprobs(
         TokenLogProbs(logprobs_by_token={logprobs.token: logprobs.logprob for logprobs in content.top_logprobs})
         for content in logprobs.content
     ]
+
+
+def _convert_openai_sampling_params(
+    max_tokens: Optional[int] = None,
+    temperature: Optional[float] = None,
+    top_p: Optional[float] = None,
+) -> SamplingParams:
+    sampling_params = SamplingParams()
+
+    if max_tokens:
+        sampling_params.max_tokens = max_tokens
+
+    # Map an explicit temperature of 0 to greedy sampling
+    if temperature == 0:
+        strategy = GreedySamplingStrategy()
+    else:
+        # OpenAI defaults to 1.0 for temperature and top_p if unset
+        if temperature is None:
+            temperature = 1.0
+        if top_p is None:
+            top_p = 1.0
+        strategy = TopPSamplingStrategy(temperature=temperature, top_p=top_p)
+
+    sampling_params.strategy = strategy
+    return sampling_params
+
+
+def _convert_openai_request_messages(messages: List[OpenAIMessageParam]):
+    # Llama Stack messages and OpenAI messages are similar, but not identical.
+    lls_messages = []
+    for message in messages:
+        lls_message = dict(message)
+
+        #  Llama Stack expects `call_id` but OpenAI uses `tool_call_id`
+        tool_call_id = lls_message.pop("tool_call_id", None)
+        if tool_call_id:
+            lls_message["call_id"] = tool_call_id
+
+        content = lls_message.get("content", None)
+        if isinstance(content, list):
+            lls_content = []
+            for item in content:
+                # items can either by pydantic models or dicts here...
+                item = dict(item)
+                if item.get("type", "") == "image_url":
+                    lls_item = ImageContentItem(
+                        type="image",
+                        image=URL(uri=item.get("image_url", {}).get("url", "")),
+                    )
+                elif item.get("type", "") == "text":
+                    lls_item = TextContentItem(
+                        type="text",
+                        text=item.get("text", ""),
+                    )
+                lls_content.append(lls_item)
+            lls_message["content"] = lls_content
+        lls_messages.append(lls_message)
+
+    return lls_messages
 
 
 def convert_openai_chat_completion_choice(
@@ -1049,3 +1197,218 @@ async def convert_openai_chat_completion_stream(
             stop_reason=stop_reason,
         )
     )
+
+
+async def prepare_openai_completion_params(**params):
+    async def _prepare_value(value: Any) -> Any:
+        new_value = value
+        if isinstance(value, list):
+            new_value = [await _prepare_value(v) for v in value]
+        elif isinstance(value, dict):
+            new_value = {k: await _prepare_value(v) for k, v in value.items()}
+        elif isinstance(value, BaseModel):
+            new_value = value.model_dump(exclude_none=True)
+        return new_value
+
+    completion_params = {}
+    for k, v in params.items():
+        if v is not None:
+            completion_params[k] = await _prepare_value(v)
+    return completion_params
+
+
+class OpenAICompletionToLlamaStackMixin:
+    async def openai_completion(
+        self,
+        model: str,
+        prompt: Union[str, List[str], List[int], List[List[int]]],
+        best_of: Optional[int] = None,
+        echo: Optional[bool] = None,
+        frequency_penalty: Optional[float] = None,
+        logit_bias: Optional[Dict[str, float]] = None,
+        logprobs: Optional[bool] = None,
+        max_tokens: Optional[int] = None,
+        n: Optional[int] = None,
+        presence_penalty: Optional[float] = None,
+        seed: Optional[int] = None,
+        stop: Optional[Union[str, List[str]]] = None,
+        stream: Optional[bool] = None,
+        stream_options: Optional[Dict[str, Any]] = None,
+        temperature: Optional[float] = None,
+        top_p: Optional[float] = None,
+        user: Optional[str] = None,
+        guided_choice: Optional[List[str]] = None,
+        prompt_logprobs: Optional[int] = None,
+    ) -> OpenAICompletion:
+        if stream:
+            raise ValueError(f"{self.__class__.__name__} doesn't support streaming openai completions")
+
+        # This is a pretty hacky way to do emulate completions -
+        # basically just de-batches them...
+        prompts = [prompt] if not isinstance(prompt, list) else prompt
+
+        sampling_params = _convert_openai_sampling_params(
+            max_tokens=max_tokens,
+            temperature=temperature,
+            top_p=top_p,
+        )
+
+        choices = []
+        # "n" is the number of completions to generate per prompt
+        n = n or 1
+        for _i in range(0, n):
+            # and we may have multiple prompts, if batching was used
+
+            for prompt in prompts:
+                result = self.completion(
+                    model_id=model,
+                    content=prompt,
+                    sampling_params=sampling_params,
+                )
+
+                index = len(choices)
+                text = result.content
+                finish_reason = _convert_stop_reason_to_openai_finish_reason(result.stop_reason)
+
+                choice = OpenAICompletionChoice(
+                    index=index,
+                    text=text,
+                    finish_reason=finish_reason,
+                )
+                choices.append(choice)
+
+        return OpenAICompletion(
+            id=f"cmpl-{uuid.uuid4()}",
+            choices=choices,
+            created=int(time.time()),
+            model=model,
+            object="text_completion",
+        )
+
+
+class OpenAIChatCompletionToLlamaStackMixin:
+    async def openai_chat_completion(
+        self,
+        model: str,
+        messages: List[OpenAIChatCompletionMessage],
+        frequency_penalty: Optional[float] = None,
+        function_call: Optional[Union[str, Dict[str, Any]]] = None,
+        functions: Optional[List[Dict[str, Any]]] = None,
+        logit_bias: Optional[Dict[str, float]] = None,
+        logprobs: Optional[bool] = None,
+        max_completion_tokens: Optional[int] = None,
+        max_tokens: Optional[int] = None,
+        n: Optional[int] = None,
+        parallel_tool_calls: Optional[bool] = None,
+        presence_penalty: Optional[float] = None,
+        response_format: Optional[OpenAIResponseFormatParam] = None,
+        seed: Optional[int] = None,
+        stop: Optional[Union[str, List[str]]] = None,
+        stream: Optional[bool] = None,
+        stream_options: Optional[Dict[str, Any]] = None,
+        temperature: Optional[float] = None,
+        tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
+        tools: Optional[List[Dict[str, Any]]] = None,
+        top_logprobs: Optional[int] = None,
+        top_p: Optional[float] = None,
+        user: Optional[str] = None,
+    ) -> Union[OpenAIChatCompletion, AsyncIterator[OpenAIChatCompletionChunk]]:
+        messages = _convert_openai_request_messages(messages)
+        response_format = _convert_openai_request_response_format(response_format)
+        sampling_params = _convert_openai_sampling_params(
+            max_tokens=max_tokens,
+            temperature=temperature,
+            top_p=top_p,
+        )
+        tool_config = _convert_openai_request_tool_config(tool_choice)
+        tools = _convert_openai_request_tools(tools)
+
+        outstanding_responses = []
+        # "n" is the number of completions to generate per prompt
+        n = n or 1
+        for _i in range(0, n):
+            response = self.chat_completion(
+                model_id=model,
+                messages=messages,
+                sampling_params=sampling_params,
+                response_format=response_format,
+                stream=stream,
+                tool_config=tool_config,
+                tools=tools,
+            )
+            outstanding_responses.append(response)
+
+        if stream:
+            return OpenAIChatCompletionToLlamaStackMixin._process_stream_response(self, model, outstanding_responses)
+
+        return await OpenAIChatCompletionToLlamaStackMixin._process_non_stream_response(
+            self, model, outstanding_responses
+        )
+
+    async def _process_stream_response(
+        self, model: str, outstanding_responses: List[Awaitable[AsyncIterator[ChatCompletionResponseStreamChunk]]]
+    ):
+        id = f"chatcmpl-{uuid.uuid4()}"
+        for outstanding_response in outstanding_responses:
+            response = await outstanding_response
+            i = 0
+            async for chunk in response:
+                event = chunk.event
+                finish_reason = _convert_stop_reason_to_openai_finish_reason(event.stop_reason)
+
+                if isinstance(event.delta, TextDelta):
+                    text_delta = event.delta.text
+                    delta = OpenAIChoiceDelta(content=text_delta)
+                    yield OpenAIChatCompletionChunk(
+                        id=id,
+                        choices=[OpenAIChatCompletionChunkChoice(index=i, finish_reason=finish_reason, delta=delta)],
+                        created=int(time.time()),
+                        model=model,
+                        object="chat.completion.chunk",
+                    )
+                elif isinstance(event.delta, ToolCallDelta):
+                    if event.delta.parse_status == ToolCallParseStatus.succeeded:
+                        tool_call = event.delta.tool_call
+                        openai_tool_call = OpenAIChoiceDeltaToolCall(
+                            index=0,
+                            id=tool_call.call_id,
+                            function=OpenAIChoiceDeltaToolCallFunction(
+                                name=tool_call.tool_name, arguments=tool_call.arguments_json
+                            ),
+                        )
+                        delta = OpenAIChoiceDelta(tool_calls=[openai_tool_call])
+                        yield OpenAIChatCompletionChunk(
+                            id=id,
+                            choices=[
+                                OpenAIChatCompletionChunkChoice(index=i, finish_reason=finish_reason, delta=delta)
+                            ],
+                            created=int(time.time()),
+                            model=model,
+                            object="chat.completion.chunk",
+                        )
+                i = i + 1
+
+    async def _process_non_stream_response(
+        self, model: str, outstanding_responses: List[Awaitable[ChatCompletionResponse]]
+    ) -> OpenAIChatCompletion:
+        choices = []
+        for outstanding_response in outstanding_responses:
+            response = await outstanding_response
+            completion_message = response.completion_message
+            message = await convert_message_to_openai_dict_new(completion_message)
+            finish_reason = _convert_stop_reason_to_openai_finish_reason(completion_message.stop_reason)
+
+            choice = OpenAIChatCompletionChoice(
+                index=len(choices),
+                message=message,
+                finish_reason=finish_reason,
+            )
+            choices.append(choice)
+
+        return OpenAIChatCompletion(
+            id=f"chatcmpl-{uuid.uuid4()}",
+            choices=choices,
+            created=int(time.time()),
+            model=model,
+            object="chat.completion",
+        )

@@ -40,7 +40,7 @@ paths:
             schema:
               $ref: '#/components/schemas/AppendRowsRequest'
         required: true
-  /v1/batch-inference/chat-completion:
+  /v1/inference/batch-chat-completion:
     post:
       responses:
         '200':
@@ -60,7 +60,7 @@ paths:
         default:
           $ref: '#/components/responses/DefaultError'
       tags:
-        - BatchInference (Coming Soon)
+        - Inference
       description: ''
       parameters: []
       requestBody:
@@ -69,7 +69,7 @@ paths:
             schema:
               $ref: '#/components/schemas/BatchChatCompletionRequest'
         required: true
-  /v1/batch-inference/completion:
+  /v1/inference/batch-completion:
     post:
       responses:
         '200':
@@ -89,7 +89,7 @@ paths:
         default:
           $ref: '#/components/responses/DefaultError'
       tags:
-        - BatchInference (Coming Soon)
+        - Inference
       description: ''
       parameters: []
       requestBody:
@@ -148,7 +148,7 @@ paths:
         default:
           $ref: '#/components/responses/DefaultError'
       tags:
-        - Inference
+        - BatchInference (Coming Soon)
       description: >-
         Generate a chat completion for the given messages using the specified model.
       parameters: []
@@ -183,7 +183,7 @@ paths:
         default:
           $ref: '#/components/responses/DefaultError'
       tags:
-        - Inference
+        - BatchInference (Coming Soon)
       description: >-
         Generate a completion for the given content using the specified model.
       parameters: []
@@ -2131,6 +2131,95 @@ paths:
             schema:
               $ref: '#/components/schemas/LogEventRequest'
         required: true
+  /v1/openai/v1/chat/completions:
+    post:
+      responses:
+        '200':
+          description: >-
+            Response from an OpenAI-compatible chat completion request. **OR** Chunk
+            from a streaming response to an OpenAI-compatible chat completion request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/OpenAIChatCompletion'
+                  - $ref: '#/components/schemas/OpenAIChatCompletionChunk'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Inference
+      description: >-
+        Generate an OpenAI-compatible chat completion for the given messages using
+        the specified model.
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenaiChatCompletionRequest'
+        required: true
+  /v1/openai/v1/completions:
+    post:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenAICompletion'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Inference
+      description: >-
+        Generate an OpenAI-compatible completion for the given prompt using the specified
+        model.
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenaiCompletionRequest'
+        required: true
+  /v1/openai/v1/models:
+    get:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenAIListModelsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Models
+      description: ''
+      parameters: []
   /v1/post-training/preference-optimize:
     post:
       responses:
@@ -2924,6 +3013,54 @@ components:
         - tool_name
         - arguments
       title: ToolCall
+    ToolConfig:
+      type: object
+      properties:
+        tool_choice:
+          oneOf:
+            - type: string
+              enum:
+                - auto
+                - required
+                - none
+              title: ToolChoice
+              description: >-
+                Whether tool use is required or automatic. This is a hint to the model
+                which may not be followed. It depends on the Instruction Following
+                capabilities of the model.
+            - type: string
+          default: auto
+          description: >-
+            (Optional) Whether tool use is automatic, required, or none. Can also
+            specify a tool name to use a specific tool. Defaults to ToolChoice.auto.
+        tool_prompt_format:
+          type: string
+          enum:
+            - json
+            - function_tag
+            - python_list
+          description: >-
+            (Optional) Instructs the model how to format tool calls. By default, Llama
+            Stack will attempt to use a format that is best adapted to the model.
+            - `ToolPromptFormat.json`: The tool calls are formatted as a JSON object.
+            - `ToolPromptFormat.function_tag`: The tool calls are enclosed in a <function=function_name>
+            tag. - `ToolPromptFormat.python_list`: The tool calls are output as Python
+            syntax -- a list of function calls.
+        system_message_behavior:
+          type: string
+          enum:
+            - append
+            - replace
+          description: >-
+            (Optional) Config for how to override the default system prompt. - `SystemMessageBehavior.append`:
+            Appends the provided system message to the default system prompt. - `SystemMessageBehavior.replace`:
+            Replaces the default system prompt with the provided system message. The
+            system message can include the string '{{function_definitions}}' to indicate
+            where the function definitions should be inserted.
+          default: append
+      additionalProperties: false
+      title: ToolConfig
+      description: Configuration for tool use.
     ToolDefinition:
       type: object
       properties:
@@ -3060,7 +3197,7 @@ components:
     BatchChatCompletionRequest:
       type: object
       properties:
-        model:
+        model_id:
           type: string
         messages_batch:
           type: array
@@ -3074,26 +3211,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ToolDefinition'
-        tool_choice:
-          type: string
-          enum:
-            - auto
-            - required
-            - none
-          title: ToolChoice
-          description: >-
-            Whether tool use is required or automatic. This is a hint to the model
-            which may not be followed. It depends on the Instruction Following capabilities
-            of the model.
-        tool_prompt_format:
-          type: string
-          enum:
-            - json
-            - function_tag
-            - python_list
-          title: ToolPromptFormat
-          description: >-
-            Prompt format for calling custom / zero shot tools.
+        tool_config:
+          $ref: '#/components/schemas/ToolConfig'
         response_format:
           $ref: '#/components/schemas/ResponseFormat'
         logprobs:
@@ -3108,7 +3227,7 @@ components:
           title: LogProbConfig
       additionalProperties: false
       required:
-        - model
+        - model_id
         - messages_batch
       title: BatchChatCompletionRequest
     BatchChatCompletionResponse:
@@ -3176,7 +3295,7 @@ components:
     BatchCompletionRequest:
       type: object
       properties:
-        model:
+        model_id:
           type: string
         content_batch:
           type: array
@@ -3198,7 +3317,7 @@ components:
           title: LogProbConfig
       additionalProperties: false
       required:
-        - model
+        - model_id
         - content_batch
       title: BatchCompletionRequest
     BatchCompletionResponse:
@@ -3250,54 +3369,6 @@ components:
       required:
         - job_uuid
       title: CancelTrainingJobRequest
-    ToolConfig:
-      type: object
-      properties:
-        tool_choice:
-          oneOf:
-            - type: string
-              enum:
-                - auto
-                - required
-                - none
-              title: ToolChoice
-              description: >-
-                Whether tool use is required or automatic. This is a hint to the model
-                which may not be followed. It depends on the Instruction Following
-                capabilities of the model.
-            - type: string
-          default: auto
-          description: >-
-            (Optional) Whether tool use is automatic, required, or none. Can also
-            specify a tool name to use a specific tool. Defaults to ToolChoice.auto.
-        tool_prompt_format:
-          type: string
-          enum:
-            - json
-            - function_tag
-            - python_list
-          description: >-
-            (Optional) Instructs the model how to format tool calls. By default, Llama
-            Stack will attempt to use a format that is best adapted to the model.
-            - `ToolPromptFormat.json`: The tool calls are formatted as a JSON object.
-            - `ToolPromptFormat.function_tag`: The tool calls are enclosed in a <function=function_name>
-            tag. - `ToolPromptFormat.python_list`: The tool calls are output as Python
-            syntax -- a list of function calls.
-        system_message_behavior:
-          type: string
-          enum:
-            - append
-            - replace
-          description: >-
-            (Optional) Config for how to override the default system prompt. - `SystemMessageBehavior.append`:
-            Appends the provided system message to the default system prompt. - `SystemMessageBehavior.replace`:
-            Replaces the default system prompt with the provided system message. The
-            system message can include the string '{{function_definitions}}' to indicate
-            where the function definitions should be inserted.
-          default: append
-      additionalProperties: false
-      title: ToolConfig
-      description: Configuration for tool use.
     ChatCompletionRequest:
       type: object
       properties:
@@ -5396,6 +5467,11 @@ components:
       properties:
         status:
           type: string
+          enum:
+            - OK
+            - Error
+            - Not Implemented
+          title: HealthStatus
       additionalProperties: false
       required:
         - status
@@ -5507,12 +5583,23 @@ components:
               - type: string
               - type: array
               - type: object
+        health:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
       additionalProperties: false
       required:
         - api
         - provider_id
         - provider_type
         - config
+        - health
       title: ProviderInfo
     InvokeToolRequest:
       type: object
@@ -5980,6 +6067,837 @@ components:
         - event
         - ttl_seconds
       title: LogEventRequest
+    OpenAIAssistantMessageParam:
+      type: object
+      properties:
+        role:
+          type: string
+          const: assistant
+          default: assistant
+          description: >-
+            Must be "assistant" to identify this as the model's response
+        content:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                $ref: '#/components/schemas/OpenAIChatCompletionContentPartParam'
+          description: The content of the model's response
+        name:
+          type: string
+          description: >-
+            (Optional) The name of the assistant message participant.
+        tool_calls:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpenAIChatCompletionToolCall'
+          description: >-
+            List of tool calls. Each tool call is an OpenAIChatCompletionToolCall
+            object.
+      additionalProperties: false
+      required:
+        - role
+        - content
+      title: OpenAIAssistantMessageParam
+      description: >-
+        A message containing the model's (assistant) response in an OpenAI-compatible
+        chat completion request.
+    "OpenAIChatCompletionContentPartImageParam":
+      type: object
+      properties:
+        type:
+          type: string
+          const: image_url
+          default: image_url
+        image_url:
+          $ref: '#/components/schemas/OpenAIImageURL'
+      additionalProperties: false
+      required:
+        - type
+        - image_url
+      title: >-
+        OpenAIChatCompletionContentPartImageParam
+    OpenAIChatCompletionContentPartParam:
+      oneOf:
+        - $ref: '#/components/schemas/OpenAIChatCompletionContentPartTextParam'
+        - $ref: '#/components/schemas/OpenAIChatCompletionContentPartImageParam'
+      discriminator:
+        propertyName: type
+        mapping:
+          text: '#/components/schemas/OpenAIChatCompletionContentPartTextParam'
+          image_url: '#/components/schemas/OpenAIChatCompletionContentPartImageParam'
+    OpenAIChatCompletionContentPartTextParam:
+      type: object
+      properties:
+        type:
+          type: string
+          const: text
+          default: text
+        text:
+          type: string
+      additionalProperties: false
+      required:
+        - type
+        - text
+      title: OpenAIChatCompletionContentPartTextParam
+    OpenAIChatCompletionToolCall:
+      type: object
+      properties:
+        index:
+          type: integer
+        id:
+          type: string
+        type:
+          type: string
+          const: function
+          default: function
+        function:
+          $ref: '#/components/schemas/OpenAIChatCompletionToolCallFunction'
+      additionalProperties: false
+      required:
+        - type
+      title: OpenAIChatCompletionToolCall
+    OpenAIChatCompletionToolCallFunction:
+      type: object
+      properties:
+        name:
+          type: string
+        arguments:
+          type: string
+      additionalProperties: false
+      title: OpenAIChatCompletionToolCallFunction
+    OpenAIDeveloperMessageParam:
+      type: object
+      properties:
+        role:
+          type: string
+          const: developer
+          default: developer
+          description: >-
+            Must be "developer" to identify this as a developer message
+        content:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                $ref: '#/components/schemas/OpenAIChatCompletionContentPartParam'
+          description: The content of the developer message
+        name:
+          type: string
+          description: >-
+            (Optional) The name of the developer message participant.
+      additionalProperties: false
+      required:
+        - role
+        - content
+      title: OpenAIDeveloperMessageParam
+      description: >-
+        A message from the developer in an OpenAI-compatible chat completion request.
+    OpenAIImageURL:
+      type: object
+      properties:
+        url:
+          type: string
+        detail:
+          type: string
+      additionalProperties: false
+      required:
+        - url
+      title: OpenAIImageURL
+    OpenAIJSONSchema:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        strict:
+          type: boolean
+        schema:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+      additionalProperties: false
+      required:
+        - name
+      title: OpenAIJSONSchema
+    OpenAIMessageParam:
+      oneOf:
+        - $ref: '#/components/schemas/OpenAIUserMessageParam'
+        - $ref: '#/components/schemas/OpenAISystemMessageParam'
+        - $ref: '#/components/schemas/OpenAIAssistantMessageParam'
+        - $ref: '#/components/schemas/OpenAIToolMessageParam'
+        - $ref: '#/components/schemas/OpenAIDeveloperMessageParam'
+      discriminator:
+        propertyName: role
+        mapping:
+          user: '#/components/schemas/OpenAIUserMessageParam'
+          system: '#/components/schemas/OpenAISystemMessageParam'
+          assistant: '#/components/schemas/OpenAIAssistantMessageParam'
+          tool: '#/components/schemas/OpenAIToolMessageParam'
+          developer: '#/components/schemas/OpenAIDeveloperMessageParam'
+    OpenAIResponseFormatJSONObject:
+      type: object
+      properties:
+        type:
+          type: string
+          const: json_object
+          default: json_object
+      additionalProperties: false
+      required:
+        - type
+      title: OpenAIResponseFormatJSONObject
+    OpenAIResponseFormatJSONSchema:
+      type: object
+      properties:
+        type:
+          type: string
+          const: json_schema
+          default: json_schema
+        json_schema:
+          $ref: '#/components/schemas/OpenAIJSONSchema'
+      additionalProperties: false
+      required:
+        - type
+        - json_schema
+      title: OpenAIResponseFormatJSONSchema
+    OpenAIResponseFormatParam:
+      oneOf:
+        - $ref: '#/components/schemas/OpenAIResponseFormatText'
+        - $ref: '#/components/schemas/OpenAIResponseFormatJSONSchema'
+        - $ref: '#/components/schemas/OpenAIResponseFormatJSONObject'
+      discriminator:
+        propertyName: type
+        mapping:
+          text: '#/components/schemas/OpenAIResponseFormatText'
+          json_schema: '#/components/schemas/OpenAIResponseFormatJSONSchema'
+          json_object: '#/components/schemas/OpenAIResponseFormatJSONObject'
+    OpenAIResponseFormatText:
+      type: object
+      properties:
+        type:
+          type: string
+          const: text
+          default: text
+      additionalProperties: false
+      required:
+        - type
+      title: OpenAIResponseFormatText
+    OpenAISystemMessageParam:
+      type: object
+      properties:
+        role:
+          type: string
+          const: system
+          default: system
+          description: >-
+            Must be "system" to identify this as a system message
+        content:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                $ref: '#/components/schemas/OpenAIChatCompletionContentPartParam'
+          description: >-
+            The content of the "system prompt". If multiple system messages are provided,
+            they are concatenated. The underlying Llama Stack code may also add other
+            system messages (for example, for formatting tool definitions).
+        name:
+          type: string
+          description: >-
+            (Optional) The name of the system message participant.
+      additionalProperties: false
+      required:
+        - role
+        - content
+      title: OpenAISystemMessageParam
+      description: >-
+        A system message providing instructions or context to the model.
+    OpenAIToolMessageParam:
+      type: object
+      properties:
+        role:
+          type: string
+          const: tool
+          default: tool
+          description: >-
+            Must be "tool" to identify this as a tool response
+        tool_call_id:
+          type: string
+          description: >-
+            Unique identifier for the tool call this response is for
+        content:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                $ref: '#/components/schemas/OpenAIChatCompletionContentPartParam'
+          description: The response content from the tool
+      additionalProperties: false
+      required:
+        - role
+        - tool_call_id
+        - content
+      title: OpenAIToolMessageParam
+      description: >-
+        A message representing the result of a tool invocation in an OpenAI-compatible
+        chat completion request.
+    OpenAIUserMessageParam:
+      type: object
+      properties:
+        role:
+          type: string
+          const: user
+          default: user
+          description: >-
+            Must be "user" to identify this as a user message
+        content:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                $ref: '#/components/schemas/OpenAIChatCompletionContentPartParam'
+          description: >-
+            The content of the message, which can include text and other media
+        name:
+          type: string
+          description: >-
+            (Optional) The name of the user message participant.
+      additionalProperties: false
+      required:
+        - role
+        - content
+      title: OpenAIUserMessageParam
+      description: >-
+        A message from the user in an OpenAI-compatible chat completion request.
+    OpenaiChatCompletionRequest:
+      type: object
+      properties:
+        model:
+          type: string
+          description: >-
+            The identifier of the model to use. The model must be registered with
+            Llama Stack and available via the /models endpoint.
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpenAIMessageParam'
+          description: List of messages in the conversation
+        frequency_penalty:
+          type: number
+          description: >-
+            (Optional) The penalty for repeated tokens
+        function_call:
+          oneOf:
+            - type: string
+            - type: object
+              additionalProperties:
+                oneOf:
+                  - type: 'null'
+                  - type: boolean
+                  - type: number
+                  - type: string
+                  - type: array
+                  - type: object
+          description: (Optional) The function call to use
+        functions:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              oneOf:
+                - type: 'null'
+                - type: boolean
+                - type: number
+                - type: string
+                - type: array
+                - type: object
+          description: (Optional) List of functions to use
+        logit_bias:
+          type: object
+          additionalProperties:
+            type: number
+          description: (Optional) The logit bias to use
+        logprobs:
+          type: boolean
+          description: (Optional) The log probabilities to use
+        max_completion_tokens:
+          type: integer
+          description: >-
+            (Optional) The maximum number of tokens to generate
+        max_tokens:
+          type: integer
+          description: >-
+            (Optional) The maximum number of tokens to generate
+        n:
+          type: integer
+          description: >-
+            (Optional) The number of completions to generate
+        parallel_tool_calls:
+          type: boolean
+          description: >-
+            (Optional) Whether to parallelize tool calls
+        presence_penalty:
+          type: number
+          description: >-
+            (Optional) The penalty for repeated tokens
+        response_format:
+          $ref: '#/components/schemas/OpenAIResponseFormatParam'
+          description: (Optional) The response format to use
+        seed:
+          type: integer
+          description: (Optional) The seed to use
+        stop:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+          description: (Optional) The stop tokens to use
+        stream:
+          type: boolean
+          description: >-
+            (Optional) Whether to stream the response
+        stream_options:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+          description: (Optional) The stream options to use
+        temperature:
+          type: number
+          description: (Optional) The temperature to use
+        tool_choice:
+          oneOf:
+            - type: string
+            - type: object
+              additionalProperties:
+                oneOf:
+                  - type: 'null'
+                  - type: boolean
+                  - type: number
+                  - type: string
+                  - type: array
+                  - type: object
+          description: (Optional) The tool choice to use
+        tools:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              oneOf:
+                - type: 'null'
+                - type: boolean
+                - type: number
+                - type: string
+                - type: array
+                - type: object
+          description: (Optional) The tools to use
+        top_logprobs:
+          type: integer
+          description: >-
+            (Optional) The top log probabilities to use
+        top_p:
+          type: number
+          description: (Optional) The top p to use
+        user:
+          type: string
+          description: (Optional) The user to use
+      additionalProperties: false
+      required:
+        - model
+        - messages
+      title: OpenaiChatCompletionRequest
+    OpenAIChatCompletion:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The ID of the chat completion
+        choices:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpenAIChoice'
+          description: List of choices
+        object:
+          type: string
+          const: chat.completion
+          default: chat.completion
+          description: >-
+            The object type, which will be "chat.completion"
+        created:
+          type: integer
+          description: >-
+            The Unix timestamp in seconds when the chat completion was created
+        model:
+          type: string
+          description: >-
+            The model that was used to generate the chat completion
+      additionalProperties: false
+      required:
+        - id
+        - choices
+        - object
+        - created
+        - model
+      title: OpenAIChatCompletion
+      description: >-
+        Response from an OpenAI-compatible chat completion request.
+    OpenAIChatCompletionChunk:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The ID of the chat completion
+        choices:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpenAIChunkChoice'
+          description: List of choices
+        object:
+          type: string
+          const: chat.completion.chunk
+          default: chat.completion.chunk
+          description: >-
+            The object type, which will be "chat.completion.chunk"
+        created:
+          type: integer
+          description: >-
+            The Unix timestamp in seconds when the chat completion was created
+        model:
+          type: string
+          description: >-
+            The model that was used to generate the chat completion
+      additionalProperties: false
+      required:
+        - id
+        - choices
+        - object
+        - created
+        - model
+      title: OpenAIChatCompletionChunk
+      description: >-
+        Chunk from a streaming response to an OpenAI-compatible chat completion request.
+    OpenAIChoice:
+      type: object
+      properties:
+        message:
+          $ref: '#/components/schemas/OpenAIMessageParam'
+          description: The message from the model
+        finish_reason:
+          type: string
+          description: The reason the model stopped generating
+        index:
+          type: integer
+          description: The index of the choice
+        logprobs:
+          $ref: '#/components/schemas/OpenAIChoiceLogprobs'
+          description: >-
+            (Optional) The log probabilities for the tokens in the message
+      additionalProperties: false
+      required:
+        - message
+        - finish_reason
+        - index
+      title: OpenAIChoice
+      description: >-
+        A choice from an OpenAI-compatible chat completion response.
+    OpenAIChoiceDelta:
+      type: object
+      properties:
+        content:
+          type: string
+          description: (Optional) The content of the delta
+        refusal:
+          type: string
+          description: (Optional) The refusal of the delta
+        role:
+          type: string
+          description: (Optional) The role of the delta
+        tool_calls:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpenAIChatCompletionToolCall'
+          description: (Optional) The tool calls of the delta
+      additionalProperties: false
+      title: OpenAIChoiceDelta
+      description: >-
+        A delta from an OpenAI-compatible chat completion streaming response.
+    OpenAIChoiceLogprobs:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpenAITokenLogProb'
+          description: >-
+            (Optional) The log probabilities for the tokens in the message
+        refusal:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpenAITokenLogProb'
+          description: >-
+            (Optional) The log probabilities for the tokens in the message
+      additionalProperties: false
+      title: OpenAIChoiceLogprobs
+      description: >-
+        The log probabilities for the tokens in the message from an OpenAI-compatible
+        chat completion response.
+    OpenAIChunkChoice:
+      type: object
+      properties:
+        delta:
+          $ref: '#/components/schemas/OpenAIChoiceDelta'
+          description: The delta from the chunk
+        finish_reason:
+          type: string
+          description: The reason the model stopped generating
+        index:
+          type: integer
+          description: The index of the choice
+        logprobs:
+          $ref: '#/components/schemas/OpenAIChoiceLogprobs'
+          description: >-
+            (Optional) The log probabilities for the tokens in the message
+      additionalProperties: false
+      required:
+        - delta
+        - finish_reason
+        - index
+      title: OpenAIChunkChoice
+      description: >-
+        A chunk choice from an OpenAI-compatible chat completion streaming response.
+    OpenAITokenLogProb:
+      type: object
+      properties:
+        token:
+          type: string
+        bytes:
+          type: array
+          items:
+            type: integer
+        logprob:
+          type: number
+        top_logprobs:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpenAITopLogProb'
+      additionalProperties: false
+      required:
+        - token
+        - logprob
+        - top_logprobs
+      title: OpenAITokenLogProb
+      description: >-
+        The log probability for a token from an OpenAI-compatible chat completion
+        response.
+    OpenAITopLogProb:
+      type: object
+      properties:
+        token:
+          type: string
+        bytes:
+          type: array
+          items:
+            type: integer
+        logprob:
+          type: number
+      additionalProperties: false
+      required:
+        - token
+        - logprob
+      title: OpenAITopLogProb
+      description: >-
+        The top log probability for a token from an OpenAI-compatible chat completion
+        response.
+    OpenaiCompletionRequest:
+      type: object
+      properties:
+        model:
+          type: string
+          description: >-
+            The identifier of the model to use. The model must be registered with
+            Llama Stack and available via the /models endpoint.
+        prompt:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+            - type: array
+              items:
+                type: integer
+            - type: array
+              items:
+                type: array
+                items:
+                  type: integer
+          description: The prompt to generate a completion for
+        best_of:
+          type: integer
+          description: >-
+            (Optional) The number of completions to generate
+        echo:
+          type: boolean
+          description: (Optional) Whether to echo the prompt
+        frequency_penalty:
+          type: number
+          description: >-
+            (Optional) The penalty for repeated tokens
+        logit_bias:
+          type: object
+          additionalProperties:
+            type: number
+          description: (Optional) The logit bias to use
+        logprobs:
+          type: boolean
+          description: (Optional) The log probabilities to use
+        max_tokens:
+          type: integer
+          description: >-
+            (Optional) The maximum number of tokens to generate
+        n:
+          type: integer
+          description: >-
+            (Optional) The number of completions to generate
+        presence_penalty:
+          type: number
+          description: >-
+            (Optional) The penalty for repeated tokens
+        seed:
+          type: integer
+          description: (Optional) The seed to use
+        stop:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+          description: (Optional) The stop tokens to use
+        stream:
+          type: boolean
+          description: >-
+            (Optional) Whether to stream the response
+        stream_options:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+          description: (Optional) The stream options to use
+        temperature:
+          type: number
+          description: (Optional) The temperature to use
+        top_p:
+          type: number
+          description: (Optional) The top p to use
+        user:
+          type: string
+          description: (Optional) The user to use
+        guided_choice:
+          type: array
+          items:
+            type: string
+        prompt_logprobs:
+          type: integer
+      additionalProperties: false
+      required:
+        - model
+        - prompt
+      title: OpenaiCompletionRequest
+    OpenAICompletion:
+      type: object
+      properties:
+        id:
+          type: string
+        choices:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpenAICompletionChoice'
+        created:
+          type: integer
+        model:
+          type: string
+        object:
+          type: string
+          const: text_completion
+          default: text_completion
+      additionalProperties: false
+      required:
+        - id
+        - choices
+        - created
+        - model
+        - object
+      title: OpenAICompletion
+      description: >-
+        Response from an OpenAI-compatible completion request.
+    OpenAICompletionChoice:
+      type: object
+      properties:
+        finish_reason:
+          type: string
+        text:
+          type: string
+        index:
+          type: integer
+        logprobs:
+          $ref: '#/components/schemas/OpenAIChoiceLogprobs'
+      additionalProperties: false
+      required:
+        - finish_reason
+        - text
+        - index
+      title: OpenAICompletionChoice
+      description: >-
+        A choice from an OpenAI-compatible completion response.
+    OpenAIModel:
+      type: object
+      properties:
+        id:
+          type: string
+        object:
+          type: string
+          const: model
+          default: model
+        created:
+          type: integer
+        owned_by:
+          type: string
+      additionalProperties: false
+      required:
+        - id
+        - object
+        - created
+        - owned_by
+      title: OpenAIModel
+      description: A model from OpenAI.
+    OpenAIListModelsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpenAIModel'
+      additionalProperties: false
+      required:
+        - data
+      title: OpenAIListModelsResponse
     DPOAlignmentConfig:
       type: object
       properties:
@@ -6079,10 +6997,13 @@ components:
           type: integer
         max_steps_per_epoch:
           type: integer
+          default: 1
         gradient_accumulation_steps:
           type: integer
+          default: 1
         max_validation_steps:
           type: integer
+          default: 1
         data_config:
           $ref: '#/components/schemas/DataConfig'
         optimizer_config:
@@ -6097,9 +7018,6 @@ components:
         - n_epochs
         - max_steps_per_epoch
         - gradient_accumulation_steps
-        - max_validation_steps
-        - data_config
-        - optimizer_config
       title: TrainingConfig
     PreferenceOptimizeRequest:
       type: object
@@ -6833,7 +7751,6 @@ components:
         - training_config
         - hyperparam_search_config
         - logger_config
-        - model
       title: SupervisedFineTuneRequest
     SyntheticDataGenerateRequest:
       type: object
@@ -6968,6 +7885,17 @@ tags:
     x-displayName: >-
       Agents API for creating and interacting with agentic systems.
   - name: BatchInference (Coming Soon)
+    description: >-
+      This is an asynchronous API. If the request is successful, the response will
+      be a job which can be polled for completion.
+
+
+      NOTE: This API is not yet implemented and is subject to change in concert with
+      other asynchronous APIs
+
+      including (post-training, evals, etc).
+    x-displayName: >-
+      Batch inference API for generating completions and chat completions.
   - name: Benchmarks
   - name: DatasetIO
   - name: Datasets

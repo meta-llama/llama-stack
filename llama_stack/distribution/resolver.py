@@ -41,7 +41,6 @@ from llama_stack.providers.datatypes import (
     Api,
     BenchmarksProtocolPrivate,
     DatasetsProtocolPrivate,
-    InlineProviderSpec,
     ModelsProtocolPrivate,
     ProviderSpec,
     RemoteProviderConfig,
@@ -230,50 +229,9 @@ def sort_providers_by_deps(
         {k: list(v.values()) for k, v in providers_with_specs.items()}
     )
 
-    # Append built-in "inspect" provider
-    apis = [x[1].spec.api for x in sorted_providers]
-    sorted_providers.append(
-        (
-            "inspect",
-            ProviderWithSpec(
-                provider_id="__builtin__",
-                provider_type="__builtin__",
-                config={"run_config": run_config.model_dump()},
-                spec=InlineProviderSpec(
-                    api=Api.inspect,
-                    provider_type="__builtin__",
-                    config_class="llama_stack.distribution.inspect.DistributionInspectConfig",
-                    module="llama_stack.distribution.inspect",
-                    api_dependencies=apis,
-                    deps__=[x.value for x in apis],
-                ),
-            ),
-        )
-    )
-
-    sorted_providers.append(
-        (
-            "providers",
-            ProviderWithSpec(
-                provider_id="__builtin__",
-                provider_type="__builtin__",
-                config={"run_config": run_config.model_dump()},
-                spec=InlineProviderSpec(
-                    api=Api.providers,
-                    provider_type="__builtin__",
-                    config_class="llama_stack.distribution.providers.ProviderImplConfig",
-                    module="llama_stack.distribution.providers",
-                    api_dependencies=apis,
-                    deps__=[x.value for x in apis],
-                ),
-            ),
-        )
-    )
-
     logger.debug(f"Resolved {len(sorted_providers)} providers")
     for api_str, provider in sorted_providers:
         logger.debug(f" {api_str} => {provider.provider_id}")
-        logger.debug("")
     return sorted_providers
 
 
@@ -400,6 +358,8 @@ def check_protocol_compliance(obj: Any, protocol: Any) -> None:
     mro = type(obj).__mro__
     for name, value in inspect.getmembers(protocol):
         if inspect.isfunction(value) and hasattr(value, "__webmethod__"):
+            if value.__webmethod__.experimental:
+                continue
             if not hasattr(obj, name):
                 missing_methods.append((name, "missing"))
             elif not callable(getattr(obj, name)):

@@ -38,10 +38,10 @@ from llama_stack.distribution.server.endpoints import (
 )
 from llama_stack.distribution.stack import (
     construct_stack,
-    redact_sensitive_fields,
     replace_env_vars,
     validate_env_pair,
 )
+from llama_stack.distribution.utils.config import redact_sensitive_fields
 from llama_stack.distribution.utils.context import preserve_contexts_async_generator
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import Api
@@ -229,15 +229,30 @@ class TracingMiddleware:
     def __init__(self, app, impls):
         self.app = app
         self.impls = impls
+        # FastAPI built-in paths that should bypass custom routing
+        self.fastapi_paths = ("/docs", "/redoc", "/openapi.json", "/favicon.ico", "/static")
 
     async def __call__(self, scope, receive, send):
         if scope.get("type") == "lifespan":
             return await self.app(scope, receive, send)
 
         path = scope.get("path", "")
+
+        # Check if the path is a FastAPI built-in path
+        if path.startswith(self.fastapi_paths):
+            # Pass through to FastAPI's built-in handlers
+            logger.debug(f"Bypassing custom routing for FastAPI built-in path: {path}")
+            return await self.app(scope, receive, send)
+
         if not hasattr(self, "endpoint_impls"):
             self.endpoint_impls = initialize_endpoint_impls(self.impls)
-        _, _, trace_path = find_matching_endpoint(scope.get("method", "GET"), path, self.endpoint_impls)
+
+        try:
+            _, _, trace_path = find_matching_endpoint(scope.get("method", "GET"), path, self.endpoint_impls)
+        except ValueError:
+            # If no matching endpoint is found, pass through to FastAPI
+            logger.debug(f"No matching endpoint found for path: {path}, falling back to FastAPI")
+            return await self.app(scope, receive, send)
 
         trace_context = await start_trace(trace_path, {"__location__": "server", "raw_path": path})
 
@@ -388,7 +403,12 @@ def main(args: Optional[argparse.Namespace] = None):
     safe_config = redact_sensitive_fields(config.model_dump())
     logger.info(yaml.dump(safe_config, indent=2))
 
-    app = FastAPI(lifespan=lifespan)
+    app = FastAPI(
+        lifespan=lifespan,
+        docs_url="/docs",
+        redoc_url="/redoc",
+        openapi_url="/openapi.json",
+    )
     if not os.environ.get("LLAMA_STACK_DISABLE_VERSION_CHECK"):
         app.add_middleware(ClientVersionMiddleware)
 
