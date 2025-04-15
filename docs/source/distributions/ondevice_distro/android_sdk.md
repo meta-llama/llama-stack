@@ -24,7 +24,7 @@ The key files in the app are `ExampleLlamaStackLocalInference.kt`, `ExampleLlama
 Add the following dependency in your `build.gradle.kts` file:
 ```
 dependencies {
- implementation("com.llama.llamastack:llama-stack-client-kotlin:0.1.4.2")
+ implementation("com.llama.llamastack:llama-stack-client-kotlin:0.2.2")
 }
 ```
 This will download jar files in your gradle cache in a directory like `~/.gradle/caches/modules-2/files-2.1/com.llama.llamastack/`
@@ -37,11 +37,7 @@ For local inferencing, it is required to include the ExecuTorch library into you
 
 Include the ExecuTorch library by:
 1. Download the `download-prebuilt-et-lib.sh` script file from the [llama-stack-client-kotlin-client-local](https://github.com/meta-llama/llama-stack-client-kotlin/tree/latest-release/llama-stack-client-kotlin-client-local/download-prebuilt-et-lib.sh) directory to your local machine.
-2. Move the script to the top level of your Android app where the app directory resides:
-<p align="center">
-<img src="https://github.com/meta-llama/llama-stack-client-kotlin/blob/latest-release/doc/img/example_android_app_directory.png" style="width:300px">
-</p>
-
+2. Move the script to the top level of your Android app where the `app` directory resides.
 3. Run `sh download-prebuilt-et-lib.sh` to create an `app/libs` directory and download the `executorch.aar` in that path. This generates an ExecuTorch library for the XNNPACK delegate.
 4. Add the `executorch.aar` dependency in your `build.gradle.kts` file:
 ```
@@ -51,6 +47,8 @@ dependencies {
   ...
 }
 ```
+
+See other dependencies for the local RAG in Android app [README](https://github.com/meta-llama/llama-stack-client-kotlin/tree/latest-release/examples/android_app#quick-start).
 
 ## Llama Stack APIs in Your Android App
 Breaking down the demo app, this section will show the core pieces that are used to initialize and run inference with Llama Stack using the Kotlin library.
