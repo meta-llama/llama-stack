@@ -159,6 +159,16 @@ models:
   provider_model_id: groq/llama-4-scout-17b-16e-instruct
   model_type: llm
 - metadata: {}
+  model_id: groq/meta-llama/llama-4-scout-17b-16e-instruct
+  provider_id: groq
+  provider_model_id: groq/meta-llama/llama-4-scout-17b-16e-instruct
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-4-Scout-17B-16E-Instruct
+  provider_id: groq
+  provider_model_id: groq/meta-llama/llama-4-scout-17b-16e-instruct
+  model_type: llm
+- metadata: {}
   model_id: groq/llama-4-maverick-17b-128e-instruct
   provider_id: groq
   provider_model_id: groq/llama-4-maverick-17b-128e-instruct
@@ -167,6 +177,16 @@ models:
   model_id: meta-llama/Llama-4-Maverick-17B-128E-Instruct
   provider_id: groq
   provider_model_id: groq/llama-4-maverick-17b-128e-instruct
+  model_type: llm
+- metadata: {}
+  model_id: groq/meta-llama/llama-4-maverick-17b-128e-instruct
+  provider_id: groq
+  provider_model_id: groq/meta-llama/llama-4-maverick-17b-128e-instruct
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-4-Maverick-17B-128E-Instruct
+  provider_id: groq
+  provider_model_id: groq/meta-llama/llama-4-maverick-17b-128e-instruct
   model_type: llm
 - metadata:
     embedding_dimension: 384

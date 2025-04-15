@@ -30,7 +30,13 @@ from llama_stack.apis.inference import (
     ToolDefinition,
     ToolPromptFormat,
 )
-from llama_stack.apis.inference.inference import OpenAIChatCompletion, OpenAICompletion, OpenAIMessageParam
+from llama_stack.apis.inference.inference import (
+    OpenAIChatCompletion,
+    OpenAIChatCompletionChunk,
+    OpenAICompletion,
+    OpenAIMessageParam,
+    OpenAIResponseFormatParam,
+)
 from llama_stack.apis.models.models import Model
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.log import get_logger
@@ -270,7 +276,7 @@ class LiteLLMOpenAIMixin(
         guided_choice: Optional[List[str]] = None,
         prompt_logprobs: Optional[int] = None,
     ) -> OpenAICompletion:
-        model_obj = await self._get_model(model)
+        model_obj = await self.model_store.get_model(model)
         params = await prepare_openai_completion_params(
             model=model_obj.provider_resource_id,
             prompt=prompt,
@@ -292,7 +298,7 @@ class LiteLLMOpenAIMixin(
             guided_choice=guided_choice,
             prompt_logprobs=prompt_logprobs,
         )
-        return litellm.text_completion(**params)
+        return await litellm.atext_completion(**params)
 
     async def openai_chat_completion(
         self,
@@ -308,7 +314,7 @@ class LiteLLMOpenAIMixin(
         n: Optional[int] = None,
         parallel_tool_calls: Optional[bool] = None,
         presence_penalty: Optional[float] = None,
-        response_format: Optional[Dict[str, str]] = None,
+        response_format: Optional[OpenAIResponseFormatParam] = None,
         seed: Optional[int] = None,
         stop: Optional[Union[str, List[str]]] = None,
         stream: Optional[bool] = None,
@@ -319,8 +325,8 @@ class LiteLLMOpenAIMixin(
         top_logprobs: Optional[int] = None,
         top_p: Optional[float] = None,
         user: Optional[str] = None,
-    ) -> OpenAIChatCompletion:
-        model_obj = await self._get_model(model)
+    ) -> Union[OpenAIChatCompletion, AsyncIterator[OpenAIChatCompletionChunk]]:
+        model_obj = await self.model_store.get_model(model)
         params = await prepare_openai_completion_params(
             model=model_obj.provider_resource_id,
             messages=messages,
@@ -346,4 +352,26 @@ class LiteLLMOpenAIMixin(
             top_p=top_p,
             user=user,
         )
-        return litellm.completion(**params)
+        return await litellm.acompletion(**params)
+
+    async def batch_completion(
+        self,
+        model_id: str,
+        content_batch: List[InterleavedContent],
+        sampling_params: Optional[SamplingParams] = None,
+        response_format: Optional[ResponseFormat] = None,
+        logprobs: Optional[LogProbConfig] = None,
+    ):
+        raise NotImplementedError("Batch completion is not supported for OpenAI Compat")
+
+    async def batch_chat_completion(
+        self,
+        model_id: str,
+        messages_batch: List[List[Message]],
+        sampling_params: Optional[SamplingParams] = None,
+        tools: Optional[List[ToolDefinition]] = None,
+        tool_config: Optional[ToolConfig] = None,
+        response_format: Optional[ResponseFormat] = None,
+        logprobs: Optional[LogProbConfig] = None,
+    ):
+        raise NotImplementedError("Batch chat completion is not supported for OpenAI Compat")

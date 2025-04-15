@@ -85,7 +85,7 @@
                 }
             }
         },
-        "/v1/batch-inference/chat-completion": {
+        "/v1/inference/batch-chat-completion": {
             "post": {
                 "responses": {
                     "200": {
@@ -112,7 +112,7 @@
                     }
                 },
                 "tags": [
-                    "BatchInference (Coming Soon)"
+                    "Inference"
                 ],
                 "description": "",
                 "parameters": [],
@@ -128,7 +128,7 @@
                 }
             }
         },
-        "/v1/batch-inference/completion": {
+        "/v1/inference/batch-completion": {
             "post": {
                 "responses": {
                     "200": {
@@ -155,7 +155,7 @@
                     }
                 },
                 "tags": [
-                    "BatchInference (Coming Soon)"
+                    "Inference"
                 ],
                 "description": "",
                 "parameters": [],
@@ -239,7 +239,7 @@
                     }
                 },
                 "tags": [
-                    "Inference"
+                    "BatchInference (Coming Soon)"
                 ],
                 "description": "Generate a chat completion for the given messages using the specified model.",
                 "parameters": [],
@@ -287,7 +287,7 @@
                     }
                 },
                 "tags": [
-                    "Inference"
+                    "BatchInference (Coming Soon)"
                 ],
                 "description": "Generate a completion for the given content using the specified model.",
                 "parameters": [],
@@ -3096,11 +3096,18 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Response from an OpenAI-compatible chat completion request. **OR** Chunk from a streaming response to an OpenAI-compatible chat completion request.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/OpenAIChatCompletion"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/OpenAIChatCompletion"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/OpenAIChatCompletionChunk"
+                                        }
+                                    ]
                                 }
                             }
                         }
@@ -4366,6 +4373,51 @@
                 ],
                 "title": "ToolCall"
             },
+            "ToolConfig": {
+                "type": "object",
+                "properties": {
+                    "tool_choice": {
+                        "oneOf": [
+                            {
+                                "type": "string",
+                                "enum": [
+                                    "auto",
+                                    "required",
+                                    "none"
+                                ],
+                                "title": "ToolChoice",
+                                "description": "Whether tool use is required or automatic. This is a hint to the model which may not be followed. It depends on the Instruction Following capabilities of the model."
+                            },
+                            {
+                                "type": "string"
+                            }
+                        ],
+                        "default": "auto",
+                        "description": "(Optional) Whether tool use is automatic, required, or none. Can also specify a tool name to use a specific tool. Defaults to ToolChoice.auto."
+                    },
+                    "tool_prompt_format": {
+                        "type": "string",
+                        "enum": [
+                            "json",
+                            "function_tag",
+                            "python_list"
+                        ],
+                        "description": "(Optional) Instructs the model how to format tool calls. By default, Llama Stack will attempt to use a format that is best adapted to the model. - `ToolPromptFormat.json`: The tool calls are formatted as a JSON object. - `ToolPromptFormat.function_tag`: The tool calls are enclosed in a <function=function_name> tag. - `ToolPromptFormat.python_list`: The tool calls are output as Python syntax -- a list of function calls."
+                    },
+                    "system_message_behavior": {
+                        "type": "string",
+                        "enum": [
+                            "append",
+                            "replace"
+                        ],
+                        "description": "(Optional) Config for how to override the default system prompt. - `SystemMessageBehavior.append`: Appends the provided system message to the default system prompt. - `SystemMessageBehavior.replace`: Replaces the default system prompt with the provided system message. The system message can include the string '{{function_definitions}}' to indicate where the function definitions should be inserted.",
+                        "default": "append"
+                    }
+                },
+                "additionalProperties": false,
+                "title": "ToolConfig",
+                "description": "Configuration for tool use."
+            },
             "ToolDefinition": {
                 "type": "object",
                 "properties": {
@@ -4554,7 +4606,7 @@
             "BatchChatCompletionRequest": {
                 "type": "object",
                 "properties": {
-                    "model": {
+                    "model_id": {
                         "type": "string"
                     },
                     "messages_batch": {
@@ -4575,25 +4627,8 @@
                             "$ref": "#/components/schemas/ToolDefinition"
                         }
                     },
-                    "tool_choice": {
-                        "type": "string",
-                        "enum": [
-                            "auto",
-                            "required",
-                            "none"
-                        ],
-                        "title": "ToolChoice",
-                        "description": "Whether tool use is required or automatic. This is a hint to the model which may not be followed. It depends on the Instruction Following capabilities of the model."
-                    },
-                    "tool_prompt_format": {
-                        "type": "string",
-                        "enum": [
-                            "json",
-                            "function_tag",
-                            "python_list"
-                        ],
-                        "title": "ToolPromptFormat",
-                        "description": "Prompt format for calling custom / zero shot tools."
+                    "tool_config": {
+                        "$ref": "#/components/schemas/ToolConfig"
                     },
                     "response_format": {
                         "$ref": "#/components/schemas/ResponseFormat"
@@ -4613,7 +4648,7 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "model",
+                    "model_id",
                     "messages_batch"
                 ],
                 "title": "BatchChatCompletionRequest"
@@ -4710,7 +4745,7 @@
             "BatchCompletionRequest": {
                 "type": "object",
                 "properties": {
-                    "model": {
+                    "model_id": {
                         "type": "string"
                     },
                     "content_batch": {
@@ -4740,7 +4775,7 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "model",
+                    "model_id",
                     "content_batch"
                 ],
                 "title": "BatchCompletionRequest"
@@ -4811,51 +4846,6 @@
                     "job_uuid"
                 ],
                 "title": "CancelTrainingJobRequest"
-            },
-            "ToolConfig": {
-                "type": "object",
-                "properties": {
-                    "tool_choice": {
-                        "oneOf": [
-                            {
-                                "type": "string",
-                                "enum": [
-                                    "auto",
-                                    "required",
-                                    "none"
-                                ],
-                                "title": "ToolChoice",
-                                "description": "Whether tool use is required or automatic. This is a hint to the model which may not be followed. It depends on the Instruction Following capabilities of the model."
-                            },
-                            {
-                                "type": "string"
-                            }
-                        ],
-                        "default": "auto",
-                        "description": "(Optional) Whether tool use is automatic, required, or none. Can also specify a tool name to use a specific tool. Defaults to ToolChoice.auto."
-                    },
-                    "tool_prompt_format": {
-                        "type": "string",
-                        "enum": [
-                            "json",
-                            "function_tag",
-                            "python_list"
-                        ],
-                        "description": "(Optional) Instructs the model how to format tool calls. By default, Llama Stack will attempt to use a format that is best adapted to the model. - `ToolPromptFormat.json`: The tool calls are formatted as a JSON object. - `ToolPromptFormat.function_tag`: The tool calls are enclosed in a <function=function_name> tag. - `ToolPromptFormat.python_list`: The tool calls are output as Python syntax -- a list of function calls."
-                    },
-                    "system_message_behavior": {
-                        "type": "string",
-                        "enum": [
-                            "append",
-                            "replace"
-                        ],
-                        "description": "(Optional) Config for how to override the default system prompt. - `SystemMessageBehavior.append`: Appends the provided system message to the default system prompt. - `SystemMessageBehavior.replace`: Replaces the default system prompt with the provided system message. The system message can include the string '{{function_definitions}}' to indicate where the function definitions should be inserted.",
-                        "default": "append"
-                    }
-                },
-                "additionalProperties": false,
-                "title": "ToolConfig",
-                "description": "Configuration for tool use."
             },
             "ChatCompletionRequest": {
                 "type": "object",
@@ -7905,7 +7895,13 @@
                 "type": "object",
                 "properties": {
                     "status": {
-                        "type": "string"
+                        "type": "string",
+                        "enum": [
+                            "OK",
+                            "Error",
+                            "Not Implemented"
+                        ],
+                        "title": "HealthStatus"
                     }
                 },
                 "additionalProperties": false,
@@ -8100,6 +8096,31 @@
                                 }
                             ]
                         }
+                    },
+                    "health": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
                     }
                 },
                 "additionalProperties": false,
@@ -8107,7 +8128,8 @@
                     "api",
                     "provider_id",
                     "provider_type",
-                    "config"
+                    "config",
+                    "health"
                 ],
                 "title": "ProviderInfo"
             },
@@ -8841,7 +8863,17 @@
                         "description": "Must be \"assistant\" to identify this as the model's response"
                     },
                     "content": {
-                        "$ref": "#/components/schemas/InterleavedContent",
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/OpenAIChatCompletionContentPartParam"
+                                }
+                            }
+                        ],
                         "description": "The content of the model's response"
                     },
                     "name": {
@@ -8851,9 +8883,9 @@
                     "tool_calls": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/ToolCall"
+                            "$ref": "#/components/schemas/OpenAIChatCompletionToolCall"
                         },
-                        "description": "List of tool calls. Each tool call is a ToolCall object."
+                        "description": "List of tool calls. Each tool call is an OpenAIChatCompletionToolCall object."
                     }
                 },
                 "additionalProperties": false,
@@ -8863,6 +8895,98 @@
                 ],
                 "title": "OpenAIAssistantMessageParam",
                 "description": "A message containing the model's (assistant) response in an OpenAI-compatible chat completion request."
+            },
+            "OpenAIChatCompletionContentPartImageParam": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "image_url",
+                        "default": "image_url"
+                    },
+                    "image_url": {
+                        "$ref": "#/components/schemas/OpenAIImageURL"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "image_url"
+                ],
+                "title": "OpenAIChatCompletionContentPartImageParam"
+            },
+            "OpenAIChatCompletionContentPartParam": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/OpenAIChatCompletionContentPartTextParam"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpenAIChatCompletionContentPartImageParam"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "text": "#/components/schemas/OpenAIChatCompletionContentPartTextParam",
+                        "image_url": "#/components/schemas/OpenAIChatCompletionContentPartImageParam"
+                    }
+                }
+            },
+            "OpenAIChatCompletionContentPartTextParam": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "text",
+                        "default": "text"
+                    },
+                    "text": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "text"
+                ],
+                "title": "OpenAIChatCompletionContentPartTextParam"
+            },
+            "OpenAIChatCompletionToolCall": {
+                "type": "object",
+                "properties": {
+                    "index": {
+                        "type": "integer"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "function",
+                        "default": "function"
+                    },
+                    "function": {
+                        "$ref": "#/components/schemas/OpenAIChatCompletionToolCallFunction"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ],
+                "title": "OpenAIChatCompletionToolCall"
+            },
+            "OpenAIChatCompletionToolCallFunction": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "arguments": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "title": "OpenAIChatCompletionToolCallFunction"
             },
             "OpenAIDeveloperMessageParam": {
                 "type": "object",
@@ -8874,7 +8998,17 @@
                         "description": "Must be \"developer\" to identify this as a developer message"
                     },
                     "content": {
-                        "$ref": "#/components/schemas/InterleavedContent",
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/OpenAIChatCompletionContentPartParam"
+                                }
+                            }
+                        ],
                         "description": "The content of the developer message"
                     },
                     "name": {
@@ -8889,6 +9023,66 @@
                 ],
                 "title": "OpenAIDeveloperMessageParam",
                 "description": "A message from the developer in an OpenAI-compatible chat completion request."
+            },
+            "OpenAIImageURL": {
+                "type": "object",
+                "properties": {
+                    "url": {
+                        "type": "string"
+                    },
+                    "detail": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "url"
+                ],
+                "title": "OpenAIImageURL"
+            },
+            "OpenAIJSONSchema": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "strict": {
+                        "type": "boolean"
+                    },
+                    "schema": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "name"
+                ],
+                "title": "OpenAIJSONSchema"
             },
             "OpenAIMessageParam": {
                 "oneOf": [
@@ -8919,6 +9113,76 @@
                     }
                 }
             },
+            "OpenAIResponseFormatJSONObject": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "json_object",
+                        "default": "json_object"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ],
+                "title": "OpenAIResponseFormatJSONObject"
+            },
+            "OpenAIResponseFormatJSONSchema": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "json_schema",
+                        "default": "json_schema"
+                    },
+                    "json_schema": {
+                        "$ref": "#/components/schemas/OpenAIJSONSchema"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "json_schema"
+                ],
+                "title": "OpenAIResponseFormatJSONSchema"
+            },
+            "OpenAIResponseFormatParam": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/OpenAIResponseFormatText"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpenAIResponseFormatJSONSchema"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpenAIResponseFormatJSONObject"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "text": "#/components/schemas/OpenAIResponseFormatText",
+                        "json_schema": "#/components/schemas/OpenAIResponseFormatJSONSchema",
+                        "json_object": "#/components/schemas/OpenAIResponseFormatJSONObject"
+                    }
+                }
+            },
+            "OpenAIResponseFormatText": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "text",
+                        "default": "text"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ],
+                "title": "OpenAIResponseFormatText"
+            },
             "OpenAISystemMessageParam": {
                 "type": "object",
                 "properties": {
@@ -8929,7 +9193,17 @@
                         "description": "Must be \"system\" to identify this as a system message"
                     },
                     "content": {
-                        "$ref": "#/components/schemas/InterleavedContent",
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/OpenAIChatCompletionContentPartParam"
+                                }
+                            }
+                        ],
                         "description": "The content of the \"system prompt\". If multiple system messages are provided, they are concatenated. The underlying Llama Stack code may also add other system messages (for example, for formatting tool definitions)."
                     },
                     "name": {
@@ -8959,7 +9233,17 @@
                         "description": "Unique identifier for the tool call this response is for"
                     },
                     "content": {
-                        "$ref": "#/components/schemas/InterleavedContent",
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/OpenAIChatCompletionContentPartParam"
+                                }
+                            }
+                        ],
                         "description": "The response content from the tool"
                     }
                 },
@@ -8982,7 +9266,17 @@
                         "description": "Must be \"user\" to identify this as a user message"
                     },
                     "content": {
-                        "$ref": "#/components/schemas/InterleavedContent",
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/OpenAIChatCompletionContentPartParam"
+                                }
+                            }
+                        ],
                         "description": "The content of the message, which can include text and other media"
                     },
                     "name": {
@@ -9110,10 +9404,7 @@
                         "description": "(Optional) The penalty for repeated tokens"
                     },
                     "response_format": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "type": "string"
-                        },
+                        "$ref": "#/components/schemas/OpenAIResponseFormatParam",
                         "description": "(Optional) The response format to use"
                     },
                     "seed": {
@@ -9290,6 +9581,46 @@
                 "title": "OpenAIChatCompletion",
                 "description": "Response from an OpenAI-compatible chat completion request."
             },
+            "OpenAIChatCompletionChunk": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "The ID of the chat completion"
+                    },
+                    "choices": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/OpenAIChunkChoice"
+                        },
+                        "description": "List of choices"
+                    },
+                    "object": {
+                        "type": "string",
+                        "const": "chat.completion.chunk",
+                        "default": "chat.completion.chunk",
+                        "description": "The object type, which will be \"chat.completion.chunk\""
+                    },
+                    "created": {
+                        "type": "integer",
+                        "description": "The Unix timestamp in seconds when the chat completion was created"
+                    },
+                    "model": {
+                        "type": "string",
+                        "description": "The model that was used to generate the chat completion"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "id",
+                    "choices",
+                    "object",
+                    "created",
+                    "model"
+                ],
+                "title": "OpenAIChatCompletionChunk",
+                "description": "Chunk from a streaming response to an OpenAI-compatible chat completion request."
+            },
             "OpenAIChoice": {
                 "type": "object",
                 "properties": {
@@ -9302,10 +9633,12 @@
                         "description": "The reason the model stopped generating"
                     },
                     "index": {
-                        "type": "integer"
+                        "type": "integer",
+                        "description": "The index of the choice"
                     },
                     "logprobs": {
-                        "$ref": "#/components/schemas/OpenAIChoiceLogprobs"
+                        "$ref": "#/components/schemas/OpenAIChoiceLogprobs",
+                        "description": "(Optional) The log probabilities for the tokens in the message"
                     }
                 },
                 "additionalProperties": false,
@@ -9317,6 +9650,33 @@
                 "title": "OpenAIChoice",
                 "description": "A choice from an OpenAI-compatible chat completion response."
             },
+            "OpenAIChoiceDelta": {
+                "type": "object",
+                "properties": {
+                    "content": {
+                        "type": "string",
+                        "description": "(Optional) The content of the delta"
+                    },
+                    "refusal": {
+                        "type": "string",
+                        "description": "(Optional) The refusal of the delta"
+                    },
+                    "role": {
+                        "type": "string",
+                        "description": "(Optional) The role of the delta"
+                    },
+                    "tool_calls": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/OpenAIChatCompletionToolCall"
+                        },
+                        "description": "(Optional) The tool calls of the delta"
+                    }
+                },
+                "additionalProperties": false,
+                "title": "OpenAIChoiceDelta",
+                "description": "A delta from an OpenAI-compatible chat completion streaming response."
+            },
             "OpenAIChoiceLogprobs": {
                 "type": "object",
                 "properties": {
@@ -9324,18 +9684,49 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/OpenAITokenLogProb"
-                        }
+                        },
+                        "description": "(Optional) The log probabilities for the tokens in the message"
                     },
                     "refusal": {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/OpenAITokenLogProb"
-                        }
+                        },
+                        "description": "(Optional) The log probabilities for the tokens in the message"
                     }
                 },
                 "additionalProperties": false,
                 "title": "OpenAIChoiceLogprobs",
                 "description": "The log probabilities for the tokens in the message from an OpenAI-compatible chat completion response."
+            },
+            "OpenAIChunkChoice": {
+                "type": "object",
+                "properties": {
+                    "delta": {
+                        "$ref": "#/components/schemas/OpenAIChoiceDelta",
+                        "description": "The delta from the chunk"
+                    },
+                    "finish_reason": {
+                        "type": "string",
+                        "description": "The reason the model stopped generating"
+                    },
+                    "index": {
+                        "type": "integer",
+                        "description": "The index of the choice"
+                    },
+                    "logprobs": {
+                        "$ref": "#/components/schemas/OpenAIChoiceLogprobs",
+                        "description": "(Optional) The log probabilities for the tokens in the message"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "delta",
+                    "finish_reason",
+                    "index"
+                ],
+                "title": "OpenAIChunkChoice",
+                "description": "A chunk choice from an OpenAI-compatible chat completion streaming response."
             },
             "OpenAITokenLogProb": {
                 "type": "object",
@@ -9777,13 +10168,16 @@
                         "type": "integer"
                     },
                     "max_steps_per_epoch": {
-                        "type": "integer"
+                        "type": "integer",
+                        "default": 1
                     },
                     "gradient_accumulation_steps": {
-                        "type": "integer"
+                        "type": "integer",
+                        "default": 1
                     },
                     "max_validation_steps": {
-                        "type": "integer"
+                        "type": "integer",
+                        "default": 1
                     },
                     "data_config": {
                         "$ref": "#/components/schemas/DataConfig"
@@ -9803,10 +10197,7 @@
                 "required": [
                     "n_epochs",
                     "max_steps_per_epoch",
-                    "gradient_accumulation_steps",
-                    "max_validation_steps",
-                    "data_config",
-                    "optimizer_config"
+                    "gradient_accumulation_steps"
                 ],
                 "title": "TrainingConfig"
             },
@@ -10982,8 +11373,7 @@
                     "job_uuid",
                     "training_config",
                     "hyperparam_search_config",
-                    "logger_config",
-                    "model"
+                    "logger_config"
                 ],
                 "title": "SupervisedFineTuneRequest"
             },
@@ -11173,7 +11563,9 @@
             "x-displayName": "Agents API for creating and interacting with agentic systems."
         },
         {
-            "name": "BatchInference (Coming Soon)"
+            "name": "BatchInference (Coming Soon)",
+            "description": "This is an asynchronous API. If the request is successful, the response will be a job which can be polled for completion.\n\nNOTE: This API is not yet implemented and is subject to change in concert with other asynchronous APIs\nincluding (post-training, evals, etc).",
+            "x-displayName": "Batch inference API for generating completions and chat completions."
         },
         {
             "name": "Benchmarks"

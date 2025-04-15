@@ -9,14 +9,15 @@
 
 [**Quick Start**](https://llama-stack.readthedocs.io/en/latest/getting_started/index.html) | [**Documentation**](https://llama-stack.readthedocs.io/en/latest/index.html) | [**Colab Notebook**](./docs/getting_started.ipynb)
 
-
 ### ✨🎉 Llama 4 Support  🎉✨
 We released [Version 0.2.0](https://github.com/meta-llama/llama-stack/releases/tag/v0.2.0) with support for the Llama 4 herd of models released by Meta.
 
-You can now run Llama 4 models on Llama Stack.
+<details>
 
+<summary>👋 Click here to see how to run Llama 4 models on Llama Stack </summary>
+
+\
 *Note you need 8xH100 GPU-host to run these models*
-
 
 ```bash
 pip install -U llama_stack
@@ -65,6 +66,9 @@ response = client.inference.chat_completion(
 print(f"Assistant> {response.completion_message.content}")
 ```
 As more providers start supporting Llama 4, you can use them in Llama Stack as well. We are adding to the list. Stay tuned!
+
+
+</details>
 
 
 ### Overview
