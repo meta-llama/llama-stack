@@ -77,7 +77,7 @@ POST /eval/benchmarks/{benchmark_id}/jobs
   "benchmark_config": {
     "eval_candidate": {
       "type": "model",
-      "model": "meta/llama-3.1-8b-instruct",
+      "model": "meta-llama/Llama3.1-8B-Instruct",
       "sampling_params": {
         "max_tokens": 100,
         "temperature": 0.7
@@ -91,7 +91,7 @@ POST /eval/benchmarks/{benchmark_id}/jobs
 Response example:
 ```json
 {
-    "job_id": "1234",
+    "job_id": "eval-1234",
     "status": "in_progress"
 }
 ```
@@ -99,6 +99,14 @@ Response example:
 ### Example for getting the status of a job
 ```
 GET /eval/benchmarks/{benchmark_id}/jobs/{job_id}
+```
+
+Response example:
+```json
+{
+  "job_id": "eval-1234",
+  "status": "in_progress"
+}
 ```
 
 ### Example for cancelling a job
