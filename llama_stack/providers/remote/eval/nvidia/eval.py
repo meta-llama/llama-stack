@@ -7,7 +7,6 @@ from typing import Any, Dict, List
 
 import requests
 
-from build.lib.llama_stack.providers.remote.inference.nvidia.models import MODEL_ENTRIES
 from llama_stack.apis.agents import Agents
 from llama_stack.apis.benchmarks import Benchmark
 from llama_stack.apis.datasetio import DatasetIO
@@ -15,6 +14,7 @@ from llama_stack.apis.datasets import Datasets
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.scoring import Scoring, ScoringResult
 from llama_stack.providers.datatypes import BenchmarksProtocolPrivate
+from llama_stack.providers.remote.inference.nvidia.models import MODEL_ENTRIES
 from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
 
 from .....apis.common.job_types import Job, JobStatus
