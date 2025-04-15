@@ -14,10 +14,10 @@ class NVIDIAEvalConfig(BaseModel):
      Configuration for the NVIDIA NeMo Evaluator microservice endpoint.
 
     Attributes:
-        evaluator_service_url (str): A base url for accessing the NVIDIA evaluation endpoint, e.g. http://localhost:8000.
+        evaluator_url (str): A base url for accessing the NVIDIA evaluation endpoint, e.g. http://localhost:8000.
     """
 
-    evaluator_service_url: str = Field(
+    evaluator_url: str = Field(
         default_factory=lambda: os.getenv("NVIDIA_EVALUATOR_URL", "http://0.0.0.0:7331"),
         description="The url for accessing the evaluator service",
     )
@@ -25,5 +25,5 @@ class NVIDIAEvalConfig(BaseModel):
     @classmethod
     def sample_run_config(cls, **kwargs) -> Dict[str, Any]:
         return {
-            "evaluator_service_url": "${env.NVIDIA_EVALUATOR_URL:http://localhost:7331}",
+            "evaluator_url": "${env.NVIDIA_EVALUATOR_URL:http://localhost:7331}",
         }

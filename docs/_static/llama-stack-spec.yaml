@@ -4553,6 +4553,7 @@ components:
       required:
         - type
         - model
+        - sampling_params
       title: ModelCandidate
       description: A model candidate for evaluation.
     RegexParserScoringFnParams:

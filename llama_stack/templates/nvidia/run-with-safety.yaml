@@ -56,7 +56,7 @@ providers:
   - provider_id: nvidia
     provider_type: remote::nvidia
     config:
-      evaluator_service_url: ${env.NVIDIA_EVALUATOR_URL:http://localhost:7331}
+      evaluator_url: ${env.NVIDIA_EVALUATOR_URL:http://localhost:7331}
   post_training:
   - provider_id: nvidia
     provider_type: remote::nvidia
