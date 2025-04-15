@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 
-import os
+from time import sleep
 
 import pytest
 from pydantic import BaseModel
@@ -23,7 +23,16 @@ def skip_if_model_doesnt_support_completion(client_with_models, model_id):
     provider_id = models[model_id].provider_id
     providers = {p.provider_id: p for p in client_with_models.providers.list()}
     provider = providers[provider_id]
-    if provider.provider_type in ("remote::openai", "remote::anthropic", "remote::gemini", "remote::groq"):
+    if (
+        provider.provider_type
+        in (
+            "remote::openai",
+            "remote::anthropic",
+            "remote::gemini",
+            "remote::groq",
+        )
+        or "openai-compat" in provider.provider_type
+    ):
         pytest.skip(f"Model {model_id} hosted by {provider.provider_type} doesn't support completion")
 
 
@@ -42,15 +51,6 @@ def get_llama_model(client_with_models, model_id):
             return mid
 
     return model.metadata.get("llama_model", None)
-
-
-def get_llama_tokenizer():
-    from llama_models.llama3.api.chat_format import ChatFormat
-    from llama_models.llama3.api.tokenizer import Tokenizer
-
-    tokenizer = Tokenizer.get_instance()
-    formatter = ChatFormat(tokenizer)
-    return tokenizer, formatter
 
 
 @pytest.mark.parametrize(
@@ -254,41 +254,6 @@ def test_text_chat_completion_non_streaming(client_with_models, text_model_id, t
 @pytest.mark.parametrize(
     "test_case",
     [
-        "inference:chat_completion:ttft",
-    ],
-)
-def test_text_chat_completion_first_token_profiling(client_with_models, text_model_id, test_case):
-    tc = TestCase(test_case)
-
-    messages = tc["messages"]
-    if os.environ.get("DEBUG_TTFT"):  # debugging print number of tokens in input, ideally around 800
-        from pydantic import TypeAdapter
-
-        from llama_stack.apis.inference import Message
-
-        tokenizer, formatter = get_llama_tokenizer()
-        typed_messages = [TypeAdapter(Message).validate_python(m) for m in messages]
-        encoded = formatter.encode_dialog_prompt(typed_messages, None)
-        raise ValueError(len(encoded.tokens) if encoded and encoded.tokens else 0)
-
-    response = client_with_models.inference.chat_completion(
-        model_id=text_model_id,
-        messages=messages,
-        stream=False,
-        timeout=120,  # Increase timeout to 2 minutes for large conversation history
-    )
-    message_content = response.completion_message.content.lower().strip()
-    assert len(message_content) > 0
-
-    if os.environ.get("DEBUG_TTFT"):  # debugging print number of tokens in response, ideally around 150
-        tokenizer, formatter = get_llama_tokenizer()
-        encoded = formatter.encode_content(message_content)
-        raise ValueError(len(encoded.tokens) if encoded and encoded.tokens else 0)
-
-
-@pytest.mark.parametrize(
-    "test_case",
-    [
         "inference:chat_completion:streaming_01",
         "inference:chat_completion:streaming_02",
     ],
@@ -486,3 +451,83 @@ def test_text_chat_completion_tool_calling_tools_not_in_request(
     else:
         for tc in response.completion_message.tool_calls:
             assert tc.tool_name == "get_object_namespace_list"
+
+
+@pytest.mark.parametrize(
+    "test_case",
+    [
+        # Tests if the model can handle simple messages like "Hi" or
+        # a message unrelated to one of the tool calls
+        "inference:chat_completion:multi_turn_tool_calling_01",
+        # Tests if the model can do full tool call with responses correctly
+        "inference:chat_completion:multi_turn_tool_calling_02",
+        # Tests if model can generate multiple params and
+        # read outputs correctly
+        "inference:chat_completion:multi_turn_tool_calling_03",
+        # Tests if model can do different tool calls in a seqeunce
+        # and use the information between appropriately
+        "inference:chat_completion:multi_turn_tool_calling_04",
+        # Tests if model can use current date and run multiple tool calls
+        # sequentially and infer using both
+        "inference:chat_completion:multi_turn_tool_calling_05",
+    ],
+)
+def test_text_chat_completion_with_multi_turn_tool_calling(client_with_models, text_model_id, test_case):
+    """This test tests the model's tool calling loop in various scenarios"""
+    if "llama-4" not in text_model_id.lower() and "llama4" not in text_model_id.lower():
+        pytest.xfail("Not tested for non-llama4 models yet")
+
+    tc = TestCase(test_case)
+    messages = []
+
+    # keep going until either
+    # 1. we have messages to test in multi-turn
+    # 2. no messages bust last message is tool response
+    while len(tc["messages"]) > 0 or (len(messages) > 0 and messages[-1]["role"] == "tool"):
+        # do not take new messages if last message is tool response
+        if len(messages) == 0 or messages[-1]["role"] != "tool":
+            new_messages = tc["messages"].pop(0)
+            messages += new_messages
+
+        # pprint(messages)
+        response = client_with_models.inference.chat_completion(
+            model_id=text_model_id,
+            messages=messages,
+            tools=tc["tools"],
+            stream=False,
+            sampling_params={
+                "strategy": {
+                    "type": "top_p",
+                    "top_p": 0.9,
+                    "temperature": 0.6,
+                }
+            },
+        )
+        op_msg = response.completion_message
+        messages.append(op_msg.model_dump())
+        # print(op_msg)
+
+        assert op_msg.role == "assistant"
+        expected = tc["expected"].pop(0)
+        assert len(op_msg.tool_calls) == expected["num_tool_calls"]
+
+        if expected["num_tool_calls"] > 0:
+            assert op_msg.tool_calls[0].tool_name == expected["tool_name"]
+            assert op_msg.tool_calls[0].arguments == expected["tool_arguments"]
+
+            tool_response = tc["tool_responses"].pop(0)
+            messages.append(
+                # Tool Response Message
+                {
+                    "role": "tool",
+                    "call_id": op_msg.tool_calls[0].call_id,
+                    "content": tool_response["response"],
+                }
+            )
+        else:
+            actual_answer = op_msg.content.lower()
+            # pprint(actual_answer)
+            assert expected["answer"] in actual_answer
+
+        # sleep to avoid rate limit
+        sleep(1)

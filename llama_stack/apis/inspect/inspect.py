@@ -8,6 +8,7 @@ from typing import List, Protocol, runtime_checkable
 
 from pydantic import BaseModel
 
+from llama_stack.providers.datatypes import HealthStatus
 from llama_stack.schema_utils import json_schema_type, webmethod
 
 
@@ -20,8 +21,7 @@ class RouteInfo(BaseModel):
 
 @json_schema_type
 class HealthInfo(BaseModel):
-    status: str
-    # TODO: add a provider level status
+    status: HealthStatus
 
 
 @json_schema_type

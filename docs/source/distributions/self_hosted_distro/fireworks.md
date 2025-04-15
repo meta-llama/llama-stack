@@ -46,6 +46,8 @@ The following models are available by default:
 - `accounts/fireworks/models/llama-v3p3-70b-instruct (aliases: meta-llama/Llama-3.3-70B-Instruct)`
 - `accounts/fireworks/models/llama-guard-3-8b (aliases: meta-llama/Llama-Guard-3-8B)`
 - `accounts/fireworks/models/llama-guard-3-11b-vision (aliases: meta-llama/Llama-Guard-3-11B-Vision)`
+- `accounts/fireworks/models/llama4-scout-instruct-basic (aliases: meta-llama/Llama-4-Scout-17B-16E-Instruct)`
+- `accounts/fireworks/models/llama4-maverick-instruct-basic (aliases: meta-llama/Llama-4-Maverick-17B-128E-Instruct)`
 - `nomic-ai/nomic-embed-text-v1.5 `
 
 

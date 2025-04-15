@@ -27,6 +27,7 @@ from llama_stack.models.llama.datatypes import (
     ToolCall,
     ToolPromptFormat,
 )
+from llama_stack.models.llama.llama4.tokenizer import Tokenizer
 
 from .llama3.interface import LLama31Interface
 from .llama3.template_data import (
@@ -46,6 +47,7 @@ class UseCase(BaseModel):
     dialogs: List[List[RawMessage] | TextCompletionContent | str] = Field(default_factory=list)
     notes: str = ""
     tool_prompt_format: ToolPromptFormat = ToolPromptFormat.json
+    max_gen_len: int = 512
 
     def md_format(self):
         section = textwrap.dedent(
@@ -71,22 +73,22 @@ class UseCase(BaseModel):
                 text += dialog
                 text += "\n\n"
                 continue
-
-            elif isinstance(dialog, TextCompletionContent):
-                input_tokens, output_tokens = generator.text_completion_raw(
-                    dialog.content,
-                    max_gen_len=64,
-                    temperature=0.1,
-                    top_p=0.95,
-                )
             else:
-                input_tokens, output_tokens = generator.chat_completion_raw(
-                    dialog,
-                    max_gen_len=512,
-                    temperature=0.0,
-                    top_p=0.95,
-                    tool_prompt_format=self.tool_prompt_format,
+                batch = [dialog]
+                method = (
+                    generator.completion if isinstance(dialog, TextCompletionContent) else generator.chat_completion
                 )
+                input_tokens = []
+                output_tokens = []
+                for token_results in method(batch, echo=True, temperature=0.1, top_p=0.95):
+                    result = token_results[0]
+                    if result.source == "input":
+                        input_tokens.append(result.token)
+                    else:
+                        output_tokens.append(result.token)
+
+                    if result.finished:
+                        break
             text += "##### Input Prompt Format\n"
 
             # FIXME: This is added to undo the hack in chat_formatter where
@@ -113,6 +115,45 @@ class UseCase(BaseModel):
             notes=notes,
         )
         return section
+
+
+class Llama4UseCase(UseCase):
+    def dialogs_to_text(self, generator) -> str:
+        def _code_block(text):
+            return f"```\n{text}\n```"
+
+        text = ""
+        tokenizer = Tokenizer.get_instance()
+        for dialog in self.dialogs:
+            if isinstance(dialog, str):
+                text += dialog
+                text += "\n\n"
+                continue
+            else:
+                batch = [dialog]
+                method = (
+                    generator.completion if isinstance(dialog, TextCompletionContent) else generator.chat_completion
+                )
+                input_tokens = []
+                output_tokens = []
+                for token_results in method(batch, echo=True, temperature=0.0):
+                    result = token_results[0]
+                    if result.source == "input":
+                        input_tokens.append(result.token)
+                    else:
+                        output_tokens.append(result.token)
+
+                    if result.finished:
+                        break
+
+            text += "##### Input Prompt Format\n"
+            text += _code_block(tokenizer.decode(input_tokens))
+            text += "\n\n"
+            text += "##### Model Response Format\n"
+            text += _code_block(tokenizer.decode(output_tokens))
+            text += "\n\n"
+
+        return text
 
 
 def llama3_1_builtin_tool_call_dialog(tool_prompt_format=ToolPromptFormat.json):

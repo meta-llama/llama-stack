@@ -28,12 +28,14 @@ from llama_stack.apis.inference import (
     ToolDefinition,
     ToolPromptFormat,
 )
-from llama_stack.models.llama.datatypes import CoreModelId
+from llama_stack.models.llama.sku_types import CoreModelId
 from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
     build_hf_repo_model_entry,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
+    OpenAIChatCompletionToLlamaStackMixin,
+    OpenAICompletionToLlamaStackMixin,
     get_sampling_options,
     process_chat_completion_response,
     process_chat_completion_stream_response,
@@ -56,7 +58,12 @@ model_entries = [
 ]
 
 
-class DatabricksInferenceAdapter(ModelRegistryHelper, Inference):
+class DatabricksInferenceAdapter(
+    ModelRegistryHelper,
+    Inference,
+    OpenAIChatCompletionToLlamaStackMixin,
+    OpenAICompletionToLlamaStackMixin,
+):
     def __init__(self, config: DatabricksImplConfig) -> None:
         ModelRegistryHelper.__init__(self, model_entries=model_entries)
         self.config = config

@@ -46,6 +46,8 @@ from llama_stack.apis.inference import (
     TokenLogProbs,
     ToolChoice,
     ToolConfig,
+    TopKSamplingStrategy,
+    TopPSamplingStrategy,
 )
 from llama_stack.apis.models import Model
 from llama_stack.log import get_logger
@@ -55,8 +57,6 @@ from llama_stack.models.llama.datatypes import (
     ToolCall,
     ToolDefinition,
     ToolPromptFormat,
-    TopKSamplingStrategy,
-    TopPSamplingStrategy,
 )
 from llama_stack.models.llama.llama3.chat_format import ChatFormat
 from llama_stack.models.llama.llama3.tokenizer import Tokenizer
@@ -66,8 +66,10 @@ from llama_stack.providers.utils.inference.model_registry import (
     ModelsProtocolPrivate,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
+    OpenAIChatCompletionToLlamaStackMixin,
     OpenAICompatCompletionChoice,
     OpenAICompatCompletionResponse,
+    OpenAICompletionToLlamaStackMixin,
     get_stop_reason,
     process_chat_completion_stream_response,
 )
@@ -172,7 +174,12 @@ def _convert_sampling_params(
     return vllm_sampling_params
 
 
-class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
+class VLLMInferenceImpl(
+    Inference,
+    OpenAIChatCompletionToLlamaStackMixin,
+    OpenAICompletionToLlamaStackMixin,
+    ModelsProtocolPrivate,
+):
     """
     vLLM-based inference model adapter for Llama Stack with support for multiple models.
 

@@ -10,7 +10,6 @@ from typing import Any, Dict, List, Optional
 
 from llama_stack.apis.common.content_types import ImageContentItem, TextContentItem
 from llama_stack.apis.inference import (
-    ChatCompletionResponseEventType,
     Inference,
     Message,
     UserMessage,
@@ -23,7 +22,8 @@ from llama_stack.apis.safety import (
 )
 from llama_stack.apis.shields import Shield
 from llama_stack.distribution.datatypes import Api
-from llama_stack.models.llama.datatypes import CoreModelId, Role
+from llama_stack.models.llama.datatypes import Role
+from llama_stack.models.llama.sku_types import CoreModelId
 from llama_stack.providers.datatypes import ShieldsProtocolPrivate
 from llama_stack.providers.utils.inference.prompt_adapter import (
     interleaved_content_as_str,
@@ -238,16 +238,12 @@ class LlamaGuardShield:
             shield_input_message = self.build_text_shield_input(messages)
 
         # TODO: llama-stack inference protocol has issues with non-streaming inference code
-        content = ""
-        async for chunk in await self.inference_api.chat_completion(
+        response = await self.inference_api.chat_completion(
             model_id=self.model,
             messages=[shield_input_message],
-            stream=True,
-        ):
-            event = chunk.event
-            if event.event_type == ChatCompletionResponseEventType.progress and event.delta.type == "text":
-                content += event.delta.text
-
+            stream=False,
+        )
+        content = response.completion_message.content
         content = content.strip()
         return self.get_shield_response(content)
 

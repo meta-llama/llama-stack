@@ -1,5 +1,42 @@
 # Changelog
 
+# v0.2.1
+Published on: 2025-04-05T23:13:00Z
+
+
+
+---
+
+# v0.2.0
+Published on: 2025-04-05T19:04:29Z
+
+## Llama 4 Support
+
+Checkout more at https://www.llama.com
+
+
+
+---
+
+# v0.1.9
+Published on: 2025-03-29T00:52:23Z
+
+### Build and Test Agents
+* Agents: Entire document context with attachments
+* RAG: Documentation with sqlite-vec faiss comparison
+* Getting started: Fixes to getting started notebook.
+
+### Agent Evals and Model Customization
+* (**New**) Post-training: Add nemo customizer
+
+### Better Engineering
+* Moved sqlite-vec to non-blocking calls
+* Don't return a payload on file delete
+
+
+
+---
+
 # v0.1.8
 Published on: 2025-03-24T01:28:50Z
 

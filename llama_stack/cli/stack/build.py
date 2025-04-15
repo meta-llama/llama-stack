@@ -57,7 +57,7 @@ class StackBuild(Subcommand):
             type=str,
             help=textwrap.dedent(
                 f"""[for image-type={"|".join(e.value for e in ImageType)}] Name of the conda or virtual environment to use for
-the build. If not specified, currently active Conda environment will be used if found.
+the build. If not specified, currently active environment will be used if found.
             """
             ),
             default=None,
@@ -74,6 +74,12 @@ the build. If not specified, currently active Conda environment will be used if 
             action="store_true",
             default=False,
             help="Run the stack after building using the same image type, name, and other applicable arguments",
+        )
+        self.parser.add_argument(
+            "--providers",
+            type=str,
+            default=None,
+            help="Build a config for a list of providers and only those providers. This list is formatted like: api1=provider1,api2=provider2. Where there can be multiple providers per API.",
         )
 
     def _run_stack_build_command(self, args: argparse.Namespace) -> None:
