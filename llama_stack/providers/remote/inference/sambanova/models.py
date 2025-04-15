@@ -15,10 +15,6 @@ MODEL_ENTRIES = [
         CoreModelId.llama3_1_8b_instruct.value,
     ),
     build_hf_repo_model_entry(
-        "sambanova/Meta-Llama-3.1-70B-Instruct",
-        CoreModelId.llama3_1_70b_instruct.value,
-    ),
-    build_hf_repo_model_entry(
         "sambanova/Meta-Llama-3.1-405B-Instruct",
         CoreModelId.llama3_1_405b_instruct.value,
     ),
