@@ -7,7 +7,7 @@ The `llamastack/distribution-nvidia` distribution consists of the following prov
 |-----|-------------|
 | agents | `inline::meta-reference` |
 | datasetio | `inline::localfs` |
-| eval | `inline::meta-reference` |
+| eval | `remote::nvidia` |
 | inference | `remote::nvidia` |
 | post_training | `remote::nvidia` |
 | safety | `remote::nvidia` |
@@ -29,6 +29,7 @@ The following environment variables can be configured:
 - `NVIDIA_CUSTOMIZER_URL`: NVIDIA Customizer URL (default: `https://customizer.api.nvidia.com`)
 - `NVIDIA_OUTPUT_MODEL_DIR`: NVIDIA Output Model Directory (default: `test-example-model@v1`)
 - `GUARDRAILS_SERVICE_URL`: URL for the NeMo Guardrails Service (default: `http://0.0.0.0:7331`)
+- `NVIDIA_EVALUATOR_URL`: URL for the NeMo Evaluator Service (default: `http://0.0.0.0:7331`)
 - `INFERENCE_MODEL`: Inference model (default: `Llama3.1-8B-Instruct`)
 - `SAFETY_MODEL`: Name of the model to use for safety (default: `meta/llama-3.1-8b-instruct`)
 
