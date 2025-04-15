@@ -18,7 +18,7 @@ from typing import (
 )
 
 from pydantic import BaseModel, Field, field_validator
-from typing_extensions import Annotated
+from typing_extensions import Annotated, TypedDict
 
 from llama_stack.apis.common.content_types import ContentDelta, InterleavedContent, InterleavedContentItem
 from llama_stack.apis.models import Model
@@ -443,6 +443,37 @@ class EmbeddingsResponse(BaseModel):
 
 
 @json_schema_type
+class OpenAIChatCompletionContentPartTextParam(BaseModel):
+    type: Literal["text"] = "text"
+    text: str
+
+
+@json_schema_type
+class OpenAIImageURL(BaseModel):
+    url: str
+    detail: Optional[str] = None
+
+
+@json_schema_type
+class OpenAIChatCompletionContentPartImageParam(BaseModel):
+    type: Literal["image_url"] = "image_url"
+    image_url: OpenAIImageURL
+
+
+OpenAIChatCompletionContentPartParam = Annotated[
+    Union[
+        OpenAIChatCompletionContentPartTextParam,
+        OpenAIChatCompletionContentPartImageParam,
+    ],
+    Field(discriminator="type"),
+]
+register_schema(OpenAIChatCompletionContentPartParam, name="OpenAIChatCompletionContentPartParam")
+
+
+OpenAIChatCompletionMessageContent = Union[str, List[OpenAIChatCompletionContentPartParam]]
+
+
+@json_schema_type
 class OpenAIUserMessageParam(BaseModel):
     """A message from the user in an OpenAI-compatible chat completion request.
 
@@ -452,7 +483,7 @@ class OpenAIUserMessageParam(BaseModel):
     """
 
     role: Literal["user"] = "user"
-    content: InterleavedContent
+    content: OpenAIChatCompletionMessageContent
     name: Optional[str] = None
 
 
@@ -466,8 +497,22 @@ class OpenAISystemMessageParam(BaseModel):
     """
 
     role: Literal["system"] = "system"
-    content: InterleavedContent
+    content: OpenAIChatCompletionMessageContent
     name: Optional[str] = None
+
+
+@json_schema_type
+class OpenAIChatCompletionToolCallFunction(BaseModel):
+    name: Optional[str] = None
+    arguments: Optional[str] = None
+
+
+@json_schema_type
+class OpenAIChatCompletionToolCall(BaseModel):
+    index: Optional[int] = None
+    id: Optional[str] = None
+    type: Literal["function"] = "function"
+    function: Optional[OpenAIChatCompletionToolCallFunction] = None
 
 
 @json_schema_type
@@ -477,13 +522,13 @@ class OpenAIAssistantMessageParam(BaseModel):
     :param role: Must be "assistant" to identify this as the model's response
     :param content: The content of the model's response
     :param name: (Optional) The name of the assistant message participant.
-    :param tool_calls: List of tool calls. Each tool call is a ToolCall object.
+    :param tool_calls: List of tool calls. Each tool call is an OpenAIChatCompletionToolCall object.
     """
 
     role: Literal["assistant"] = "assistant"
-    content: InterleavedContent
+    content: OpenAIChatCompletionMessageContent
     name: Optional[str] = None
-    tool_calls: Optional[List[ToolCall]] = Field(default_factory=list)
+    tool_calls: Optional[List[OpenAIChatCompletionToolCall]] = Field(default_factory=list)
 
 
 @json_schema_type
@@ -497,7 +542,7 @@ class OpenAIToolMessageParam(BaseModel):
 
     role: Literal["tool"] = "tool"
     tool_call_id: str
-    content: InterleavedContent
+    content: OpenAIChatCompletionMessageContent
 
 
 @json_schema_type
@@ -510,7 +555,7 @@ class OpenAIDeveloperMessageParam(BaseModel):
     """
 
     role: Literal["developer"] = "developer"
-    content: InterleavedContent
+    content: OpenAIChatCompletionMessageContent
     name: Optional[str] = None
 
 
@@ -525,6 +570,46 @@ OpenAIMessageParam = Annotated[
     Field(discriminator="role"),
 ]
 register_schema(OpenAIMessageParam, name="OpenAIMessageParam")
+
+
+@json_schema_type
+class OpenAIResponseFormatText(BaseModel):
+    type: Literal["text"] = "text"
+
+
+@json_schema_type
+class OpenAIJSONSchema(TypedDict, total=False):
+    name: str
+    description: Optional[str] = None
+    strict: Optional[bool] = None
+
+    # Pydantic BaseModel cannot be used with a schema param, since it already
+    # has one. And, we don't want to alias here because then have to handle
+    # that alias when converting to OpenAI params. So, to support schema,
+    # we use a TypedDict.
+    schema: Optional[Dict[str, Any]] = None
+
+
+@json_schema_type
+class OpenAIResponseFormatJSONSchema(BaseModel):
+    type: Literal["json_schema"] = "json_schema"
+    json_schema: OpenAIJSONSchema
+
+
+@json_schema_type
+class OpenAIResponseFormatJSONObject(BaseModel):
+    type: Literal["json_object"] = "json_object"
+
+
+OpenAIResponseFormatParam = Annotated[
+    Union[
+        OpenAIResponseFormatText,
+        OpenAIResponseFormatJSONSchema,
+        OpenAIResponseFormatJSONObject,
+    ],
+    Field(discriminator="type"),
+]
+register_schema(OpenAIResponseFormatParam, name="OpenAIResponseFormatParam")
 
 
 @json_schema_type
@@ -561,12 +646,44 @@ class OpenAITokenLogProb(BaseModel):
 class OpenAIChoiceLogprobs(BaseModel):
     """The log probabilities for the tokens in the message from an OpenAI-compatible chat completion response.
 
-    :content: (Optional) The log probabilities for the tokens in the message
-    :refusal: (Optional) The log probabilities for the tokens in the message
+    :param content: (Optional) The log probabilities for the tokens in the message
+    :param refusal: (Optional) The log probabilities for the tokens in the message
     """
 
     content: Optional[List[OpenAITokenLogProb]] = None
     refusal: Optional[List[OpenAITokenLogProb]] = None
+
+
+@json_schema_type
+class OpenAIChoiceDelta(BaseModel):
+    """A delta from an OpenAI-compatible chat completion streaming response.
+
+    :param content: (Optional) The content of the delta
+    :param refusal: (Optional) The refusal of the delta
+    :param role: (Optional) The role of the delta
+    :param tool_calls: (Optional) The tool calls of the delta
+    """
+
+    content: Optional[str] = None
+    refusal: Optional[str] = None
+    role: Optional[str] = None
+    tool_calls: Optional[List[OpenAIChatCompletionToolCall]] = None
+
+
+@json_schema_type
+class OpenAIChunkChoice(BaseModel):
+    """A chunk choice from an OpenAI-compatible chat completion streaming response.
+
+    :param delta: The delta from the chunk
+    :param finish_reason: The reason the model stopped generating
+    :param index: The index of the choice
+    :param logprobs: (Optional) The log probabilities for the tokens in the message
+    """
+
+    delta: OpenAIChoiceDelta
+    finish_reason: str
+    index: int
+    logprobs: Optional[OpenAIChoiceLogprobs] = None
 
 
 @json_schema_type
@@ -575,8 +692,8 @@ class OpenAIChoice(BaseModel):
 
     :param message: The message from the model
     :param finish_reason: The reason the model stopped generating
-    :index: The index of the choice
-    :logprobs: (Optional) The log probabilities for the tokens in the message
+    :param index: The index of the choice
+    :param logprobs: (Optional) The log probabilities for the tokens in the message
     """
 
     message: OpenAIMessageParam
@@ -599,6 +716,24 @@ class OpenAIChatCompletion(BaseModel):
     id: str
     choices: List[OpenAIChoice]
     object: Literal["chat.completion"] = "chat.completion"
+    created: int
+    model: str
+
+
+@json_schema_type
+class OpenAIChatCompletionChunk(BaseModel):
+    """Chunk from a streaming response to an OpenAI-compatible chat completion request.
+
+    :param id: The ID of the chat completion
+    :param choices: List of choices
+    :param object: The object type, which will be "chat.completion.chunk"
+    :param created: The Unix timestamp in seconds when the chat completion was created
+    :param model: The model that was used to generate the chat completion
+    """
+
+    id: str
+    choices: List[OpenAIChunkChoice]
+    object: Literal["chat.completion.chunk"] = "chat.completion.chunk"
     created: int
     model: str
 
@@ -681,6 +816,16 @@ class EmbeddingTaskType(Enum):
     document = "document"
 
 
+@json_schema_type
+class BatchCompletionResponse(BaseModel):
+    batch: List[CompletionResponse]
+
+
+@json_schema_type
+class BatchChatCompletionResponse(BaseModel):
+    batch: List[ChatCompletionResponse]
+
+
 @runtime_checkable
 @trace_protocol
 class Inference(Protocol):
@@ -715,6 +860,17 @@ class Inference(Protocol):
                  If stream=True, returns an SSE event stream of CompletionResponseStreamChunk
         """
         ...
+
+    @webmethod(route="/inference/batch-completion", method="POST", experimental=True)
+    async def batch_completion(
+        self,
+        model_id: str,
+        content_batch: List[InterleavedContent],
+        sampling_params: Optional[SamplingParams] = None,
+        response_format: Optional[ResponseFormat] = None,
+        logprobs: Optional[LogProbConfig] = None,
+    ) -> BatchCompletionResponse:
+        raise NotImplementedError("Batch completion is not implemented")
 
     @webmethod(route="/inference/chat-completion", method="POST")
     async def chat_completion(
@@ -755,6 +911,19 @@ class Inference(Protocol):
                  If stream=True, returns an SSE event stream of ChatCompletionResponseStreamChunk
         """
         ...
+
+    @webmethod(route="/inference/batch-chat-completion", method="POST", experimental=True)
+    async def batch_chat_completion(
+        self,
+        model_id: str,
+        messages_batch: List[List[Message]],
+        sampling_params: Optional[SamplingParams] = None,
+        tools: Optional[List[ToolDefinition]] = None,
+        tool_config: Optional[ToolConfig] = None,
+        response_format: Optional[ResponseFormat] = None,
+        logprobs: Optional[LogProbConfig] = None,
+    ) -> BatchChatCompletionResponse:
+        raise NotImplementedError("Batch chat completion is not implemented")
 
     @webmethod(route="/inference/embeddings", method="POST")
     async def embeddings(
@@ -838,7 +1007,7 @@ class Inference(Protocol):
         n: Optional[int] = None,
         parallel_tool_calls: Optional[bool] = None,
         presence_penalty: Optional[float] = None,
-        response_format: Optional[Dict[str, str]] = None,
+        response_format: Optional[OpenAIResponseFormatParam] = None,
         seed: Optional[int] = None,
         stop: Optional[Union[str, List[str]]] = None,
         stream: Optional[bool] = None,
@@ -849,7 +1018,7 @@ class Inference(Protocol):
         top_logprobs: Optional[int] = None,
         top_p: Optional[float] = None,
         user: Optional[str] = None,
-    ) -> OpenAIChatCompletion:
+    ) -> Union[OpenAIChatCompletion, AsyncIterator[OpenAIChatCompletionChunk]]:
         """Generate an OpenAI-compatible chat completion for the given messages using the specified model.
 
         :param model: The identifier of the model to use. The model must be registered with Llama Stack and available via the /models endpoint.

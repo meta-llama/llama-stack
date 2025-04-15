@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 import json
 import logging
-from typing import Any, AsyncGenerator, Dict, List, Optional, Union
+from typing import Any, AsyncGenerator, AsyncIterator, Dict, List, Optional, Union
 
 import httpx
 from openai import AsyncOpenAI
@@ -45,7 +45,12 @@ from llama_stack.apis.inference import (
     ToolDefinition,
     ToolPromptFormat,
 )
-from llama_stack.apis.inference.inference import OpenAIChatCompletion, OpenAICompletion, OpenAIMessageParam
+from llama_stack.apis.inference.inference import (
+    OpenAIChatCompletion,
+    OpenAICompletion,
+    OpenAIMessageParam,
+    OpenAIResponseFormatParam,
+)
 from llama_stack.apis.models import Model, ModelType
 from llama_stack.models.llama.datatypes import BuiltinTool, StopReason, ToolCall
 from llama_stack.models.llama.sku_list import all_registered_models
@@ -487,7 +492,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         n: Optional[int] = None,
         parallel_tool_calls: Optional[bool] = None,
         presence_penalty: Optional[float] = None,
-        response_format: Optional[Dict[str, str]] = None,
+        response_format: Optional[OpenAIResponseFormatParam] = None,
         seed: Optional[int] = None,
         stop: Optional[Union[str, List[str]]] = None,
         stream: Optional[bool] = None,
@@ -498,7 +503,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         top_logprobs: Optional[int] = None,
         top_p: Optional[float] = None,
         user: Optional[str] = None,
-    ) -> OpenAIChatCompletion:
+    ) -> Union[OpenAIChatCompletion, AsyncIterator[OpenAIChatCompletionChunk]]:
         model_obj = await self._get_model(model)
         params = await prepare_openai_completion_params(
             model=model_obj.provider_resource_id,
@@ -526,3 +531,25 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
             user=user,
         )
         return await self.client.chat.completions.create(**params)  # type: ignore
+
+    async def batch_completion(
+        self,
+        model_id: str,
+        content_batch: List[InterleavedContent],
+        sampling_params: Optional[SamplingParams] = None,
+        response_format: Optional[ResponseFormat] = None,
+        logprobs: Optional[LogProbConfig] = None,
+    ):
+        raise NotImplementedError("Batch completion is not supported for Ollama")
+
+    async def batch_chat_completion(
+        self,
+        model_id: str,
+        messages_batch: List[List[Message]],
+        sampling_params: Optional[SamplingParams] = None,
+        tools: Optional[List[ToolDefinition]] = None,
+        tool_config: Optional[ToolConfig] = None,
+        response_format: Optional[ResponseFormat] = None,
+        logprobs: Optional[LogProbConfig] = None,
+    ):
+        raise NotImplementedError("Batch chat completion is not supported for Ollama")

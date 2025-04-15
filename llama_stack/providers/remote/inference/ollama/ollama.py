@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 
-from typing import Any, AsyncGenerator, Dict, List, Optional, Union
+from typing import Any, AsyncGenerator, AsyncIterator, Dict, List, Optional, Union
 
 import httpx
 from ollama import AsyncClient
@@ -39,10 +39,20 @@ from llama_stack.apis.inference import (
     ToolDefinition,
     ToolPromptFormat,
 )
-from llama_stack.apis.inference.inference import OpenAIChatCompletion, OpenAICompletion, OpenAIMessageParam
+from llama_stack.apis.inference.inference import (
+    OpenAIChatCompletion,
+    OpenAIChatCompletionChunk,
+    OpenAICompletion,
+    OpenAIMessageParam,
+    OpenAIResponseFormatParam,
+)
 from llama_stack.apis.models import Model, ModelType
 from llama_stack.log import get_logger
-from llama_stack.providers.datatypes import ModelsProtocolPrivate
+from llama_stack.providers.datatypes import (
+    HealthResponse,
+    HealthStatus,
+    ModelsProtocolPrivate,
+)
 from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
 )
@@ -87,8 +97,19 @@ class OllamaInferenceAdapter(
 
     async def initialize(self) -> None:
         logger.info(f"checking connectivity to Ollama at `{self.url}`...")
+        await self.health()
+
+    async def health(self) -> HealthResponse:
+        """
+        Performs a health check by verifying connectivity to the Ollama server.
+        This method is used by initialize() and the Provider API to verify that the service is running
+        correctly.
+        Returns:
+            HealthResponse: A dictionary containing the health status.
+        """
         try:
             await self.client.ps()
+            return HealthResponse(status=HealthStatus.OK)
         except httpx.ConnectError as e:
             raise RuntimeError(
                 "Ollama Server is not running, start it using `ollama serve` in a separate terminal"
@@ -322,6 +343,12 @@ class OllamaInferenceAdapter(
         response = await self.client.list()
         available_models = [m["model"] for m in response["models"]]
         if model.provider_resource_id not in available_models:
+            available_models_latest = [m["model"].split(":latest")[0] for m in response["models"]]
+            if model.provider_resource_id in available_models_latest:
+                logger.warning(
+                    f"Imprecise provider resource id was used but 'latest' is available in Ollama - using '{model.provider_resource_id}:latest'"
+                )
+                return model
             raise ValueError(
                 f"Model '{model.provider_resource_id}' is not available in Ollama. Available models: {', '.join(available_models)}"
             )
@@ -393,7 +420,7 @@ class OllamaInferenceAdapter(
         n: Optional[int] = None,
         parallel_tool_calls: Optional[bool] = None,
         presence_penalty: Optional[float] = None,
-        response_format: Optional[Dict[str, str]] = None,
+        response_format: Optional[OpenAIResponseFormatParam] = None,
         seed: Optional[int] = None,
         stop: Optional[Union[str, List[str]]] = None,
         stream: Optional[bool] = None,
@@ -404,7 +431,7 @@ class OllamaInferenceAdapter(
         top_logprobs: Optional[int] = None,
         top_p: Optional[float] = None,
         user: Optional[str] = None,
-    ) -> OpenAIChatCompletion:
+    ) -> Union[OpenAIChatCompletion, AsyncIterator[OpenAIChatCompletionChunk]]:
         model_obj = await self._get_model(model)
         params = {
             k: v
@@ -436,6 +463,28 @@ class OllamaInferenceAdapter(
             if v is not None
         }
         return await self.openai_client.chat.completions.create(**params)  # type: ignore
+
+    async def batch_completion(
+        self,
+        model_id: str,
+        content_batch: List[InterleavedContent],
+        sampling_params: Optional[SamplingParams] = None,
+        response_format: Optional[ResponseFormat] = None,
+        logprobs: Optional[LogProbConfig] = None,
+    ):
+        raise NotImplementedError("Batch completion is not supported for Ollama")
+
+    async def batch_chat_completion(
+        self,
+        model_id: str,
+        messages_batch: List[List[Message]],
+        sampling_params: Optional[SamplingParams] = None,
+        tools: Optional[List[ToolDefinition]] = None,
+        tool_config: Optional[ToolConfig] = None,
+        response_format: Optional[ResponseFormat] = None,
+        logprobs: Optional[LogProbConfig] = None,
+    ):
+        raise NotImplementedError("Batch chat completion is not supported for Ollama")
 
 
 async def convert_message_to_openai_dict_for_ollama(message: Message) -> List[dict]:
