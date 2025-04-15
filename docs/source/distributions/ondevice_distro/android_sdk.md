@@ -58,7 +58,7 @@ Start a Llama Stack server on localhost. Here is an example of how you can do th
 ```
 conda create -n stack-fireworks python=3.10
 conda activate stack-fireworks
-pip install --no-cache llama-stack==0.1.4
+pip install --no-cache llama-stack==0.2.2
 llama stack build --template fireworks --image-type conda
 export FIREWORKS_API_KEY=<SOME_KEY>
 llama stack run fireworks --port 5050
