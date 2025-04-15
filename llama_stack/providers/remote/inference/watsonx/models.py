@@ -40,10 +40,6 @@ MODEL_ENTRIES = [
         "meta-llama/llama-3-2-90b-vision-instruct",
         CoreModelId.llama3_2_90b_vision_instruct.value,
     ),
-    # build_hf_repo_model_entry(
-    #     "meta-llama/llama-3-405b-instruct",
-    #     CoreModelId.llama3_405b_instruct.value,
-    # ),
     build_hf_repo_model_entry(
         "meta-llama/llama-guard-3-11b-vision",
         CoreModelId.llama_guard_3_11b_vision.value,

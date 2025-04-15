@@ -68,6 +68,6 @@ docker run \
 llama stack build --template watsonx --image-type conda
 llama stack run ./run.yaml \
   --port $LLAMA_STACK_PORT \
-  --env WATSONX_API_KEY=$WATSONX_API_KEY  \
+  --env WATSONX_API_KEY=$WATSONX_API_KEY \
   --env WATSONX_PROJECT_ID=$WATSONX_PROJECT_ID
 ```

@@ -7,7 +7,6 @@
 from typing import AsyncGenerator, List, Optional, Union
 
 from llama_stack.apis.common.content_types import InterleavedContent, InterleavedContentItem
-from llama_stack.models.llama.datatypes import SamplingParams, ToolDefinition, ToolPromptFormat
 from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
@@ -30,8 +29,6 @@ from llama_stack.apis.inference import (
 from llama_stack.providers.utils.inference.openai_compat import (
     OpenAICompatCompletionChoice,
     OpenAICompatCompletionResponse,
-    convert_message_to_openai_dict,
-    get_sampling_options,
     process_chat_completion_response,
     process_chat_completion_stream_response,
     process_completion_response,
