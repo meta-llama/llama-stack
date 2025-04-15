@@ -14,7 +14,8 @@ The `llamastack/distribution-{{ name }}` distribution consists of the following 
 
 {{ providers_table }}
 
-{% if run_config_env_vars 
+{% if run_config_env_vars  %}
+
 ### Environment Variables
 
 The following environment variables can be configured:
