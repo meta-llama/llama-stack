@@ -90,7 +90,7 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y \
        iputils-ping net-tools iproute2 dnsutils telnet \
-       curl wget telnet \
+       curl wget telnet git\
        procps psmisc lsof \
        traceroute \
        bubblewrap \
