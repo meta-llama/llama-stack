@@ -120,13 +120,10 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
             "meta/llama-3.2-90b-vision-instruct": "https://ai.api.nvidia.com/v1/gr/meta/llama-3.2-90b-vision-instruct",
         }
 
-        # add /v1 in case of hosted models
-        base_url = self._config.url
-        if _is_nvidia_hosted(self._config):
-            if provider_model_id in special_model_urls:
-                base_url = special_model_urls[provider_model_id]
-            else:
-                base_url = f"{self._config.url}/v1"
+        base_url = f"{self._config.url}/v1" if self._config.append_api_version else self._config.url
+
+        if _is_nvidia_hosted(self._config) and provider_model_id in special_model_urls:
+            base_url = special_model_urls[provider_model_id]
         return _get_client_for_base_url(base_url)
 
     async def completion(
