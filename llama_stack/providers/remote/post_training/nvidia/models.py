@@ -16,7 +16,11 @@ _MODEL_ENTRIES = [
     build_hf_repo_model_entry(
         "meta/llama-3.1-8b-instruct",
         CoreModelId.llama3_1_8b_instruct.value,
-    )
+    ),
+    build_hf_repo_model_entry(
+        "meta/llama-3.2-1b-instruct",
+        CoreModelId.llama3_2_1b_instruct.value,
+    ),
 ]
 
 
