@@ -60,7 +60,7 @@ class TestNvidiaDatastore(unittest.TestCase):
             provider_id="",
             purpose=DatasetPurpose.post_training_messages,
             source=URIDataSource(uri="https://example.com/data.jsonl"),
-            metadata={"format": "jsonl", "description": "Test dataset description"},
+            metadata={"provider_id": "nvidia", "format": "jsonl", "description": "Test dataset description"},
         )
 
         self.run_async(self.adapter.register_dataset(dataset_def))

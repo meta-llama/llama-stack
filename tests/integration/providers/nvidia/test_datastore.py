@@ -30,7 +30,7 @@ def test_register_and_unregister(llama_stack_client, provider_id):
         dataset_id=dataset_id,
         purpose=purpose,
         source=source,
-        metadata={"provider": provider_id, "format": "json", "description": "Test dataset description"},
+        metadata={"provider_id": provider_id, "format": "json", "description": "Test dataset description"},
     )
     assert dataset.identifier is not None
     assert dataset.provider_id == provider_id
