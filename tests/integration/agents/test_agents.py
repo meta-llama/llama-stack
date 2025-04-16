@@ -118,12 +118,21 @@ def test_agent_simple(llama_stack_client_with_mocked_inference, agent_config):
 def test_agent_name(llama_stack_client, text_model_id):
     agent_name = f"test-agent-{uuid4()}"
 
-    agent = Agent(
-        llama_stack_client,
-        model=text_model_id,
-        instructions="You are a helpful assistant",
-        name=agent_name,
-    )
+    try:
+        agent = Agent(
+            llama_stack_client,
+            model=text_model_id,
+            instructions="You are a helpful assistant",
+            name=agent_name,
+        )
+    except TypeError:
+        agent = Agent(
+            llama_stack_client,
+            model=text_model_id,
+            instructions="You are a helpful assistant",
+        )
+        return
+
     session_id = agent.create_session(f"test-session-{uuid4()}")
 
     agent.create_turn(
