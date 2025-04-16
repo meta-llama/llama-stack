@@ -19,7 +19,7 @@ import tempfile
 import time
 import uuid
 from enum import Enum
-from typing import Callable, Generator, Literal, Optional, Union
+from typing import Callable, Generator, List, Literal, Optional, Tuple, Union
 
 import torch
 import zmq
@@ -32,12 +32,11 @@ from pydantic import BaseModel, Field
 from torch.distributed.launcher.api import LaunchConfig, elastic_launch
 from typing_extensions import Annotated
 
+from llama_stack.models.llama.datatypes import GenerationResult
 from llama_stack.providers.utils.inference.prompt_adapter import (
     ChatCompletionRequestWithRawContent,
     CompletionRequestWithRawContent,
 )
-
-from .common import TokenResult
 
 log = logging.getLogger(__name__)
 
@@ -70,12 +69,12 @@ class CancelSentinel(BaseModel):
 
 class TaskRequest(BaseModel):
     type: Literal[ProcessingMessageName.task_request] = ProcessingMessageName.task_request
-    task: Union[CompletionRequestWithRawContent, ChatCompletionRequestWithRawContent]
+    task: Tuple[str, List[CompletionRequestWithRawContent] | List[ChatCompletionRequestWithRawContent]]
 
 
 class TaskResponse(BaseModel):
     type: Literal[ProcessingMessageName.task_response] = ProcessingMessageName.task_response
-    result: TokenResult
+    result: List[GenerationResult]
 
 
 class ExceptionResponse(BaseModel):
@@ -332,7 +331,7 @@ class ModelParallelProcessGroup:
 
     def run_inference(
         self,
-        req: Union[CompletionRequestWithRawContent, ChatCompletionRequestWithRawContent],
+        req: Tuple[str, List[CompletionRequestWithRawContent] | List[ChatCompletionRequestWithRawContent]],
     ) -> Generator:
         assert not self.running, "inference already running"
 

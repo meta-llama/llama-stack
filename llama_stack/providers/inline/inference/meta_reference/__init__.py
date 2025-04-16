@@ -4,13 +4,13 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, Union
+from typing import Any, Dict
 
-from .config import MetaReferenceInferenceConfig, MetaReferenceQuantizedInferenceConfig
+from .config import MetaReferenceInferenceConfig
 
 
 async def get_provider_impl(
-    config: Union[MetaReferenceInferenceConfig, MetaReferenceQuantizedInferenceConfig],
+    config: MetaReferenceInferenceConfig,
     _deps: Dict[str, Any],
 ):
     from .inference import MetaReferenceInferenceImpl

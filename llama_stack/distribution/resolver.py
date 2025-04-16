@@ -273,7 +273,6 @@ def sort_providers_by_deps(
     logger.debug(f"Resolved {len(sorted_providers)} providers")
     for api_str, provider in sorted_providers:
         logger.debug(f" {api_str} => {provider.provider_id}")
-        logger.debug("")
     return sorted_providers
 
 
@@ -351,6 +350,7 @@ async def instantiate_provider(
     if not hasattr(provider_spec, "module"):
         raise AttributeError(f"ProviderSpec of type {type(provider_spec)} does not have a 'module' attribute")
 
+    logger.debug(f"Instantiating provider {provider.provider_id} from {provider_spec.module}")
     module = importlib.import_module(provider_spec.module)
     args = []
     if isinstance(provider_spec, RemoteProviderSpec):
@@ -399,6 +399,8 @@ def check_protocol_compliance(obj: Any, protocol: Any) -> None:
     mro = type(obj).__mro__
     for name, value in inspect.getmembers(protocol):
         if inspect.isfunction(value) and hasattr(value, "__webmethod__"):
+            if value.__webmethod__.experimental:
+                continue
             if not hasattr(obj, name):
                 missing_methods.append((name, "missing"))
             elif not callable(getattr(obj, name)):

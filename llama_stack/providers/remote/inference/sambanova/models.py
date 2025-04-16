@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from llama_stack.models.llama.datatypes import CoreModelId
+from llama_stack.models.llama.sku_types import CoreModelId
 from llama_stack.providers.utils.inference.model_registry import (
     build_hf_repo_model_entry,
 )
@@ -45,5 +45,9 @@ MODEL_ENTRIES = [
     build_hf_repo_model_entry(
         "Meta-Llama-Guard-3-8B",
         CoreModelId.llama_guard_3_8b.value,
+    ),
+    build_hf_repo_model_entry(
+        "Llama-4-Scout-17B-16E-Instruct",
+        CoreModelId.llama4_scout_17b_16e_instruct.value,
     ),
 ]

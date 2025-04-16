@@ -1,8 +1,8 @@
 # Providers Overview
 
 The goal of Llama Stack is to build an ecosystem where users can easily swap out different implementations for the same API. Examples for these include:
-- LLM inference providers (e.g., Fireworks, Together, AWS Bedrock, Groq, Cerebras, SambaNova, vLLM, etc.),
-- Vector databases (e.g., ChromaDB, Weaviate, Qdrant, Milvus, FAISS, PGVector, etc.),
+- LLM inference providers (e.g., Ollama, Fireworks, Together, AWS Bedrock, Groq, Cerebras, SambaNova, vLLM, etc.),
+- Vector databases (e.g., ChromaDB, Weaviate, Qdrant, Milvus, FAISS, PGVector, SQLite-Vec, etc.),
 - Safety providers (e.g., Meta's Llama Guard, AWS Bedrock Guardrails, etc.)
 
 Providers come in two flavors:
@@ -10,6 +10,10 @@ Providers come in two flavors:
 - **Inline**: the provider is fully specified and implemented within the Llama Stack codebase. It may be a simple wrapper around an existing library, or a full fledged implementation within Llama Stack.
 
 Importantly, Llama Stack always strives to provide at least one fully inline provider for each API so you can iterate on a fully featured environment locally.
+
+## External Providers
+
+Llama Stack supports external providers that live outside of the main codebase. This allows you to create and maintain your own providers independently. See the [External Providers Guide](external) for details.
 
 ## Agents
 Run multi-step agentic workflows with LLMs with tool usage, memory (RAG), etc.
@@ -50,6 +54,7 @@ The following providers (i.e., databases) are available for Vector IO:
 ```{toctree}
 :maxdepth: 1
 
+external
 vector_io/faiss
 vector_io/sqlite-vec
 vector_io/chromadb

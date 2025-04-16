@@ -5,8 +5,10 @@
 # the root directory of this source tree.
 import json
 import logging
+import time
+import uuid
 import warnings
-from typing import AsyncGenerator, Dict, Iterable, List, Optional, Union
+from typing import Any, AsyncGenerator, Dict, Iterable, List, Optional, Union
 
 from openai import AsyncStream
 from openai.types.chat import (
@@ -73,21 +75,22 @@ from llama_stack.apis.inference import (
     CompletionMessage,
     CompletionResponse,
     CompletionResponseStreamChunk,
+    GreedySamplingStrategy,
     Message,
+    SamplingParams,
     SystemMessage,
     TokenLogProbs,
     ToolResponseMessage,
+    TopKSamplingStrategy,
+    TopPSamplingStrategy,
     UserMessage,
 )
+from llama_stack.apis.inference.inference import OpenAIChatCompletion, OpenAICompletion, OpenAICompletionChoice
 from llama_stack.models.llama.datatypes import (
     BuiltinTool,
-    GreedySamplingStrategy,
-    SamplingParams,
     StopReason,
     ToolCall,
     ToolDefinition,
-    TopKSamplingStrategy,
-    TopPSamplingStrategy,
 )
 from llama_stack.providers.utils.inference.prompt_adapter import (
     convert_image_content_to_url,
@@ -573,21 +576,24 @@ async def convert_message_to_openai_dict_new(
             content=await _convert_message_content(message.content),
         )
     elif isinstance(message, CompletionMessage):
+        tool_calls = [
+            OpenAIChatCompletionMessageToolCall(
+                id=tool.call_id,
+                function=OpenAIFunction(
+                    name=(tool.tool_name if not isinstance(tool.tool_name, BuiltinTool) else tool.tool_name.value),
+                    arguments=json.dumps(tool.arguments),
+                ),
+                type="function",
+            )
+            for tool in message.tool_calls
+        ]
+        params = {}
+        if tool_calls:
+            params = {"tool_calls": tool_calls}
         out = OpenAIChatCompletionAssistantMessage(
             role="assistant",
             content=await _convert_message_content(message.content),
-            tool_calls=[
-                OpenAIChatCompletionMessageToolCall(
-                    id=tool.call_id,
-                    function=OpenAIFunction(
-                        name=(tool.tool_name if not isinstance(tool.tool_name, BuiltinTool) else tool.tool_name.value),
-                        arguments=json.dumps(tool.arguments),
-                    ),
-                    type="function",
-                )
-                for tool in message.tool_calls
-            ]
-            or None,
+            **params,
         )
     elif isinstance(message, ToolResponseMessage):
         out = OpenAIChatCompletionToolMessage(
@@ -637,6 +643,36 @@ PYTHON_TYPE_TO_LITELLM_TYPE = {
     "bool": "boolean",
     "str": "string",
 }
+
+
+def to_openai_param_type(param_type: str) -> dict:
+    """
+    Convert Python type hints to OpenAI parameter type format.
+
+    Examples:
+        'str' -> {'type': 'string'}
+        'int' -> {'type': 'integer'}
+        'list[str]' -> {'type': 'array', 'items': {'type': 'string'}}
+        'list[int]' -> {'type': 'array', 'items': {'type': 'integer'}}
+    """
+    # Handle basic types first
+    basic_types = {
+        "str": "string",
+        "int": "integer",
+        "float": "number",
+        "bool": "boolean",
+    }
+
+    if param_type in basic_types:
+        return {"type": basic_types[param_type]}
+
+    # Handle list/array types
+    if param_type.startswith("list[") and param_type.endswith("]"):
+        inner_type = param_type[5:-1]
+        if inner_type in basic_types:
+            return {"type": "array", "items": {"type": basic_types.get(inner_type, inner_type)}}
+
+    return {"type": param_type}
 
 
 def convert_tooldef_to_openai_tool(tool: ToolDefinition) -> dict:
@@ -699,7 +735,7 @@ def convert_tooldef_to_openai_tool(tool: ToolDefinition) -> dict:
         properties = parameters["properties"]
         required = []
         for param_name, param in tool.parameters.items():
-            properties[param_name] = {"type": PYTHON_TYPE_TO_LITELLM_TYPE.get(param.param_type, param.param_type)}
+            properties[param_name] = to_openai_param_type(param.param_type)
             if param.description:
                 properties[param_name].update(description=param.description)
             if param.default:
@@ -801,13 +837,38 @@ def _convert_openai_logprobs(
          - token, logprob
 
     """
-    if not logprobs:
+    if not logprobs or not logprobs.content:
         return None
 
     return [
         TokenLogProbs(logprobs_by_token={logprobs.token: logprobs.logprob for logprobs in content.top_logprobs})
         for content in logprobs.content
     ]
+
+
+def _convert_openai_sampling_params(
+    max_tokens: Optional[int] = None,
+    temperature: Optional[float] = None,
+    top_p: Optional[float] = None,
+) -> SamplingParams:
+    sampling_params = SamplingParams()
+
+    if max_tokens:
+        sampling_params.max_tokens = max_tokens
+
+    # Map an explicit temperature of 0 to greedy sampling
+    if temperature == 0:
+        strategy = GreedySamplingStrategy()
+    else:
+        # OpenAI defaults to 1.0 for temperature and top_p if unset
+        if temperature is None:
+            temperature = 1.0
+        if top_p is None:
+            top_p = 1.0
+        strategy = TopPSamplingStrategy(temperature=temperature, top_p=top_p)
+
+    sampling_params.strategy = strategy
+    return sampling_params
 
 
 def convert_openai_chat_completion_choice(
@@ -1016,3 +1077,106 @@ async def convert_openai_chat_completion_stream(
             stop_reason=stop_reason,
         )
     )
+
+
+async def prepare_openai_completion_params(**params):
+    completion_params = {k: v for k, v in params.items() if v is not None}
+    return completion_params
+
+
+class OpenAICompletionUnsupportedMixin:
+    async def openai_completion(
+        self,
+        model: str,
+        prompt: Union[str, List[str], List[int], List[List[int]]],
+        best_of: Optional[int] = None,
+        echo: Optional[bool] = None,
+        frequency_penalty: Optional[float] = None,
+        logit_bias: Optional[Dict[str, float]] = None,
+        logprobs: Optional[bool] = None,
+        max_tokens: Optional[int] = None,
+        n: Optional[int] = None,
+        presence_penalty: Optional[float] = None,
+        seed: Optional[int] = None,
+        stop: Optional[Union[str, List[str]]] = None,
+        stream: Optional[bool] = None,
+        stream_options: Optional[Dict[str, Any]] = None,
+        temperature: Optional[float] = None,
+        top_p: Optional[float] = None,
+        user: Optional[str] = None,
+        guided_choice: Optional[List[str]] = None,
+        prompt_logprobs: Optional[int] = None,
+    ) -> OpenAICompletion:
+        if stream:
+            raise ValueError(f"{self.__class__.__name__} doesn't support streaming openai completions")
+
+        # This is a pretty hacky way to do emulate completions -
+        # basically just de-batches them...
+        prompts = [prompt] if not isinstance(prompt, list) else prompt
+
+        sampling_params = _convert_openai_sampling_params(
+            max_tokens=max_tokens,
+            temperature=temperature,
+            top_p=top_p,
+        )
+
+        choices = []
+        # "n" is the number of completions to generate per prompt
+        for _i in range(0, n):
+            # and we may have multiple prompts, if batching was used
+
+            for prompt in prompts:
+                result = self.completion(
+                    model_id=model,
+                    content=prompt,
+                    sampling_params=sampling_params,
+                )
+
+                index = len(choices)
+                text = result.content
+                finish_reason = _convert_openai_finish_reason(result.stop_reason)
+
+                choice = OpenAICompletionChoice(
+                    index=index,
+                    text=text,
+                    finish_reason=finish_reason,
+                )
+                choices.append(choice)
+
+        return OpenAICompletion(
+            id=f"cmpl-{uuid.uuid4()}",
+            choices=choices,
+            created=int(time.time()),
+            model=model,
+            object="text_completion",
+        )
+
+
+class OpenAIChatCompletionUnsupportedMixin:
+    async def openai_chat_completion(
+        self,
+        model: str,
+        messages: List[OpenAIChatCompletionMessage],
+        frequency_penalty: Optional[float] = None,
+        function_call: Optional[Union[str, Dict[str, Any]]] = None,
+        functions: Optional[List[Dict[str, Any]]] = None,
+        logit_bias: Optional[Dict[str, float]] = None,
+        logprobs: Optional[bool] = None,
+        max_completion_tokens: Optional[int] = None,
+        max_tokens: Optional[int] = None,
+        n: Optional[int] = None,
+        parallel_tool_calls: Optional[bool] = None,
+        presence_penalty: Optional[float] = None,
+        response_format: Optional[Dict[str, str]] = None,
+        seed: Optional[int] = None,
+        stop: Optional[Union[str, List[str]]] = None,
+        stream: Optional[bool] = None,
+        stream_options: Optional[Dict[str, Any]] = None,
+        temperature: Optional[float] = None,
+        tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
+        tools: Optional[List[Dict[str, Any]]] = None,
+        top_logprobs: Optional[int] = None,
+        top_p: Optional[float] = None,
+        user: Optional[str] = None,
+    ) -> OpenAIChatCompletion:
+        raise ValueError(f"{self.__class__.__name__} doesn't support openai chat completion")

@@ -96,7 +96,10 @@ async def register_resources(run_config: StackRunConfig, impls: Dict[Api, Any]):
 
         method = getattr(impls[api], register_method)
         for obj in objects:
-            await method(**obj.model_dump())
+            # we want to maintain the type information in arguments to method.
+            # instead of method(**obj.model_dump()), which may convert a typed attr to a dict,
+            # we use model_dump() to find all the attrs and then getattr to get the still typed value.
+            await method(**{k: getattr(obj, k) for k in obj.model_dump().keys()})
 
         method = getattr(impls[api], list_method)
         response = await method()
@@ -218,7 +221,7 @@ async def construct_stack(
     run_config: StackRunConfig, provider_registry: Optional[ProviderRegistry] = None
 ) -> Dict[Api, Any]:
     dist_registry, _ = await create_dist_registry(run_config.metadata_store, run_config.image_name)
-    impls = await resolve_impls(run_config, provider_registry or get_provider_registry(), dist_registry)
+    impls = await resolve_impls(run_config, provider_registry or get_provider_registry(run_config), dist_registry)
     await register_resources(run_config, impls)
     return impls
 
