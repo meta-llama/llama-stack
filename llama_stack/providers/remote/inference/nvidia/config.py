@@ -48,8 +48,8 @@ class NVIDIAConfig(BaseModel):
         description="Timeout for the HTTP requests",
     )
     append_api_version: bool = Field(
-        default=lambda: os.getenv("NVIDIA_APPEND_API_VERSION", True),
-        description="Whether to append the API version to the model ID",
+        default_factory=lambda: os.getenv("NVIDIA_APPEND_API_VERSION", "True").lower() != "false",
+        description="When set to false, the API version will not be appended to the base_url. By default, it is true.",
     )
 
     @classmethod
