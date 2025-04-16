@@ -103,7 +103,5 @@ llama stack run together
 
 2. Start Streamlit UI
 ```bash
-cd llama_stack/distribution/ui
-pip install -r requirements.txt
-streamlit run app.py
+uv run --with ".[ui]" streamlit run llama_stack/distribution/ui/app.py
 ```

@@ -206,10 +206,6 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
         model: str,
         checkpoint_dir: Optional[str],
         algorithm_config: Optional[AlgorithmConfig] = None,
-        extra_json: Optional[Dict[str, Any]] = None,
-        params: Optional[Dict[str, Any]] = None,
-        headers: Optional[Dict[str, Any]] = None,
-        **kwargs,
     ) -> NvidiaPostTrainingJob:
         """
         Fine-tunes a model on a dataset.

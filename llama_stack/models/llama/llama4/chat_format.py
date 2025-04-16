@@ -301,7 +301,6 @@ class ChatFormat:
                     arguments=tool_arguments,
                 )
             )
-            content = ""
 
         return RawMessage(
             role="assistant",

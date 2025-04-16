@@ -25,7 +25,7 @@ The `llamastack/distribution-remote-vllm` distribution consists of the following
 | vector_io | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
 
 
-You can use this distribution if you have GPUs and want to run an independent vLLM server container for running inference.
+You can use this distribution if you want to run an independent vLLM server for inference.
 
 ### Environment Variables
 
@@ -41,7 +41,10 @@ The following environment variables can be configured:
 
 ## Setting up vLLM server
 
-Both AMD and NVIDIA GPUs can serve as accelerators for the vLLM server, which acts as both the LLM inference provider and the safety provider.
+In the following sections, we'll use either AMD and NVIDIA GPUs to serve as hardware accelerators for the vLLM
+server, which acts as both the LLM inference provider and the safety provider. Note that vLLM also
+[supports many other hardware accelerators](https://docs.vllm.ai/en/latest/getting_started/installation.html) and
+that we only use GPUs here for demonstration purposes.
 
 ### Setting up vLLM server on AMD GPU
 

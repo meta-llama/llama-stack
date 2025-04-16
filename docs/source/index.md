@@ -1,3 +1,5 @@
+# Llama Stack
+Welcome to Llama Stack, the open-source framework for building generative AI applications.
 ```{admonition} Llama 4 is here!
 :class: tip
 
@@ -9,7 +11,6 @@ Check out [Getting Started with Llama 4](https://colab.research.google.com/githu
 Llama Stack {{ llama_stack_version }} is now available! See the {{ llama_stack_version_link }} for more details.
 ```
 
-# Llama Stack
 
 ## What is Llama Stack?
 
@@ -98,8 +99,9 @@ A number of "adapters" are available for some popular Inference and Vector Store
 :maxdepth: 3
 
 self
-introduction/index
 getting_started/index
+getting_started/detailed_tutorial
+introduction/index
 concepts/index
 providers/index
 distributions/index

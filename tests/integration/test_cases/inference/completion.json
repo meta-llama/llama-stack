@@ -44,5 +44,18 @@
                 "year_retired": "2003"
             }
         }
+    },
+    "batch_completion": {
+        "data": {
+            "contents": [
+                "Micheael Jordan is born in ",
+                "Roses are red, violets are ",
+                "If you had a million dollars, what would you do with it? ",
+                "All you need is ",
+                "The capital of France is ",
+                "It is a good day to ",
+                "The answer to the universe is "
+            ]
+        }
     }
 }

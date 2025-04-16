@@ -112,6 +112,8 @@ html_theme_options = {
     # "style_nav_header_background": "#c3c9d4",
 }
 
+default_dark_mode = False
+
 html_static_path = ["../_static"]
 # html_logo = "../_static/llama-stack-logo.png"
 # html_style = "../_static/css/my_theme.css"
@@ -119,6 +121,7 @@ html_static_path = ["../_static"]
 
 def setup(app):
     app.add_css_file("css/my_theme.css")
+    app.add_js_file("js/detect_theme.js")
 
     def dockerhub_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
         url = f"https://hub.docker.com/r/llamastack/{text}"

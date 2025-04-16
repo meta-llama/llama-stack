@@ -18,6 +18,7 @@ VIRTUAL_ENV=${VIRTUAL_ENV:-}
 set -euo pipefail
 
 RED='\033[0;31m'
+GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
 error_handler() {
@@ -73,7 +74,7 @@ done
 PYTHON_BINARY="python"
 case "$env_type" in
   "venv")
-    if [ -n "$VIRTUAL_ENV" && "$VIRTUAL_ENV" == "$env_path_or_name" ]; then
+    if [ -n "$VIRTUAL_ENV" ] && [ "$VIRTUAL_ENV" == "$env_path_or_name" ]; then
         echo -e "${GREEN}Virtual environment already activated${NC}" >&2
     else
         # Activate virtual environment

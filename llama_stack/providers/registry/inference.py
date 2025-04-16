@@ -24,7 +24,7 @@ META_REFERENCE_DEPS = [
     "zmq",
     "lm-format-enforcer",
     "sentence-transformers",
-    "torchao==0.5.0",
+    "torchao==0.8.0",
     "fbgemm-gpu-genai==1.1.2",
 ]
 

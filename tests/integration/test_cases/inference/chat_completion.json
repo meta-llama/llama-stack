@@ -537,5 +537,31 @@
         }
       ]
     }
+  },
+  "batch_completion": {
+    "data": {
+      "qa_pairs": [
+        {
+          "question": "What is the capital of France?",
+          "answer": "Paris"
+        },
+        {
+          "question": "Who wrote the book '1984'?",
+          "answer": "George Orwell"
+        },
+        {
+          "question": "Which planet has rings around it with a name starting with letter S?",
+          "answer": "Saturn"
+        },
+        {
+          "question": "When did the first moon landing happen?",
+          "answer": "1969"
+        },
+        {
+          "question": "What word says 'hello' in Spanish?",
+          "answer": "Hola"
+        }
+      ]
+    }
   }
 }

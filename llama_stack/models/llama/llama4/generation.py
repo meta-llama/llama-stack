@@ -233,7 +233,7 @@ class Llama4:
                         source="output",
                         logprobs=(token_logprobs[idx, cur_pos : cur_pos + 1].tolist() if logprobs else None),
                         batch_idx=idx,
-                        finished=eos_reached[idx],
+                        finished=eos_reached[idx].item(),
                         ignore_token=cur_pos < len(prompt_tokens[idx]),
                     )
                 )

@@ -20,6 +20,7 @@ class WebMethod:
     raw_bytes_request_body: Optional[bool] = False
     # A descriptive name of the corresponding span created by tracing
     descriptive_name: Optional[str] = None
+    experimental: Optional[bool] = False
 
 
 T = TypeVar("T", bound=Callable[..., Any])
@@ -33,6 +34,7 @@ def webmethod(
     response_examples: Optional[List[Any]] = None,
     raw_bytes_request_body: Optional[bool] = False,
     descriptive_name: Optional[str] = None,
+    experimental: Optional[bool] = False,
 ) -> Callable[[T], T]:
     """
     Decorator that supplies additional metadata to an endpoint operation function.
@@ -41,6 +43,7 @@ def webmethod(
     :param public: True if the operation can be invoked without prior authentication.
     :param request_examples: Sample requests that the operation might take. Pass a list of objects, not JSON.
     :param response_examples: Sample responses that the operation might produce. Pass a list of objects, not JSON.
+    :param experimental: True if the operation is experimental and subject to change.
     """
 
     def wrap(func: T) -> T:
@@ -52,6 +55,7 @@ def webmethod(
             response_examples=response_examples,
             raw_bytes_request_body=raw_bytes_request_body,
             descriptive_name=descriptive_name,
+            experimental=experimental,
         )
         return func
 
