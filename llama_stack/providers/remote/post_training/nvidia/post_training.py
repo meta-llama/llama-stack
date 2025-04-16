@@ -32,7 +32,7 @@ STATUS_MAPPING = {
     "failed": JobStatus.failed.value,
     "cancelled": JobStatus.cancelled.value,
     "pending": JobStatus.scheduled.value,
-    "unkown": JobStatus.scheduled.value,
+    "unknown": JobStatus.scheduled.value,
 }
 
 
