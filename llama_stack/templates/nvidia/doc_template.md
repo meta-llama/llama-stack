@@ -144,3 +144,7 @@ llama stack run ./run.yaml \
   --env NVIDIA_API_KEY=$NVIDIA_API_KEY \
   --env INFERENCE_MODEL=$INFERENCE_MODEL
 ```
+
+### Example Notebooks
+You can reference the Jupyter notebooks in `docs/notebooks/nvidia/` for example usage of these APIs.
+- [Llama_Stack_NVIDIA_E2E_Flow.ipynb](/docs/notebooks/nvidia/Llama_Stack_NVIDIA_E2E_Flow.ipynb) contains an end-to-end workflow for running inference, customizing, and evaluating models using your deployed NeMo Microservices platform.
