@@ -26,7 +26,12 @@ from openai.types.chat.chat_completion_chunk import (
 )
 from openai.types.model import Model as OpenAIModel
 
-from llama_stack.apis.inference import ToolChoice, ToolConfig
+from llama_stack.apis.inference import (
+    ChatCompletionRequest,
+    ToolChoice,
+    ToolConfig,
+    UserMessage,
+)
 from llama_stack.apis.models import Model
 from llama_stack.models.llama.datatypes import StopReason
 from llama_stack.providers.remote.inference.vllm.config import VLLMInferenceAdapterConfig
@@ -232,3 +237,14 @@ def test_chat_completion_doesnt_block_event_loop(caplog):
     # above.
     asyncio_warnings = [record.message for record in caplog.records if record.name == "asyncio"]
     assert not asyncio_warnings
+
+
+@pytest.mark.asyncio
+async def test_get_params_empty_tools(vllm_inference_adapter):
+    request = ChatCompletionRequest(
+        tools=[],
+        model="test_model",
+        messages=[UserMessage(content="test")],
+    )
+    params = await vllm_inference_adapter._get_params(request)
+    assert "tools" not in params

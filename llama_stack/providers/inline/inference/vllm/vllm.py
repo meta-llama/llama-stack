@@ -66,10 +66,10 @@ from llama_stack.providers.utils.inference.model_registry import (
     ModelsProtocolPrivate,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
-    OpenAIChatCompletionUnsupportedMixin,
+    OpenAIChatCompletionToLlamaStackMixin,
     OpenAICompatCompletionChoice,
     OpenAICompatCompletionResponse,
-    OpenAICompletionUnsupportedMixin,
+    OpenAICompletionToLlamaStackMixin,
     get_stop_reason,
     process_chat_completion_stream_response,
 )
@@ -176,8 +176,8 @@ def _convert_sampling_params(
 
 class VLLMInferenceImpl(
     Inference,
-    OpenAIChatCompletionUnsupportedMixin,
-    OpenAICompletionUnsupportedMixin,
+    OpenAIChatCompletionToLlamaStackMixin,
+    OpenAICompletionToLlamaStackMixin,
     ModelsProtocolPrivate,
 ):
     """
