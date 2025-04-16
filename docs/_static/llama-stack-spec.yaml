@@ -2135,11 +2135,15 @@ paths:
     post:
       responses:
         '200':
-          description: OK
+          description: >-
+            Response from an OpenAI-compatible chat completion request. **OR** Chunk
+            from a streaming response to an OpenAI-compatible chat completion request.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OpenAIChatCompletion'
+                oneOf:
+                  - $ref: '#/components/schemas/OpenAIChatCompletion'
+                  - $ref: '#/components/schemas/OpenAIChatCompletionChunk'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -5463,6 +5467,11 @@ components:
       properties:
         status:
           type: string
+          enum:
+            - OK
+            - Error
+            - Not Implemented
+          title: HealthStatus
       additionalProperties: false
       required:
         - status
@@ -5574,12 +5583,23 @@ components:
               - type: string
               - type: array
               - type: object
+        health:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
       additionalProperties: false
       required:
         - api
         - provider_id
         - provider_type
         - config
+        - health
       title: ProviderInfo
     InvokeToolRequest:
       type: object
@@ -6057,7 +6077,11 @@ components:
           description: >-
             Must be "assistant" to identify this as the model's response
         content:
-          $ref: '#/components/schemas/InterleavedContent'
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                $ref: '#/components/schemas/OpenAIChatCompletionContentPartParam'
           description: The content of the model's response
         name:
           type: string
@@ -6066,9 +6090,10 @@ components:
         tool_calls:
           type: array
           items:
-            $ref: '#/components/schemas/ToolCall'
+            $ref: '#/components/schemas/OpenAIChatCompletionToolCall'
           description: >-
-            List of tool calls. Each tool call is a ToolCall object.
+            List of tool calls. Each tool call is an OpenAIChatCompletionToolCall
+            object.
       additionalProperties: false
       required:
         - role
@@ -6077,6 +6102,70 @@ components:
       description: >-
         A message containing the model's (assistant) response in an OpenAI-compatible
         chat completion request.
+    "OpenAIChatCompletionContentPartImageParam":
+      type: object
+      properties:
+        type:
+          type: string
+          const: image_url
+          default: image_url
+        image_url:
+          $ref: '#/components/schemas/OpenAIImageURL'
+      additionalProperties: false
+      required:
+        - type
+        - image_url
+      title: >-
+        OpenAIChatCompletionContentPartImageParam
+    OpenAIChatCompletionContentPartParam:
+      oneOf:
+        - $ref: '#/components/schemas/OpenAIChatCompletionContentPartTextParam'
+        - $ref: '#/components/schemas/OpenAIChatCompletionContentPartImageParam'
+      discriminator:
+        propertyName: type
+        mapping:
+          text: '#/components/schemas/OpenAIChatCompletionContentPartTextParam'
+          image_url: '#/components/schemas/OpenAIChatCompletionContentPartImageParam'
+    OpenAIChatCompletionContentPartTextParam:
+      type: object
+      properties:
+        type:
+          type: string
+          const: text
+          default: text
+        text:
+          type: string
+      additionalProperties: false
+      required:
+        - type
+        - text
+      title: OpenAIChatCompletionContentPartTextParam
+    OpenAIChatCompletionToolCall:
+      type: object
+      properties:
+        index:
+          type: integer
+        id:
+          type: string
+        type:
+          type: string
+          const: function
+          default: function
+        function:
+          $ref: '#/components/schemas/OpenAIChatCompletionToolCallFunction'
+      additionalProperties: false
+      required:
+        - type
+      title: OpenAIChatCompletionToolCall
+    OpenAIChatCompletionToolCallFunction:
+      type: object
+      properties:
+        name:
+          type: string
+        arguments:
+          type: string
+      additionalProperties: false
+      title: OpenAIChatCompletionToolCallFunction
     OpenAIDeveloperMessageParam:
       type: object
       properties:
@@ -6087,7 +6176,11 @@ components:
           description: >-
             Must be "developer" to identify this as a developer message
         content:
-          $ref: '#/components/schemas/InterleavedContent'
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                $ref: '#/components/schemas/OpenAIChatCompletionContentPartParam'
           description: The content of the developer message
         name:
           type: string
@@ -6100,6 +6193,40 @@ components:
       title: OpenAIDeveloperMessageParam
       description: >-
         A message from the developer in an OpenAI-compatible chat completion request.
+    OpenAIImageURL:
+      type: object
+      properties:
+        url:
+          type: string
+        detail:
+          type: string
+      additionalProperties: false
+      required:
+        - url
+      title: OpenAIImageURL
+    OpenAIJSONSchema:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        strict:
+          type: boolean
+        schema:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+      additionalProperties: false
+      required:
+        - name
+      title: OpenAIJSONSchema
     OpenAIMessageParam:
       oneOf:
         - $ref: '#/components/schemas/OpenAIUserMessageParam'
@@ -6115,6 +6242,53 @@ components:
           assistant: '#/components/schemas/OpenAIAssistantMessageParam'
           tool: '#/components/schemas/OpenAIToolMessageParam'
           developer: '#/components/schemas/OpenAIDeveloperMessageParam'
+    OpenAIResponseFormatJSONObject:
+      type: object
+      properties:
+        type:
+          type: string
+          const: json_object
+          default: json_object
+      additionalProperties: false
+      required:
+        - type
+      title: OpenAIResponseFormatJSONObject
+    OpenAIResponseFormatJSONSchema:
+      type: object
+      properties:
+        type:
+          type: string
+          const: json_schema
+          default: json_schema
+        json_schema:
+          $ref: '#/components/schemas/OpenAIJSONSchema'
+      additionalProperties: false
+      required:
+        - type
+        - json_schema
+      title: OpenAIResponseFormatJSONSchema
+    OpenAIResponseFormatParam:
+      oneOf:
+        - $ref: '#/components/schemas/OpenAIResponseFormatText'
+        - $ref: '#/components/schemas/OpenAIResponseFormatJSONSchema'
+        - $ref: '#/components/schemas/OpenAIResponseFormatJSONObject'
+      discriminator:
+        propertyName: type
+        mapping:
+          text: '#/components/schemas/OpenAIResponseFormatText'
+          json_schema: '#/components/schemas/OpenAIResponseFormatJSONSchema'
+          json_object: '#/components/schemas/OpenAIResponseFormatJSONObject'
+    OpenAIResponseFormatText:
+      type: object
+      properties:
+        type:
+          type: string
+          const: text
+          default: text
+      additionalProperties: false
+      required:
+        - type
+      title: OpenAIResponseFormatText
     OpenAISystemMessageParam:
       type: object
       properties:
@@ -6125,7 +6299,11 @@ components:
           description: >-
             Must be "system" to identify this as a system message
         content:
-          $ref: '#/components/schemas/InterleavedContent'
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                $ref: '#/components/schemas/OpenAIChatCompletionContentPartParam'
           description: >-
             The content of the "system prompt". If multiple system messages are provided,
             they are concatenated. The underlying Llama Stack code may also add other
@@ -6155,7 +6333,11 @@ components:
           description: >-
             Unique identifier for the tool call this response is for
         content:
-          $ref: '#/components/schemas/InterleavedContent'
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                $ref: '#/components/schemas/OpenAIChatCompletionContentPartParam'
           description: The response content from the tool
       additionalProperties: false
       required:
@@ -6176,7 +6358,11 @@ components:
           description: >-
             Must be "user" to identify this as a user message
         content:
-          $ref: '#/components/schemas/InterleavedContent'
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                $ref: '#/components/schemas/OpenAIChatCompletionContentPartParam'
           description: >-
             The content of the message, which can include text and other media
         name:
@@ -6262,9 +6448,7 @@ components:
           description: >-
             (Optional) The penalty for repeated tokens
         response_format:
-          type: object
-          additionalProperties:
-            type: string
+          $ref: '#/components/schemas/OpenAIResponseFormatParam'
           description: (Optional) The response format to use
         seed:
           type: integer
@@ -6370,6 +6554,41 @@ components:
       title: OpenAIChatCompletion
       description: >-
         Response from an OpenAI-compatible chat completion request.
+    OpenAIChatCompletionChunk:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The ID of the chat completion
+        choices:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpenAIChunkChoice'
+          description: List of choices
+        object:
+          type: string
+          const: chat.completion.chunk
+          default: chat.completion.chunk
+          description: >-
+            The object type, which will be "chat.completion.chunk"
+        created:
+          type: integer
+          description: >-
+            The Unix timestamp in seconds when the chat completion was created
+        model:
+          type: string
+          description: >-
+            The model that was used to generate the chat completion
+      additionalProperties: false
+      required:
+        - id
+        - choices
+        - object
+        - created
+        - model
+      title: OpenAIChatCompletionChunk
+      description: >-
+        Chunk from a streaming response to an OpenAI-compatible chat completion request.
     OpenAIChoice:
       type: object
       properties:
@@ -6381,8 +6600,11 @@ components:
           description: The reason the model stopped generating
         index:
           type: integer
+          description: The index of the choice
         logprobs:
           $ref: '#/components/schemas/OpenAIChoiceLogprobs'
+          description: >-
+            (Optional) The log probabilities for the tokens in the message
       additionalProperties: false
       required:
         - message
@@ -6391,6 +6613,27 @@ components:
       title: OpenAIChoice
       description: >-
         A choice from an OpenAI-compatible chat completion response.
+    OpenAIChoiceDelta:
+      type: object
+      properties:
+        content:
+          type: string
+          description: (Optional) The content of the delta
+        refusal:
+          type: string
+          description: (Optional) The refusal of the delta
+        role:
+          type: string
+          description: (Optional) The role of the delta
+        tool_calls:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpenAIChatCompletionToolCall'
+          description: (Optional) The tool calls of the delta
+      additionalProperties: false
+      title: OpenAIChoiceDelta
+      description: >-
+        A delta from an OpenAI-compatible chat completion streaming response.
     OpenAIChoiceLogprobs:
       type: object
       properties:
@@ -6398,15 +6641,43 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/OpenAITokenLogProb'
+          description: >-
+            (Optional) The log probabilities for the tokens in the message
         refusal:
           type: array
           items:
             $ref: '#/components/schemas/OpenAITokenLogProb'
+          description: >-
+            (Optional) The log probabilities for the tokens in the message
       additionalProperties: false
       title: OpenAIChoiceLogprobs
       description: >-
         The log probabilities for the tokens in the message from an OpenAI-compatible
         chat completion response.
+    OpenAIChunkChoice:
+      type: object
+      properties:
+        delta:
+          $ref: '#/components/schemas/OpenAIChoiceDelta'
+          description: The delta from the chunk
+        finish_reason:
+          type: string
+          description: The reason the model stopped generating
+        index:
+          type: integer
+          description: The index of the choice
+        logprobs:
+          $ref: '#/components/schemas/OpenAIChoiceLogprobs'
+          description: >-
+            (Optional) The log probabilities for the tokens in the message
+      additionalProperties: false
+      required:
+        - delta
+        - finish_reason
+        - index
+      title: OpenAIChunkChoice
+      description: >-
+        A chunk choice from an OpenAI-compatible chat completion streaming response.
     OpenAITokenLogProb:
       type: object
       properties:

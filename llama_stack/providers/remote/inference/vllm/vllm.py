@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 import json
 import logging
-from typing import Any, AsyncGenerator, Dict, List, Optional, Union
+from typing import Any, AsyncGenerator, AsyncIterator, Dict, List, Optional, Union
 
 import httpx
 from openai import AsyncOpenAI
@@ -45,7 +45,12 @@ from llama_stack.apis.inference import (
     ToolDefinition,
     ToolPromptFormat,
 )
-from llama_stack.apis.inference.inference import OpenAIChatCompletion, OpenAICompletion, OpenAIMessageParam
+from llama_stack.apis.inference.inference import (
+    OpenAIChatCompletion,
+    OpenAICompletion,
+    OpenAIMessageParam,
+    OpenAIResponseFormatParam,
+)
 from llama_stack.apis.models import Model, ModelType
 from llama_stack.models.llama.datatypes import BuiltinTool, StopReason, ToolCall
 from llama_stack.models.llama.sku_list import all_registered_models
@@ -369,7 +374,8 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
             options["max_tokens"] = self.config.max_tokens
 
         input_dict: dict[str, Any] = {}
-        if isinstance(request, ChatCompletionRequest) and request.tools is not None:
+        # Only include the 'tools' param if there is any. It can break things if an empty list is sent to the vLLM.
+        if isinstance(request, ChatCompletionRequest) and request.tools:
             input_dict = {"tools": _convert_to_vllm_tools_in_request(request.tools)}
 
         if isinstance(request, ChatCompletionRequest):
@@ -487,7 +493,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         n: Optional[int] = None,
         parallel_tool_calls: Optional[bool] = None,
         presence_penalty: Optional[float] = None,
-        response_format: Optional[Dict[str, str]] = None,
+        response_format: Optional[OpenAIResponseFormatParam] = None,
         seed: Optional[int] = None,
         stop: Optional[Union[str, List[str]]] = None,
         stream: Optional[bool] = None,
@@ -498,7 +504,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         top_logprobs: Optional[int] = None,
         top_p: Optional[float] = None,
         user: Optional[str] = None,
-    ) -> OpenAIChatCompletion:
+    ) -> Union[OpenAIChatCompletion, AsyncIterator[OpenAIChatCompletionChunk]]:
         model_obj = await self._get_model(model)
         params = await prepare_openai_completion_params(
             model=model_obj.provider_resource_id,
