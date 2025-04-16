@@ -34,10 +34,6 @@ from llama_stack.apis.inference import (
     ToolChoice,
     ToolConfig,
 )
-from llama_stack.apis.models import Model, ModelType
-from llama_stack.providers.utils.inference import (
-    ALL_HUGGINGFACE_REPOS_TO_MODEL_DESCRIPTOR,
-)
 from llama_stack.apis.inference.inference import (
     OpenAIChatCompletion,
     OpenAIChatCompletionChunk,
@@ -45,7 +41,11 @@ from llama_stack.apis.inference.inference import (
     OpenAIMessageParam,
     OpenAIResponseFormatParam,
 )
-from llama_stack.models.llama.datatypes import ToolPromptFormat
+from llama_stack.apis.models import Model, ModelType
+from llama_stack.models.llama.datatypes import ToolDefinition, ToolPromptFormat
+from llama_stack.providers.utils.inference import (
+    ALL_HUGGINGFACE_REPOS_TO_MODEL_DESCRIPTOR,
+)
 from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
 )
