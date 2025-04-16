@@ -368,6 +368,9 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
             yield chunk
 
     async def register_model(self, model: Model) -> Model:
+        # register_model is called during Llama Stack initialization, hence we cannot init self.client if not initialized yet.
+        # self.client should only be created after the initialization is complete to avoid asyncio cross-context errors.
+        # Changing this may lead to unpredictable behavior.
         client = self._create_client() if self.client is None else self.client
         model = await self.register_helper.register_model(model)
         res = await client.models.list()
