@@ -6456,36 +6456,7 @@
                         "default": "model"
                     },
                     "model": {
-                        "oneOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "type": "object",
-                                "additionalProperties": {
-                                    "oneOf": [
-                                        {
-                                            "type": "null"
-                                        },
-                                        {
-                                            "type": "boolean"
-                                        },
-                                        {
-                                            "type": "number"
-                                        },
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "type": "array"
-                                        },
-                                        {
-                                            "type": "object"
-                                        }
-                                    ]
-                                }
-                            }
-                        ],
+                        "type": "string",
                         "description": "The model ID to evaluate."
                     },
                     "sampling_params": {
@@ -6500,7 +6471,8 @@
                 "additionalProperties": false,
                 "required": [
                     "type",
-                    "model"
+                    "model",
+                    "sampling_params"
                 ],
                 "title": "ModelCandidate",
                 "description": "A model candidate for evaluation."

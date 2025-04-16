@@ -27,11 +27,12 @@ from .models import _MODEL_ENTRIES
 
 # Map API status to JobStatus enum
 STATUS_MAPPING = {
-    "running": "in_progress",
-    "completed": "completed",
-    "failed": "failed",
-    "cancelled": "cancelled",
-    "pending": "scheduled",
+    "running": JobStatus.in_progress.value,
+    "completed": JobStatus.completed.value,
+    "failed": JobStatus.failed.value,
+    "cancelled": JobStatus.cancelled.value,
+    "pending": JobStatus.scheduled.value,
+    "unkown": JobStatus.scheduled.value,
 }
 
 
@@ -391,15 +392,14 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
 
         # Handle LoRA-specific configuration
         if algorithm_config:
-            algortihm_config_dict = algorithm_config.model_dump()
-            if algortihm_config_dict.get("type") == "LoRA":
+            if algorithm_config.get("type") == "LoRA":
                 warn_unsupported_params(algorithm_config, supported_params["lora_config"], "LoRA config")
                 job_config["hyperparameters"]["lora"] = {
                     k: v
                     for k, v in {
-                        "adapter_dim": algortihm_config_dict.get("adapter_dim"),
-                        "alpha": algortihm_config_dict.get("alpha"),
-                        "adapter_dropout": algortihm_config_dict.get("adapter_dropout"),
+                        "adapter_dim": algorithm_config.get("adapter_dim"),
+                        "alpha": algorithm_config.get("alpha"),
+                        "adapter_dropout": algorithm_config.get("adapter_dropout"),
                     }.items()
                     if v is not None
                 }

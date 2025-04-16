@@ -438,7 +438,10 @@ class DatasetsRoutingTable(CommonRoutingTableImpl, Datasets):
         provider_dataset_id = dataset_id
 
         # infer provider from source
-        if source.type == DatasetType.rows.value:
+        if metadata:
+            if metadata.get("provider"):
+                provider_id = metadata.get("provider")  # pass through from nvidia datasetio
+        elif source.type == DatasetType.rows.value:
             provider_id = "localfs"
         elif source.type == DatasetType.uri.value:
             # infer provider from uri

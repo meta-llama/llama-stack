@@ -6,7 +6,7 @@ The `llamastack/distribution-nvidia` distribution consists of the following prov
 | API | Provider(s) |
 |-----|-------------|
 | agents | `inline::meta-reference` |
-| datasetio | `inline::localfs` |
+| datasetio | `inline::localfs`, `remote::nvidia` |
 | eval | `remote::nvidia` |
 | inference | `remote::nvidia` |
 | post_training | `remote::nvidia` |

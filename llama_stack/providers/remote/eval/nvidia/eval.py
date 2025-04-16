@@ -14,6 +14,8 @@ from llama_stack.apis.datasets import Datasets
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.scoring import Scoring, ScoringResult
 from llama_stack.providers.datatypes import BenchmarksProtocolPrivate
+from llama_stack.providers.remote.inference.nvidia.models import MODEL_ENTRIES
+from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
 
 from .....apis.common.job_types import Job, JobStatus
 from .....apis.eval.eval import BenchmarkConfig, Eval, EvaluateResponse
@@ -25,6 +27,7 @@ DEFAULT_NAMESPACE = "nvidia"
 class NVIDIAEvalImpl(
     Eval,
     BenchmarksProtocolPrivate,
+    ModelRegistryHelper,
 ):
     def __init__(
         self,
@@ -41,6 +44,8 @@ class NVIDIAEvalImpl(
         self.scoring_api = scoring_api
         self.inference_api = inference_api
         self.agents_api = agents_api
+
+        ModelRegistryHelper.__init__(self, model_entries=MODEL_ENTRIES)
 
     async def initialize(self) -> None: ...
 
@@ -81,11 +86,13 @@ class NVIDIAEvalImpl(
             if benchmark_config.eval_candidate.type == "model"
             else benchmark_config.eval_candidate.config.model
         )
+        nvidia_model = self.get_provider_model_id(model)
+
         result = await self._evaluator_post(
             "/v1/evaluation/jobs",
             {
                 "config": f"{DEFAULT_NAMESPACE}/{benchmark_id}",
-                "target": {"type": "model", "model": model},
+                "target": {"type": "model", "model": nvidia_model},
             },
         )
 

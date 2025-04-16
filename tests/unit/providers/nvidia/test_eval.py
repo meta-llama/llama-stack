@@ -55,9 +55,6 @@ class TestNVIDIAEvalImpl(unittest.TestCase):
         self.mock_evaluator_get = self.evaluator_get_patcher.start()
         self.mock_evaluator_post = self.evaluator_post_patcher.start()
 
-        # Set up async test helper
-        # self.run_async = self._create_async_helper()
-
     def tearDown(self):
         """Clean up after each test."""
         self.evaluator_get_patcher.stop()

@@ -33,7 +33,6 @@ from llama_stack.apis.inference import (
     TextTruncation,
     ToolChoice,
     ToolConfig,
-    ToolDefinition,
 )
 from llama_stack.apis.inference.inference import (
     OpenAIChatCompletion,
@@ -42,7 +41,14 @@ from llama_stack.apis.inference.inference import (
     OpenAIMessageParam,
     OpenAIResponseFormatParam,
 )
-from llama_stack.models.llama.datatypes import ToolPromptFormat
+from llama_stack.apis.models import Model, ModelType
+from llama_stack.models.llama.datatypes import (
+    ToolDefinition,
+    ToolPromptFormat,
+)
+from llama_stack.providers.utils.inference import (
+    ALL_HUGGINGFACE_REPOS_TO_MODEL_DESCRIPTOR,
+)
 from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
 )
@@ -120,10 +126,15 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
             "meta/llama-3.2-90b-vision-instruct": "https://ai.api.nvidia.com/v1/gr/meta/llama-3.2-90b-vision-instruct",
         }
 
-        base_url = f"{self._config.url}/v1"
-        if _is_nvidia_hosted(self._config) and provider_model_id in special_model_urls:
-            base_url = special_model_urls[provider_model_id]
-
+        # add /v1 in case of hosted models
+        base_url = self._config.url
+        if _is_nvidia_hosted(self._config):
+            if provider_model_id in special_model_urls:
+                base_url = special_model_urls[provider_model_id]
+            else:
+                base_url = f"{self._config.url}/v1"
+        elif "nim.int.aire.nvidia.com" in base_url:
+            base_url = f"{base_url}/v1"
         return _get_client_for_base_url(base_url)
 
     async def completion(
@@ -379,3 +390,44 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
             return await self._get_client(provider_model_id).chat.completions.create(**params)
         except APIConnectionError as e:
             raise ConnectionError(f"Failed to connect to NVIDIA NIM at {self._config.url}: {e}") from e
+
+    async def register_model(self, model: Model) -> Model:
+        """
+        Allow non-llama model registration.
+
+        Non-llama model registration: API Catalogue models, post-training models, etc.
+            client = LlamaStackAsLibraryClient("nvidia")
+            client.models.register(
+                    model_id="mistralai/mixtral-8x7b-instruct-v0.1",
+                    model_type=ModelType.llm,
+                    provider_id="nvidia",
+                    provider_model_id="mistralai/mixtral-8x7b-instruct-v0.1"
+            )
+
+            NOTE: Only supports models endpoints compatible with AsyncOpenAI base_url format.
+        """
+        if model.model_type == ModelType.embedding:
+            # embedding models are always registered by their provider model id and does not need to be mapped to a llama model
+            provider_resource_id = model.provider_resource_id
+        else:
+            provider_resource_id = self.get_provider_model_id(model.provider_resource_id)
+
+        if provider_resource_id:
+            model.provider_resource_id = provider_resource_id
+        else:
+            llama_model = model.metadata.get("llama_model")
+            existing_llama_model = self.get_llama_model(model.provider_resource_id)
+            if existing_llama_model:
+                if existing_llama_model != llama_model:
+                    raise ValueError(
+                        f"Provider model id '{model.provider_resource_id}' is already registered to a different llama model: '{existing_llama_model}'"
+                    )
+            else:
+                # not llama model
+                if llama_model in ALL_HUGGINGFACE_REPOS_TO_MODEL_DESCRIPTOR:
+                    self.provider_id_to_llama_model_map[model.provider_resource_id] = (
+                        ALL_HUGGINGFACE_REPOS_TO_MODEL_DESCRIPTOR[llama_model]
+                    )
+                else:
+                    self.alias_to_provider_id_map[model.provider_model_id] = model.provider_model_id
+        return model

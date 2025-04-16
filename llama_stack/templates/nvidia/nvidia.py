@@ -23,7 +23,7 @@ def get_distribution_template() -> DistributionTemplate:
         "telemetry": ["inline::meta-reference"],
         "eval": ["remote::nvidia"],
         "post_training": ["remote::nvidia"],
-        "datasetio": ["inline::localfs"],
+        "datasetio": ["inline::localfs", "remote::nvidia"],
         "scoring": ["inline::basic"],
         "tool_runtime": ["inline::rag-runtime"],
     }
