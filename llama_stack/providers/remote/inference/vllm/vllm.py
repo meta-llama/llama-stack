@@ -248,7 +248,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         if self.client is not None:
             return
 
-        log.info(f"Initializing VLLM client with base_url={self.config.url}")
+        log.info(f"Initializing vLLM client with base_url={self.config.url}")
         self.client = self._create_client()
 
     def _create_client(self):
