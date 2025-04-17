@@ -46,6 +46,7 @@ dev = [
     "pytest-asyncio",
     "pytest-cov",
     "pytest-html",
+    "pytest-json-report",
     "nbval",            # For notebook testing
     "black",
     "ruff",
