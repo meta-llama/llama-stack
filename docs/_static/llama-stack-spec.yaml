@@ -98,31 +98,6 @@ paths:
             schema:
               $ref: '#/components/schemas/BatchCompletionRequest'
         required: true
-  /v1/post-training/job/cancel:
-    post:
-      responses:
-        '200':
-          description: OK
-        '400':
-          $ref: '#/components/responses/BadRequest400'
-        '429':
-          $ref: >-
-            #/components/responses/TooManyRequests429
-        '500':
-          $ref: >-
-            #/components/responses/InternalServerError500
-        default:
-          $ref: '#/components/responses/DefaultError'
-      tags:
-        - PostTraining (Coming Soon)
-      description: ''
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CancelTrainingJobRequest'
-        required: true
   /v1/inference/chat-completion:
     post:
       responses:
@@ -516,6 +491,30 @@ paths:
           required: true
           schema:
             type: string
+  /v1/evaluate/job/{job_id}:
+    delete:
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Eval
+      description: ''
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
   /v1/files/{bucket}/{key}:
     get:
       responses:
@@ -585,6 +584,54 @@ paths:
           required: true
           schema:
             type: string
+  /v1/post-training/job/{job_id}:
+    delete:
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - PostTraining (Coming Soon)
+      description: ''
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+  /v1/synthetic-data-generation/job/{job_id}:
+    delete:
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - SyntheticDataGeneration (Coming Soon)
+      description: ''
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
   /v1/inference/embeddings:
     post:
       responses:
@@ -618,16 +665,15 @@ paths:
             schema:
               $ref: '#/components/schemas/EmbeddingsRequest'
         required: true
-  /v1/eval/benchmarks/{benchmark_id}/evaluations:
+  /v1/eval/benchmarks/{benchmark_id}/evaluate:
     post:
       responses:
         '200':
-          description: >-
-            EvaluateResponse object containing generations and scores
+          description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EvaluateResponse'
+                $ref: '#/components/schemas/EvaluateJob'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -640,12 +686,10 @@ paths:
           $ref: '#/components/responses/DefaultError'
       tags:
         - Eval
-      description: Evaluate a list of rows on a benchmark.
+      description: ''
       parameters:
         - name: benchmark_id
           in: path
-          description: >-
-            The ID of the benchmark to run the evaluation on.
           required: true
           schema:
             type: string
@@ -653,7 +697,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EvaluateRowsRequest'
+              $ref: '#/components/schemas/EvaluateRequest'
         required: true
   /v1/agents/{agent_id}/session/{session_id}/turn/{turn_id}/step/{step_id}:
     get:
@@ -824,6 +868,62 @@ paths:
           required: true
           schema:
             type: string
+  /v1/evaluate/jobs/{job_id}:
+    get:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvaluateJob'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Eval
+      description: ''
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+    post:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvaluateJob'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Eval
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateEvaluateJobRequest'
+        required: true
   /v1/models/{model_id}:
     get:
       responses:
@@ -875,6 +975,62 @@ paths:
           required: true
           schema:
             type: string
+  /v1/post-training/jobs/{job_id}:
+    get:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostTrainingJob'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - PostTraining (Coming Soon)
+      description: ''
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+    post:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostTrainingJob'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - PostTraining (Coming Soon)
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePostTrainingJobRequest'
+        required: true
   /v1/scoring-functions/{scoring_fn_id}:
     get:
       responses:
@@ -998,6 +1154,57 @@ paths:
             schema:
               $ref: '#/components/schemas/GetSpanTreeRequest'
         required: true
+  /v1/synthetic-data-generation/jobs/{job_id}:
+    get:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyntheticDataGenerationJob'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - SyntheticDataGeneration (Coming Soon)
+      description: ''
+      parameters: []
+    post:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyntheticDataGenerationJob'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - SyntheticDataGeneration (Coming Soon)
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSyntheticDataGenerationJobRequest'
+        required: true
   /v1/tools/{tool_name}:
     get:
       responses:
@@ -1105,85 +1312,6 @@ paths:
           required: true
           schema:
             type: string
-  /v1/post-training/job/artifacts:
-    get:
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PostTrainingJobArtifactsResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest400'
-        '429':
-          $ref: >-
-            #/components/responses/TooManyRequests429
-        '500':
-          $ref: >-
-            #/components/responses/InternalServerError500
-        default:
-          $ref: '#/components/responses/DefaultError'
-      tags:
-        - PostTraining (Coming Soon)
-      description: ''
-      parameters:
-        - name: job_uuid
-          in: query
-          required: true
-          schema:
-            type: string
-  /v1/post-training/job/status:
-    get:
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PostTrainingJobStatusResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest400'
-        '429':
-          $ref: >-
-            #/components/responses/TooManyRequests429
-        '500':
-          $ref: >-
-            #/components/responses/InternalServerError500
-        default:
-          $ref: '#/components/responses/DefaultError'
-      tags:
-        - PostTraining (Coming Soon)
-      description: ''
-      parameters:
-        - name: job_uuid
-          in: query
-          required: true
-          schema:
-            type: string
-  /v1/post-training/jobs:
-    get:
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ListPostTrainingJobsResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest400'
-        '429':
-          $ref: >-
-            #/components/responses/TooManyRequests429
-        '500':
-          $ref: >-
-            #/components/responses/InternalServerError500
-        default:
-          $ref: '#/components/responses/DefaultError'
-      tags:
-        - PostTraining (Coming Soon)
-      description: ''
-      parameters: []
   /v1/files/session:{upload_id}:
     get:
       responses:
@@ -1492,109 +1620,6 @@ paths:
           required: false
           schema:
             type: integer
-  /v1/eval/benchmarks/{benchmark_id}/jobs/{job_id}:
-    get:
-      responses:
-        '200':
-          description: The status of the evaluationjob.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Job'
-        '400':
-          $ref: '#/components/responses/BadRequest400'
-        '429':
-          $ref: >-
-            #/components/responses/TooManyRequests429
-        '500':
-          $ref: >-
-            #/components/responses/InternalServerError500
-        default:
-          $ref: '#/components/responses/DefaultError'
-      tags:
-        - Eval
-      description: Get the status of a job.
-      parameters:
-        - name: benchmark_id
-          in: path
-          description: >-
-            The ID of the benchmark to run the evaluation on.
-          required: true
-          schema:
-            type: string
-        - name: job_id
-          in: path
-          description: The ID of the job to get the status of.
-          required: true
-          schema:
-            type: string
-    delete:
-      responses:
-        '200':
-          description: OK
-        '400':
-          $ref: '#/components/responses/BadRequest400'
-        '429':
-          $ref: >-
-            #/components/responses/TooManyRequests429
-        '500':
-          $ref: >-
-            #/components/responses/InternalServerError500
-        default:
-          $ref: '#/components/responses/DefaultError'
-      tags:
-        - Eval
-      description: Cancel a job.
-      parameters:
-        - name: benchmark_id
-          in: path
-          description: >-
-            The ID of the benchmark to run the evaluation on.
-          required: true
-          schema:
-            type: string
-        - name: job_id
-          in: path
-          description: The ID of the job to cancel.
-          required: true
-          schema:
-            type: string
-  /v1/eval/benchmarks/{benchmark_id}/jobs/{job_id}/result:
-    get:
-      responses:
-        '200':
-          description: The result of the job.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EvaluateResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest400'
-        '429':
-          $ref: >-
-            #/components/responses/TooManyRequests429
-        '500':
-          $ref: >-
-            #/components/responses/InternalServerError500
-        default:
-          $ref: '#/components/responses/DefaultError'
-      tags:
-        - Eval
-      description: Get the result of a job.
-      parameters:
-        - name: benchmark_id
-          in: path
-          description: >-
-            The ID of the benchmark to run the evaluation on.
-          required: true
-          schema:
-            type: string
-        - name: job_id
-          in: path
-          description: The ID of the job to get the result of.
-          required: true
-          schema:
-            type: string
   /v1/agents/{agent_id}/sessions:
     get:
       responses:
@@ -1723,6 +1748,29 @@ paths:
             schema:
               $ref: '#/components/schemas/RegisterDatasetRequest'
         required: true
+  /v1/evaluate/jobs:
+    get:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListEvaluateJobsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Eval
+      description: ''
+      parameters: []
   /v1/files/{bucket}:
     get:
       responses:
@@ -1803,6 +1851,29 @@ paths:
             schema:
               $ref: '#/components/schemas/RegisterModelRequest'
         required: true
+  /v1/post-training/jobs:
+    get:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListPostTrainingJobsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - PostTraining (Coming Soon)
+      description: ''
+      parameters: []
   /v1/providers:
     get:
       responses:
@@ -1980,6 +2051,29 @@ paths:
             schema:
               $ref: '#/components/schemas/RegisterShieldRequest'
         required: true
+  /v1/synthetic-data-generation/jobs:
+    get:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListSyntheticDataGenerationJobsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - SyntheticDataGeneration (Coming Soon)
+      description: ''
+      parameters: []
   /v1/toolgroups:
     get:
       responses:
@@ -2423,43 +2517,6 @@ paths:
             schema:
               $ref: '#/components/schemas/ResumeAgentTurnRequest'
         required: true
-  /v1/eval/benchmarks/{benchmark_id}/jobs:
-    post:
-      responses:
-        '200':
-          description: >-
-            The job that was created to run the evaluation.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Job'
-        '400':
-          $ref: '#/components/responses/BadRequest400'
-        '429':
-          $ref: >-
-            #/components/responses/TooManyRequests429
-        '500':
-          $ref: >-
-            #/components/responses/InternalServerError500
-        default:
-          $ref: '#/components/responses/DefaultError'
-      tags:
-        - Eval
-      description: Run an evaluation on a benchmark.
-      parameters:
-        - name: benchmark_id
-          in: path
-          description: >-
-            The ID of the benchmark to run the evaluation on.
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RunEvalRequest'
-        required: true
   /v1/safety/run-shield:
     post:
       responses:
@@ -2610,7 +2667,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SyntheticDataGenerationResponse'
+                $ref: '#/components/schemas/SyntheticDataGenerationJob'
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -3360,15 +3417,6 @@ components:
         - stop_reason
       title: CompletionResponse
       description: Response from a completion request.
-    CancelTrainingJobRequest:
-      type: object
-      properties:
-        job_uuid:
-          type: string
-      additionalProperties: false
-      required:
-        - job_uuid
-      title: CancelTrainingJobRequest
     ChatCompletionRequest:
       type: object
       properties:
@@ -4586,82 +4634,23 @@ components:
           llm_as_judge: '#/components/schemas/LLMAsJudgeScoringFnParams'
           regex_parser: '#/components/schemas/RegexParserScoringFnParams'
           basic: '#/components/schemas/BasicScoringFnParams'
-    EvaluateRowsRequest:
+    EvaluateRequest:
       type: object
       properties:
-        input_rows:
-          type: array
-          items:
-            type: object
-            additionalProperties:
-              oneOf:
-                - type: 'null'
-                - type: boolean
-                - type: number
-                - type: string
-                - type: array
-                - type: object
-          description: The rows to evaluate.
-        scoring_functions:
-          type: array
-          items:
-            type: string
-          description: >-
-            The scoring functions to use for the evaluation.
         benchmark_config:
           $ref: '#/components/schemas/BenchmarkConfig'
-          description: The configuration for the benchmark.
       additionalProperties: false
       required:
-        - input_rows
-        - scoring_functions
         - benchmark_config
-      title: EvaluateRowsRequest
-    EvaluateResponse:
+      title: EvaluateRequest
+    JobArtifact:
       type: object
       properties:
-        generations:
-          type: array
-          items:
-            type: object
-            additionalProperties:
-              oneOf:
-                - type: 'null'
-                - type: boolean
-                - type: number
-                - type: string
-                - type: array
-                - type: object
-          description: The generations from the evaluation.
-        scores:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/ScoringResult'
-          description: The scores from the evaluation.
-      additionalProperties: false
-      required:
-        - generations
-        - scores
-      title: EvaluateResponse
-      description: The response from an evaluation.
-    ScoringResult:
-      type: object
-      properties:
-        score_rows:
-          type: array
-          items:
-            type: object
-            additionalProperties:
-              oneOf:
-                - type: 'null'
-                - type: boolean
-                - type: number
-                - type: string
-                - type: array
-                - type: object
-          description: >-
-            The scoring result for each row. Each row is a map of column name to value.
-        aggregated_results:
+        name:
+          type: string
+        type:
+          type: string
+        metadata:
           type: object
           additionalProperties:
             oneOf:
@@ -4671,13 +4660,77 @@ components:
               - type: string
               - type: array
               - type: object
-          description: Map of metric name to aggregated value
+        uri:
+          type: string
       additionalProperties: false
       required:
-        - score_rows
-        - aggregated_results
-      title: ScoringResult
-      description: A scoring result for a single row.
+        - name
+        - type
+      title: JobArtifact
+    JobStatusDetails:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - unknown
+            - new
+            - scheduled
+            - running
+            - paused
+            - resuming
+            - cancelled
+            - failed
+            - completed
+          title: JobStatus
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+      additionalProperties: false
+      required:
+        - status
+        - timestamp
+      title: JobStatusDetails
+    EvaluateJob:
+      type: object
+      properties:
+        id:
+          type: string
+        artifacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/JobArtifact'
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/JobStatusDetails'
+        type:
+          type: string
+          const: eval
+          default: eval
+        status:
+          type: string
+          enum:
+            - unknown
+            - new
+            - scheduled
+            - running
+            - paused
+            - resuming
+            - cancelled
+            - failed
+            - completed
+          title: JobStatus
+      additionalProperties: false
+      required:
+        - id
+        - artifacts
+        - events
+        - type
+        - status
+      title: EvaluateJob
     Agent:
       type: object
       properties:
@@ -4951,6 +5004,44 @@ components:
         - llm
         - embedding
       title: ModelType
+    PostTrainingJob:
+      type: object
+      properties:
+        id:
+          type: string
+        artifacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/JobArtifact'
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/JobStatusDetails'
+        type:
+          type: string
+          const: post-training
+          default: post-training
+        status:
+          type: string
+          enum:
+            - unknown
+            - new
+            - scheduled
+            - running
+            - paused
+            - resuming
+            - cancelled
+            - failed
+            - completed
+          title: JobStatus
+      additionalProperties: false
+      required:
+        - id
+        - artifacts
+        - events
+        - type
+        - status
+      title: PostTrainingJob
     AgentTurnInputType:
       type: object
       properties:
@@ -5254,6 +5345,44 @@ components:
       required:
         - data
       title: QuerySpanTreeResponse
+    SyntheticDataGenerationJob:
+      type: object
+      properties:
+        id:
+          type: string
+        artifacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/JobArtifact'
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/JobStatusDetails'
+        type:
+          type: string
+          const: synthetic-data-generation
+          default: synthetic-data-generation
+        status:
+          type: string
+          enum:
+            - unknown
+            - new
+            - scheduled
+            - running
+            - paused
+            - resuming
+            - cancelled
+            - failed
+            - completed
+          title: JobStatus
+      additionalProperties: false
+      required:
+        - id
+        - artifacts
+        - events
+        - type
+        - status
+      title: SyntheticDataGenerationJob
     Tool:
       type: object
       properties:
@@ -5356,86 +5485,6 @@ components:
         - root_span_id
         - start_time
       title: Trace
-    Checkpoint:
-      description: Checkpoint created during training runs
-      title: Checkpoint
-    PostTrainingJobArtifactsResponse:
-      type: object
-      properties:
-        job_uuid:
-          type: string
-        checkpoints:
-          type: array
-          items:
-            $ref: '#/components/schemas/Checkpoint'
-      additionalProperties: false
-      required:
-        - job_uuid
-        - checkpoints
-      title: PostTrainingJobArtifactsResponse
-      description: Artifacts of a finetuning job.
-    PostTrainingJobStatusResponse:
-      type: object
-      properties:
-        job_uuid:
-          type: string
-        status:
-          type: string
-          enum:
-            - completed
-            - in_progress
-            - failed
-            - scheduled
-            - cancelled
-          title: JobStatus
-        scheduled_at:
-          type: string
-          format: date-time
-        started_at:
-          type: string
-          format: date-time
-        completed_at:
-          type: string
-          format: date-time
-        resources_allocated:
-          type: object
-          additionalProperties:
-            oneOf:
-              - type: 'null'
-              - type: boolean
-              - type: number
-              - type: string
-              - type: array
-              - type: object
-        checkpoints:
-          type: array
-          items:
-            $ref: '#/components/schemas/Checkpoint'
-      additionalProperties: false
-      required:
-        - job_uuid
-        - status
-        - checkpoints
-      title: PostTrainingJobStatusResponse
-      description: Status of a finetuning job.
-    ListPostTrainingJobsResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            type: object
-            properties:
-              job_uuid:
-                type: string
-            additionalProperties: false
-            required:
-              - job_uuid
-            title: PostTrainingJob
-      additionalProperties: false
-      required:
-        - data
-      title: ListPostTrainingJobsResponse
     VectorDB:
       type: object
       properties:
@@ -5669,25 +5718,6 @@ components:
       title: PaginatedResponse
       description: >-
         A generic paginated response that follows a simple format.
-    Job:
-      type: object
-      properties:
-        job_id:
-          type: string
-        status:
-          type: string
-          enum:
-            - completed
-            - in_progress
-            - failed
-            - scheduled
-            - cancelled
-          title: JobStatus
-      additionalProperties: false
-      required:
-        - job_id
-        - status
-      title: Job
     ListAgentSessionsResponse:
       type: object
       properties:
@@ -5755,6 +5785,53 @@ components:
       required:
         - data
       title: ListDatasetsResponse
+    ListEvaluateJobsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              artifacts:
+                type: array
+                items:
+                  $ref: '#/components/schemas/JobArtifact'
+              events:
+                type: array
+                items:
+                  $ref: '#/components/schemas/JobStatusDetails'
+              type:
+                type: string
+                const: eval
+                default: eval
+              status:
+                type: string
+                enum:
+                  - unknown
+                  - new
+                  - scheduled
+                  - running
+                  - paused
+                  - resuming
+                  - cancelled
+                  - failed
+                  - completed
+                title: JobStatus
+            additionalProperties: false
+            required:
+              - id
+              - artifacts
+              - events
+              - type
+              - status
+            title: EvaluateJob
+      additionalProperties: false
+      required:
+        - data
+      title: ListEvaluateJobsResponse
     ListFileResponse:
       type: object
       properties:
@@ -5780,6 +5857,17 @@ components:
       required:
         - data
       title: ListModelsResponse
+    ListPostTrainingJobsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PostTrainingJob'
+      additionalProperties: false
+      required:
+        - data
+      title: ListPostTrainingJobsResponse
     ListProvidersResponse:
       type: object
       properties:
@@ -5852,6 +5940,17 @@ components:
       required:
         - data
       title: ListShieldsResponse
+    ListSyntheticDataGenerationJobsResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/SyntheticDataGenerationJob'
+      additionalProperties: false
+      required:
+        - items
+      title: ListSyntheticDataGenerationJobsResponse
     ListToolGroupsResponse:
       type: object
       properties:
@@ -7059,15 +7158,6 @@ components:
         - hyperparam_search_config
         - logger_config
       title: PreferenceOptimizeRequest
-    PostTrainingJob:
-      type: object
-      properties:
-        job_uuid:
-          type: string
-      additionalProperties: false
-      required:
-        - job_uuid
-      title: PostTrainingJob
     DefaultRAGQueryGeneratorConfig:
       type: object
       properties:
@@ -7514,16 +7604,6 @@ components:
       required:
         - tool_responses
       title: ResumeAgentTurnRequest
-    RunEvalRequest:
-      type: object
-      properties:
-        benchmark_config:
-          $ref: '#/components/schemas/BenchmarkConfig'
-          description: The configuration for the benchmark.
-      additionalProperties: false
-      required:
-        - benchmark_config
-      title: RunEvalRequest
     RunShieldRequest:
       type: object
       properties:
@@ -7620,6 +7700,40 @@ components:
         - results
       title: ScoreResponse
       description: The response from scoring.
+    ScoringResult:
+      type: object
+      properties:
+        score_rows:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              oneOf:
+                - type: 'null'
+                - type: boolean
+                - type: number
+                - type: string
+                - type: array
+                - type: object
+          description: >-
+            The scoring result for each row. Each row is a map of column name to value.
+        aggregated_results:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+          description: Map of metric name to aggregated value
+      additionalProperties: false
+      required:
+        - score_rows
+        - aggregated_results
+      title: ScoringResult
+      description: A scoring result for a single row.
     ScoreBatchRequest:
       type: object
       properties:
@@ -7777,38 +7891,69 @@ components:
         - dialogs
         - filtering_function
       title: SyntheticDataGenerateRequest
-    SyntheticDataGenerationResponse:
+    UpdateEvaluateJobRequest:
       type: object
       properties:
-        synthetic_data:
-          type: array
-          items:
-            type: object
-            additionalProperties:
-              oneOf:
-                - type: 'null'
-                - type: boolean
-                - type: number
-                - type: string
-                - type: array
-                - type: object
-        statistics:
+        job:
           type: object
-          additionalProperties:
-            oneOf:
-              - type: 'null'
-              - type: boolean
-              - type: number
-              - type: string
-              - type: array
-              - type: object
+          properties:
+            id:
+              type: string
+            artifacts:
+              type: array
+              items:
+                $ref: '#/components/schemas/JobArtifact'
+            events:
+              type: array
+              items:
+                $ref: '#/components/schemas/JobStatusDetails'
+            type:
+              type: string
+              const: eval
+              default: eval
+            status:
+              type: string
+              enum:
+                - unknown
+                - new
+                - scheduled
+                - running
+                - paused
+                - resuming
+                - cancelled
+                - failed
+                - completed
+              title: JobStatus
+          additionalProperties: false
+          required:
+            - id
+            - artifacts
+            - events
+            - type
+            - status
+          title: EvaluateJob
       additionalProperties: false
       required:
-        - synthetic_data
-      title: SyntheticDataGenerationResponse
-      description: >-
-        Response from the synthetic data generation. Batch of (prompt, response, score)
-        tuples that pass the threshold.
+        - job
+      title: UpdateEvaluateJobRequest
+    UpdatePostTrainingJobRequest:
+      type: object
+      properties:
+        job:
+          $ref: '#/components/schemas/PostTrainingJob'
+      additionalProperties: false
+      required:
+        - job
+      title: UpdatePostTrainingJobRequest
+    UpdateSyntheticDataGenerationJobRequest:
+      type: object
+      properties:
+        job:
+          $ref: '#/components/schemas/SyntheticDataGenerationJob'
+      additionalProperties: false
+      required:
+        - job
+      title: UpdateSyntheticDataGenerationJobRequest
     VersionInfo:
       type: object
       properties:

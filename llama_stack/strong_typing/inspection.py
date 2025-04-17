@@ -562,6 +562,15 @@ else:
         return typing.get_type_hints(typ)
 
 
+def get_computed_fields(typ: type) -> dict[str, type]:
+    "Returns all computed fields of a class."
+    pydantic_decorators = getattr(typ, "__pydantic_decorators__", None)
+    if not pydantic_decorators:
+        return {}
+    computed_fields = pydantic_decorators.computed_fields
+    return {field_name: decorator.info.return_type for field_name, decorator in computed_fields.items()}
+
+
 def get_class_properties(typ: type) -> Iterable[Tuple[str, type | str]]:
     "Returns all properties of a class."
 
@@ -569,7 +578,8 @@ def get_class_properties(typ: type) -> Iterable[Tuple[str, type | str]]:
         return ((field.name, field.type) for field in dataclasses.fields(typ))
     else:
         resolved_hints = get_resolved_hints(typ)
-        return resolved_hints.items()
+        computed_fields = get_computed_fields(typ)
+        return (resolved_hints | computed_fields).items()
 
 
 def get_class_property(typ: type, name: str) -> Optional[type | str]:

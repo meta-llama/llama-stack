@@ -33,11 +33,11 @@ from torchtune.training.lr_schedulers import get_cosine_schedule_with_warmup
 from torchtune.training.metric_logging import DiskLogger
 from tqdm import tqdm
 
+from llama_stack.apis.common.job_types import JobArtifact
 from llama_stack.apis.common.training_types import PostTrainingMetric
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
 from llama_stack.apis.post_training import (
-    Checkpoint,
     DataConfig,
     EfficiencyConfig,
     LoraFinetuningConfig,
@@ -457,7 +457,7 @@ class LoraFinetuningSingleDevice:
 
         return loss
 
-    async def train(self) -> Tuple[Dict[str, Any], List[Checkpoint]]:
+    async def train(self) -> Tuple[Dict[str, Any], List[JobArtifact]]:
         """
         The core training loop.
         """
@@ -543,13 +543,18 @@ class LoraFinetuningSingleDevice:
             self.epochs_run += 1
             log.info("Starting checkpoint save...")
             checkpoint_path = await self.save_checkpoint(epoch=curr_epoch)
-            checkpoint = Checkpoint(
-                identifier=f"{self.model_id}-sft-{curr_epoch}",
-                created_at=datetime.now(timezone.utc),
-                epoch=curr_epoch,
-                post_training_job_id=self.job_uuid,
-                path=checkpoint_path,
+
+            checkpoint = JobArtifact(
+                name=f"{self.model_id}-sft-{curr_epoch}",
+                type="checkpoint",
+                # TODO: this should be exposed via /files instead
+                uri=checkpoint_path,
             )
+
+            metadata = {
+                "created_at": datetime.now(timezone.utc),
+                "epoch": curr_epoch,
+            }
             if self.training_config.data_config.validation_dataset_id:
                 validation_loss, perplexity = await self.validation()
                 training_metrics = PostTrainingMetric(
@@ -558,7 +563,9 @@ class LoraFinetuningSingleDevice:
                     validation_loss=validation_loss,
                     perplexity=perplexity,
                 )
-                checkpoint.training_metrics = training_metrics
+                metadata["training_metrics"] = training_metrics
+            checkpoint.metadata = metadata
+
             checkpoints.append(checkpoint)
 
         # clean up the memory after training finishes

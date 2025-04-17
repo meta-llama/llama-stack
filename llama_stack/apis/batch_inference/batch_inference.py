@@ -4,9 +4,11 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import List, Optional, Protocol, runtime_checkable
+from typing import List, Literal, Optional, Protocol, runtime_checkable
 
-from llama_stack.apis.common.job_types import Job
+from pydantic import BaseModel
+
+from llama_stack.apis.common.job_types import BaseJob
 from llama_stack.apis.inference import (
     InterleavedContent,
     LogProbConfig,
@@ -18,6 +20,14 @@ from llama_stack.apis.inference import (
     ToolPromptFormat,
 )
 from llama_stack.schema_utils import webmethod
+
+
+class BatchInferenceJob(BaseJob, BaseModel):
+    type: Literal["batch_inference"] = "batch_inference"
+
+
+class ListBatchInferenceJobsResponse(BaseModel):
+    data: list[BatchInferenceJob]
 
 
 @runtime_checkable
@@ -38,7 +48,7 @@ class BatchInference(Protocol):
         sampling_params: Optional[SamplingParams] = None,
         response_format: Optional[ResponseFormat] = None,
         logprobs: Optional[LogProbConfig] = None,
-    ) -> Job: ...
+    ) -> BatchInferenceJob: ...
 
     @webmethod(route="/batch-inference/chat-completion", method="POST")
     async def chat_completion(
@@ -52,4 +62,4 @@ class BatchInference(Protocol):
         tool_prompt_format: Optional[ToolPromptFormat] = None,
         response_format: Optional[ResponseFormat] = None,
         logprobs: Optional[LogProbConfig] = None,
-    ) -> Job: ...
+    ) -> BatchInferenceJob: ...
