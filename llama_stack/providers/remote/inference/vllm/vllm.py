@@ -374,7 +374,8 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
             options["max_tokens"] = self.config.max_tokens
 
         input_dict: dict[str, Any] = {}
-        if isinstance(request, ChatCompletionRequest) and request.tools is not None:
+        # Only include the 'tools' param if there is any. It can break things if an empty list is sent to the vLLM.
+        if isinstance(request, ChatCompletionRequest) and request.tools:
             input_dict = {"tools": _convert_to_vllm_tools_in_request(request.tools)}
 
         if isinstance(request, ChatCompletionRequest):

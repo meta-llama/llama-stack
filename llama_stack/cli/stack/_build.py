@@ -235,10 +235,14 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
         )
 
     except (Exception, RuntimeError) as exc:
+        import traceback
+
         cprint(
             f"Error building stack: {exc}",
             color="red",
         )
+        cprint("Stack trace:", color="red")
+        traceback.print_exc()
         sys.exit(1)
     if run_config is None:
         cprint(
@@ -350,7 +354,7 @@ def _run_stack_build_command_from_build_config(
         build_config,
         build_file_path,
         image_name,
-        template_or_config=template_name or config_path,
+        template_or_config=template_name or config_path or str(build_file_path),
     )
     if return_code != 0:
         raise RuntimeError(f"Failed to build image {image_name}")

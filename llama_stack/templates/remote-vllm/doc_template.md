@@ -28,7 +28,7 @@ The following environment variables can be configured:
 
 ## Setting up vLLM server
 
-In the following sections, we'll use either AMD and NVIDIA GPUs to serve as hardware accelerators for the vLLM
+In the following sections, we'll use AMD, NVIDIA or Intel GPUs to serve as hardware accelerators for the vLLM
 server, which acts as both the LLM inference provider and the safety provider. Note that vLLM also
 [supports many other hardware accelerators](https://docs.vllm.ai/en/latest/getting_started/installation.html) and
 that we only use GPUs here for demonstration purposes.
@@ -144,6 +144,55 @@ docker run \
     -p $SAFETY_PORT:$SAFETY_PORT \
     --ipc=host \
     vllm/vllm-openai:latest \
+    --gpu-memory-utilization 0.7 \
+    --model $SAFETY_MODEL \
+    --port $SAFETY_PORT
+```
+
+### Setting up vLLM server on Intel GPU
+
+Refer to [vLLM Documentation for XPU](https://docs.vllm.ai/en/v0.8.2/getting_started/installation/gpu.html?device=xpu) to get a vLLM endpoint. In addition to vLLM side setup which guides towards installing vLLM from sources orself-building vLLM Docker container, Intel provides prebuilt vLLM container to use on systems with Intel GPUs supported by PyTorch XPU backend:
+- [intel/vllm](https://hub.docker.com/r/intel/vllm)
+
+Here is a sample script to start a vLLM server locally via Docker using Intel provided container:
+
+```bash
+export INFERENCE_PORT=8000
+export INFERENCE_MODEL=meta-llama/Llama-3.2-1B-Instruct
+export ZE_AFFINITY_MASK=0
+
+docker run \
+    --pull always \
+    --device /dev/dri \
+    -v /dev/dri/by-path:/dev/dri/by-path \
+    -v ~/.cache/huggingface:/root/.cache/huggingface \
+    --env "HUGGING_FACE_HUB_TOKEN=$HF_TOKEN" \
+    --env ZE_AFFINITY_MASK=$ZE_AFFINITY_MASK \
+    -p $INFERENCE_PORT:$INFERENCE_PORT \
+    --ipc=host \
+    intel/vllm:xpu \
+    --gpu-memory-utilization 0.7 \
+    --model $INFERENCE_MODEL \
+    --port $INFERENCE_PORT
+```
+
+If you are using Llama Stack Safety / Shield APIs, then you will need to also run another instance of a vLLM with a corresponding safety model like `meta-llama/Llama-Guard-3-1B` using a script like:
+
+```bash
+export SAFETY_PORT=8081
+export SAFETY_MODEL=meta-llama/Llama-Guard-3-1B
+export ZE_AFFINITY_MASK=1
+
+docker run \
+    --pull always \
+    --device /dev/dri \
+    -v /dev/dri/by-path:/dev/dri/by-path \
+    -v ~/.cache/huggingface:/root/.cache/huggingface \
+    --env "HUGGING_FACE_HUB_TOKEN=$HF_TOKEN" \
+    --env ZE_AFFINITY_MASK=$ZE_AFFINITY_MASK \
+    -p $SAFETY_PORT:$SAFETY_PORT \
+    --ipc=host \
+    intel/vllm:xpu \
     --gpu-memory-utilization 0.7 \
     --model $SAFETY_MODEL \
     --port $SAFETY_PORT
