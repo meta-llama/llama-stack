@@ -6097,7 +6097,6 @@ components:
       additionalProperties: false
       required:
         - role
-        - content
       title: OpenAIAssistantMessageParam
       description: >-
         A message containing the model's (assistant) response in an OpenAI-compatible
