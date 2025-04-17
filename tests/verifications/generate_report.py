@@ -412,7 +412,22 @@ def generate_report(
             # Determine display name based on case count
             base_name = base_test_name_map.get(test, test)  # Get base name
             case_count = base_test_case_counts.get(base_name, 1)  # Get count
-            display_test_name = base_name if case_count == 1 else test  # Choose display name
+            # --- BEGIN PATCH: show stream param name if test_chat_multiple_images ---
+            if case_count > 1 and test.startswith("test_chat_multiple_images "):
+                # Try to extract the param value from the test name
+                m = re.match(r"^(test_chat_multiple_images) \\\((.*)\\\)$", test)
+                if m:
+                    param_val = m.group(2)
+                    # Only replace True/False with stream=True/False if that's the only param
+                    if param_val in ("True", "False"):
+                        display_test_name = f"test_chat_multiple_images (stream={param_val})"
+                    else:
+                        display_test_name = test
+                else:
+                    display_test_name = test
+            else:
+                display_test_name = base_name if case_count == 1 else test  # Choose display name
+            # --- END PATCH ---
             row = f"| {display_test_name} |"  # Use display name
 
             for model_id in provider_models:

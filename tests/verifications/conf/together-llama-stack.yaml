@@ -12,3 +12,4 @@ test_exclusions:
   together/meta-llama/Llama-3.3-70B-Instruct-Turbo:
   - test_chat_non_streaming_image
   - test_chat_streaming_image
+  - test_chat_multi_turn_multiple_images
