@@ -22,7 +22,7 @@ def get_distribution_template() -> DistributionTemplate:
         "telemetry": ["inline::meta-reference"],
         "eval": ["inline::meta-reference"],
         "post_training": ["remote::nvidia"],
-        "datasetio": ["inline::localfs"],
+        "datasetio": ["inline::localfs", "remote::nvidia"],
         "scoring": ["inline::basic"],
         "tool_runtime": ["inline::rag-runtime"],
     }
@@ -67,9 +67,7 @@ def get_distribution_template() -> DistributionTemplate:
         available_models_by_provider=available_models,
         run_configs={
             "run.yaml": RunConfigSettings(
-                provider_overrides={
-                    "inference": [inference_provider],
-                },
+                provider_overrides={"inference": [inference_provider]},
                 default_models=default_models,
                 default_tool_groups=default_tool_groups,
             ),
