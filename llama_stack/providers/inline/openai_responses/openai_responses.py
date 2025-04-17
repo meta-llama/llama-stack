@@ -12,6 +12,7 @@ from llama_stack.apis.inference.inference import (
     OpenAIAssistantMessageParam,
     OpenAIChatCompletion,
     OpenAIChatCompletionContentPartTextParam,
+    OpenAIChoice,
     OpenAIMessageParam,
     OpenAIUserMessageParam,
 )
@@ -31,6 +32,32 @@ from .config import OpenAIResponsesImplConfig
 logger = get_logger(name=__name__, category="openai_responses")
 
 OPENAI_RESPONSES_PREFIX = "openai_responses:"
+
+
+async def _previous_response_to_messages(previous_response: OpenAIResponseObject) -> List[OpenAIMessageParam]:
+    messages: List[OpenAIMessageParam] = []
+    for output_message in previous_response.output:
+        messages.append(OpenAIAssistantMessageParam(content=output_message.content[0].text))
+    return messages
+
+
+async def _openai_choices_to_output_messages(choices: List[OpenAIChoice]) -> List[OpenAIResponseOutputMessage]:
+    output_messages = []
+    for choice in choices:
+        output_content = ""
+        if isinstance(choice.message.content, str):
+            output_content = choice.message.content
+        elif isinstance(choice.message.content, OpenAIChatCompletionContentPartTextParam):
+            output_content = choice.message.content.text
+        # TODO: handle image content
+        output_messages.append(
+            OpenAIResponseOutputMessage(
+                id=f"msg_{uuid.uuid4()}",
+                content=[OpenAIResponseOutputMessageContentOutputText(text=output_content)],
+                status="completed",
+            )
+        )
+    return output_messages
 
 
 class OpenAIResponsesImpl(OpenAIResponses):
@@ -73,8 +100,7 @@ class OpenAIResponsesImpl(OpenAIResponses):
         messages: List[OpenAIMessageParam] = []
         if previous_response_id:
             previous_response = await self.get_openai_response(previous_response_id)
-            messages.append(OpenAIAssistantMessageParam(content=previous_response.output[0].content[0].text))
-
+            messages.extend(await _previous_response_to_messages(previous_response))
         messages.append(OpenAIUserMessageParam(content=input))
 
         chat_response = await self.inference_api.openai_chat_completion(
@@ -84,21 +110,7 @@ class OpenAIResponsesImpl(OpenAIResponses):
         # type cast to appease mypy
         chat_response = cast(OpenAIChatCompletion, chat_response)
 
-        output_messages = []
-        for choice in chat_response.choices:
-            output_content = ""
-            if isinstance(choice.message.content, str):
-                output_content = choice.message.content
-            elif isinstance(choice.message.content, OpenAIChatCompletionContentPartTextParam):
-                output_content = choice.message.content.text
-            # TODO: handle image content
-            output_messages.append(
-                OpenAIResponseOutputMessage(
-                    id=f"msg_{uuid.uuid4()}",
-                    content=[OpenAIResponseOutputMessageContentOutputText(text=output_content)],
-                    status="completed",
-                )
-            )
+        output_messages = await _openai_choices_to_output_messages(chat_response.choices)
         response = OpenAIResponseObject(
             created_at=chat_response.created,
             id=f"resp-{uuid.uuid4()}",
