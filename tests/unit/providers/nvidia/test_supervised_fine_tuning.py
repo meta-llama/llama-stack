@@ -17,6 +17,8 @@ from llama_stack_client.types.post_training_supervised_fine_tune_params import (
     TrainingConfigOptimizerConfig,
 )
 
+from llama_stack.apis.models import Model, ModelType
+from llama_stack.providers.remote.inference.nvidia.nvidia import NVIDIAConfig, NVIDIAInferenceAdapter
 from llama_stack.providers.remote.post_training.nvidia.post_training import (
     ListNvidiaPostTrainingJobs,
     NvidiaPostTrainingAdapter,
@@ -40,8 +42,22 @@ class TestNvidiaPostTraining(unittest.TestCase):
         )
         self.mock_make_request = self.make_request_patcher.start()
 
+        # Mock the inference client
+        inference_config = NVIDIAConfig(base_url=os.environ["NVIDIA_BASE_URL"], api_key=None)
+        self.inference_adapter = NVIDIAInferenceAdapter(inference_config)
+
+        self.mock_client = unittest.mock.MagicMock()
+        self.mock_client.chat.completions.create = unittest.mock.AsyncMock()
+        self.inference_mock_make_request = self.mock_client.chat.completions.create
+        self.inference_make_request_patcher = patch(
+            "llama_stack.providers.remote.inference.nvidia.nvidia.NVIDIAInferenceAdapter._get_client",
+            return_value=self.mock_client,
+        )
+        self.inference_make_request_patcher.start()
+
     def tearDown(self):
         self.make_request_patcher.stop()
+        self.inference_make_request_patcher.stop()
 
     @pytest.fixture(autouse=True)
     def inject_fixtures(self, run_async):
@@ -302,6 +318,31 @@ class TestNvidiaPostTraining(unittest.TestCase):
             f"/v1/customization/jobs/{job_id}/cancel",
             expected_params={"job_id": job_id},
         )
+
+    def test_inference_register_model(self):
+        model_id = "default/job-1234"
+        model_type = ModelType.llm
+        model = Model(
+            identifier=model_id,
+            provider_id="nvidia",
+            provider_model_id=model_id,
+            provider_resource_id=model_id,
+            model_type=model_type,
+        )
+        result = self.run_async(self.inference_adapter.register_model(model))
+        assert result == model
+        assert len(self.inference_adapter.alias_to_provider_id_map) > 1
+        assert self.inference_adapter.get_provider_model_id(model.provider_model_id) == model_id
+
+        with patch.object(self.inference_adapter, "chat_completion") as mock_chat_completion:
+            self.run_async(
+                self.inference_adapter.chat_completion(
+                    model_id=model_id,
+                    messages=[{"role": "user", "content": "Hello, model"}],
+                )
+            )
+
+            mock_chat_completion.assert_called()
 
 
 if __name__ == "__main__":

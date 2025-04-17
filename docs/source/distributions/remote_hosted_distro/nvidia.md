@@ -22,9 +22,8 @@ The `llamastack/distribution-nvidia` distribution consists of the following prov
 The following environment variables can be configured:
 
 - `NVIDIA_API_KEY`: NVIDIA API Key (default: ``)
-- `NVIDIA_USER_ID`: NVIDIA User ID (default: `llama-stack-user`)
+- `NVIDIA_APPEND_API_VERSION`: Whether to append the API version to the base_url (default: `True`)
 - `NVIDIA_DATASET_NAMESPACE`: NVIDIA Dataset Namespace (default: `default`)
-- `NVIDIA_ACCESS_POLICIES`: NVIDIA Access Policies (default: `{}`)
 - `NVIDIA_PROJECT_ID`: NVIDIA Project ID (default: `test-project`)
 - `NVIDIA_CUSTOMIZER_URL`: NVIDIA Customizer URL (default: `https://customizer.api.nvidia.com`)
 - `NVIDIA_OUTPUT_MODEL_DIR`: NVIDIA Output Model Directory (default: `test-example-model@v1`)
