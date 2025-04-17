@@ -4,9 +4,11 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import base64
 import copy
 import json
 import re
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -18,6 +20,8 @@ from tests.verifications.openai_api.fixtures.fixtures import (
 from tests.verifications.openai_api.fixtures.load import load_test_cases
 
 chat_completion_test_cases = load_test_cases("chat_completion")
+
+THIS_DIR = Path(__file__).parent
 
 
 def case_id_generator(case):
@@ -69,6 +73,21 @@ def should_skip_test(verification_config, provider, model, test_name_base):
 # Helper to get the base test name from the request object
 def get_base_test_name(request):
     return request.node.originalname
+
+
+@pytest.fixture
+def multi_image_data():
+    files = [
+        THIS_DIR / "fixtures/images/vision_test_1.jpg",
+        THIS_DIR / "fixtures/images/vision_test_2.jpg",
+        THIS_DIR / "fixtures/images/vision_test_3.jpg",
+    ]
+    encoded_files = []
+    for file in files:
+        with open(file, "rb") as image_file:
+            base64_data = base64.b64encode(image_file.read()).decode("utf-8")
+            encoded_files.append(f"data:image/jpeg;base64,{base64_data}")
+    return encoded_files
 
 
 # --- Test Functions ---
@@ -531,6 +550,86 @@ def test_chat_streaming_multi_turn_tool_calling(request, openai_client, model, p
             assert any(ans.lower() in content_lower for ans in expected_answers), (
                 f"Expected one of {expected_answers} in content, but got: '{accumulated_content}'"
             )
+
+
+@pytest.mark.parametrize("stream", [False, True], ids=["stream=False", "stream=True"])
+def test_chat_multi_turn_multiple_images(
+    request, openai_client, model, provider, verification_config, multi_image_data, stream
+):
+    test_name_base = get_base_test_name(request)
+    if should_skip_test(verification_config, provider, model, test_name_base):
+        pytest.skip(f"Skipping {test_name_base} for model {model} on provider {provider} based on config.")
+
+    messages_turn1 = [
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": multi_image_data[0],
+                    },
+                },
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": multi_image_data[1],
+                    },
+                },
+                {
+                    "type": "text",
+                    "text": "What furniture is in the first image that is not in the second image?",
+                },
+            ],
+        },
+    ]
+
+    # First API call
+    response1 = openai_client.chat.completions.create(
+        model=model,
+        messages=messages_turn1,
+        stream=stream,
+    )
+    if stream:
+        message_content1 = ""
+        for chunk in response1:
+            message_content1 += chunk.choices[0].delta.content or ""
+    else:
+        message_content1 = response1.choices[0].message.content
+    assert len(message_content1) > 0
+    assert any(expected in message_content1.lower().strip() for expected in {"chair", "table"}), message_content1
+
+    # Prepare messages for the second turn
+    messages_turn2 = messages_turn1 + [
+        {"role": "assistant", "content": message_content1},
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": multi_image_data[2],
+                    },
+                },
+                {"type": "text", "text": "What is in this image that is also in the first image?"},
+            ],
+        },
+    ]
+
+    # Second API call
+    response2 = openai_client.chat.completions.create(
+        model=model,
+        messages=messages_turn2,
+        stream=stream,
+    )
+    if stream:
+        message_content2 = ""
+        for chunk in response2:
+            message_content2 += chunk.choices[0].delta.content or ""
+    else:
+        message_content2 = response2.choices[0].message.content
+    assert len(message_content2) > 0
+    assert any(expected in message_content2.lower().strip() for expected in {"bed"}), message_content2
 
 
 # --- Helper functions (structured output validation) ---

@@ -1,13 +1,13 @@
 {
-  "created": 1744762318.264238,
-  "duration": 177.55697464942932,
+  "created": 1744918847.712677,
+  "duration": 215.2132911682129,
   "exitcode": 0,
   "root": "/home/erichuang/llama-stack",
   "environment": {},
   "summary": {
-    "passed": 26,
-    "total": 26,
-    "collected": 26
+    "passed": 28,
+    "total": 28,
+    "collected": 28
   },
   "collectors": [
     {
@@ -27,132 +27,142 @@
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_basic[meta-llama/Llama-4-Scout-17B-16E-Instruct-earth]",
           "type": "Function",
-          "lineno": 80
+          "lineno": 95
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_basic[meta-llama/Llama-4-Scout-17B-16E-Instruct-saturn]",
           "type": "Function",
-          "lineno": 80
+          "lineno": 95
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_basic[meta-llama/Llama-4-Scout-17B-16E-Instruct-earth]",
           "type": "Function",
-          "lineno": 103
+          "lineno": 114
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_basic[meta-llama/Llama-4-Scout-17B-16E-Instruct-saturn]",
           "type": "Function",
-          "lineno": 103
+          "lineno": 114
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_image[meta-llama/Llama-4-Scout-17B-16E-Instruct-case0]",
           "type": "Function",
-          "lineno": 131
+          "lineno": 138
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_image[meta-llama/Llama-4-Scout-17B-16E-Instruct-case0]",
           "type": "Function",
-          "lineno": 154
+          "lineno": 157
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_structured_output[meta-llama/Llama-4-Scout-17B-16E-Instruct-calendar]",
           "type": "Function",
-          "lineno": 182
+          "lineno": 181
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_structured_output[meta-llama/Llama-4-Scout-17B-16E-Instruct-math]",
           "type": "Function",
-          "lineno": 182
+          "lineno": 181
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_structured_output[meta-llama/Llama-4-Scout-17B-16E-Instruct-calendar]",
           "type": "Function",
-          "lineno": 209
+          "lineno": 204
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_structured_output[meta-llama/Llama-4-Scout-17B-16E-Instruct-math]",
           "type": "Function",
-          "lineno": 209
+          "lineno": 204
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_tool_calling[meta-llama/Llama-4-Scout-17B-16E-Instruct-case0]",
           "type": "Function",
-          "lineno": 235
+          "lineno": 226
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_tool_calling[meta-llama/Llama-4-Scout-17B-16E-Instruct-case0]",
           "type": "Function",
-          "lineno": 263
+          "lineno": 250
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_tool_choice_required[meta-llama/Llama-4-Scout-17B-16E-Instruct-case0]",
           "type": "Function",
-          "lineno": 296
+          "lineno": 278
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_tool_choice_required[meta-llama/Llama-4-Scout-17B-16E-Instruct-case0]",
           "type": "Function",
-          "lineno": 329
+          "lineno": 302
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_tool_choice_none[meta-llama/Llama-4-Scout-17B-16E-Instruct-case0]",
           "type": "Function",
-          "lineno": 362
+          "lineno": 329
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_tool_choice_none[meta-llama/Llama-4-Scout-17B-16E-Instruct-case0]",
           "type": "Function",
-          "lineno": 395
+          "lineno": 352
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_multi_turn_tool_calling[meta-llama/Llama-4-Scout-17B-16E-Instruct-text_then_weather_tool]",
           "type": "Function",
-          "lineno": 431
+          "lineno": 380
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_multi_turn_tool_calling[meta-llama/Llama-4-Scout-17B-16E-Instruct-weather_tool_then_text]",
           "type": "Function",
-          "lineno": 431
+          "lineno": 380
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_multi_turn_tool_calling[meta-llama/Llama-4-Scout-17B-16E-Instruct-add_product_tool]",
           "type": "Function",
-          "lineno": 431
+          "lineno": 380
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_multi_turn_tool_calling[meta-llama/Llama-4-Scout-17B-16E-Instruct-get_then_create_event_tool]",
           "type": "Function",
-          "lineno": 431
+          "lineno": 380
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_multi_turn_tool_calling[meta-llama/Llama-4-Scout-17B-16E-Instruct-compare_monthly_expense_tool]",
           "type": "Function",
-          "lineno": 431
+          "lineno": 380
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_multi_turn_tool_calling[meta-llama/Llama-4-Scout-17B-16E-Instruct-text_then_weather_tool]",
           "type": "Function",
-          "lineno": 532
+          "lineno": 471
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_multi_turn_tool_calling[meta-llama/Llama-4-Scout-17B-16E-Instruct-weather_tool_then_text]",
           "type": "Function",
-          "lineno": 532
+          "lineno": 471
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_multi_turn_tool_calling[meta-llama/Llama-4-Scout-17B-16E-Instruct-add_product_tool]",
           "type": "Function",
-          "lineno": 532
+          "lineno": 471
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_multi_turn_tool_calling[meta-llama/Llama-4-Scout-17B-16E-Instruct-get_then_create_event_tool]",
           "type": "Function",
-          "lineno": 532
+          "lineno": 471
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_multi_turn_tool_calling[meta-llama/Llama-4-Scout-17B-16E-Instruct-compare_monthly_expense_tool]",
           "type": "Function",
-          "lineno": 532
+          "lineno": 471
+        },
+        {
+          "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_multi_turn_multiple_images[meta-llama/Llama-4-Scout-17B-16E-Instruct-stream=False]",
+          "type": "Function",
+          "lineno": 554
+        },
+        {
+          "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_multi_turn_multiple_images[meta-llama/Llama-4-Scout-17B-16E-Instruct-stream=True]",
+          "type": "Function",
+          "lineno": 554
         }
       ]
     }
@@ -160,7 +170,7 @@
   "tests": [
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_basic[meta-llama/Llama-4-Scout-17B-16E-Instruct-earth]",
-      "lineno": 80,
+      "lineno": 95,
       "outcome": "passed",
       "keywords": [
         "test_chat_non_streaming_basic[meta-llama/Llama-4-Scout-17B-16E-Instruct-earth]",
@@ -179,21 +189,21 @@
         "case_id": "earth"
       },
       "setup": {
-        "duration": 0.048547716811299324,
+        "duration": 0.09800294879823923,
         "outcome": "passed"
       },
       "call": {
-        "duration": 2.2047047605738044,
+        "duration": 4.066351721994579,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.00029009580612182617,
+        "duration": 0.00025077443569898605,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_basic[meta-llama/Llama-4-Scout-17B-16E-Instruct-saturn]",
-      "lineno": 80,
+      "lineno": 95,
       "outcome": "passed",
       "keywords": [
         "test_chat_non_streaming_basic[meta-llama/Llama-4-Scout-17B-16E-Instruct-saturn]",
@@ -212,21 +222,21 @@
         "case_id": "saturn"
       },
       "setup": {
-        "duration": 0.025718219578266144,
+        "duration": 0.07197055127471685,
         "outcome": "passed"
       },
       "call": {
-        "duration": 1.1276333406567574,
+        "duration": 1.1918699434027076,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.00028874073177576065,
+        "duration": 0.00027959980070590973,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_basic[meta-llama/Llama-4-Scout-17B-16E-Instruct-earth]",
-      "lineno": 103,
+      "lineno": 114,
       "outcome": "passed",
       "keywords": [
         "test_chat_streaming_basic[meta-llama/Llama-4-Scout-17B-16E-Instruct-earth]",
@@ -245,21 +255,21 @@
         "case_id": "earth"
       },
       "setup": {
-        "duration": 0.02475887257605791,
+        "duration": 0.07294174749404192,
         "outcome": "passed"
       },
       "call": {
-        "duration": 2.219081767834723,
+        "duration": 2.027987685985863,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0002961978316307068,
+        "duration": 0.00026049185544252396,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_basic[meta-llama/Llama-4-Scout-17B-16E-Instruct-saturn]",
-      "lineno": 103,
+      "lineno": 114,
       "outcome": "passed",
       "keywords": [
         "test_chat_streaming_basic[meta-llama/Llama-4-Scout-17B-16E-Instruct-saturn]",
@@ -278,21 +288,21 @@
         "case_id": "saturn"
       },
       "setup": {
-        "duration": 0.025741156190633774,
+        "duration": 0.0741243390366435,
         "outcome": "passed"
       },
       "call": {
-        "duration": 1.1742202220484614,
+        "duration": 1.2185465842485428,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.000283985398709774,
+        "duration": 0.0002712178975343704,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_image[meta-llama/Llama-4-Scout-17B-16E-Instruct-case0]",
-      "lineno": 131,
+      "lineno": 138,
       "outcome": "passed",
       "keywords": [
         "test_chat_non_streaming_image[meta-llama/Llama-4-Scout-17B-16E-Instruct-case0]",
@@ -311,21 +321,21 @@
         "case_id": "case0"
       },
       "setup": {
-        "duration": 0.024309909902513027,
+        "duration": 0.07473955396562815,
         "outcome": "passed"
       },
       "call": {
-        "duration": 8.937463724054396,
+        "duration": 10.396870554424822,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.00032057054340839386,
+        "duration": 0.00025566015392541885,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_image[meta-llama/Llama-4-Scout-17B-16E-Instruct-case0]",
-      "lineno": 154,
+      "lineno": 157,
       "outcome": "passed",
       "keywords": [
         "test_chat_streaming_image[meta-llama/Llama-4-Scout-17B-16E-Instruct-case0]",
@@ -344,21 +354,21 @@
         "case_id": "case0"
       },
       "setup": {
-        "duration": 0.024973606690764427,
+        "duration": 0.07153997663408518,
         "outcome": "passed"
       },
       "call": {
-        "duration": 10.170741765759885,
+        "duration": 10.59731453191489,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.00030694250017404556,
+        "duration": 0.0002689240500330925,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_structured_output[meta-llama/Llama-4-Scout-17B-16E-Instruct-calendar]",
-      "lineno": 182,
+      "lineno": 181,
       "outcome": "passed",
       "keywords": [
         "test_chat_non_streaming_structured_output[meta-llama/Llama-4-Scout-17B-16E-Instruct-calendar]",
@@ -377,21 +387,21 @@
         "case_id": "calendar"
       },
       "setup": {
-        "duration": 0.02560058142989874,
+        "duration": 0.07629724312573671,
         "outcome": "passed"
       },
       "call": {
-        "duration": 5.377012901939452,
+        "duration": 5.293915126472712,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0002925479784607887,
+        "duration": 0.0002626115456223488,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_structured_output[meta-llama/Llama-4-Scout-17B-16E-Instruct-math]",
-      "lineno": 182,
+      "lineno": 181,
       "outcome": "passed",
       "keywords": [
         "test_chat_non_streaming_structured_output[meta-llama/Llama-4-Scout-17B-16E-Instruct-math]",
@@ -410,21 +420,21 @@
         "case_id": "math"
       },
       "setup": {
-        "duration": 0.025032303296029568,
+        "duration": 0.07231003511697054,
         "outcome": "passed"
       },
       "call": {
-        "duration": 19.210087121464312,
+        "duration": 19.020215207710862,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.00026431307196617126,
+        "duration": 0.00025262776762247086,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_structured_output[meta-llama/Llama-4-Scout-17B-16E-Instruct-calendar]",
-      "lineno": 209,
+      "lineno": 204,
       "outcome": "passed",
       "keywords": [
         "test_chat_streaming_structured_output[meta-llama/Llama-4-Scout-17B-16E-Instruct-calendar]",
@@ -443,21 +453,21 @@
         "case_id": "calendar"
       },
       "setup": {
-        "duration": 0.032463871873915195,
+        "duration": 0.07291634101420641,
         "outcome": "passed"
       },
       "call": {
-        "duration": 6.4921210911124945,
+        "duration": 6.105666604824364,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0003768550232052803,
+        "duration": 0.00027642492204904556,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_structured_output[meta-llama/Llama-4-Scout-17B-16E-Instruct-math]",
-      "lineno": 209,
+      "lineno": 204,
       "outcome": "passed",
       "keywords": [
         "test_chat_streaming_structured_output[meta-llama/Llama-4-Scout-17B-16E-Instruct-math]",
@@ -476,21 +486,21 @@
         "case_id": "math"
       },
       "setup": {
-        "duration": 0.024429439567029476,
+        "duration": 0.07050449773669243,
         "outcome": "passed"
       },
       "call": {
-        "duration": 23.12012344505638,
+        "duration": 19.080777555704117,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.00028461869806051254,
+        "duration": 0.000232757069170475,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_tool_calling[meta-llama/Llama-4-Scout-17B-16E-Instruct-case0]",
-      "lineno": 235,
+      "lineno": 226,
       "outcome": "passed",
       "keywords": [
         "test_chat_non_streaming_tool_calling[meta-llama/Llama-4-Scout-17B-16E-Instruct-case0]",
@@ -509,21 +519,21 @@
         "case_id": "case0"
       },
       "setup": {
-        "duration": 0.0249528456479311,
+        "duration": 0.07927203364670277,
         "outcome": "passed"
       },
       "call": {
-        "duration": 0.7512929392978549,
+        "duration": 0.7760327504947782,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.000272899866104126,
+        "duration": 0.00024862587451934814,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_tool_calling[meta-llama/Llama-4-Scout-17B-16E-Instruct-case0]",
-      "lineno": 263,
+      "lineno": 250,
       "outcome": "passed",
       "keywords": [
         "test_chat_streaming_tool_calling[meta-llama/Llama-4-Scout-17B-16E-Instruct-case0]",
@@ -542,22 +552,21 @@
         "case_id": "case0"
       },
       "setup": {
-        "duration": 0.024562276899814606,
+        "duration": 0.07514432724565268,
         "outcome": "passed"
       },
       "call": {
-        "duration": 0.7538198363035917,
-        "outcome": "passed",
-        "stdout": "{'id': '621ab525-811d-4c30-be73-0eab728a05b4', 'type': 'function', 'function': {'name': 'get_weather', 'arguments': '{\"location\": \"San Francisco, United States\"}'}}\n"
+        "duration": 0.7971448050811887,
+        "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.00028704386204481125,
+        "duration": 0.0002687377855181694,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_tool_choice_required[meta-llama/Llama-4-Scout-17B-16E-Instruct-case0]",
-      "lineno": 296,
+      "lineno": 278,
       "outcome": "passed",
       "keywords": [
         "test_chat_non_streaming_tool_choice_required[meta-llama/Llama-4-Scout-17B-16E-Instruct-case0]",
@@ -576,22 +585,21 @@
         "case_id": "case0"
       },
       "setup": {
-        "duration": 0.03360837884247303,
+        "duration": 0.07167623657733202,
         "outcome": "passed"
       },
       "call": {
-        "duration": 0.7717798417434096,
-        "outcome": "passed",
-        "stdout": "ChatCompletion(id='chatcmpl-02ee2fee-a4e9-4dbe-97ac-054d0762a439', choices=[Choice(finish_reason='stop', index=0, logprobs=None, message=ChatCompletionMessage(content='[get_weather(location=\"San Francisco, United States\")]', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=[ChatCompletionMessageToolCall(id='02cb233d-68c3-4f9b-89fe-0d732d1c3c21', function=Function(arguments='{\"location\": \"San Francisco, United States\"}', name='get_weather'), type='function', index=None)], name=None))], created=1744762223, model='meta-llama/Llama-4-Scout-17B-16E-Instruct', object='chat.completion', service_tier=None, system_fingerprint=None, usage=None)\n"
+        "duration": 0.6906132427975535,
+        "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0002828184515237808,
+        "duration": 0.0003270544111728668,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_tool_choice_required[meta-llama/Llama-4-Scout-17B-16E-Instruct-case0]",
-      "lineno": 329,
+      "lineno": 302,
       "outcome": "passed",
       "keywords": [
         "test_chat_streaming_tool_choice_required[meta-llama/Llama-4-Scout-17B-16E-Instruct-case0]",
@@ -610,21 +618,21 @@
         "case_id": "case0"
       },
       "setup": {
-        "duration": 0.025506796315312386,
+        "duration": 0.0725558316335082,
         "outcome": "passed"
       },
       "call": {
-        "duration": 0.7010164679959416,
+        "duration": 0.9245227407664061,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.00033200718462467194,
+        "duration": 0.0002602478489279747,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_tool_choice_none[meta-llama/Llama-4-Scout-17B-16E-Instruct-case0]",
-      "lineno": 362,
+      "lineno": 329,
       "outcome": "passed",
       "keywords": [
         "test_chat_non_streaming_tool_choice_none[meta-llama/Llama-4-Scout-17B-16E-Instruct-case0]",
@@ -643,21 +651,21 @@
         "case_id": "case0"
       },
       "setup": {
-        "duration": 0.027156910859048367,
+        "duration": 0.07299680262804031,
         "outcome": "passed"
       },
       "call": {
-        "duration": 31.317131561227143,
+        "duration": 31.90802155341953,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0002524787560105324,
+        "duration": 0.00023696757853031158,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_tool_choice_none[meta-llama/Llama-4-Scout-17B-16E-Instruct-case0]",
-      "lineno": 395,
+      "lineno": 352,
       "outcome": "passed",
       "keywords": [
         "test_chat_streaming_tool_choice_none[meta-llama/Llama-4-Scout-17B-16E-Instruct-case0]",
@@ -676,21 +684,21 @@
         "case_id": "case0"
       },
       "setup": {
-        "duration": 0.024899227544665337,
+        "duration": 0.07331038825213909,
         "outcome": "passed"
       },
       "call": {
-        "duration": 34.43670728895813,
+        "duration": 39.341348845511675,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0002611493691802025,
+        "duration": 0.00022847391664981842,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_multi_turn_tool_calling[meta-llama/Llama-4-Scout-17B-16E-Instruct-text_then_weather_tool]",
-      "lineno": 431,
+      "lineno": 380,
       "outcome": "passed",
       "keywords": [
         "test_chat_non_streaming_multi_turn_tool_calling[meta-llama/Llama-4-Scout-17B-16E-Instruct-text_then_weather_tool]",
@@ -709,21 +717,21 @@
         "case_id": "text_then_weather_tool"
       },
       "setup": {
-        "duration": 0.024312538094818592,
+        "duration": 0.10512833576649427,
         "outcome": "passed"
       },
       "call": {
-        "duration": 2.2870817249640822,
+        "duration": 2.9590865215286613,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0002299947664141655,
+        "duration": 0.0002405792474746704,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_multi_turn_tool_calling[meta-llama/Llama-4-Scout-17B-16E-Instruct-weather_tool_then_text]",
-      "lineno": 431,
+      "lineno": 380,
       "outcome": "passed",
       "keywords": [
         "test_chat_non_streaming_multi_turn_tool_calling[meta-llama/Llama-4-Scout-17B-16E-Instruct-weather_tool_then_text]",
@@ -742,21 +750,21 @@
         "case_id": "weather_tool_then_text"
       },
       "setup": {
-        "duration": 0.02405371330678463,
+        "duration": 0.07294358871877193,
         "outcome": "passed"
       },
       "call": {
-        "duration": 1.6739978613331914,
+        "duration": 1.7672317335382104,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.00023547839373350143,
+        "duration": 0.0003217160701751709,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_multi_turn_tool_calling[meta-llama/Llama-4-Scout-17B-16E-Instruct-add_product_tool]",
-      "lineno": 431,
+      "lineno": 380,
       "outcome": "passed",
       "keywords": [
         "test_chat_non_streaming_multi_turn_tool_calling[meta-llama/Llama-4-Scout-17B-16E-Instruct-add_product_tool]",
@@ -775,21 +783,21 @@
         "case_id": "add_product_tool"
       },
       "setup": {
-        "duration": 0.02578610647469759,
+        "duration": 0.11179900728166103,
         "outcome": "passed"
       },
       "call": {
-        "duration": 2.190480748191476,
+        "duration": 2.411543940193951,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.00022947601974010468,
+        "duration": 0.00023025460541248322,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_multi_turn_tool_calling[meta-llama/Llama-4-Scout-17B-16E-Instruct-get_then_create_event_tool]",
-      "lineno": 431,
+      "lineno": 380,
       "outcome": "passed",
       "keywords": [
         "test_chat_non_streaming_multi_turn_tool_calling[meta-llama/Llama-4-Scout-17B-16E-Instruct-get_then_create_event_tool]",
@@ -808,21 +816,21 @@
         "case_id": "get_then_create_event_tool"
       },
       "setup": {
-        "duration": 0.024106032215058804,
+        "duration": 0.07234534807503223,
         "outcome": "passed"
       },
       "call": {
-        "duration": 4.1938588144257665,
+        "duration": 4.438527720049024,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.00023343786597251892,
+        "duration": 0.00028106197714805603,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_multi_turn_tool_calling[meta-llama/Llama-4-Scout-17B-16E-Instruct-compare_monthly_expense_tool]",
-      "lineno": 431,
+      "lineno": 380,
       "outcome": "passed",
       "keywords": [
         "test_chat_non_streaming_multi_turn_tool_calling[meta-llama/Llama-4-Scout-17B-16E-Instruct-compare_monthly_expense_tool]",
@@ -841,21 +849,21 @@
         "case_id": "compare_monthly_expense_tool"
       },
       "setup": {
-        "duration": 0.02426640223711729,
+        "duration": 0.06979168020188808,
         "outcome": "passed"
       },
       "call": {
-        "duration": 3.0676988009363413,
+        "duration": 3.186668715439737,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0002630520612001419,
+        "duration": 0.0002599591389298439,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_multi_turn_tool_calling[meta-llama/Llama-4-Scout-17B-16E-Instruct-text_then_weather_tool]",
-      "lineno": 532,
+      "lineno": 471,
       "outcome": "passed",
       "keywords": [
         "test_chat_streaming_multi_turn_tool_calling[meta-llama/Llama-4-Scout-17B-16E-Instruct-text_then_weather_tool]",
@@ -874,21 +882,21 @@
         "case_id": "text_then_weather_tool"
       },
       "setup": {
-        "duration": 0.024594508111476898,
+        "duration": 0.07083943020552397,
         "outcome": "passed"
       },
       "call": {
-        "duration": 2.314523985609412,
+        "duration": 2.31697681453079,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.000264105387032032,
+        "duration": 0.00029378384351730347,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_multi_turn_tool_calling[meta-llama/Llama-4-Scout-17B-16E-Instruct-weather_tool_then_text]",
-      "lineno": 532,
+      "lineno": 471,
       "outcome": "passed",
       "keywords": [
         "test_chat_streaming_multi_turn_tool_calling[meta-llama/Llama-4-Scout-17B-16E-Instruct-weather_tool_then_text]",
@@ -907,21 +915,21 @@
         "case_id": "weather_tool_then_text"
       },
       "setup": {
-        "duration": 0.02453650813549757,
+        "duration": 0.07374998275190592,
         "outcome": "passed"
       },
       "call": {
-        "duration": 1.5636006034910679,
+        "duration": 1.7863417640328407,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0002301037311553955,
+        "duration": 0.00025129225105047226,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_multi_turn_tool_calling[meta-llama/Llama-4-Scout-17B-16E-Instruct-add_product_tool]",
-      "lineno": 532,
+      "lineno": 471,
       "outcome": "passed",
       "keywords": [
         "test_chat_streaming_multi_turn_tool_calling[meta-llama/Llama-4-Scout-17B-16E-Instruct-add_product_tool]",
@@ -940,21 +948,21 @@
         "case_id": "add_product_tool"
       },
       "setup": {
-        "duration": 0.025252479128539562,
+        "duration": 0.07009322382509708,
         "outcome": "passed"
       },
       "call": {
-        "duration": 2.467401936650276,
+        "duration": 2.248749589547515,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0002512047067284584,
+        "duration": 0.00022566411644220352,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_multi_turn_tool_calling[meta-llama/Llama-4-Scout-17B-16E-Instruct-get_then_create_event_tool]",
-      "lineno": 532,
+      "lineno": 471,
       "outcome": "passed",
       "keywords": [
         "test_chat_streaming_multi_turn_tool_calling[meta-llama/Llama-4-Scout-17B-16E-Instruct-get_then_create_event_tool]",
@@ -973,21 +981,21 @@
         "case_id": "get_then_create_event_tool"
       },
       "setup": {
-        "duration": 0.025367626920342445,
+        "duration": 0.10290939453989267,
         "outcome": "passed"
       },
       "call": {
-        "duration": 4.428477040491998,
+        "duration": 4.644147016108036,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.00022960733622312546,
+        "duration": 0.0002319561317563057,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_multi_turn_tool_calling[meta-llama/Llama-4-Scout-17B-16E-Instruct-compare_monthly_expense_tool]",
-      "lineno": 532,
+      "lineno": 471,
       "outcome": "passed",
       "keywords": [
         "test_chat_streaming_multi_turn_tool_calling[meta-llama/Llama-4-Scout-17B-16E-Instruct-compare_monthly_expense_tool]",
@@ -1006,18 +1014,84 @@
         "case_id": "compare_monthly_expense_tool"
       },
       "setup": {
-        "duration": 0.0242690397426486,
+        "duration": 0.07125874608755112,
         "outcome": "passed"
       },
       "call": {
-        "duration": 3.730327570810914,
+        "duration": 3.2340452317148447,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0007346374914050102,
+        "duration": 0.0002202410250902176,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_multi_turn_multiple_images[meta-llama/Llama-4-Scout-17B-16E-Instruct-stream=False]",
+      "lineno": 554,
+      "outcome": "passed",
+      "keywords": [
+        "test_chat_multi_turn_multiple_images[meta-llama/Llama-4-Scout-17B-16E-Instruct-stream=False]",
+        "parametrize",
+        "pytestmark",
+        "meta-llama/Llama-4-Scout-17B-16E-Instruct-stream=False",
+        "test_chat_completion.py",
+        "openai_api",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "metadata": {
+        "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
+        "case_id": "stream=False"
+      },
+      "setup": {
+        "duration": 0.07085523661226034,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 17.7453119084239,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.00037308502942323685,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_multi_turn_multiple_images[meta-llama/Llama-4-Scout-17B-16E-Instruct-stream=True]",
+      "lineno": 554,
+      "outcome": "passed",
+      "keywords": [
+        "test_chat_multi_turn_multiple_images[meta-llama/Llama-4-Scout-17B-16E-Instruct-stream=True]",
+        "parametrize",
+        "pytestmark",
+        "meta-llama/Llama-4-Scout-17B-16E-Instruct-stream=True",
+        "test_chat_completion.py",
+        "openai_api",
+        "verifications",
+        "tests",
+        "llama-stack",
+        ""
+      ],
+      "metadata": {
+        "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
+        "case_id": "stream=True"
+      },
+      "setup": {
+        "duration": 0.07670701760798693,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 12.663874679245055,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.0008251797407865524,
         "outcome": "passed"
       }
     }
   ],
-  "run_timestamp": 1744762139
+  "run_timestamp": 1744918631
 }
