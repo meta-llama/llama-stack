@@ -35,6 +35,10 @@ jobs:
           pip install -r requirements.txt pytest
           pip install -e .
 
+      - name: Run fast unit & smoke tests
+        run: |
+          pytest -m "not integration"
+
       - name: Build providers
         run: |
           llama stack build --template ${{ matrix.provider }} --image-type venv

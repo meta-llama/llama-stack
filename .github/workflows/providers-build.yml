@@ -76,6 +76,11 @@ jobs:
           # LLAMA_STACK_DIR is set to the current directory so we are building from the source
           USE_COPY_NOT_MOUNT=true LLAMA_STACK_DIR=. uv run llama stack build --template ${{ matrix.template }} --image-type ${{ matrix.image-type }} --image-name test
 
+      - name: Integration compiler smoke
+        if: matrix.image-type == 'container'
+        run: |
+          pytest -m integration tests/integration/test_ubi9_compiles.py
+
       - name: Print dependencies in the image
         if: matrix.image-type == 'venv'
         run: |
