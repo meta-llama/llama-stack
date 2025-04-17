@@ -16,6 +16,7 @@ from llama_stack.apis.files import Files
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.inspect import Inspect
 from llama_stack.apis.models import Models
+from llama_stack.apis.openai_responses.openai_responses import OpenAIResponses
 from llama_stack.apis.post_training import PostTraining
 from llama_stack.apis.providers import Providers as ProvidersAPI
 from llama_stack.apis.safety import Safety
@@ -80,6 +81,7 @@ def api_protocol_map() -> Dict[Api, Any]:
         Api.tool_groups: ToolGroups,
         Api.tool_runtime: ToolRuntime,
         Api.files: Files,
+        Api.openai_responses: OpenAIResponses,
     }
 
 

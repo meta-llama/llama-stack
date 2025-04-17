@@ -39,6 +39,7 @@ def get_distribution_template() -> DistributionTemplate:
             "remote::model-context-protocol",
             "remote::wolfram-alpha",
         ],
+        "openai_responses": ["inline::openai-responses"],
     }
     name = "remote-vllm"
     inference_provider = Provider(

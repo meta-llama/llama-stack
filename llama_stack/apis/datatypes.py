@@ -24,6 +24,7 @@ class Api(Enum):
     eval = "eval"
     post_training = "post_training"
     tool_runtime = "tool_runtime"
+    openai_responses = "openai_responses"
 
     telemetry = "telemetry"
 

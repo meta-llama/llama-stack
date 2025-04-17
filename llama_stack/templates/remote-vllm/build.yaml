@@ -31,4 +31,6 @@ distribution_spec:
     - inline::rag-runtime
     - remote::model-context-protocol
     - remote::wolfram-alpha
+    openai_responses:
+    - inline::openai-responses
 image_type: conda

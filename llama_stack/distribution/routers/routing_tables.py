@@ -149,6 +149,8 @@ class CommonRoutingTableImpl(RoutingTable):
                 p.benchmark_store = self
             elif api == Api.tool_runtime:
                 p.tool_store = self
+            elif api == Api.openai_responses:
+                p.model_store = self
 
     async def shutdown(self) -> None:
         for p in self.impls_by_provider_id.values():

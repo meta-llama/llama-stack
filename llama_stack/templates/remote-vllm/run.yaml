@@ -5,6 +5,7 @@ apis:
 - datasetio
 - eval
 - inference
+- openai_responses
 - safety
 - scoring
 - telemetry
@@ -108,6 +109,14 @@ providers:
     provider_type: remote::wolfram-alpha
     config:
       api_key: ${env.WOLFRAM_ALPHA_API_KEY:}
+  openai_responses:
+  - provider_id: openai-responses
+    provider_type: inline::openai-responses
+    config:
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/remote-vllm}/openai_responses.db
 metadata_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/remote-vllm}/registry.db
