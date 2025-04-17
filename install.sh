@@ -9,25 +9,36 @@ set -Eeuo pipefail
 
 PORT=8321
 OLLAMA_PORT=11434
-MODEL_ALIAS="llama3.2:1b"
+MODEL_ALIAS="llama3.2:3b"
 SERVER_IMAGE="llamastack/distribution-ollama:0.2.2"
 WAIT_TIMEOUT=300
+NETWORK="llama-stack-net"
 
 log(){ printf "\e[1;32m%s\e[0m\n" "$*"; }
 die(){ printf "\e[1;31m❌ %s\e[0m\n" "$*" >&2; exit 1; }
 
-command -v docker >/dev/null || die "Docker is required but not found."
+if   command -v docker &> /dev/null; then ENGINE="docker"
+elif command -v podman &> /dev/null; then ENGINE="podman"
+else die "Docker or Podman is required. Install Docker: https://docs.docker.com/get-docker/ or Podman: https://podman.io/getting-started/installation"
+fi
 
-# clean up any leftovers from earlier runs
+if ! $ENGINE network ls --filter name=^${NETWORK}$ --format '{{.Name}}' | grep -q "^${NETWORK}$"; then
+  log "Creating Docker network: ${NETWORK}"
+  $ENGINE network create "${NETWORK}"
+fi
+
+# Clean up any leftovers from earlier runs
 for name in ollama-server llama-stack; do
-  docker ps -aq --filter "name=^${name}$" | xargs -r docker rm -f
+  $ENGINE ps -aq --filter "name=^${name}$" | xargs -r $ENGINE rm -f
 done
 
 ###############################################################################
 # 1. Ollama
 ###############################################################################
 log "🦙  Starting Ollama…"
-docker run -d --name ollama-server -p "$OLLAMA_PORT:11434" \
+$ENGINE run -d --name ollama-server \
+  --network "${NETWORK}" \
+  -p "${OLLAMA_PORT}:11434" \
   -v ollama-models:/root/.ollama \
   ollama/ollama >/dev/null
 
@@ -36,25 +47,25 @@ timeout "$WAIT_TIMEOUT" bash -c \
   "until curl -fsS http://localhost:${OLLAMA_PORT}/ 2>/dev/null | grep -q 'Ollama'; do sleep 1; done" \
   || die "Ollama did not become ready in ${WAIT_TIMEOUT}s"
 
-if ! docker exec ollama-server ollama list | grep -q "$MODEL_ALIAS"; then
+if ! $ENGINE exec ollama-server ollama list | grep -q "$MODEL_ALIAS"; then
   log "📦  Pulling model $MODEL_ALIAS…"
-  docker exec ollama-server ollama pull "$MODEL_ALIAS"
+  $ENGINE exec ollama-server ollama pull "$MODEL_ALIAS"
 fi
 
 log "🚀  Launching model runtime…"
-docker exec -d ollama-server ollama run "$MODEL_ALIAS" --keepalive 60m
+$ENGINE exec -d ollama-server ollama run "$MODEL_ALIAS" --keepalive 60m
 
 ###############################################################################
 # 2. Llama‑Stack
 ###############################################################################
 log "🦙📦  Starting Llama‑Stack…"
-docker run -d --name llama-stack \
-  -p "$PORT:$PORT" \
-  --add-host=host.docker.internal:host-gateway \
-  "$SERVER_IMAGE" \
-  --port "$PORT" \
-  --env INFERENCE_MODEL="$MODEL_ALIAS" \
-  --env OLLAMA_URL="http://host.docker.internal:${OLLAMA_PORT}" >/dev/null
+$ENGINE run -d --name llama-stack \
+  --network "${NETWORK}" \
+  -p "${PORT}:${PORT}" \
+  "${SERVER_IMAGE}" \
+  --port "${PORT}" \
+  --env INFERENCE_MODEL="${MODEL_ALIAS}" \
+  --env OLLAMA_URL="http://ollama-server:${OLLAMA_PORT}" >/dev/null
 
 log "⏳  Waiting for Llama‑Stack API…"
 timeout "$WAIT_TIMEOUT" bash -c \
@@ -67,3 +78,7 @@ timeout "$WAIT_TIMEOUT" bash -c \
 log ""
 log "🎉  Llama‑Stack is ready!"
 log "👉  API endpoint: http://localhost:${PORT}"
+
+# Note: if you’re calling from another container on the “${NETWORK}” network,
+#       you can use the internal DNS name http://llama-stack:${PORT}
+ log ""
