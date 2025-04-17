@@ -3,14 +3,6 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-
-# /// script
-# requires-python = ">=3.10"
-# dependencies = [
-#     "pytest-json-report",
-#     "pyyaml",
-# ]
-# ///
 """
 Test Report Generator
 
@@ -67,16 +59,10 @@ RESULTS_DIR.mkdir(exist_ok=True)
 # Maximum number of test result files to keep per provider
 MAX_RESULTS_PER_PROVIDER = 1
 
-PROVIDER_ORDER = [
+DEFAULT_PROVIDERS = [
     "together",
     "fireworks",
-    "groq",
-    "cerebras",
     "openai",
-    "together-llama-stack",
-    "fireworks-llama-stack",
-    "groq-llama-stack",
-    "openai-llama-stack",
 ]
 
 VERIFICATION_CONFIG = _load_all_verification_configs()
@@ -140,6 +126,14 @@ def run_tests(provider, keyword=None):
     except Exception as e:
         print(f"Error running tests for {provider}: {e}")
         return None
+
+
+def run_multiple_tests(providers_to_run: list[str], keyword: str | None):
+    """Runs tests for a list of providers."""
+    print(f"Running tests for providers: {', '.join(providers_to_run)}")
+    for provider in providers_to_run:
+        run_tests(provider.strip(), keyword=keyword)
+    print("Finished running tests.")
 
 
 def parse_results(
@@ -250,20 +244,6 @@ def parse_results(
     return parsed_results, providers_in_file, tests_in_file, run_timestamp_str
 
 
-def get_all_result_files_by_provider():
-    """Get all test result files, keyed by provider."""
-    provider_results = {}
-
-    result_files = list(RESULTS_DIR.glob("*.json"))
-
-    for file in result_files:
-        provider = file.stem
-        if provider:
-            provider_results[provider] = file
-
-    return provider_results
-
-
 def generate_report(
     results_dict: Dict[str, Any],
     providers: Dict[str, Set[str]],
@@ -276,6 +256,7 @@ def generate_report(
     Args:
         results_dict: Aggregated results [provider][model][test_name] -> status.
         providers: Dict of all providers and their models {provider: {models}}.
+                   The order of keys in this dict determines the report order.
         all_tests: Set of all test names found.
         provider_timestamps: Dict of provider to timestamp when tests were run
         output_file: Optional path to save the report.
@@ -353,22 +334,17 @@ def generate_report(
                                 passed_tests += 1
         provider_totals[provider] = (provider_passed, provider_total)
 
-    # Add summary table (use passed-in providers dict)
+    # Add summary table (use the order from the providers dict keys)
     report.append("| Provider | Pass Rate | Tests Passed | Total Tests |")
     report.append("| --- | --- | --- | --- |")
-    for provider in [p for p in PROVIDER_ORDER if p in providers]:  # Check against keys of passed-in dict
-        passed, total = provider_totals.get(provider, (0, 0))
-        pass_rate = f"{(passed / total * 100):.1f}%" if total > 0 else "N/A"
-        report.append(f"| {provider.capitalize()} | {pass_rate} | {passed} | {total} |")
-    for provider in [p for p in providers if p not in PROVIDER_ORDER]:  # Check against keys of passed-in dict
+    # Iterate through providers in the order they appear in the input dict
+    for provider in providers_sorted.keys():
         passed, total = provider_totals.get(provider, (0, 0))
         pass_rate = f"{(passed / total * 100):.1f}%" if total > 0 else "N/A"
         report.append(f"| {provider.capitalize()} | {pass_rate} | {passed} | {total} |")
     report.append("\n")
 
-    for provider in sorted(
-        providers_sorted.keys(), key=lambda p: (PROVIDER_ORDER.index(p) if p in PROVIDER_ORDER else float("inf"), p)
-    ):
+    for provider in providers_sorted.keys():
         provider_models = providers_sorted[provider]  # Use sorted models
         if not provider_models:
             continue
@@ -461,60 +437,62 @@ def main():
         "--providers",
         type=str,
         nargs="+",
-        help="Specify providers to test (comma-separated or space-separated, default: all)",
+        help="Specify providers to include/test (comma-separated or space-separated, default: uses DEFAULT_PROVIDERS)",
     )
     parser.add_argument("--output", type=str, help="Output file location (default: tests/verifications/REPORT.md)")
     parser.add_argument("--k", type=str, help="Keyword expression to filter tests (passed to pytest -k)")
     args = parser.parse_args()
 
     all_results = {}
-    # Initialize collections to aggregate results in main
-    aggregated_providers = defaultdict(set)
+    final_providers_order = {}  # Dictionary to store results, preserving processing order
     aggregated_tests = set()
     provider_timestamps = {}
 
-    if args.run_tests:
-        # Get list of available providers from command line or use detected providers
-        if args.providers:
-            # Handle both comma-separated and space-separated lists
-            test_providers = []
-            for provider_arg in args.providers:
-                # Split by comma if commas are present
-                if "," in provider_arg:
-                    test_providers.extend(provider_arg.split(","))
-                else:
-                    test_providers.append(provider_arg)
-        else:
-            # Default providers to test
-            test_providers = PROVIDER_ORDER
-
-        for provider in test_providers:
-            provider = provider.strip()  # Remove any whitespace
-            result_file = run_tests(provider, keyword=args.k)
-            if result_file:
-                # Parse and aggregate results
-                parsed_results, providers_in_file, tests_in_file, run_timestamp = parse_results(result_file)
-                all_results.update(parsed_results)
-                for prov, models in providers_in_file.items():
-                    aggregated_providers[prov].update(models)
-                    if run_timestamp:
-                        provider_timestamps[prov] = run_timestamp
-                aggregated_tests.update(tests_in_file)
+    # 1. Determine the desired list and order of providers
+    if args.providers:
+        desired_providers = []
+        for provider_arg in args.providers:
+            desired_providers.extend([p.strip() for p in provider_arg.split(",")])
     else:
-        # Use existing results
-        provider_result_files = get_all_result_files_by_provider()
+        desired_providers = DEFAULT_PROVIDERS  # Use default order/list
 
-        for result_file in provider_result_files.values():
-            # Parse and aggregate results
-            parsed_results, providers_in_file, tests_in_file, run_timestamp = parse_results(result_file)
-            all_results.update(parsed_results)
-            for prov, models in providers_in_file.items():
-                aggregated_providers[prov].update(models)
-                if run_timestamp:
-                    provider_timestamps[prov] = run_timestamp
-            aggregated_tests.update(tests_in_file)
+    # 2. Run tests if requested (using the desired provider list)
+    if args.run_tests:
+        run_multiple_tests(desired_providers, args.k)
 
-    generate_report(all_results, aggregated_providers, aggregated_tests, provider_timestamps, args.output)
+    for provider in desired_providers:
+        # Construct the expected result file path directly
+        result_file = RESULTS_DIR / f"{provider}.json"
+
+        if result_file.exists():  # Check if the specific file exists
+            print(f"Loading results for {provider} from {result_file}")
+            try:
+                parsed_data = parse_results(result_file)
+                parsed_results, providers_in_file, tests_in_file, run_timestamp = parsed_data
+                all_results.update(parsed_results)
+                aggregated_tests.update(tests_in_file)
+
+                # Add models for this provider, ensuring it's added in the correct report order
+                if provider in providers_in_file:
+                    if provider not in final_providers_order:
+                        final_providers_order[provider] = set()
+                    final_providers_order[provider].update(providers_in_file[provider])
+                    if run_timestamp != "Unknown":
+                        provider_timestamps[provider] = run_timestamp
+                else:
+                    print(
+                        f"Warning: Provider '{provider}' found in desired list but not within its result file data ({result_file})."
+                    )
+
+            except Exception as e:
+                print(f"Error parsing results for provider {provider} from {result_file}: {e}")
+        else:
+            # Only print warning if we expected results (i.e., provider was in the desired list)
+            print(f"Result file for desired provider '{provider}' not found at {result_file}. Skipping.")
+
+    # 5. Generate the report using the filtered & ordered results
+    print(f"Final Provider Order for Report: {list(final_providers_order.keys())}")
+    generate_report(all_results, final_providers_order, aggregated_tests, provider_timestamps, args.output)
 
 
 if __name__ == "__main__":

@@ -200,35 +200,48 @@ class TestNvidiaPostTraining(unittest.TestCase):
             )
 
     def test_get_training_job_status(self):
-        self.mock_make_request.return_value = {
-            "created_at": "2024-12-09T04:06:28.580220",
-            "updated_at": "2024-12-09T04:21:19.852832",
-            "status": "completed",
-            "steps_completed": 1210,
-            "epochs_completed": 2,
-            "percentage_done": 100.0,
-            "best_epoch": 2,
-            "train_loss": 1.718016266822815,
-            "val_loss": 1.8661999702453613,
-        }
+        customizer_status_to_job_status = [
+            ("running", "in_progress"),
+            ("completed", "completed"),
+            ("failed", "failed"),
+            ("cancelled", "cancelled"),
+            ("pending", "scheduled"),
+            ("unknown", "scheduled"),
+        ]
 
-        job_id = "cust-JGTaMbJMdqjJU8WbQdN9Q2"
+        for customizer_status, expected_status in customizer_status_to_job_status:
+            with self.subTest(customizer_status=customizer_status, expected_status=expected_status):
+                self.mock_make_request.return_value = {
+                    "created_at": "2024-12-09T04:06:28.580220",
+                    "updated_at": "2024-12-09T04:21:19.852832",
+                    "status": customizer_status,
+                    "steps_completed": 1210,
+                    "epochs_completed": 2,
+                    "percentage_done": 100.0,
+                    "best_epoch": 2,
+                    "train_loss": 1.718016266822815,
+                    "val_loss": 1.8661999702453613,
+                }
 
-        status = self.run_async(self.adapter.get_training_job_status(job_uuid=job_id))
+                job_id = "cust-JGTaMbJMdqjJU8WbQdN9Q2"
 
-        assert isinstance(status, NvidiaPostTrainingJobStatusResponse)
-        assert status.status.value == "completed"
-        assert status.steps_completed == 1210
-        assert status.epochs_completed == 2
-        assert status.percentage_done == 100.0
-        assert status.best_epoch == 2
-        assert status.train_loss == 1.718016266822815
-        assert status.val_loss == 1.8661999702453613
+                status = self.run_async(self.adapter.get_training_job_status(job_uuid=job_id))
 
-        self.mock_make_request.assert_called_once()
-        self._assert_request(
-            self.mock_make_request, "GET", f"/v1/customization/jobs/{job_id}/status", expected_params={"job_id": job_id}
-        )
+                assert isinstance(status, NvidiaPostTrainingJobStatusResponse)
+                assert status.status.value == expected_status
+                assert status.steps_completed == 1210
+                assert status.epochs_completed == 2
+                assert status.percentage_done == 100.0
+                assert status.best_epoch == 2
+                assert status.train_loss == 1.718016266822815
+                assert status.val_loss == 1.8661999702453613
+
+                self._assert_request(
+                    self.mock_make_request,
+                    "GET",
+                    f"/v1/customization/jobs/{job_id}/status",
+                    expected_params={"job_id": job_id},
+                )
 
     def test_get_training_jobs(self):
         job_id = "cust-JGTaMbJMdqjJU8WbQdN9Q2"
