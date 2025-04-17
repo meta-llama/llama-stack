@@ -68,7 +68,8 @@ chunks_response = client.vector_io.query(
 ### Using the RAG Tool
 
 A better way to ingest documents is to use the RAG Tool. This tool allows you to ingest documents from URLs, files, etc.
-and automatically chunks them into smaller pieces.
+and automatically chunks them into smaller pieces. More examples for how to format a RAGDocument can be found in the
+[appendix](#more-ragdocument-examples).
 
 ```python
 from llama_stack_client import RAGDocument
@@ -178,3 +179,38 @@ for vector_db_id in client.vector_dbs.list():
     print(f"Unregistering vector database: {vector_db_id.identifier}")
     client.vector_dbs.unregister(vector_db_id=vector_db_id.identifier)
 ```
+
+### Appendix
+
+#### More RAGDocument Examples
+```python
+from llama_stack_client import RAGDocument
+import base64
+
+RAGDocument(document_id="num-0", content={"uri": "file://path/to/file"})
+RAGDocument(document_id="num-1", content="plain text")
+RAGDocument(
+    document_id="num-2",
+    content={
+        "type": "text",
+        "text": "plain text input",
+    },  # for inputs that should be treated as text explicitly
+)
+RAGDocument(
+    document_id="num-3",
+    content={
+        "type": "image",
+        "image": {"url": {"uri": "https://mywebsite.com/image.jpg"}},
+    },
+)
+B64_ENCODED_IMAGE = base64.b64encode(
+    requests.get(
+        "https://raw.githubusercontent.com/meta-llama/llama-stack/refs/heads/main/docs/_static/llama-stack.png"
+    ).content
+)
+RAGDocuemnt(
+    document_id="num-4",
+    content={"type": "image", "image": {"data": B64_ENCODED_IMAGE}},
+)
+```
+for more strongly typed interaction use the typed dicts found [here](https://github.com/meta-llama/llama-stack-client-python/blob/38cd91c9e396f2be0bec1ee96a19771582ba6f17/src/llama_stack_client/types/shared_params/document.py).
