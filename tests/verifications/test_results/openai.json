@@ -1,6 +1,6 @@
 {
-  "created": 1744679497.440863,
-  "duration": 102.70424389839172,
+  "created": 1744841456.846108,
+  "duration": 94.55667495727539,
   "exitcode": 0,
   "root": "/Users/erichuang/projects/llama-stack",
   "environment": {},
@@ -157,132 +157,132 @@
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_tool_choice_required[gpt-4o-case0]",
           "type": "Function",
-          "lineno": 281
+          "lineno": 282
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_tool_choice_required[gpt-4o-mini-case0]",
           "type": "Function",
-          "lineno": 281
+          "lineno": 282
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_tool_choice_none[gpt-4o-case0]",
           "type": "Function",
-          "lineno": 308
+          "lineno": 309
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_tool_choice_none[gpt-4o-mini-case0]",
           "type": "Function",
-          "lineno": 308
+          "lineno": 309
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_tool_choice_none[gpt-4o-case0]",
           "type": "Function",
-          "lineno": 331
+          "lineno": 332
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_tool_choice_none[gpt-4o-mini-case0]",
           "type": "Function",
-          "lineno": 331
+          "lineno": 332
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_multi_turn_tool_calling[gpt-4o-text_then_weather_tool]",
           "type": "Function",
-          "lineno": 359
+          "lineno": 360
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_multi_turn_tool_calling[gpt-4o-weather_tool_then_text]",
           "type": "Function",
-          "lineno": 359
+          "lineno": 360
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_multi_turn_tool_calling[gpt-4o-add_product_tool]",
           "type": "Function",
-          "lineno": 359
+          "lineno": 360
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_multi_turn_tool_calling[gpt-4o-get_then_create_event_tool]",
           "type": "Function",
-          "lineno": 359
+          "lineno": 360
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_multi_turn_tool_calling[gpt-4o-compare_monthly_expense_tool]",
           "type": "Function",
-          "lineno": 359
+          "lineno": 360
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_multi_turn_tool_calling[gpt-4o-mini-text_then_weather_tool]",
           "type": "Function",
-          "lineno": 359
+          "lineno": 360
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_multi_turn_tool_calling[gpt-4o-mini-weather_tool_then_text]",
           "type": "Function",
-          "lineno": 359
+          "lineno": 360
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_multi_turn_tool_calling[gpt-4o-mini-add_product_tool]",
           "type": "Function",
-          "lineno": 359
+          "lineno": 360
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_multi_turn_tool_calling[gpt-4o-mini-get_then_create_event_tool]",
           "type": "Function",
-          "lineno": 359
+          "lineno": 360
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_multi_turn_tool_calling[gpt-4o-mini-compare_monthly_expense_tool]",
           "type": "Function",
-          "lineno": 359
+          "lineno": 360
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_multi_turn_tool_calling[gpt-4o-text_then_weather_tool]",
           "type": "Function",
-          "lineno": 450
+          "lineno": 451
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_multi_turn_tool_calling[gpt-4o-weather_tool_then_text]",
           "type": "Function",
-          "lineno": 450
+          "lineno": 451
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_multi_turn_tool_calling[gpt-4o-add_product_tool]",
           "type": "Function",
-          "lineno": 450
+          "lineno": 451
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_multi_turn_tool_calling[gpt-4o-get_then_create_event_tool]",
           "type": "Function",
-          "lineno": 450
+          "lineno": 451
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_multi_turn_tool_calling[gpt-4o-compare_monthly_expense_tool]",
           "type": "Function",
-          "lineno": 450
+          "lineno": 451
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_multi_turn_tool_calling[gpt-4o-mini-text_then_weather_tool]",
           "type": "Function",
-          "lineno": 450
+          "lineno": 451
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_multi_turn_tool_calling[gpt-4o-mini-weather_tool_then_text]",
           "type": "Function",
-          "lineno": 450
+          "lineno": 451
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_multi_turn_tool_calling[gpt-4o-mini-add_product_tool]",
           "type": "Function",
-          "lineno": 450
+          "lineno": 451
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_multi_turn_tool_calling[gpt-4o-mini-get_then_create_event_tool]",
           "type": "Function",
-          "lineno": 450
+          "lineno": 451
         },
         {
           "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_multi_turn_tool_calling[gpt-4o-mini-compare_monthly_expense_tool]",
           "type": "Function",
-          "lineno": 450
+          "lineno": 451
         }
       ]
     }
@@ -309,15 +309,15 @@
         "case_id": "earth"
       },
       "setup": {
-        "duration": 0.09044458298012614,
+        "duration": 0.12443312490358949,
         "outcome": "passed"
       },
       "call": {
-        "duration": 1.3071064590476453,
+        "duration": 0.8473757090978324,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0003990421537309885,
+        "duration": 0.00016116583719849586,
         "outcome": "passed"
       }
     },
@@ -342,15 +342,15 @@
         "case_id": "saturn"
       },
       "setup": {
-        "duration": 0.015266708098351955,
+        "duration": 0.006899583851918578,
         "outcome": "passed"
       },
       "call": {
-        "duration": 1.3942135840188712,
+        "duration": 0.6270905418787152,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0006840829737484455,
+        "duration": 0.00016312487423419952,
         "outcome": "passed"
       }
     },
@@ -375,15 +375,15 @@
         "case_id": "earth"
       },
       "setup": {
-        "duration": 0.028802334098145366,
+        "duration": 0.006712291855365038,
         "outcome": "passed"
       },
       "call": {
-        "duration": 0.40633770800195634,
+        "duration": 0.9687315828632563,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0006945421919226646,
+        "duration": 0.00015454203821718693,
         "outcome": "passed"
       }
     },
@@ -408,15 +408,15 @@
         "case_id": "saturn"
       },
       "setup": {
-        "duration": 0.01865937514230609,
+        "duration": 0.01219862513244152,
         "outcome": "passed"
       },
       "call": {
-        "duration": 0.7515070410445333,
+        "duration": 0.8335784170776606,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0002985831815749407,
+        "duration": 0.00015825009904801846,
         "outcome": "passed"
       }
     },
@@ -441,15 +441,15 @@
         "case_id": "earth"
       },
       "setup": {
-        "duration": 0.011108374921604991,
+        "duration": 0.006971874972805381,
         "outcome": "passed"
       },
       "call": {
-        "duration": 0.3914629169739783,
+        "duration": 0.5532776250038296,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0006979589816182852,
+        "duration": 0.00017308397218585014,
         "outcome": "passed"
       }
     },
@@ -474,15 +474,15 @@
         "case_id": "saturn"
       },
       "setup": {
-        "duration": 0.02875337516888976,
+        "duration": 0.013978166040033102,
         "outcome": "passed"
       },
       "call": {
-        "duration": 0.5632798750884831,
+        "duration": 0.5871057908516377,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.004012458026409149,
+        "duration": 0.00015816697850823402,
         "outcome": "passed"
       }
     },
@@ -507,15 +507,15 @@
         "case_id": "earth"
       },
       "setup": {
-        "duration": 0.0143584581092,
+        "duration": 0.006813500076532364,
         "outcome": "passed"
       },
       "call": {
-        "duration": 0.36101250001229346,
+        "duration": 0.4924970408901572,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0005384159740060568,
+        "duration": 0.00029533286578953266,
         "outcome": "passed"
       }
     },
@@ -540,15 +540,15 @@
         "case_id": "saturn"
       },
       "setup": {
-        "duration": 0.017127499915659428,
+        "duration": 0.0067986249923706055,
         "outcome": "passed"
       },
       "call": {
-        "duration": 0.8120857500471175,
+        "duration": 1.4850703340489417,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0005928750615566969,
+        "duration": 0.0002639580052345991,
         "outcome": "passed"
       }
     },
@@ -573,15 +573,15 @@
         "case_id": "case0"
       },
       "setup": {
-        "duration": 0.023183667100965977,
+        "duration": 0.007201374974101782,
         "outcome": "passed"
       },
       "call": {
-        "duration": 2.8612758750095963,
+        "duration": 2.7223148751072586,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0005042918492108583,
+        "duration": 0.00026712496764957905,
         "outcome": "passed"
       }
     },
@@ -606,15 +606,15 @@
         "case_id": "case0"
       },
       "setup": {
-        "duration": 0.007410250138491392,
+        "duration": 0.0075530000030994415,
         "outcome": "passed"
       },
       "call": {
-        "duration": 2.3748936660122126,
+        "duration": 4.295006334083155,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.00045658298768103123,
+        "duration": 0.00017512496560811996,
         "outcome": "passed"
       }
     },
@@ -639,15 +639,15 @@
         "case_id": "case0"
       },
       "setup": {
-        "duration": 0.023792708991095424,
+        "duration": 0.006824542069807649,
         "outcome": "passed"
       },
       "call": {
-        "duration": 3.1502402499318123,
+        "duration": 3.3443578749429435,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0010152498725801706,
+        "duration": 0.00023495894856750965,
         "outcome": "passed"
       }
     },
@@ -672,15 +672,15 @@
         "case_id": "case0"
       },
       "setup": {
-        "duration": 0.01887162495404482,
+        "duration": 0.006994707975536585,
         "outcome": "passed"
       },
       "call": {
-        "duration": 2.070013999938965,
+        "duration": 1.6912214998155832,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0005797501653432846,
+        "duration": 0.0007641669362783432,
         "outcome": "passed"
       }
     },
@@ -705,15 +705,15 @@
         "case_id": "calendar"
       },
       "setup": {
-        "duration": 0.017477875109761953,
+        "duration": 0.007816500030457973,
         "outcome": "passed"
       },
       "call": {
-        "duration": 0.7350135410670191,
+        "duration": 0.8090797911863774,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.00046616699546575546,
+        "duration": 0.00017570890486240387,
         "outcome": "passed"
       }
     },
@@ -738,15 +738,15 @@
         "case_id": "math"
       },
       "setup": {
-        "duration": 0.033007249934598804,
+        "duration": 0.007046542130410671,
         "outcome": "passed"
       },
       "call": {
-        "duration": 5.031138291116804,
+        "duration": 4.590162083040923,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.00032295798882842064,
+        "duration": 0.00016149994917213917,
         "outcome": "passed"
       }
     },
@@ -771,15 +771,15 @@
         "case_id": "calendar"
       },
       "setup": {
-        "duration": 0.014672457939013839,
+        "duration": 0.0068622499238699675,
         "outcome": "passed"
       },
       "call": {
-        "duration": 0.7515842081047595,
+        "duration": 0.7782253748737276,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.00034395791590213776,
+        "duration": 0.00015641585923731327,
         "outcome": "passed"
       }
     },
@@ -804,15 +804,15 @@
         "case_id": "math"
       },
       "setup": {
-        "duration": 0.02985133300535381,
+        "duration": 0.01584450015798211,
         "outcome": "passed"
       },
       "call": {
-        "duration": 2.388004041975364,
+        "duration": 1.7199794589541852,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.00038116704672574997,
+        "duration": 0.00016866694204509258,
         "outcome": "passed"
       }
     },
@@ -837,15 +837,15 @@
         "case_id": "calendar"
       },
       "setup": {
-        "duration": 0.017887332942336798,
+        "duration": 0.007770000025629997,
         "outcome": "passed"
       },
       "call": {
-        "duration": 1.0018641669303179,
+        "duration": 0.6888420830946416,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0005486670415848494,
+        "duration": 0.0002853749319911003,
         "outcome": "passed"
       }
     },
@@ -870,15 +870,15 @@
         "case_id": "math"
       },
       "setup": {
-        "duration": 0.0158015841152519,
+        "duration": 0.009934042114764452,
         "outcome": "passed"
       },
       "call": {
-        "duration": 7.285852208966389,
+        "duration": 4.339179708156735,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0003417080733925104,
+        "duration": 0.00014329212717711926,
         "outcome": "passed"
       }
     },
@@ -903,15 +903,15 @@
         "case_id": "calendar"
       },
       "setup": {
-        "duration": 0.014434333890676498,
+        "duration": 0.007238582940772176,
         "outcome": "passed"
       },
       "call": {
-        "duration": 0.9268912919797003,
+        "duration": 0.7408282500691712,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.00046200002543628216,
+        "duration": 0.0004124580882489681,
         "outcome": "passed"
       }
     },
@@ -936,15 +936,15 @@
         "case_id": "math"
       },
       "setup": {
-        "duration": 0.01635808404535055,
+        "duration": 0.009300166042521596,
         "outcome": "passed"
       },
       "call": {
-        "duration": 3.7341703751590103,
+        "duration": 2.9929484580643475,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0004277920816093683,
+        "duration": 0.0002359580248594284,
         "outcome": "passed"
       }
     },
@@ -969,15 +969,15 @@
         "case_id": "case0"
       },
       "setup": {
-        "duration": 0.021756208036094904,
+        "duration": 0.007114958018064499,
         "outcome": "passed"
       },
       "call": {
-        "duration": 0.6105514578521252,
+        "duration": 0.5455114999786019,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0004747910425066948,
+        "duration": 0.0001529159490019083,
         "outcome": "passed"
       }
     },
@@ -1002,15 +1002,15 @@
         "case_id": "case0"
       },
       "setup": {
-        "duration": 0.015522167086601257,
+        "duration": 0.011507000075653195,
         "outcome": "passed"
       },
       "call": {
-        "duration": 0.9731334580574185,
+        "duration": 0.9555377080105245,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0003415420651435852,
+        "duration": 0.0004787091165781021,
         "outcome": "passed"
       }
     },
@@ -1035,15 +1035,15 @@
         "case_id": "case0"
       },
       "setup": {
-        "duration": 0.014343583025038242,
+        "duration": 0.007758707972243428,
         "outcome": "passed"
       },
       "call": {
-        "duration": 0.5453979168087244,
+        "duration": 0.6434436670970172,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0011145840398967266,
+        "duration": 0.0008757910691201687,
         "outcome": "passed"
       }
     },
@@ -1068,15 +1068,15 @@
         "case_id": "case0"
       },
       "setup": {
-        "duration": 0.017669249791651964,
+        "duration": 0.009367667138576508,
         "outcome": "passed"
       },
       "call": {
-        "duration": 0.6310562079306692,
+        "duration": 0.6695005830843002,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0006836249958723783,
+        "duration": 0.00016933400183916092,
         "outcome": "passed"
       }
     },
@@ -1101,15 +1101,16 @@
         "case_id": "case0"
       },
       "setup": {
-        "duration": 0.016614832915365696,
+        "duration": 0.007463040994480252,
         "outcome": "passed"
       },
       "call": {
-        "duration": 0.6914504591841251,
-        "outcome": "passed"
+        "duration": 0.8918469999916852,
+        "outcome": "passed",
+        "stdout": "ChatCompletion(id='chatcmpl-BN5FBGF0b1Nv4s3p72ILmlknZuEHk', choices=[Choice(finish_reason='tool_calls', index=0, logprobs=None, message=ChatCompletionMessage(content=None, refusal=None, role='assistant', annotations=[], audio=None, function_call=None, tool_calls=[ChatCompletionMessageToolCall(id='call_5n6Tl53qYzdf65wPoMisbPBF', function=Function(arguments='{\"location\":\"San Francisco, USA\"}', name='get_weather'), type='function')]))], created=1744841401, model='gpt-4o-2024-08-06', object='chat.completion', service_tier='default', system_fingerprint='fp_f5bdcc3276', usage=CompletionUsage(completion_tokens=18, prompt_tokens=77, total_tokens=95, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=0, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=0), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n"
       },
       "teardown": {
-        "duration": 0.0004829999525099993,
+        "duration": 0.00015658396296203136,
         "outcome": "passed"
       }
     },
@@ -1134,21 +1135,22 @@
         "case_id": "case0"
       },
       "setup": {
-        "duration": 0.03217837493866682,
+        "duration": 0.018928000004962087,
         "outcome": "passed"
       },
       "call": {
-        "duration": 0.4917086660861969,
-        "outcome": "passed"
+        "duration": 0.7251290830317885,
+        "outcome": "passed",
+        "stdout": "ChatCompletion(id='chatcmpl-BN5FBpteAqNnvgUbTqVuQRC30StOE', choices=[Choice(finish_reason='tool_calls', index=0, logprobs=None, message=ChatCompletionMessage(content=None, refusal=None, role='assistant', annotations=[], audio=None, function_call=None, tool_calls=[ChatCompletionMessageToolCall(id='call_WXPajqo5LOCCRn3N6sUoW6OC', function=Function(arguments='{\"location\":\"San Francisco, USA\"}', name='get_weather'), type='function')]))], created=1744841401, model='gpt-4o-mini-2024-07-18', object='chat.completion', service_tier='default', system_fingerprint='fp_44added55e', usage=CompletionUsage(completion_tokens=18, prompt_tokens=77, total_tokens=95, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=0, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=0), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))\n"
       },
       "teardown": {
-        "duration": 0.0005399580113589764,
+        "duration": 0.0008977497927844524,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_tool_choice_required[gpt-4o-case0]",
-      "lineno": 281,
+      "lineno": 282,
       "outcome": "passed",
       "keywords": [
         "test_chat_streaming_tool_choice_required[gpt-4o-case0]",
@@ -1167,21 +1169,21 @@
         "case_id": "case0"
       },
       "setup": {
-        "duration": 0.01154208299703896,
+        "duration": 0.007159708067774773,
         "outcome": "passed"
       },
       "call": {
-        "duration": 0.5663661658763885,
+        "duration": 0.6681597500573844,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0008221250027418137,
+        "duration": 0.0010218329261988401,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_tool_choice_required[gpt-4o-mini-case0]",
-      "lineno": 281,
+      "lineno": 282,
       "outcome": "passed",
       "keywords": [
         "test_chat_streaming_tool_choice_required[gpt-4o-mini-case0]",
@@ -1200,21 +1202,21 @@
         "case_id": "case0"
       },
       "setup": {
-        "duration": 0.013238833984360099,
+        "duration": 0.006946499925106764,
         "outcome": "passed"
       },
       "call": {
-        "duration": 0.6098562499973923,
+        "duration": 0.564959250157699,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.00045654200948774815,
+        "duration": 0.00025266711600124836,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_tool_choice_none[gpt-4o-case0]",
-      "lineno": 308,
+      "lineno": 309,
       "outcome": "passed",
       "keywords": [
         "test_chat_non_streaming_tool_choice_none[gpt-4o-case0]",
@@ -1233,21 +1235,21 @@
         "case_id": "case0"
       },
       "setup": {
-        "duration": 0.014951375080272555,
+        "duration": 0.008796625072136521,
         "outcome": "passed"
       },
       "call": {
-        "duration": 0.5425659997854382,
+        "duration": 0.5506484580691904,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0002112078946083784,
+        "duration": 0.0006776249501854181,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_tool_choice_none[gpt-4o-mini-case0]",
-      "lineno": 308,
+      "lineno": 309,
       "outcome": "passed",
       "keywords": [
         "test_chat_non_streaming_tool_choice_none[gpt-4o-mini-case0]",
@@ -1266,21 +1268,21 @@
         "case_id": "case0"
       },
       "setup": {
-        "duration": 0.010041083907708526,
+        "duration": 0.008791540982201695,
         "outcome": "passed"
       },
       "call": {
-        "duration": 0.7337456250097603,
+        "duration": 0.5648198751732707,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.00042791711166501045,
+        "duration": 0.00017616688273847103,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_tool_choice_none[gpt-4o-case0]",
-      "lineno": 331,
+      "lineno": 332,
       "outcome": "passed",
       "keywords": [
         "test_chat_streaming_tool_choice_none[gpt-4o-case0]",
@@ -1299,21 +1301,21 @@
         "case_id": "case0"
       },
       "setup": {
-        "duration": 0.007236667210236192,
+        "duration": 0.0071877078153193,
         "outcome": "passed"
       },
       "call": {
-        "duration": 0.4192167909350246,
+        "duration": 1.0776563328690827,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0010569579899311066,
+        "duration": 0.0007355830166488886,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_tool_choice_none[gpt-4o-mini-case0]",
-      "lineno": 331,
+      "lineno": 332,
       "outcome": "passed",
       "keywords": [
         "test_chat_streaming_tool_choice_none[gpt-4o-mini-case0]",
@@ -1332,21 +1334,21 @@
         "case_id": "case0"
       },
       "setup": {
-        "duration": 0.01997062494046986,
+        "duration": 0.009106541983783245,
         "outcome": "passed"
       },
       "call": {
-        "duration": 0.6866283339913934,
+        "duration": 0.6319579591508955,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0010521251242607832,
+        "duration": 0.0001566251739859581,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_multi_turn_tool_calling[gpt-4o-text_then_weather_tool]",
-      "lineno": 359,
+      "lineno": 360,
       "outcome": "passed",
       "keywords": [
         "test_chat_non_streaming_multi_turn_tool_calling[gpt-4o-text_then_weather_tool]",
@@ -1365,21 +1367,21 @@
         "case_id": "text_then_weather_tool"
       },
       "setup": {
-        "duration": 0.017386124935001135,
+        "duration": 0.007579708006232977,
         "outcome": "passed"
       },
       "call": {
-        "duration": 4.425433791941032,
+        "duration": 2.0561707499437034,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.00043645803816616535,
+        "duration": 0.0002633749973028898,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_multi_turn_tool_calling[gpt-4o-weather_tool_then_text]",
-      "lineno": 359,
+      "lineno": 360,
       "outcome": "passed",
       "keywords": [
         "test_chat_non_streaming_multi_turn_tool_calling[gpt-4o-weather_tool_then_text]",
@@ -1398,21 +1400,21 @@
         "case_id": "weather_tool_then_text"
       },
       "setup": {
-        "duration": 0.014067957876250148,
+        "duration": 0.00797787494957447,
         "outcome": "passed"
       },
       "call": {
-        "duration": 1.205255625071004,
+        "duration": 1.275011499878019,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0004651669878512621,
+        "duration": 0.0004980000667273998,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_multi_turn_tool_calling[gpt-4o-add_product_tool]",
-      "lineno": 359,
+      "lineno": 360,
       "outcome": "passed",
       "keywords": [
         "test_chat_non_streaming_multi_turn_tool_calling[gpt-4o-add_product_tool]",
@@ -1431,21 +1433,21 @@
         "case_id": "add_product_tool"
       },
       "setup": {
-        "duration": 0.016634040977805853,
+        "duration": 0.009830792201682925,
         "outcome": "passed"
       },
       "call": {
-        "duration": 1.4360020828898996,
+        "duration": 1.7245257501490414,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0004704580642282963,
+        "duration": 0.0008070000912994146,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_multi_turn_tool_calling[gpt-4o-get_then_create_event_tool]",
-      "lineno": 359,
+      "lineno": 360,
       "outcome": "passed",
       "keywords": [
         "test_chat_non_streaming_multi_turn_tool_calling[gpt-4o-get_then_create_event_tool]",
@@ -1464,21 +1466,21 @@
         "case_id": "get_then_create_event_tool"
       },
       "setup": {
-        "duration": 0.015702415956184268,
+        "duration": 0.007216874975711107,
         "outcome": "passed"
       },
       "call": {
-        "duration": 5.882555708056316,
+        "duration": 3.557671125046909,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.003662874922156334,
+        "duration": 0.00018779095262289047,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_multi_turn_tool_calling[gpt-4o-compare_monthly_expense_tool]",
-      "lineno": 359,
+      "lineno": 360,
       "outcome": "passed",
       "keywords": [
         "test_chat_non_streaming_multi_turn_tool_calling[gpt-4o-compare_monthly_expense_tool]",
@@ -1497,21 +1499,21 @@
         "case_id": "compare_monthly_expense_tool"
       },
       "setup": {
-        "duration": 0.020038041984662414,
+        "duration": 0.01774512487463653,
         "outcome": "passed"
       },
       "call": {
-        "duration": 2.2738899998366833,
+        "duration": 3.471029832959175,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0004929169081151485,
+        "duration": 0.0006218329071998596,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_multi_turn_tool_calling[gpt-4o-mini-text_then_weather_tool]",
-      "lineno": 359,
+      "lineno": 360,
       "outcome": "passed",
       "keywords": [
         "test_chat_non_streaming_multi_turn_tool_calling[gpt-4o-mini-text_then_weather_tool]",
@@ -1530,21 +1532,21 @@
         "case_id": "text_then_weather_tool"
       },
       "setup": {
-        "duration": 0.007982166949659586,
+        "duration": 0.0074716671369969845,
         "outcome": "passed"
       },
       "call": {
-        "duration": 1.7494398748967797,
+        "duration": 1.4332320829853415,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0005488330498337746,
+        "duration": 0.00024041696451604366,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_multi_turn_tool_calling[gpt-4o-mini-weather_tool_then_text]",
-      "lineno": 359,
+      "lineno": 360,
       "outcome": "passed",
       "keywords": [
         "test_chat_non_streaming_multi_turn_tool_calling[gpt-4o-mini-weather_tool_then_text]",
@@ -1563,21 +1565,21 @@
         "case_id": "weather_tool_then_text"
       },
       "setup": {
-        "duration": 0.007455583196133375,
+        "duration": 0.012363416142761707,
         "outcome": "passed"
       },
       "call": {
-        "duration": 5.338647875003517,
+        "duration": 1.0449200000148267,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0005507499445229769,
+        "duration": 0.00017075007781386375,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_multi_turn_tool_calling[gpt-4o-mini-add_product_tool]",
-      "lineno": 359,
+      "lineno": 360,
       "outcome": "passed",
       "keywords": [
         "test_chat_non_streaming_multi_turn_tool_calling[gpt-4o-mini-add_product_tool]",
@@ -1596,21 +1598,21 @@
         "case_id": "add_product_tool"
       },
       "setup": {
-        "duration": 0.01675066608004272,
+        "duration": 0.007610665867105126,
         "outcome": "passed"
       },
       "call": {
-        "duration": 4.016703582834452,
+        "duration": 1.1585895828902721,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0005397920031100512,
+        "duration": 0.00015249988064169884,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_multi_turn_tool_calling[gpt-4o-mini-get_then_create_event_tool]",
-      "lineno": 359,
+      "lineno": 360,
       "outcome": "passed",
       "keywords": [
         "test_chat_non_streaming_multi_turn_tool_calling[gpt-4o-mini-get_then_create_event_tool]",
@@ -1629,21 +1631,21 @@
         "case_id": "get_then_create_event_tool"
       },
       "setup": {
-        "duration": 0.009890957968309522,
+        "duration": 0.015131499851122499,
         "outcome": "passed"
       },
       "call": {
-        "duration": 3.9003724998328835,
+        "duration": 3.4365211671683937,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0005802921950817108,
+        "duration": 0.00016770907677710056,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_non_streaming_multi_turn_tool_calling[gpt-4o-mini-compare_monthly_expense_tool]",
-      "lineno": 359,
+      "lineno": 360,
       "outcome": "passed",
       "keywords": [
         "test_chat_non_streaming_multi_turn_tool_calling[gpt-4o-mini-compare_monthly_expense_tool]",
@@ -1662,21 +1664,21 @@
         "case_id": "compare_monthly_expense_tool"
       },
       "setup": {
-        "duration": 0.021778207970783114,
+        "duration": 0.011571999872103333,
         "outcome": "passed"
       },
       "call": {
-        "duration": 2.3824402918107808,
+        "duration": 2.5175172919407487,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0008852919563651085,
+        "duration": 0.0006474158726632595,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_multi_turn_tool_calling[gpt-4o-text_then_weather_tool]",
-      "lineno": 450,
+      "lineno": 451,
       "outcome": "passed",
       "keywords": [
         "test_chat_streaming_multi_turn_tool_calling[gpt-4o-text_then_weather_tool]",
@@ -1695,21 +1697,21 @@
         "case_id": "text_then_weather_tool"
       },
       "setup": {
-        "duration": 0.021121500059962273,
+        "duration": 0.008532207924872637,
         "outcome": "passed"
       },
       "call": {
-        "duration": 2.362067250069231,
+        "duration": 4.933332832995802,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0007184590213000774,
+        "duration": 0.00029174983501434326,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_multi_turn_tool_calling[gpt-4o-weather_tool_then_text]",
-      "lineno": 450,
+      "lineno": 451,
       "outcome": "passed",
       "keywords": [
         "test_chat_streaming_multi_turn_tool_calling[gpt-4o-weather_tool_then_text]",
@@ -1728,21 +1730,21 @@
         "case_id": "weather_tool_then_text"
       },
       "setup": {
-        "duration": 0.01677604205906391,
+        "duration": 0.006954000098630786,
         "outcome": "passed"
       },
       "call": {
-        "duration": 1.4576394581235945,
+        "duration": 3.7280790000222623,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0005367500707507133,
+        "duration": 0.0022806660272181034,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_multi_turn_tool_calling[gpt-4o-add_product_tool]",
-      "lineno": 450,
+      "lineno": 451,
       "outcome": "passed",
       "keywords": [
         "test_chat_streaming_multi_turn_tool_calling[gpt-4o-add_product_tool]",
@@ -1761,21 +1763,21 @@
         "case_id": "add_product_tool"
       },
       "setup": {
-        "duration": 0.010623916983604431,
+        "duration": 0.0073084591422230005,
         "outcome": "passed"
       },
       "call": {
-        "duration": 3.295967958169058,
+        "duration": 2.8530333330854774,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0005429999437183142,
+        "duration": 0.0005582920275628567,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_multi_turn_tool_calling[gpt-4o-get_then_create_event_tool]",
-      "lineno": 450,
+      "lineno": 451,
       "outcome": "passed",
       "keywords": [
         "test_chat_streaming_multi_turn_tool_calling[gpt-4o-get_then_create_event_tool]",
@@ -1794,21 +1796,21 @@
         "case_id": "get_then_create_event_tool"
       },
       "setup": {
-        "duration": 0.014912083046510816,
+        "duration": 0.008092042058706284,
         "outcome": "passed"
       },
       "call": {
-        "duration": 2.7422334579750896,
+        "duration": 2.3742935829795897,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.001017916016280651,
+        "duration": 0.0005646671634167433,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_multi_turn_tool_calling[gpt-4o-compare_monthly_expense_tool]",
-      "lineno": 450,
+      "lineno": 451,
       "outcome": "passed",
       "keywords": [
         "test_chat_streaming_multi_turn_tool_calling[gpt-4o-compare_monthly_expense_tool]",
@@ -1827,21 +1829,21 @@
         "case_id": "compare_monthly_expense_tool"
       },
       "setup": {
-        "duration": 0.014568000100553036,
+        "duration": 0.010496499948203564,
         "outcome": "passed"
       },
       "call": {
-        "duration": 2.4006296249572188,
+        "duration": 3.235504541080445,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.000492083141580224,
+        "duration": 0.00015583401545882225,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_multi_turn_tool_calling[gpt-4o-mini-text_then_weather_tool]",
-      "lineno": 450,
+      "lineno": 451,
       "outcome": "passed",
       "keywords": [
         "test_chat_streaming_multi_turn_tool_calling[gpt-4o-mini-text_then_weather_tool]",
@@ -1860,21 +1862,21 @@
         "case_id": "text_then_weather_tool"
       },
       "setup": {
-        "duration": 0.01243741693906486,
+        "duration": 0.01372083299793303,
         "outcome": "passed"
       },
       "call": {
-        "duration": 1.858031083131209,
+        "duration": 1.3791909590363503,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0012166248634457588,
+        "duration": 0.00015145796351134777,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_multi_turn_tool_calling[gpt-4o-mini-weather_tool_then_text]",
-      "lineno": 450,
+      "lineno": 451,
       "outcome": "passed",
       "keywords": [
         "test_chat_streaming_multi_turn_tool_calling[gpt-4o-mini-weather_tool_then_text]",
@@ -1893,21 +1895,21 @@
         "case_id": "weather_tool_then_text"
       },
       "setup": {
-        "duration": 0.017216125037521124,
+        "duration": 0.006975916214287281,
         "outcome": "passed"
       },
       "call": {
-        "duration": 1.4033057920169085,
+        "duration": 0.8690883328672498,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.00047016702592372894,
+        "duration": 0.0005298329051584005,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_multi_turn_tool_calling[gpt-4o-mini-add_product_tool]",
-      "lineno": 450,
+      "lineno": 451,
       "outcome": "passed",
       "keywords": [
         "test_chat_streaming_multi_turn_tool_calling[gpt-4o-mini-add_product_tool]",
@@ -1926,21 +1928,21 @@
         "case_id": "add_product_tool"
       },
       "setup": {
-        "duration": 0.019779917085543275,
+        "duration": 0.008625000016763806,
         "outcome": "passed"
       },
       "call": {
-        "duration": 1.5427470421418548,
+        "duration": 1.6651969160884619,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0007832080591470003,
+        "duration": 0.0004458329640328884,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_multi_turn_tool_calling[gpt-4o-mini-get_then_create_event_tool]",
-      "lineno": 450,
+      "lineno": 451,
       "outcome": "passed",
       "keywords": [
         "test_chat_streaming_multi_turn_tool_calling[gpt-4o-mini-get_then_create_event_tool]",
@@ -1959,21 +1961,21 @@
         "case_id": "get_then_create_event_tool"
       },
       "setup": {
-        "duration": 0.019053417025133967,
+        "duration": 0.009998749941587448,
         "outcome": "passed"
       },
       "call": {
-        "duration": 4.038398916134611,
+        "duration": 3.24621754209511,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.00048545910976827145,
+        "duration": 0.00047412491403520107,
         "outcome": "passed"
       }
     },
     {
       "nodeid": "tests/verifications/openai_api/test_chat_completion.py::test_chat_streaming_multi_turn_tool_calling[gpt-4o-mini-compare_monthly_expense_tool]",
-      "lineno": 450,
+      "lineno": 451,
       "outcome": "passed",
       "keywords": [
         "test_chat_streaming_multi_turn_tool_calling[gpt-4o-mini-compare_monthly_expense_tool]",
@@ -1992,18 +1994,18 @@
         "case_id": "compare_monthly_expense_tool"
       },
       "setup": {
-        "duration": 0.01692862482741475,
+        "duration": 0.007803959073498845,
         "outcome": "passed"
       },
       "call": {
-        "duration": 1.849576957989484,
+        "duration": 4.1487593341153115,
         "outcome": "passed"
       },
       "teardown": {
-        "duration": 0.0032055408228188753,
+        "duration": 0.0007139160297811031,
         "outcome": "passed"
       }
     }
   ],
-  "run_timestamp": 1744679391
+  "run_timestamp": 1744841358
 }
