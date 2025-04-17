@@ -5,10 +5,11 @@
 # the root directory of this source tree.
 
 import os
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
+
+from pydantic import BaseModel, Field, SecretStr
 
 from llama_stack.schema_utils import json_schema_type
-from pydantic import BaseModel, Field, SecretStr
 
 
 class WatsonXProviderDataValidator(BaseModel):
@@ -19,7 +20,6 @@ class WatsonXProviderDataValidator(BaseModel):
 
 @json_schema_type
 class WatsonXConfig(BaseModel):
-
     url: str = Field(
         default_factory=lambda: os.getenv("WATSONX_BASE_URL", "https://us-south.ml.cloud.ibm.com"),
         description="A base url for accessing the Watsonx.ai",
@@ -42,5 +42,5 @@ class WatsonXConfig(BaseModel):
         return {
             "url": "${env.WATSONX_BASE_URL:https://us-south.ml.cloud.ibm.com}",
             "api_key": "${env.WATSONX_API_KEY:}",
-            "project_id": "${env.WATSONX_PROJECT_ID:}"
+            "project_id": "${env.WATSONX_PROJECT_ID:}",
         }

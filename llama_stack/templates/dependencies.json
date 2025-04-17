@@ -766,10 +766,13 @@
     "blobfile",
     "chardet",
     "datasets",
+    "emoji",
     "faiss-cpu",
     "fastapi",
     "fire",
     "httpx",
+    "ibm_watson_machine_learning",
+    "langdetect",
     "matplotlib",
     "mcp",
     "nltk",
@@ -782,6 +785,7 @@
     "psycopg2-binary",
     "pymongo",
     "pypdf",
+    "pythainlp",
     "redis",
     "requests",
     "scikit-learn",
@@ -789,7 +793,7 @@
     "sentencepiece",
     "tqdm",
     "transformers",
-    "uvicorn",
-    "ibm_watson_machine_learning"
+    "tree_sitter",
+    "uvicorn"
   ]
 }

@@ -43,7 +43,5 @@ MODEL_ENTRIES = [
     build_hf_repo_model_entry(
         "meta-llama/llama-guard-3-11b-vision",
         CoreModelId.llama_guard_3_11b_vision.value,
-    )
-    
+    ),
 ]
-
