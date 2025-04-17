@@ -235,10 +235,14 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
         )
 
     except (Exception, RuntimeError) as exc:
+        import traceback
+
         cprint(
             f"Error building stack: {exc}",
             color="red",
         )
+        cprint("Stack trace:", color="red")
+        traceback.print_exc()
         sys.exit(1)
     if run_config is None:
         cprint(
