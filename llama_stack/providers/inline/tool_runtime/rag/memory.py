@@ -33,6 +33,7 @@ from llama_stack.apis.tools import (
 )
 from llama_stack.apis.vector_io import QueryChunksResponse, VectorIO
 from llama_stack.providers.datatypes import ToolsProtocolPrivate
+from llama_stack.providers.utils.inference.prompt_adapter import interleaved_content_as_str
 from llama_stack.providers.utils.memory.vector_store import (
     content_from_doc,
     make_overlapped_chunks,
@@ -153,6 +154,11 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
                 )
             )
         picked.append(TextContentItem(text="END of knowledge_search tool results.\n"))
+        picked.append(
+            TextContentItem(
+                text=f'The above results were retrieved to help answer the user\'s query: "{interleaved_content_as_str(content)}". Use them as supporting information only in answering this query.\n',
+            )
+        )
 
         return RAGQueryResult(
             content=picked,
