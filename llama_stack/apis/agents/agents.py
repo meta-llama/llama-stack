@@ -230,7 +230,7 @@ class AgentConfig(AgentConfigCommon):
     :param model: The model identifier to use for the agent
     :param instructions: The system instructions for the agent
     :param name: Optional name for the agent, used in telemetry and identification
-    :param enable_session_persistence: Whether to persist session data
+    :param enable_session_persistence: Optional flag indicating whether session data has to be persisted
     :param response_format: Optional response format configuration
     """
 
