@@ -86,7 +86,7 @@ class NVIDIAEvalImpl(
             if benchmark_config.eval_candidate.type == "model"
             else benchmark_config.eval_candidate.config.model
         )
-        nvidia_model = self.get_provider_model_id(model)
+        nvidia_model = self.get_provider_model_id(model) or model
 
         result = await self._evaluator_post(
             "/v1/evaluation/jobs",
