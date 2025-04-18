@@ -2136,8 +2136,7 @@ paths:
       responses:
         '200':
           description: >-
-            Response from an OpenAI-compatible chat completion request. **OR** Chunk
-            from a streaming response to an OpenAI-compatible chat completion request.
+            Response from an OpenAI-compatible chat completion request.
           content:
             application/json:
               schema:

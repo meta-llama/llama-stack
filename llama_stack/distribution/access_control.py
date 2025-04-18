@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from llama_stack.distribution.datatypes import AccessAttributes
 from llama_stack.log import get_logger
@@ -14,8 +14,8 @@ logger = get_logger(__name__, category="core")
 
 def check_access(
     obj_identifier: str,
-    obj_attributes: Optional[AccessAttributes],
-    user_attributes: Optional[Dict[str, Any]] = None,
+    obj_attributes: AccessAttributes | None,
+    user_attributes: dict[str, Any] | None = None,
 ) -> bool:
     """Check if the current user has access to the given object, based on access attributes.
 

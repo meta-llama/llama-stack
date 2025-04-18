@@ -18,7 +18,6 @@ from dataclasses import dataclass
 from datetime import datetime
 from io import BytesIO
 from pathlib import Path
-from typing import List
 
 from PIL import Image
 
@@ -45,7 +44,7 @@ except:
 """
 
 
-def generate_bwrap_command(bind_dirs: List[str]) -> str:
+def generate_bwrap_command(bind_dirs: list[str]) -> str:
     """
     Generate the bwrap command string for binding all
     directories in the current directory read-only.
@@ -71,7 +70,7 @@ class CodeExecutionContext:
 
 @dataclass
 class CodeExecutionRequest:
-    scripts: List[str]
+    scripts: list[str]
     only_last_cell_stdouterr: bool = True
     only_last_cell_fail: bool = True
     seed: int = 0

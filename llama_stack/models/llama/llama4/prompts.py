@@ -7,7 +7,6 @@
 import textwrap
 from io import BytesIO
 from pathlib import Path
-from typing import List
 
 from ..datatypes import RawMediaItem, RawMessage, RawTextItem
 from ..prompt_format import (
@@ -19,7 +18,7 @@ from ..prompt_format import (
 THIS_DIR = Path(__file__).parent
 
 
-def usecases(base_model: bool = False) -> List[UseCase | str]:
+def usecases(base_model: bool = False) -> list[UseCase | str]:
     with open(THIS_DIR.parent / "resources/small_dog.jpg", "rb") as f:
         img_small_dog = f.read()
     with open(THIS_DIR.parent / "resources/dog.jpg", "rb") as f:

@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 import logging
 import textwrap
-from typing import Any, Dict
+from typing import Any
 
 from llama_stack.distribution.datatypes import (
     LLAMA_STACK_RUN_CONFIG_VERSION,
@@ -24,7 +24,7 @@ from llama_stack.providers.datatypes import Api, ProviderSpec
 logger = logging.getLogger(__name__)
 
 
-def configure_single_provider(registry: Dict[str, ProviderSpec], provider: Provider) -> Provider:
+def configure_single_provider(registry: dict[str, ProviderSpec], provider: Provider) -> Provider:
     provider_spec = registry[provider.provider_type]
     config_type = instantiate_class_type(provider_spec.config_class)
     try:
@@ -120,8 +120,8 @@ def configure_api_providers(config: StackRunConfig, build_spec: DistributionSpec
 
 
 def upgrade_from_routing_table(
-    config_dict: Dict[str, Any],
-) -> Dict[str, Any]:
+    config_dict: dict[str, Any],
+) -> dict[str, Any]:
     def get_providers(entries):
         return [
             Provider(
@@ -163,7 +163,7 @@ def upgrade_from_routing_table(
     return config_dict
 
 
-def parse_and_maybe_upgrade_config(config_dict: Dict[str, Any]) -> StackRunConfig:
+def parse_and_maybe_upgrade_config(config_dict: dict[str, Any]) -> StackRunConfig:
     version = config_dict.get("version", None)
     if version == LLAMA_STACK_RUN_CONFIG_VERSION:
         return StackRunConfig(**config_dict)

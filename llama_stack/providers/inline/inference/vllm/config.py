@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -42,7 +42,7 @@ class VLLMConfig(BaseModel):
     )
 
     @classmethod
-    def sample_run_config(cls, **kwargs: Any) -> Dict[str, Any]:
+    def sample_run_config(cls, **kwargs: Any) -> dict[str, Any]:
         return {
             "tensor_parallel_size": "${env.TENSOR_PARALLEL_SIZE:1}",
             "max_tokens": "${env.MAX_TOKENS:4096}",

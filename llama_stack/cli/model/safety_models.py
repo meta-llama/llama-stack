@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -22,7 +22,7 @@ class PromptGuardModel(BaseModel):
     max_seq_length: int = 2048
     is_instruct_model: bool = False
     quantization_format: CheckpointQuantizationFormat = CheckpointQuantizationFormat.bf16
-    arch_args: Dict[str, Any] = Field(default_factory=dict)
+    arch_args: dict[str, Any] = Field(default_factory=dict)
 
     def descriptor(self) -> str:
         return self.model_id

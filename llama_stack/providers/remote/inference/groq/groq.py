@@ -4,7 +4,8 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, AsyncIterator, Dict, List, Optional, Union
+from collections.abc import AsyncIterator
+from typing import Any
 
 from openai import AsyncOpenAI
 
@@ -59,29 +60,29 @@ class GroqInferenceAdapter(LiteLLMOpenAIMixin):
     async def openai_chat_completion(
         self,
         model: str,
-        messages: List[OpenAIMessageParam],
-        frequency_penalty: Optional[float] = None,
-        function_call: Optional[Union[str, Dict[str, Any]]] = None,
-        functions: Optional[List[Dict[str, Any]]] = None,
-        logit_bias: Optional[Dict[str, float]] = None,
-        logprobs: Optional[bool] = None,
-        max_completion_tokens: Optional[int] = None,
-        max_tokens: Optional[int] = None,
-        n: Optional[int] = None,
-        parallel_tool_calls: Optional[bool] = None,
-        presence_penalty: Optional[float] = None,
-        response_format: Optional[OpenAIResponseFormatParam] = None,
-        seed: Optional[int] = None,
-        stop: Optional[Union[str, List[str]]] = None,
-        stream: Optional[bool] = None,
-        stream_options: Optional[Dict[str, Any]] = None,
-        temperature: Optional[float] = None,
-        tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
-        tools: Optional[List[Dict[str, Any]]] = None,
-        top_logprobs: Optional[int] = None,
-        top_p: Optional[float] = None,
-        user: Optional[str] = None,
-    ) -> Union[OpenAIChatCompletion, AsyncIterator[OpenAIChatCompletionChunk]]:
+        messages: list[OpenAIMessageParam],
+        frequency_penalty: float | None = None,
+        function_call: str | dict[str, Any] | None = None,
+        functions: list[dict[str, Any]] | None = None,
+        logit_bias: dict[str, float] | None = None,
+        logprobs: bool | None = None,
+        max_completion_tokens: int | None = None,
+        max_tokens: int | None = None,
+        n: int | None = None,
+        parallel_tool_calls: bool | None = None,
+        presence_penalty: float | None = None,
+        response_format: OpenAIResponseFormatParam | None = None,
+        seed: int | None = None,
+        stop: str | list[str] | None = None,
+        stream: bool | None = None,
+        stream_options: dict[str, Any] | None = None,
+        temperature: float | None = None,
+        tool_choice: str | dict[str, Any] | None = None,
+        tools: list[dict[str, Any]] | None = None,
+        top_logprobs: int | None = None,
+        top_p: float | None = None,
+        user: str | None = None,
+    ) -> OpenAIChatCompletion | AsyncIterator[OpenAIChatCompletionChunk]:
         model_obj = await self.model_store.get_model(model)
 
         # Groq does not support json_schema response format, so we need to convert it to json_object

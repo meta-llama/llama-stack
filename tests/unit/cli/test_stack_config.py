@@ -18,11 +18,11 @@ from llama_stack.distribution.configure import (
 @pytest.fixture
 def up_to_date_config():
     return yaml.safe_load(
-        """
-        version: {version}
+        f"""
+        version: {LLAMA_STACK_RUN_CONFIG_VERSION}
         image_name: foo
         apis_to_serve: []
-        built_at: {built_at}
+        built_at: {datetime.now().isoformat()}
         providers:
           inference:
             - provider_id: provider1
@@ -42,16 +42,16 @@ def up_to_date_config():
             - provider_id: provider1
               provider_type: inline::meta-reference
               config: {{}}
-    """.format(version=LLAMA_STACK_RUN_CONFIG_VERSION, built_at=datetime.now().isoformat())
+    """
     )
 
 
 @pytest.fixture
 def old_config():
     return yaml.safe_load(
-        """
+        f"""
         image_name: foo
-        built_at: {built_at}
+        built_at: {datetime.now().isoformat()}
         apis_to_serve: []
         routing_table:
           inference:
@@ -82,7 +82,7 @@ def old_config():
           telemetry:
             provider_type: noop
             config: {{}}
-    """.format(built_at=datetime.now().isoformat())
+    """
     )
 
 

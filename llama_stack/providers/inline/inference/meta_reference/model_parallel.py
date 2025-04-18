@@ -4,9 +4,10 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+from collections.abc import Callable, Generator
 from copy import deepcopy
 from functools import partial
-from typing import Any, Callable, Generator, List
+from typing import Any
 
 from llama_stack.models.llama.llama3.chat_format import ChatFormat as Llama3ChatFormat
 from llama_stack.models.llama.llama4.chat_format import ChatFormat as Llama4ChatFormat
@@ -82,7 +83,7 @@ class LlamaModelParallelGenerator:
 
     def completion(
         self,
-        request_batch: List[CompletionRequestWithRawContent],
+        request_batch: list[CompletionRequestWithRawContent],
     ) -> Generator:
         req_obj = deepcopy(request_batch)
         gen = self.group.run_inference(("completion", req_obj))
@@ -90,7 +91,7 @@ class LlamaModelParallelGenerator:
 
     def chat_completion(
         self,
-        request_batch: List[ChatCompletionRequestWithRawContent],
+        request_batch: list[ChatCompletionRequestWithRawContent],
     ) -> Generator:
         req_obj = deepcopy(request_batch)
         gen = self.group.run_inference(("chat_completion", req_obj))

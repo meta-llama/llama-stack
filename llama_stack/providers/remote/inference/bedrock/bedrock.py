@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 import json
-from typing import AsyncGenerator, AsyncIterator, Dict, List, Optional, Union
+from collections.abc import AsyncGenerator, AsyncIterator
 
 from botocore.client import BaseClient
 
@@ -79,26 +79,26 @@ class BedrockInferenceAdapter(
         self,
         model_id: str,
         content: InterleavedContent,
-        sampling_params: Optional[SamplingParams] = None,
-        response_format: Optional[ResponseFormat] = None,
-        stream: Optional[bool] = False,
-        logprobs: Optional[LogProbConfig] = None,
+        sampling_params: SamplingParams | None = None,
+        response_format: ResponseFormat | None = None,
+        stream: bool | None = False,
+        logprobs: LogProbConfig | None = None,
     ) -> AsyncGenerator:
         raise NotImplementedError()
 
     async def chat_completion(
         self,
         model_id: str,
-        messages: List[Message],
-        sampling_params: Optional[SamplingParams] = None,
-        response_format: Optional[ResponseFormat] = None,
-        tools: Optional[List[ToolDefinition]] = None,
-        tool_choice: Optional[ToolChoice] = ToolChoice.auto,
-        tool_prompt_format: Optional[ToolPromptFormat] = None,
-        stream: Optional[bool] = False,
-        logprobs: Optional[LogProbConfig] = None,
-        tool_config: Optional[ToolConfig] = None,
-    ) -> Union[ChatCompletionResponse, AsyncIterator[ChatCompletionResponseStreamChunk]]:
+        messages: list[Message],
+        sampling_params: SamplingParams | None = None,
+        response_format: ResponseFormat | None = None,
+        tools: list[ToolDefinition] | None = None,
+        tool_choice: ToolChoice | None = ToolChoice.auto,
+        tool_prompt_format: ToolPromptFormat | None = None,
+        stream: bool | None = False,
+        logprobs: LogProbConfig | None = None,
+        tool_config: ToolConfig | None = None,
+    ) -> ChatCompletionResponse | AsyncIterator[ChatCompletionResponseStreamChunk]:
         if sampling_params is None:
             sampling_params = SamplingParams()
         model = await self.model_store.get_model(model_id)
@@ -151,7 +151,7 @@ class BedrockInferenceAdapter(
         async for chunk in process_chat_completion_stream_response(stream, request):
             yield chunk
 
-    async def _get_params_for_chat_completion(self, request: ChatCompletionRequest) -> Dict:
+    async def _get_params_for_chat_completion(self, request: ChatCompletionRequest) -> dict:
         bedrock_model = request.model
 
         sampling_params = request.sampling_params
@@ -176,10 +176,10 @@ class BedrockInferenceAdapter(
     async def embeddings(
         self,
         model_id: str,
-        contents: List[str] | List[InterleavedContentItem],
-        text_truncation: Optional[TextTruncation] = TextTruncation.none,
-        output_dimension: Optional[int] = None,
-        task_type: Optional[EmbeddingTaskType] = None,
+        contents: list[str] | list[InterleavedContentItem],
+        text_truncation: TextTruncation | None = TextTruncation.none,
+        output_dimension: int | None = None,
+        task_type: EmbeddingTaskType | None = None,
     ) -> EmbeddingsResponse:
         model = await self.model_store.get_model(model_id)
         embeddings = []

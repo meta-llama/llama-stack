@@ -6,10 +6,9 @@
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Literal, Optional, Protocol, Union
+from typing import Annotated, Any, Literal, Protocol
 
 from pydantic import BaseModel, Field
-from typing_extensions import Annotated
 
 from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.common.job_types import JobStatus
@@ -36,9 +35,9 @@ class DataConfig(BaseModel):
     batch_size: int
     shuffle: bool
     data_format: DatasetFormat
-    validation_dataset_id: Optional[str] = None
-    packed: Optional[bool] = False
-    train_on_input: Optional[bool] = False
+    validation_dataset_id: str | None = None
+    packed: bool | None = False
+    train_on_input: bool | None = False
 
 
 @json_schema_type
@@ -51,10 +50,10 @@ class OptimizerConfig(BaseModel):
 
 @json_schema_type
 class EfficiencyConfig(BaseModel):
-    enable_activation_checkpointing: Optional[bool] = False
-    enable_activation_offloading: Optional[bool] = False
-    memory_efficient_fsdp_wrap: Optional[bool] = False
-    fsdp_cpu_offload: Optional[bool] = False
+    enable_activation_checkpointing: bool | None = False
+    enable_activation_offloading: bool | None = False
+    memory_efficient_fsdp_wrap: bool | None = False
+    fsdp_cpu_offload: bool | None = False
 
 
 @json_schema_type
@@ -62,23 +61,23 @@ class TrainingConfig(BaseModel):
     n_epochs: int
     max_steps_per_epoch: int = 1
     gradient_accumulation_steps: int = 1
-    max_validation_steps: Optional[int] = 1
-    data_config: Optional[DataConfig] = None
-    optimizer_config: Optional[OptimizerConfig] = None
-    efficiency_config: Optional[EfficiencyConfig] = None
-    dtype: Optional[str] = "bf16"
+    max_validation_steps: int | None = 1
+    data_config: DataConfig | None = None
+    optimizer_config: OptimizerConfig | None = None
+    efficiency_config: EfficiencyConfig | None = None
+    dtype: str | None = "bf16"
 
 
 @json_schema_type
 class LoraFinetuningConfig(BaseModel):
     type: Literal["LoRA"] = "LoRA"
-    lora_attn_modules: List[str]
+    lora_attn_modules: list[str]
     apply_lora_to_mlp: bool
     apply_lora_to_output: bool
     rank: int
     alpha: int
-    use_dora: Optional[bool] = False
-    quantize_base: Optional[bool] = False
+    use_dora: bool | None = False
+    quantize_base: bool | None = False
 
 
 @json_schema_type
@@ -88,7 +87,7 @@ class QATFinetuningConfig(BaseModel):
     group_size: int
 
 
-AlgorithmConfig = Annotated[Union[LoraFinetuningConfig, QATFinetuningConfig], Field(discriminator="type")]
+AlgorithmConfig = Annotated[LoraFinetuningConfig | QATFinetuningConfig, Field(discriminator="type")]
 register_schema(AlgorithmConfig, name="AlgorithmConfig")
 
 
@@ -97,7 +96,7 @@ class PostTrainingJobLogStream(BaseModel):
     """Stream of logs from a finetuning job."""
 
     job_uuid: str
-    log_lines: List[str]
+    log_lines: list[str]
 
 
 @json_schema_type
@@ -131,8 +130,8 @@ class PostTrainingRLHFRequest(BaseModel):
     training_config: TrainingConfig
 
     # TODO: define these
-    hyperparam_search_config: Dict[str, Any]
-    logger_config: Dict[str, Any]
+    hyperparam_search_config: dict[str, Any]
+    logger_config: dict[str, Any]
 
 
 class PostTrainingJob(BaseModel):
@@ -146,17 +145,17 @@ class PostTrainingJobStatusResponse(BaseModel):
     job_uuid: str
     status: JobStatus
 
-    scheduled_at: Optional[datetime] = None
-    started_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
+    scheduled_at: datetime | None = None
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
 
-    resources_allocated: Optional[Dict[str, Any]] = None
+    resources_allocated: dict[str, Any] | None = None
 
-    checkpoints: List[Checkpoint] = Field(default_factory=list)
+    checkpoints: list[Checkpoint] = Field(default_factory=list)
 
 
 class ListPostTrainingJobsResponse(BaseModel):
-    data: List[PostTrainingJob]
+    data: list[PostTrainingJob]
 
 
 @json_schema_type
@@ -164,7 +163,7 @@ class PostTrainingJobArtifactsResponse(BaseModel):
     """Artifacts of a finetuning job."""
 
     job_uuid: str
-    checkpoints: List[Checkpoint] = Field(default_factory=list)
+    checkpoints: list[Checkpoint] = Field(default_factory=list)
 
     # TODO(ashwin): metrics, evals
 
@@ -175,14 +174,14 @@ class PostTraining(Protocol):
         self,
         job_uuid: str,
         training_config: TrainingConfig,
-        hyperparam_search_config: Dict[str, Any],
-        logger_config: Dict[str, Any],
-        model: Optional[str] = Field(
+        hyperparam_search_config: dict[str, Any],
+        logger_config: dict[str, Any],
+        model: str | None = Field(
             default=None,
             description="Model descriptor for training if not in provider config`",
         ),
-        checkpoint_dir: Optional[str] = None,
-        algorithm_config: Optional[AlgorithmConfig] = None,
+        checkpoint_dir: str | None = None,
+        algorithm_config: AlgorithmConfig | None = None,
     ) -> PostTrainingJob: ...
 
     @webmethod(route="/post-training/preference-optimize", method="POST")
@@ -192,8 +191,8 @@ class PostTraining(Protocol):
         finetuned_model: str,
         algorithm_config: DPOAlignmentConfig,
         training_config: TrainingConfig,
-        hyperparam_search_config: Dict[str, Any],
-        logger_config: Dict[str, Any],
+        hyperparam_search_config: dict[str, Any],
+        logger_config: dict[str, Any],
     ) -> PostTrainingJob: ...
 
     @webmethod(route="/post-training/jobs", method="GET")

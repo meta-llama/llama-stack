@@ -13,7 +13,7 @@
 
 import textwrap
 from datetime import datetime
-from typing import Any, List, Optional
+from typing import Any
 
 from llama_stack.apis.inference import (
     BuiltinTool,
@@ -39,12 +39,12 @@ class SystemDefaultGenerator(PromptTemplateGeneratorBase):
             },
         )
 
-    def data_examples(self) -> List[Any]:
+    def data_examples(self) -> list[Any]:
         return [None]
 
 
 class BuiltinToolGenerator(PromptTemplateGeneratorBase):
-    def _tool_breakdown(self, tools: List[ToolDefinition]):
+    def _tool_breakdown(self, tools: list[ToolDefinition]):
         builtin_tools, custom_tools = [], []
         for dfn in tools:
             if isinstance(dfn.tool_name, BuiltinTool):
@@ -54,7 +54,7 @@ class BuiltinToolGenerator(PromptTemplateGeneratorBase):
 
         return builtin_tools, custom_tools
 
-    def gen(self, tools: List[ToolDefinition]) -> PromptTemplate:
+    def gen(self, tools: list[ToolDefinition]) -> PromptTemplate:
         builtin_tools, custom_tools = self._tool_breakdown(tools)
         template_str = textwrap.dedent(
             """
@@ -75,7 +75,7 @@ class BuiltinToolGenerator(PromptTemplateGeneratorBase):
             },
         )
 
-    def data_examples(self) -> List[List[ToolDefinition]]:
+    def data_examples(self) -> list[list[ToolDefinition]]:
         return [
             # builtin tools
             [
@@ -91,7 +91,7 @@ class BuiltinToolGenerator(PromptTemplateGeneratorBase):
 
 
 class JsonCustomToolGenerator(PromptTemplateGeneratorBase):
-    def gen(self, custom_tools: List[ToolDefinition]) -> PromptTemplate:
+    def gen(self, custom_tools: list[ToolDefinition]) -> PromptTemplate:
         template_str = textwrap.dedent(
             """
             Answer the user's question by making use of the following functions if needed.
@@ -137,7 +137,7 @@ class JsonCustomToolGenerator(PromptTemplateGeneratorBase):
             {"custom_tools": [t.model_dump() for t in custom_tools]},
         )
 
-    def data_examples(self) -> List[List[ToolDefinition]]:
+    def data_examples(self) -> list[list[ToolDefinition]]:
         return [
             [
                 ToolDefinition(
@@ -161,7 +161,7 @@ class JsonCustomToolGenerator(PromptTemplateGeneratorBase):
 
 
 class FunctionTagCustomToolGenerator(PromptTemplateGeneratorBase):
-    def gen(self, custom_tools: List[ToolDefinition]) -> PromptTemplate:
+    def gen(self, custom_tools: list[ToolDefinition]) -> PromptTemplate:
         template_str = textwrap.dedent(
             """
             You have access to the following functions:
@@ -199,7 +199,7 @@ class FunctionTagCustomToolGenerator(PromptTemplateGeneratorBase):
             {"custom_tools": [t.model_dump() for t in custom_tools]},
         )
 
-    def data_examples(self) -> List[List[ToolDefinition]]:
+    def data_examples(self) -> list[list[ToolDefinition]]:
         return [
             [
                 ToolDefinition(
@@ -238,14 +238,14 @@ class PythonListCustomToolGenerator(PromptTemplateGeneratorBase):  # noqa: N801
         """.strip("\n")
     )
 
-    def gen(self, custom_tools: List[ToolDefinition], system_prompt: Optional[str] = None) -> PromptTemplate:
+    def gen(self, custom_tools: list[ToolDefinition], system_prompt: str | None = None) -> PromptTemplate:
         system_prompt = system_prompt or self.DEFAULT_PROMPT
         return PromptTemplate(
             system_prompt,
             {"function_description": self._gen_function_description(custom_tools)},
         )
 
-    def _gen_function_description(self, custom_tools: List[ToolDefinition]) -> PromptTemplate:
+    def _gen_function_description(self, custom_tools: list[ToolDefinition]) -> PromptTemplate:
         template_str = textwrap.dedent(
             """
             Here is a list of functions in JSON format that you can invoke.
@@ -291,7 +291,7 @@ class PythonListCustomToolGenerator(PromptTemplateGeneratorBase):  # noqa: N801
             {"tools": [t.model_dump() for t in custom_tools]},
         ).render()
 
-    def data_examples(self) -> List[List[ToolDefinition]]:
+    def data_examples(self) -> list[list[ToolDefinition]]:
         return [
             [
                 ToolDefinition(

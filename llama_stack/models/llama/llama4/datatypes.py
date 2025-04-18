@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 from dataclasses import dataclass
-from typing import List, Optional, Union
 
 import torch
 
@@ -30,7 +29,7 @@ class LLMInput:
     tokens: torch.Tensor
 
     # images are already pre-processed (resized, tiled, etc.)
-    images: Optional[List[torch.Tensor]] = None
+    images: list[torch.Tensor] | None = None
 
 
 @dataclass
@@ -45,8 +44,8 @@ class TransformerInput:
     # tokens_position defines the position of the tokens in each batch,
     # - when it is a tensor ([batch_size,]), it is the start position of the tokens in each batch
     # - when it is an int, the start position are the same for all batches
-    tokens_position: Union[torch.Tensor, int]
-    image_embedding: Optional[MaskedEmbedding] = None
+    tokens_position: torch.Tensor | int
+    image_embedding: MaskedEmbedding | None = None
 
 
 @dataclass

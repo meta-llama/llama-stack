@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -12,7 +12,7 @@ from llama_stack.schema_utils import json_schema_type
 
 
 class TogetherProviderDataValidator(BaseModel):
-    together_api_key: Optional[str] = Field(
+    together_api_key: str | None = Field(
         default=None,
         description="API key for Together models",
     )
@@ -20,7 +20,7 @@ class TogetherProviderDataValidator(BaseModel):
 
 @json_schema_type
 class TogetherCompatConfig(BaseModel):
-    api_key: Optional[str] = Field(
+    api_key: str | None = Field(
         default=None,
         description="The Together API key",
     )
@@ -31,7 +31,7 @@ class TogetherCompatConfig(BaseModel):
     )
 
     @classmethod
-    def sample_run_config(cls, api_key: str = "${env.TOGETHER_API_KEY}", **kwargs) -> Dict[str, Any]:
+    def sample_run_config(cls, api_key: str = "${env.TOGETHER_API_KEY}", **kwargs) -> dict[str, Any]:
         return {
             "openai_compat_api_base": "https://api.together.xyz/v1",
             "api_key": api_key,

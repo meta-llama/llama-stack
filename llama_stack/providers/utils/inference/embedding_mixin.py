@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 import logging
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from sentence_transformers import SentenceTransformer
@@ -31,10 +31,10 @@ class SentenceTransformerEmbeddingMixin:
     async def embeddings(
         self,
         model_id: str,
-        contents: List[str] | List[InterleavedContentItem],
-        text_truncation: Optional[TextTruncation] = TextTruncation.none,
-        output_dimension: Optional[int] = None,
-        task_type: Optional[EmbeddingTaskType] = None,
+        contents: list[str] | list[InterleavedContentItem],
+        text_truncation: TextTruncation | None = TextTruncation.none,
+        output_dimension: int | None = None,
+        task_type: EmbeddingTaskType | None = None,
     ) -> EmbeddingsResponse:
         model = await self.model_store.get_model(model_id)
         embedding_model = self._load_sentence_transformer_model(model.provider_resource_id)

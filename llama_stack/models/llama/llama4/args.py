@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 from enum import Enum
-from typing import Optional
 
 from pydantic import BaseModel, model_validator
 
@@ -15,8 +14,8 @@ class QuantizationScheme(Enum):
 
 
 class QuantizationArgs(BaseModel):
-    scheme: Optional[QuantizationScheme] = None
-    group_size: Optional[int] = None
+    scheme: QuantizationScheme | None = None
+    group_size: int | None = None
     spinquant: bool = False
 
 
@@ -58,32 +57,32 @@ class ModelArgs(BaseModel):
     dim: int = -1
     n_layers: int = -1
     n_heads: int = -1
-    n_kv_heads: Optional[int] = None
-    head_dim: Optional[int] = None
+    n_kv_heads: int | None = None
+    head_dim: int | None = None
 
     vocab_size: int = -1
     multiple_of: int = 256  # make SwiGLU hidden layer size multiple of large power of 2
-    ffn_dim_multiplier: Optional[float] = None
-    ffn_exp: Optional[float] = None
+    ffn_dim_multiplier: float | None = None
+    ffn_exp: float | None = None
     norm_eps: float = 1e-5
 
-    attention_chunk_size: Optional[int] = None
+    attention_chunk_size: int | None = None
     rope_theta: float = 500000
     use_scaled_rope: bool = False
-    rope_scaling_factor: Optional[float] = None
-    rope_high_freq_factor: Optional[float] = None
+    rope_scaling_factor: float | None = None
+    rope_high_freq_factor: float | None = None
 
-    nope_layer_interval: Optional[int] = None  # No position encoding in every n layers
+    nope_layer_interval: int | None = None  # No position encoding in every n layers
     use_qk_norm: bool = False
     # Set to True to enable inference-time temperature tuning (useful for very long context)
     attn_temperature_tuning: bool = False
     floor_scale: float = 8192.0
     attn_scale: float = 0.1
 
-    vision_args: Optional[VisionArgs] = None
-    moe_args: Optional[MoEArgs] = None
-    quantization_args: Optional[QuantizationArgs] = None
-    lora_args: Optional[LoRAArgs] = None
+    vision_args: VisionArgs | None = None
+    moe_args: MoEArgs | None = None
+    quantization_args: QuantizationArgs | None = None
+    lora_args: LoRAArgs | None = None
 
     max_batch_size: int = 32
     max_seq_len: int = 2048

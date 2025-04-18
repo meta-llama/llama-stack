@@ -8,7 +8,6 @@ import json
 import logging
 import uuid
 from datetime import datetime, timezone
-from typing import List, Optional
 
 from pydantic import BaseModel
 
@@ -25,9 +24,9 @@ class AgentSessionInfo(BaseModel):
     session_id: str
     session_name: str
     # TODO: is this used anywhere?
-    vector_db_id: Optional[str] = None
+    vector_db_id: str | None = None
     started_at: datetime
-    access_attributes: Optional[AccessAttributes] = None
+    access_attributes: AccessAttributes | None = None
 
 
 class AgentPersistence:
@@ -55,7 +54,7 @@ class AgentPersistence:
         )
         return session_id
 
-    async def get_session_info(self, session_id: str) -> Optional[AgentSessionInfo]:
+    async def get_session_info(self, session_id: str) -> AgentSessionInfo | None:
         value = await self.kvstore.get(
             key=f"session:{self.agent_id}:{session_id}",
         )
@@ -78,7 +77,7 @@ class AgentPersistence:
 
         return check_access(session_info.session_id, session_info.access_attributes, get_auth_attributes())
 
-    async def get_session_if_accessible(self, session_id: str) -> Optional[AgentSessionInfo]:
+    async def get_session_if_accessible(self, session_id: str) -> AgentSessionInfo | None:
         """Get session info if the user has access to it. For internal use by sub-session methods."""
         session_info = await self.get_session_info(session_id)
         if not session_info:
@@ -106,7 +105,7 @@ class AgentPersistence:
             value=turn.model_dump_json(),
         )
 
-    async def get_session_turns(self, session_id: str) -> List[Turn]:
+    async def get_session_turns(self, session_id: str) -> list[Turn]:
         if not await self.get_session_if_accessible(session_id):
             raise ValueError(f"Session {session_id} not found or access denied")
 
@@ -125,7 +124,7 @@ class AgentPersistence:
         turns.sort(key=lambda x: (x.completed_at or datetime.min))
         return turns
 
-    async def get_session_turn(self, session_id: str, turn_id: str) -> Optional[Turn]:
+    async def get_session_turn(self, session_id: str, turn_id: str) -> Turn | None:
         if not await self.get_session_if_accessible(session_id):
             raise ValueError(f"Session {session_id} not found or access denied")
 
@@ -145,7 +144,7 @@ class AgentPersistence:
             value=step.model_dump_json(),
         )
 
-    async def get_in_progress_tool_call_step(self, session_id: str, turn_id: str) -> Optional[ToolExecutionStep]:
+    async def get_in_progress_tool_call_step(self, session_id: str, turn_id: str) -> ToolExecutionStep | None:
         if not await self.get_session_if_accessible(session_id):
             return None
 
@@ -163,7 +162,7 @@ class AgentPersistence:
             value=str(num_infer_iters),
         )
 
-    async def get_num_infer_iters_in_turn(self, session_id: str, turn_id: str) -> Optional[int]:
+    async def get_num_infer_iters_in_turn(self, session_id: str, turn_id: str) -> int | None:
         if not await self.get_session_if_accessible(session_id):
             return None
 

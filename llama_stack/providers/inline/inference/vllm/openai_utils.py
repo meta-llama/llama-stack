@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import List, Optional
 
 import vllm
 
@@ -55,8 +54,8 @@ def _merge_context_into_content(message: Message) -> Message:  # type: ignore
 
 
 def _llama_stack_tools_to_openai_tools(
-    tools: Optional[List[ToolDefinition]] = None,
-) -> List[vllm.entrypoints.openai.protocol.ChatCompletionToolsParam]:
+    tools: list[ToolDefinition] | None = None,
+) -> list[vllm.entrypoints.openai.protocol.ChatCompletionToolsParam]:
     """
     Convert the list of available tools from Llama Stack's format to vLLM's
     version of OpenAI's format.

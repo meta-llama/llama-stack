@@ -3,7 +3,7 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
@@ -66,7 +66,7 @@ class BasicScoringImpl(
 
     async def shutdown(self) -> None: ...
 
-    async def list_scoring_functions(self) -> List[ScoringFn]:
+    async def list_scoring_functions(self) -> list[ScoringFn]:
         scoring_fn_defs_list = [
             fn_def for impl in self.scoring_fn_id_impls.values() for fn_def in impl.get_supported_scoring_fn_defs()
         ]
@@ -82,7 +82,7 @@ class BasicScoringImpl(
     async def score_batch(
         self,
         dataset_id: str,
-        scoring_functions: Dict[str, Optional[ScoringFnParams]] = None,
+        scoring_functions: dict[str, ScoringFnParams | None] = None,
         save_results_dataset: bool = False,
     ) -> ScoreBatchResponse:
         dataset_def = await self.datasets_api.get_dataset(dataset_id=dataset_id)
@@ -107,8 +107,8 @@ class BasicScoringImpl(
 
     async def score(
         self,
-        input_rows: List[Dict[str, Any]],
-        scoring_functions: Dict[str, Optional[ScoringFnParams]] = None,
+        input_rows: list[dict[str, Any]],
+        scoring_functions: dict[str, ScoringFnParams | None] = None,
     ) -> ScoreResponse:
         res = {}
         for scoring_fn_id in scoring_functions.keys():

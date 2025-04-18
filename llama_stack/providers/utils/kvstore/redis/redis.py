@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 from datetime import datetime
-from typing import List, Optional
 
 from redis.asyncio import Redis
 
@@ -25,13 +24,13 @@ class RedisKVStoreImpl(KVStore):
             return key
         return f"{self.config.namespace}:{key}"
 
-    async def set(self, key: str, value: str, expiration: Optional[datetime] = None) -> None:
+    async def set(self, key: str, value: str, expiration: datetime | None = None) -> None:
         key = self._namespaced_key(key)
         await self.redis.set(key, value)
         if expiration:
             await self.redis.expireat(key, expiration)
 
-    async def get(self, key: str) -> Optional[str]:
+    async def get(self, key: str) -> str | None:
         key = self._namespaced_key(key)
         value = await self.redis.get(key)
         if value is None:
@@ -43,7 +42,7 @@ class RedisKVStoreImpl(KVStore):
         key = self._namespaced_key(key)
         await self.redis.delete(key)
 
-    async def range(self, start_key: str, end_key: str) -> List[str]:
+    async def range(self, start_key: str, end_key: str) -> list[str]:
         start_key = self._namespaced_key(start_key)
         end_key = self._namespaced_key(end_key)
         cursor = 0
