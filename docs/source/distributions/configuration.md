@@ -53,6 +53,13 @@ models:
   provider_id: ollama
   provider_model_id: null
 shields: []
+server:
+  port: 8321
+  auth:
+    provider_type: "kubernetes"
+    config:
+      api_server_url: "https://kubernetes.default.svc"
+      ca_cert_path: "/path/to/ca.crt"
 ```
 
 Let's break this down into the different sections. The first section specifies the set of APIs that the stack server will serve:
@@ -101,6 +108,105 @@ models:
 A Model is an instance of a "Resource" (see [Concepts](../concepts/index)) and is associated with a specific inference provider (in this case, the provider with identifier `ollama`). This is an instance of a "pre-registered" model. While we always encourage the clients to always register models before using them, some Stack servers may come up a list of "already known and available" models.
 
 What's with the `provider_model_id` field? This is an identifier for the model inside the provider's model catalog. Contrast it with `model_id` which is the identifier for the same model for Llama Stack's purposes. For example, you may want to name "llama3.2:vision-11b" as "image_captioning_model" when you use it in your Stack interactions. When omitted, the server will set `provider_model_id` to be the same as `model_id`.
+
+## Server Configuration
+
+The `server` section configures the HTTP server that serves the Llama Stack APIs:
+
+```yaml
+server:
+  port: 8321  # Port to listen on (default: 8321)
+  tls_certfile: "/path/to/cert.pem"  # Optional: Path to TLS certificate for HTTPS
+  tls_keyfile: "/path/to/key.pem"    # Optional: Path to TLS key for HTTPS
+  auth:                              # Optional: Authentication configuration
+    provider_type: "kubernetes"      # Type of auth provider
+    config:                          # Provider-specific configuration
+      api_server_url: "https://kubernetes.default.svc"
+      ca_cert_path: "/path/to/ca.crt" # Optional: Path to CA certificate
+```
+
+### Authentication Configuration
+
+The `auth` section configures authentication for the server. When configured, all API requests must include a valid Bearer token in the Authorization header:
+
+```
+Authorization: Bearer <token>
+```
+
+The server supports multiple authentication providers:
+
+#### Kubernetes Provider
+
+The Kubernetes cluster must be configured to use a service account for authentication.
+
+```bash
+kubectl create namespace llama-stack
+kubectl create serviceaccount llama-stack-auth -n llama-stack
+kubectl create rolebinding llama-stack-auth-rolebinding --clusterrole=admin --serviceaccount=llama-stack:llama-stack-auth -n llama-stack
+kubectl create token llama-stack-auth -n llama-stack > llama-stack-auth-token
+```
+
+Validates tokens against the Kubernetes API server:
+```yaml
+server:
+  auth:
+    provider_type: "kubernetes"
+    config:
+      api_server_url: "https://kubernetes.default.svc"  # URL of the Kubernetes API server
+      ca_cert_path: "/path/to/ca.crt"                   # Optional: Path to CA certificate
+```
+
+The provider extracts user information from the JWT token:
+- Username from the `sub` claim becomes a role
+- Kubernetes groups become teams
+
+You can easily validate a request by running:
+
+```bash
+curl -s -L -H "Authorization: Bearer $(cat llama-stack-auth-token)" http://127.0.0.1:8321/v1/providers
+```
+
+#### Custom Provider
+Validates tokens against a custom authentication endpoint:
+```yaml
+server:
+  auth:
+    provider_type: "custom"
+    config:
+      endpoint: "https://auth.example.com/validate"  # URL of the auth endpoint
+```
+
+The custom endpoint receives a POST request with:
+```json
+{
+  "api_key": "<token>",
+  "request": {
+    "path": "/api/v1/endpoint",
+    "headers": {
+      "content-type": "application/json",
+      "user-agent": "curl/7.64.1"
+    },
+    "params": {
+      "key": ["value"]
+    }
+  }
+}
+```
+
+And must respond with:
+```json
+{
+  "access_attributes": {
+    "roles": ["admin", "user"],
+    "teams": ["ml-team", "nlp-team"],
+    "projects": ["llama-3", "project-x"],
+    "namespaces": ["research"]
+  },
+  "message": "Authentication successful"
+}
+```
+
+If no access attributes are returned, the token is used as a namespace.
 
 ## Extending to handle Safety
 
