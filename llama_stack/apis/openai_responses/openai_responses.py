@@ -75,9 +75,25 @@ class OpenAIResponseObject(BaseModel):
 
 
 @json_schema_type
-class OpenAIResponseObjectStream(BaseModel):
+class OpenAIResponseObjectStreamResponseCreated(BaseModel):
     response: OpenAIResponseObject
     type: Literal["response.created"] = "response.created"
+
+
+@json_schema_type
+class OpenAIResponseObjectStreamResponseCompleted(BaseModel):
+    response: OpenAIResponseObject
+    type: Literal["response.completed"] = "response.completed"
+
+
+OpenAIResponseObjectStream = Annotated[
+    Union[
+        OpenAIResponseObjectStreamResponseCreated,
+        OpenAIResponseObjectStreamResponseCompleted,
+    ],
+    Field(discriminator="type"),
+]
+register_schema(OpenAIResponseObjectStream, name="OpenAIResponseObjectStream")
 
 
 @json_schema_type
@@ -112,6 +128,7 @@ class OpenAIResponseInputMessage(BaseModel):
 @json_schema_type
 class OpenAIResponseInputToolWebSearch(BaseModel):
     type: Literal["web_search", "web_search_preview_2025_03_11"] = "web_search"
+    # TODO: actually use search_context_size somewhere...
     search_context_size: Optional[str] = Field(default="medium", pattern="^low|medium|high$")
     # TODO: add user_location
 
