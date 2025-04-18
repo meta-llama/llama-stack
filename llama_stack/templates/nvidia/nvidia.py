@@ -65,7 +65,7 @@ def get_distribution_template() -> DistributionTemplate:
     default_models = get_model_registry(available_models)
     return DistributionTemplate(
         name="nvidia",
-        distro_type="remote_hosted",
+        distro_type="self_hosted",
         description="Use NVIDIA NIM for running LLM inference, evaluation and safety",
         container_image=None,
         template_path=Path(__file__).parent / "doc_template.md",
@@ -103,6 +103,10 @@ def get_distribution_template() -> DistributionTemplate:
                 "llama-stack-user",
                 "NVIDIA User ID",
             ),
+            "NVIDIA_APPEND_API_VERSION": (
+                "True",
+                "Whether to append the API version to the base_url",
+            ),
             "NVIDIA_DATASET_NAMESPACE": (
                 "default",
                 "NVIDIA Dataset Namespace",
@@ -126,6 +130,10 @@ def get_distribution_template() -> DistributionTemplate:
             "GUARDRAILS_SERVICE_URL": (
                 "http://0.0.0.0:7331",
                 "URL for the NeMo Guardrails Service",
+            ),
+            "NVIDIA_GUARDRAILS_CONFIG_ID": (
+                "self-check",
+                "NVIDIA Guardrail Configuration ID",
             ),
             "NVIDIA_EVALUATOR_URL": (
                 "http://0.0.0.0:7331",

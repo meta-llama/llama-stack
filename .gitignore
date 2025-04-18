@@ -18,6 +18,7 @@ Package.resolved
 .vscode
 _build
 docs/src
+docs/notebooks/nvidia/tool_calling/tmp/
 pyrightconfig.json
 venv/
 pytest-report.xml

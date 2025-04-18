@@ -392,14 +392,15 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
 
         # Handle LoRA-specific configuration
         if algorithm_config:
-            if algorithm_config.get("type") == "LoRA":
-                warn_unsupported_params(algorithm_config, supported_params["lora_config"], "LoRA config")
+            algorithm_config_dict = algorithm_config.model_dump()
+            if algorithm_config_dict.get("type") == "LoRA":
+                warn_unsupported_params(algorithm_config_dict, supported_params["lora_config"], "LoRA config")
                 job_config["hyperparameters"]["lora"] = {
                     k: v
                     for k, v in {
-                        "adapter_dim": algorithm_config.get("adapter_dim"),
-                        "alpha": algorithm_config.get("alpha"),
-                        "adapter_dropout": algorithm_config.get("adapter_dropout"),
+                        "adapter_dim": algorithm_config_dict.get("adapter_dim"),
+                        "alpha": algorithm_config_dict.get("alpha"),
+                        "adapter_dropout": algorithm_config_dict.get("adapter_dropout"),
                     }.items()
                     if v is not None
                 }
