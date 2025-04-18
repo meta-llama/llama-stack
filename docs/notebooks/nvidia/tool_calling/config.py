@@ -9,6 +9,9 @@ NDS_URL = "http://data-store.test:3000" # Data Store
 NEMO_URL = "http://nemo.test:3000" # Customizer, Evaluator, Guardrails
 NIM_URL = "http://nim.test:3000" # NIM
 
+# (Required) Configure the base model. Must be one supported by the NeMo Customizer deployment!
+BASE_MODEL = "meta-llama/Llama-3.2-1B-Instruct"
+
 # (Required) Hugging Face Token
 HF_TOKEN = ""
 
@@ -18,9 +21,6 @@ NDS_TOKEN = "token"
 # (Optional) Use a dedicated namespace and dataset name for tutorial assets
 NMS_NAMESPACE = "nvidia-tool-calling-tutorial"
 DATASET_NAME = "xlam-ft-dataset-1"
-
-# (Optional) Configure the base model. Must be one supported by the NeMo Customizer deployment!
-BASE_MODEL = "meta-llama/Llama-3.2-1B-Instruct"
 
 # (Optional) NVIDIA User ID - currently unused
 USER_ID = ""
