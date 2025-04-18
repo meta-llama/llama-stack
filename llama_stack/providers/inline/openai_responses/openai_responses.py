@@ -33,6 +33,8 @@ from llama_stack.apis.openai_responses.openai_responses import (
     OpenAIResponseInputTool,
     OpenAIResponseObject,
     OpenAIResponseObjectStream,
+    OpenAIResponseObjectStreamResponseCompleted,
+    OpenAIResponseObjectStreamResponseCreated,
     OpenAIResponseOutput,
     OpenAIResponseOutputMessage,
     OpenAIResponseOutputMessageContentOutputText,
@@ -174,7 +176,8 @@ class OpenAIResponsesImpl(OpenAIResponses):
                 for chunk_choice in chunk.choices:
                     # TODO: this only works for text content
                     chat_response_content.append(chunk_choice.delta.content or "")
-                    chunk_finish_reason = chunk_choice.finish_reason
+                    if chunk_choice.finish_reason:
+                        chunk_finish_reason = chunk_choice.finish_reason
             assistant_message = OpenAIAssistantMessageParam(content="".join(chat_response_content))
             chat_response = OpenAIChatCompletion(
                 id=chat_response_id,
@@ -219,7 +222,9 @@ class OpenAIResponsesImpl(OpenAIResponses):
         if stream:
 
             async def async_response() -> AsyncIterator[OpenAIResponseObjectStream]:
-                yield OpenAIResponseObjectStream(response=response)
+                # TODO: response created should actually get emitted much earlier in the process
+                yield OpenAIResponseObjectStreamResponseCreated(response=response)
+                yield OpenAIResponseObjectStreamResponseCompleted(response=response)
 
             return async_response()
 
@@ -270,40 +275,40 @@ class OpenAIResponsesImpl(OpenAIResponses):
         # Add the assistant message with tool_calls response to the messages list
         messages.append(choice.message)
 
-        # TODO: handle multiple tool calls
-        tool_call = choice.message.tool_calls[0]
-        tool_call_id = tool_call.id
-        function = tool_call.function
+        for tool_call in choice.message.tool_calls:
+            tool_call_id = tool_call.id
+            function = tool_call.function
 
-        # If for some reason the tool call doesn't have a function or id, we can't execute it
-        if not function or not tool_call_id:
-            return output_messages
+            # If for some reason the tool call doesn't have a function or id, we can't execute it
+            if not function or not tool_call_id:
+                continue
 
-        # TODO: telemetry spans for tool calls
-        result = await self._execute_tool_call(function)
+            # TODO: telemetry spans for tool calls
+            result = await self._execute_tool_call(function)
 
-        # Handle tool call failure
-        if not result:
+            # Handle tool call failure
+            if not result:
+                output_messages.append(
+                    OpenAIResponseOutputMessageWebSearchToolCall(
+                        id=tool_call_id,
+                        status="failed",
+                    )
+                )
+                continue
+
             output_messages.append(
                 OpenAIResponseOutputMessageWebSearchToolCall(
                     id=tool_call_id,
-                    status="failed",
-                )
+                    status="completed",
+                ),
             )
-            return output_messages
 
-        output_messages.append(
-            OpenAIResponseOutputMessageWebSearchToolCall(
-                id=tool_call_id,
-                status="completed",
-            ),
-        )
+            result_content = ""
+            # TODO: handle other result content types and lists
+            if isinstance(result.content, str):
+                result_content = result.content
+            messages.append(OpenAIToolMessageParam(content=result_content, tool_call_id=tool_call_id))
 
-        result_content = ""
-        # TODO: handle other result content types and lists
-        if isinstance(result.content, str):
-            result_content = result.content
-        messages.append(OpenAIToolMessageParam(content=result_content, tool_call_id=tool_call_id))
         tool_results_chat_response = await self.inference_api.openai_chat_completion(
             model=model_id,
             messages=messages,
