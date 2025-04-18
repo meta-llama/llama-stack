@@ -14,6 +14,7 @@ from pathlib import Path
 import pytest
 import yaml
 from llama_stack_client import LlamaStackClient
+from openai import OpenAI
 
 from llama_stack import LlamaStackAsLibraryClient
 from llama_stack.apis.datatypes import Api
@@ -207,3 +208,9 @@ def llama_stack_client(request, provider_data, text_model_id):
         raise RuntimeError("Initialization failed")
 
     return client
+
+
+@pytest.fixture(scope="session")
+def openai_client(client_with_models):
+    base_url = f"{client_with_models.base_url}/v1/openai/v1"
+    return OpenAI(base_url=base_url, api_key="fake")

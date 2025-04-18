@@ -5,6 +5,7 @@ apis:
 - datasetio
 - eval
 - inference
+- openai_responses
 - safety
 - scoring
 - telemetry
@@ -82,6 +83,14 @@ providers:
     provider_type: inline::braintrust
     config:
       openai_api_key: ${env.OPENAI_API_KEY:}
+  openai_responses:
+  - provider_id: openai-responses
+    provider_type: inline::openai-responses
+    config:
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/together}/openai_responses.db
   tool_runtime:
   - provider_id: brave-search
     provider_type: remote::brave-search
