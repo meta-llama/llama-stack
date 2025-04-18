@@ -69,3 +69,10 @@ class MongoDBKVStoreImpl(KVStore):
         async for doc in cursor:
             result.append(doc["value"])
         return result
+
+    async def range_key(self, start_key: str, end_key: str) -> List[str]:
+        start_key = self._namespaced_key(start_key)
+        end_key = self._namespaced_key(end_key)
+        query = {"key": {"$gte": start_key, "$lt": end_key}}
+        cursor = self.collection.find(query, {"key": 1, "_id": 0}).sort("key", 1)
+        return [doc["key"] for doc in cursor]

@@ -65,6 +65,7 @@ async def test_session_access_control(mock_get_auth_attributes, test_setup):
         session_name="Restricted Session",
         started_at=datetime.now(),
         access_attributes=AccessAttributes(roles=["admin"], teams=["security-team"]),
+        turns=[],
     )
 
     await agent_persistence.kvstore.set(
@@ -96,6 +97,7 @@ async def test_turn_access_control(mock_get_auth_attributes, test_setup):
         session_name="Restricted Session",
         started_at=datetime.now(),
         access_attributes=AccessAttributes(roles=["admin"]),
+        turns=[],
     )
 
     await agent_persistence.kvstore.set(
@@ -148,6 +150,7 @@ async def test_tool_call_and_infer_iters_access_control(mock_get_auth_attributes
         session_name="Restricted Session",
         started_at=datetime.now(),
         access_attributes=AccessAttributes(roles=["admin"]),
+        turns=[],
     )
 
     await agent_persistence.kvstore.set(
