@@ -92,7 +92,7 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 def translate_exception(exc: Exception) -> Union[HTTPException, RequestValidationError]:
     if isinstance(exc, ValidationError):
-        exc = RequestValidationError(exc.raw_errors)
+        exc = RequestValidationError(exc.errors())
 
     if isinstance(exc, RequestValidationError):
         return HTTPException(
