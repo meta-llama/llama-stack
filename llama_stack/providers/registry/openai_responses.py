@@ -20,6 +20,8 @@ def available_providers() -> List[ProviderSpec]:
             api_dependencies=[
                 Api.models,
                 Api.inference,
+                Api.tool_groups,
+                Api.tool_runtime,
             ],
         ),
     ]

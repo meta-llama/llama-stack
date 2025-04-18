@@ -14,6 +14,8 @@ from .config import OpenAIResponsesImplConfig
 async def get_provider_impl(config: OpenAIResponsesImplConfig, deps: Dict[Api, Any]):
     from .openai_responses import OpenAIResponsesImpl
 
-    impl = OpenAIResponsesImpl(config, deps[Api.models], deps[Api.inference])
+    impl = OpenAIResponsesImpl(
+        config, deps[Api.models], deps[Api.inference], deps[Api.tool_groups], deps[Api.tool_runtime]
+    )
     await impl.initialize()
     return impl

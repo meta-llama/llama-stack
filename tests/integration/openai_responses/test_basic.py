@@ -6,15 +6,8 @@
 
 
 import pytest
-from openai import OpenAI
 
 from ..test_cases.test_case import TestCase
-
-
-@pytest.fixture
-def openai_client(client_with_models):
-    base_url = f"{client_with_models.base_url}/v1/openai/v1"
-    return OpenAI(base_url=base_url, api_key="bar")
 
 
 @pytest.mark.parametrize(
@@ -24,7 +17,7 @@ def openai_client(client_with_models):
         "openai:responses:non_streaming_02",
     ],
 )
-def test_openai_responses_non_streaming(openai_client, client_with_models, text_model_id, test_case):
+def test_basic_non_streaming(openai_client, client_with_models, text_model_id, test_case):
     tc = TestCase(test_case)
     question = tc["question"]
     expected = tc["expected"]
@@ -55,7 +48,7 @@ def test_openai_responses_non_streaming(openai_client, client_with_models, text_
         "openai:responses:streaming_02",
     ],
 )
-def test_openai_responses_streaming(openai_client, client_with_models, text_model_id, test_case):
+def test_basic_streaming(openai_client, client_with_models, text_model_id, test_case):
     tc = TestCase(test_case)
     question = tc["question"]
     expected = tc["expected"]

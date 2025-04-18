@@ -22,5 +22,16 @@
       "question": "What is the name of the US captial?",
       "expected": "Washington"
     }
+  },
+  "tools_web_search_01": {
+    "data": {
+      "input": "How many experts does the Llama 4 Maverick model have?",
+      "tools": [
+        {
+          "type": "web_search"
+        }
+      ],
+      "expected": "128"
+    }
   }
 }
