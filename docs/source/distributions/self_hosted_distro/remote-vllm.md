@@ -44,7 +44,7 @@ The following environment variables can be configured:
 In the following sections, we'll use AMD, NVIDIA or Intel GPUs to serve as hardware accelerators for the vLLM
 server, which acts as both the LLM inference provider and the safety provider. Note that vLLM also
 [supports many other hardware accelerators](https://docs.vllm.ai/en/latest/getting_started/installation.html) and
-that we only use GPUs here for demonstration purposes.
+that we only use GPUs here for demonstration purposes. Note that if you are running into issues, there's a new environment variable `VLLM_DEBUG_LOG_API_SERVER_RESPONSE` (available in vLLM v0.8.3 and above) to enable log response from API server for debugging.
 
 ### Setting up vLLM server on AMD GPU
 
