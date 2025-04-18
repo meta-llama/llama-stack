@@ -215,7 +215,7 @@ response = agent.create_turn(
 )
 ```
 ## Simple Example 2: Using an Agent with the Web Search Tool
-1. Start by registering a Tavily API key at [Tavily](https://tavily.com/). 
+1. Start by registering a Tavily API key at [Tavily](https://tavily.com/).
 2. [Optional] Provide the API key directly to the Llama Stack server
 ```bash
 export TAVILY_SEARCH_API_KEY="your key"
@@ -232,22 +232,26 @@ from llama_stack_client import LlamaStackClient
 
 client = LlamaStackClient(
     base_url=f"http://localhost:8321",
-    provider_data = {"tavily_search_api_key": "your_TAVILY_SEARCH_API_KEY"}  # Set this from the client side. No need to provide it if it has already been configured on the Llama Stack server.
-    )   
+    provider_data={
+        "tavily_search_api_key": "your_TAVILY_SEARCH_API_KEY"
+    },  # Set this from the client side. No need to provide it if it has already been configured on the Llama Stack server.
+)
 
 agent = Agent(
-    client, 
+    client,
     model="meta-llama/Llama-3.2-3B-Instruct",
     instructions=(
         "You are a web search assistant, must use websearch tool to look up the most current and precise information available. "
     ),
-    tools=["builtin::websearch"], 
-    )
+    tools=["builtin::websearch"],
+)
 
 session_id = agent.create_session("websearch-session")
 
 response = agent.create_turn(
-    messages=[{"role": "user", "content": "How did the USA perform in the last Olympics?"}],
+    messages=[
+        {"role": "user", "content": "How did the USA perform in the last Olympics?"}
+    ],
     session_id=session_id,
 )
 for log in EventLogger().log(response):
@@ -264,15 +268,15 @@ for log in EventLogger().log(response):
     ```python
     client = LlamaStackClient(
         base_url="http://localhost:8321",
-        provider_data={"wolfram_alpha_api_key": wolfram_api_key}
+        provider_data={"wolfram_alpha_api_key": wolfram_api_key},
     )
     ```
 3. Configure the tools in the Agent by setting `tools=["builtin::wolfram_alpha"]`.
 4. Example user query:
     ```python
     response = agent.create_turn(
-         messages=[{"role": "user", "content": "Solve x^2 + 2x + 1 = 0 using WolframAlpha"}],
-         session_id=session_id,
+        messages=[{"role": "user", "content": "Solve x^2 + 2x + 1 = 0 using WolframAlpha"}],
+        session_id=session_id,
     )
     ```
 ```
