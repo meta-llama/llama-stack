@@ -68,3 +68,10 @@ class RedisKVStoreImpl(KVStore):
             ]
 
         return []
+
+    async def range_key(self, start_key: str, end_key: str) -> List[str]:
+        """Get all keys in the given range."""
+        matching_keys = await self.redis.zrangebylex(self.namespace, f"[{start_key}", f"[{end_key}")
+        if not matching_keys:
+            return []
+        return [k.decode("utf-8") for k in matching_keys]

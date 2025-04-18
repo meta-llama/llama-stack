@@ -30,6 +30,13 @@ class InmemoryKVStoreImpl(KVStore):
     async def range(self, start_key: str, end_key: str) -> List[str]:
         return [self._store[key] for key in self._store.keys() if key >= start_key and key < end_key]
 
+    async def range_key(self, start_key: str, end_key: str) -> List[str]:
+        """Get all keys in the given range."""
+        return [key for key in self._store.keys() if key >= start_key and key < end_key]
+
+    async def delete(self, key: str) -> None:
+        del self._store[key]
+
 
 async def kvstore_impl(config: KVStoreConfig) -> KVStore:
     if config.type == KVStoreType.redis.value:
