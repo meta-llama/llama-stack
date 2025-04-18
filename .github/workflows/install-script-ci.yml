@@ -23,15 +23,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Make installer executable
-        run: chmod +x install.sh
       - name: Run installer end-to-end
         run: ./install.sh
       - name: Wait for health endpoint
         run: |
           timeout 120 bash -c \
             'until curl -fsS http://localhost:8321/v1/health; do sleep 1; done'
-      - name: Cleanup
-        run: |
-          docker rm -f ollama-server llama-stack || true
-          docker network rm llama-stack-net || true
