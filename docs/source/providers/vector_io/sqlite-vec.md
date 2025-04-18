@@ -66,6 +66,25 @@ To use sqlite-vec in your Llama Stack project, follow these steps:
 2. Configure your Llama Stack project to use SQLite-Vec.
 3. Start storing and querying vectors.
 
+## Supported Search Modes
+
+The sqlite-vec provider supports both vector-based and keyword-based (full-text) search modes.
+
+When using the RAGTool interface, you can specify the desired search behavior via the search_mode parameter in
+`RAGQueryConfig`. For example:
+
+```python
+from llama_stack.apis.tool_runtime.rag import RAGQueryConfig
+
+query_config = RAGQueryConfig(max_chunks=6, mode="vector")
+
+results = client.tool_runtime.rag_tool.query(
+    vector_db_ids=[vector_db_id],
+    content="what is torchtune",
+    query_config=query_config,
+)
+```
+
 ## Installation
 
 You can install SQLite-Vec using pip:
