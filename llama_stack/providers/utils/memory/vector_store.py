@@ -118,27 +118,26 @@ async def content_from_doc(doc: RAGDocument) -> str:
     if isinstance(doc.content, URL):
         if doc.content.uri.startswith("data:"):
             return content_from_data(doc.content.uri)
-        else:
-            async with httpx.AsyncClient() as client:
-                r = await client.get(doc.content.uri)
-            if doc.mime_type == "application/pdf":
-                return parse_pdf(r.content)
-            else:
-                return r.text
-
-    pattern = re.compile("^(https?://|file://|data:)")
-    if pattern.match(doc.content):
-        if doc.content.startswith("data:"):
-            return content_from_data(doc.content)
-        else:
+        async with httpx.AsyncClient() as client:
+            r = await client.get(doc.content.uri)
+        if doc.mime_type == "application/pdf":
+            return parse_pdf(r.content)
+        return r.text
+    elif isinstance(doc.content, str):
+        pattern = re.compile("^(https?://|file://|data:)")
+        if pattern.match(doc.content):
+            if doc.content.startswith("data:"):
+                return content_from_data(doc.content)
             async with httpx.AsyncClient() as client:
                 r = await client.get(doc.content)
             if doc.mime_type == "application/pdf":
                 return parse_pdf(r.content)
-            else:
-                return r.text
-
-    return interleaved_content_as_str(doc.content)
+            return r.text
+        return doc.content
+    elif isinstance(doc.content, InterleavedContent):
+        return interleaved_content_as_str(doc.content)
+    else:
+        raise ValueError(f"{type(doc)} not supported document.")
 
 
 def make_overlapped_chunks(document_id: str, text: str, window_len: int, overlap_len: int) -> List[Chunk]:
