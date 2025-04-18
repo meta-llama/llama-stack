@@ -81,6 +81,35 @@ class OpenAIResponseObjectStream(BaseModel):
 
 
 @json_schema_type
+class OpenAIResponseInputMessageContentText(BaseModel):
+    text: str
+    type: Literal["input_text"] = "input_text"
+
+
+@json_schema_type
+class OpenAIResponseInputMessageContentImage(BaseModel):
+    detail: Literal["low", "high", "auto"] = "auto"
+    type: Literal["input_image"] = "input_image"
+    # TODO: handle file_id
+    image_url: Optional[str] = None
+
+
+# TODO: handle file content types
+OpenAIResponseInputMessageContent = Annotated[
+    Union[OpenAIResponseInputMessageContentText, OpenAIResponseInputMessageContentImage],
+    Field(discriminator="type"),
+]
+register_schema(OpenAIResponseInputMessageContent, name="OpenAIResponseInputMessageContent")
+
+
+@json_schema_type
+class OpenAIResponseInputMessage(BaseModel):
+    content: Union[str, List[OpenAIResponseInputMessageContent]]
+    role: Literal["system", "developer", "user", "assistant"]
+    type: Optional[Literal["message"]] = "message"
+
+
+@json_schema_type
 class OpenAIResponseInputToolWebSearch(BaseModel):
     type: Literal["web_search", "web_search_preview_2025_03_11"] = "web_search"
     search_context_size: Optional[str] = Field(default="medium", pattern="^low|medium|high$")
@@ -109,7 +138,7 @@ class OpenAIResponses(Protocol):
     @webmethod(route="/openai/v1/responses", method="POST")
     async def create_openai_response(
         self,
-        input: str,
+        input: Union[str, List[OpenAIResponseInputMessage]],
         model: str,
         previous_response_id: Optional[str] = None,
         store: Optional[bool] = True,

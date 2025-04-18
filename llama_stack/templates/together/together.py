@@ -36,6 +36,7 @@ def get_distribution_template() -> DistributionTemplate:
         "eval": ["inline::meta-reference"],
         "datasetio": ["remote::huggingface", "inline::localfs"],
         "scoring": ["inline::basic", "inline::llm-as-judge", "inline::braintrust"],
+        "openai_responses": ["inline::openai-responses"],
         "tool_runtime": [
             "remote::brave-search",
             "remote::tavily-search",

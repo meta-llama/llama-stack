@@ -19,6 +19,7 @@ The `llamastack/distribution-together` distribution consists of the following pr
 | datasetio | `remote::huggingface`, `inline::localfs` |
 | eval | `inline::meta-reference` |
 | inference | `remote::together`, `inline::sentence-transformers` |
+| openai_responses | `inline::openai-responses` |
 | safety | `inline::llama-guard` |
 | scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |
 | telemetry | `inline::meta-reference` |

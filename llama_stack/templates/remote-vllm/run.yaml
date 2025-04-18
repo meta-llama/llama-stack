@@ -85,6 +85,14 @@ providers:
       service_name: "${env.OTEL_SERVICE_NAME:\u200B}"
       sinks: ${env.TELEMETRY_SINKS:console,sqlite}
       sqlite_db_path: ${env.SQLITE_DB_PATH:~/.llama/distributions/remote-vllm/trace_store.db}
+  openai_responses:
+  - provider_id: openai-responses
+    provider_type: inline::openai-responses
+    config:
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/remote-vllm}/openai_responses.db
   tool_runtime:
   - provider_id: brave-search
     provider_type: remote::brave-search
@@ -109,14 +117,6 @@ providers:
     provider_type: remote::wolfram-alpha
     config:
       api_key: ${env.WOLFRAM_ALPHA_API_KEY:}
-  openai_responses:
-  - provider_id: openai-responses
-    provider_type: inline::openai-responses
-    config:
-      kvstore:
-        type: sqlite
-        namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/remote-vllm}/openai_responses.db
 metadata_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/remote-vllm}/registry.db
