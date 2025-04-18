@@ -9,7 +9,7 @@ from typing import AsyncIterator, List, Literal, Optional, Protocol, Union, runt
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
-from llama_stack.schema_utils import json_schema_type, webmethod
+from llama_stack.schema_utils import json_schema_type, register_schema, webmethod
 
 
 @json_schema_type
@@ -28,6 +28,7 @@ OpenAIResponseOutputMessageContent = Annotated[
     Union[OpenAIResponseOutputMessageContentOutputText,],
     Field(discriminator="type"),
 ]
+register_schema(OpenAIResponseOutputMessageContent, name="OpenAIResponseOutputMessageContent")
 
 
 @json_schema_type
@@ -39,10 +40,21 @@ class OpenAIResponseOutputMessage(BaseModel):
     type: Literal["message"] = "message"
 
 
+@json_schema_type
+class OpenAIResponseOutputMessageWebSearchToolCall(BaseModel):
+    id: str
+    status: str
+    type: Literal["web_search_call"] = "web_search_call"
+
+
 OpenAIResponseOutput = Annotated[
-    Union[OpenAIResponseOutputMessage,],
+    Union[
+        OpenAIResponseOutputMessage,
+        OpenAIResponseOutputMessageWebSearchToolCall,
+    ],
     Field(discriminator="type"),
 ]
+register_schema(OpenAIResponseOutput, name="OpenAIResponseOutput")
 
 
 @json_schema_type
@@ -68,6 +80,20 @@ class OpenAIResponseObjectStream(BaseModel):
     type: Literal["response.created"] = "response.created"
 
 
+@json_schema_type
+class OpenAIResponseInputToolWebSearch(BaseModel):
+    type: Literal["web_search", "web_search_preview_2025_03_11"] = "web_search"
+    search_context_size: Optional[str] = Field(default="medium", pattern="^low|medium|high$")
+    # TODO: add user_location
+
+
+OpenAIResponseInputTool = Annotated[
+    Union[OpenAIResponseInputToolWebSearch,],
+    Field(discriminator="type"),
+]
+register_schema(OpenAIResponseInputTool, name="OpenAIResponseInputTool")
+
+
 @runtime_checkable
 class OpenAIResponses(Protocol):
     """
@@ -88,4 +114,5 @@ class OpenAIResponses(Protocol):
         previous_response_id: Optional[str] = None,
         store: Optional[bool] = True,
         stream: Optional[bool] = False,
+        tools: Optional[List[OpenAIResponseInputTool]] = None,
     ) -> Union[OpenAIResponseObject, AsyncIterator[OpenAIResponseObjectStream]]: ...
