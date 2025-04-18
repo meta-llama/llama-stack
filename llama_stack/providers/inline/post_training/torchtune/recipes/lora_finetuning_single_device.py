@@ -48,9 +48,6 @@ from llama_stack.apis.post_training import (
 from llama_stack.distribution.utils.config_dirs import DEFAULT_CHECKPOINT_DIR
 from llama_stack.distribution.utils.model_utils import model_local_dir
 from llama_stack.models.llama.sku_list import resolve_model
-from llama_stack.providers.inline.post_training.common.validator import (
-    validate_input_dataset_schema,
-)
 from llama_stack.providers.inline.post_training.torchtune.common import utils
 from llama_stack.providers.inline.post_training.torchtune.common.checkpointer import (
     TorchtuneCheckpointer,
@@ -348,11 +345,9 @@ class LoraFinetuningSingleDevice:
         all_rows = await fetch_rows(dataset_id)
         rows = all_rows.data
 
-        await validate_input_dataset_schema(
-            datasets_api=self.datasets_api,
-            dataset_id=dataset_id,
-            dataset_type=self._data_format.value,
-        )
+        # TODO (xiyan): validate dataset schema
+        # dataset_def = await self.datasets_api.get_dataset(dataset_id=dataset_id)
+
         data_transform = await utils.get_data_transform(self._data_format)
         ds = SFTDataset(
             rows,
