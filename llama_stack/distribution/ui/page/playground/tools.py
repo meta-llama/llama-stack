@@ -133,7 +133,8 @@ def tool_chat_page():
                             yield response.event.payload.delta.text
                     if response.event.payload.event_type == "step_complete":
                         if response.event.payload.step_details.step_type == "tool_execution":
-                            yield " 🛠 "
+                            tool_name = str(response.event.payload.step_details.tool_calls[0].tool_name)
+                            yield f'\n\n🛠 :grey[_Using "{tool_name}" tool:_]\n\n'
                 else:
                     yield f"Error occurred in the Llama Stack Cluster: {response}"
 
