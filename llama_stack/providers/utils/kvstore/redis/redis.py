@@ -42,7 +42,7 @@ class RedisKVStoreImpl(KVStore):
         key = self._namespaced_key(key)
         await self.redis.delete(key)
 
-    async def range(self, start_key: str, end_key: str) -> list[str]:
+    async def values_in_range(self, start_key: str, end_key: str) -> list[str]:
         start_key = self._namespaced_key(start_key)
         end_key = self._namespaced_key(end_key)
         cursor = 0
@@ -67,3 +67,10 @@ class RedisKVStoreImpl(KVStore):
             ]
 
         return []
+
+    async def keys_in_range(self, start_key: str, end_key: str) -> list[str]:
+        """Get all keys in the given range."""
+        matching_keys = await self.redis.zrangebylex(self.namespace, f"[{start_key}", f"[{end_key}")
+        if not matching_keys:
+            return []
+        return [k.decode("utf-8") for k in matching_keys]

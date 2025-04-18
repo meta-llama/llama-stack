@@ -58,7 +58,7 @@ class MetaReferenceEvalImpl(
         # Load existing benchmarks from kvstore
         start_key = EVAL_TASKS_PREFIX
         end_key = f"{EVAL_TASKS_PREFIX}\xff"
-        stored_benchmarks = await self.kvstore.range(start_key, end_key)
+        stored_benchmarks = await self.kvstore.values_in_range(start_key, end_key)
 
         for benchmark in stored_benchmarks:
             benchmark = Benchmark.model_validate_json(benchmark)

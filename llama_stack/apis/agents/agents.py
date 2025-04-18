@@ -13,6 +13,7 @@ from typing import Annotated, Any, Literal, Protocol, runtime_checkable
 from pydantic import BaseModel, ConfigDict, Field
 
 from llama_stack.apis.common.content_types import URL, ContentDelta, InterleavedContent
+from llama_stack.apis.common.responses import PaginatedResponse
 from llama_stack.apis.inference import (
     CompletionMessage,
     ResponseFormat,
@@ -239,16 +240,6 @@ class Agent(BaseModel):
     agent_id: str
     agent_config: AgentConfig
     created_at: datetime
-
-
-@json_schema_type
-class ListAgentsResponse(BaseModel):
-    data: list[Agent]
-
-
-@json_schema_type
-class ListAgentSessionsResponse(BaseModel):
-    data: list[Session]
 
 
 class AgentConfigOverridablePerTurn(AgentConfigCommon):
@@ -526,7 +517,7 @@ class Agents(Protocol):
         session_id: str,
         agent_id: str,
     ) -> None:
-        """Delete an agent session by its ID.
+        """Delete an agent session by its ID and its associated turns.
 
         :param session_id: The ID of the session to delete.
         :param agent_id: The ID of the agent to delete the session for.
@@ -538,17 +529,19 @@ class Agents(Protocol):
         self,
         agent_id: str,
     ) -> None:
-        """Delete an agent by its ID.
+        """Delete an agent by its ID and its associated sessions and turns.
 
         :param agent_id: The ID of the agent to delete.
         """
         ...
 
     @webmethod(route="/agents", method="GET")
-    async def list_agents(self) -> ListAgentsResponse:
+    async def list_agents(self, start_index: int | None = None, limit: int | None = None) -> PaginatedResponse:
         """List all agents.
 
-        :returns: A ListAgentsResponse.
+        :param start_index: The index to start the pagination from.
+        :param limit: The number of agents to return.
+        :returns: A PaginatedResponse.
         """
         ...
 
@@ -565,11 +558,15 @@ class Agents(Protocol):
     async def list_agent_sessions(
         self,
         agent_id: str,
-    ) -> ListAgentSessionsResponse:
+        start_index: int | None = None,
+        limit: int | None = None,
+    ) -> PaginatedResponse:
         """List all session(s) of a given agent.
 
         :param agent_id: The ID of the agent to list sessions for.
-        :returns: A ListAgentSessionsResponse.
+        :param start_index: The index to start the pagination from.
+        :param limit: The number of sessions to return.
+        :returns: A PaginatedResponse.
         """
         ...
 
