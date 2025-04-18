@@ -6,7 +6,7 @@
 
 import json
 import uuid
-from typing import AsyncIterator, List, Optional, cast
+from typing import AsyncIterator, List, Optional, Union, cast
 
 from openai.types.chat import ChatCompletionToolParam
 
@@ -14,9 +14,12 @@ from llama_stack.apis.inference.inference import (
     Inference,
     OpenAIAssistantMessageParam,
     OpenAIChatCompletion,
+    OpenAIChatCompletionContentPartImageParam,
+    OpenAIChatCompletionContentPartParam,
     OpenAIChatCompletionContentPartTextParam,
     OpenAIChatCompletionToolCallFunction,
     OpenAIChoice,
+    OpenAIImageURL,
     OpenAIMessageParam,
     OpenAIToolMessageParam,
     OpenAIUserMessageParam,
@@ -24,6 +27,9 @@ from llama_stack.apis.inference.inference import (
 from llama_stack.apis.models.models import Models, ModelType
 from llama_stack.apis.openai_responses import OpenAIResponses
 from llama_stack.apis.openai_responses.openai_responses import (
+    OpenAIResponseInputMessage,
+    OpenAIResponseInputMessageContentImage,
+    OpenAIResponseInputMessageContentText,
     OpenAIResponseInputTool,
     OpenAIResponseObject,
     OpenAIResponseObjectStream,
@@ -106,13 +112,14 @@ class OpenAIResponsesImpl(OpenAIResponses):
 
     async def create_openai_response(
         self,
-        input: str,
+        input: Union[str, List[OpenAIResponseInputMessage]],
         model: str,
         previous_response_id: Optional[str] = None,
         store: Optional[bool] = True,
         stream: Optional[bool] = False,
         tools: Optional[List[OpenAIResponseInputTool]] = None,
     ):
+        stream = False if stream is None else stream
         model_obj = await self.models_api.get_model(model)
         if model_obj is None:
             raise ValueError(f"Model '{model}' not found")
@@ -123,13 +130,34 @@ class OpenAIResponsesImpl(OpenAIResponses):
         if previous_response_id:
             previous_response = await self.get_openai_response(previous_response_id)
             messages.extend(await _previous_response_to_messages(previous_response))
-        messages.append(OpenAIUserMessageParam(content=input))
+        # TODO: refactor this user_content parsing out into a separate method
+        user_content: Union[str, List[OpenAIChatCompletionContentPartParam]] = ""
+        if isinstance(input, list):
+            user_content = []
+            for user_input in input:
+                if isinstance(user_input.content, list):
+                    for user_input_content in user_input.content:
+                        if isinstance(user_input_content, OpenAIResponseInputMessageContentText):
+                            user_content.append(OpenAIChatCompletionContentPartTextParam(text=user_input_content.text))
+                        elif isinstance(user_input_content, OpenAIResponseInputMessageContentImage):
+                            if user_input_content.image_url:
+                                image_url = OpenAIImageURL(
+                                    url=user_input_content.image_url, detail=user_input_content.detail
+                                )
+                                user_content.append(OpenAIChatCompletionContentPartImageParam(image_url=image_url))
+                else:
+                    user_content.append(OpenAIChatCompletionContentPartTextParam(text=user_input.content))
+        else:
+            user_content = input
+        messages.append(OpenAIUserMessageParam(content=user_content))
 
         chat_tools = await self._convert_response_tools_to_chat_tools(tools) if tools else None
+        # TODO: the code below doesn't handle streaming
         chat_response = await self.inference_api.openai_chat_completion(
             model=model_obj.identifier,
             messages=messages,
             tools=chat_tools,
+            stream=stream,
         )
         # type cast to appease mypy
         chat_response = cast(OpenAIChatCompletion, chat_response)
@@ -139,7 +167,7 @@ class OpenAIResponsesImpl(OpenAIResponses):
         output_messages: List[OpenAIResponseOutput] = []
         if chat_response.choices[0].finish_reason == "tool_calls":
             output_messages.extend(
-                await self._execute_tool_and_return_final_output(model_obj.identifier, chat_response, messages)
+                await self._execute_tool_and_return_final_output(model_obj.identifier, stream, chat_response, messages)
             )
         else:
             output_messages.extend(await _openai_choices_to_output_messages(chat_response.choices))
@@ -198,7 +226,7 @@ class OpenAIResponsesImpl(OpenAIResponses):
         return chat_tools
 
     async def _execute_tool_and_return_final_output(
-        self, model_id: str, chat_response: OpenAIChatCompletion, messages: List[OpenAIMessageParam]
+        self, model_id: str, stream: bool, chat_response: OpenAIChatCompletion, messages: List[OpenAIMessageParam]
     ) -> List[OpenAIResponseOutput]:
         output_messages: List[OpenAIResponseOutput] = []
         choice = chat_response.choices[0]
@@ -211,20 +239,20 @@ class OpenAIResponsesImpl(OpenAIResponses):
         if not choice.message.tool_calls:
             return output_messages
 
-        # TODO: handle multiple tool calls
-        function = choice.message.tool_calls[0].function
+        # Add the assistant message with tool_calls response to the messages list
+        messages.append(choice.message)
 
-        # If the tool call is not a function, we don't need to execute it
-        if not function:
+        # TODO: handle multiple tool calls
+        tool_call = choice.message.tool_calls[0]
+        tool_call_id = tool_call.id
+        function = tool_call.function
+
+        # If for some reason the tool call doesn't have a function or id, we can't execute it
+        if not function or not tool_call_id:
             return output_messages
 
         # TODO: telemetry spans for tool calls
         result = await self._execute_tool_call(function)
-
-        tool_call_prefix = "tc_"
-        if function.name == "web_search":
-            tool_call_prefix = "ws_"
-        tool_call_id = f"{tool_call_prefix}{uuid.uuid4()}"
 
         # Handle tool call failure
         if not result:
@@ -251,6 +279,7 @@ class OpenAIResponsesImpl(OpenAIResponses):
         tool_results_chat_response = await self.inference_api.openai_chat_completion(
             model=model_id,
             messages=messages,
+            stream=stream,
         )
         # type cast to appease mypy
         tool_results_chat_response = cast(OpenAIChatCompletion, tool_results_chat_response)

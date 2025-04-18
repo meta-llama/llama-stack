@@ -31,6 +31,7 @@ def get_distribution_template() -> DistributionTemplate:
         "datasetio": ["remote::huggingface", "inline::localfs"],
         "scoring": ["inline::basic", "inline::llm-as-judge", "inline::braintrust"],
         "telemetry": ["inline::meta-reference"],
+        "openai_responses": ["inline::openai-responses"],
         "tool_runtime": [
             "remote::brave-search",
             "remote::tavily-search",
@@ -39,7 +40,6 @@ def get_distribution_template() -> DistributionTemplate:
             "remote::model-context-protocol",
             "remote::wolfram-alpha",
         ],
-        "openai_responses": ["inline::openai-responses"],
     }
     name = "remote-vllm"
     inference_provider = Provider(
