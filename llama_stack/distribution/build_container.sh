@@ -72,9 +72,13 @@ if [[ $container_base == *"registry.access.redhat.com/ubi9"* ]]; then
 FROM $container_base
 WORKDIR /app
 
+# We install the Python 3.11 dev headers and build tools so that any
+# C‑extension wheels (e.g. polyleven, faiss‑cpu) can compile successfully.
+
 RUN dnf -y update && dnf install -y iputils net-tools wget \
     vim-minimal python3.11 python3.11-pip python3.11-wheel \
-    python3.11-setuptools && ln -s /bin/pip3.11 /bin/pip && ln -s /bin/python3.11 /bin/python && dnf clean all
+    python3.11-setuptools python3.11-devel gcc make && \
+    ln -s /bin/pip3.11 /bin/pip && ln -s /bin/python3.11 /bin/python && dnf clean all
 
 ENV UV_SYSTEM_PYTHON=1
 RUN pip install uv
