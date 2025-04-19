@@ -22,6 +22,27 @@ from llama_stack.schema_utils import json_schema_type
 
 
 class ModelsProtocolPrivate(Protocol):
+    """
+    Protocol for model management.
+
+    This allows users to register their preferred model identifiers.
+
+    Model registration requires -
+     - a provider, used to route the registration request
+     - a model identifier, user's intended name for the model during inference
+     - a provider model identifier, a model identifier supported by the provider
+
+    Providers will only accept registration for provider model ids they support.
+
+    Example,
+      register: provider x my-model-id x provider-model-id
+       -> Error if provider does not support provider-model-id
+       -> Error if my-model-id is already registered
+       -> Success if provider supports provider-model-id
+      inference: my-model-id x ...
+       -> Provider uses provider-model-id for inference
+    """
+
     async def register_model(self, model: Model) -> Model: ...
 
     async def unregister_model(self, model_id: str) -> None: ...
