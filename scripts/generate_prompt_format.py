@@ -6,7 +6,7 @@
 # the root directory of this source tree.
 
 # Run this script:
-# torchrun --nproc_per_node=8 scripts/generate_prompt_format.py meta-llama/Llama-4-17B-Omni-Instruct-BF16-16E ~/.llama/checkpoints/Llama-4-17B-Omni-Instruct-BF16-16E/ llama_stack.models.llama.llama4.prompts llama_stack/models/llama/llama4/prompt_format.md
+# torchrun --nproc_per_node=8 scripts/generate_prompt_format.py meta-llama/Llama-4-Scout-17B-16E ~/.llama/checkpoints/Llama-4-Scout-17B-16E/ llama_stack.models.llama.llama4.prompts llama_stack/models/llama/llama4/prompt_format.md
 
 
 import importlib
