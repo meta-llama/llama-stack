@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from openai import APIError
 from pydantic import BaseModel
 
 from tests.verifications.openai_api.fixtures.fixtures import (
@@ -134,6 +135,50 @@ def test_chat_streaming_basic(request, openai_client, model, provider, verificat
     # TODO: add detailed type validation
 
     assert case["output"].lower() in content.lower()
+
+
+@pytest.mark.parametrize(
+    "case",
+    chat_completion_test_cases["test_chat_input_validation"]["test_params"]["case"],
+    ids=case_id_generator,
+)
+def test_chat_non_streaming_error_handling(request, openai_client, model, provider, verification_config, case):
+    test_name_base = get_base_test_name(request)
+    if should_skip_test(verification_config, provider, model, test_name_base):
+        pytest.skip(f"Skipping {test_name_base} for model {model} on provider {provider} based on config.")
+
+    with pytest.raises(APIError) as e:
+        openai_client.chat.completions.create(
+            model=model,
+            messages=case["input"]["messages"],
+            stream=False,
+            tool_choice=case["input"]["tool_choice"] if "tool_choice" in case["input"] else None,
+            tools=case["input"]["tools"] if "tools" in case["input"] else None,
+        )
+    assert case["output"]["error"]["status_code"] == e.value.status_code
+
+
+@pytest.mark.parametrize(
+    "case",
+    chat_completion_test_cases["test_chat_input_validation"]["test_params"]["case"],
+    ids=case_id_generator,
+)
+def test_chat_streaming_error_handling(request, openai_client, model, provider, verification_config, case):
+    test_name_base = get_base_test_name(request)
+    if should_skip_test(verification_config, provider, model, test_name_base):
+        pytest.skip(f"Skipping {test_name_base} for model {model} on provider {provider} based on config.")
+
+    with pytest.raises(APIError) as e:
+        response = openai_client.chat.completions.create(
+            model=model,
+            messages=case["input"]["messages"],
+            stream=True,
+            tool_choice=case["input"]["tool_choice"] if "tool_choice" in case["input"] else None,
+            tools=case["input"]["tools"] if "tools" in case["input"] else None,
+        )
+        for _chunk in response:
+            pass
+    assert str(case["output"]["error"]["status_code"]) in e.value.message
 
 
 @pytest.mark.parametrize(

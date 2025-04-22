@@ -8,6 +8,11 @@ import asyncio
 import time
 from typing import Any, AsyncGenerator, AsyncIterator, Dict, List, Optional, Union
 
+from openai.types.chat import ChatCompletionToolChoiceOptionParam as OpenAIChatCompletionToolChoiceOptionParam
+from openai.types.chat import ChatCompletionToolParam as OpenAIChatCompletionToolParam
+from pydantic import Field, TypeAdapter
+from typing_extensions import Annotated
+
 from llama_stack.apis.common.content_types import (
     URL,
     InterleavedContent,
@@ -526,7 +531,7 @@ class InferenceRouter(Inference):
     async def openai_chat_completion(
         self,
         model: str,
-        messages: List[OpenAIMessageParam],
+        messages: Annotated[List[OpenAIMessageParam], Field(..., min_length=1)],
         frequency_penalty: Optional[float] = None,
         function_call: Optional[Union[str, Dict[str, Any]]] = None,
         functions: Optional[List[Dict[str, Any]]] = None,
@@ -557,6 +562,16 @@ class InferenceRouter(Inference):
             raise ValueError(f"Model '{model}' not found")
         if model_obj.model_type == ModelType.embedding:
             raise ValueError(f"Model '{model}' is an embedding model and does not support chat completions")
+
+        # Use the OpenAI client for a bit of extra input validation without
+        # exposing the OpenAI client itself as part of our API surface
+        if tool_choice:
+            TypeAdapter(OpenAIChatCompletionToolChoiceOptionParam).validate_python(tool_choice)
+            if tools is None:
+                raise ValueError("'tool_choice' is only allowed when 'tools' is also provided")
+        if tools:
+            for tool in tools:
+                TypeAdapter(OpenAIChatCompletionToolParam).validate_python(tool)
 
         params = dict(
             model=model_obj.identifier,
