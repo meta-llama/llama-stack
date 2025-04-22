@@ -53,6 +53,7 @@ Here's a list of known external providers that you can use with Llama Stack:
 | Type | Name | Description | Repository |
 |------|------|-------------|------------|
 | Remote | KubeFlow Training | Train models with KubeFlow | [llama-stack-provider-kft](https://github.com/opendatahub-io/llama-stack-provider-kft) |
+| Remote | RamaLama | Inference models with RamaLama | [llama-stack-provider-ramalama](https://github.com/containers/llama-stack-provider-ramalama) |
 
 ### Remote Provider Specification
 
