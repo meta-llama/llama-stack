@@ -8,7 +8,6 @@
 from typing import Any, AsyncGenerator, AsyncIterator, Dict, List, Optional, Union
 
 import httpx
-from ollama import AsyncClient
 from openai import AsyncOpenAI
 
 from llama_stack.apis.common.content_types import (
@@ -73,6 +72,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
     interleaved_content_as_str,
     request_has_media,
 )
+from ollama import AsyncClient
 
 from .models import model_entries
 
@@ -342,9 +342,12 @@ class OllamaInferenceAdapter(
         #  - models not currently running are run by the ollama server as needed
         response = await self.client.list()
         available_models = [m["model"] for m in response["models"]]
-        if model.provider_resource_id not in available_models:
+        provider_resource_id = self.register_helper.get_provider_model_id(model.provider_resource_id)
+        if provider_resource_id is None:
+            provider_resource_id = model.provider_resource_id
+        if provider_resource_id not in available_models:
             available_models_latest = [m["model"].split(":latest")[0] for m in response["models"]]
-            if model.provider_resource_id in available_models_latest:
+            if provider_resource_id in available_models_latest:
                 logger.warning(
                     f"Imprecise provider resource id was used but 'latest' is available in Ollama - using '{model.provider_resource_id}:latest'"
                 )
@@ -352,6 +355,7 @@ class OllamaInferenceAdapter(
             raise ValueError(
                 f"Model '{model.provider_resource_id}' is not available in Ollama. Available models: {', '.join(available_models)}"
             )
+        model.provider_resource_id = provider_resource_id
 
         return model
 
