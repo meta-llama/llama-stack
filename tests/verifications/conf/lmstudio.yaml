@@ -1,0 +1,16 @@
+base_url: http://localhost:1234/v1/
+models:
+- meta-llama-3.1-8b-instruct
+- llama-3.2-3b-instruct
+model_display_names:
+  meta-llama-3.1-8b-instruct: Llama-3.1-8b-Instruct
+  llama-3.2-3b-instruct: Llama-3.2-3b-Instruct
+test_exclusions:
+  meta-llama-3.1-8b-instruct:
+  - test_chat_non_streaming_image
+  - test_chat_streaming_image
+  - test_chat_multi_turn_multiple_images
+  llama-3.2-3b-instruct:
+  - test_chat_non_streaming_image
+  - test_chat_streaming_image
+  - test_chat_multi_turn_multiple_images
