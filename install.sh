@@ -32,7 +32,7 @@ for name in ollama-server llama-stack; do
   ids=$($ENGINE ps -aq --filter "name=^${name}$")
   if [ -n "$ids" ]; then
     log "⚠️   Found existing container(s) for '${name}', removing..."
-    $ENGINE rm -f $ids
+    $ENGINE rm -f "$ids"
   fi
 done
 
