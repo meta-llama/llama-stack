@@ -15,13 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # 4.2.2
-
-      - name: ShellCheck
-        uses: ludeeus/action-shellcheck@00cae500b08a931fb5698e11e79bfbd38e612a38 # 2.0.0
-        with:
-          scandir: '.'
-          additional_files: 'install.sh'
-
+      - name: Run ShellCheck on install.sh
+        run: shellcheck install.sh
   smoke-test:
     needs: lint
     runs-on: ubuntu-latest
