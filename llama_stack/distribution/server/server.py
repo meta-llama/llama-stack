@@ -22,6 +22,7 @@ from fastapi import Body, FastAPI, HTTPException, Request
 from fastapi import Path as FastapiPath
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, StreamingResponse
+from openai import BadRequestError
 from pydantic import BaseModel, ValidationError
 from typing_extensions import Annotated
 
@@ -110,6 +111,8 @@ def translate_exception(exc: Exception) -> Union[HTTPException, RequestValidatio
         )
     elif isinstance(exc, ValueError):
         return HTTPException(status_code=400, detail=f"Invalid value: {str(exc)}")
+    elif isinstance(exc, BadRequestError):
+        return HTTPException(status_code=400, detail=str(exc))
     elif isinstance(exc, PermissionError):
         return HTTPException(status_code=403, detail=f"Permission denied: {str(exc)}")
     elif isinstance(exc, TimeoutError):
