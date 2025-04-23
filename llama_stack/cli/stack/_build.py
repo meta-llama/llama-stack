@@ -317,11 +317,15 @@ def _generate_run_config(
         to_write = json.loads(run_config.model_dump_json())
         f.write(yaml.dump(to_write, sort_keys=False))
 
-    # this path is only invoked when no template is provided
-    cprint(
-        f"You can now run your stack with `llama stack run {run_config_file}`",
-        color="green",
-    )
+    # Only print this message for non-container builds since it will be displayed before the
+    # container is built
+    # For non-container builds, the run.yaml is generated at the very end of the build process so it
+    # makes sense to display this message
+    if build_config.image_type != LlamaStackImageType.CONTAINER.value:
+        cprint(
+            f"You can now run your stack with `llama stack run {run_config_file}`",
+            color="green",
+        )
     return run_config_file
 
 
@@ -355,6 +359,13 @@ def _run_stack_build_command_from_build_config(
         build_file_path = build_dir / f"{image_name}-build.yaml"
 
     os.makedirs(build_dir, exist_ok=True)
+    run_config_file = None
+    # Generate the run.yaml so it can be included in the container image with the proper entrypoint
+    # Only do this if we're building a container image and we're not using a template
+    if build_config.image_type == LlamaStackImageType.CONTAINER.value and not template_name and config_path:
+        cprint("Generating run.yaml file", color="green")
+        run_config_file = _generate_run_config(build_config, build_dir, image_name)
+
     with open(build_file_path, "w") as f:
         to_write = json.loads(build_config.model_dump_json())
         f.write(yaml.dump(to_write, sort_keys=False))
@@ -364,6 +375,7 @@ def _run_stack_build_command_from_build_config(
         build_file_path,
         image_name,
         template_or_config=template_name or config_path or str(build_file_path),
+        run_config=run_config_file,
     )
     if return_code != 0:
         raise RuntimeError(f"Failed to build image {image_name}")
