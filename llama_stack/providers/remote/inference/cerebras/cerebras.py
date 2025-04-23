@@ -34,6 +34,8 @@ from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
+    OpenAIChatCompletionToLlamaStackMixin,
+    OpenAICompletionToLlamaStackMixin,
     get_sampling_options,
     process_chat_completion_response,
     process_chat_completion_stream_response,
@@ -49,7 +51,12 @@ from .config import CerebrasImplConfig
 from .models import MODEL_ENTRIES
 
 
-class CerebrasInferenceAdapter(ModelRegistryHelper, Inference):
+class CerebrasInferenceAdapter(
+    ModelRegistryHelper,
+    Inference,
+    OpenAIChatCompletionToLlamaStackMixin,
+    OpenAICompletionToLlamaStackMixin,
+):
     def __init__(self, config: CerebrasImplConfig) -> None:
         ModelRegistryHelper.__init__(
             self,

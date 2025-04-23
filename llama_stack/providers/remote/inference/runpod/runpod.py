@@ -12,6 +12,8 @@ from llama_stack.apis.inference import *  # noqa: F403
 # from llama_stack.providers.datatypes import ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
 from llama_stack.providers.utils.inference.openai_compat import (
+    OpenAIChatCompletionToLlamaStackMixin,
+    OpenAICompletionToLlamaStackMixin,
     get_sampling_options,
     process_chat_completion_response,
     process_chat_completion_stream_response,
@@ -38,7 +40,12 @@ RUNPOD_SUPPORTED_MODELS = {
 }
 
 
-class RunpodInferenceAdapter(ModelRegistryHelper, Inference):
+class RunpodInferenceAdapter(
+    ModelRegistryHelper,
+    Inference,
+    OpenAIChatCompletionToLlamaStackMixin,
+    OpenAICompletionToLlamaStackMixin,
+):
     def __init__(self, config: RunpodImplConfig) -> None:
         ModelRegistryHelper.__init__(self, stack_to_provider_models_map=RUNPOD_SUPPORTED_MODELS)
         self.config = config

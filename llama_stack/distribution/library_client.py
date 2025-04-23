@@ -43,9 +43,9 @@ from llama_stack.distribution.server.endpoints import (
 from llama_stack.distribution.stack import (
     construct_stack,
     get_stack_run_config_from_template,
-    redact_sensitive_fields,
     replace_env_vars,
 )
+from llama_stack.distribution.utils.config import redact_sensitive_fields
 from llama_stack.distribution.utils.context import preserve_contexts_async_generator
 from llama_stack.distribution.utils.exec import in_notebook
 from llama_stack.providers.utils.telemetry.tracing import (

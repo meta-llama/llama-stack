@@ -5,10 +5,11 @@
 # the root directory of this source tree.
 
 
-from typing import Any, AsyncGenerator, List, Optional, Union
+from typing import Any, AsyncGenerator, AsyncIterator, Dict, List, Optional, Union
 
 import httpx
 from ollama import AsyncClient
+from openai import AsyncOpenAI
 
 from llama_stack.apis.common.content_types import (
     ImageContentItem,
@@ -38,9 +39,20 @@ from llama_stack.apis.inference import (
     ToolDefinition,
     ToolPromptFormat,
 )
+from llama_stack.apis.inference.inference import (
+    OpenAIChatCompletion,
+    OpenAIChatCompletionChunk,
+    OpenAICompletion,
+    OpenAIMessageParam,
+    OpenAIResponseFormatParam,
+)
 from llama_stack.apis.models import Model, ModelType
 from llama_stack.log import get_logger
-from llama_stack.providers.datatypes import ModelsProtocolPrivate
+from llama_stack.providers.datatypes import (
+    HealthResponse,
+    HealthStatus,
+    ModelsProtocolPrivate,
+)
 from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
 )
@@ -67,7 +79,10 @@ from .models import model_entries
 logger = get_logger(name=__name__, category="inference")
 
 
-class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
+class OllamaInferenceAdapter(
+    Inference,
+    ModelsProtocolPrivate,
+):
     def __init__(self, url: str) -> None:
         self.register_helper = ModelRegistryHelper(model_entries)
         self.url = url
@@ -76,10 +91,25 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
     def client(self) -> AsyncClient:
         return AsyncClient(host=self.url)
 
+    @property
+    def openai_client(self) -> AsyncOpenAI:
+        return AsyncOpenAI(base_url=f"{self.url}/v1", api_key="ollama")
+
     async def initialize(self) -> None:
         logger.info(f"checking connectivity to Ollama at `{self.url}`...")
+        await self.health()
+
+    async def health(self) -> HealthResponse:
+        """
+        Performs a health check by verifying connectivity to the Ollama server.
+        This method is used by initialize() and the Provider API to verify that the service is running
+        correctly.
+        Returns:
+            HealthResponse: A dictionary containing the health status.
+        """
         try:
             await self.client.ps()
+            return HealthResponse(status=HealthStatus.OK)
         except httpx.ConnectError as e:
             raise RuntimeError(
                 "Ollama Server is not running, start it using `ollama serve` in a separate terminal"
@@ -313,11 +343,148 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         response = await self.client.list()
         available_models = [m["model"] for m in response["models"]]
         if model.provider_resource_id not in available_models:
+            available_models_latest = [m["model"].split(":latest")[0] for m in response["models"]]
+            if model.provider_resource_id in available_models_latest:
+                logger.warning(
+                    f"Imprecise provider resource id was used but 'latest' is available in Ollama - using '{model.provider_resource_id}:latest'"
+                )
+                return model
             raise ValueError(
                 f"Model '{model.provider_resource_id}' is not available in Ollama. Available models: {', '.join(available_models)}"
             )
 
         return model
+
+    async def openai_completion(
+        self,
+        model: str,
+        prompt: Union[str, List[str], List[int], List[List[int]]],
+        best_of: Optional[int] = None,
+        echo: Optional[bool] = None,
+        frequency_penalty: Optional[float] = None,
+        logit_bias: Optional[Dict[str, float]] = None,
+        logprobs: Optional[bool] = None,
+        max_tokens: Optional[int] = None,
+        n: Optional[int] = None,
+        presence_penalty: Optional[float] = None,
+        seed: Optional[int] = None,
+        stop: Optional[Union[str, List[str]]] = None,
+        stream: Optional[bool] = None,
+        stream_options: Optional[Dict[str, Any]] = None,
+        temperature: Optional[float] = None,
+        top_p: Optional[float] = None,
+        user: Optional[str] = None,
+        guided_choice: Optional[List[str]] = None,
+        prompt_logprobs: Optional[int] = None,
+    ) -> OpenAICompletion:
+        if not isinstance(prompt, str):
+            raise ValueError("Ollama does not support non-string prompts for completion")
+
+        model_obj = await self._get_model(model)
+        params = {
+            k: v
+            for k, v in {
+                "model": model_obj.provider_resource_id,
+                "prompt": prompt,
+                "best_of": best_of,
+                "echo": echo,
+                "frequency_penalty": frequency_penalty,
+                "logit_bias": logit_bias,
+                "logprobs": logprobs,
+                "max_tokens": max_tokens,
+                "n": n,
+                "presence_penalty": presence_penalty,
+                "seed": seed,
+                "stop": stop,
+                "stream": stream,
+                "stream_options": stream_options,
+                "temperature": temperature,
+                "top_p": top_p,
+                "user": user,
+            }.items()
+            if v is not None
+        }
+        return await self.openai_client.completions.create(**params)  # type: ignore
+
+    async def openai_chat_completion(
+        self,
+        model: str,
+        messages: List[OpenAIMessageParam],
+        frequency_penalty: Optional[float] = None,
+        function_call: Optional[Union[str, Dict[str, Any]]] = None,
+        functions: Optional[List[Dict[str, Any]]] = None,
+        logit_bias: Optional[Dict[str, float]] = None,
+        logprobs: Optional[bool] = None,
+        max_completion_tokens: Optional[int] = None,
+        max_tokens: Optional[int] = None,
+        n: Optional[int] = None,
+        parallel_tool_calls: Optional[bool] = None,
+        presence_penalty: Optional[float] = None,
+        response_format: Optional[OpenAIResponseFormatParam] = None,
+        seed: Optional[int] = None,
+        stop: Optional[Union[str, List[str]]] = None,
+        stream: Optional[bool] = None,
+        stream_options: Optional[Dict[str, Any]] = None,
+        temperature: Optional[float] = None,
+        tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
+        tools: Optional[List[Dict[str, Any]]] = None,
+        top_logprobs: Optional[int] = None,
+        top_p: Optional[float] = None,
+        user: Optional[str] = None,
+    ) -> Union[OpenAIChatCompletion, AsyncIterator[OpenAIChatCompletionChunk]]:
+        model_obj = await self._get_model(model)
+        params = {
+            k: v
+            for k, v in {
+                "model": model_obj.provider_resource_id,
+                "messages": messages,
+                "frequency_penalty": frequency_penalty,
+                "function_call": function_call,
+                "functions": functions,
+                "logit_bias": logit_bias,
+                "logprobs": logprobs,
+                "max_completion_tokens": max_completion_tokens,
+                "max_tokens": max_tokens,
+                "n": n,
+                "parallel_tool_calls": parallel_tool_calls,
+                "presence_penalty": presence_penalty,
+                "response_format": response_format,
+                "seed": seed,
+                "stop": stop,
+                "stream": stream,
+                "stream_options": stream_options,
+                "temperature": temperature,
+                "tool_choice": tool_choice,
+                "tools": tools,
+                "top_logprobs": top_logprobs,
+                "top_p": top_p,
+                "user": user,
+            }.items()
+            if v is not None
+        }
+        return await self.openai_client.chat.completions.create(**params)  # type: ignore
+
+    async def batch_completion(
+        self,
+        model_id: str,
+        content_batch: List[InterleavedContent],
+        sampling_params: Optional[SamplingParams] = None,
+        response_format: Optional[ResponseFormat] = None,
+        logprobs: Optional[LogProbConfig] = None,
+    ):
+        raise NotImplementedError("Batch completion is not supported for Ollama")
+
+    async def batch_chat_completion(
+        self,
+        model_id: str,
+        messages_batch: List[List[Message]],
+        sampling_params: Optional[SamplingParams] = None,
+        tools: Optional[List[ToolDefinition]] = None,
+        tool_config: Optional[ToolConfig] = None,
+        response_format: Optional[ResponseFormat] = None,
+        logprobs: Optional[LogProbConfig] = None,
+    ):
+        raise NotImplementedError("Batch chat completion is not supported for Ollama")
 
 
 async def convert_message_to_openai_dict_for_ollama(message: Message) -> List[dict]:

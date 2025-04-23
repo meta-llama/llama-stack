@@ -36,8 +36,10 @@ from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
+    OpenAIChatCompletionToLlamaStackMixin,
     OpenAICompatCompletionChoice,
     OpenAICompatCompletionResponse,
+    OpenAICompletionToLlamaStackMixin,
     get_sampling_strategy_options,
     process_chat_completion_response,
     process_chat_completion_stream_response,
@@ -51,7 +53,12 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 from .models import MODEL_ENTRIES
 
 
-class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
+class BedrockInferenceAdapter(
+    ModelRegistryHelper,
+    Inference,
+    OpenAIChatCompletionToLlamaStackMixin,
+    OpenAICompletionToLlamaStackMixin,
+):
     def __init__(self, config: BedrockConfig) -> None:
         ModelRegistryHelper.__init__(self, MODEL_ENTRIES)
         self._config = config

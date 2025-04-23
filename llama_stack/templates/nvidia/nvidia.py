@@ -59,7 +59,7 @@ def get_distribution_template() -> DistributionTemplate:
     default_models = get_model_registry(available_models)
     return DistributionTemplate(
         name="nvidia",
-        distro_type="remote_hosted",
+        distro_type="self_hosted",
         description="Use NVIDIA NIM for running LLM inference and safety",
         container_image=None,
         template_path=Path(__file__).parent / "doc_template.md",

@@ -16,11 +16,12 @@ providers:
     provider_type: inline::meta-reference
     config:
       model: ${env.INFERENCE_MODEL}
-      max_seq_len: 4096
       checkpoint_dir: ${env.INFERENCE_CHECKPOINT_DIR:null}
       quantization:
         type: ${env.QUANTIZATION_TYPE:bf16}
       model_parallel_size: ${env.MODEL_PARALLEL_SIZE:0}
+      max_batch_size: ${env.MAX_BATCH_SIZE:1}
+      max_seq_len: ${env.MAX_SEQ_LEN:4096}
   - provider_id: sentence-transformers
     provider_type: inline::sentence-transformers
     config: {}

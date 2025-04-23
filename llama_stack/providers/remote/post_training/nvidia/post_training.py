@@ -27,11 +27,12 @@ from .models import _MODEL_ENTRIES
 
 # Map API status to JobStatus enum
 STATUS_MAPPING = {
-    "running": "in_progress",
-    "completed": "completed",
-    "failed": "failed",
-    "cancelled": "cancelled",
-    "pending": "scheduled",
+    "running": JobStatus.in_progress.value,
+    "completed": JobStatus.completed.value,
+    "failed": JobStatus.failed.value,
+    "cancelled": JobStatus.cancelled.value,
+    "pending": JobStatus.scheduled.value,
+    "unknown": JobStatus.scheduled.value,
 }
 
 
@@ -206,10 +207,6 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
         model: str,
         checkpoint_dir: Optional[str],
         algorithm_config: Optional[AlgorithmConfig] = None,
-        extra_json: Optional[Dict[str, Any]] = None,
-        params: Optional[Dict[str, Any]] = None,
-        headers: Optional[Dict[str, Any]] = None,
-        **kwargs,
     ) -> NvidiaPostTrainingJob:
         """
         Fine-tunes a model on a dataset.

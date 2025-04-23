@@ -42,6 +42,8 @@ from llama_stack.apis.inference import (
 )
 from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
 from llama_stack.providers.utils.inference.openai_compat import (
+    OpenAIChatCompletionToLlamaStackMixin,
+    OpenAICompletionToLlamaStackMixin,
     process_chat_completion_stream_response,
 )
 from llama_stack.providers.utils.inference.prompt_adapter import (
@@ -52,7 +54,12 @@ from .config import SambaNovaImplConfig
 from .models import MODEL_ENTRIES
 
 
-class SambaNovaInferenceAdapter(ModelRegistryHelper, Inference):
+class SambaNovaInferenceAdapter(
+    ModelRegistryHelper,
+    Inference,
+    OpenAIChatCompletionToLlamaStackMixin,
+    OpenAICompletionToLlamaStackMixin,
+):
     def __init__(self, config: SambaNovaImplConfig) -> None:
         ModelRegistryHelper.__init__(self, model_entries=MODEL_ENTRIES)
         self.config = config

@@ -66,8 +66,10 @@ from llama_stack.providers.utils.inference.model_registry import (
     ModelsProtocolPrivate,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
+    OpenAIChatCompletionToLlamaStackMixin,
     OpenAICompatCompletionChoice,
     OpenAICompatCompletionResponse,
+    OpenAICompletionToLlamaStackMixin,
     get_stop_reason,
     process_chat_completion_stream_response,
 )
@@ -172,7 +174,12 @@ def _convert_sampling_params(
     return vllm_sampling_params
 
 
-class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
+class VLLMInferenceImpl(
+    Inference,
+    OpenAIChatCompletionToLlamaStackMixin,
+    OpenAICompletionToLlamaStackMixin,
+    ModelsProtocolPrivate,
+):
     """
     vLLM-based inference model adapter for Llama Stack with support for multiple models.
 

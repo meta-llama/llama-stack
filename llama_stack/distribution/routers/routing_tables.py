@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 import logging
+import time
 import uuid
 from typing import Any, Dict, List, Optional
 
@@ -23,7 +24,7 @@ from llama_stack.apis.datasets import (
     RowsDataSource,
     URIDataSource,
 )
-from llama_stack.apis.models import ListModelsResponse, Model, Models, ModelType
+from llama_stack.apis.models import ListModelsResponse, Model, Models, ModelType, OpenAIListModelsResponse, OpenAIModel
 from llama_stack.apis.resource import ResourceType
 from llama_stack.apis.scoring_functions import (
     ListScoringFunctionsResponse,
@@ -253,6 +254,19 @@ class CommonRoutingTableImpl(RoutingTable):
 class ModelsRoutingTable(CommonRoutingTableImpl, Models):
     async def list_models(self) -> ListModelsResponse:
         return ListModelsResponse(data=await self.get_all_with_type("model"))
+
+    async def openai_list_models(self) -> OpenAIListModelsResponse:
+        models = await self.get_all_with_type("model")
+        openai_models = [
+            OpenAIModel(
+                id=model.identifier,
+                object="model",
+                created=int(time.time()),
+                owned_by="llama_stack",
+            )
+            for model in models
+        ]
+        return OpenAIListModelsResponse(data=openai_models)
 
     async def get_model(self, model_id: str) -> Model:
         model = await self.get_object_by_identifier("model", model_id)

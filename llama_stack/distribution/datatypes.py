@@ -326,3 +326,12 @@ class BuildConfig(BaseModel):
         default="conda",
         description="Type of package to build (conda | container | venv)",
     )
+    image_name: Optional[str] = Field(
+        default=None,
+        description="Name of the distribution to build",
+    )
+    external_providers_dir: Optional[str] = Field(
+        default=None,
+        description="Path to directory containing external provider implementations. The providers packages will be resolved from this directory. "
+        "pip_packages MUST contain the provider package name.",
+    )
