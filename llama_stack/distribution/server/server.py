@@ -166,14 +166,16 @@ async def maybe_await(value):
 
 
 async def sse_generator(event_gen_coroutine):
-    event_gen = await event_gen_coroutine
+    event_gen = None
     try:
+        event_gen = await event_gen_coroutine
         async for item in event_gen:
             yield create_sse_event(item)
             await asyncio.sleep(0.01)
     except asyncio.CancelledError:
         logger.info("Generator cancelled")
-        await event_gen.aclose()
+        if event_gen:
+            await event_gen.aclose()
     except Exception as e:
         logger.exception("Error in sse_generator")
         yield create_sse_event(
