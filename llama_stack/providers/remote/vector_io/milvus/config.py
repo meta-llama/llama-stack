@@ -16,7 +16,12 @@ class MilvusVectorIOConfig(BaseModel):
     uri: str
     token: str | None = None
     consistency_level: str = "Strong"
-
+    # TLS-related options
+    secure: bool = False
+    server_pem_path: Optional[str] = None
     @classmethod
-    def sample_run_config(cls, __distro_dir__: str, **kwargs: Any) -> dict[str, Any]:
-        return {"uri": "${env.MILVUS_ENDPOINT}", "token": "${env.MILVUS_TOKEN}"}
+
+    def sample_run_config(cls, __distro_dir__: str, **kwargs: Any) -> Dict[str, Any]:
+        return {"uri": "${env.MILVUS_ENDPOINT}", "token": "${env.MILVUS_TOKEN}","secure": True,
+            "server_pem_path": "/path/to/ca.crt"}
+
