@@ -93,6 +93,7 @@ def build_image(
     build_file_path: Path,
     image_name: str,
     template_or_config: str,
+    run_config: str | None = None,
 ):
     container_base = build_config.distribution_spec.container_image or "python:3.10-slim"
 
@@ -108,6 +109,11 @@ def build_image(
             container_base,
             " ".join(normal_deps),
         ]
+
+        # When building from a config file (not a template), include the run config path in the
+        # build arguments
+        if run_config is not None:
+            args.append(run_config)
     elif build_config.image_type == LlamaStackImageType.CONDA.value:
         script = str(importlib.resources.files("llama_stack") / "distribution/build_conda_env.sh")
         args = [
