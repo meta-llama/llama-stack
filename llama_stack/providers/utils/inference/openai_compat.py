@@ -524,10 +524,25 @@ async def convert_message_to_openai_dict(message: Message, download: bool = Fals
     else:
         content = [await _convert_content(message.content)]
 
-    return {
+    result = {
         "role": message.role,
         "content": content,
     }
+
+    if hasattr(message, "tool_calls") and message.tool_calls:
+        result["tool_calls"] = []
+        for tc in message.tool_calls:
+            result["tool_calls"].append(
+                {
+                    "id": tc.call_id,
+                    "type": "function",
+                    "function": {
+                        "name": tc.tool_name,
+                        "arguments": tc.arguments_json if hasattr(tc, "arguments_json") else json.dumps(tc.arguments),
+                    },
+                }
+            )
+    return result
 
 
 class UnparseableToolCall(BaseModel):
