@@ -28,15 +28,15 @@ from fairscale.nn.model_parallel.initialize import (
     get_model_parallel_rank,
     get_model_parallel_src_rank,
 )
-from pydantic import BaseModel, Field
-from torch.distributed.launcher.api import LaunchConfig, elastic_launch
-from typing_extensions import Annotated
 
 from llama_stack.models.llama.datatypes import GenerationResult
 from llama_stack.providers.utils.inference.prompt_adapter import (
     ChatCompletionRequestWithRawContent,
     CompletionRequestWithRawContent,
 )
+from pydantic import BaseModel, Field
+from torch.distributed.launcher.api import elastic_launch, LaunchConfig
+from typing_extensions import Annotated
 
 log = logging.getLogger(__name__)
 
@@ -52,33 +52,51 @@ class ProcessingMessageName(str, Enum):
 
 
 class ReadyRequest(BaseModel):
-    type: Literal[ProcessingMessageName.ready_request] = ProcessingMessageName.ready_request
+    type: Literal[ProcessingMessageName.ready_request] = (
+        ProcessingMessageName.ready_request
+    )
 
 
 class ReadyResponse(BaseModel):
-    type: Literal[ProcessingMessageName.ready_response] = ProcessingMessageName.ready_response
+    type: Literal[ProcessingMessageName.ready_response] = (
+        ProcessingMessageName.ready_response
+    )
 
 
 class EndSentinel(BaseModel):
-    type: Literal[ProcessingMessageName.end_sentinel] = ProcessingMessageName.end_sentinel
+    type: Literal[ProcessingMessageName.end_sentinel] = (
+        ProcessingMessageName.end_sentinel
+    )
 
 
 class CancelSentinel(BaseModel):
-    type: Literal[ProcessingMessageName.cancel_sentinel] = ProcessingMessageName.cancel_sentinel
+    type: Literal[ProcessingMessageName.cancel_sentinel] = (
+        ProcessingMessageName.cancel_sentinel
+    )
 
 
 class TaskRequest(BaseModel):
-    type: Literal[ProcessingMessageName.task_request] = ProcessingMessageName.task_request
-    task: Tuple[str, List[CompletionRequestWithRawContent] | List[ChatCompletionRequestWithRawContent]]
+    type: Literal[ProcessingMessageName.task_request] = (
+        ProcessingMessageName.task_request
+    )
+    task: Tuple[
+        str,
+        List[CompletionRequestWithRawContent]
+        | List[ChatCompletionRequestWithRawContent],
+    ]
 
 
 class TaskResponse(BaseModel):
-    type: Literal[ProcessingMessageName.task_response] = ProcessingMessageName.task_response
+    type: Literal[ProcessingMessageName.task_response] = (
+        ProcessingMessageName.task_response
+    )
     result: List[GenerationResult]
 
 
 class ExceptionResponse(BaseModel):
-    type: Literal[ProcessingMessageName.exception_response] = ProcessingMessageName.exception_response
+    type: Literal[ProcessingMessageName.exception_response] = (
+        ProcessingMessageName.exception_response
+    )
     error: str
 
 
@@ -172,7 +190,9 @@ def retrieve_requests(reply_socket_url: str):
                         group=get_model_parallel_group(),
                     )
                     if isinstance(updates[0], CancelSentinel):
-                        log.info("quitting generation loop because request was cancelled")
+                        log.info(
+                            "quitting generation loop because request was cancelled"
+                        )
                         break
 
                 if mp_rank_0():
@@ -234,7 +254,7 @@ def worker_process_entrypoint(
             if isinstance(task, EndSentinel):
                 break
 
-            assert isinstance(task, TaskRequest)
+            assert isinstance(task, TaskRequest), task
             result = model(task.task)
         except StopIteration:
             break
@@ -331,7 +351,11 @@ class ModelParallelProcessGroup:
 
     def run_inference(
         self,
-        req: Tuple[str, List[CompletionRequestWithRawContent] | List[ChatCompletionRequestWithRawContent]],
+        req: Tuple[
+            str,
+            List[CompletionRequestWithRawContent]
+            | List[ChatCompletionRequestWithRawContent],
+        ],
     ) -> Generator:
         assert not self.running, "inference already running"
 
