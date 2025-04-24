@@ -7,8 +7,8 @@ on:
     branches: [ main ]
     paths-ignore:
       - 'docs/**'
-      -  'rfcs/**'
-      -  'scripts/**/'
+      - 'rfcs/**'
+      - 'scripts/**/'
 
 jobs:
   test-external-providers:
