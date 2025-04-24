@@ -5,6 +5,10 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+    paths-ignore:
+      - 'docs/**'
+      -  'rfcs/**'
+      -  'scripts/**/'
 
 jobs:
   test-external-providers:
