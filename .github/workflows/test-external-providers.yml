@@ -12,7 +12,6 @@ on:
       - 'uv.lock'
       - 'pyproject.toml'
       - 'requirements.txt'
-      - '.github/workflows/integration-tests.yml' # This workflow
 
 jobs:
   test-external-providers:
