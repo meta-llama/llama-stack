@@ -43,7 +43,7 @@ log "🦙  Starting Ollama…"
 $ENGINE run -d --name ollama-server \
   -p "${OLLAMA_PORT}:11434" \
   -v ollama-models:/root/.ollama \
-  ollama/ollama >/dev/null
+  ollama/ollama > /dev/null 2>&1
 
 log "⏳  Waiting for Ollama daemon…"
 timeout "$WAIT_TIMEOUT" bash -c \
@@ -51,7 +51,7 @@ timeout "$WAIT_TIMEOUT" bash -c \
   || die "Ollama did not become ready in ${WAIT_TIMEOUT}s"
 
 log "📦  Ensuring model is pulled: ${MODEL_ALIAS}..."
-$ENGINE exec ollama-server ollama pull "${MODEL_ALIAS}"
+$ENGINE exec ollama-server ollama pull "${MODEL_ALIAS}" > /dev/null 2>&1
 
 ###############################################################################
 # 2. Llama‑Stack
@@ -63,7 +63,7 @@ $ENGINE run -d --name llama-stack \
   "${SERVER_IMAGE}" \
   --port "${PORT}" \
   --env INFERENCE_MODEL="${MODEL_ALIAS}" \
-  --env OLLAMA_URL="http://${HOST_DNS}:${OLLAMA_PORT}" >/dev/null
+  --env OLLAMA_URL="http://${HOST_DNS}:${OLLAMA_PORT}" > /dev/null 2>&1
 
 log "⏳  Waiting for Llama‑Stack API…"
 timeout "$WAIT_TIMEOUT" bash -c \
