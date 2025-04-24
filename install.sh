@@ -28,7 +28,6 @@ fi
 
 # Clean up any leftovers from earlier runs
 for name in ollama-server llama-stack; do
-  # detect existing containers
   ids=$($ENGINE ps -aq --filter "name=^${name}$")
   if [ -n "$ids" ]; then
     log "⚠️   Found existing container(s) for '${name}', removing..."
@@ -46,9 +45,12 @@ $ENGINE run -d --name ollama-server \
   ollama/ollama > /dev/null 2>&1
 
 log "⏳  Waiting for Ollama daemon…"
-timeout "$WAIT_TIMEOUT" bash -c \
-  "until curl -fsS http://localhost:${OLLAMA_PORT}/ 2>/dev/null | grep -q 'Ollama'; do sleep 1; done" \
-  || die "Ollama did not become ready in ${WAIT_TIMEOUT}s"
+if ! timeout "$WAIT_TIMEOUT" bash -c \
+    "until curl -fsS http://localhost:${OLLAMA_PORT}/ 2>/dev/null | grep -q 'Ollama'; do sleep 1; done"; then
+  log "❌  Ollama daemon did not become ready in ${WAIT_TIMEOUT}s; dumping container logs:"
+  $ENGINE logs ollama-server --tail=200
+  die "Ollama startup failed"
+fi
 
 log "📦  Ensuring model is pulled: ${MODEL_ALIAS}..."
 $ENGINE exec ollama-server ollama pull "${MODEL_ALIAS}" > /dev/null 2>&1
@@ -65,10 +67,13 @@ $ENGINE run -d --name llama-stack \
   --env INFERENCE_MODEL="${MODEL_ALIAS}" \
   --env OLLAMA_URL="http://${HOST_DNS}:${OLLAMA_PORT}" > /dev/null 2>&1
 
-log "⏳  Waiting for Llama‑Stack API…"
-timeout "$WAIT_TIMEOUT" bash -c \
-  "until curl -fsS http://localhost:${PORT}/v1/health 2>/dev/null | grep -q 'OK'; do sleep 1; done" \
-  || die "Llama‑Stack did not become ready in ${WAIT_TIMEOUT}s"
+log "⏳  Waiting for Llama-Stack API…"
+if ! timeout "$WAIT_TIMEOUT" bash -c \
+  "until curl -fsS http://localhost:${PORT}/v1/health 2>/dev/null | grep -q 'OK'; do sleep 1; done"; then
+  log "❌  Llama-Stack did not become ready in ${WAIT_TIMEOUT}s; dumping container logs:"
+  $ENGINE logs llama-stack --tail=200
+  die "Llama-Stack startup failed"
+fi
 
 ###############################################################################
 # Done
