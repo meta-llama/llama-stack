@@ -48,6 +48,10 @@ MODEL_ENTRIES = [
         "meta/llama-3.2-90b-vision-instruct",
         CoreModelId.llama3_2_90b_vision_instruct.value,
     ),
+    build_hf_repo_model_entry(
+        "meta/llama-3.3-70b-instruct",
+        CoreModelId.llama3_3_70b_instruct.value,
+    ),
     # NeMo Retriever Text Embedding models -
     #
     # https://docs.nvidia.com/nim/nemo-retriever/text-embedding/latest/support-matrix.html

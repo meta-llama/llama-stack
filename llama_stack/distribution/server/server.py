@@ -22,6 +22,7 @@ from fastapi import Body, FastAPI, HTTPException, Request
 from fastapi import Path as FastapiPath
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, StreamingResponse
+from openai import BadRequestError
 from pydantic import BaseModel, ValidationError
 from typing_extensions import Annotated
 
@@ -92,7 +93,7 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 def translate_exception(exc: Exception) -> Union[HTTPException, RequestValidationError]:
     if isinstance(exc, ValidationError):
-        exc = RequestValidationError(exc.raw_errors)
+        exc = RequestValidationError(exc.errors())
 
     if isinstance(exc, RequestValidationError):
         return HTTPException(
@@ -110,6 +111,8 @@ def translate_exception(exc: Exception) -> Union[HTTPException, RequestValidatio
         )
     elif isinstance(exc, ValueError):
         return HTTPException(status_code=400, detail=f"Invalid value: {str(exc)}")
+    elif isinstance(exc, BadRequestError):
+        return HTTPException(status_code=400, detail=str(exc))
     elif isinstance(exc, PermissionError):
         return HTTPException(status_code=403, detail=f"Permission denied: {str(exc)}")
     elif isinstance(exc, TimeoutError):
@@ -162,9 +165,10 @@ async def maybe_await(value):
     return value
 
 
-async def sse_generator(event_gen):
+async def sse_generator(event_gen_coroutine):
+    event_gen = await event_gen_coroutine
     try:
-        async for item in await event_gen:
+        async for item in event_gen:
             yield create_sse_event(item)
             await asyncio.sleep(0.01)
     except asyncio.CancelledError:

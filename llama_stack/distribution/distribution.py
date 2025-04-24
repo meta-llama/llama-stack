@@ -12,7 +12,6 @@ from typing import Any, Dict, List
 import yaml
 from pydantic import BaseModel
 
-from llama_stack.distribution.datatypes import StackRunConfig
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import (
     AdapterSpec,
@@ -97,7 +96,9 @@ def _load_inline_provider_spec(spec_data: Dict[str, Any], api: Api, provider_nam
     return spec
 
 
-def get_provider_registry(config: StackRunConfig | None = None) -> Dict[Api, Dict[str, ProviderSpec]]:
+def get_provider_registry(
+    config=None,
+) -> Dict[Api, Dict[str, ProviderSpec]]:
     """Get the provider registry, optionally including external providers.
 
     This function loads both built-in providers and external providers from YAML files.
@@ -122,7 +123,7 @@ def get_provider_registry(config: StackRunConfig | None = None) -> Dict[Api, Dic
           llama-guard.yaml
 
     Args:
-        config: Optional StackRunConfig containing the external providers directory path
+        config: Optional object containing the external providers directory path
 
     Returns:
         A dictionary mapping APIs to their available providers
@@ -142,7 +143,8 @@ def get_provider_registry(config: StackRunConfig | None = None) -> Dict[Api, Dic
         except ImportError as e:
             logger.warning(f"Failed to import module {name}: {e}")
 
-    if config and config.external_providers_dir:
+    # Check if config has the external_providers_dir attribute
+    if config and hasattr(config, "external_providers_dir") and config.external_providers_dir:
         external_providers_dir = os.path.abspath(config.external_providers_dir)
         if not os.path.exists(external_providers_dir):
             raise FileNotFoundError(f"External providers directory not found: {external_providers_dir}")

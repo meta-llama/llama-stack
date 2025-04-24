@@ -515,7 +515,8 @@ class MetaReferenceInferenceImpl(
             stop_reason = None
             ipython = False
 
-            for token_result in self.generator.chat_completion(request):
+            for token_results in self.generator.chat_completion([request]):
+                token_result = token_results[0]
                 if os.environ.get("LLAMA_MODELS_DEBUG", "0") == "1":
                     cprint(token_result.text, "cyan", end="")
                 if os.environ.get("LLAMA_MODELS_DEBUG", "0") == "2":
