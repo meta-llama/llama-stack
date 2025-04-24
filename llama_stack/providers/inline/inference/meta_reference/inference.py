@@ -253,7 +253,8 @@ class MetaReferenceInferenceImpl(
         def impl():
             stop_reason = None
 
-            for token_result in self.generator.completion(request):
+            for token_results in self.generator.completion([request]):
+                token_result = token_results[0]
                 if token_result.token == tokenizer.eot_id:
                     stop_reason = StopReason.end_of_turn
                     text = ""

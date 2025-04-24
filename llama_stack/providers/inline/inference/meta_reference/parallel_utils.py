@@ -69,7 +69,10 @@ class CancelSentinel(BaseModel):
 
 class TaskRequest(BaseModel):
     type: Literal[ProcessingMessageName.task_request] = ProcessingMessageName.task_request
-    task: Tuple[str, List[CompletionRequestWithRawContent] | List[ChatCompletionRequestWithRawContent]]
+    task: Tuple[
+        str,
+        List[CompletionRequestWithRawContent] | List[ChatCompletionRequestWithRawContent],
+    ]
 
 
 class TaskResponse(BaseModel):
@@ -234,7 +237,7 @@ def worker_process_entrypoint(
             if isinstance(task, EndSentinel):
                 break
 
-            assert isinstance(task, TaskRequest)
+            assert isinstance(task, TaskRequest), task
             result = model(task.task)
         except StopIteration:
             break
@@ -331,7 +334,10 @@ class ModelParallelProcessGroup:
 
     def run_inference(
         self,
-        req: Tuple[str, List[CompletionRequestWithRawContent] | List[ChatCompletionRequestWithRawContent]],
+        req: Tuple[
+            str,
+            List[CompletionRequestWithRawContent] | List[ChatCompletionRequestWithRawContent],
+        ],
     ) -> Generator:
         assert not self.running, "inference already running"
 
