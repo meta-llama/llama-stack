@@ -152,12 +152,8 @@ elif [[ "$env_type" == "container" ]]; then
     $CONTAINER_BINARY run $CONTAINER_OPTS -it \
     -p $port:$port \
     $env_vars \
-    -v "$yaml_config:/app/config.yaml" \
     $mounts \
     --env LLAMA_STACK_PORT=$port \
-    --entrypoint python \
     $container_image:$version_tag \
-    -m llama_stack.distribution.server.server \
-    --yaml-config /app/config.yaml \
     $other_args
 fi
