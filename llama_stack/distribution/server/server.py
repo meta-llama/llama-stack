@@ -166,14 +166,16 @@ async def maybe_await(value):
 
 
 async def sse_generator(event_gen_coroutine):
-    event_gen = await event_gen_coroutine
+    event_gen = None
     try:
+        event_gen = await event_gen_coroutine
         async for item in event_gen:
             yield create_sse_event(item)
             await asyncio.sleep(0.01)
     except asyncio.CancelledError:
         logger.info("Generator cancelled")
-        await event_gen.aclose()
+        if event_gen:
+            await event_gen.aclose()
     except Exception as e:
         logger.exception("Error in sse_generator")
         yield create_sse_event(
@@ -459,6 +461,7 @@ def main(args: Optional[argparse.Namespace] = None):
                 raise ValueError(f"Could not find method {endpoint.name} on {impl}!!")
 
             impl_method = getattr(impl, endpoint.name)
+            logger.debug(f"{endpoint.method.upper()} {endpoint.route}")
 
             with warnings.catch_warnings():
                 warnings.filterwarnings("ignore", category=UserWarning, module="pydantic._internal._fields")

@@ -7,6 +7,7 @@
 from pathlib import Path
 
 from llama_stack.distribution.datatypes import ModelInput, Provider, ShieldInput, ToolGroupInput
+from llama_stack.providers.remote.eval.nvidia import NVIDIAEvalConfig
 from llama_stack.providers.remote.inference.nvidia import NVIDIAConfig
 from llama_stack.providers.remote.inference.nvidia.models import MODEL_ENTRIES
 from llama_stack.providers.remote.safety.nvidia import NVIDIASafetyConfig
@@ -20,7 +21,7 @@ def get_distribution_template() -> DistributionTemplate:
         "safety": ["remote::nvidia"],
         "agents": ["inline::meta-reference"],
         "telemetry": ["inline::meta-reference"],
-        "eval": ["inline::meta-reference"],
+        "eval": ["remote::nvidia"],
         "post_training": ["remote::nvidia"],
         "datasetio": ["inline::localfs"],
         "scoring": ["inline::basic"],
@@ -36,6 +37,11 @@ def get_distribution_template() -> DistributionTemplate:
         provider_id="nvidia",
         provider_type="remote::nvidia",
         config=NVIDIASafetyConfig.sample_run_config(),
+    )
+    eval_provider = Provider(
+        provider_id="nvidia",
+        provider_type="remote::nvidia",
+        config=NVIDIAEvalConfig.sample_run_config(),
     )
     inference_model = ModelInput(
         model_id="${env.INFERENCE_MODEL}",
@@ -60,7 +66,7 @@ def get_distribution_template() -> DistributionTemplate:
     return DistributionTemplate(
         name="nvidia",
         distro_type="self_hosted",
-        description="Use NVIDIA NIM for running LLM inference and safety",
+        description="Use NVIDIA NIM for running LLM inference, evaluation and safety",
         container_image=None,
         template_path=Path(__file__).parent / "doc_template.md",
         providers=providers,
@@ -69,6 +75,7 @@ def get_distribution_template() -> DistributionTemplate:
             "run.yaml": RunConfigSettings(
                 provider_overrides={
                     "inference": [inference_provider],
+                    "eval": [eval_provider],
                 },
                 default_models=default_models,
                 default_tool_groups=default_tool_groups,
@@ -78,7 +85,8 @@ def get_distribution_template() -> DistributionTemplate:
                     "inference": [
                         inference_provider,
                         safety_provider,
-                    ]
+                    ],
+                    "eval": [eval_provider],
                 },
                 default_models=[inference_model, safety_model],
                 default_shields=[ShieldInput(shield_id="${env.SAFETY_MODEL}", provider_id="nvidia")],
@@ -90,18 +98,14 @@ def get_distribution_template() -> DistributionTemplate:
                 "",
                 "NVIDIA API Key",
             ),
-            ## Nemo Customizer related variables
-            "NVIDIA_USER_ID": (
-                "llama-stack-user",
-                "NVIDIA User ID",
+            "NVIDIA_APPEND_API_VERSION": (
+                "True",
+                "Whether to append the API version to the base_url",
             ),
+            ## Nemo Customizer related variables
             "NVIDIA_DATASET_NAMESPACE": (
                 "default",
                 "NVIDIA Dataset Namespace",
-            ),
-            "NVIDIA_ACCESS_POLICIES": (
-                "{}",
-                "NVIDIA Access Policies",
             ),
             "NVIDIA_PROJECT_ID": (
                 "test-project",
@@ -118,6 +122,10 @@ def get_distribution_template() -> DistributionTemplate:
             "GUARDRAILS_SERVICE_URL": (
                 "http://0.0.0.0:7331",
                 "URL for the NeMo Guardrails Service",
+            ),
+            "NVIDIA_EVALUATOR_URL": (
+                "http://0.0.0.0:7331",
+                "URL for the NeMo Evaluator Service",
             ),
             "INFERENCE_MODEL": (
                 "Llama3.1-8B-Instruct",
