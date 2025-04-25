@@ -59,7 +59,7 @@ def get_distribution_template() -> DistributionTemplate:
     return DistributionTemplate(
         name="watsonx",
         distro_type="remote_hosted",
-        description="Use WatsonX for running LLM inference",
+        description="Use watsonx for running LLM inference",
         container_image=None,
         template_path=Path(__file__).parent / "doc_template.md",
         providers=providers,
@@ -80,11 +80,11 @@ def get_distribution_template() -> DistributionTemplate:
             ),
             "WATSONX_API_KEY": (
                 "",
-                "Watsonx API Key",
+                "watsonx API Key",
             ),
             "WATSONX_PROJECT_ID": (
                 "",
-                "Watsonx Project ID",
+                "watsonx Project ID",
             ),
         },
     )

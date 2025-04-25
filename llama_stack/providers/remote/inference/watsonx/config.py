@@ -22,11 +22,11 @@ class WatsonXProviderDataValidator(BaseModel):
 class WatsonXConfig(BaseModel):
     url: str = Field(
         default_factory=lambda: os.getenv("WATSONX_BASE_URL", "https://us-south.ml.cloud.ibm.com"),
-        description="A base url for accessing the Watsonx.ai",
+        description="A base url for accessing the watsonx.ai",
     )
     api_key: Optional[SecretStr] = Field(
         default_factory=lambda: os.getenv("WATSONX_API_KEY"),
-        description="The Watsonx API key, only needed of using the hosted service",
+        description="The watsonx API key, only needed of using the hosted service",
     )
     project_id: Optional[str] = Field(
         default_factory=lambda: os.getenv("WATSONX_PROJECT_ID"),

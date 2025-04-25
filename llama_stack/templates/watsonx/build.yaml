@@ -1,6 +1,6 @@
 version: '2'
 distribution_spec:
-  description: Use WatsonX for running LLM inference
+  description: Use watsonx for running LLM inference
   providers:
     inference:
     - remote::watsonx

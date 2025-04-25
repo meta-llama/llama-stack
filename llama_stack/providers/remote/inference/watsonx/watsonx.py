@@ -50,7 +50,7 @@ class WatsonXInferenceAdapter(Inference, ModelRegistryHelper):
     def __init__(self, config: WatsonXConfig) -> None:
         ModelRegistryHelper.__init__(self, MODEL_ENTRIES)
 
-        print(f"Initializing WatsonXInferenceAdapter({config.url})...")
+        print(f"Initializing watsonx InferenceAdapter({config.url})...")
 
         self._config = config
 

@@ -1,7 +1,7 @@
 ---
 orphan: true
 ---
-# WatsonX Distribution
+# watsonx Distribution
 
 ```{toctree}
 :maxdepth: 2
@@ -38,10 +38,10 @@ The following models are available by default:
 
 ### Prerequisite: API Keys
 
-Make sure you have access to a WatsonX API Key. You can get one by referring [watsonx.ai](https://www.ibm.com/docs/en/masv-and-l/maximo-manage/continuous-delivery?topic=setup-create-watsonx-api-key).
+Make sure you have access to a watsonx API Key. You can get one by referring [watsonx.ai](https://www.ibm.com/docs/en/masv-and-l/maximo-manage/continuous-delivery?topic=setup-create-watsonx-api-key).
 
 
-## Running Llama Stack with WatsonX
+## Running Llama Stack with watsonx
 
 You can do this via Conda (build code), venv or Docker which has a pre-built image.
 
