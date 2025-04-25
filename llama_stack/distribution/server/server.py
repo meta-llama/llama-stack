@@ -461,6 +461,7 @@ def main(args: Optional[argparse.Namespace] = None):
                 raise ValueError(f"Could not find method {endpoint.name} on {impl}!!")
 
             impl_method = getattr(impl, endpoint.name)
+            logger.debug(f"{endpoint.method.upper()} {endpoint.route}")
 
             with warnings.catch_warnings():
                 warnings.filterwarnings("ignore", category=UserWarning, module="pydantic._internal._fields")
