@@ -19,6 +19,7 @@
 | Together | 50.0% | 40 | 80 |
 | Fireworks | 50.0% | 40 | 80 |
 | Openai | 100.0% | 56 | 56 |
+| Lmstudio | 100.0% | 24 | 24 |
 
 
 
@@ -230,3 +231,48 @@ pytest tests/verifications/openai_api/test_chat_completion.py --provider=openai 
 | test_chat_streaming_tool_calling | ✅ | ✅ |
 | test_chat_streaming_tool_choice_none | ✅ | ✅ |
 | test_chat_streaming_tool_choice_required | ✅ | ✅ |
+
+## Lmstudio
+
+```bash
+# Run all tests for this provider:
+pytest tests/verifications/openai_api/test_chat_completion.py --provider=lmstudio -v
+
+# Example: Run only the 'earth' case of test_chat_non_streaming_basic:
+pytest tests/verifications/openai_api/test_chat_completion.py --provider=lmstudio -k "test_chat_non_streaming_basic and earth"
+```
+
+
+**Model Key (Lmstudio)**
+
+| Display Name | Full Model ID |
+| --- | --- |
+| Llama-4-Scout-Instruct | `llama-4-scout-17b-16e-instruct` |
+
+
+| Test | Llama-4-Scout-Instruct |
+| --- | --- |
+| test_chat_non_streaming_basic (earth) | ✅ |
+| test_chat_non_streaming_basic (saturn) | ✅ |
+| test_chat_non_streaming_multi_turn_tool_calling (add_product_tool) | ✅ |
+| test_chat_non_streaming_multi_turn_tool_calling (compare_monthly_expense_tool) | ✅ |
+| test_chat_non_streaming_multi_turn_tool_calling (get_then_create_event_tool) | ✅ |
+| test_chat_non_streaming_multi_turn_tool_calling (text_then_weather_tool) | ✅ |
+| test_chat_non_streaming_multi_turn_tool_calling (weather_tool_then_text) | ✅ |
+| test_chat_non_streaming_structured_output (calendar) | ✅ |
+| test_chat_non_streaming_structured_output (math) | ✅ |
+| test_chat_non_streaming_tool_calling | ✅ |
+| test_chat_non_streaming_tool_choice_none | ✅ |
+| test_chat_non_streaming_tool_choice_required | ✅ |
+| test_chat_streaming_basic (earth) | ✅ |
+| test_chat_streaming_basic (saturn) | ✅ |
+| test_chat_streaming_multi_turn_tool_calling (add_product_tool) | ✅ |
+| test_chat_streaming_multi_turn_tool_calling (compare_monthly_expense_tool) | ✅ |
+| test_chat_streaming_multi_turn_tool_calling (get_then_create_event_tool) | ✅ |
+| test_chat_streaming_multi_turn_tool_calling (text_then_weather_tool) | ✅ |
+| test_chat_streaming_multi_turn_tool_calling (weather_tool_then_text) | ✅ |
+| test_chat_streaming_structured_output (calendar) | ✅ |
+| test_chat_streaming_structured_output (math) | ✅ |
+| test_chat_streaming_tool_calling | ✅ |
+| test_chat_streaming_tool_choice_none | ✅ |
+| test_chat_streaming_tool_choice_required | ✅ |
