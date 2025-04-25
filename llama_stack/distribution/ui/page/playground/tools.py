@@ -66,17 +66,20 @@ def tool_chat_page():
 
         toolgroup_selection.extend(mcp_selection)
 
-        active_tool_list = []
-        for toolgroup_id in toolgroup_selection:
-            active_tool_list.extend(
-                [
-                    f"{''.join(toolgroup_id.split('::')[1:])}:{t.identifier}"
-                    for t in client.tools.list(toolgroup_id=toolgroup_id)
-                ]
-            )
+        grouped_tools = {}
+        total_tools = 0
 
-        st.markdown(f"Active Tools: 🛠 {len(active_tool_list)}", help="List of currently active tools.")
-        st.json(active_tool_list)
+        for toolgroup_id in toolgroup_selection:
+            tools = client.tools.list(toolgroup_id=toolgroup_id)
+            grouped_tools[toolgroup_id] = [tool.identifier for tool in tools]
+            total_tools += len(tools)
+
+        st.markdown(f"Active Tools: 🛠 {total_tools}")
+
+        for group_id, tools in grouped_tools.items():
+            with st.expander(f"🔧 Tools from `{group_id}`"):
+                for idx, tool in enumerate(tools, start=1):
+                    st.markdown(f"{idx}. `{tool.split(':')[-1]}`")
 
         st.subheader("Agent Configurations")
         max_tokens = st.slider(
