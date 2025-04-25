@@ -41,7 +41,6 @@ done
 log "🦙  Starting Ollama…"
 $ENGINE run -d --name ollama-server \
   -p "${OLLAMA_PORT}:11434" \
-  -v ollama-models:/root/.ollama \
   ollama/ollama > /dev/null 2>&1
 
 log "⏳  Waiting for Ollama daemon…"
