@@ -134,10 +134,9 @@ async def content_from_doc(doc: RAGDocument) -> str:
                 return parse_pdf(r.content)
             return r.text
         return doc.content
-    elif isinstance(doc.content, InterleavedContent):
-        return interleaved_content_as_str(doc.content)
     else:
-        raise ValueError(f"{type(doc)} not supported document.")
+        # will raise ValueError if the content is not List[InterleavedContent] or InterleavedContent
+        return interleaved_content_as_str(doc.content)
 
 
 def make_overlapped_chunks(document_id: str, text: str, window_len: int, overlap_len: int) -> List[Chunk]:
