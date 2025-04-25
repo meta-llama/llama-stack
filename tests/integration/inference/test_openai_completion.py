@@ -75,19 +75,24 @@ def openai_client(client_with_models):
     return OpenAI(base_url=base_url, api_key="bar")
 
 
+@pytest.fixture(params=["openai_client", "llama_stack_client"])
+def compat_client(request):
+    return request.getfixturevalue(request.param)
+
+
 @pytest.mark.parametrize(
     "test_case",
     [
         "inference:completion:sanity",
     ],
 )
-def test_openai_completion_non_streaming(openai_client, client_with_models, text_model_id, test_case):
+def test_openai_completion_non_streaming(llama_stack_client, client_with_models, text_model_id, test_case):
     skip_if_model_doesnt_support_openai_completion(client_with_models, text_model_id)
     tc = TestCase(test_case)
 
     # ollama needs more verbose prompting for some reason here...
     prompt = "Respond to this question and explain your answer. " + tc["content"]
-    response = openai_client.completions.create(
+    response = llama_stack_client.completions.create(
         model=text_model_id,
         prompt=prompt,
         stream=False,
@@ -103,13 +108,13 @@ def test_openai_completion_non_streaming(openai_client, client_with_models, text
         "inference:completion:sanity",
     ],
 )
-def test_openai_completion_streaming(openai_client, client_with_models, text_model_id, test_case):
+def test_openai_completion_streaming(llama_stack_client, client_with_models, text_model_id, test_case):
     skip_if_model_doesnt_support_openai_completion(client_with_models, text_model_id)
     tc = TestCase(test_case)
 
     # ollama needs more verbose prompting for some reason here...
     prompt = "Respond to this question and explain your answer. " + tc["content"]
-    response = openai_client.completions.create(
+    response = llama_stack_client.completions.create(
         model=text_model_id,
         prompt=prompt,
         stream=True,
@@ -127,11 +132,11 @@ def test_openai_completion_streaming(openai_client, client_with_models, text_mod
         0,
     ],
 )
-def test_openai_completion_prompt_logprobs(openai_client, client_with_models, text_model_id, prompt_logprobs):
+def test_openai_completion_prompt_logprobs(llama_stack_client, client_with_models, text_model_id, prompt_logprobs):
     skip_if_provider_isnt_vllm(client_with_models, text_model_id)
 
     prompt = "Hello, world!"
-    response = openai_client.completions.create(
+    response = llama_stack_client.completions.create(
         model=text_model_id,
         prompt=prompt,
         stream=False,
@@ -144,11 +149,11 @@ def test_openai_completion_prompt_logprobs(openai_client, client_with_models, te
     assert len(choice.prompt_logprobs) > 0
 
 
-def test_openai_completion_guided_choice(openai_client, client_with_models, text_model_id):
+def test_openai_completion_guided_choice(llama_stack_client, client_with_models, text_model_id):
     skip_if_provider_isnt_vllm(client_with_models, text_model_id)
 
     prompt = "I am feeling really sad today."
-    response = openai_client.completions.create(
+    response = llama_stack_client.completions.create(
         model=text_model_id,
         prompt=prompt,
         stream=False,
@@ -161,6 +166,9 @@ def test_openai_completion_guided_choice(openai_client, client_with_models, text
     assert choice.text in ["joy", "sadness"]
 
 
+# Run the chat-completion tests with both the OpenAI client and the LlamaStack client
+
+
 @pytest.mark.parametrize(
     "test_case",
     [
@@ -168,13 +176,13 @@ def test_openai_completion_guided_choice(openai_client, client_with_models, text
         "inference:chat_completion:non_streaming_02",
     ],
 )
-def test_openai_chat_completion_non_streaming(openai_client, client_with_models, text_model_id, test_case):
+def test_openai_chat_completion_non_streaming(compat_client, client_with_models, text_model_id, test_case):
     skip_if_model_doesnt_support_openai_chat_completion(client_with_models, text_model_id)
     tc = TestCase(test_case)
     question = tc["question"]
     expected = tc["expected"]
 
-    response = openai_client.chat.completions.create(
+    response = compat_client.chat.completions.create(
         model=text_model_id,
         messages=[
             {
@@ -196,13 +204,13 @@ def test_openai_chat_completion_non_streaming(openai_client, client_with_models,
         "inference:chat_completion:streaming_02",
     ],
 )
-def test_openai_chat_completion_streaming(openai_client, client_with_models, text_model_id, test_case):
+def test_openai_chat_completion_streaming(compat_client, client_with_models, text_model_id, test_case):
     skip_if_model_doesnt_support_openai_chat_completion(client_with_models, text_model_id)
     tc = TestCase(test_case)
     question = tc["question"]
     expected = tc["expected"]
 
-    response = openai_client.chat.completions.create(
+    response = compat_client.chat.completions.create(
         model=text_model_id,
         messages=[{"role": "user", "content": question}],
         stream=True,
