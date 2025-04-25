@@ -136,7 +136,7 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
         )
 
         image_type = prompt(
-            f"> Enter the image type you want your Llama Stack to be built as (use <TAB> to see options): ",
+            "> Enter the image type you want your Llama Stack to be built as (use <TAB> to see options): ",
             completer=WordCompleter([e.value for e in ImageType]),
             complete_while_typing=True,
             validator=Validator.from_callable(
