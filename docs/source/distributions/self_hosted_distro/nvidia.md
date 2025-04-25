@@ -7,7 +7,7 @@ The `llamastack/distribution-nvidia` distribution consists of the following prov
 |-----|-------------|
 | agents | `inline::meta-reference` |
 | datasetio | `inline::localfs` |
-| eval | `inline::meta-reference` |
+| eval | `remote::nvidia` |
 | inference | `remote::nvidia` |
 | post_training | `remote::nvidia` |
 | safety | `remote::nvidia` |
@@ -22,13 +22,13 @@ The `llamastack/distribution-nvidia` distribution consists of the following prov
 The following environment variables can be configured:
 
 - `NVIDIA_API_KEY`: NVIDIA API Key (default: ``)
-- `NVIDIA_USER_ID`: NVIDIA User ID (default: `llama-stack-user`)
+- `NVIDIA_APPEND_API_VERSION`: Whether to append the API version to the base_url (default: `True`)
 - `NVIDIA_DATASET_NAMESPACE`: NVIDIA Dataset Namespace (default: `default`)
-- `NVIDIA_ACCESS_POLICIES`: NVIDIA Access Policies (default: `{}`)
 - `NVIDIA_PROJECT_ID`: NVIDIA Project ID (default: `test-project`)
 - `NVIDIA_CUSTOMIZER_URL`: NVIDIA Customizer URL (default: `https://customizer.api.nvidia.com`)
 - `NVIDIA_OUTPUT_MODEL_DIR`: NVIDIA Output Model Directory (default: `test-example-model@v1`)
 - `GUARDRAILS_SERVICE_URL`: URL for the NeMo Guardrails Service (default: `http://0.0.0.0:7331`)
+- `NVIDIA_EVALUATOR_URL`: URL for the NeMo Evaluator Service (default: `http://0.0.0.0:7331`)
 - `INFERENCE_MODEL`: Inference model (default: `Llama3.1-8B-Instruct`)
 - `SAFETY_MODEL`: Name of the model to use for safety (default: `meta/llama-3.1-8b-instruct`)
 
@@ -58,7 +58,7 @@ The following models are available by default:
 Make sure you have access to a NVIDIA API Key. You can get one by visiting [https://build.nvidia.com/](https://build.nvidia.com/). Use this key for the `NVIDIA_API_KEY` environment variable.
 
 ### Deploy NeMo Microservices Platform
-The NVIDIA NeMo microservices platform supports end-to-end microservice deployment of a complete AI flywheel on your Kubernetes cluster through the NeMo Microservices Helm Chart. Please reference the [NVIDIA NeMo Microservices documentation](https://docs.nvidia.com/nemo/microservices/documentation/latest/nemo-microservices/latest-early_access/set-up/deploy-as-platform/index.html) for platform prerequisites and instructions to install and deploy the platform.
+The NVIDIA NeMo microservices platform supports end-to-end microservice deployment of a complete AI flywheel on your Kubernetes cluster through the NeMo Microservices Helm Chart. Please reference the [NVIDIA NeMo Microservices documentation](https://docs.nvidia.com/nemo/microservices/latest/about/index.html) for platform prerequisites and instructions to install and deploy the platform.
 
 ## Supported Services
 Each Llama Stack API corresponds to a specific NeMo microservice. The core microservices (Customizer, Evaluator, Guardrails) are exposed by the same endpoint. The platform components (Data Store) are each exposed by separate endpoints.
@@ -118,7 +118,7 @@ curl --location "$NEMO_URL/v1/deployment/model-deployments" \
       }
    }'
 ```
-This NIM deployment should take approximately 10 minutes to go live. [See the docs](https://docs.nvidia.com/nemo/microservices/documentation/latest/nemo-microservices/latest-early_access/get-started/tutorials/deploy-nims.html#) for more information on how to deploy a NIM and verify it's available for inference.
+This NIM deployment should take approximately 10 minutes to go live. [See the docs](https://docs.nvidia.com/nemo/microservices/latest/get-started/tutorials/deploy-nims.html) for more information on how to deploy a NIM and verify it's available for inference.
 
 You can also remove a deployed NIM to free up GPU resources, if needed.
 ```sh
@@ -171,7 +171,3 @@ llama stack run ./run.yaml \
   --env NVIDIA_API_KEY=$NVIDIA_API_KEY \
   --env INFERENCE_MODEL=$INFERENCE_MODEL
 ```
-
-### Example Notebooks
-You can reference the Jupyter notebooks in `docs/notebooks/nvidia/` for example usage of these APIs.
-- [Llama_Stack_NVIDIA_E2E_Flow.ipynb](/docs/notebooks/nvidia/Llama_Stack_NVIDIA_E2E_Flow.ipynb) contains an end-to-end workflow for running inference, customizing, and evaluating models using your deployed NeMo Microservices platform.

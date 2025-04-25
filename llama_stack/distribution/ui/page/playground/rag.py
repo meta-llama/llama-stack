@@ -24,6 +24,13 @@ def rag_chat_page():
     def should_disable_input():
         return "displayed_messages" in st.session_state and len(st.session_state.displayed_messages) > 0
 
+    def log_message(message):
+        with st.chat_message(message["role"]):
+            if "tool_output" in message and message["tool_output"]:
+                with st.expander(label="Tool Output", expanded=False, icon="🛠"):
+                    st.write(message["tool_output"])
+            st.markdown(message["content"])
+
     with st.sidebar:
         # File/Directory Upload Section
         st.subheader("Upload Documents", divider=True)
@@ -146,8 +153,7 @@ def rag_chat_page():
 
     # Display chat history
     for message in st.session_state.displayed_messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+        log_message(message)
 
     if temperature > 0.0:
         strategy = {
@@ -201,7 +207,7 @@ def rag_chat_page():
 
         # Display assistant response
         with st.chat_message("assistant"):
-            retrieval_message_placeholder = st.empty()
+            retrieval_message_placeholder = st.expander(label="Tool Output", expanded=False, icon="🛠")
             message_placeholder = st.empty()
             full_response = ""
             retrieval_response = ""
@@ -209,14 +215,16 @@ def rag_chat_page():
                 log.print()
                 if log.role == "tool_execution":
                     retrieval_response += log.content.replace("====", "").strip()
-                    retrieval_message_placeholder.info(retrieval_response)
+                    retrieval_message_placeholder.write(retrieval_response)
                 else:
                     full_response += log.content
                     message_placeholder.markdown(full_response + "▌")
             message_placeholder.markdown(full_response)
 
             st.session_state.messages.append({"role": "assistant", "content": full_response})
-            st.session_state.displayed_messages.append({"role": "assistant", "content": full_response})
+            st.session_state.displayed_messages.append(
+                {"role": "assistant", "content": full_response, "tool_output": retrieval_response}
+            )
 
     def direct_process_prompt(prompt):
         # Add the system prompt in the beginning of the conversation
@@ -230,14 +238,13 @@ def rag_chat_page():
         prompt_context = rag_response.content
 
         with st.chat_message("assistant"):
+            with st.expander(label="Retrieval Output", expanded=False):
+                st.write(prompt_context)
+
             retrieval_message_placeholder = st.empty()
             message_placeholder = st.empty()
             full_response = ""
             retrieval_response = ""
-
-            # Display the retrieved content
-            retrieval_response += str(prompt_context)
-            retrieval_message_placeholder.info(retrieval_response)
 
             # Construct the extended prompt
             extended_prompt = f"Please answer the following query using the context below.\n\nCONTEXT:\n{prompt_context}\n\nQUERY:\n{prompt}"

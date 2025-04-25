@@ -60,6 +60,7 @@ RESULTS_DIR.mkdir(exist_ok=True)
 MAX_RESULTS_PER_PROVIDER = 1
 
 DEFAULT_PROVIDERS = [
+    "meta_reference",
     "together",
     "fireworks",
     "openai",

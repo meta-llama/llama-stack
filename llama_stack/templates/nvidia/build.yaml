@@ -1,6 +1,6 @@
 version: '2'
 distribution_spec:
-  description: Use NVIDIA NIM for running LLM inference and safety
+  description: Use NVIDIA NIM for running LLM inference, evaluation and safety
   providers:
     inference:
     - remote::nvidia
@@ -13,7 +13,7 @@ distribution_spec:
     telemetry:
     - inline::meta-reference
     eval:
-    - inline::meta-reference
+    - remote::nvidia
     post_training:
     - remote::nvidia
     datasetio:

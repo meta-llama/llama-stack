@@ -176,12 +176,67 @@ distribution_spec:
     safety: inline::llama-guard
     agents: inline::meta-reference
     telemetry: inline::meta-reference
+image_name: ollama
 image_type: conda
+
+# If some providers are external, you can specify the path to the implementation
+external_providers_dir: /etc/llama-stack/providers.d
 ```
 
 ```
 llama stack build --config llama_stack/templates/ollama/build.yaml
 ```
+:::
+
+:::{tab-item} Building with External Providers
+
+Llama Stack supports external providers that live outside of the main codebase. This allows you to create and maintain your own providers independently or use community-provided providers.
+
+To build a distribution with external providers, you need to:
+
+1. Configure the `external_providers_dir` in your build configuration file:
+
+```yaml
+# Example my-external-stack.yaml with external providers
+version: '2'
+distribution_spec:
+  description: Custom distro for CI tests
+  providers:
+    inference:
+    - remote::custom_ollama
+# Add more providers as needed
+image_type: container
+image_name: ci-test
+# Path to external provider implementations
+external_providers_dir: /etc/llama-stack/providers.d
+```
+
+Here's an example for a custom Ollama provider:
+
+```yaml
+adapter:
+  adapter_type: custom_ollama
+  pip_packages:
+  - ollama
+  - aiohttp
+  - llama-stack-provider-ollama # This is the provider package
+  config_class: llama_stack_ollama_provider.config.OllamaImplConfig
+  module: llama_stack_ollama_provider
+api_dependencies: []
+optional_api_dependencies: []
+```
+
+The `pip_packages` section lists the Python packages required by the provider, as well as the
+provider package itself. The package must be available on PyPI or can be provided from a local
+directory or a git repository (git must be installed on the build environment).
+
+2. Build your distribution using the config file:
+
+```
+llama stack build --config my-external-stack.yaml
+```
+
+For more information on external providers, including directory structure, provider types, and implementation requirements, see the [External Providers documentation](../providers/external.md).
 :::
 
 :::{tab-item} Building Container

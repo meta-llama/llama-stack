@@ -16,8 +16,9 @@ from llama_stack.distribution.utils.image_types import LlamaStackImageType
 def test_container_build_passes_path(monkeypatch, tmp_path):
     called_with = {}
 
-    def spy_build_image(cfg, build_file_path, image_name, template_or_config):
+    def spy_build_image(cfg, build_file_path, image_name, template_or_config, run_config=None):
         called_with["path"] = template_or_config
+        called_with["run_config"] = run_config
         return 0
 
     monkeypatch.setattr(
@@ -36,3 +37,4 @@ def test_container_build_passes_path(monkeypatch, tmp_path):
     assert "path" in called_with
     assert isinstance(called_with["path"], str)
     assert Path(called_with["path"]).exists()
+    assert called_with["run_config"] is None

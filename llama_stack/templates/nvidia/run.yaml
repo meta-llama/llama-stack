@@ -18,6 +18,7 @@ providers:
     config:
       url: ${env.NVIDIA_BASE_URL:https://integrate.api.nvidia.com}
       api_key: ${env.NVIDIA_API_KEY:}
+      append_api_version: ${env.NVIDIA_APPEND_API_VERSION:True}
   vector_io:
   - provider_id: faiss
     provider_type: inline::faiss
@@ -48,13 +49,10 @@ providers:
       sinks: ${env.TELEMETRY_SINKS:console,sqlite}
       sqlite_db_path: ${env.SQLITE_DB_PATH:~/.llama/distributions/nvidia/trace_store.db}
   eval:
-  - provider_id: meta-reference
-    provider_type: inline::meta-reference
+  - provider_id: nvidia
+    provider_type: remote::nvidia
     config:
-      kvstore:
-        type: sqlite
-        namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/nvidia}/meta_reference_eval.db
+      evaluator_url: ${env.NVIDIA_EVALUATOR_URL:http://localhost:7331}
   post_training:
   - provider_id: nvidia
     provider_type: remote::nvidia

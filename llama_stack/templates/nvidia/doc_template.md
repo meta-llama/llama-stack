@@ -31,7 +31,7 @@ The following models are available by default:
 Make sure you have access to a NVIDIA API Key. You can get one by visiting [https://build.nvidia.com/](https://build.nvidia.com/). Use this key for the `NVIDIA_API_KEY` environment variable.
 
 ### Deploy NeMo Microservices Platform
-The NVIDIA NeMo microservices platform supports end-to-end microservice deployment of a complete AI flywheel on your Kubernetes cluster through the NeMo Microservices Helm Chart. Please reference the [NVIDIA NeMo Microservices documentation](https://docs.nvidia.com/nemo/microservices/documentation/latest/nemo-microservices/latest-early_access/set-up/deploy-as-platform/index.html) for platform prerequisites and instructions to install and deploy the platform.
+The NVIDIA NeMo microservices platform supports end-to-end microservice deployment of a complete AI flywheel on your Kubernetes cluster through the NeMo Microservices Helm Chart. Please reference the [NVIDIA NeMo Microservices documentation](https://docs.nvidia.com/nemo/microservices/latest/about/index.html) for platform prerequisites and instructions to install and deploy the platform.
 
 ## Supported Services
 Each Llama Stack API corresponds to a specific NeMo microservice. The core microservices (Customizer, Evaluator, Guardrails) are exposed by the same endpoint. The platform components (Data Store) are each exposed by separate endpoints.
@@ -91,7 +91,7 @@ curl --location "$NEMO_URL/v1/deployment/model-deployments" \
       }
    }'
 ```
-This NIM deployment should take approximately 10 minutes to go live. [See the docs](https://docs.nvidia.com/nemo/microservices/documentation/latest/nemo-microservices/latest-early_access/get-started/tutorials/deploy-nims.html#) for more information on how to deploy a NIM and verify it's available for inference.
+This NIM deployment should take approximately 10 minutes to go live. [See the docs](https://docs.nvidia.com/nemo/microservices/latest/get-started/tutorials/deploy-nims.html) for more information on how to deploy a NIM and verify it's available for inference.
 
 You can also remove a deployed NIM to free up GPU resources, if needed.
 ```sh
@@ -144,7 +144,3 @@ llama stack run ./run.yaml \
   --env NVIDIA_API_KEY=$NVIDIA_API_KEY \
   --env INFERENCE_MODEL=$INFERENCE_MODEL
 ```
-
-### Example Notebooks
-You can reference the Jupyter notebooks in `docs/notebooks/nvidia/` for example usage of these APIs.
-- [Llama_Stack_NVIDIA_E2E_Flow.ipynb](/docs/notebooks/nvidia/Llama_Stack_NVIDIA_E2E_Flow.ipynb) contains an end-to-end workflow for running inference, customizing, and evaluating models using your deployed NeMo Microservices platform.

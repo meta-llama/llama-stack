@@ -29,12 +29,19 @@ def tool_chat_page():
         st.cache_resource.clear()
 
     with st.sidebar:
+        st.title("Configuration")
         st.subheader("Model")
-        model = st.selectbox(label="models", options=model_list, on_change=reset_agent)
+        model = st.selectbox(label="Model", options=model_list, on_change=reset_agent, label_visibility="collapsed")
 
-        st.subheader("Builtin Tools")
+        st.subheader("Available ToolGroups")
+
         toolgroup_selection = st.pills(
-            label="Available ToolGroups", options=builtin_tools_list, selection_mode="multi", on_change=reset_agent
+            label="Built-in tools",
+            options=builtin_tools_list,
+            selection_mode="multi",
+            on_change=reset_agent,
+            format_func=lambda tool: "".join(tool.split("::")[1:]),
+            help="List of built-in tools from your llama stack server.",
         )
 
         if "builtin::rag" in toolgroup_selection:
@@ -48,9 +55,13 @@ def tool_chat_page():
                 on_change=reset_agent,
             )
 
-        st.subheader("MCP Servers")
         mcp_selection = st.pills(
-            label="Available MCP Servers", options=mcp_tools_list, selection_mode="multi", on_change=reset_agent
+            label="MCP Servers",
+            options=mcp_tools_list,
+            selection_mode="multi",
+            on_change=reset_agent,
+            format_func=lambda tool: "".join(tool.split("::")[1:]),
+            help="List of MCP servers registered to your llama stack server.",
         )
 
         toolgroup_selection.extend(mcp_selection)
@@ -64,10 +75,10 @@ def tool_chat_page():
                 ]
             )
 
-        st.subheader(f"Active Tools: 🛠 {len(active_tool_list)}")
+        st.markdown(f"Active Tools: 🛠 {len(active_tool_list)}", help="List of currently active tools.")
         st.json(active_tool_list)
 
-        st.subheader("Chat Configurations")
+        st.subheader("Agent Configurations")
         max_tokens = st.slider(
             "Max Tokens",
             min_value=0,
@@ -133,7 +144,11 @@ def tool_chat_page():
                             yield response.event.payload.delta.text
                     if response.event.payload.event_type == "step_complete":
                         if response.event.payload.step_details.step_type == "tool_execution":
-                            yield " 🛠 "
+                            if response.event.payload.step_details.tool_calls:
+                                tool_name = str(response.event.payload.step_details.tool_calls[0].tool_name)
+                                yield f'\n\n🛠 :grey[_Using "{tool_name}" tool:_]\n\n'
+                            else:
+                                yield "No tool_calls present in step_details"
                 else:
                     yield f"Error occurred in the Llama Stack Cluster: {response}"
 
