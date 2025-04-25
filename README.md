@@ -70,6 +70,13 @@ As more providers start supporting Llama 4, you can use them in Llama Stack as w
 
 </details>
 
+### 🚀 One-Line Installer 🚀
+
+To try Llama Stack locally, run:
+
+```bash
+curl -LsSf https://github.com/meta-llama/llama-stack/raw/main/install.sh | sh
+```
 
 ### Overview
 
