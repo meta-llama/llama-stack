@@ -272,6 +272,8 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         if sampling_params is None:
             sampling_params = SamplingParams()
         model = await self._get_model(model_id)
+        if model.provider_resource_id is None:
+            raise ValueError(f"Model {model_id} has no provider_resource_id set")
         request = CompletionRequest(
             model=model.provider_resource_id,
             content=content,
@@ -302,6 +304,8 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         if sampling_params is None:
             sampling_params = SamplingParams()
         model = await self._get_model(model_id)
+        if model.provider_resource_id is None:
+            raise ValueError(f"Model {model_id} has no provider_resource_id set")
         # This is to be consistent with OpenAI API and support vLLM <= v0.6.3
         # References:
         #   * https://platform.openai.com/docs/api-reference/chat/create#chat-create-tool_choice

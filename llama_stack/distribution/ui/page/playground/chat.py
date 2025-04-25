@@ -124,7 +124,7 @@ if prompt := st.chat_input("Example: What is Llama Stack?"):
                 message_placeholder.markdown(full_response + "▌")
             message_placeholder.markdown(full_response)
         else:
-            full_response = response
-            message_placeholder.markdown(full_response.completion_message.content)
+            full_response = response.completion_message.content
+            message_placeholder.markdown(full_response)
 
         st.session_state.messages.append({"role": "assistant", "content": full_response})

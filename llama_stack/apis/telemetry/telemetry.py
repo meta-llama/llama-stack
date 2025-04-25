@@ -37,7 +37,7 @@ class Span(BaseModel):
     name: str
     start_time: datetime
     end_time: datetime | None = None
-    attributes: dict[str, Any] | None = Field(default_factory=dict)
+    attributes: dict[str, Any] | None = Field(default_factory=lambda: {})
 
     def set_attribute(self, key: str, value: Any):
         if self.attributes is None:
@@ -74,19 +74,19 @@ class EventCommon(BaseModel):
     trace_id: str
     span_id: str
     timestamp: datetime
-    attributes: dict[str, Primitive] | None = Field(default_factory=dict)
+    attributes: dict[str, Primitive] | None = Field(default_factory=lambda: {})
 
 
 @json_schema_type
 class UnstructuredLogEvent(EventCommon):
-    type: Literal[EventType.UNSTRUCTURED_LOG.value] = EventType.UNSTRUCTURED_LOG.value
+    type: Literal[EventType.UNSTRUCTURED_LOG] = EventType.UNSTRUCTURED_LOG
     message: str
     severity: LogSeverity
 
 
 @json_schema_type
 class MetricEvent(EventCommon):
-    type: Literal[EventType.METRIC.value] = EventType.METRIC.value
+    type: Literal[EventType.METRIC] = EventType.METRIC
     metric: str  # this would be an enum
     value: int | float
     unit: str
@@ -131,14 +131,14 @@ class StructuredLogType(Enum):
 
 @json_schema_type
 class SpanStartPayload(BaseModel):
-    type: Literal[StructuredLogType.SPAN_START.value] = StructuredLogType.SPAN_START.value
+    type: Literal[StructuredLogType.SPAN_START] = StructuredLogType.SPAN_START
     name: str
     parent_span_id: str | None = None
 
 
 @json_schema_type
 class SpanEndPayload(BaseModel):
-    type: Literal[StructuredLogType.SPAN_END.value] = StructuredLogType.SPAN_END.value
+    type: Literal[StructuredLogType.SPAN_END] = StructuredLogType.SPAN_END
     status: SpanStatus
 
 
@@ -151,7 +151,7 @@ register_schema(StructuredLogPayload, name="StructuredLogPayload")
 
 @json_schema_type
 class StructuredLogEvent(EventCommon):
-    type: Literal[EventType.STRUCTURED_LOG.value] = EventType.STRUCTURED_LOG.value
+    type: Literal[EventType.STRUCTURED_LOG] = EventType.STRUCTURED_LOG
     payload: StructuredLogPayload
 
 

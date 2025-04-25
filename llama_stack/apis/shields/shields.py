@@ -21,14 +21,14 @@ class CommonShieldFields(BaseModel):
 class Shield(CommonShieldFields, Resource):
     """A safety shield resource that can be used to check content"""
 
-    type: Literal[ResourceType.shield.value] = ResourceType.shield.value
+    type: Literal[ResourceType.shield] = ResourceType.shield
 
     @property
     def shield_id(self) -> str:
         return self.identifier
 
     @property
-    def provider_shield_id(self) -> str:
+    def provider_shield_id(self) -> str | None:
         return self.provider_resource_id
 
 

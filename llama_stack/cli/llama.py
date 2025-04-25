@@ -38,7 +38,10 @@ class LlamaCLIParser:
         print_subcommand_description(self.parser, subparsers)
 
     def parse_args(self) -> argparse.Namespace:
-        return self.parser.parse_args()
+        args = self.parser.parse_args()
+        if not isinstance(args, argparse.Namespace):
+            raise TypeError(f"Expected argparse.Namespace, got {type(args)}")
+        return args
 
     def run(self, args: argparse.Namespace) -> None:
         args.func(args)

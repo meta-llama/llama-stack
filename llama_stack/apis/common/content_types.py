@@ -28,7 +28,7 @@ class _URLOrData(BaseModel):
 
     url: URL | None = None
     # data is a base64 encoded string, hint with contentEncoding=base64
-    data: str | None = Field(contentEncoding="base64", default=None)
+    data: str | None = Field(default=None, json_schema_extra={"contentEncoding": "base64"})
 
     @model_validator(mode="before")
     @classmethod
