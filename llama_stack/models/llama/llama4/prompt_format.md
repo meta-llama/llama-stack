@@ -64,7 +64,7 @@ This example passes an image that is smaller than the tile size, to show the til
 
 ##### Model Response Format
 ```
-The image depicts a dog standing on a skateboard, with its front paws positioned on the board and its back paws hanging off the back. The dog has a distinctive coat pattern, featuring a white face, brown and black fur, and white paws, and is standing on a skateboard with red wheels, set against a blurred background of a street or alleyway with a teal door and beige wall.<|eot|>
+The image depicts a dog standing on a skateboard, positioned centrally and facing the camera directly. The dog has a distinctive coat pattern featuring white, black, and brown fur, with floppy ears and a black nose, and is standing on a skateboard with red wheels.<|eot|>
 ```
 
 
@@ -91,7 +91,7 @@ Here is an example of how to pass an image to the model
 
 ##### Model Response Format
 ```
-This image shows a dog standing on a skateboard, with its front paws positioned near the front of the board and its back paws near the back. The dog has a white, black, and orange coat, and is standing on a gray skateboard with red wheels, in front of a blurred background that appears to be a street or alleyway.<|eot|>
+The image depicts a dog standing on a skateboard, with the dog positioned centrally and facing forward. The dog has a distinctive coat featuring a mix of white, brown, and black fur, and is wearing a collar as it stands on the skateboard, which has red wheels.<|eot|>
 ```
 
 
@@ -117,7 +117,7 @@ Here is an example of how to pass an image to the model
 
 ##### Model Response Format
 ```
-The first image shows a dog standing on a skateboard, while the second image shows a plate of spaghetti with tomato sauce, parmesan cheese, and parsley. The two images are unrelated, with the first image featuring a dog and the second image featuring a food dish, and they do not share any common elements or themes.<|eot|>
+The first image features a dog standing on a skateboard, while the second image showcases a plate of spaghetti with tomato sauce and cheese. The two images appear to be unrelated, with one depicting a playful scene of a dog on a skateboard and the other presenting a classic Italian dish.<|eom|>
 ```
 
 
@@ -135,13 +135,44 @@ We are continuing the format for zero shot function calling used in previous ver
 ```
 <|begin_of_text|><|header_start|>system<|header_end|>
 
-You are an expert in composing functions. You are given a question and a set of possible functions.
-Based on the question, you will need to make one or more function/tool calls to achieve the purpose.
-If none of the function can be used, point it out. If the given question lacks the parameters required by the function,
-also point it out. You should only return the function call in tools call sections.
+You are a helpful assistant and an expert in function composition. You can answer general questions using your internal knowledge OR invoke functions when necessary. Follow these strict guidelines:
 
-If you decide to invoke any of the function(s), you MUST put it in the format of [func_name1(params_name1=params_value1, params_name2=params_value2...), func_name2(params)]
-You SHOULD NOT include any other text in the response.
+1. FUNCTION CALLS:
+- ONLY use functions that are EXPLICITLY listed in the function list below
+- If NO functions are listed (empty function list []), respond ONLY with internal knowledge or "I don't have access to [Unavailable service] information"
+- If a function is not in the list, respond ONLY with internal knowledge or "I don't have access to [Unavailable service] information"
+- If ALL required parameters are present AND the query EXACTLY matches a listed function's purpose: output ONLY the function call(s)
+- Use exact format: [func_name1(param1=value1, param2=value2), func_name2(...)]
+Examples:
+CORRECT: [get_weather(location="Vancouver"), calculate_route(start="Boston", end="New York")] <- Only if get_weather and calculate_route are in function list
+INCORRECT: get_weather(location="New York")
+INCORRECT: Let me check the weather: [get_weather(location="New York")]
+INCORRECT: [get_events(location="Singapore")] <- If function not in list
+
+2. RESPONSE RULES:
+- For pure function requests matching a listed function: ONLY output the function call(s)
+- For knowledge questions: ONLY output text
+- For missing parameters: ONLY request the specific missing parameters
+- For unavailable services (not in function list): output ONLY with internal knowledge or "I don't have access to [Unavailable service] information". Do NOT execute a function call.
+- If the query asks for information beyond what a listed function provides: output ONLY with internal knowledge about your limitations
+- NEVER combine text and function calls in the same response
+- NEVER suggest alternative functions when the requested service is unavailable
+- NEVER create or invent new functions not listed below
+
+3. STRICT BOUNDARIES:
+- ONLY use functions from the list below - no exceptions
+- NEVER use a function as an alternative to unavailable information
+- NEVER call functions not present in the function list
+- NEVER add explanatory text to function calls
+- NEVER respond with empty brackets
+- Use proper Python/JSON syntax for function calls
+- Check the function list carefully before responding
+
+4. TOOL RESPONSE HANDLING:
+- When receiving tool responses: provide concise, natural language responses
+- Don't repeat tool response verbatim
+- Don't add supplementary information
+
 
 Here is a list of functions in JSON format that you can invoke.
 
@@ -151,9 +182,7 @@ Here is a list of functions in JSON format that you can invoke.
         "description": "Get weather info for places",
         "parameters": {
             "type": "dict",
-            "required": [
-                "city"
-            ],
+            "required": ["city"],
             "properties": {
                 "city": {
                     "type": "string",
@@ -167,7 +196,10 @@ Here is a list of functions in JSON format that you can invoke.
             }
         }
     }
-<|eot|><|header_start|>user<|header_end|>
+]
+
+You can answer general questions or invoke tools when necessary.
+In addition to tool calls, you should also augment your responses by using the tool outputs.<|eot|><|header_start|>user<|header_end|>
 
 What is the weather in SF and Seattle?<|eot|><|header_start|>assistant<|header_end|>
 
@@ -176,7 +208,7 @@ What is the weather in SF and Seattle?<|eot|><|header_start|>assistant<|header_e
 
 ##### Model Response Format
 ```
-[get_weather(city='SF'), get_weather(city='Seattle')]<|eot|>
+[get_weather(city="San Francisco"), get_weather(city="Seattle")]<|eot|>
 ```
 
 
@@ -273,5 +305,5 @@ Use tools to get latest trending songs<|eot|><|header_start|>assistant<|header_e
 
 ##### Model Response Format
 ```
-<function=trending_songs>{"n": "10"}</function><|eot|>
+<function=trending_songs>{"n": 10}</function><|eot|>
 ```
