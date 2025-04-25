@@ -10,6 +10,7 @@ import platform
 import textwrap
 import time
 
+import pytest
 from dotenv import load_dotenv
 
 from llama_stack.log import get_logger
@@ -19,10 +20,29 @@ from .report import Report
 logger = get_logger(__name__, category="tests")
 
 
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    outcome = yield
+    report = outcome.get_result()
+    if report.when == "call":
+        item.execution_outcome = report.outcome
+        item.was_xfail = getattr(report, "wasxfail", False)
+
+
 def pytest_runtest_teardown(item):
-    interval_seconds = os.getenv("LLAMA_STACK_TEST_INTERVAL_SECONDS")
-    if interval_seconds:
-        time.sleep(float(interval_seconds))
+    # Check if the test actually ran and passed or failed, but was not skipped or an expected failure (xfail)
+    outcome = getattr(item, "execution_outcome", None)
+    was_xfail = getattr(item, "was_xfail", False)
+
+    name = item.nodeid
+    if not any(x in name for x in ("inference/", "safety/", "agents/")):
+        return
+
+    logger.debug(f"Test '{item.nodeid}' outcome was '{outcome}' (xfail={was_xfail})")
+    if outcome in ("passed", "failed") and not was_xfail:
+        interval_seconds = os.getenv("LLAMA_STACK_TEST_INTERVAL_SECONDS")
+        if interval_seconds:
+            time.sleep(float(interval_seconds))
 
 
 def pytest_configure(config):
