@@ -245,6 +245,7 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
 
         Supported models:
             - meta/llama-3.1-8b-instruct
+            - meta/llama-3.2-1b-instruct
 
         Supported algorithm configs:
             - LoRA, SFT
@@ -290,10 +291,6 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
 
             - LoRA config:
                 ## NeMo customizer specific LoRA parameters
-                - adapter_dim: int - Adapter dimension
-                    Default: 8 (supports powers of 2)
-                - adapter_dropout: float - Adapter dropout
-                    Default: None (0.0-1.0)
                 - alpha: int - Scaling factor for the LoRA update
                     Default: 16
             Note:
@@ -336,7 +333,7 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
             },
             "data_config": {"dataset_id", "batch_size"},
             "optimizer_config": {"lr", "weight_decay"},
-            "lora_config": {"type", "adapter_dim", "adapter_dropout", "alpha"},
+            "lora_config": {"type", "alpha"},
         }
 
         # Validate all parameters at once
