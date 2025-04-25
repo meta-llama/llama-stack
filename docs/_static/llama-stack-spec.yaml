@@ -2910,7 +2910,13 @@ components:
         additional_params:
           type: object
           additionalProperties:
-            type: string
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
       additionalProperties: false
       required:
         - strategy
