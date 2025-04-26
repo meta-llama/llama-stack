@@ -29,12 +29,12 @@ from llama_stack.apis.inference import (
     ToolPromptFormat,
 )
 from llama_stack.apis.inference.inference import (
+    GreedySamplingStrategy,
     OpenAIChatCompletion,
     OpenAIChatCompletionChunk,
     OpenAICompletion,
     OpenAIMessageParam,
     OpenAIResponseFormatParam,
-    GreedySamplingStrategy,
     TopKSamplingStrategy,
     TopPSamplingStrategy,
 )
@@ -242,8 +242,7 @@ class WatsonXInferenceAdapter(Inference, ModelRegistryHelper):
             if isinstance(request.sampling_params.strategy, GreedySamplingStrategy):
                 input_dict["params"][GenParams.TEMPERATURE] = 0.0
 
-            
-        input_dict["params"][GenParams.STOP_SEQUENCES] =  ["<|endoftext|>"]
+        input_dict["params"][GenParams.STOP_SEQUENCES] = ["<|endoftext|>"]
 
         params = {
             **input_dict,
