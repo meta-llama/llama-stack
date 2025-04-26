@@ -7000,6 +7000,13 @@ components:
         - adamw
         - sgd
       title: OptimizerType
+    RuntimeConfig:
+      type: object
+      title: RuntimeConfig
+      description: >-
+        Provider-specific runtime configuration. Providers should document and parse
+        their own expected fields. This model allows arbitrary extra fields for maximum
+        flexibility.
     TrainingConfig:
       type: object
       properties:
@@ -7060,6 +7067,8 @@ components:
               - type: string
               - type: array
               - type: object
+        runtime_config:
+          $ref: '#/components/schemas/RuntimeConfig'
       additionalProperties: false
       required:
         - job_uuid
@@ -7755,6 +7764,8 @@ components:
           type: string
         algorithm_config:
           $ref: '#/components/schemas/AlgorithmConfig'
+        runtime_config:
+          $ref: '#/components/schemas/RuntimeConfig'
       additionalProperties: false
       required:
         - job_uuid
