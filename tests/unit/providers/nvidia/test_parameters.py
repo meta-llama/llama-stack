@@ -10,14 +10,17 @@ import warnings
 from unittest.mock import patch
 
 import pytest
-from llama_stack_client.types.algorithm_config_param import LoraFinetuningConfig
-from llama_stack_client.types.post_training_supervised_fine_tune_params import (
-    TrainingConfig,
-    TrainingConfigDataConfig,
-    TrainingConfigEfficiencyConfig,
-    TrainingConfigOptimizerConfig,
-)
 
+from llama_stack.apis.post_training.post_training import (
+    DataConfig,
+    DatasetFormat,
+    EfficiencyConfig,
+    LoraFinetuningConfig,
+    OptimizerConfig,
+    OptimizerType,
+    TrainingConfig,
+)
+from llama_stack.distribution.library_client import convert_pydantic_to_json_value
 from llama_stack.providers.remote.post_training.nvidia.post_training import (
     NvidiaPostTrainingAdapter,
     NvidiaPostTrainingConfig,
@@ -66,11 +69,8 @@ class TestNvidiaParameters(unittest.TestCase):
 
     def test_customizer_parameters_passed(self):
         """Test scenario 1: When an optional parameter is passed and value is correctly set."""
-        custom_adapter_dim = 32  # Different from default of 8
         algorithm_config = LoraFinetuningConfig(
             type="LoRA",
-            adapter_dim=custom_adapter_dim,
-            adapter_dropout=0.2,
             apply_lora_to_mlp=True,
             apply_lora_to_output=True,
             alpha=16,
@@ -78,8 +78,15 @@ class TestNvidiaParameters(unittest.TestCase):
             lora_attn_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
         )
 
-        data_config = TrainingConfigDataConfig(dataset_id="test-dataset", batch_size=16)
-        optimizer_config = TrainingConfigOptimizerConfig(lr=0.0002)
+        data_config = DataConfig(
+            dataset_id="test-dataset", batch_size=16, shuffle=False, data_format=DatasetFormat.instruct
+        )
+        optimizer_config = OptimizerConfig(
+            optimizer_type=OptimizerType.adam,
+            lr=0.0002,
+            weight_decay=0.01,
+            num_warmup_steps=100,
+        )
         training_config = TrainingConfig(
             n_epochs=3,
             data_config=data_config,
@@ -95,7 +102,7 @@ class TestNvidiaParameters(unittest.TestCase):
                     model="meta-llama/Llama-3.1-8B-Instruct",
                     checkpoint_dir="",
                     algorithm_config=algorithm_config,
-                    training_config=training_config,
+                    training_config=convert_pydantic_to_json_value(training_config),
                     logger_config={},
                     hyperparam_search_config={},
                 )
@@ -114,7 +121,7 @@ class TestNvidiaParameters(unittest.TestCase):
         self._assert_request_params(
             {
                 "hyperparameters": {
-                    "lora": {"adapter_dim": custom_adapter_dim, "adapter_dropout": 0.2, "alpha": 16},
+                    "lora": {"alpha": 16},
                     "epochs": 3,
                     "learning_rate": 0.0002,
                     "batch_size": 16,
@@ -130,8 +137,6 @@ class TestNvidiaParameters(unittest.TestCase):
 
         algorithm_config = LoraFinetuningConfig(
             type="LoRA",
-            adapter_dim=16,
-            adapter_dropout=0.1,
             apply_lora_to_mlp=True,
             apply_lora_to_output=True,
             alpha=16,
@@ -139,12 +144,16 @@ class TestNvidiaParameters(unittest.TestCase):
             lora_attn_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
         )
 
-        data_config = TrainingConfigDataConfig(
-            dataset_id=required_dataset_id,  # Required parameter
-            batch_size=8,
+        data_config = DataConfig(
+            dataset_id=required_dataset_id, batch_size=8, shuffle=False, data_format=DatasetFormat.instruct
         )
 
-        optimizer_config = TrainingConfigOptimizerConfig(lr=0.0001)
+        optimizer_config = OptimizerConfig(
+            optimizer_type=OptimizerType.adam,
+            lr=0.0001,
+            weight_decay=0.01,
+            num_warmup_steps=100,
+        )
 
         training_config = TrainingConfig(
             n_epochs=1,
@@ -161,7 +170,7 @@ class TestNvidiaParameters(unittest.TestCase):
                     model=required_model,  # Required parameter
                     checkpoint_dir="",
                     algorithm_config=algorithm_config,
-                    training_config=training_config,
+                    training_config=convert_pydantic_to_json_value(training_config),
                     logger_config={},
                     hyperparam_search_config={},
                 )
@@ -186,24 +195,24 @@ class TestNvidiaParameters(unittest.TestCase):
 
     def test_unsupported_parameters_warning(self):
         """Test that warnings are raised for unsupported parameters."""
-        data_config = TrainingConfigDataConfig(
+        data_config = DataConfig(
             dataset_id="test-dataset",
             batch_size=8,
             # Unsupported parameters
             shuffle=True,
-            data_format="instruct",
+            data_format=DatasetFormat.instruct,
             validation_dataset_id="val-dataset",
         )
 
-        optimizer_config = TrainingConfigOptimizerConfig(
+        optimizer_config = OptimizerConfig(
             lr=0.0001,
             weight_decay=0.01,
             # Unsupported parameters
-            optimizer_type="adam",
+            optimizer_type=OptimizerType.adam,
             num_warmup_steps=100,
         )
 
-        efficiency_config = TrainingConfigEfficiencyConfig(
+        efficiency_config = EfficiencyConfig(
             enable_activation_checkpointing=True  # Unsupported parameter
         )
 
@@ -230,15 +239,13 @@ class TestNvidiaParameters(unittest.TestCase):
                     checkpoint_dir="test-dir",  # Unsupported parameter
                     algorithm_config=LoraFinetuningConfig(
                         type="LoRA",
-                        adapter_dim=16,
-                        adapter_dropout=0.1,
                         apply_lora_to_mlp=True,
                         apply_lora_to_output=True,
                         alpha=16,
                         rank=16,
                         lora_attn_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
                     ),
-                    training_config=training_config,
+                    training_config=convert_pydantic_to_json_value(training_config),
                     logger_config={"test": "value"},  # Unsupported parameter
                     hyperparam_search_config={"test": "value"},  # Unsupported parameter
                 )

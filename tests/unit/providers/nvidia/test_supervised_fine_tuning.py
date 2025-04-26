@@ -10,14 +10,18 @@ import warnings
 from unittest.mock import patch
 
 import pytest
-from llama_stack_client.types.algorithm_config_param import LoraFinetuningConfig, QatFinetuningConfig
-from llama_stack_client.types.post_training_supervised_fine_tune_params import (
-    TrainingConfig,
-    TrainingConfigDataConfig,
-    TrainingConfigOptimizerConfig,
-)
 
 from llama_stack.apis.models import Model, ModelType
+from llama_stack.apis.post_training.post_training import (
+    DataConfig,
+    DatasetFormat,
+    LoraFinetuningConfig,
+    OptimizerConfig,
+    OptimizerType,
+    QATFinetuningConfig,
+    TrainingConfig,
+)
+from llama_stack.distribution.library_client import convert_pydantic_to_json_value
 from llama_stack.providers.remote.inference.nvidia.nvidia import NVIDIAConfig, NVIDIAInferenceAdapter
 from llama_stack.providers.remote.post_training.nvidia.post_training import (
     ListNvidiaPostTrainingJobs,
@@ -121,7 +125,7 @@ class TestNvidiaPostTraining(unittest.TestCase):
                 "batch_size": 16,
                 "epochs": 2,
                 "learning_rate": 0.0001,
-                "lora": {"adapter_dim": 16, "adapter_dropout": 0.1},
+                "lora": {"alpha": 16},
             },
             "output_model": "default/job-1234",
             "status": "created",
@@ -132,8 +136,6 @@ class TestNvidiaPostTraining(unittest.TestCase):
 
         algorithm_config = LoraFinetuningConfig(
             type="LoRA",
-            adapter_dim=16,
-            adapter_dropout=0.1,
             apply_lora_to_mlp=True,
             apply_lora_to_output=True,
             alpha=16,
@@ -141,10 +143,15 @@ class TestNvidiaPostTraining(unittest.TestCase):
             lora_attn_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
         )
 
-        data_config = TrainingConfigDataConfig(dataset_id="sample-basic-test", batch_size=16)
+        data_config = DataConfig(
+            dataset_id="sample-basic-test", batch_size=16, shuffle=False, data_format=DatasetFormat.instruct
+        )
 
-        optimizer_config = TrainingConfigOptimizerConfig(
+        optimizer_config = OptimizerConfig(
+            optimizer_type=OptimizerType.adam,
             lr=0.0001,
+            weight_decay=0.01,
+            num_warmup_steps=100,
         )
 
         training_config = TrainingConfig(
@@ -161,7 +168,7 @@ class TestNvidiaPostTraining(unittest.TestCase):
                     model="meta-llama/Llama-3.1-8B-Instruct",
                     checkpoint_dir="",
                     algorithm_config=algorithm_config,
-                    training_config=training_config,
+                    training_config=convert_pydantic_to_json_value(training_config),
                     logger_config={},
                     hyperparam_search_config={},
                 )
@@ -185,16 +192,22 @@ class TestNvidiaPostTraining(unittest.TestCase):
                     "epochs": 2,
                     "batch_size": 16,
                     "learning_rate": 0.0001,
-                    "lora": {"alpha": 16, "adapter_dim": 16, "adapter_dropout": 0.1},
+                    "weight_decay": 0.01,
+                    "lora": {"alpha": 16},
                 },
             },
         )
 
     def test_supervised_fine_tune_with_qat(self):
-        algorithm_config = QatFinetuningConfig(type="QAT", quantizer_name="quantizer_name", group_size=1)
-        data_config = TrainingConfigDataConfig(dataset_id="sample-basic-test", batch_size=16)
-        optimizer_config = TrainingConfigOptimizerConfig(
+        algorithm_config = QATFinetuningConfig(type="QAT", quantizer_name="quantizer_name", group_size=1)
+        data_config = DataConfig(
+            dataset_id="sample-basic-test", batch_size=16, shuffle=False, data_format=DatasetFormat.instruct
+        )
+        optimizer_config = OptimizerConfig(
+            optimizer_type=OptimizerType.adam,
             lr=0.0001,
+            weight_decay=0.01,
+            num_warmup_steps=100,
         )
         training_config = TrainingConfig(
             n_epochs=2,
@@ -209,7 +222,7 @@ class TestNvidiaPostTraining(unittest.TestCase):
                     model="meta-llama/Llama-3.1-8B-Instruct",
                     checkpoint_dir="",
                     algorithm_config=algorithm_config,
-                    training_config=training_config,
+                    training_config=convert_pydantic_to_json_value(training_config),
                     logger_config={},
                     hyperparam_search_config={},
                 )
