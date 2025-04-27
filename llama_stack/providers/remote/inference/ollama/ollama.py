@@ -333,7 +333,10 @@ class OllamaInferenceAdapter(
         return EmbeddingsResponse(embeddings=embeddings)
 
     async def register_model(self, model: Model) -> Model:
-        model = await self.register_helper.register_model(model)
+        try:
+            model = await self.register_helper.register_model(model)
+        except ValueError:
+            pass  # Ignore statically unknown model, will check live listing
         if model.model_type == ModelType.embedding:
             logger.info(f"Pulling embedding model `{model.provider_resource_id}` if necessary...")
             await self.client.pull(model.provider_resource_id)

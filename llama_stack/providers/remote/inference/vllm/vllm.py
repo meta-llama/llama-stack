@@ -358,7 +358,10 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
 
     async def register_model(self, model: Model) -> Model:
         assert self.client is not None
-        model = await self.register_helper.register_model(model)
+        try:
+            model = await self.register_helper.register_model(model)
+        except ValueError:
+            pass  # Ignore statically unknown model, will check live listing
         res = await self.client.models.list()
         available_models = [m.id async for m in res]
         if model.provider_resource_id not in available_models:
