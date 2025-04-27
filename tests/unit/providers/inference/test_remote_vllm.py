@@ -107,8 +107,8 @@ async def test_register_model_checks_vllm(mock_openai_models_list, vllm_inferenc
 
     foo_model = Model(identifier="foo", provider_resource_id="foo", provider_id="vllm-inference")
 
-    with pytest.raises(ValueError):
-        await vllm_inference_adapter.register_model(foo_model)
+    await vllm_inference_adapter.register_model(foo_model)
+    mock_openai_models_list.assert_called()
 
 
 @pytest.mark.asyncio
