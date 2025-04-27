@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel
 
@@ -17,7 +17,9 @@ class PaginatedResponse(BaseModel):
 
     :param data: The list of items for the current page
     :param has_more: Whether there are more items available after this set
+    :param url: Optional URL to fetch the next page of results. Only present if has_more is true.
     """
 
-    data: list[dict[str, Any]]
+    data: List[Dict[str, Any]]
     has_more: bool
+    url: Optional[str] = None

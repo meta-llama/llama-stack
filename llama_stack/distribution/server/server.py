@@ -1,3 +1,4 @@
+
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 # All rights reserved.
 #
@@ -12,6 +13,7 @@ import os
 import sys
 import traceback
 import warnings
+import urllib.parse
 from contextlib import asynccontextmanager
 from importlib.metadata import version as parse_version
 from pathlib import Path
@@ -25,6 +27,7 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from openai import BadRequestError
 from pydantic import BaseModel, ValidationError
 
+from llama_stack.apis.common.responses import PaginatedResponse
 from llama_stack.distribution.datatypes import LoggingConfig, StackRunConfig
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
 from llama_stack.distribution.request_headers import (
@@ -202,8 +205,46 @@ def create_dynamic_typed_route(func: Any, method: str, route: str):
                     )
                     return StreamingResponse(gen, media_type="text/event-stream")
                 else:
-                    value = func(**kwargs)
-                    return await maybe_await(value)
+                    # Execute the actual implementation function
+                    result_value = func(**kwargs)
+                    value = await maybe_await(result_value)
+
+                    # Check if the result is a PaginatedResponse and needs a next URL
+                    if isinstance(value, PaginatedResponse) and value.has_more:
+                        try:
+                            # Retrieve pagination params from original call kwargs
+                            limit = kwargs.get("limit")
+                            start_index = kwargs.get("start_index", 0) # Default to 0 if not provided
+
+                            # Ensure params are integers
+                            limit = int(limit) if limit is not None else None
+                            start_index = int(start_index) if start_index is not None else 0
+
+                            if limit is not None and limit > 0:
+                                next_start_index = start_index + limit
+
+                                # Build query params for the next page URL
+                                next_params = dict(request.query_params)
+                                next_params['start_index'] = str(next_start_index)
+                                # Ensure limit is also included/updated if necessary
+                                next_params['limit'] = str(limit)
+
+                                # Construct the full URL for the next page
+                                next_url = str(request.url.replace(query=urllib.parse.urlencode(next_params)))
+                                # Assign the URL to the response object (assuming 'url' field exists)
+                                value.url = next_url
+                            else:
+                                # Log a warning if limit is missing or invalid for pagination that has_more
+                                logger.warning(f"PaginatedResponse has_more=True but limit is missing or invalid for request: {request.url}")
+
+                        except (ValueError, TypeError) as e:
+                            logger.error(f"Error processing pagination parameters for URL generation: {e}", exc_info=True)
+                        except AttributeError:
+                            # This might happen if PaginatedResponse doesn't have the 'url' field yet.
+                            # Should not happen if Task 1 was completed correctly.
+                            logger.error("PaginatedResponse object does not have a 'url' attribute. Ensure the model definition is updated.", exc_info=True)
+
+                    return value # Return the (potentially modified) value
             except Exception as e:
                 logger.exception(f"Error executing endpoint {route=} {method=}")
                 raise translate_exception(e) from e
