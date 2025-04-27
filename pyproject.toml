@@ -38,6 +38,7 @@ dependencies = [
     "termcolor",
     "tiktoken",
     "pillow",
+    "h11>=0.16.0",
 ]
 
 [project.optional-dependencies]
