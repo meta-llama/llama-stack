@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 from llama_stack.apis.models.models import ModelType
-from llama_stack.models.llama.datatypes import CoreModelId
+from llama_stack.models.llama.sku_list import CoreModelId
 from llama_stack.providers.utils.inference.model_registry import (
     ProviderModelEntry,
 )
@@ -63,9 +63,7 @@ MODEL_ENTRIES = [
         },
     ),
     ProviderModelEntry(
-        model_id="all-MiniLM-L6-v2",
         provider_model_id="all-minilm-l6-v2",
-        provider_id="lmstudio",
         model_type=ModelType.embedding,
         metadata={
             "embedding_dimension": 384,

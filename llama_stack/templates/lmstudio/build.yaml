@@ -24,7 +24,6 @@ distribution_spec:
     telemetry:
     - inline::meta-reference
     tool_runtime:
-    - remote::brave-search
     - remote::tavily-search
     - inline::code-interpreter
     - inline::rag-runtime

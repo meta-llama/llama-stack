@@ -33,7 +33,7 @@ The following models are available by default:
 - `meta-llama-3.1-70b-instruct `
 - `llama-3.2-1b-instruct `
 - `llama-3.2-3b-instruct `
-- `llama-3.2-70b-instruct `
+- `llama-3.3-70b-instruct `
 - `nomic-embed-text-v1.5 `
 - `all-minilm-l6-v2 `
 

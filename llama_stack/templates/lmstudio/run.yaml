@@ -75,7 +75,7 @@ providers:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
     config:
-      service_name: ${env.OTEL_SERVICE_NAME:llama-stack}
+      service_name: "${env.OTEL_SERVICE_NAME:\u200B}"
       sinks: ${env.TELEMETRY_SINKS:console,sqlite}
       sqlite_db_path: ${env.SQLITE_DB_PATH:~/.llama/distributions/lmstudio/trace_store.db}
   tool_runtime:
@@ -125,9 +125,9 @@ models:
   provider_model_id: llama-3.2-3b-instruct
   model_type: llm
 - metadata: {}
-  model_id: llama-3.2-70b-instruct
+  model_id: llama-3.3-70b-instruct
   provider_id: lmstudio
-  provider_model_id: llama-3.2-70b-instruct
+  provider_model_id: llama-3.3-70b-instruct
   model_type: llm
 - metadata:
     embedding_dimension: 768

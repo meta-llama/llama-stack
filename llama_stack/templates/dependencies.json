@@ -351,10 +351,12 @@
     "chardet",
     "chromadb-client",
     "datasets",
+    "emoji",
     "faiss-cpu",
     "fastapi",
     "fire",
     "httpx",
+    "langdetect",
     "lmstudio",
     "matplotlib",
     "nltk",
@@ -367,6 +369,7 @@
     "psycopg2-binary",
     "pymongo",
     "pypdf",
+    "pythainlp",
     "redis",
     "requests",
     "scikit-learn",
@@ -374,6 +377,7 @@
     "sentencepiece",
     "tqdm",
     "transformers",
+    "tree_sitter",
     "uvicorn"
   ],
   "meta-reference-gpu": [
