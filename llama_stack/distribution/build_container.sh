@@ -19,12 +19,16 @@ UV_HTTP_TIMEOUT=${UV_HTTP_TIMEOUT:-500}
 # mounting is not supported by docker buildx, so we use COPY instead
 USE_COPY_NOT_MOUNT=${USE_COPY_NOT_MOUNT:-}
 
+# Path to the run.yaml file in the container
+RUN_CONFIG_PATH=/app/run.yaml
+
+BUILD_CONTEXT_DIR=$(pwd)
+
 if [ "$#" -lt 4 ]; then
   # This only works for templates
-  echo "Usage: $0 <template_or_config> <image_name> <container_base> <pip_dependencies> [<special_pip_deps>]" >&2
+  echo "Usage: $0 <template_or_config> <image_name> <container_base> <pip_dependencies> [<run_config>] [<special_pip_deps>]" >&2
   exit 1
 fi
-
 set -euo pipefail
 
 template_or_config="$1"
@@ -35,8 +39,27 @@ container_base="$1"
 shift
 pip_dependencies="$1"
 shift
-special_pip_deps="${1:-}"
 
+# Handle optional arguments
+run_config=""
+special_pip_deps=""
+
+# Check if there are more arguments
+# The logics is becoming cumbersom, we should refactor it if we can do better
+if [ $# -gt 0 ]; then
+  # Check if the argument ends with .yaml
+  if [[ "$1" == *.yaml ]]; then
+    run_config="$1"
+    shift
+    # If there's another argument after .yaml, it must be special_pip_deps
+    if [ $# -gt 0 ]; then
+      special_pip_deps="$1"
+    fi
+  else
+    # If it's not .yaml, it must be special_pip_deps
+    special_pip_deps="$1"
+  fi
+fi
 
 # Define color codes
 RED='\033[0;31m'
@@ -75,7 +98,7 @@ WORKDIR /app
 # We install the Python 3.11 dev headers and build tools so that any
 # C‑extension wheels (e.g. polyleven, faiss‑cpu) can compile successfully.
 
-RUN dnf -y update && dnf install -y iputils net-tools wget \
+RUN dnf -y update && dnf install -y iputils git net-tools wget \
     vim-minimal python3.11 python3.11-pip python3.11-wheel \
     python3.11-setuptools python3.11-devel gcc make && \
     ln -s /bin/pip3.11 /bin/pip && ln -s /bin/python3.11 /bin/python && dnf clean all
@@ -117,6 +140,45 @@ if [ -n "$special_pip_deps" ]; then
 RUN uv pip install --no-cache $part
 EOF
   done
+fi
+
+# Function to get Python command
+get_python_cmd() {
+    if is_command_available python; then
+        echo "python"
+    elif is_command_available python3; then
+        echo "python3"
+    else
+        echo "Error: Neither python nor python3 is installed. Please install Python to continue." >&2
+        exit 1
+    fi
+}
+
+if [ -n "$run_config" ]; then
+  # Copy the run config to the build context since it's an absolute path
+  cp "$run_config" "$BUILD_CONTEXT_DIR/run.yaml"
+  add_to_container << EOF
+COPY run.yaml $RUN_CONFIG_PATH
+EOF
+
+  # Parse the run.yaml configuration to identify external provider directories
+  # If external providers are specified, copy their directory to the container
+  # and update the configuration to reference the new container path
+  python_cmd=$(get_python_cmd)
+  external_providers_dir=$($python_cmd -c "import yaml; config = yaml.safe_load(open('$run_config')); print(config.get('external_providers_dir') or '')")
+  if [ -n "$external_providers_dir" ]; then
+    echo "Copying external providers directory: $external_providers_dir"
+    add_to_container << EOF
+COPY $external_providers_dir /app/providers.d
+EOF
+    # Edit the run.yaml file to change the external_providers_dir to /app/providers.d
+    if [ "$(uname)" = "Darwin" ]; then
+      sed -i.bak -e 's|external_providers_dir:.*|external_providers_dir: /app/providers.d|' "$BUILD_CONTEXT_DIR/run.yaml"
+      rm -f "$BUILD_CONTEXT_DIR/run.yaml.bak"
+    else
+      sed -i 's|external_providers_dir:.*|external_providers_dir: /app/providers.d|' "$BUILD_CONTEXT_DIR/run.yaml"
+    fi
+  fi
 fi
 
 stack_mount="/app/llama-stack-source"
@@ -178,14 +240,15 @@ fi
 RUN pip uninstall -y uv
 EOF
 
-# if template_or_config ends with .yaml, it is not a template and we should not use the --template flag
-if [[ "$template_or_config" != *.yaml ]]; then
+# If a run config is provided, we use the --config flag
+if [[ -n "$run_config" ]]; then
+  add_to_container << EOF
+ENTRYPOINT ["python", "-m", "llama_stack.distribution.server.server", "--config", "$RUN_CONFIG_PATH"]
+EOF
+# If a template is provided (not a yaml file), we use the --template flag
+elif [[ "$template_or_config" != *.yaml ]]; then
   add_to_container << EOF
 ENTRYPOINT ["python", "-m", "llama_stack.distribution.server.server", "--template", "$template_or_config"]
-EOF
-else
-  add_to_container << EOF
-ENTRYPOINT ["python", "-m", "llama_stack.distribution.server.server"]
 EOF
 fi
 
@@ -258,9 +321,10 @@ $CONTAINER_BINARY build \
   "${CLI_ARGS[@]}" \
   -t "$image_tag" \
   -f "$TEMP_DIR/Containerfile" \
-  "."
+  "$BUILD_CONTEXT_DIR"
 
 # clean up tmp/configs
+rm -f "$BUILD_CONTEXT_DIR/run.yaml"
 set +x
 
 echo "Success!"

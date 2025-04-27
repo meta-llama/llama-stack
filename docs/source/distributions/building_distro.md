@@ -109,8 +109,6 @@ llama stack build --list-templates
 +------------------------------+-----------------------------------------------------------------------------+
 | nvidia                       | Use NVIDIA NIM for running LLM inference                                    |
 +------------------------------+-----------------------------------------------------------------------------+
-| meta-reference-quantized-gpu | Use Meta Reference with fp8, int4 quantization for running LLM inference    |
-+------------------------------+-----------------------------------------------------------------------------+
 | cerebras                     | Use Cerebras for running LLM inference                                      |
 +------------------------------+-----------------------------------------------------------------------------+
 | ollama                       | Use (an external) Ollama server for running LLM inference                   |

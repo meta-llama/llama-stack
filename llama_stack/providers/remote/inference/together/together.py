@@ -76,8 +76,11 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
 
     async def shutdown(self) -> None:
         if self._client:
-            await self._client.close()
+            # Together client has no close method, so just set to None
             self._client = None
+        if self._openai_client:
+            await self._openai_client.close()
+            self._openai_client = None
 
     async def completion(
         self,
@@ -359,7 +362,7 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
             top_p=top_p,
             user=user,
         )
-        if params.get("stream", True):
+        if params.get("stream", False):
             return self._stream_openai_chat_completion(params)
         return await self._get_openai_client().chat.completions.create(**params)  # type: ignore
 

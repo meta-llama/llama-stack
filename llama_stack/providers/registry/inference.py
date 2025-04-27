@@ -288,4 +288,14 @@ def available_providers() -> List[ProviderSpec]:
                 provider_data_validator="llama_stack.providers.remote.inference.passthrough.PassthroughProviderDataValidator",
             ),
         ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
+                adapter_type="watsonx",
+                pip_packages=["ibm_watson_machine_learning"],
+                module="llama_stack.providers.remote.inference.watsonx",
+                config_class="llama_stack.providers.remote.inference.watsonx.WatsonXConfig",
+                provider_data_validator="llama_stack.providers.remote.inference.watsonx.WatsonXProviderDataValidator",
+            ),
+        ),
     ]

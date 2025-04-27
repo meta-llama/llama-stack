@@ -28,12 +28,15 @@ from openai.types.model import Model as OpenAIModel
 
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
+    CompletionMessage,
+    SystemMessage,
     ToolChoice,
     ToolConfig,
+    ToolResponseMessage,
     UserMessage,
 )
 from llama_stack.apis.models import Model
-from llama_stack.models.llama.datatypes import StopReason
+from llama_stack.models.llama.datatypes import StopReason, ToolCall
 from llama_stack.providers.remote.inference.vllm.config import VLLMInferenceAdapterConfig
 from llama_stack.providers.remote.inference.vllm.vllm import (
     VLLMInferenceAdapter,
@@ -133,6 +136,49 @@ async def test_old_vllm_tool_choice(vllm_inference_adapter):
         request = mock_nonstream_completion.call_args.args[0]
         # Ensure tool_choice gets converted to none for older vLLM versions
         assert request.tool_config.tool_choice == ToolChoice.none
+
+
+@pytest.mark.asyncio
+async def test_tool_call_response(vllm_inference_adapter):
+    """Verify that tool call arguments from a CompletionMessage are correctly converted
+    into the expected JSON format."""
+
+    # Patch the call to vllm so we can inspect the arguments sent were correct
+    with patch.object(
+        vllm_inference_adapter.client.chat.completions, "create", new_callable=AsyncMock
+    ) as mock_nonstream_completion:
+        messages = [
+            SystemMessage(content="You are a helpful assistant"),
+            UserMessage(content="How many?"),
+            CompletionMessage(
+                content="",
+                stop_reason=StopReason.end_of_turn,
+                tool_calls=[
+                    ToolCall(
+                        call_id="foo",
+                        tool_name="knowledge_search",
+                        arguments={"query": "How many?"},
+                        arguments_json='{"query": "How many?"}',
+                    )
+                ],
+            ),
+            ToolResponseMessage(call_id="foo", content="knowledge_search found 5...."),
+        ]
+        await vllm_inference_adapter.chat_completion(
+            "mock-model",
+            messages,
+            stream=False,
+            tools=[],
+            tool_config=ToolConfig(tool_choice=ToolChoice.auto),
+        )
+
+        assert mock_nonstream_completion.call_args.kwargs["messages"][2]["tool_calls"] == [
+            {
+                "id": "foo",
+                "type": "function",
+                "function": {"name": "knowledge_search", "arguments": '{"query": "How many?"}'},
+            }
+        ]
 
 
 @pytest.mark.asyncio

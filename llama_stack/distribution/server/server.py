@@ -22,6 +22,7 @@ from fastapi import Body, FastAPI, HTTPException, Request
 from fastapi import Path as FastapiPath
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, StreamingResponse
+from openai import BadRequestError
 from pydantic import BaseModel, ValidationError
 from typing_extensions import Annotated
 
@@ -110,6 +111,8 @@ def translate_exception(exc: Exception) -> Union[HTTPException, RequestValidatio
         )
     elif isinstance(exc, ValueError):
         return HTTPException(status_code=400, detail=f"Invalid value: {str(exc)}")
+    elif isinstance(exc, BadRequestError):
+        return HTTPException(status_code=400, detail=str(exc))
     elif isinstance(exc, PermissionError):
         return HTTPException(status_code=403, detail=f"Permission denied: {str(exc)}")
     elif isinstance(exc, TimeoutError):
@@ -162,14 +165,17 @@ async def maybe_await(value):
     return value
 
 
-async def sse_generator(event_gen):
+async def sse_generator(event_gen_coroutine):
+    event_gen = None
     try:
-        async for item in await event_gen:
+        event_gen = await event_gen_coroutine
+        async for item in event_gen:
             yield create_sse_event(item)
             await asyncio.sleep(0.01)
     except asyncio.CancelledError:
         logger.info("Generator cancelled")
-        await event_gen.aclose()
+        if event_gen:
+            await event_gen.aclose()
     except Exception as e:
         logger.exception("Error in sse_generator")
         yield create_sse_event(
@@ -455,6 +461,7 @@ def main(args: Optional[argparse.Namespace] = None):
                 raise ValueError(f"Could not find method {endpoint.name} on {impl}!!")
 
             impl_method = getattr(impl, endpoint.name)
+            logger.debug(f"{endpoint.method.upper()} {endpoint.route}")
 
             with warnings.catch_warnings():
                 warnings.filterwarnings("ignore", category=UserWarning, module="pydantic._internal._fields")

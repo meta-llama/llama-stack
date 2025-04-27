@@ -5,6 +5,13 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+    paths:
+      - 'llama_stack/**'
+      - 'tests/integration/**'
+      - 'uv.lock'
+      - 'pyproject.toml'
+      - 'requirements.txt'
+      - '.github/workflows/test-external-providers.yml' # This workflow
 
 jobs:
   test-external-providers:

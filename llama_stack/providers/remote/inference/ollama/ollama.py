@@ -8,7 +8,6 @@
 from typing import Any, AsyncGenerator, AsyncIterator, Dict, List, Optional, Union
 
 import httpx
-from ollama import AsyncClient
 from openai import AsyncOpenAI
 
 from llama_stack.apis.common.content_types import (
@@ -73,6 +72,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
     interleaved_content_as_str,
     request_has_media,
 )
+from ollama import AsyncClient  # type: ignore[attr-defined]
 
 from .models import model_entries
 
