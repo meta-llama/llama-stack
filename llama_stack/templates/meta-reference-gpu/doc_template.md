@@ -69,6 +69,7 @@ LLAMA_STACK_PORT=8321
 docker run \
   -it \
   --pull always \
+  --gpu all \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ~/.llama:/root/.llama \
   llamastack/distribution-{{ name }} \
@@ -82,6 +83,7 @@ If you are using Llama Stack Safety / Shield APIs, use:
 docker run \
   -it \
   --pull always \
+  --gpu all \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ~/.llama:/root/.llama \
   llamastack/distribution-{{ name }} \

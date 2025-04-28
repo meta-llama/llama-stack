@@ -36,7 +36,6 @@ import os
 
 os.environ["NVIDIA_API_KEY"] = "your-api-key"
 os.environ["NVIDIA_CUSTOMIZER_URL"] = "http://nemo.test"
-os.environ["NVIDIA_USER_ID"] = "llama-stack-user"
 os.environ["NVIDIA_DATASET_NAMESPACE"] = "default"
 os.environ["NVIDIA_PROJECT_ID"] = "test-project"
 os.environ["NVIDIA_OUTPUT_MODEL_DIR"] = "test-example-model@v1"
@@ -128,13 +127,14 @@ client.post_training.job.cancel(job_uuid="your-job-id")
 #### 1. Register the model
 
 ```python
-model = Model(
-    identifier="test-example-model@v1",
+from llama_stack.apis.models import Model, ModelType
+
+client.models.register(
+    model_id="test-example-model@v1",
     provider_id="nvidia",
     provider_model_id="test-example-model@v1",
     model_type=ModelType.llm,
 )
-client.register_model(model)
 ```
 
 #### 2. Inference with the fine-tuned model

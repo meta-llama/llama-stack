@@ -67,12 +67,17 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
         self.timeout = aiohttp.ClientTimeout(total=config.timeout)
         # TODO: filter by available models based on /config endpoint
         ModelRegistryHelper.__init__(self, model_entries=_MODEL_ENTRIES)
-        self.session = aiohttp.ClientSession(headers=self.headers, timeout=self.timeout)
-        self.customizer_url = config.customizer_url
+        self.session = None
 
+        self.customizer_url = config.customizer_url
         if not self.customizer_url:
             warnings.warn("Customizer URL is not set, using default value: http://nemo.test", stacklevel=2)
             self.customizer_url = "http://nemo.test"
+
+    async def _get_session(self) -> aiohttp.ClientSession:
+        if self.session is None or self.session.closed:
+            self.session = aiohttp.ClientSession(headers=self.headers, timeout=self.timeout)
+        return self.session
 
     async def _make_request(
         self,
@@ -94,11 +99,9 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
         if json and "Content-Type" not in request_headers:
             request_headers["Content-Type"] = "application/json"
 
+        session = await self._get_session()
         for _ in range(self.config.max_retries):
-            # TODO: Remove `verify_ssl=False`. Added for testing purposes to call NMP int environment from `docs/notebooks/nvidia/`
-            async with self.session.request(
-                method, url, params=params, json=json, verify_ssl=False, **kwargs
-            ) as response:
+            async with session.request(method, url, params=params, json=json, **kwargs) as response:
                 if response.status >= 400:
                     error_data = await response.json()
                     raise Exception(f"API request failed: {error_data}")
@@ -125,8 +128,8 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
         jobs = []
         for job in response.get("data", []):
             job_id = job.pop("id")
-            job_status = job.pop("status", "unknown").lower()
-            mapped_status = STATUS_MAPPING.get(job_status, "unknown")
+            job_status = job.pop("status", "scheduled").lower()
+            mapped_status = STATUS_MAPPING.get(job_status, "scheduled")
 
             # Convert string timestamps to datetime objects
             created_at = (
@@ -180,7 +183,7 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
         )
 
         api_status = response.pop("status").lower()
-        mapped_status = STATUS_MAPPING.get(api_status, "unknown")
+        mapped_status = STATUS_MAPPING.get(api_status, "scheduled")
 
         return NvidiaPostTrainingJobStatusResponse(
             status=JobStatus(mapped_status),
@@ -242,6 +245,7 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
 
         Supported models:
             - meta/llama-3.1-8b-instruct
+            - meta/llama-3.2-1b-instruct
 
         Supported algorithm configs:
             - LoRA, SFT
@@ -287,10 +291,6 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
 
             - LoRA config:
                 ## NeMo customizer specific LoRA parameters
-                - adapter_dim: int - Adapter dimension
-                    Default: 8 (supports powers of 2)
-                - adapter_dropout: float - Adapter dropout
-                    Default: None (0.0-1.0)
                 - alpha: int - Scaling factor for the LoRA update
                     Default: 16
             Note:
@@ -300,7 +300,7 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
             User is informed about unsupported parameters via warnings.
         """
         # Map model to nvidia model name
-        # ToDo: only supports llama-3.1-8b-instruct now, need to update this to support other models
+        # See `_MODEL_ENTRIES` for supported models
         nvidia_model = self.get_provider_model_id(model)
 
         # Check for unsupported method parameters
@@ -333,7 +333,7 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
             },
             "data_config": {"dataset_id", "batch_size"},
             "optimizer_config": {"lr", "weight_decay"},
-            "lora_config": {"type", "adapter_dim", "adapter_dropout", "alpha"},
+            "lora_config": {"type", "alpha"},
         }
 
         # Validate all parameters at once
@@ -392,17 +392,10 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
 
         # Handle LoRA-specific configuration
         if algorithm_config:
-            algorithm_config_dict = algorithm_config.model_dump()
-            if algorithm_config_dict.get("type") == "LoRA":
-                warn_unsupported_params(algorithm_config_dict, supported_params["lora_config"], "LoRA config")
+            if algorithm_config.type == "LoRA":
+                warn_unsupported_params(algorithm_config, supported_params["lora_config"], "LoRA config")
                 job_config["hyperparameters"]["lora"] = {
-                    k: v
-                    for k, v in {
-                        "adapter_dim": algorithm_config_dict.get("adapter_dim"),
-                        "alpha": algorithm_config_dict.get("alpha"),
-                        "adapter_dropout": algorithm_config_dict.get("adapter_dropout"),
-                    }.items()
-                    if v is not None
+                    k: v for k, v in {"alpha": algorithm_config.alpha}.items() if v is not None
                 }
             else:
                 raise NotImplementedError(f"Unsupported algorithm config: {algorithm_config}")

@@ -98,22 +98,14 @@ def get_distribution_template() -> DistributionTemplate:
                 "",
                 "NVIDIA API Key",
             ),
-            ## Nemo Customizer related variables
-            "NVIDIA_USER_ID": (
-                "llama-stack-user",
-                "NVIDIA User ID",
-            ),
             "NVIDIA_APPEND_API_VERSION": (
                 "True",
                 "Whether to append the API version to the base_url",
             ),
+            ## Nemo Customizer related variables
             "NVIDIA_DATASET_NAMESPACE": (
                 "default",
                 "NVIDIA Dataset Namespace",
-            ),
-            "NVIDIA_ACCESS_POLICIES": (
-                "{}",
-                "NVIDIA Access Policies",
             ),
             "NVIDIA_PROJECT_ID": (
                 "test-project",

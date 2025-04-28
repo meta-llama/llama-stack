@@ -5,10 +5,22 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+    paths:
+      - 'llama_stack/**'
+      - 'tests/integration/**'
+      - 'uv.lock'
+      - 'pyproject.toml'
+      - 'requirements.txt'
+      - '.github/workflows/test-external-providers.yml' # This workflow
 
 jobs:
   test-external-providers:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        image-type: [venv]
+        # We don't do container yet, it's tricky to install a package from the host into the
+        # container and point 'uv pip install' to the correct path...
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -35,16 +47,24 @@ jobs:
           uv sync --extra dev --extra test
           uv pip install -e .
 
-      - name: Install Ollama custom provider
+      - name: Apply image type to config file
+        run: |
+          yq -i '.image_type = "${{ matrix.image-type }}"' tests/external-provider/llama-stack-provider-ollama/custom-distro.yaml
+          cat tests/external-provider/llama-stack-provider-ollama/custom-distro.yaml
+
+      - name: Setup directory for Ollama custom provider
         run: |
           mkdir -p tests/external-provider/llama-stack-provider-ollama/src/
           cp -a llama_stack/providers/remote/inference/ollama/ tests/external-provider/llama-stack-provider-ollama/src/llama_stack_provider_ollama
-          uv pip install tests/external-provider/llama-stack-provider-ollama
 
       - name: Create provider configuration
         run: |
           mkdir -p /tmp/providers.d/remote/inference
           cp tests/external-provider/llama-stack-provider-ollama/custom_ollama.yaml /tmp/providers.d/remote/inference/custom_ollama.yaml
+
+      - name: Build distro from config file
+        run: |
+          USE_COPY_NOT_MOUNT=true LLAMA_STACK_DIR=. uv run llama stack build --config tests/external-provider/llama-stack-provider-ollama/custom-distro.yaml
 
       - name: Wait for Ollama to start
         run: |
@@ -62,11 +82,13 @@ jobs:
           exit 1
 
       - name: Start Llama Stack server in background
+        if: ${{ matrix.image-type }} == 'venv'
         env:
           INFERENCE_MODEL: "meta-llama/Llama-3.2-3B-Instruct"
         run: |
-          source .venv/bin/activate
-          nohup uv run llama stack run tests/external-provider/llama-stack-provider-ollama/run.yaml --image-type venv > server.log 2>&1 &
+          source ci-test/bin/activate
+          uv run pip list
+          nohup uv run --active llama stack run tests/external-provider/llama-stack-provider-ollama/run.yaml --image-type ${{ matrix.image-type }} > server.log 2>&1 &
 
       - name: Wait for Llama Stack server to be ready
         run: |

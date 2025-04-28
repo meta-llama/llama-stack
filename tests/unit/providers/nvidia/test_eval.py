@@ -13,6 +13,7 @@ import pytest
 from llama_stack.apis.benchmarks import Benchmark
 from llama_stack.apis.common.job_types import Job, JobStatus
 from llama_stack.apis.eval.eval import BenchmarkConfig, EvaluateResponse, ModelCandidate, SamplingParams
+from llama_stack.models.llama.sku_types import CoreModelId
 from llama_stack.providers.remote.eval.nvidia.config import NVIDIAEvalConfig
 from llama_stack.providers.remote.eval.nvidia.eval import NVIDIAEvalImpl
 
@@ -32,7 +33,7 @@ class TestNVIDIAEvalImpl(unittest.TestCase):
         self.agents_api = MagicMock()
 
         self.config = NVIDIAEvalConfig(
-            evaluator_service_url=os.environ["NVIDIA_EVALUATOR_URL"],
+            evaluator_url=os.environ["NVIDIA_EVALUATOR_URL"],
         )
 
         self.eval_impl = NVIDIAEvalImpl(
@@ -118,7 +119,7 @@ class TestNVIDIAEvalImpl(unittest.TestCase):
         benchmark_config = BenchmarkConfig(
             eval_candidate=ModelCandidate(
                 type="model",
-                model="meta/llama-3.1-8b-instruct",
+                model=CoreModelId.llama3_1_8b_instruct.value,
                 sampling_params=SamplingParams(max_tokens=100, temperature=0.7),
             )
         )
@@ -137,7 +138,7 @@ class TestNVIDIAEvalImpl(unittest.TestCase):
         self._assert_request_body(
             {
                 "config": f"nvidia/{MOCK_BENCHMARK_ID}",
-                "target": {"type": "model", "model": benchmark_config.eval_candidate.model},
+                "target": {"type": "model", "model": "meta/llama-3.1-8b-instruct"},
             }
         )
 

@@ -52,7 +52,7 @@ providers:
   - provider_id: nvidia
     provider_type: remote::nvidia
     config:
-      evaluator_service_url: ${env.NVIDIA_EVALUATOR_URL:http://localhost:7331}
+      evaluator_url: ${env.NVIDIA_EVALUATOR_URL:http://localhost:7331}
   post_training:
   - provider_id: nvidia
     provider_type: remote::nvidia
@@ -177,6 +177,16 @@ models:
   model_id: meta-llama/Llama-3.2-90B-Vision-Instruct
   provider_id: nvidia
   provider_model_id: meta/llama-3.2-90b-vision-instruct
+  model_type: llm
+- metadata: {}
+  model_id: meta/llama-3.3-70b-instruct
+  provider_id: nvidia
+  provider_model_id: meta/llama-3.3-70b-instruct
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-3.3-70B-Instruct
+  provider_id: nvidia
+  provider_model_id: meta/llama-3.3-70b-instruct
   model_type: llm
 - metadata:
     embedding_dimension: 2048

@@ -526,9 +526,9 @@ class OpenAIAssistantMessageParam(BaseModel):
     """
 
     role: Literal["assistant"] = "assistant"
-    content: OpenAIChatCompletionMessageContent
+    content: Optional[OpenAIChatCompletionMessageContent] = None
     name: Optional[str] = None
-    tool_calls: Optional[List[OpenAIChatCompletionToolCall]] = Field(default_factory=list)
+    tool_calls: Optional[List[OpenAIChatCompletionToolCall]] = None
 
 
 @json_schema_type
