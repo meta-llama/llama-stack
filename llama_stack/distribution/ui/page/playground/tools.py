@@ -94,11 +94,15 @@ def tool_chat_page():
         st.subheader("Agent Configurations")
         st.subheader("Agent Type")
         agent_type = st.radio(
-            "Select Agent Type",
-            [AgentType.REGULAR, AgentType.REACT],
-            format_func=lambda x: x.value,
+            label="Select Agent Type",
+            options=["Regular", "ReAct"],
             on_change=reset_agent,
         )
+
+        if agent_type == "ReAct":
+            agent_type = AgentType.REACT
+        else:
+            agent_type = AgentType.REGULAR
 
         max_tokens = st.slider(
             "Max Tokens",
