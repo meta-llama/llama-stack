@@ -154,6 +154,12 @@ get_python_cmd() {
     fi
 }
 
+# Add other required item commands generic to all containers
+add_to_container << EOF
+# Allows running as non-root user
+RUN mkdir -p /.llama/providers.d /.cache
+EOF
+
 if [ -n "$run_config" ]; then
   # Copy the run config to the build context since it's an absolute path
   cp "$run_config" "$BUILD_CONTEXT_DIR/run.yaml"
@@ -166,17 +172,19 @@ EOF
   # and update the configuration to reference the new container path
   python_cmd=$(get_python_cmd)
   external_providers_dir=$($python_cmd -c "import yaml; config = yaml.safe_load(open('$run_config')); print(config.get('external_providers_dir') or '')")
-  if [ -n "$external_providers_dir" ]; then
+  external_providers_dir=$(eval echo "$external_providers_dir")
+  if [ -n "$external_providers_dir" ] && [ -d "$external_providers_dir" ]; then
     echo "Copying external providers directory: $external_providers_dir"
+    cp -r "$external_providers_dir" "$BUILD_CONTEXT_DIR/providers.d"
     add_to_container << EOF
-COPY $external_providers_dir /app/providers.d
+COPY providers.d /.llama/providers.d
 EOF
-    # Edit the run.yaml file to change the external_providers_dir to /app/providers.d
+    # Edit the run.yaml file to change the external_providers_dir to /.llama/providers.d
     if [ "$(uname)" = "Darwin" ]; then
-      sed -i.bak -e 's|external_providers_dir:.*|external_providers_dir: /app/providers.d|' "$BUILD_CONTEXT_DIR/run.yaml"
+      sed -i.bak -e 's|external_providers_dir:.*|external_providers_dir: /.llama/providers.d|' "$BUILD_CONTEXT_DIR/run.yaml"
       rm -f "$BUILD_CONTEXT_DIR/run.yaml.bak"
     else
-      sed -i 's|external_providers_dir:.*|external_providers_dir: /app/providers.d|' "$BUILD_CONTEXT_DIR/run.yaml"
+      sed -i 's|external_providers_dir:.*|external_providers_dir: /.llama/providers.d|' "$BUILD_CONTEXT_DIR/run.yaml"
     fi
   fi
 fi
@@ -254,9 +262,6 @@ fi
 
 # Add other require item commands genearic to all containers
 add_to_container << EOF
-
-# Allows running as non-root user
-RUN mkdir -p /.llama /.cache
 
 RUN chmod -R g+rw /app /.llama /.cache
 EOF

@@ -47,8 +47,8 @@ jobs:
 
       - name: Create provider configuration
         run: |
-          mkdir -p /tmp/providers.d/remote/inference
-          cp tests/external-provider/llama-stack-provider-ollama/custom_ollama.yaml /tmp/providers.d/remote/inference/custom_ollama.yaml
+          mkdir -p /home/runner/.llama/providers.d/remote/inference
+          cp tests/external-provider/llama-stack-provider-ollama/custom_ollama.yaml /home/runner/.llama/providers.d/remote/inference/custom_ollama.yaml
 
       - name: Build distro from config file
         run: |
@@ -66,7 +66,7 @@ jobs:
       - name: Wait for Llama Stack server to be ready
         run: |
           for i in {1..30}; do
-            if ! grep -q "remote::custom_ollama from /tmp/providers.d/remote/inference/custom_ollama.yaml" server.log; then
+            if ! grep -q "remote::custom_ollama from /home/runner/.llama/providers.d/remote/inference/custom_ollama.yaml" server.log; then
               echo "Waiting for Llama Stack server to load the provider..."
               sleep 1
             else
