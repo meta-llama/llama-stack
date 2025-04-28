@@ -22,8 +22,6 @@ NDS_TOKEN = "token"
 NMS_NAMESPACE = "nvidia-tool-calling-tutorial"
 DATASET_NAME = "xlam-ft-dataset-1"
 
-# (Optional) NVIDIA User ID - currently unused
-USER_ID = ""
 # (Optional) Entity Store Project ID. Modify if you've created a project in Entity Store that you'd
 # like to associate with your Customized models.
 PROJECT_ID = ""

@@ -32,7 +32,6 @@ import os
 
 os.environ["NVIDIA_API_KEY"] = "your-api-key"
 os.environ["NVIDIA_CUSTOMIZER_URL"] = "http://nemo.test"
-os.environ["NVIDIA_USER_ID"] = "llama-stack-user"
 os.environ["NVIDIA_DATASET_NAMESPACE"] = "default"
 os.environ["NVIDIA_PROJECT_ID"] = "test-project"
 from llama_stack.distribution.library_client import LlamaStackAsLibraryClient

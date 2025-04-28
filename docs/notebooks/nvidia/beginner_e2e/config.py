@@ -18,9 +18,6 @@ HF_TOKEN = ""
 # (Optional) Namespace to associate with Datasets and Customization jobs
 NAMESPACE = "nvidia-e2e-tutorial"
 
-# (Optional) NVIDIA User ID - currently unused
-USER_ID = ""
-
 # (Optional) Entity Store Project ID. Modify if you've created a project in Entity Store that you'd
 # like to associate with your Customized models.
 PROJECT_ID = ""
