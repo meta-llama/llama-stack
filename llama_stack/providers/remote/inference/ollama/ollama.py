@@ -433,6 +433,12 @@ class OllamaInferenceAdapter(
         user: Optional[str] = None,
     ) -> Union[OpenAIChatCompletion, AsyncIterator[OpenAIChatCompletionChunk]]:
         model_obj = await self._get_model(model)
+
+        # ollama still makes tool calls even when tool_choice is "none"
+        # so we need to remove the tools in that case
+        if tool_choice == "none" and tools is not None:
+            tools = None
+
         params = {
             k: v
             for k, v in {
