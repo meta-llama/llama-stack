@@ -41,7 +41,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@0c5e2b8115b80b4c7c5ddf6ffdd634974642d182 # v5.4.1
+        uses: astral-sh/setup-uv@9a311713f4acad0acceb25fb016307e47c3887b6 # v5.4.1
 
       - name: Sync with uv
         run: uv sync --extra docs
