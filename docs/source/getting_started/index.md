@@ -68,7 +68,7 @@ agent = Agent(
     ],
 )
 
-prompt = "How do you do great work?"
+prompt = "What is the key to doing great work"
 print("prompt>", prompt)
 
 response = agent.create_turn(
@@ -88,11 +88,11 @@ And you should see output like below.
 ```
 rag_tool> Ingesting document: https://www.paulgraham.com/greatwork.html
 
-prompt> How do you do great work?
+prompt> What is the key to doing great work
 
-inference> [knowledge_search(query="What is the key to doing great work")]
+inference> [knowledge_search(query="key to doing great work")]
 
-tool_execution> Tool:knowledge_search Args:{'query': 'What is the key to doing great work'}
+tool_execution> Tool:knowledge_search Args:{'query': 'key to doing great work'}
 
 tool_execution> Tool:knowledge_search Response:[TextContentItem(text='knowledge_search tool found 5 chunks:\nBEGIN of knowledge_search tool results.\n', type='text'), TextContentItem(text="Result 1:\nDocument_id:docum\nContent:  work. Doing great work means doing something important\nso well that you expand people's ideas of what's possible. But\nthere's no threshold for importance. It's a matter of degree, and\noften hard to judge at the time anyway.\n", type='text'), TextContentItem(text="Result 2:\nDocument_id:docum\nContent:  work. Doing great work means doing something important\nso well that you expand people's ideas of what's possible. But\nthere's no threshold for importance. It's a matter of degree, and\noften hard to judge at the time anyway.\n", type='text'), TextContentItem(text="Result 3:\nDocument_id:docum\nContent:  work. Doing great work means doing something important\nso well that you expand people's ideas of what's possible. But\nthere's no threshold for importance. It's a matter of degree, and\noften hard to judge at the time anyway.\n", type='text'), TextContentItem(text="Result 4:\nDocument_id:docum\nContent:  work. Doing great work means doing something important\nso well that you expand people's ideas of what's possible. But\nthere's no threshold for importance. It's a matter of degree, and\noften hard to judge at the time anyway.\n", type='text'), TextContentItem(text="Result 5:\nDocument_id:docum\nContent:  work. Doing great work means doing something important\nso well that you expand people's ideas of what's possible. But\nthere's no threshold for importance. It's a matter of degree, and\noften hard to judge at the time anyway.\n", type='text'), TextContentItem(text='END of knowledge_search tool results.\n', type='text')]
 
