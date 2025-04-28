@@ -419,9 +419,9 @@ def main(args: Optional[argparse.Namespace] = None):
         app.add_middleware(ClientVersionMiddleware)
 
     # Add authentication middleware if configured
-    if config.server.auth and config.server.auth.endpoint:
-        logger.info(f"Enabling authentication with endpoint: {config.server.auth.endpoint}")
-        app.add_middleware(AuthenticationMiddleware, auth_endpoint=config.server.auth.endpoint)
+    if config.server.auth:
+        logger.info(f"Enabling authentication with provider: {config.server.auth.provider_type.value}")
+        app.add_middleware(AuthenticationMiddleware, auth_config=config.server.auth)
 
     try:
         impls = asyncio.run(construct_stack(config))

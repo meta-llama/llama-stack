@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+from enum import Enum
 from typing import Annotated, Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field
@@ -235,10 +236,21 @@ class LoggingConfig(BaseModel):
     )
 
 
+class AuthProviderType(str, Enum):
+    """Supported authentication provider types."""
+
+    KUBERNETES = "kubernetes"
+    CUSTOM = "custom"
+
+
 class AuthenticationConfig(BaseModel):
-    endpoint: str = Field(
+    provider_type: AuthProviderType = Field(
         ...,
-        description="Endpoint URL to validate authentication tokens",
+        description="Type of authentication provider (e.g., 'kubernetes', 'custom')",
+    )
+    config: Dict[str, str] = Field(
+        ...,
+        description="Provider-specific configuration",
     )
 
 
