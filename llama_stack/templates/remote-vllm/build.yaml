@@ -24,8 +24,6 @@ distribution_spec:
     - inline::braintrust
     telemetry:
     - inline::meta-reference
-    openai_responses:
-    - inline::openai-responses
     tool_runtime:
     - remote::brave-search
     - remote::tavily-search

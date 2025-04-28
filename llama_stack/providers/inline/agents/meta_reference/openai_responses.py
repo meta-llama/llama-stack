@@ -10,6 +10,20 @@ from typing import AsyncIterator, List, Optional, Union, cast
 
 from openai.types.chat import ChatCompletionToolParam
 
+from llama_stack.apis.agents.openai_responses import (
+    OpenAIResponseInputMessage,
+    OpenAIResponseInputMessageContentImage,
+    OpenAIResponseInputMessageContentText,
+    OpenAIResponseInputTool,
+    OpenAIResponseObject,
+    OpenAIResponseObjectStream,
+    OpenAIResponseObjectStreamResponseCompleted,
+    OpenAIResponseObjectStreamResponseCreated,
+    OpenAIResponseOutput,
+    OpenAIResponseOutputMessage,
+    OpenAIResponseOutputMessageContentOutputText,
+    OpenAIResponseOutputMessageWebSearchToolCall,
+)
 from llama_stack.apis.inference.inference import (
     Inference,
     OpenAIAssistantMessageParam,
@@ -24,29 +38,11 @@ from llama_stack.apis.inference.inference import (
     OpenAIToolMessageParam,
     OpenAIUserMessageParam,
 )
-from llama_stack.apis.models.models import Models, ModelType
-from llama_stack.apis.openai_responses import OpenAIResponses
-from llama_stack.apis.openai_responses.openai_responses import (
-    OpenAIResponseInputMessage,
-    OpenAIResponseInputMessageContentImage,
-    OpenAIResponseInputMessageContentText,
-    OpenAIResponseInputTool,
-    OpenAIResponseObject,
-    OpenAIResponseObjectStream,
-    OpenAIResponseObjectStreamResponseCompleted,
-    OpenAIResponseObjectStreamResponseCreated,
-    OpenAIResponseOutput,
-    OpenAIResponseOutputMessage,
-    OpenAIResponseOutputMessageContentOutputText,
-    OpenAIResponseOutputMessageWebSearchToolCall,
-)
 from llama_stack.apis.tools.tools import ToolGroups, ToolInvocationResult, ToolRuntime
 from llama_stack.log import get_logger
 from llama_stack.models.llama.datatypes import ToolDefinition, ToolParamDefinition
 from llama_stack.providers.utils.inference.openai_compat import convert_tooldef_to_openai_tool
-from llama_stack.providers.utils.kvstore import kvstore_impl
-
-from .config import OpenAIResponsesImplConfig
+from llama_stack.providers.utils.kvstore import KVStore
 
 logger = get_logger(name=__name__, category="openai_responses")
 
@@ -80,34 +76,25 @@ async def _openai_choices_to_output_messages(choices: List[OpenAIChoice]) -> Lis
     return output_messages
 
 
-class OpenAIResponsesImpl(OpenAIResponses):
+class OpenAIResponsesImpl:
     def __init__(
         self,
-        config: OpenAIResponsesImplConfig,
-        models_api: Models,
+        persistence_store: KVStore,
         inference_api: Inference,
         tool_groups_api: ToolGroups,
         tool_runtime_api: ToolRuntime,
     ):
-        self.config = config
-        self.models_api = models_api
+        self.persistence_store = persistence_store
         self.inference_api = inference_api
         self.tool_groups_api = tool_groups_api
         self.tool_runtime_api = tool_runtime_api
-
-    async def initialize(self) -> None:
-        self.kvstore = await kvstore_impl(self.config.kvstore)
-
-    async def shutdown(self) -> None:
-        logger.debug("OpenAIResponsesImpl.shutdown")
-        pass
 
     async def get_openai_response(
         self,
         id: str,
     ) -> OpenAIResponseObject:
         key = f"{OPENAI_RESPONSES_PREFIX}{id}"
-        response_json = await self.kvstore.get(key=key)
+        response_json = await self.persistence_store.get(key=key)
         if response_json is None:
             raise ValueError(f"OpenAI response with id '{id}' not found")
         return OpenAIResponseObject.model_validate_json(response_json)
@@ -122,11 +109,6 @@ class OpenAIResponsesImpl(OpenAIResponses):
         tools: Optional[List[OpenAIResponseInputTool]] = None,
     ):
         stream = False if stream is None else stream
-        model_obj = await self.models_api.get_model(model)
-        if model_obj is None:
-            raise ValueError(f"Model '{model}' not found")
-        if model_obj.model_type == ModelType.embedding:
-            raise ValueError(f"Model '{model}' is an embedding model and does not support chat completions")
 
         messages: List[OpenAIMessageParam] = []
         if previous_response_id:
@@ -155,7 +137,7 @@ class OpenAIResponsesImpl(OpenAIResponses):
 
         chat_tools = await self._convert_response_tools_to_chat_tools(tools) if tools else None
         chat_response = await self.inference_api.openai_chat_completion(
-            model=model_obj.identifier,
+            model=model,
             messages=messages,
             tools=chat_tools,
             stream=stream,
@@ -198,14 +180,14 @@ class OpenAIResponsesImpl(OpenAIResponses):
         output_messages: List[OpenAIResponseOutput] = []
         if chat_response.choices[0].finish_reason == "tool_calls":
             output_messages.extend(
-                await self._execute_tool_and_return_final_output(model_obj.identifier, stream, chat_response, messages)
+                await self._execute_tool_and_return_final_output(model, stream, chat_response, messages)
             )
         else:
             output_messages.extend(await _openai_choices_to_output_messages(chat_response.choices))
         response = OpenAIResponseObject(
             created_at=chat_response.created,
             id=f"resp-{uuid.uuid4()}",
-            model=model_obj.identifier,
+            model=model,
             object="response",
             status="completed",
             output=output_messages,
@@ -214,7 +196,7 @@ class OpenAIResponsesImpl(OpenAIResponses):
         if store:
             # Store in kvstore
             key = f"{OPENAI_RESPONSES_PREFIX}{response.id}"
-            await self.kvstore.set(
+            await self.persistence_store.set(
                 key=key,
                 value=response.model_dump_json(),
             )

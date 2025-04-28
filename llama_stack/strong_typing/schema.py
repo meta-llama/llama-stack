@@ -478,6 +478,8 @@ class JsonSchemaGenerator:
                 }
             return ret
         elif origin_type is Literal:
+            if len(typing.get_args(typ)) != 1:
+                print(f"Literal type {typ} has {len(typing.get_args(typ))} arguments")
             (literal_value,) = typing.get_args(typ)  # unpack value of literal type
             schema = self.type_to_schema(type(literal_value))
             schema["const"] = literal_value

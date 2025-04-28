@@ -4,12 +4,12 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import AsyncIterator, List, Literal, Optional, Protocol, Union, runtime_checkable
+from typing import List, Literal, Optional, Union
 
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
-from llama_stack.schema_utils import json_schema_type, register_schema, webmethod
+from llama_stack.schema_utils import json_schema_type, register_schema
 
 
 @json_schema_type
@@ -104,7 +104,7 @@ class OpenAIResponseInputMessageContentText(BaseModel):
 
 @json_schema_type
 class OpenAIResponseInputMessageContentImage(BaseModel):
-    detail: Literal["low", "high", "auto"] = "auto"
+    detail: Literal["low"] | Literal["high"] | Literal["auto"] = "auto"
     type: Literal["input_image"] = "input_image"
     # TODO: handle file_id
     image_url: Optional[str] = None
@@ -121,13 +121,13 @@ register_schema(OpenAIResponseInputMessageContent, name="OpenAIResponseInputMess
 @json_schema_type
 class OpenAIResponseInputMessage(BaseModel):
     content: Union[str, List[OpenAIResponseInputMessageContent]]
-    role: Literal["system", "developer", "user", "assistant"]
+    role: Literal["system"] | Literal["developer"] | Literal["user"] | Literal["assistant"]
     type: Optional[Literal["message"]] = "message"
 
 
 @json_schema_type
 class OpenAIResponseInputToolWebSearch(BaseModel):
-    type: Literal["web_search", "web_search_preview_2025_03_11"] = "web_search"
+    type: Literal["web_search"] | Literal["web_search_preview_2025_03_11"] = "web_search"
     # TODO: actually use search_context_size somewhere...
     search_context_size: Optional[str] = Field(default="medium", pattern="^low|medium|high$")
     # TODO: add user_location
@@ -138,27 +138,3 @@ OpenAIResponseInputTool = Annotated[
     Field(discriminator="type"),
 ]
 register_schema(OpenAIResponseInputTool, name="OpenAIResponseInputTool")
-
-
-@runtime_checkable
-class OpenAIResponses(Protocol):
-    """
-    OpenAI Responses API implementation.
-    """
-
-    @webmethod(route="/openai/v1/responses/{id}", method="GET")
-    async def get_openai_response(
-        self,
-        id: str,
-    ) -> OpenAIResponseObject: ...
-
-    @webmethod(route="/openai/v1/responses", method="POST")
-    async def create_openai_response(
-        self,
-        input: Union[str, List[OpenAIResponseInputMessage]],
-        model: str,
-        previous_response_id: Optional[str] = None,
-        store: Optional[bool] = True,
-        stream: Optional[bool] = False,
-        tools: Optional[List[OpenAIResponseInputTool]] = None,
-    ) -> Union[OpenAIResponseObject, AsyncIterator[OpenAIResponseObjectStream]]: ...

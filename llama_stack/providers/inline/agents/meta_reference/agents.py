@@ -23,6 +23,9 @@ from llama_stack.apis.agents import (
     Document,
     ListAgentSessionsResponse,
     ListAgentsResponse,
+    OpenAIResponseInputMessage,
+    OpenAIResponseInputTool,
+    OpenAIResponseObject,
     Session,
     Turn,
 )
@@ -40,6 +43,7 @@ from llama_stack.providers.utils.kvstore import InmemoryKVStoreImpl, kvstore_imp
 
 from .agent_instance import ChatAgent
 from .config import MetaReferenceAgentsImplConfig
+from .openai_responses import OpenAIResponsesImpl
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -63,9 +67,16 @@ class MetaReferenceAgentsImpl(Agents):
         self.tool_groups_api = tool_groups_api
 
         self.in_memory_store = InmemoryKVStoreImpl()
+        self.openai_responses_impl = None
 
     async def initialize(self) -> None:
         self.persistence_store = await kvstore_impl(self.config.persistence_store)
+        self.openai_responses_impl = OpenAIResponsesImpl(
+            self.persistence_store,
+            inference_api=self.inference_api,
+            tool_groups_api=self.tool_groups_api,
+            tool_runtime_api=self.tool_runtime_api,
+        )
 
         # check if "bwrap" is available
         if not shutil.which("bwrap"):
@@ -244,3 +255,23 @@ class MetaReferenceAgentsImpl(Agents):
         agent_id: str,
     ) -> ListAgentSessionsResponse:
         pass
+
+    # OpenAI responses
+    async def get_openai_response(
+        self,
+        id: str,
+    ) -> OpenAIResponseObject:
+        return await self.openai_responses_impl.get_openai_response(id)
+
+    async def create_openai_response(
+        self,
+        input: Union[str, List[OpenAIResponseInputMessage]],
+        model: str,
+        previous_response_id: Optional[str] = None,
+        store: Optional[bool] = True,
+        stream: Optional[bool] = False,
+        tools: Optional[List[OpenAIResponseInputTool]] = None,
+    ) -> OpenAIResponseObject:
+        return await self.openai_responses_impl.create_openai_response(
+            input, model, previous_response_id, store, stream, tools
+        )
