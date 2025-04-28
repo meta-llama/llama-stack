@@ -44,8 +44,7 @@ class NvidiaDatasetIOAdapter:
             request_headers.update(headers)
 
         async with aiohttp.ClientSession(headers=request_headers) as session:
-            # TODO: Remove `verify_ssl=False`. Added for testing purposes to call NMP int environment from `docs/notebooks/nvidia/`
-            async with session.request(method, url, params=params, json=json, verify_ssl=False, **kwargs) as response:
+            async with session.request(method, url, params=params, json=json, **kwargs) as response:
                 if response.status != 200:
                     error_data = await response.json()
                     raise Exception(f"API request failed: {error_data}")
