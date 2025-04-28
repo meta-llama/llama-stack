@@ -140,8 +140,6 @@ class NeMoGuardrails:
                 "config_id": self.config_id,
             },
         }
-        print("request_data")
-        print(request_data)
         response = await self._guardrails_post(path="/v1/guardrail/checks", data=request_data)
 
         if response["status"] == "blocked":
