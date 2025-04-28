@@ -16,7 +16,7 @@ Description:
 
 
 Configuration:
-    - Provider details (models, display names) are loaded from `tests/verifications/config.yaml`.
+    - Provider details (models, display names) are loaded from `tests/verifications/conf/*.yaml`.
     - Test cases are defined in YAML files within `tests/verifications/openai_api/fixtures/test_cases/`.
     - Test results are stored in `tests/verifications/test_results/`.
 
