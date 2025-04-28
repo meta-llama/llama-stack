@@ -39,6 +39,11 @@ def get_distribution_template() -> DistributionTemplate:
         provider_type="remote::nvidia",
         config=NVIDIASafetyConfig.sample_run_config(),
     )
+    datasetio_provider = Provider(
+        provider_id="nvidia",
+        provider_type="remote::nvidia",
+        config=NvidiaDatasetIOConfig.sample_run_config(),
+    )
     eval_provider = Provider(
         provider_id="nvidia",
         provider_type="remote::nvidia",
