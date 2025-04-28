@@ -1,3 +1,6 @@
+# This is a temporary run file because model names used by the verification tests
+# are not quite consistent with various pre-existing distributions.
+#
 version: '2'
 image_name: openai-api-verification
 apis:

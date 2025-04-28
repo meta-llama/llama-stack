@@ -143,7 +143,7 @@ class OpenAIResponsesImpl:
             stream=stream,
         )
 
-        if isinstance(chat_response, AsyncIterator):
+        if stream:
             # TODO: refactor this into a separate method that handles streaming
             chat_response_id = ""
             chat_response_content = []
@@ -175,10 +175,10 @@ class OpenAIResponsesImpl:
             )
         else:
             # dump and reload to map to our pydantic types
-            chat_response = OpenAIChatCompletion.model_validate_json(chat_response.model_dump_json())
+            chat_response = OpenAIChatCompletion(**chat_response.model_dump())
 
         output_messages: List[OpenAIResponseOutput] = []
-        if chat_response.choices[0].finish_reason == "tool_calls":
+        if chat_response.choices[0].message.tool_calls:
             output_messages.extend(
                 await self._execute_tool_and_return_final_output(model, stream, chat_response, messages)
             )
