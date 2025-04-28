@@ -1,8 +1,8 @@
 version: '2'
 image_name: openai-api-verification
 apis:
+- agents
 - inference
-- openai_responses
 - telemetry
 - tool_runtime
 - vector_io
@@ -46,14 +46,14 @@ providers:
       service_name: "${env.OTEL_SERVICE_NAME:\u200B}"
       sinks: ${env.TELEMETRY_SINKS:console,sqlite}
       sqlite_db_path: ${env.SQLITE_DB_PATH:~/.llama/distributions/openai/trace_store.db}
-  openai_responses:
-  - provider_id: openai-responses
-    provider_type: inline::openai-responses
+  agents:
+  - provider_id: meta-reference
+    provider_type: inline::meta-reference
     config:
-      kvstore:
+      persistence_store:
         type: sqlite
         namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/openai}/openai_responses.db
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/openai}/agents_store.db
   tool_runtime:
   - provider_id: brave-search
     provider_type: remote::brave-search

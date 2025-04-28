@@ -14,12 +14,12 @@ from tests.verifications.openai_api.fixtures.fixtures import (
 )
 from tests.verifications.openai_api.fixtures.load import load_test_cases
 
-response_test_cases = load_test_cases("response")
+responses_test_cases = load_test_cases("responses")
 
 
 @pytest.mark.parametrize(
     "case",
-    response_test_cases["test_response_basic"]["test_params"]["case"],
+    responses_test_cases["test_response_basic"]["test_params"]["case"],
     ids=case_id_generator,
 )
 def test_response_non_streaming_basic(request, openai_client, model, provider, verification_config, case):
@@ -48,7 +48,7 @@ def test_response_non_streaming_basic(request, openai_client, model, provider, v
 
 @pytest.mark.parametrize(
     "case",
-    response_test_cases["test_response_basic"]["test_params"]["case"],
+    responses_test_cases["test_response_basic"]["test_params"]["case"],
     ids=case_id_generator,
 )
 def test_response_streaming_basic(request, openai_client, model, provider, verification_config, case):
@@ -77,7 +77,7 @@ def test_response_streaming_basic(request, openai_client, model, provider, verif
 
 @pytest.mark.parametrize(
     "case",
-    response_test_cases["test_response_multi_turn"]["test_params"]["case"],
+    responses_test_cases["test_response_multi_turn"]["test_params"]["case"],
     ids=case_id_generator,
 )
 def test_response_non_streaming_multi_turn(request, openai_client, model, provider, verification_config, case):
@@ -100,7 +100,7 @@ def test_response_non_streaming_multi_turn(request, openai_client, model, provid
 
 @pytest.mark.parametrize(
     "case",
-    response_test_cases["test_response_web_search"]["test_params"]["case"],
+    responses_test_cases["test_response_web_search"]["test_params"]["case"],
     ids=case_id_generator,
 )
 def test_response_non_streaming_web_search(request, openai_client, model, provider, verification_config, case):
@@ -126,7 +126,7 @@ def test_response_non_streaming_web_search(request, openai_client, model, provid
 
 @pytest.mark.parametrize(
     "case",
-    response_test_cases["test_response_image"]["test_params"]["case"],
+    responses_test_cases["test_response_image"]["test_params"]["case"],
     ids=case_id_generator,
 )
 def test_response_non_streaming_image(request, openai_client, model, provider, verification_config, case):
@@ -145,7 +145,7 @@ def test_response_non_streaming_image(request, openai_client, model, provider, v
 
 @pytest.mark.parametrize(
     "case",
-    response_test_cases["test_response_multi_turn_image"]["test_params"]["case"],
+    responses_test_cases["test_response_multi_turn_image"]["test_params"]["case"],
     ids=case_id_generator,
 )
 def test_response_non_streaming_multi_turn_image(request, openai_client, model, provider, verification_config, case):
