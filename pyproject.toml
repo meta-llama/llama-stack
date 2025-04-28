@@ -260,6 +260,7 @@ exclude = [
     "^llama_stack/providers/inline/scoring/llm_as_judge/",
     "^llama_stack/providers/remote/agents/sample/",
     "^llama_stack/providers/remote/datasetio/huggingface/",
+    "^llama_stack/providers/remote/datasetio/nvidia/",
     "^llama_stack/providers/remote/inference/anthropic/",
     "^llama_stack/providers/remote/inference/bedrock/",
     "^llama_stack/providers/remote/inference/cerebras/",

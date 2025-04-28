@@ -394,6 +394,7 @@
     "aiosqlite",
     "blobfile",
     "chardet",
+    "datasets",
     "faiss-cpu",
     "fastapi",
     "fire",

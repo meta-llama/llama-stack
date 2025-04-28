@@ -62,13 +62,13 @@ providers:
       project_id: ${env.NVIDIA_PROJECT_ID:test-project}
       customizer_url: ${env.NVIDIA_CUSTOMIZER_URL:http://nemo.test}
   datasetio:
-  - provider_id: localfs
-    provider_type: inline::localfs
+  - provider_id: nvidia
+    provider_type: remote::nvidia
     config:
-      kvstore:
-        type: sqlite
-        namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/nvidia}/localfs_datasetio.db
+      api_key: ${env.NVIDIA_API_KEY:}
+      dataset_namespace: ${env.NVIDIA_DATASET_NAMESPACE:default}
+      project_id: ${env.NVIDIA_PROJECT_ID:test-project}
+      datasets_url: ${env.NVIDIA_DATASETS_URL:http://nemo.test}
   scoring:
   - provider_id: basic
     provider_type: inline::basic

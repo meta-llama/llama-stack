@@ -18,6 +18,7 @@ distribution_spec:
     - remote::nvidia
     datasetio:
     - inline::localfs
+    - remote::nvidia
     scoring:
     - inline::basic
     tool_runtime:
