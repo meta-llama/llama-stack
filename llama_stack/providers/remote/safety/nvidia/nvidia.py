@@ -126,10 +126,10 @@ class NeMoGuardrails:
         Raises:
             requests.HTTPError: If the POST request fails.
         """
-        messages = [await convert_message_to_openai_dict_new(message) for message in messages]
+        request_messages = [await convert_message_to_openai_dict_new(message) for message in messages]
         request_data = {
             "model": self.model,
-            "messages": messages,
+            "messages": request_messages,
             "temperature": self.temperature,
             "top_p": 1,
             "frequency_penalty": 0,

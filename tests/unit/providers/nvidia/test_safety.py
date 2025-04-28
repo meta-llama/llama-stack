@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import json
 import os
 import unittest
 from typing import Any
@@ -139,8 +138,8 @@ class TestNVIDIASafetyAdapter(unittest.TestCase):
             data={
                 "model": shield_id,
                 "messages": [
-                    json.loads(messages[0].model_dump_json()),
-                    json.loads(messages[1].model_dump_json()),
+                    {"role": "user", "content": "Hello, how are you?"},
+                    {"role": "assistant", "content": "I'm doing well, thank you for asking!", "tool_calls": None},
                 ],
                 "temperature": 1.0,
                 "top_p": 1,
@@ -193,8 +192,8 @@ class TestNVIDIASafetyAdapter(unittest.TestCase):
             data={
                 "model": shield_id,
                 "messages": [
-                    json.loads(messages[0].model_dump_json()),
-                    json.loads(messages[1].model_dump_json()),
+                    {"role": "user", "content": "Hello, how are you?"},
+                    {"role": "assistant", "content": "I'm doing well, thank you for asking!", "tool_calls": None},
                 ],
                 "temperature": 1.0,
                 "top_p": 1,
@@ -269,8 +268,8 @@ class TestNVIDIASafetyAdapter(unittest.TestCase):
             data={
                 "model": shield_id,
                 "messages": [
-                    json.loads(messages[0].model_dump_json()),
-                    json.loads(messages[1].model_dump_json()),
+                    {"role": "user", "content": "Hello, how are you?"},
+                    {"role": "assistant", "content": "I'm doing well, thank you for asking!", "tool_calls": None},
                 ],
                 "temperature": 1.0,
                 "top_p": 1,
