@@ -1,5 +1,4 @@
 version = 1
-revision = 1
 requires-python = ">=3.10"
 resolution-markers = [
     "(python_full_version < '3.11' and platform_machine != 'aarch64' and sys_platform == 'linux') or (python_full_version < '3.11' and sys_platform != 'darwin' and sys_platform != 'linux')",
@@ -1419,7 +1418,7 @@ wheels = [
 
 [[package]]
 name = "llama-stack"
-version = "0.2.1"
+version = "0.2.4"
 source = { editable = "." }
 dependencies = [
     { name = "blobfile" },
@@ -1532,8 +1531,8 @@ requires-dist = [
     { name = "jinja2", marker = "extra == 'codegen'", specifier = ">=3.1.6" },
     { name = "jsonschema" },
     { name = "kubernetes" },
-    { name = "llama-stack-client", specifier = ">=0.2.2" },
-    { name = "llama-stack-client", marker = "extra == 'ui'", specifier = ">=0.2.1" },
+    { name = "llama-stack-client", specifier = ">=0.2.4" },
+    { name = "llama-stack-client", marker = "extra == 'ui'", specifier = ">=0.2.4" },
     { name = "mcp", marker = "extra == 'test'" },
     { name = "myst-parser", marker = "extra == 'docs'" },
     { name = "nbval", marker = "extra == 'dev'" },
@@ -1585,11 +1584,10 @@ requires-dist = [
     { name = "types-setuptools", marker = "extra == 'dev'" },
     { name = "uvicorn", marker = "extra == 'dev'" },
 ]
-provides-extras = ["dev", "unit", "test", "docs", "codegen", "ui"]
 
 [[package]]
 name = "llama-stack-client"
-version = "0.2.2"
+version = "0.2.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -1606,9 +1604,9 @@ dependencies = [
     { name = "tqdm" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/fc/1c/7d3ab0e57195f21f9cf121fba2692ee8dc792793e5c82aa702602dda9bea/llama_stack_client-0.2.2.tar.gz", hash = "sha256:a0323b18b9f68172c639755652654452b7e72e28e77d95db5146e25d83002d34", size = 241914 }
+sdist = { url = "https://files.pythonhosted.org/packages/d9/bd/bbbac1a766f33f947bd105338a2a469ef3a9faef78da20436f3f5d0adc95/llama_stack_client-0.2.4.tar.gz", hash = "sha256:51df03c7172739c37c222fb25072ee5f1f2943037d1e23336eb7c2408a294825", size = 254328 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/9e/68/bdd9cb19e2c151d9aa8bf91444dfa9675bc7913006d8e1e030fb79dbf8c5/llama_stack_client-0.2.2-py3-none-any.whl", hash = "sha256:2a4ef3edb861e9a3a734e6e5e65d9d3de1f10cd56c18d21d82253088d2758e53", size = 273307 },
+    { url = "https://files.pythonhosted.org/packages/14/85/9f8bf39a9201be82d32e1cdb03629b552bcc94bb3348e0f154c0e20a2c43/llama_stack_client-0.2.4-py3-none-any.whl", hash = "sha256:7541c6179e9afd5a1a94eed4d151a76d10869e3bde2506b16a9bdb52fc0a7a84", size = 292723 },
 ]
 
 [[package]]
