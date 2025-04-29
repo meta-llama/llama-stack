@@ -54,5 +54,5 @@ class TelemetryConfig(BaseModel):
         return {
             "service_name": "${env.OTEL_SERVICE_NAME:​}",
             "sinks": "${env.TELEMETRY_SINKS:console,sqlite}",
-            "sqlite_db_path": "${env.SQLITE_DB_PATH:" + __distro_dir__ + "/" + db_name + "}",
+            "sqlite_db_path": "${env.SQLITE_STORE_DIR:" + __distro_dir__ + "}/" + db_name,
         }

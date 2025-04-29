@@ -45,7 +45,7 @@ providers:
     config:
       service_name: "${env.OTEL_SERVICE_NAME:\u200B}"
       sinks: ${env.TELEMETRY_SINKS:console,sqlite}
-      sqlite_db_path: ${env.SQLITE_DB_PATH:~/.llama/distributions/watsonx/trace_store.db}
+      sqlite_db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/watsonx}/trace_store.db
   eval:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
