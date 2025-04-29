@@ -321,6 +321,7 @@ exclude = [
     "^llama_stack/strong_typing/serializer\\.py$",
     "^llama_stack/templates/dev/dev\\.py$",
     "^llama_stack/templates/groq/groq\\.py$",
+    "^llama_stack/templates/llama_api/llama_api\\.py$",
     "^llama_stack/templates/sambanova/sambanova\\.py$",
     "^llama_stack/templates/template\\.py$",
 ]

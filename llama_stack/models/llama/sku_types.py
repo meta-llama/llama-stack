@@ -81,6 +81,7 @@ class CoreModelId(Enum):
     llama_guard_2_8b = "Llama-Guard-2-8B"
     llama_guard_3_11b_vision = "Llama-Guard-3-11B-Vision"
     llama_guard_3_1b = "Llama-Guard-3-1B"
+    llama_guard_4_12b = "Llama-Guard-4-12B"
 
 
 def is_multimodal(model_id) -> bool:
@@ -148,6 +149,7 @@ def model_family(model_id) -> ModelFamily:
         CoreModelId.llama_guard_2_8b,
         CoreModelId.llama_guard_3_11b_vision,
         CoreModelId.llama_guard_3_1b,
+        CoreModelId.llama_guard_4_12b,
     ]:
         return ModelFamily.safety
     else:
@@ -225,5 +227,7 @@ class Model(BaseModel):
             CoreModelId.llama_guard_3_1b,
         ]:
             return 131072
+        elif self.core_model_id == CoreModelId.llama_guard_4_12b:
+            return 8192
         else:
             raise ValueError(f"Unknown max_seq_len for {self.core_model_id}")

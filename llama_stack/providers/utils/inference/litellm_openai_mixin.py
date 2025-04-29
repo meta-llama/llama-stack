@@ -90,6 +90,9 @@ class LiteLLMOpenAIMixin(
             raise ValueError(f"Unsupported model: {model.provider_resource_id}")
         return model
 
+    def get_litellm_model_name(self, model_id: str) -> str:
+        return "openai/" + model_id if self.is_openai_compat else model_id
+
     async def completion(
         self,
         model_id: str,
@@ -130,8 +133,7 @@ class LiteLLMOpenAIMixin(
         )
 
         params = await self._get_params(request)
-        if self.is_openai_compat:
-            params["model"] = "openai/" + params["model"]
+        params["model"] = self.get_litellm_model_name(params["model"])
 
         logger.debug(f"params to litellm (openai compat): {params}")
         # unfortunately, we need to use synchronous litellm.completion here because litellm
@@ -220,21 +222,23 @@ class LiteLLMOpenAIMixin(
                     else request.tool_config.tool_choice
                 )
 
+        return {
+            "model": request.model,
+            "api_key": self.get_api_key(),
+            "api_base": self.api_base,
+            **input_dict,
+            "stream": request.stream,
+            **get_sampling_options(request.sampling_params),
+        }
+
+    def get_api_key(self) -> str:
         provider_data = self.get_request_provider_data()
         key_field = self.provider_data_api_key_field
         if provider_data and getattr(provider_data, key_field, None):
             api_key = getattr(provider_data, key_field)
         else:
             api_key = self.api_key_from_config
-
-        return {
-            "model": request.model,
-            "api_key": api_key,
-            "api_base": self.api_base,
-            **input_dict,
-            "stream": request.stream,
-            **get_sampling_options(request.sampling_params),
-        }
+        return api_key
 
     async def embeddings(
         self,
@@ -247,7 +251,7 @@ class LiteLLMOpenAIMixin(
         model = await self.model_store.get_model(model_id)
 
         response = litellm.embedding(
-            model=model.provider_resource_id,
+            model=self.get_litellm_model_name(model.provider_resource_id),
             input=[interleaved_content_as_str(content) for content in contents],
         )
 
@@ -278,7 +282,7 @@ class LiteLLMOpenAIMixin(
     ) -> OpenAICompletion:
         model_obj = await self.model_store.get_model(model)
         params = await prepare_openai_completion_params(
-            model=model_obj.provider_resource_id,
+            model=self.get_litellm_model_name(model_obj.provider_resource_id),
             prompt=prompt,
             best_of=best_of,
             echo=echo,
@@ -297,6 +301,8 @@ class LiteLLMOpenAIMixin(
             user=user,
             guided_choice=guided_choice,
             prompt_logprobs=prompt_logprobs,
+            api_key=self.get_api_key(),
+            api_base=self.api_base,
         )
         return await litellm.atext_completion(**params)
 
@@ -328,7 +334,7 @@ class LiteLLMOpenAIMixin(
     ) -> Union[OpenAIChatCompletion, AsyncIterator[OpenAIChatCompletionChunk]]:
         model_obj = await self.model_store.get_model(model)
         params = await prepare_openai_completion_params(
-            model=model_obj.provider_resource_id,
+            model=self.get_litellm_model_name(model_obj.provider_resource_id),
             messages=messages,
             frequency_penalty=frequency_penalty,
             function_call=function_call,
@@ -351,6 +357,8 @@ class LiteLLMOpenAIMixin(
             top_logprobs=top_logprobs,
             top_p=top_p,
             user=user,
+            api_key=self.get_api_key(),
+            api_base=self.api_base,
         )
         return await litellm.acompletion(**params)
 
