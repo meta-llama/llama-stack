@@ -176,14 +176,14 @@ jobs:
             .distribution_spec.container_image = "registry.access.redhat.com/ubi9:latest"
           ' llama_stack/templates/dev/build.yaml
 
-      - name: Build dev → container (UBI9)
+      - name: Build dev container (UBI9)
         env:
           USE_COPY_NOT_MOUNT: "true"
-          LLAMA_STACK_DIR:   "."
+          LLAMA_STACK_DIR: "."
         run: |
           uv run llama stack build --config llama_stack/templates/dev/build.yaml
 
-      - name: Inspect the container image entrypoint
+      - name: Inspect UBI9 image
         run: |
           IMAGE_ID=$(docker images --format "{{.Repository}}:{{.Tag}}" | head -n 1)
           entrypoint=$(docker inspect --format '{{ .Config.Entrypoint }}' $IMAGE_ID)
@@ -192,3 +192,9 @@ jobs:
             echo "Entrypoint is not correct"
             exit 1
           fi
+
+          echo "Checking /etc/os-release in $IMAGE_ID"
+          docker run --rm --entrypoint sh "$IMAGE_ID" -c \
+              'source /etc/os-release && echo "$ID"' \
+              | grep -qE '^(rhel|ubi)$' \
+              || { echo "Base image is not UBI 9!"; exit 1; }
