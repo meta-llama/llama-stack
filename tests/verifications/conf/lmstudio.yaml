@@ -1,0 +1,10 @@
+base_url: http://localhost:1234/v1/
+models:
+- llama-4-scout-17b-16e-instruct
+model_display_names:
+  llama-4-scout-17b-16e-instruct: Llama-4-Scout-Instruct
+test_exclusions:
+  llama-4-scout-17b-16e-instruct:
+  - test_chat_non_streaming_image
+  - test_chat_streaming_image
+  - test_chat_multi_turn_multiple_images
