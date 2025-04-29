@@ -173,7 +173,7 @@ jobs:
           yq -i '
             .image_type    = "container" |
             .image_name    = "ubi9-test" |
-            .container_base = "registry.access.redhat.com/ubi9/ubi-minimal:latest"
+            .distribution_spec.container_image = "registry.access.redhat.com/ubi9:latest"
           ' llama_stack/templates/dev/build.yaml
 
       - name: Build dev → container (UBI9)
