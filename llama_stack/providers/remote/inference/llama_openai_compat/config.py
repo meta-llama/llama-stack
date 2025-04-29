@@ -12,9 +12,9 @@ from llama_stack.schema_utils import json_schema_type
 
 
 class LlamaProviderDataValidator(BaseModel):
-    fireworks_api_key: Optional[str] = Field(
+    llama_api_key: Optional[str] = Field(
         default=None,
-        description="API key for Llama API models",
+        description="API key for api.llama models",
     )
 
 
