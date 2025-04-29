@@ -460,15 +460,17 @@ def run_download_cmd(args: argparse.Namespace, parser: argparse.ArgumentParser):
         from llama_stack.models.llama.sku_list import llama_meta_net_info, resolve_model
 
         from .model.safety_models import (
-            prompt_guard_download_info,
-            prompt_guard_model_sku,
+            prompt_guard_download_info_map,
+            prompt_guard_model_sku_map,
         )
 
-        prompt_guard = prompt_guard_model_sku()
+        prompt_guard_model_sku_map = prompt_guard_model_sku_map()
+        prompt_guard_download_info_map = prompt_guard_download_info_map()
+
         for model_id in model_ids:
-            if model_id == prompt_guard.model_id:
-                model = prompt_guard
-                info = prompt_guard_download_info()
+            if model_id in prompt_guard_model_sku_map.keys():
+                model = prompt_guard_model_sku_map[model_id]
+                info = prompt_guard_download_info_map[model_id]
             else:
                 model = resolve_model(model_id)
                 if model is None:
