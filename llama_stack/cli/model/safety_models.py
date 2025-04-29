@@ -51,7 +51,7 @@ def prompt_guard_model_sku_map() -> Dict[str, Any]:
 def prompt_guard_download_info_map() -> Dict[str, LlamaDownloadInfo]:
     return {
         model.model_id: LlamaDownloadInfo(
-            folder=model.model_id,
+            folder="Prompt-Guard" if model.model_id == "Prompt-Guard-86M" else model.model_id,
             files=[
                 "model.safetensors",
                 "special_tokens_map.json",
