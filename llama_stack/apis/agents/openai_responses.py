@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -139,8 +139,30 @@ class OpenAIResponseInputToolWebSearch(BaseModel):
     # TODO: add user_location
 
 
+@json_schema_type
+class OpenAIResponseInputToolFunction(BaseModel):
+    type: Literal["function"] = "function"
+    name: str
+    description: str | None = None
+    parameters: dict[str, Any] | None
+    strict: bool | None = None
+
+
+class FileSearchRankingOptions(BaseModel):
+    ranker: str | None = None
+    score_threshold: float | None = Field(default=0.0, ge=0.0, le=1.0)
+
+
+@json_schema_type
+class OpenAIResponseInputToolFileSearch(BaseModel):
+    type: Literal["file_search"] = "file_search"
+    vector_store_id: list[str]
+    ranking_options: FileSearchRankingOptions | None = None
+    # TODO: add filters
+
+
 OpenAIResponseInputTool = Annotated[
-    OpenAIResponseInputToolWebSearch,
+    OpenAIResponseInputToolWebSearch | OpenAIResponseInputToolFileSearch | OpenAIResponseInputToolFunction,
     Field(discriminator="type"),
 ]
 register_schema(OpenAIResponseInputTool, name="OpenAIResponseInputTool")
