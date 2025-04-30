@@ -192,6 +192,7 @@ class OpenAIResponsesImpl:
             status="completed",
             output=output_messages,
         )
+        logger.debug(f"OpenAI Responses response: {response}")
 
         if store:
             # Store in kvstore
@@ -218,7 +219,9 @@ class OpenAIResponsesImpl:
         chat_tools: List[ChatCompletionToolParam] = []
         for input_tool in tools:
             # TODO: Handle other tool types
-            if input_tool.type == "web_search":
+            if input_tool.type == "function":
+                chat_tools.append(ChatCompletionToolParam(type="function", function=input_tool.model_dump()))
+            elif input_tool.type == "web_search":
                 tool_name = "web_search"
                 tool = await self.tool_groups_api.get_tool(tool_name)
                 tool_def = ToolDefinition(

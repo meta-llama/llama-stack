@@ -6405,6 +6405,113 @@
                 "title": "OpenAIResponseInputMessageContentText"
             },
             "OpenAIResponseInputTool": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/OpenAIResponseInputToolWebSearch"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpenAIResponseInputToolFileSearch"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpenAIResponseInputToolFunction"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "web_search": "#/components/schemas/OpenAIResponseInputToolWebSearch",
+                        "file_search": "#/components/schemas/OpenAIResponseInputToolFileSearch",
+                        "function": "#/components/schemas/OpenAIResponseInputToolFunction"
+                    }
+                }
+            },
+            "OpenAIResponseInputToolFileSearch": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "file_search",
+                        "default": "file_search"
+                    },
+                    "vector_store_id": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "ranking_options": {
+                        "type": "object",
+                        "properties": {
+                            "ranker": {
+                                "type": "string"
+                            },
+                            "score_threshold": {
+                                "type": "number",
+                                "default": 0.0
+                            }
+                        },
+                        "additionalProperties": false,
+                        "title": "FileSearchRankingOptions"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "vector_store_id"
+                ],
+                "title": "OpenAIResponseInputToolFileSearch"
+            },
+            "OpenAIResponseInputToolFunction": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "function",
+                        "default": "function"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "parameters": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    },
+                    "strict": {
+                        "type": "boolean"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "name"
+                ],
+                "title": "OpenAIResponseInputToolFunction"
+            },
+            "OpenAIResponseInputToolWebSearch": {
                 "type": "object",
                 "properties": {
                     "type": {

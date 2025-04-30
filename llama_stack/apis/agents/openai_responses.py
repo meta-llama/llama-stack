@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import List, Literal, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
@@ -133,8 +133,30 @@ class OpenAIResponseInputToolWebSearch(BaseModel):
     # TODO: add user_location
 
 
+@json_schema_type
+class OpenAIResponseInputToolFunction(BaseModel):
+    type: Literal["function"] = "function"
+    name: str
+    description: Optional[str] = None
+    parameters: Optional[Dict[str, Any]]
+    strict: Optional[bool]
+
+
+class FileSearchRankingOptions(BaseModel):
+    ranker: Optional[str] = None
+    score_threshold: Optional[float] = Field(default=0.0, ge=0.0, le=1.0)
+
+
+@json_schema_type
+class OpenAIResponseInputToolFileSearch(BaseModel):
+    type: Literal["file_search"] = "file_search"
+    vector_store_id: List[str]
+    ranking_options: Optional[FileSearchRankingOptions] = None
+    # TODO: add filters
+
+
 OpenAIResponseInputTool = Annotated[
-    Union[OpenAIResponseInputToolWebSearch,],
+    Union[OpenAIResponseInputToolWebSearch, OpenAIResponseInputToolFileSearch, OpenAIResponseInputToolFunction],
     Field(discriminator="type"),
 ]
 register_schema(OpenAIResponseInputTool, name="OpenAIResponseInputTool")
