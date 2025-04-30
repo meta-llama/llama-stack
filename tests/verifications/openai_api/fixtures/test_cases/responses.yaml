@@ -1,0 +1,65 @@
+test_response_basic:
+  test_name: test_response_basic
+  test_params:
+    case:
+    - case_id: "earth"
+      input: "Which planet do humans live on?"
+      output: "earth"
+    - case_id: "saturn"
+      input: "Which planet has rings around it with a name starting with letter S?"
+      output: "saturn"
+
+test_response_multi_turn:
+  test_name: test_response_multi_turn
+  test_params:
+    case:
+    - case_id: "earth"
+      turns:
+      - input: "Which planet do humans live on?"
+        output: "earth"
+      - input: "What is the name of the planet from your previous response?"
+        output: "earth"
+
+test_response_web_search:
+  test_name: test_response_web_search
+  test_params:
+    case:
+    - case_id: "llama_experts"
+      input: "How many experts does the Llama 4 Maverick model have?"
+      tools:
+      - type: web_search
+        search_context_size: "low"
+      output: "128"
+
+test_response_image:
+  test_name: test_response_image
+  test_params:
+    case:
+    - case_id: "llama_image"
+      input:
+      - role: user
+        content:
+        - type: input_text
+          text: "Identify the type of animal in this image."
+        - type: input_image
+          image_url: "https://upload.wikimedia.org/wikipedia/commons/f/f7/Llamas%2C_Vernagt-Stausee%2C_Italy.jpg"
+      output: "llama"
+
+test_response_multi_turn_image:
+  test_name: test_response_multi_turn_image
+  test_params:
+    case:
+    - case_id: "llama_image_search"
+      turns:
+      - input:
+        - role: user
+          content:
+          - type: input_text
+            text: "What type of animal is in this image? Please respond with a single word that starts with the letter 'L'."
+          - type: input_image
+            image_url: "https://upload.wikimedia.org/wikipedia/commons/f/f7/Llamas%2C_Vernagt-Stausee%2C_Italy.jpg"
+        output: "llama"
+      - input: "Search the web using the search tool for the animal from the previous response. Your search query should be a single phrase that includes the animal's name and the words 'maverick' and 'scout'."
+        tools:
+        - type: web_search
+        output: "model"

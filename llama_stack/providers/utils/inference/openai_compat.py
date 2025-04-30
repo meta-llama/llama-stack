@@ -638,10 +638,13 @@ async def convert_message_to_openai_dict_new(
             )
             for tool in message.tool_calls
         ]
+        params = {}
+        if tool_calls:
+            params["tool_calls"] = tool_calls
         out = OpenAIChatCompletionAssistantMessage(
             role="assistant",
             content=await _convert_message_content(message.content),
-            tool_calls=tool_calls or None,
+            **params,
         )
     elif isinstance(message, ToolResponseMessage):
         out = OpenAIChatCompletionToolMessage(

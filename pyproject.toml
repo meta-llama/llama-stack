@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "llama_stack"
-version = "0.2.1"
+version = "0.2.4"
 authors = [{ name = "Meta Llama", email = "llama-oss@meta.com" }]
 description = "Llama Stack"
 readme = "README.md"
@@ -27,7 +27,7 @@ dependencies = [
     "huggingface-hub",
     "jinja2>=3.1.6",
     "jsonschema",
-    "llama-stack-client>=0.2.2",
+    "llama-stack-client>=0.2.4",
     "openai>=1.66",
     "prompt-toolkit",
     "python-dotenv",
@@ -39,6 +39,7 @@ dependencies = [
     "tiktoken",
     "pillow",
     "h11>=0.16.0",
+    "kubernetes",
 ]
 
 [project.optional-dependencies]
@@ -48,7 +49,7 @@ dev = [
     "pytest-cov",
     "pytest-html",
     "pytest-json-report",
-    "nbval",            # For notebook testing
+    "nbval",              # For notebook testing
     "black",
     "ruff",
     "types-requests",
@@ -56,7 +57,7 @@ dev = [
     "pre-commit",
     "uvicorn",
     "fastapi",
-    "ruamel.yaml",      # needed for openapi generator
+    "ruamel.yaml",        # needed for openapi generator
 ]
 # These are the dependencies required for running unit tests.
 unit = [
@@ -67,7 +68,7 @@ unit = [
     "pypdf",
     "chardet",
     "qdrant-client",
-    "opentelemetry-exporter-otlp-proto-http"
+    "opentelemetry-exporter-otlp-proto-http",
 ]
 # These are the core dependencies required for running integration tests. They are shared across all
 # providers. If a provider requires additional dependencies, please add them to your environment
@@ -104,7 +105,7 @@ codegen = ["rich", "pydantic", "jinja2>=3.1.6"]
 ui = [
     "streamlit",
     "pandas",
-    "llama-stack-client>=0.2.1",
+    "llama-stack-client>=0.2.4",
     "streamlit-option-menu",
 ]
 
@@ -320,6 +321,7 @@ exclude = [
     "^llama_stack/strong_typing/serializer\\.py$",
     "^llama_stack/templates/dev/dev\\.py$",
     "^llama_stack/templates/groq/groq\\.py$",
+    "^llama_stack/templates/llama_api/llama_api\\.py$",
     "^llama_stack/templates/sambanova/sambanova\\.py$",
     "^llama_stack/templates/template\\.py$",
 ]

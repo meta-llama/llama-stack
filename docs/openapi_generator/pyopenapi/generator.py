@@ -179,7 +179,7 @@ class ContentBuilder:
         "Creates the content subtree for a request or response."
 
         def is_iterator_type(t):
-            return "StreamChunk" in str(t)
+            return "StreamChunk" in str(t) or "OpenAIResponseObjectStream" in str(t)
 
         def get_media_type(t):
             if is_generic_list(t):

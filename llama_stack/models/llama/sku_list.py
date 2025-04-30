@@ -793,6 +793,13 @@ def llama3_3_instruct_models() -> List[Model]:
 def safety_models() -> List[Model]:
     return [
         Model(
+            core_model_id=CoreModelId.llama_guard_4_12b,
+            description="Llama Guard v4 12b system safety model",
+            huggingface_repo="meta-llama/Llama-Guard-4-12B",
+            arch_args={},
+            pth_file_count=1,
+        ),
+        Model(
             core_model_id=CoreModelId.llama_guard_3_11b_vision,
             description="Llama Guard v3 11b vision system safety model",
             huggingface_repo="meta-llama/Llama-Guard-3-11B-Vision",

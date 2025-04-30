@@ -38,6 +38,13 @@ from llama_stack.apis.safety import SafetyViolation
 from llama_stack.apis.tools import ToolDef
 from llama_stack.schema_utils import json_schema_type, register_schema, webmethod
 
+from .openai_responses import (
+    OpenAIResponseInputMessage,
+    OpenAIResponseInputTool,
+    OpenAIResponseObject,
+    OpenAIResponseObjectStream,
+)
+
 
 class Attachment(BaseModel):
     """An attachment to an agent turn.
@@ -593,3 +600,39 @@ class Agents(Protocol):
         :returns: A ListAgentSessionsResponse.
         """
         ...
+
+    # We situate the OpenAI Responses API in the Agents API just like we did things
+    # for Inference. The Responses API, in its intent, serves the same purpose as
+    # the Agents API above -- it is essentially a lightweight "agentic loop" with
+    # integrated tool calling.
+    #
+    # Both of these APIs are inherently stateful.
+
+    @webmethod(route="/openai/v1/responses/{id}", method="GET")
+    async def get_openai_response(
+        self,
+        id: str,
+    ) -> OpenAIResponseObject:
+        """Retrieve an OpenAI response by its ID.
+
+        :param id: The ID of the OpenAI response to retrieve.
+        :returns: An OpenAIResponseObject.
+        """
+        ...
+
+    @webmethod(route="/openai/v1/responses", method="POST")
+    async def create_openai_response(
+        self,
+        input: Union[str, List[OpenAIResponseInputMessage]],
+        model: str,
+        previous_response_id: Optional[str] = None,
+        store: Optional[bool] = True,
+        stream: Optional[bool] = False,
+        tools: Optional[List[OpenAIResponseInputTool]] = None,
+    ) -> Union[OpenAIResponseObject, AsyncIterator[OpenAIResponseObjectStream]]:
+        """Create a new OpenAI response.
+
+        :param input: Input message(s) to create the response.
+        :param model: The underlying LLM used for completions.
+        :param previous_response_id: (Optional) if specified, the new response will be a continuation of the previous response. This can be used to easily fork-off new responses from existing responses.
+        """
