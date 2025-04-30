@@ -19,7 +19,7 @@ import yaml
 from prompt_toolkit import prompt
 from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.validation import Validator
-from termcolor import cprint
+from termcolor import colored, cprint
 
 from llama_stack.cli.stack.utils import ImageType
 from llama_stack.cli.table import print_table
@@ -389,6 +389,11 @@ def _run_stack_build_command_from_build_config(
             shutil.copy(path, run_config_file)
 
         cprint("Build Successful!", color="green")
+        cprint("You can find the newly-built template here: " + colored(template_path, "light_blue"))
+        cprint(
+            "You can run the new Llama Stack distro via: "
+            + colored(f"llama stack run {template_path} --image-type {build_config.image_type}", "light_blue")
+        )
         return template_path
     else:
         return _generate_run_config(build_config, build_dir, image_name)
