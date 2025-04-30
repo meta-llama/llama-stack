@@ -16,9 +16,9 @@ class MilvusVectorIOConfig(BaseModel):
     uri: str
     token: str | None = None
     consistency_level: str = "Strong"
-    
-    model_config = ConfigDict(extra='allow')
-        
+
+    model_config = ConfigDict(extra="allow")
+
     @classmethod
 
     def sample_run_config(cls, __distro_dir__: str, **kwargs: Any) -> Dict[str, Any]:
