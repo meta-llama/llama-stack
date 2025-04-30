@@ -43,10 +43,14 @@ jobs:
           # the ollama installer also starts the ollama service
           curl -fsSL https://ollama.com/install.sh | sh
 
-      - name: Pull Ollama image
+      # Do NOT cache models - pulling the cache is actually slower than just pulling the model.
+      # It takes ~45 seconds to pull the models from the cache and unpack it, but only 30 seconds to
+      # pull them directly.
+      # Maybe this is because the cache is being pulled at the same time by all the matrix jobs?
+      - name: Pull Ollama models (instruct and embed)
         run: |
-          # TODO: cache the model. OLLAMA_MODELS defaults to ~ollama/.ollama/models.
           ollama pull llama3.2:3b-instruct-fp16
+          ollama pull all-minilm:latest
 
       - name: Set Up Environment and Install Dependencies
         run: |
@@ -106,3 +110,16 @@ jobs:
             -k "not(builtin_tool or safety_with_image or code_interpreter or test_rag)" \
             --text-model="meta-llama/Llama-3.2-3B-Instruct" \
             --embedding-model=all-MiniLM-L6-v2
+
+      - name: Write ollama logs to file
+        run: |
+          sudo journalctl -u ollama.service > ollama.log
+
+      - name: Upload all logs to artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.client-type }}-${{ matrix.test-type }}
+          path: |
+            *.log
+          retention-days: 1
