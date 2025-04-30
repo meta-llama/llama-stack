@@ -126,6 +126,28 @@ def test_response_non_streaming_web_search(request, openai_client, model, provid
 
 @pytest.mark.parametrize(
     "case",
+    responses_test_cases["test_response_custom_tool"]["test_params"]["case"],
+    ids=case_id_generator,
+)
+def test_response_non_streaming_custom_tool(request, openai_client, model, provider, verification_config, case):
+    test_name_base = get_base_test_name(request)
+    if should_skip_test(verification_config, provider, model, test_name_base):
+        pytest.skip(f"Skipping {test_name_base} for model {model} on provider {provider} based on config.")
+
+    response = openai_client.responses.create(
+        model=model,
+        input=case["input"],
+        tools=case["tools"],
+        stream=False,
+    )
+    assert len(response.output) == 1
+    assert response.output[0].type == "function_call"
+    assert response.output[0].status == "completed"
+    assert response.output[0].name == "get_weather"
+
+
+@pytest.mark.parametrize(
+    "case",
     responses_test_cases["test_response_image"]["test_params"]["case"],
     ids=case_id_generator,
 )

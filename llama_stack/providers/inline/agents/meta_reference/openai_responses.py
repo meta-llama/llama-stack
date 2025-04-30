@@ -17,6 +17,7 @@ from llama_stack.apis.agents.openai_responses import (
     OpenAIResponseInputMessageContentImage,
     OpenAIResponseInputMessageContentText,
     OpenAIResponseInputTool,
+    OpenAIResponseInputToolFunction,
     OpenAIResponseMessage,
     OpenAIResponseObject,
     OpenAIResponseObjectStream,
@@ -24,6 +25,7 @@ from llama_stack.apis.agents.openai_responses import (
     OpenAIResponseObjectStreamResponseCreated,
     OpenAIResponseOutput,
     OpenAIResponseOutputMessageContentOutputText,
+    OpenAIResponseOutputMessageFunctionToolCall,
     OpenAIResponseOutputMessageWebSearchToolCall,
     OpenAIResponsePreviousResponseWithInputItems,
 )
@@ -221,10 +223,28 @@ class OpenAIResponsesImpl:
             chat_response = OpenAIChatCompletion(**chat_response.model_dump())
 
         output_messages: list[OpenAIResponseOutput] = []
-        if chat_response.choices[0].message.tool_calls:
-            output_messages.extend(
-                await self._execute_tool_and_return_final_output(model, stream, chat_response, messages, temperature)
-            )
+        # TODO: should we check more than choices[0] here?
+        if chat_response.choices[0].message.tool_calls and tools:
+            # TODO: Should we support a mix of custom and builtin tools?
+            #       in other words, should we check for more than tools[0]?
+            if isinstance(tools[0], OpenAIResponseInputToolFunction):
+                choice = chat_response.choices[0]
+                for tool_call in choice.message.tool_calls:
+                    output_messages.append(
+                        OpenAIResponseOutputMessageFunctionToolCall(
+                            arguments=tool_call.function.arguments or "",
+                            call_id=tool_call.id,
+                            name=tool_call.function.name or "",
+                            id=f"fc_{uuid.uuid4()}",
+                            status="completed",
+                        )
+                    )
+            else:
+                output_messages.extend(
+                    await self._execute_tool_and_return_final_output(
+                        model, stream, chat_response, messages, temperature
+                    )
+                )
         else:
             output_messages.extend(await _openai_choices_to_output_messages(chat_response.choices))
         response = OpenAIResponseObject(

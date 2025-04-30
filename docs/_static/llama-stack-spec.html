@@ -6920,15 +6920,54 @@
                     },
                     {
                         "$ref": "#/components/schemas/OpenAIResponseOutputMessageWebSearchToolCall"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpenAIResponseOutputMessageFunctionToolCall"
                     }
                 ],
                 "discriminator": {
                     "propertyName": "type",
                     "mapping": {
                         "message": "#/components/schemas/OpenAIResponseMessage",
-                        "web_search_call": "#/components/schemas/OpenAIResponseOutputMessageWebSearchToolCall"
+                        "web_search_call": "#/components/schemas/OpenAIResponseOutputMessageWebSearchToolCall",
+                        "function_call": "#/components/schemas/OpenAIResponseOutputMessageFunctionToolCall"
                     }
                 }
+            },
+            "OpenAIResponseOutputMessageFunctionToolCall": {
+                "type": "object",
+                "properties": {
+                    "arguments": {
+                        "type": "string"
+                    },
+                    "call_id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "function_call",
+                        "default": "function_call"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "arguments",
+                    "call_id",
+                    "name",
+                    "type",
+                    "id",
+                    "status"
+                ],
+                "title": "OpenAIResponseOutputMessageFunctionToolCall"
             },
             "OpenAIResponseObjectStream": {
                 "oneOf": [

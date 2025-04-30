@@ -77,8 +77,20 @@ class OpenAIResponseOutputMessageWebSearchToolCall(BaseModel):
     type: Literal["web_search_call"] = "web_search_call"
 
 
+@json_schema_type
+class OpenAIResponseOutputMessageFunctionToolCall(BaseModel):
+    arguments: str
+    call_id: str
+    name: str
+    type: Literal["function_call"] = "function_call"
+    id: str
+    status: str
+
+
 OpenAIResponseOutput = Annotated[
-    OpenAIResponseMessage | OpenAIResponseOutputMessageWebSearchToolCall,
+    OpenAIResponseMessage
+    | OpenAIResponseOutputMessageWebSearchToolCall
+    | OpenAIResponseOutputMessageFunctionToolCall,
     Field(discriminator="type"),
 ]
 register_schema(OpenAIResponseOutput, name="OpenAIResponseOutput")
