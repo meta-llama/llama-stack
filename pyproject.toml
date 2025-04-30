@@ -144,15 +144,25 @@ exclude = [
 
 [tool.ruff.lint]
 select = [
-    "B",   # flake8-bugbear
-    "B9",  # flake8-bugbear subset
-    "C",   # comprehensions
-    "E",   # pycodestyle
-    "F",   # Pyflakes
-    "N",   # Naming
-    "W",   # Warnings
-    "DTZ", # datetime rules
-    "I",   # isort (imports order)
+    "B",       # flake8-bugbear
+    "B9",      # flake8-bugbear subset
+    "C",       # comprehensions
+    "E",       # pycodestyle
+    "F",       # Pyflakes
+    "N",       # Naming
+    "W",       # Warnings
+    "DTZ",     # datetime rules
+    "I",       # isort (imports order)
+    "RUF001",  # Checks for ambiguous Unicode characters in strings
+    "RUF002",  # Checks for ambiguous Unicode characters in docstrings
+    "RUF003",  # Checks for ambiguous Unicode characters in comments
+    "PLC2401", # Checks for the use of non-ASCII characters in variable names
+    "PLC2403", # Checks for the use of non-ASCII characters in import statements
+    "PLE2510", # Checks for strings that contain the control character BS.
+    "PLE2512", # Checks for strings that contain the raw control character SUB.
+    "PLE2513", # Checks for strings that contain the raw control character ESC.
+    "PLE2514", # Checks for strings that contain the raw control character NUL (0 byte).
+    "PLE2515", # Checks for strings that contain the zero width space character.
 ]
 ignore = [
     # The following ignores are desired by the project maintainers.
@@ -165,10 +175,18 @@ ignore = [
     # These are the additional ones we started ignoring after moving to ruff. We should look into each one of them later.
     "C901", # Complexity of the function is too high
 ]
+unfixable = [
+    "PLE2515",
+] # Do not fix this automatically since ruff will replace the zero-width space with \u200b - let's do it manually
 
 # Ignore the following errors for the following files
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = ["DTZ"] # Ignore datetime rules for tests
+"llama_stack/providers/inline/scoring/basic/utils/ifeval_utils.py" = ["RUF001"]
+"llama_stack/providers/inline/scoring/basic/scoring_fn/fn_defs/regex_parser_multiple_choice_answer.py" = [
+    "RUF001",
+    "PLE2515",
+]
 
 [tool.mypy]
 mypy_path = ["llama_stack"]
