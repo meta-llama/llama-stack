@@ -101,6 +101,7 @@ vector_io:
 - **`client_pem_path`**: Path to the **client certificate** file (required for mTLS).
 - **`client_key_path`**: Path to the **client private key** file (required for mTLS).
 
-
 ## Documentation
 See the [Milvus documentation](https://milvus.io/docs/install-overview.md) for more details about Milvus in general.
+
+For more details on TLS configuration, refer to the [TLS setup guide](https://milvus.io/docs/tls.md).
