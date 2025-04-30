@@ -139,7 +139,7 @@ class TestNVIDIASafetyAdapter(unittest.TestCase):
                 "model": shield_id,
                 "messages": [
                     {"role": "user", "content": "Hello, how are you?"},
-                    {"role": "assistant", "content": "I'm doing well, thank you for asking!", "tool_calls": None},
+                    {"role": "assistant", "content": "I'm doing well, thank you for asking!"},
                 ],
                 "temperature": 1.0,
                 "top_p": 1,
@@ -193,7 +193,7 @@ class TestNVIDIASafetyAdapter(unittest.TestCase):
                 "model": shield_id,
                 "messages": [
                     {"role": "user", "content": "Hello, how are you?"},
-                    {"role": "assistant", "content": "I'm doing well, thank you for asking!", "tool_calls": None},
+                    {"role": "assistant", "content": "I'm doing well, thank you for asking!"},
                 ],
                 "temperature": 1.0,
                 "top_p": 1,
@@ -269,7 +269,7 @@ class TestNVIDIASafetyAdapter(unittest.TestCase):
                 "model": shield_id,
                 "messages": [
                     {"role": "user", "content": "Hello, how are you?"},
-                    {"role": "assistant", "content": "I'm doing well, thank you for asking!", "tool_calls": None},
+                    {"role": "assistant", "content": "I'm doing well, thank you for asking!"},
                 ],
                 "temperature": 1.0,
                 "top_p": 1,
