@@ -131,3 +131,20 @@ OpenAIResponseInputTool = Annotated[
     Field(discriminator="type"),
 ]
 register_schema(OpenAIResponseInputTool, name="OpenAIResponseInputTool")
+
+
+@json_schema_type
+class OpenAIResponseInputItemMessage(OpenAIResponseInputMessage):
+    id: str
+
+
+@json_schema_type
+class OpenAIResponseInputItemList(BaseModel):
+    data: list[OpenAIResponseInputItemMessage]
+    object: Literal["list"] = "list"
+
+
+@json_schema_type
+class OpenAIResponsePreviousResponseWithInputItems(BaseModel):
+    input_items: OpenAIResponseInputItemList
+    response: OpenAIResponseObject
