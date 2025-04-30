@@ -6,7 +6,7 @@
 
 from typing import Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from llama_stack.schema_utils import json_schema_type
 
@@ -17,8 +17,7 @@ class MilvusVectorIOConfig(BaseModel):
     token: str | None = None
     consistency_level: str = "Strong"
     
-    class Config:
-        extra = "allow"
+    model_config = ConfigDict(extra='allow')
         
     @classmethod
 
