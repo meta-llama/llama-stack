@@ -47,14 +47,13 @@ def get_provider_dependencies(
         providers = config.distribution_spec.providers
     deps = []
     registry = get_provider_registry(config)
-
     for api_str, provider_or_providers in providers.items():
         providers_for_api = registry[Api(api_str)]
 
         providers = provider_or_providers if isinstance(provider_or_providers, list) else [provider_or_providers]
 
         for provider in providers:
-            # Providers from BuildConfig and RunConfig are subtly different – not great
+            # Providers from BuildConfig and RunConfig are subtly different - not great
             provider_type = provider if isinstance(provider, str) else provider.provider_type
 
             if provider_type not in providers_for_api:
