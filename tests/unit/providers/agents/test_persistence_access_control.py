@@ -4,9 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import os
-import shutil
-import tempfile
 import uuid
 from datetime import datetime
 from unittest.mock import patch
@@ -17,20 +14,12 @@ from llama_stack.apis.agents import Turn
 from llama_stack.apis.inference import CompletionMessage, StopReason
 from llama_stack.distribution.datatypes import AccessAttributes
 from llama_stack.providers.inline.agents.meta_reference.persistence import AgentPersistence, AgentSessionInfo
-from llama_stack.providers.utils.kvstore.config import SqliteKVStoreConfig
-from llama_stack.providers.utils.kvstore.sqlite import SqliteKVStoreImpl
 
 
 @pytest.fixture
-async def test_setup():
-    temp_dir = tempfile.mkdtemp()
-    db_path = os.path.join(temp_dir, "test_persistence_access_control.db")
-    kvstore_config = SqliteKVStoreConfig(db_path=db_path)
-    kvstore = SqliteKVStoreImpl(kvstore_config)
-    await kvstore.initialize()
-    agent_persistence = AgentPersistence(agent_id="test_agent", kvstore=kvstore)
+async def test_setup(sqlite_kvstore):
+    agent_persistence = AgentPersistence(agent_id="test_agent", kvstore=sqlite_kvstore)
     yield agent_persistence
-    shutil.rmtree(temp_dir)
 
 
 @pytest.mark.asyncio
