@@ -270,8 +270,9 @@ class MetaReferenceAgentsImpl(Agents):
         previous_response_id: Optional[str] = None,
         store: Optional[bool] = True,
         stream: Optional[bool] = False,
+        temperature: Optional[float] = None,
         tools: Optional[List[OpenAIResponseInputTool]] = None,
     ) -> OpenAIResponseObject:
         return await self.openai_responses_impl.create_openai_response(
-            input, model, previous_response_id, store, stream, tools
+            input, model, previous_response_id, store, stream, temperature, tools
         )

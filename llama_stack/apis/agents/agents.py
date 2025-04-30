@@ -628,6 +628,7 @@ class Agents(Protocol):
         previous_response_id: Optional[str] = None,
         store: Optional[bool] = True,
         stream: Optional[bool] = False,
+        temperature: Optional[float] = None,
         tools: Optional[List[OpenAIResponseInputTool]] = None,
     ) -> Union[OpenAIResponseObject, AsyncIterator[OpenAIResponseObjectStream]]:
         """Create a new OpenAI response.

@@ -106,6 +106,7 @@ class OpenAIResponsesImpl:
         previous_response_id: Optional[str] = None,
         store: Optional[bool] = True,
         stream: Optional[bool] = False,
+        temperature: Optional[float] = None,
         tools: Optional[List[OpenAIResponseInputTool]] = None,
     ):
         stream = False if stream is None else stream
@@ -141,6 +142,7 @@ class OpenAIResponsesImpl:
             messages=messages,
             tools=chat_tools,
             stream=stream,
+            temperature=temperature,
         )
 
         if stream:
@@ -180,7 +182,7 @@ class OpenAIResponsesImpl:
         output_messages: List[OpenAIResponseOutput] = []
         if chat_response.choices[0].message.tool_calls:
             output_messages.extend(
-                await self._execute_tool_and_return_final_output(model, stream, chat_response, messages)
+                await self._execute_tool_and_return_final_output(model, stream, chat_response, messages, temperature)
             )
         else:
             output_messages.extend(await _openai_choices_to_output_messages(chat_response.choices))
@@ -241,7 +243,12 @@ class OpenAIResponsesImpl:
         return chat_tools
 
     async def _execute_tool_and_return_final_output(
-        self, model_id: str, stream: bool, chat_response: OpenAIChatCompletion, messages: List[OpenAIMessageParam]
+        self,
+        model_id: str,
+        stream: bool,
+        chat_response: OpenAIChatCompletion,
+        messages: List[OpenAIMessageParam],
+        temperature: float,
     ) -> List[OpenAIResponseOutput]:
         output_messages: List[OpenAIResponseOutput] = []
         choice = chat_response.choices[0]
@@ -295,6 +302,7 @@ class OpenAIResponsesImpl:
             model=model_id,
             messages=messages,
             stream=stream,
+            temperature=temperature,
         )
         # type cast to appease mypy
         tool_results_chat_response = cast(OpenAIChatCompletion, tool_results_chat_response)
