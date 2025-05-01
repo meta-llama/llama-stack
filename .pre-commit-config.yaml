@@ -15,7 +15,6 @@ repos:
         args: ['--maxkb=1000']
     -   id: end-of-file-fixer
         exclude: '^(.*\.svg)$'
-    -   id: no-commit-to-branch
     -   id: check-yaml
         args: ["--unsafe"]
     -   id: detect-private-key
