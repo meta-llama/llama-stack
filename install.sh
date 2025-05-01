@@ -61,6 +61,8 @@ else
 fi
 
 # macOS + Podman: ensure VM is running before we try to launch containers
+# If you need GPU passthrough under Podman on macOS, init the VM with libkrun:
+#   CONTAINERS_MACHINE_PROVIDER=libkrun podman machine init
 if [ "$ENGINE" = "podman" ] && [ "$(uname -s)" = "Darwin" ]; then
   if ! podman info &>/dev/null; then
     log "⌛️ Initializing Podman VM…"
