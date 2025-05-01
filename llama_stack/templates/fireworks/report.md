@@ -43,4 +43,3 @@
 |:-----|:-----|:-----|:-----|:-----|
 | inline::meta-reference | /create_agent_turn | rag | test_rag_agent | ✅ |
 | inline::meta-reference | /create_agent_turn | custom_tool | test_custom_tool | ✅ |
-| inline::meta-reference | /create_agent_turn | code_execution | test_code_interpreter_for_attachments | ✅ |

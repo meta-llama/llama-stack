@@ -295,6 +295,7 @@ def test_builtin_tool_code_execution(llama_stack_client_with_mocked_inference, a
 # This test must be run in an environment where `bwrap` is available. If you are running against a
 # server, this means the _server_ must have `bwrap` available. If you are using library client, then
 # you must have `bwrap` available in test's environment.
+@pytest.mark.skip(reason="Code interpreter is currently disabled in the Stack")
 def test_code_interpreter_for_attachments(llama_stack_client_with_mocked_inference, agent_config):
     agent_config = {
         **agent_config,
