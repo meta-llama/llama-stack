@@ -35,13 +35,6 @@ def available_providers() -> list[ProviderSpec]:
             config_class="llama_stack.providers.inline.tool_runtime.rag.config.RagToolRuntimeConfig",
             api_dependencies=[Api.vector_io, Api.inference],
         ),
-        InlineProviderSpec(
-            api=Api.tool_runtime,
-            provider_type="inline::code-interpreter",
-            pip_packages=[],
-            module="llama_stack.providers.inline.tool_runtime.code_interpreter",
-            config_class="llama_stack.providers.inline.tool_runtime.code_interpreter.config.CodeInterpreterToolConfig",
-        ),
         remote_provider_spec(
             api=Api.tool_runtime,
             adapter=AdapterSpec(

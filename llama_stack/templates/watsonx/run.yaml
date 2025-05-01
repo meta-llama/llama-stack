@@ -91,9 +91,6 @@ providers:
     config:
       api_key: ${env.TAVILY_SEARCH_API_KEY:}
       max_results: 3
-  - provider_id: code-interpreter
-    provider_type: inline::code-interpreter
-    config: {}
   - provider_id: rag-runtime
     provider_type: inline::rag-runtime
     config: {}
@@ -204,7 +201,5 @@ tool_groups:
   provider_id: tavily-search
 - toolgroup_id: builtin::rag
   provider_id: rag-runtime
-- toolgroup_id: builtin::code_interpreter
-  provider_id: code-interpreter
 server:
   port: 8321
