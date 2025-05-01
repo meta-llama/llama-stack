@@ -8,7 +8,7 @@
 from typing import Any, AsyncGenerator, AsyncIterator, Dict, List, Optional, Union
 
 import httpx
-from ollama import AsyncClient
+from ollama import AsyncClient  # type: ignore[attr-defined]
 from openai import AsyncOpenAI
 
 from llama_stack.apis.common.content_types import (
@@ -333,7 +333,10 @@ class OllamaInferenceAdapter(
         return EmbeddingsResponse(embeddings=embeddings)
 
     async def register_model(self, model: Model) -> Model:
-        model = await self.register_helper.register_model(model)
+        try:
+            model = await self.register_helper.register_model(model)
+        except ValueError:
+            pass  # Ignore statically unknown model, will check live listing
         if model.model_type == ModelType.embedding:
             logger.info(f"Pulling embedding model `{model.provider_resource_id}` if necessary...")
             await self.client.pull(model.provider_resource_id)
@@ -342,9 +345,12 @@ class OllamaInferenceAdapter(
         #  - models not currently running are run by the ollama server as needed
         response = await self.client.list()
         available_models = [m["model"] for m in response["models"]]
-        if model.provider_resource_id not in available_models:
+        provider_resource_id = self.register_helper.get_provider_model_id(model.provider_resource_id)
+        if provider_resource_id is None:
+            provider_resource_id = model.provider_resource_id
+        if provider_resource_id not in available_models:
             available_models_latest = [m["model"].split(":latest")[0] for m in response["models"]]
-            if model.provider_resource_id in available_models_latest:
+            if provider_resource_id in available_models_latest:
                 logger.warning(
                     f"Imprecise provider resource id was used but 'latest' is available in Ollama - using '{model.provider_resource_id}:latest'"
                 )
@@ -352,6 +358,7 @@ class OllamaInferenceAdapter(
             raise ValueError(
                 f"Model '{model.provider_resource_id}' is not available in Ollama. Available models: {', '.join(available_models)}"
             )
+        model.provider_resource_id = provider_resource_id
 
         return model
 

@@ -372,7 +372,10 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         # self.client should only be created after the initialization is complete to avoid asyncio cross-context errors.
         # Changing this may lead to unpredictable behavior.
         client = self._create_client() if self.client is None else self.client
-        model = await self.register_helper.register_model(model)
+        try:
+            model = await self.register_helper.register_model(model)
+        except ValueError:
+            pass  # Ignore statically unknown model, will check live listing
         res = await client.models.list()
         available_models = [m.id async for m in res]
         if model.provider_resource_id not in available_models:
