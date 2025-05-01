@@ -532,12 +532,17 @@ async def convert_message_to_openai_dict(message: Message, download: bool = Fals
     if hasattr(message, "tool_calls") and message.tool_calls:
         result["tool_calls"] = []
         for tc in message.tool_calls:
+            # The tool.tool_name can be a str or a BuiltinTool enum. If
+            # it's the latter, convert to a string.
+            tool_name = tc.tool_name
+            if isinstance(tool_name, BuiltinTool):
+                tool_name = tool_name.value
             result["tool_calls"].append(
                 {
                     "id": tc.call_id,
                     "type": "function",
                     "function": {
-                        "name": tc.tool_name,
+                        "name": tool_name,
                         "arguments": tc.arguments_json if hasattr(tc, "arguments_json") else json.dumps(tc.arguments),
                     },
                 }
