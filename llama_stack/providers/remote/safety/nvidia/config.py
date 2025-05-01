@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 import os
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -27,10 +27,10 @@ class NVIDIASafetyConfig(BaseModel):
         default_factory=lambda: os.getenv("GUARDRAILS_SERVICE_URL", "http://0.0.0.0:7331"),
         description="The url for accessing the guardrails service",
     )
-    config_id: Optional[str] = Field(default="self-check", description="Config ID to use from the config store")
+    config_id: str | None = Field(default="self-check", description="Config ID to use from the config store")
 
     @classmethod
-    def sample_run_config(cls, **kwargs) -> Dict[str, Any]:
+    def sample_run_config(cls, **kwargs) -> dict[str, Any]:
         return {
             "guardrails_service_url": "${env.GUARDRAILS_SERVICE_URL:http://localhost:7331}",
             "config_id": "self-check",

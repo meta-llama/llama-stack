@@ -10,7 +10,7 @@ import logging
 import sqlite3
 import struct
 import uuid
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import numpy as np
 import sqlite_vec
@@ -25,7 +25,7 @@ from llama_stack.providers.utils.memory.vector_store import EmbeddingIndex, Vect
 logger = logging.getLogger(__name__)
 
 
-def serialize_vector(vector: List[float]) -> bytes:
+def serialize_vector(vector: list[float]) -> bytes:
     """Serialize a list of floats into a compact binary representation."""
     return struct.pack(f"{len(vector)}f", *vector)
 
@@ -98,7 +98,7 @@ class SQLiteVecIndex(EmbeddingIndex):
 
         await asyncio.to_thread(_drop_tables)
 
-    async def add_chunks(self, chunks: List[Chunk], embeddings: NDArray, batch_size: int = 500):
+    async def add_chunks(self, chunks: list[Chunk], embeddings: NDArray, batch_size: int = 500):
         """
         Add new chunks along with their embeddings using batch inserts.
         For each chunk, we insert its JSON into the metadata table and then insert its
@@ -209,7 +209,7 @@ class SQLiteVecVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
     def __init__(self, config, inference_api: Inference) -> None:
         self.config = config
         self.inference_api = inference_api
-        self.cache: Dict[str, VectorDBWithIndex] = {}
+        self.cache: dict[str, VectorDBWithIndex] = {}
 
     async def initialize(self) -> None:
         def _setup_connection():
@@ -264,7 +264,7 @@ class SQLiteVecVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
         index = await SQLiteVecIndex.create(vector_db.embedding_dimension, self.config.db_path, vector_db.identifier)
         self.cache[vector_db.identifier] = VectorDBWithIndex(vector_db, index, self.inference_api)
 
-    async def list_vector_dbs(self) -> List[VectorDB]:
+    async def list_vector_dbs(self) -> list[VectorDB]:
         return [v.vector_db for v in self.cache.values()]
 
     async def unregister_vector_db(self, vector_db_id: str) -> None:
@@ -286,7 +286,7 @@ class SQLiteVecVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
 
         await asyncio.to_thread(_delete_vector_db_from_registry)
 
-    async def insert_chunks(self, vector_db_id: str, chunks: List[Chunk], ttl_seconds: Optional[int] = None) -> None:
+    async def insert_chunks(self, vector_db_id: str, chunks: list[Chunk], ttl_seconds: int | None = None) -> None:
         if vector_db_id not in self.cache:
             raise ValueError(f"Vector DB {vector_db_id} not found. Found: {list(self.cache.keys())}")
         # The VectorDBWithIndex helper is expected to compute embeddings via the inference_api
@@ -294,7 +294,7 @@ class SQLiteVecVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
         await self.cache[vector_db_id].insert_chunks(chunks)
 
     async def query_chunks(
-        self, vector_db_id: str, query: Any, params: Optional[Dict[str, Any]] = None
+        self, vector_db_id: str, query: Any, params: dict[str, Any] | None = None
     ) -> QueryChunksResponse:
         if vector_db_id not in self.cache:
             raise ValueError(f"Vector DB {vector_db_id} not found")
@@ -303,5 +303,5 @@ class SQLiteVecVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
 
 def generate_chunk_id(document_id: str, chunk_text: str) -> str:
     """Generate a unique chunk ID using a hash of document ID and chunk text."""
-    hash_input = f"{document_id}:{chunk_text}".encode("utf-8")
+    hash_input = f"{document_id}:{chunk_text}".encode()
     return str(uuid.UUID(hashlib.md5(hash_input).hexdigest()))

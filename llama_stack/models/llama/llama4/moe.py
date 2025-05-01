@@ -6,7 +6,7 @@
 
 # ruff: noqa: N806
 # pyre-strict
-from typing import Any, Dict, List
+from typing import Any
 
 import fairscale.nn.model_parallel.initialize as fs_init
 import torch
@@ -63,13 +63,13 @@ class Experts(nn.Module):
 
     def load_hook(
         self,
-        state_dict: Dict[str, Any],
+        state_dict: dict[str, Any],
         prefix: str,
-        local_metadata: Dict[str, Any],
+        local_metadata: dict[str, Any],
         strict: bool,
-        missing_keys: List[str],
-        unexpected_keys: List[str],
-        error_msgs: List[str],
+        missing_keys: list[str],
+        unexpected_keys: list[str],
+        error_msgs: list[str],
     ) -> None:
         self.prefix = prefix
         if prefix + "moe_w_in_eD_F" in state_dict:
@@ -158,13 +158,13 @@ class MoE(torch.nn.Module):
 
     def load_hook(
         self,
-        state_dict: Dict[str, Any],
+        state_dict: dict[str, Any],
         prefix: str,
-        local_metadata: Dict[str, Any],
+        local_metadata: dict[str, Any],
         strict: bool,
-        missing_keys: List[str],
-        unexpected_keys: List[str],
-        error_msgs: List[str],
+        missing_keys: list[str],
+        unexpected_keys: list[str],
+        error_msgs: list[str],
     ) -> None:
         if prefix + "w_in_shared_FD.weight" in state_dict:
             state_dict[prefix + "shared_expert.w1.weight"] = state_dict.pop(prefix + "w_in_shared_FD.weight")
@@ -210,5 +210,5 @@ class MoE(torch.nn.Module):
 
 
 def divide_exact(numerator: int, denominator: int) -> int:
-    assert numerator % denominator == 0, "{} is not divisible by {}".format(numerator, denominator)
+    assert numerator % denominator == 0, f"{numerator} is not divisible by {denominator}"
     return numerator // denominator

@@ -3,7 +3,7 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from typing import Any, Dict
+from typing import Any
 
 from pydantic import BaseModel
 
@@ -18,7 +18,7 @@ class BraintrustProviderDataValidator(BaseModel):
 
 async def get_provider_impl(
     config: BraintrustScoringConfig,
-    deps: Dict[Api, Any],
+    deps: dict[Api, Any],
 ):
     from .braintrust import BraintrustScoringImpl
 

@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 import logging
-from typing import Any, Dict, List
+from typing import Any
 
 from llama_stack.apis.inference import Message
 from llama_stack.apis.safety import (
@@ -48,8 +48,8 @@ class MetaReferenceCodeScannerSafetyImpl(Safety):
     async def run_shield(
         self,
         shield_id: str,
-        messages: List[Message],
-        params: Dict[str, Any] = None,
+        messages: list[Message],
+        params: dict[str, Any] = None,
     ) -> RunShieldResponse:
         shield = await self.shield_store.get_shield(shield_id)
         if not shield:

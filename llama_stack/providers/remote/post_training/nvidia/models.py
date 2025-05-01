@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import List
 
 from llama_stack.models.llama.sku_types import CoreModelId
 from llama_stack.providers.utils.inference.model_registry import (
@@ -24,5 +23,5 @@ _MODEL_ENTRIES = [
 ]
 
 
-def get_model_entries() -> List[ProviderModelEntry]:
+def get_model_entries() -> list[ProviderModelEntry]:
     return _MODEL_ENTRIES

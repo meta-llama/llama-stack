@@ -12,7 +12,6 @@
 # the top-level of this source tree.
 
 import textwrap
-from typing import Optional
 
 from .base import PromptTemplate, PromptTemplateGeneratorBase
 
@@ -21,8 +20,8 @@ class ToolResponseGenerator(PromptTemplateGeneratorBase):
     def gen(
         self,
         status: str,
-        stdout: Optional[str] = None,
-        stderr: Optional[str] = None,
+        stdout: str | None = None,
+        stderr: str | None = None,
     ):
         assert status in [
             "success",

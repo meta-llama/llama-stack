@@ -7,7 +7,7 @@
 import os
 from collections import defaultdict
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import pytest
 import yaml
@@ -23,36 +23,36 @@ from .report import Report
 
 
 class ProviderFixture(BaseModel):
-    providers: List[Provider]
-    provider_data: Optional[Dict[str, Any]] = None
+    providers: list[Provider]
+    provider_data: dict[str, Any] | None = None
 
 
 class TestScenario(BaseModel):
     # provider fixtures can be either a mark or a dictionary of api -> providers
-    provider_fixtures: Dict[str, str] = Field(default_factory=dict)
-    fixture_combo_id: Optional[str] = None
+    provider_fixtures: dict[str, str] = Field(default_factory=dict)
+    fixture_combo_id: str | None = None
 
 
 class APITestConfig(BaseModel):
-    scenarios: List[TestScenario] = Field(default_factory=list)
-    inference_models: List[str] = Field(default_factory=list)
+    scenarios: list[TestScenario] = Field(default_factory=list)
+    inference_models: list[str] = Field(default_factory=list)
 
     # test name format should be <relative_path.py>::<test_name>
-    tests: List[str] = Field(default_factory=list)
+    tests: list[str] = Field(default_factory=list)
 
 
 class MemoryApiTestConfig(APITestConfig):
-    embedding_model: Optional[str] = Field(default_factory=None)
+    embedding_model: str | None = Field(default_factory=None)
 
 
 class AgentsApiTestConfig(APITestConfig):
-    safety_shield: Optional[str] = Field(default_factory=None)
+    safety_shield: str | None = Field(default_factory=None)
 
 
 class TestConfig(BaseModel):
-    inference: Optional[APITestConfig] = None
-    agents: Optional[AgentsApiTestConfig] = None
-    memory: Optional[MemoryApiTestConfig] = None
+    inference: APITestConfig | None = None
+    agents: AgentsApiTestConfig | None = None
+    memory: MemoryApiTestConfig | None = None
 
 
 def get_test_config_from_config_file(metafunc_config):
@@ -65,7 +65,7 @@ def get_test_config_from_config_file(metafunc_config):
         raise ValueError(
             f"Test config {config_file} was specified but not found. Please make sure it exists in the llama_stack/providers/tests directory."
         )
-    with open(config_file_path, "r") as config_file:
+    with open(config_file_path) as config_file:
         config = yaml.safe_load(config_file)
         return TestConfig(**config)
 
@@ -188,18 +188,18 @@ def pytest_addoption(parser):
     )
 
 
-def make_provider_id(providers: Dict[str, str]) -> str:
+def make_provider_id(providers: dict[str, str]) -> str:
     return ":".join(f"{api}={provider}" for api, provider in sorted(providers.items()))
 
 
-def get_provider_marks(providers: Dict[str, str]) -> List[Any]:
+def get_provider_marks(providers: dict[str, str]) -> list[Any]:
     marks = []
     for provider in providers.values():
         marks.append(getattr(pytest.mark, provider))
     return marks
 
 
-def get_provider_fixture_overrides(config, available_fixtures: Dict[str, List[str]]) -> Optional[List[pytest.param]]:
+def get_provider_fixture_overrides(config, available_fixtures: dict[str, list[str]]) -> list[pytest.param] | None:
     provider_str = config.getoption("--providers")
     if not provider_str:
         return None
@@ -214,7 +214,7 @@ def get_provider_fixture_overrides(config, available_fixtures: Dict[str, List[st
     ]
 
 
-def parse_fixture_string(provider_str: str, available_fixtures: Dict[str, List[str]]) -> Dict[str, str]:
+def parse_fixture_string(provider_str: str, available_fixtures: dict[str, list[str]]) -> dict[str, str]:
     """Parse provider string of format 'api1=provider1,api2=provider2'"""
     if not provider_str:
         return {}

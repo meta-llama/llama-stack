@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import List
 
 from llama_stack.providers.datatypes import (
     Api,
@@ -14,7 +13,7 @@ from llama_stack.providers.datatypes import (
 from llama_stack.providers.utils.kvstore import kvstore_dependencies
 
 
-def available_providers() -> List[ProviderSpec]:
+def available_providers() -> list[ProviderSpec]:
     return [
         InlineProviderSpec(
             api=Api.agents,

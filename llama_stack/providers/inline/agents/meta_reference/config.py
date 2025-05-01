@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict
+from typing import Any
 
 from pydantic import BaseModel
 
@@ -16,7 +16,7 @@ class MetaReferenceAgentsImplConfig(BaseModel):
     persistence_store: KVStoreConfig
 
     @classmethod
-    def sample_run_config(cls, __distro_dir__: str) -> Dict[str, Any]:
+    def sample_run_config(cls, __distro_dir__: str) -> dict[str, Any]:
         return {
             "persistence_store": SqliteKVStoreConfig.sample_run_config(
                 __distro_dir__=__distro_dir__,

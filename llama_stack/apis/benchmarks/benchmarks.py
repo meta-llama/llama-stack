@@ -3,7 +3,7 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from typing import Any, Dict, List, Literal, Optional, Protocol, runtime_checkable
+from typing import Any, Literal, Protocol, runtime_checkable
 
 from pydantic import BaseModel, Field
 
@@ -13,8 +13,8 @@ from llama_stack.schema_utils import json_schema_type, webmethod
 
 class CommonBenchmarkFields(BaseModel):
     dataset_id: str
-    scoring_functions: List[str]
-    metadata: Dict[str, Any] = Field(
+    scoring_functions: list[str]
+    metadata: dict[str, Any] = Field(
         default_factory=dict,
         description="Metadata for this evaluation task",
     )
@@ -35,12 +35,12 @@ class Benchmark(CommonBenchmarkFields, Resource):
 
 class BenchmarkInput(CommonBenchmarkFields, BaseModel):
     benchmark_id: str
-    provider_id: Optional[str] = None
-    provider_benchmark_id: Optional[str] = None
+    provider_id: str | None = None
+    provider_benchmark_id: str | None = None
 
 
 class ListBenchmarksResponse(BaseModel):
-    data: List[Benchmark]
+    data: list[Benchmark]
 
 
 @runtime_checkable
@@ -59,8 +59,8 @@ class Benchmarks(Protocol):
         self,
         benchmark_id: str,
         dataset_id: str,
-        scoring_functions: List[str],
-        provider_benchmark_id: Optional[str] = None,
-        provider_id: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        scoring_functions: list[str],
+        provider_benchmark_id: str | None = None,
+        provider_id: str | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> None: ...

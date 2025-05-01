@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 import warnings
 from datetime import datetime
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Literal
 
 import aiohttp
 from pydantic import BaseModel, ConfigDict
@@ -50,7 +50,7 @@ class NvidiaPostTrainingJob(PostTrainingJob):
 
 
 class ListNvidiaPostTrainingJobs(BaseModel):
-    data: List[NvidiaPostTrainingJob]
+    data: list[NvidiaPostTrainingJob]
 
 
 class NvidiaPostTrainingJobStatusResponse(PostTrainingJobStatusResponse):
@@ -83,11 +83,11 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
         self,
         method: str,
         path: str,
-        headers: Optional[Dict[str, Any]] = None,
-        params: Optional[Dict[str, Any]] = None,
-        json: Optional[Dict[str, Any]] = None,
+        headers: dict[str, Any] | None = None,
+        params: dict[str, Any] | None = None,
+        json: dict[str, Any] | None = None,
         **kwargs,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Helper method to make HTTP requests to the Customizer API."""
         url = f"{self.customizer_url}{path}"
         request_headers = self.headers.copy()
@@ -109,9 +109,9 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
 
     async def get_training_jobs(
         self,
-        page: Optional[int] = 1,
-        page_size: Optional[int] = 10,
-        sort: Optional[Literal["created_at", "-created_at"]] = "created_at",
+        page: int | None = 1,
+        page_size: int | None = 10,
+        sort: Literal["created_at", "-created_at"] | None = "created_at",
     ) -> ListNvidiaPostTrainingJobs:
         """Get all customization jobs.
         Updated the base class return type from ListPostTrainingJobsResponse to ListNvidiaPostTrainingJobs.
@@ -207,12 +207,12 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
     async def supervised_fine_tune(
         self,
         job_uuid: str,
-        training_config: Dict[str, Any],
-        hyperparam_search_config: Dict[str, Any],
-        logger_config: Dict[str, Any],
+        training_config: dict[str, Any],
+        hyperparam_search_config: dict[str, Any],
+        logger_config: dict[str, Any],
         model: str,
-        checkpoint_dir: Optional[str],
-        algorithm_config: Optional[AlgorithmConfig] = None,
+        checkpoint_dir: str | None,
+        algorithm_config: AlgorithmConfig | None = None,
     ) -> NvidiaPostTrainingJob:
         """
         Fine-tunes a model on a dataset.
@@ -423,8 +423,8 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
         finetuned_model: str,
         algorithm_config: DPOAlignmentConfig,
         training_config: TrainingConfig,
-        hyperparam_search_config: Dict[str, Any],
-        logger_config: Dict[str, Any],
+        hyperparam_search_config: dict[str, Any],
+        logger_config: dict[str, Any],
     ) -> PostTrainingJob:
         """Optimize a model based on preference data."""
         raise NotImplementedError("Preference optimization is not implemented yet")

@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 import json
-from typing import AsyncGenerator, List, Optional
+from collections.abc import AsyncGenerator
 
 from openai import OpenAI
 
@@ -77,25 +77,25 @@ class SambaNovaInferenceAdapter(
         self,
         model_id: str,
         content: InterleavedContent,
-        sampling_params: Optional[SamplingParams] = None,
-        response_format: Optional[ResponseFormat] = None,
-        stream: Optional[bool] = False,
-        logprobs: Optional[LogProbConfig] = None,
+        sampling_params: SamplingParams | None = None,
+        response_format: ResponseFormat | None = None,
+        stream: bool | None = False,
+        logprobs: LogProbConfig | None = None,
     ) -> AsyncGenerator:
         raise NotImplementedError()
 
     async def chat_completion(
         self,
         model_id: str,
-        messages: List[Message],
-        sampling_params: Optional[SamplingParams] = None,
-        response_format: Optional[ResponseFormat] = None,
-        tools: Optional[List[ToolDefinition]] = None,
-        tool_choice: Optional[ToolChoice] = ToolChoice.auto,
-        tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.json,
-        stream: Optional[bool] = False,
-        tool_config: Optional[ToolConfig] = None,
-        logprobs: Optional[LogProbConfig] = None,
+        messages: list[Message],
+        sampling_params: SamplingParams | None = None,
+        response_format: ResponseFormat | None = None,
+        tools: list[ToolDefinition] | None = None,
+        tool_choice: ToolChoice | None = ToolChoice.auto,
+        tool_prompt_format: ToolPromptFormat | None = ToolPromptFormat.json,
+        stream: bool | None = False,
+        tool_config: ToolConfig | None = None,
+        logprobs: LogProbConfig | None = None,
     ) -> AsyncGenerator:
         if sampling_params is None:
             sampling_params = SamplingParams()
@@ -146,10 +146,10 @@ class SambaNovaInferenceAdapter(
     async def embeddings(
         self,
         model_id: str,
-        contents: List[str] | List[InterleavedContentItem],
-        text_truncation: Optional[TextTruncation] = TextTruncation.none,
-        output_dimension: Optional[int] = None,
-        task_type: Optional[EmbeddingTaskType] = None,
+        contents: list[str] | list[InterleavedContentItem],
+        text_truncation: TextTruncation | None = TextTruncation.none,
+        output_dimension: int | None = None,
+        task_type: EmbeddingTaskType | None = None,
     ) -> EmbeddingsResponse:
         raise NotImplementedError()
 
@@ -186,7 +186,7 @@ class SambaNovaInferenceAdapter(
 
         return params
 
-    async def convert_to_sambanova_messages(self, messages: List[Message]) -> List[dict]:
+    async def convert_to_sambanova_messages(self, messages: list[Message]) -> list[dict]:
         conversation = []
         for message in messages:
             content = {}
@@ -244,7 +244,7 @@ class SambaNovaInferenceAdapter(
 
         return content
 
-    def convert_to_sambanova_tool(self, tools: List[ToolDefinition]) -> List[dict]:
+    def convert_to_sambanova_tool(self, tools: list[ToolDefinition]) -> list[dict]:
         if tools is None:
             return tools
 
@@ -292,7 +292,7 @@ class SambaNovaInferenceAdapter(
     def convert_to_sambanova_tool_calls(
         self,
         tool_calls,
-    ) -> List[ToolCall]:
+    ) -> list[ToolCall]:
         if not tool_calls:
             return []
 

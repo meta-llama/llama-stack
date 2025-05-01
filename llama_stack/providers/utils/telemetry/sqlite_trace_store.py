@@ -6,7 +6,7 @@
 
 import json
 from datetime import datetime
-from typing import Dict, List, Optional, Protocol
+from typing import Protocol
 
 import aiosqlite
 
@@ -16,18 +16,18 @@ from llama_stack.apis.telemetry import QueryCondition, Span, SpanWithStatus, Tra
 class TraceStore(Protocol):
     async def query_traces(
         self,
-        attribute_filters: Optional[List[QueryCondition]] = None,
-        limit: Optional[int] = 100,
-        offset: Optional[int] = 0,
-        order_by: Optional[List[str]] = None,
-    ) -> List[Trace]: ...
+        attribute_filters: list[QueryCondition] | None = None,
+        limit: int | None = 100,
+        offset: int | None = 0,
+        order_by: list[str] | None = None,
+    ) -> list[Trace]: ...
 
     async def get_span_tree(
         self,
         span_id: str,
-        attributes_to_return: Optional[List[str]] = None,
-        max_depth: Optional[int] = None,
-    ) -> Dict[str, SpanWithStatus]: ...
+        attributes_to_return: list[str] | None = None,
+        max_depth: int | None = None,
+    ) -> dict[str, SpanWithStatus]: ...
 
 
 class SQLiteTraceStore(TraceStore):
@@ -36,11 +36,11 @@ class SQLiteTraceStore(TraceStore):
 
     async def query_traces(
         self,
-        attribute_filters: Optional[List[QueryCondition]] = None,
-        limit: Optional[int] = 100,
-        offset: Optional[int] = 0,
-        order_by: Optional[List[str]] = None,
-    ) -> List[Trace]:
+        attribute_filters: list[QueryCondition] | None = None,
+        limit: int | None = 100,
+        offset: int | None = 0,
+        order_by: list[str] | None = None,
+    ) -> list[Trace]:
         def build_where_clause() -> tuple[str, list]:
             if not attribute_filters:
                 return "", []
@@ -112,9 +112,9 @@ class SQLiteTraceStore(TraceStore):
     async def get_span_tree(
         self,
         span_id: str,
-        attributes_to_return: Optional[List[str]] = None,
-        max_depth: Optional[int] = None,
-    ) -> Dict[str, SpanWithStatus]:
+        attributes_to_return: list[str] | None = None,
+        max_depth: int | None = None,
+    ) -> dict[str, SpanWithStatus]:
         # Build the attributes selection
         attributes_select = "s.attributes"
         if attributes_to_return:

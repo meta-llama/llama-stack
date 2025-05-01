@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import List, Optional
 
 from .api import KVStore
 from .config import KVStoreConfig, KVStoreType
@@ -21,13 +20,13 @@ class InmemoryKVStoreImpl(KVStore):
     async def initialize(self) -> None:
         pass
 
-    async def get(self, key: str) -> Optional[str]:
+    async def get(self, key: str) -> str | None:
         return self._store.get(key)
 
     async def set(self, key: str, value: str) -> None:
         self._store[key] = value
 
-    async def range(self, start_key: str, end_key: str) -> List[str]:
+    async def range(self, start_key: str, end_key: str) -> list[str]:
         return [self._store[key] for key in self._store.keys() if key >= start_key and key < end_key]
 
 

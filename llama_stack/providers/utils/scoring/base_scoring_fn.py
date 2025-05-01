@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from llama_stack.apis.scoring import ScoringFnParams, ScoringResultRow
 from llama_stack.apis.scoring_functions import ScoringFn
@@ -28,28 +28,28 @@ class BaseScoringFn(ABC):
     @abstractmethod
     async def score_row(
         self,
-        input_row: Dict[str, Any],
-        scoring_fn_identifier: Optional[str] = None,
-        scoring_params: Optional[ScoringFnParams] = None,
+        input_row: dict[str, Any],
+        scoring_fn_identifier: str | None = None,
+        scoring_params: ScoringFnParams | None = None,
     ) -> ScoringResultRow:
         raise NotImplementedError()
 
     @abstractmethod
     async def aggregate(
         self,
-        scoring_results: List[ScoringResultRow],
-        scoring_fn_identifier: Optional[str] = None,
-        scoring_params: Optional[ScoringFnParams] = None,
-    ) -> Dict[str, Any]:
+        scoring_results: list[ScoringResultRow],
+        scoring_fn_identifier: str | None = None,
+        scoring_params: ScoringFnParams | None = None,
+    ) -> dict[str, Any]:
         raise NotImplementedError()
 
     @abstractmethod
     async def score(
         self,
-        input_rows: List[Dict[str, Any]],
-        scoring_fn_identifier: Optional[str] = None,
-        scoring_params: Optional[ScoringFnParams] = None,
-    ) -> List[ScoringResultRow]:
+        input_rows: list[dict[str, Any]],
+        scoring_fn_identifier: str | None = None,
+        scoring_params: ScoringFnParams | None = None,
+    ) -> list[ScoringResultRow]:
         raise NotImplementedError()
 
 
@@ -65,7 +65,7 @@ class RegisteredBaseScoringFn(BaseScoringFn):
     def __str__(self) -> str:
         return self.__class__.__name__
 
-    def get_supported_scoring_fn_defs(self) -> List[ScoringFn]:
+    def get_supported_scoring_fn_defs(self) -> list[ScoringFn]:
         return list(self.supported_fn_defs_registry.values())
 
     def register_scoring_fn_def(self, scoring_fn: ScoringFn) -> None:
@@ -81,18 +81,18 @@ class RegisteredBaseScoringFn(BaseScoringFn):
     @abstractmethod
     async def score_row(
         self,
-        input_row: Dict[str, Any],
-        scoring_fn_identifier: Optional[str] = None,
-        scoring_params: Optional[ScoringFnParams] = None,
+        input_row: dict[str, Any],
+        scoring_fn_identifier: str | None = None,
+        scoring_params: ScoringFnParams | None = None,
     ) -> ScoringResultRow:
         raise NotImplementedError()
 
     async def aggregate(
         self,
-        scoring_results: List[ScoringResultRow],
-        scoring_fn_identifier: Optional[str] = None,
-        scoring_params: Optional[ScoringFnParams] = None,
-    ) -> Dict[str, Any]:
+        scoring_results: list[ScoringResultRow],
+        scoring_fn_identifier: str | None = None,
+        scoring_params: ScoringFnParams | None = None,
+    ) -> dict[str, Any]:
         params = self.supported_fn_defs_registry[scoring_fn_identifier].params
         if scoring_params is not None:
             if params is None:
@@ -107,8 +107,8 @@ class RegisteredBaseScoringFn(BaseScoringFn):
 
     async def score(
         self,
-        input_rows: List[Dict[str, Any]],
-        scoring_fn_identifier: Optional[str] = None,
-        scoring_params: Optional[ScoringFnParams] = None,
-    ) -> List[ScoringResultRow]:
+        input_rows: list[dict[str, Any]],
+        scoring_fn_identifier: str | None = None,
+        scoring_params: ScoringFnParams | None = None,
+    ) -> list[ScoringResultRow]:
         return [await self.score_row(input_row, scoring_fn_identifier, scoring_params) for input_row in input_rows]

@@ -7,14 +7,14 @@
 import concurrent.futures
 import re
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 import numpy as np
 import torch
 from fairscale.nn.model_parallel.initialize import get_model_parallel_rank, get_model_parallel_world_size
 
 
-def map_mp_rank(old_mp_size: int, new_mp_size: int, new_mp_rank: int) -> List[int]:
+def map_mp_rank(old_mp_size: int, new_mp_size: int, new_mp_rank: int) -> list[int]:
     """Map a new MP rank to a list of old MP ranks given a change in MP size."""
     if new_mp_size % old_mp_size == 0:
         # Read old MP shard and split it into smaller ones
@@ -31,12 +31,12 @@ def map_mp_rank(old_mp_size: int, new_mp_size: int, new_mp_rank: int) -> List[in
 
 
 def maybe_reshard_state_dict(
-    ckpt_paths: List[Path],
+    ckpt_paths: list[Path],
     n_kv_heads: int,
-    moe_num_experts: Optional[int] = None,
-    map_location: Union[str, torch.device] = "cpu",
+    moe_num_experts: int | None = None,
+    map_location: str | torch.device = "cpu",
     mmap: bool = True,
-) -> Dict[str, torch.Tensor]:
+) -> dict[str, torch.Tensor]:
     if str(map_location) == "cpu":
         torch.set_default_tensor_type(torch.BFloat16Tensor)
     else:
@@ -97,18 +97,18 @@ _MOE_WEIGHT_COLUMN_KEY = {"feed_forward.experts.moe_w_out_eF_D"}
 
 
 def reshard_mp(
-    state_dicts: List[Dict[str, torch.Tensor]],
+    state_dicts: list[dict[str, torch.Tensor]],
     size: int,
     rank: int,
     repeat_qk_qv: int = 1,
-) -> Dict[str, torch.Tensor]:
+) -> dict[str, torch.Tensor]:
     """
     Reshard a list of state dicts into a single state dict given a change in MP size.
     If the list has more than one state dict, we concatenate the values of the same
     key across all state dicts. Otherwise, we just slice it for the current MP rank.
     """
 
-    def concat_or_chunk(tensors: List[torch.Tensor], dim: int) -> torch.Tensor:
+    def concat_or_chunk(tensors: list[torch.Tensor], dim: int) -> torch.Tensor:
         if len(tensors) > 1:
             return torch.cat(tensors, dim=dim)
         return tensors[0].chunk(size, dim=dim)[rank].clone()
@@ -144,7 +144,7 @@ def reshard_mp(
     column_regex = re.compile("|".join(column_keys))
     row_regex = re.compile("|".join(row_keys))
 
-    output: Dict[str, torch.Tensor] = {}
+    output: dict[str, torch.Tensor] = {}
     with concurrent.futures.ThreadPoolExecutor() as executor:
         # Note: only processes keys in the first state dict.
         # Assumes keys are the same across all state dicts.
@@ -154,7 +154,7 @@ def reshard_mp(
     return output
 
 
-def convert_moe_weights(state_dict: Dict[str, Any], num_experts: int) -> Dict[str, Any]:
+def convert_moe_weights(state_dict: dict[str, Any], num_experts: int) -> dict[str, Any]:
     routed_keys = _MOE_WEIGHT_ROW_KEY | _MOE_WEIGHT_COLUMN_KEY
     routed_regex = re.compile("|".join(routed_keys))
     keys = list(state_dict.keys())

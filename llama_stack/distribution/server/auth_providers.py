@@ -7,7 +7,6 @@
 import json
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Dict, List, Optional
 from urllib.parse import parse_qs
 
 import httpx
@@ -22,7 +21,7 @@ logger = get_logger(name=__name__, category="auth")
 class AuthResponse(BaseModel):
     """The format of the authentication response from the auth endpoint."""
 
-    access_attributes: Optional[AccessAttributes] = Field(
+    access_attributes: AccessAttributes | None = Field(
         default=None,
         description="""
         Structured user attributes for attribute-based access control.
@@ -44,7 +43,7 @@ class AuthResponse(BaseModel):
         """,
     )
 
-    message: Optional[str] = Field(
+    message: str | None = Field(
         default=None, description="Optional message providing additional context about the authentication result."
     )
 
@@ -52,9 +51,9 @@ class AuthResponse(BaseModel):
 class AuthRequestContext(BaseModel):
     path: str = Field(description="The path of the request being authenticated")
 
-    headers: Dict[str, str] = Field(description="HTTP headers from the original request (excluding Authorization)")
+    headers: dict[str, str] = Field(description="HTTP headers from the original request (excluding Authorization)")
 
-    params: Dict[str, List[str]] = Field(
+    params: dict[str, list[str]] = Field(
         description="Query parameters from the original request, parsed as dictionary of lists"
     )
 
@@ -76,14 +75,14 @@ class AuthProviderConfig(BaseModel):
     """Base configuration for authentication providers."""
 
     provider_type: AuthProviderType = Field(..., description="Type of authentication provider")
-    config: Dict[str, str] = Field(..., description="Provider-specific configuration")
+    config: dict[str, str] = Field(..., description="Provider-specific configuration")
 
 
 class AuthProvider(ABC):
     """Abstract base class for authentication providers."""
 
     @abstractmethod
-    async def validate_token(self, token: str, scope: Optional[Dict] = None) -> Optional[AccessAttributes]:
+    async def validate_token(self, token: str, scope: dict | None = None) -> AccessAttributes | None:
         """Validate a token and return access attributes."""
         pass
 
@@ -96,7 +95,7 @@ class AuthProvider(ABC):
 class KubernetesAuthProvider(AuthProvider):
     """Kubernetes authentication provider that validates tokens against the Kubernetes API server."""
 
-    def __init__(self, config: Dict[str, str]):
+    def __init__(self, config: dict[str, str]):
         self.api_server_url = config["api_server_url"]
         self.ca_cert_path = config.get("ca_cert_path")
         self._client = None
@@ -120,7 +119,7 @@ class KubernetesAuthProvider(AuthProvider):
             self._client = ApiClient(configuration)
         return self._client
 
-    async def validate_token(self, token: str, scope: Optional[Dict] = None) -> Optional[AccessAttributes]:
+    async def validate_token(self, token: str, scope: dict | None = None) -> AccessAttributes | None:
         """Validate a Kubernetes token and return access attributes."""
         try:
             client = await self._get_client()
@@ -166,11 +165,11 @@ class KubernetesAuthProvider(AuthProvider):
 class CustomAuthProvider(AuthProvider):
     """Custom authentication provider that uses an external endpoint."""
 
-    def __init__(self, config: Dict[str, str]):
+    def __init__(self, config: dict[str, str]):
         self.endpoint = config["endpoint"]
         self._client = None
 
-    async def validate_token(self, token: str, scope: Optional[Dict] = None) -> Optional[AccessAttributes]:
+    async def validate_token(self, token: str, scope: dict | None = None) -> AccessAttributes | None:
         """Validate a token using the custom authentication endpoint."""
         if not self.endpoint:
             raise ValueError("Authentication endpoint not configured")

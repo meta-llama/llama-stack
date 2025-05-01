@@ -15,7 +15,7 @@ def get_code_env_prefix() -> str:
     global CODE_ENV_PREFIX
 
     if CODE_ENV_PREFIX is None:
-        with open(CODE_ENV_PREFIX_FILE, "r") as f:
+        with open(CODE_ENV_PREFIX_FILE) as f:
             CODE_ENV_PREFIX = f.read()
 
     return CODE_ENV_PREFIX

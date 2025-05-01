@@ -4,7 +4,8 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from collections.abc import Callable
+from typing import Any
 
 import fairscale.nn.model_parallel.initialize as fs_init
 import torch
@@ -42,9 +43,9 @@ class ColumnParallelConv2dPatch(torch.nn.Module):
         self,
         in_channels: int,
         out_channels: int,
-        kernel_size: Union[int, Tuple[int, int]],
-        stride: Union[int, Tuple[int, int]],
-        bias: Optional[bool] = False,
+        kernel_size: int | tuple[int, int],
+        stride: int | tuple[int, int],
+        bias: bool | None = False,
     ) -> None:
         super().__init__()
         if isinstance(kernel_size, int):
@@ -134,15 +135,15 @@ class _TransformerBlock(nn.Module):
     def attention(
         self,
         x: torch.Tensor,
-        freq_cis: Optional[torch.Tensor] = None,
+        freq_cis: torch.Tensor | None = None,
     ):
         return self.attn(x=x, start_pos=0, freqs_cis=freq_cis)
 
     def forward(
         self,
         x: torch.Tensor,
-        mask: Optional[torch.Tensor] = None,
-        freq_cis: Optional[torch.Tensor] = None,
+        mask: torch.Tensor | None = None,
+        freq_cis: torch.Tensor | None = None,
     ):
         _gate_attn = 1 if not self.gated else self.gate_attn.tanh()
         _gate_ffn = 1 if not self.gated else self.gate_ffn.tanh()
@@ -210,8 +211,8 @@ class PackingIndex:
 class VisionEncoder(nn.Module):
     def __init__(
         self,
-        image_size: Tuple[int, int],
-        patch_size: Tuple[int, int],
+        image_size: tuple[int, int],
+        patch_size: tuple[int, int],
         dim: int,
         layers: int,
         heads: int,
@@ -299,13 +300,13 @@ class VisionEncoder(nn.Module):
 
     def load_hook(
         self,
-        state_dict: Dict[str, Any],
+        state_dict: dict[str, Any],
         prefix: str,
-        local_metadata: Dict[str, Any],
+        local_metadata: dict[str, Any],
         strict: bool = True,
-        missing_keys: List[str] = None,
-        unexpected_keys: List[str] = None,
-        error_msgs: List[str] = None,
+        missing_keys: list[str] = None,
+        unexpected_keys: list[str] = None,
+        error_msgs: list[str] = None,
         return_state_dict: bool = False,
     ) -> None:
         orig_pos_embed = state_dict.get(prefix + "positional_embedding")
