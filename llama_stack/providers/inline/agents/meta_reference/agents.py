@@ -6,7 +6,6 @@
 
 import json
 import logging
-import shutil
 import uuid
 from collections.abc import AsyncGenerator
 
@@ -77,10 +76,6 @@ class MetaReferenceAgentsImpl(Agents):
             tool_groups_api=self.tool_groups_api,
             tool_runtime_api=self.tool_runtime_api,
         )
-
-        # check if "bwrap" is available
-        if not shutil.which("bwrap"):
-            logger.warning("Warning: `bwrap` is not available. Code interpreter tool will not work correctly.")
 
     async def create_agent(
         self,
