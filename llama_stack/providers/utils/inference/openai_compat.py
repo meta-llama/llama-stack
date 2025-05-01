@@ -865,7 +865,7 @@ def _convert_openai_request_tools(tools: Optional[List[Dict[str, Any]]] = None) 
             tool_param_properties = tool_params.get("properties", {})
             for tool_param_key, tool_param_value in tool_param_properties.items():
                 tool_param_def = ToolParamDefinition(
-                    param_type=tool_param_value.get("type", None),
+                    param_type=str(tool_param_value.get("type", None)),
                     description=tool_param_value.get("description", None),
                 )
                 lls_tool_params[tool_param_key] = tool_param_def
