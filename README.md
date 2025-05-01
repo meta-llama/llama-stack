@@ -91,14 +91,95 @@ Llama Stack standardizes the core building blocks that simplify AI application d
 - **Multiple developer interfaces** like CLI and SDKs for Python, Typescript, iOS, and Android.
 - **Standalone applications** as examples for how to build production-grade AI applications with Llama Stack.
 
-<div style="text-align: center;">
-  <img
-    src="https://github.com/user-attachments/assets/33d9576d-95ea-468d-95e2-8fa233205a50"
-    width="480"
-    title="Llama Stack"
-    alt="Llama Stack"
-  />
-</div>
+```mermaid
+%%{
+	init: {
+		'theme': 'base',
+		'themeVariables': {
+			'fontSize':'100px'
+		}
+	}
+}%%
+graph TD
+	%% === Classes to control layout ===
+	classDef inv rankSpacing:0,diagramPadding:0,nodeSpacing:1000,padding:0,opacity:0,stroke-width:0
+
+	%% === Classes for color-coded nodes (scaled stroke width & corners) ===
+	classDef darkGray fill:#ddd,stroke:#999,stroke-width:0px,rx:40px,ry:40px
+	classDef agentYellow fill:#FDF3B6,stroke:#999,stroke-width:5px,rx:40px,ry:40px
+	classDef violetBlock fill:#EEE8F4,stroke:#999,stroke-width:5px,rx:40px,ry:40px
+	classDef lightGreen fill:#D8EDC1,stroke:#999,stroke-width:5px,rx:40px,ry:40px
+	classDef telemetryGray fill:#E7E7E7,stroke:#999,stroke-width:5px,rx:40px,ry:40px
+	%% === Top layer ===
+	top[Llama&nbsp;Stack&nbsp;Client&nbsp;SDKs,&nbsp;CLI,&nbsp;User&nbsp;Interfaces]:::darkGray
+	top ~~~ M1
+	%% dummy right subgraph for alighnment and balance
+	subgraph R
+	end
+	top ~~~ R
+	subgraph Middle[" "]
+		subgraph M1[" "]
+			Agents:::agentYellow
+			PostTraining[Post&nbsp;Training]:::violetBlock
+		end
+
+		M1 ~~~ M2
+		subgraph M2[" "]
+			classDef lightBlue fill:#C7E4F7,stroke:#999,stroke-width:5px,rx:40px,ry:40px
+			classDef lightRed fill:#F8C1B1,stroke:#999,stroke-width:5px,rx:40px,ry:40px
+			classDef lightOrange fill:#F9D591,stroke:#999,stroke-width:5px,rx:40px,ry:40px
+			VectorIO:::lightBlue
+			Inference:::lightRed
+			Evals:::lightOrange
+			SyntheticData[Synthetic&nbsp;Data]:::violetBlock
+		end
+
+		M2 ~~~ M3
+		subgraph M3[" "]
+			Safety:::lightGreen
+			BatchInference[Batch&nbsp;Inference]:::violetBlock
+			BatchAgents[Batch&nbsp;Agents]:::agentYellow
+		end
+
+		M3 ~~~ M4
+		subgraph M4[" "]
+		end
+		M4 ~~~ M5
+		subgraph M5[" "]
+		%% === Dashed border classes (scaled stroke/dash/corners) ===
+			classDef resBlue fill:#C9DCEC,stroke:#999,stroke-width:5px,rx:40px,ry:40px,stroke-dasharray:50 50
+			classDef resGray fill:#EEE,stroke:#999,stroke-width:5px,rx:40px,ry:40px,stroke-dasharray:50 50
+			classDef resYellow fill:#F6E3B3,stroke:#999,stroke-width:5px,rx:40px,ry:40px,stroke-dasharray:50 50
+			classDef resGreen fill:#D8EDC1,stroke:#999,stroke-width:5px,rx:40px,ry:40px,stroke-dasharray:50 50
+			VectorDBs:::resBlue
+			Models:::resGray
+			Shields:::resGreen
+			Datasets:::resYellow
+		end
+		M5 ~~~ M6
+		subgraph M6[" "]
+        _[" "]:::inv
+		end
+		M6 ~~~ M7
+		subgraph M7[" "]
+			Telemetry:::telemetryGray
+		end
+	end
+	M7 ~~~ SP
+	%% dummy left subgraphs for alighnment and balance
+	top ~~~ L
+	subgraph L
+	end
+	L ~~~ L2
+	subgraph L2
+	end
+	SP[&nbsp;&nbsp;Service&nbsp;Providers&nbsp;&nbsp;]:::darkGray
+	class Top,M1,M2,M3,M4,M5,M7,R,L,L2 inv
+	classDef hr height:1,width:1500,fill:#EEE,stroke:#999,stroke-width:10,stroke-dasharray:10 50
+	class L,R,M6 hr
+	classDef MiddleC fill:#eee,rx:40px,ry:40px
+	class Middle MiddleC
+```
 
 ### Llama Stack Benefits
 - **Flexible Options**: Developers can choose their preferred infrastructure without changing APIs and enjoy flexible deployment choices.
