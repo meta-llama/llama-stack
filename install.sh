@@ -40,10 +40,8 @@ wait_for_service() {
 
 if command -v docker &> /dev/null; then
   ENGINE="docker"
-  HOST_DNS="host.docker.internal"
 elif command -v podman &> /dev/null; then
   ENGINE="podman"
-  HOST_DNS="host.containers.internal"
 else
   die "Docker or Podman is required. Install Docker: https://docs.docker.com/get-docker/ or Podman: https://podman.io/getting-started/installation"
 fi
@@ -66,8 +64,8 @@ fi
 if [ "$ENGINE" = "podman" ] && [ "$(uname -s)" = "Darwin" ]; then
   if ! podman info &>/dev/null; then
     log "⌛️ Initializing Podman VM…"
-    podman machine init -q &>/dev/null || true
-    podman machine start -q &>/dev/null || true
+    podman machine init &>/dev/null || true
+    podman machine start &>/dev/null || true
 
     log "⌛️  Waiting for Podman API…"
     until podman info &>/dev/null; do
@@ -87,12 +85,20 @@ for name in ollama-server llama-stack; do
 done
 
 ###############################################################################
+# 0. Create a shared network
+###############################################################################
+if ! $ENGINE network inspect llama-net >/dev/null 2>&1; then
+  log "🌐  Creating network…"
+  $ENGINE network create llama-net >/dev/null 2>&1
+fi
+
+###############################################################################
 # 1. Ollama
 ###############################################################################
 log "🦙  Starting Ollama…"
-
 $ENGINE run -d "${PLATFORM_OPTS[@]}" --name ollama-server \
-  -p "${OLLAMA_PORT}:11434" \
+  --network llama-net \
+  -p "${OLLAMA_PORT}:${OLLAMA_PORT}" \
   ollama/ollama > /dev/null 2>&1
 
 if ! wait_for_service "http://localhost:${OLLAMA_PORT}/" "Ollama" "$WAIT_TIMEOUT" "Ollama daemon"; then
@@ -111,18 +117,14 @@ fi
 ###############################################################################
 # 2. Llama‑Stack
 ###############################################################################
-if [ "$ENGINE" = "docker" ]; then
-  NET_OPTS=( -p "${PORT}:${PORT}" --add-host="${HOST_DNS}:host-gateway" )
-elif [ "$ENGINE" = "podman" ]; then
-  NET_OPTS=( -p "${PORT}:${PORT}" )
-fi
-
-cmd=( run -d "${PLATFORM_OPTS[@]}" --name llama-stack "${NET_OPTS[@]}" \
+cmd=( run -d "${PLATFORM_OPTS[@]}" --name llama-stack \
+      --network llama-net \
+      -p "${PORT}:${PORT}" \
       "${SERVER_IMAGE}" --port "${PORT}" \
       --env INFERENCE_MODEL="${MODEL_ALIAS}" \
-      --env OLLAMA_URL="http://${HOST_DNS}:${OLLAMA_PORT}" )
+      --env OLLAMA_URL="http://ollama-server:${OLLAMA_PORT}" )
 
-log "🦙📦  Starting Llama‑Stack…"
+log "🦙  Starting Llama‑Stack…"
 $ENGINE "${cmd[@]}" > /dev/null 2>&1
 
 if ! wait_for_service "http://127.0.0.1:${PORT}/v1/health" "OK" "$WAIT_TIMEOUT" "Llama-Stack API"; then
