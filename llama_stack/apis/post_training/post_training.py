@@ -169,6 +169,17 @@ class PostTrainingJobArtifactsResponse(BaseModel):
     # TODO(ashwin): metrics, evals
 
 
+@json_schema_type
+class RuntimeConfig(BaseModel):
+    """
+    Provider-specific runtime configuration. Providers should document and parse their own expected fields.
+    This model allows arbitrary extra fields for maximum flexibility.
+    """
+
+    class Config:
+        extra = "allow"
+
+
 class PostTraining(Protocol):
     @webmethod(route="/post-training/supervised-fine-tune", method="POST")
     async def supervised_fine_tune(
@@ -183,6 +194,7 @@ class PostTraining(Protocol):
         ),
         checkpoint_dir: Optional[str] = None,
         algorithm_config: Optional[AlgorithmConfig] = None,
+        runtime_config: Optional[RuntimeConfig] = None,
     ) -> PostTrainingJob: ...
 
     @webmethod(route="/post-training/preference-optimize", method="POST")
@@ -194,6 +206,7 @@ class PostTraining(Protocol):
         training_config: TrainingConfig,
         hyperparam_search_config: Dict[str, Any],
         logger_config: Dict[str, Any],
+        runtime_config: Optional[RuntimeConfig] = None,
     ) -> PostTrainingJob: ...
 
     @webmethod(route="/post-training/jobs", method="GET")

@@ -18,6 +18,7 @@ from llama_stack.apis.post_training import (
     PostTrainingJob,
     PostTrainingJobArtifactsResponse,
     PostTrainingJobStatusResponse,
+    RuntimeConfig,
     TrainingConfig,
 )
 from llama_stack.providers.inline.post_training.torchtune.config import (
@@ -80,6 +81,7 @@ class TorchtunePostTrainingImpl:
         model: str,
         checkpoint_dir: Optional[str],
         algorithm_config: Optional[AlgorithmConfig],
+        runtime_config: Optional[RuntimeConfig] = None,
     ) -> PostTrainingJob:
         if isinstance(algorithm_config, LoraFinetuningConfig):
 
