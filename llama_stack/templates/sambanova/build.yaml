@@ -17,6 +17,5 @@ distribution_spec:
     tool_runtime:
     - remote::brave-search
     - remote::tavily-search
-    - inline::code-interpreter
     - inline::rag-runtime
 image_type: conda
