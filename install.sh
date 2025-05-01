@@ -16,6 +16,28 @@ WAIT_TIMEOUT=300
 log(){ printf "\e[1;32m%s\e[0m\n" "$*"; }
 die(){ printf "\e[1;31m❌ %s\e[0m\n" "$*" >&2; exit 1; }
 
+wait_for_service() {
+  local url="$1"
+  local pattern="$2"
+  local timeout="$3"
+  local name="$4"
+  local start ts
+  log "⏳  Waiting for ${name}…"
+  start=$(date +%s)
+  while true; do
+    if curl --retry 5 --retry-delay 1 --retry-max-time "$timeout" --retry-all-errors --silent --fail "$url" 2>/dev/null | grep -q "$pattern"; then
+      break
+    fi
+    ts=$(date +%s)
+    if (( ts - start >= timeout )); then
+      return 1
+    fi
+    printf '.'
+    sleep 1
+  done
+  return 0
+}
+
 if command -v docker &> /dev/null; then
   ENGINE="docker"
   HOST_DNS="host.docker.internal"
@@ -71,16 +93,18 @@ $ENGINE run -d "${PLATFORM_OPTS[@]}" --name ollama-server \
   -p "${OLLAMA_PORT}:11434" \
   ollama/ollama > /dev/null 2>&1
 
-log "⏳  Waiting for Ollama daemon…"
-if ! timeout "$WAIT_TIMEOUT" bash -c \
-    "until curl -fsS http://localhost:${OLLAMA_PORT}/ 2>/dev/null | grep -q 'Ollama'; do sleep 1; done"; then
+if ! wait_for_service "http://localhost:${OLLAMA_PORT}/" "Ollama" "$WAIT_TIMEOUT" "Ollama daemon"; then
   log "❌  Ollama daemon did not become ready in ${WAIT_TIMEOUT}s; dumping container logs:"
-  $ENGINE logs ollama-server --tail=200
+  $ENGINE logs --tail 200 ollama-server
   die "Ollama startup failed"
 fi
 
 log "📦  Ensuring model is pulled: ${MODEL_ALIAS}…"
-$ENGINE exec ollama-server ollama pull "${MODEL_ALIAS}" > /dev/null 2>&1
+if ! $ENGINE exec ollama-server ollama pull "${MODEL_ALIAS}" > /dev/null 2>&1; then
+  log "❌  Failed to pull model ${MODEL_ALIAS}; dumping container logs:"
+  $ENGINE logs --tail 200 ollama-server
+  die "Model pull failed"
+fi
 
 ###############################################################################
 # 2. Llama‑Stack
@@ -88,7 +112,7 @@ $ENGINE exec ollama-server ollama pull "${MODEL_ALIAS}" > /dev/null 2>&1
 if [ "$ENGINE" = "docker" ]; then
   NET_OPTS=( -p "${PORT}:${PORT}" --add-host="${HOST_DNS}:host-gateway" )
 elif [ "$ENGINE" = "podman" ]; then
-  NET_OPTS=( --network host )
+  NET_OPTS=( -p "${PORT}:${PORT}" )
 fi
 
 cmd=( run -d "${PLATFORM_OPTS[@]}" --name llama-stack "${NET_OPTS[@]}" \
@@ -99,11 +123,9 @@ cmd=( run -d "${PLATFORM_OPTS[@]}" --name llama-stack "${NET_OPTS[@]}" \
 log "🦙📦  Starting Llama‑Stack…"
 $ENGINE "${cmd[@]}" > /dev/null 2>&1
 
-log "⏳  Waiting for Llama-Stack API…"
-if ! timeout "$WAIT_TIMEOUT" bash -c \
-  "until $ENGINE exec llama-stack curl -fsS http://127.0.0.1:${PORT}/v1/health 2>/dev/null | grep -q 'OK'; do printf '.'; sleep 1; done"; then
+if ! wait_for_service "http://127.0.0.1:${PORT}/v1/health" "OK" "$WAIT_TIMEOUT" "Llama-Stack API"; then
   log "❌  Llama-Stack did not become ready in ${WAIT_TIMEOUT}s; dumping container logs:"
-  $ENGINE logs llama-stack --tail=200
+  $ENGINE logs --tail 200 llama-stack
   die "Llama-Stack startup failed"
 fi
 
