@@ -234,6 +234,29 @@ class AuthenticationConfig(BaseModel):
     )
 
 
+class QuotaPeriod(str, Enum):
+    DAY = "day"
+
+
+class QuotaLimit(BaseModel):
+    max_requests: int = Field(default=1000, description="Maximum requests per period")
+    period: QuotaPeriod = Field(default=QuotaPeriod.DAY, description="Quota period to set")
+
+
+class QuotaType(str, Enum):
+    SQLITE = "sqlite"
+
+
+class QuotaSqliteConfig(BaseModel):
+    db_path: str = Field(default="./quotas.db", description="Path to the SQLite DB file")
+    limit: QuotaLimit = Field(description="Quota limit configuration (requests + period)")
+
+
+class QuotaConfig(BaseModel):
+    type: QuotaType = Field(description="Quota backend type. Only 'sqlite' is supported at this time")
+    config: QuotaSqliteConfig
+
+
 class ServerConfig(BaseModel):
     port: int = Field(
         default=8321,
@@ -256,6 +279,10 @@ class ServerConfig(BaseModel):
     disable_ipv6: bool = Field(
         default=False,
         description="Disable IPv6 support",
+    )
+    quota: QuotaConfig | None = Field(
+        default=None,
+        description="Per client quota request configuration",
     )
 
 

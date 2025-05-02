@@ -113,6 +113,8 @@ class AuthenticationMiddleware:
                     "namespaces": [token],
                 }
 
+            scope["authenticated_client_id"] = token
+
             # Store attributes in request scope
             scope["user_attributes"] = user_attributes
             logger.debug(f"Authentication successful: {len(scope['user_attributes'])} attributes")
