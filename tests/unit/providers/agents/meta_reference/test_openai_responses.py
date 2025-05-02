@@ -4,13 +4,19 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
 from llama_stack.apis.agents.openai_responses import (
+    OpenAIResponseInputItemList,
+    OpenAIResponseInputMessageContentText,
     OpenAIResponseInputToolWebSearch,
-    OpenAIResponseOutputMessage,
+    OpenAIResponseMessage,
+    OpenAIResponseObject,
+    OpenAIResponseOutputMessageContentOutputText,
+    OpenAIResponseOutputMessageWebSearchToolCall,
+    OpenAIResponsePreviousResponseWithInputItems,
 )
 from llama_stack.apis.inference.inference import (
     OpenAIAssistantMessageParam,
@@ -100,7 +106,7 @@ async def test_create_openai_response_with_string_input(openai_responses_impl, m
     openai_responses_impl.persistence_store.set.assert_called_once()
     assert result.model == model
     assert len(result.output) == 1
-    assert isinstance(result.output[0], OpenAIResponseOutputMessage)
+    assert isinstance(result.output[0], OpenAIResponseMessage)
     assert result.output[0].content[0].text == "Hello! How can I help you?"
 
 
@@ -198,5 +204,108 @@ async def test_create_openai_response_with_string_input_with_tools(openai_respon
 
     # Check that we got the content from our mocked tool execution result
     assert len(result.output) >= 1
-    assert isinstance(result.output[1], OpenAIResponseOutputMessage)
+    assert isinstance(result.output[1], OpenAIResponseMessage)
     assert result.output[1].content[0].text == "The score of todays game was 10-12"
+
+
+@pytest.mark.asyncio
+async def test_prepend_previous_response_none(openai_responses_impl):
+    """Test prepending no previous response to a new response."""
+
+    input = await openai_responses_impl._prepend_previous_response("fake_input", None)
+    assert input == "fake_input"
+
+
+@pytest.mark.asyncio
+@patch.object(OpenAIResponsesImpl, "_get_previous_response_with_input")
+async def test_prepend_previous_response_basic(get_previous_response_with_input, openai_responses_impl):
+    """Test prepending a basic previous response to a new response."""
+
+    input_item_message = OpenAIResponseMessage(
+        id="123",
+        content=[OpenAIResponseInputMessageContentText(text="fake_previous_input")],
+        role="user",
+    )
+    input_items = OpenAIResponseInputItemList(data=[input_item_message])
+    response_output_message = OpenAIResponseMessage(
+        id="123",
+        content=[OpenAIResponseOutputMessageContentOutputText(text="fake_response")],
+        status="completed",
+        role="assistant",
+    )
+    response = OpenAIResponseObject(
+        created_at=1,
+        id="resp_123",
+        model="fake_model",
+        output=[response_output_message],
+        status="completed",
+    )
+    previous_response = OpenAIResponsePreviousResponseWithInputItems(
+        input_items=input_items,
+        response=response,
+    )
+    get_previous_response_with_input.return_value = previous_response
+
+    input = await openai_responses_impl._prepend_previous_response("fake_input", "resp_123")
+
+    assert len(input) == 3
+    # Check for previous input
+    assert isinstance(input[0], OpenAIResponseMessage)
+    assert input[0].content[0].text == "fake_previous_input"
+    # Check for previous output
+    assert isinstance(input[1], OpenAIResponseMessage)
+    assert input[1].content[0].text == "fake_response"
+    # Check for new input
+    assert isinstance(input[2], OpenAIResponseMessage)
+    assert input[2].content == "fake_input"
+
+
+@pytest.mark.asyncio
+@patch.object(OpenAIResponsesImpl, "_get_previous_response_with_input")
+async def test_prepend_previous_response_web_search(get_previous_response_with_input, openai_responses_impl):
+    """Test prepending a web search previous response to a new response."""
+
+    input_item_message = OpenAIResponseMessage(
+        id="123",
+        content=[OpenAIResponseInputMessageContentText(text="fake_previous_input")],
+        role="user",
+    )
+    input_items = OpenAIResponseInputItemList(data=[input_item_message])
+    output_web_search = OpenAIResponseOutputMessageWebSearchToolCall(
+        id="ws_123",
+        status="completed",
+    )
+    output_message = OpenAIResponseMessage(
+        id="123",
+        content=[OpenAIResponseOutputMessageContentOutputText(text="fake_web_search_response")],
+        status="completed",
+        role="assistant",
+    )
+    response = OpenAIResponseObject(
+        created_at=1,
+        id="resp_123",
+        model="fake_model",
+        output=[output_web_search, output_message],
+        status="completed",
+    )
+    previous_response = OpenAIResponsePreviousResponseWithInputItems(
+        input_items=input_items,
+        response=response,
+    )
+    get_previous_response_with_input.return_value = previous_response
+
+    input_messages = [OpenAIResponseMessage(content="fake_input", role="user")]
+    input = await openai_responses_impl._prepend_previous_response(input_messages, "resp_123")
+
+    assert len(input) == 4
+    # Check for previous input
+    assert isinstance(input[0], OpenAIResponseMessage)
+    assert input[0].content[0].text == "fake_previous_input"
+    # Check for previous output web search tool call
+    assert isinstance(input[1], OpenAIResponseOutputMessageWebSearchToolCall)
+    # Check for previous output web search response
+    assert isinstance(input[2], OpenAIResponseMessage)
+    assert input[2].content[0].text == "fake_web_search_response"
+    # Check for new input
+    assert isinstance(input[3], OpenAIResponseMessage)
+    assert input[3].content == "fake_input"

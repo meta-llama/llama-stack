@@ -22,7 +22,7 @@ from llama_stack.apis.agents import (
     Document,
     ListAgentSessionsResponse,
     ListAgentsResponse,
-    OpenAIResponseInputMessage,
+    OpenAIResponseInput,
     OpenAIResponseInputTool,
     OpenAIResponseObject,
     Session,
@@ -255,7 +255,7 @@ class MetaReferenceAgentsImpl(Agents):
 
     async def create_openai_response(
         self,
-        input: str | list[OpenAIResponseInputMessage],
+        input: str | list[OpenAIResponseInput],
         model: str,
         previous_response_id: str | None = None,
         store: bool | None = True,
