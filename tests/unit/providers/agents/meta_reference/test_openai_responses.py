@@ -9,10 +9,15 @@ from unittest.mock import AsyncMock
 import pytest
 
 from llama_stack.apis.agents.openai_responses import (
+    OpenAIResponseInputMessage,
+    OpenAIResponseInputMessageContentText,
     OpenAIResponseInputToolWebSearch,
     OpenAIResponseOutputMessage,
 )
 from llama_stack.apis.inference.inference import (
+    OpenAIAssistantMessageParam,
+    OpenAIChatCompletionContentPartTextParam,
+    OpenAIDeveloperMessageParam,
     OpenAIUserMessageParam,
 )
 from llama_stack.apis.tools.tools import Tool, ToolGroups, ToolInvocationResult, ToolParameter, ToolRuntime
@@ -156,3 +161,49 @@ async def test_create_openai_response_with_string_input_with_tools(openai_respon
     assert len(result.output) >= 1
     assert isinstance(result.output[1], OpenAIResponseOutputMessage)
     assert result.output[1].content[0].text == "Dublin"
+
+
+@pytest.mark.asyncio
+async def test_create_openai_response_with_multiple_messages(openai_responses_impl, mock_inference_api):
+    """Test creating an OpenAI response with multiple messages."""
+    # Setup
+    input_messages = [
+        OpenAIResponseInputMessage(role="developer", content="You are a helpful assistant", name=None),
+        OpenAIResponseInputMessage(role="user", content="Name some towns in Ireland", name=None),
+        OpenAIResponseInputMessage(
+            role="assistant",
+            content=[
+                OpenAIResponseInputMessageContentText(text="Galway, Longford, Sligo"),
+                OpenAIResponseInputMessageContentText(text="Dublin"),
+            ],
+            name=None,
+        ),
+        OpenAIResponseInputMessage(role="user", content="Which is the largest town in Ireland?", name=None),
+    ]
+    model = "meta-llama/Llama-3.1-8B-Instruct"
+
+    mock_inference_api.openai_chat_completion.return_value = load_chat_completion_fixture("simple_chat_completion.yaml")
+
+    # Execute
+    await openai_responses_impl.create_openai_response(
+        input=input_messages,
+        model=model,
+        temperature=0.1,
+    )
+
+    # Verify the the correct messages were sent to the inference API i.e.
+    # All of the responses message were convered to the chat completion message objects
+    inference_messages = mock_inference_api.openai_chat_completion.call_args_list[0].kwargs["messages"]
+    for i, m in enumerate(input_messages):
+        if isinstance(m.content, str):
+            assert inference_messages[i].content == m.content
+        else:
+            assert inference_messages[i].content[0].text == m.content[0].text
+            assert isinstance(inference_messages[i].content[0], OpenAIChatCompletionContentPartTextParam)
+        assert inference_messages[i].role == m.role
+        if m.role == "user":
+            assert isinstance(inference_messages[i], OpenAIUserMessageParam)
+        elif m.role == "assistant":
+            assert isinstance(inference_messages[i], OpenAIAssistantMessageParam)
+        else:
+            assert isinstance(inference_messages[i], OpenAIDeveloperMessageParam)
