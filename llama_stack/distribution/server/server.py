@@ -60,6 +60,7 @@ from llama_stack.providers.utils.telemetry.tracing import (
 
 from .auth import AuthenticationMiddleware
 from .endpoints import get_all_api_endpoints
+from .quota import QuotaMiddleware
 
 REPO_ROOT = Path(__file__).parent.parent.parent.parent
 
@@ -434,6 +435,35 @@ def main(args: argparse.Namespace | None = None):
     if config.server.auth:
         logger.info(f"Enabling authentication with provider: {config.server.auth.provider_type.value}")
         app.add_middleware(AuthenticationMiddleware, auth_config=config.server.auth)
+    else:
+        if config.server.quota:
+            quota = config.server.quota
+            logger.warning(
+                "Configured authenticated_max_requests (%d) but no auth is enabled; "
+                "falling back to anonymous_max_requests (%d) for all the requests",
+                quota.authenticated_max_requests,
+                quota.anonymous_max_requests,
+            )
+
+    if config.server.quota:
+        logger.info("Enabling quota middleware for authenticated and anonymous clients")
+
+        quota = config.server.quota
+        anonymous_max_requests = quota.anonymous_max_requests
+        # if auth is disabled, use the anonymous max requests
+        authenticated_max_requests = quota.authenticated_max_requests if config.server.auth else anonymous_max_requests
+
+        kv_config = quota.kvstore
+        window_map = {"day": 86400}
+        window_seconds = window_map[quota.period.value]
+
+        app.add_middleware(
+            QuotaMiddleware,
+            kv_config=kv_config,
+            anonymous_max_requests=anonymous_max_requests,
+            authenticated_max_requests=authenticated_max_requests,
+            window_seconds=window_seconds,
+        )
 
     try:
         impls = asyncio.run(construct_stack(config))

@@ -113,6 +113,10 @@ class AuthenticationMiddleware:
                     "roles": [token],
                 }
 
+            # Store the client ID in the request scope so that downstream middleware (like QuotaMiddleware)
+            # can identify the requester and enforce per-client rate limits.
+            scope["authenticated_client_id"] = token
+
             # Store attributes in request scope
             scope["user_attributes"] = user_attributes
             scope["principal"] = validation_result.principal
