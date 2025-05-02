@@ -18,6 +18,28 @@ class OpenAIResponseError(BaseModel):
 
 
 @json_schema_type
+class OpenAIResponseInputMessageContentText(BaseModel):
+    text: str
+    type: Literal["input_text"] = "input_text"
+
+
+@json_schema_type
+class OpenAIResponseInputMessageContentImage(BaseModel):
+    detail: Literal["low"] | Literal["high"] | Literal["auto"] = "auto"
+    type: Literal["input_image"] = "input_image"
+    # TODO: handle file_id
+    image_url: str | None = None
+
+
+# TODO: handle file content types
+OpenAIResponseInputMessageContent = Annotated[
+    OpenAIResponseInputMessageContentText | OpenAIResponseInputMessageContentImage,
+    Field(discriminator="type"),
+]
+register_schema(OpenAIResponseInputMessageContent, name="OpenAIResponseInputMessageContent")
+
+
+@json_schema_type
 class OpenAIResponseOutputMessageContentOutputText(BaseModel):
     text: str
     type: Literal["output_text"] = "output_text"
@@ -31,12 +53,21 @@ register_schema(OpenAIResponseOutputMessageContent, name="OpenAIResponseOutputMe
 
 
 @json_schema_type
-class OpenAIResponseOutputMessage(BaseModel):
-    id: str
-    content: list[OpenAIResponseOutputMessageContent]
-    role: Literal["assistant"] = "assistant"
-    status: str
+class OpenAIResponseMessage(BaseModel):
+    """
+    Corresponds to the various Message types in the Responses API.
+    They are all under one type because the Responses API gives them all
+    the same "type" value, and there is no way to tell them apart in certain
+    scenarios.
+    """
+
+    content: str | list[OpenAIResponseInputMessageContent] | list[OpenAIResponseOutputMessageContent]
+    role: Literal["system"] | Literal["developer"] | Literal["user"] | Literal["assistant"]
     type: Literal["message"] = "message"
+
+    # The fields below are not used in all scenarios, but are required in others.
+    id: str | None = None
+    status: str | None = None
 
 
 @json_schema_type
@@ -47,7 +78,7 @@ class OpenAIResponseOutputMessageWebSearchToolCall(BaseModel):
 
 
 OpenAIResponseOutput = Annotated[
-    OpenAIResponseOutputMessage | OpenAIResponseOutputMessageWebSearchToolCall,
+    OpenAIResponseMessage | OpenAIResponseOutputMessageWebSearchToolCall,
     Field(discriminator="type"),
 ]
 register_schema(OpenAIResponseOutput, name="OpenAIResponseOutput")
@@ -89,33 +120,15 @@ OpenAIResponseObjectStream = Annotated[
 register_schema(OpenAIResponseObjectStream, name="OpenAIResponseObjectStream")
 
 
-@json_schema_type
-class OpenAIResponseInputMessageContentText(BaseModel):
-    text: str
-    type: Literal["input_text"] = "input_text"
-
-
-@json_schema_type
-class OpenAIResponseInputMessageContentImage(BaseModel):
-    detail: Literal["low"] | Literal["high"] | Literal["auto"] = "auto"
-    type: Literal["input_image"] = "input_image"
-    # TODO: handle file_id
-    image_url: str | None = None
-
-
-# TODO: handle file content types
-OpenAIResponseInputMessageContent = Annotated[
-    OpenAIResponseInputMessageContentText | OpenAIResponseInputMessageContentImage,
-    Field(discriminator="type"),
+OpenAIResponseInput = Annotated[
+    # Responses API allows output messages to be passed in as input
+    OpenAIResponseOutputMessageWebSearchToolCall
+    |
+    # Fallback to the generic message type as a last resort
+    OpenAIResponseMessage,
+    Field(union_mode="left_to_right"),
 ]
-register_schema(OpenAIResponseInputMessageContent, name="OpenAIResponseInputMessageContent")
-
-
-@json_schema_type
-class OpenAIResponseInputMessage(BaseModel):
-    content: str | list[OpenAIResponseInputMessageContent]
-    role: Literal["system"] | Literal["developer"] | Literal["user"] | Literal["assistant"]
-    type: Literal["message"] | None = "message"
+register_schema(OpenAIResponseInput, name="OpenAIResponseInput")
 
 
 @json_schema_type
@@ -133,18 +146,11 @@ OpenAIResponseInputTool = Annotated[
 register_schema(OpenAIResponseInputTool, name="OpenAIResponseInputTool")
 
 
-@json_schema_type
-class OpenAIResponseInputItemMessage(OpenAIResponseInputMessage):
-    id: str
-
-
-@json_schema_type
 class OpenAIResponseInputItemList(BaseModel):
-    data: list[OpenAIResponseInputItemMessage]
+    data: list[OpenAIResponseInput]
     object: Literal["list"] = "list"
 
 
-@json_schema_type
 class OpenAIResponsePreviousResponseWithInputItems(BaseModel):
     input_items: OpenAIResponseInputItemList
     response: OpenAIResponseObject

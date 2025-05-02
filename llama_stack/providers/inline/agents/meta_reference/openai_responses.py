@@ -12,19 +12,17 @@ from typing import cast
 from openai.types.chat import ChatCompletionToolParam
 
 from llama_stack.apis.agents.openai_responses import (
+    OpenAIResponseInput,
     OpenAIResponseInputItemList,
-    OpenAIResponseInputItemMessage,
-    OpenAIResponseInputMessage,
-    OpenAIResponseInputMessageContent,
     OpenAIResponseInputMessageContentImage,
     OpenAIResponseInputMessageContentText,
     OpenAIResponseInputTool,
+    OpenAIResponseMessage,
     OpenAIResponseObject,
     OpenAIResponseObjectStream,
     OpenAIResponseObjectStreamResponseCompleted,
     OpenAIResponseObjectStreamResponseCreated,
     OpenAIResponseOutput,
-    OpenAIResponseOutputMessage,
     OpenAIResponseOutputMessageContentOutputText,
     OpenAIResponseOutputMessageWebSearchToolCall,
     OpenAIResponsePreviousResponseWithInputItems,
@@ -56,62 +54,38 @@ logger = get_logger(name=__name__, category="openai_responses")
 OPENAI_RESPONSES_PREFIX = "openai_responses:"
 
 
-async def _convert_response_input_content_to_chat_content_parts(
-    input_content: list[OpenAIResponseInputMessageContent],
-) -> list[OpenAIChatCompletionContentPartParam]:
-    """
-    Convert a list of input content items to a list of chat completion content parts
-    """
-    content_parts = []
-    for input_content_part in input_content:
-        if isinstance(input_content_part, OpenAIResponseInputMessageContentText):
-            content_parts.append(OpenAIChatCompletionContentPartTextParam(text=input_content_part.text))
-        elif isinstance(input_content_part, OpenAIResponseInputMessageContentImage):
-            if input_content_part.image_url:
-                image_url = OpenAIImageURL(url=input_content_part.image_url, detail=input_content_part.detail)
-                content_parts.append(OpenAIChatCompletionContentPartImageParam(image_url=image_url))
-    return content_parts
-
-
-async def _convert_response_input_to_chat_user_content(
-    input: str | list[OpenAIResponseInputMessage],
-) -> str | list[OpenAIChatCompletionContentPartParam]:
-    user_content: str | list[OpenAIChatCompletionContentPartParam] = ""
-    if isinstance(input, list):
-        user_content = []
-        for user_input in input:
-            if isinstance(user_input.content, list):
-                user_content.extend(await _convert_response_input_content_to_chat_content_parts(user_input.content))
-            else:
-                user_content.append(OpenAIChatCompletionContentPartTextParam(text=user_input.content))
-    else:
-        user_content = input
-    return user_content
-
-
-async def _previous_response_to_messages(
-    previous_response: OpenAIResponsePreviousResponseWithInputItems,
+async def _convert_response_input_to_chat_messages(
+    input: str | list[OpenAIResponseInput],
 ) -> list[OpenAIMessageParam]:
     messages: list[OpenAIMessageParam] = []
-    for previous_message in previous_response.input_items.data:
-        previous_content = await _convert_response_input_content_to_chat_content_parts(previous_message.content)
-        if previous_message.role == "user":
-            converted_message = OpenAIUserMessageParam(content=previous_content)
-        elif previous_message.role == "assistant":
-            converted_message = OpenAIAssistantMessageParam(content=previous_content)
-        else:
-            # TODO: handle other message roles? unclear if system/developer roles are
-            # used in previous responses
-            continue
-        messages.append(converted_message)
-
-    for output_message in previous_response.response.output:
-        if isinstance(output_message, OpenAIResponseOutputMessage):
-            messages.append(OpenAIAssistantMessageParam(content=output_message.content[0].text))
+    content: str | list[OpenAIChatCompletionContentPartParam] = ""
+    if isinstance(input, list):
+        for input_message in input:
+            if isinstance(input_message.content, list):
+                content = []
+                for input_message_content in input_message.content:
+                    if isinstance(input_message_content, OpenAIResponseInputMessageContentText):
+                        content.append(OpenAIChatCompletionContentPartTextParam(text=input_message_content.text))
+                    elif isinstance(input_message_content, OpenAIResponseInputMessageContentImage):
+                        if input_message_content.image_url:
+                            image_url = OpenAIImageURL(
+                                url=input_message_content.image_url, detail=input_message_content.detail
+                            )
+                            content.append(OpenAIChatCompletionContentPartImageParam(image_url=image_url))
+            else:
+                content = input_message.content
+            message_type = await _get_message_type_by_role(input_message.role)
+            if message_type is None:
+                raise ValueError(
+                    f"Llama Stack OpenAI Responses does not yet support message role '{input_message.role}' in this context"
+                )
+            messages.append(message_type(content=content))
+    else:
+        messages.append(OpenAIUserMessageParam(content=input))
     return messages
 
 
-async def _openai_choices_to_output_messages(choices: list[OpenAIChoice]) -> list[OpenAIResponseOutputMessage]:
+async def _openai_choices_to_output_messages(choices: list[OpenAIChoice]) -> list[OpenAIResponseMessage]:
     output_messages = []
     for choice in choices:
         output_content = ""
@@ -121,10 +95,11 @@ async def _openai_choices_to_output_messages(choices: list[OpenAIChoice]) -> lis
             output_content = choice.message.content.text
         # TODO: handle image content
         output_messages.append(
-            OpenAIResponseOutputMessage(
+            OpenAIResponseMessage(
                 id=f"msg_{uuid.uuid4()}",
                 content=[OpenAIResponseOutputMessageContentOutputText(text=output_content)],
                 status="completed",
+                role="assistant",
             )
         )
     return output_messages
@@ -160,6 +135,27 @@ class OpenAIResponsesImpl:
             raise ValueError(f"OpenAI response with id '{id}' not found")
         return OpenAIResponsePreviousResponseWithInputItems.model_validate_json(response_json)
 
+    async def _prepend_previous_response(
+        self, input: str | list[OpenAIResponseInput], previous_response_id: str | None = None
+    ):
+        if previous_response_id:
+            previous_response_with_input = await self._get_previous_response_with_input(previous_response_id)
+
+            # previous response input items
+            new_input_items = previous_response_with_input.input_items.data
+
+            # previous response output items
+            new_input_items.extend(previous_response_with_input.response.output)
+
+            # new input items from the current request
+            if isinstance(input, str):
+                # Normalize input to a list of OpenAIResponseInputMessage objects
+                input = [OpenAIResponseMessage(content=input, role="user")]
+            new_input_items.extend(input)
+            input = new_input_items
+
+        return input
+
     async def get_openai_response(
         self,
         id: str,
@@ -169,7 +165,7 @@ class OpenAIResponsesImpl:
 
     async def create_openai_response(
         self,
-        input: str | list[OpenAIResponseInputMessage],
+        input: str | list[OpenAIResponseInput],
         model: str,
         previous_response_id: str | None = None,
         store: bool | None = True,
@@ -179,37 +175,8 @@ class OpenAIResponsesImpl:
     ):
         stream = False if stream is None else stream
 
-        messages: list[OpenAIMessageParam] = []
-        if previous_response_id:
-            previous_response_with_input = await self._get_previous_response_with_input(previous_response_id)
-            messages.extend(await _previous_response_to_messages(previous_response_with_input))
-
-        # TODO: refactor this user_content parsing out into a separate method
-        content: str | list[OpenAIChatCompletionContentPartParam] = ""
-        if isinstance(input, list):
-            for input_message in input:
-                if isinstance(input_message.content, list):
-                    content = []
-                    for input_message_content in input_message.content:
-                        if isinstance(input_message_content, OpenAIResponseInputMessageContentText):
-                            content.append(OpenAIChatCompletionContentPartTextParam(text=input_message_content.text))
-                        elif isinstance(input_message_content, OpenAIResponseInputMessageContentImage):
-                            if input_message_content.image_url:
-                                image_url = OpenAIImageURL(
-                                    url=input_message_content.image_url, detail=input_message_content.detail
-                                )
-                                content.append(OpenAIChatCompletionContentPartImageParam(image_url=image_url))
-                else:
-                    content = input_message.content
-                message_type = await _get_message_type_by_role(input_message.role)
-                if message_type is None:
-                    raise ValueError(
-                        f"Llama Stack OpenAI Responses does not yet support message role '{input_message.role}' in this context"
-                    )
-                messages.append(message_type(content=content))
-        else:
-            messages.append(OpenAIUserMessageParam(content=input))
-
+        input = await self._prepend_previous_response(input, previous_response_id)
+        messages = await _convert_response_input_to_chat_messages(input)
         chat_tools = await self._convert_response_tools_to_chat_tools(tools) if tools else None
         chat_response = await self.inference_api.openai_chat_completion(
             model=model,
@@ -272,22 +239,29 @@ class OpenAIResponsesImpl:
         if store:
             # Store in kvstore
 
+            new_input_id = f"msg_{uuid.uuid4()}"
             if isinstance(input, str):
                 # synthesize a message from the input string
                 input_content = OpenAIResponseInputMessageContentText(text=input)
-                input_content_item = OpenAIResponseInputItemMessage(
+                input_content_item = OpenAIResponseMessage(
                     role="user",
                     content=[input_content],
-                    id=f"msg_{uuid.uuid4()}",
+                    id=new_input_id,
                 )
                 input_items_data = [input_content_item]
             else:
                 # we already have a list of messages
                 input_items_data = []
                 for input_item in input:
-                    input_items_data.append(
-                        OpenAIResponseInputItemMessage(id=f"msg_{uuid.uuid4()}", **input_item.model_dump())
-                    )
+                    if isinstance(input_item, OpenAIResponseMessage):
+                        # These may or may not already have an id, so dump to dict, check for id, and add if missing
+                        input_item_dict = input_item.model_dump()
+                        if "id" not in input_item_dict:
+                            input_item_dict["id"] = new_input_id
+                        input_items_data.append(OpenAIResponseMessage(**input_item_dict))
+                    else:
+                        input_items_data.append(input_item)
+
             input_items = OpenAIResponseInputItemList(data=input_items_data)
             prev_response = OpenAIResponsePreviousResponseWithInputItems(
                 input_items=input_items,
