@@ -34,8 +34,10 @@ from llama_stack.apis.inference.inference import (
     OpenAIChatCompletionContentPartTextParam,
     OpenAIChatCompletionToolCallFunction,
     OpenAIChoice,
+    OpenAIDeveloperMessageParam,
     OpenAIImageURL,
     OpenAIMessageParam,
+    OpenAISystemMessageParam,
     OpenAIToolMessageParam,
     OpenAIUserMessageParam,
 )
@@ -77,6 +79,16 @@ async def _openai_choices_to_output_messages(choices: list[OpenAIChoice]) -> lis
     return output_messages
 
 
+async def _get_message_type_by_role(role: str):
+    role_to_type = {
+        "user": OpenAIUserMessageParam,
+        "system": OpenAISystemMessageParam,
+        "assistant": OpenAIAssistantMessageParam,
+        "developer": OpenAIDeveloperMessageParam,
+    }
+    return role_to_type.get(role)
+
+
 class OpenAIResponsesImpl:
     def __init__(
         self,
@@ -116,26 +128,32 @@ class OpenAIResponsesImpl:
         if previous_response_id:
             previous_response = await self.get_openai_response(previous_response_id)
             messages.extend(await _previous_response_to_messages(previous_response))
+
         # TODO: refactor this user_content parsing out into a separate method
-        user_content: str | list[OpenAIChatCompletionContentPartParam] = ""
+        content: str | list[OpenAIChatCompletionContentPartParam] = ""
         if isinstance(input, list):
-            user_content = []
-            for user_input in input:
-                if isinstance(user_input.content, list):
-                    for user_input_content in user_input.content:
-                        if isinstance(user_input_content, OpenAIResponseInputMessageContentText):
-                            user_content.append(OpenAIChatCompletionContentPartTextParam(text=user_input_content.text))
-                        elif isinstance(user_input_content, OpenAIResponseInputMessageContentImage):
-                            if user_input_content.image_url:
+            for input_message in input:
+                if isinstance(input_message.content, list):
+                    content = []
+                    for input_message_content in input_message.content:
+                        if isinstance(input_message_content, OpenAIResponseInputMessageContentText):
+                            content.append(OpenAIChatCompletionContentPartTextParam(text=input_message_content.text))
+                        elif isinstance(input_message_content, OpenAIResponseInputMessageContentImage):
+                            if input_message_content.image_url:
                                 image_url = OpenAIImageURL(
-                                    url=user_input_content.image_url, detail=user_input_content.detail
+                                    url=input_message_content.image_url, detail=input_message_content.detail
                                 )
-                                user_content.append(OpenAIChatCompletionContentPartImageParam(image_url=image_url))
+                                content.append(OpenAIChatCompletionContentPartImageParam(image_url=image_url))
                 else:
-                    user_content.append(OpenAIChatCompletionContentPartTextParam(text=user_input.content))
+                    content = input_message.content
+                message_type = await _get_message_type_by_role(input_message.role)
+                if message_type is None:
+                    raise ValueError(
+                        f"Llama Stack OpenAI Responses does not yet support message role '{input_message.role}' in this context"
+                    )
+                messages.append(message_type(content=content))
         else:
-            user_content = input
-        messages.append(OpenAIUserMessageParam(content=user_content))
+            messages.append(OpenAIUserMessageParam(content=input))
 
         chat_tools = await self._convert_response_tools_to_chat_tools(tools) if tools else None
         chat_response = await self.inference_api.openai_chat_completion(
