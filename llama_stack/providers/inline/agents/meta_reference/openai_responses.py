@@ -68,12 +68,20 @@ async def _convert_response_input_to_chat_messages(
                 for input_message_content in input_message.content:
                     if isinstance(input_message_content, OpenAIResponseInputMessageContentText):
                         content.append(OpenAIChatCompletionContentPartTextParam(text=input_message_content.text))
+                    elif isinstance(input_message_content, OpenAIResponseOutputMessageContentOutputText):
+                        content.append(OpenAIChatCompletionContentPartTextParam(text=input_message_content.text))
                     elif isinstance(input_message_content, OpenAIResponseInputMessageContentImage):
                         if input_message_content.image_url:
                             image_url = OpenAIImageURL(
                                 url=input_message_content.image_url, detail=input_message_content.detail
                             )
                             content.append(OpenAIChatCompletionContentPartImageParam(image_url=image_url))
+                    elif isinstance(input_message_content, str):
+                        content.append(OpenAIChatCompletionContentPartTextParam(text=input_message_content))
+                    else:
+                        raise ValueError(
+                            f"Llama Stack OpenAI Responses does not yet support content type '{type(input_message_content)}' in this context"
+                        )
             else:
                 content = input_message.content
             message_type = await _get_message_type_by_role(input_message.role)
