@@ -108,6 +108,7 @@ from llama_stack.apis.inference.inference import (
     OpenAIChatCompletion,
     OpenAICompletion,
     OpenAICompletionChoice,
+    OpenAIMessageParam,
     OpenAIResponseFormatParam,
     ToolConfig,
 )
@@ -987,7 +988,7 @@ def _convert_openai_sampling_params(
 
 
 def openai_messages_to_messages(
-    messages: list[OpenAIChatCompletionMessage],
+    messages: list[OpenAIMessageParam],
 ) -> list[Message]:
     """
     Convert a list of OpenAIChatCompletionMessage into a list of Message.
@@ -995,12 +996,12 @@ def openai_messages_to_messages(
     converted_messages = []
     for message in messages:
         if message.role == "system":
-            converted_message = SystemMessage(content=message.content)
+            converted_message = SystemMessage(content=openai_content_to_content(message.content))
         elif message.role == "user":
             converted_message = UserMessage(content=openai_content_to_content(message.content))
         elif message.role == "assistant":
             converted_message = CompletionMessage(
-                content=message.content,
+                content=openai_content_to_content(message.content),
                 tool_calls=_convert_openai_tool_calls(message.tool_calls),
                 stop_reason=StopReason.end_of_turn,
             )
@@ -1331,7 +1332,7 @@ class OpenAIChatCompletionToLlamaStackMixin:
     async def openai_chat_completion(
         self,
         model: str,
-        messages: list[OpenAIChatCompletionMessage],
+        messages: list[OpenAIMessageParam],
         frequency_penalty: float | None = None,
         function_call: str | dict[str, Any] | None = None,
         functions: list[dict[str, Any]] | None = None,
