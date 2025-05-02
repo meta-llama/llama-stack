@@ -88,9 +88,7 @@ class OpenAIResponseOutputMessageFunctionToolCall(BaseModel):
 
 
 OpenAIResponseOutput = Annotated[
-    OpenAIResponseMessage
-    | OpenAIResponseOutputMessageWebSearchToolCall
-    | OpenAIResponseOutputMessageFunctionToolCall,
+    OpenAIResponseMessage | OpenAIResponseOutputMessageWebSearchToolCall | OpenAIResponseOutputMessageFunctionToolCall,
     Field(discriminator="type"),
 ]
 register_schema(OpenAIResponseOutput, name="OpenAIResponseOutput")
