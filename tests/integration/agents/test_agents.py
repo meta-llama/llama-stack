@@ -552,7 +552,7 @@ def test_rag_agent_with_attachments(llama_stack_client_with_mocked_inference, ag
     assert "lora" in response.output_message.content.lower()
 
 
-@pytest.skip(reason="Code interpreter is currently disabled in the Stack")
+@pytest.mark.skip(reason="Code interpreter is currently disabled in the Stack")
 def test_rag_and_code_agent(llama_stack_client_with_mocked_inference, agent_config):
     if "llama-4" in agent_config["model"].lower():
         pytest.xfail("Not working for llama4")
