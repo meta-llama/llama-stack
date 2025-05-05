@@ -20,8 +20,5 @@ class MilvusVectorIOConfig(BaseModel):
     model_config = ConfigDict(extra="allow")
 
     @classmethod
-
-    def sample_run_config(cls, __distro_dir__: str, **kwargs: Any) -> Dict[str, Any]:
-
+    def sample_run_config(cls, __distro_dir__: str, **kwargs: Any) -> dict[str, Any]:
         return {"uri": "${env.MILVUS_ENDPOINT}", "token": "${env.MILVUS_TOKEN}"}
-
