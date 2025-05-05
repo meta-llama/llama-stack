@@ -61,7 +61,6 @@ class PythonListCustomToolGenerator(PromptTemplateGeneratorBase):  # noqa: N801
         - Don't repeat tool response verbatim
         - Don't add supplementary information
 
-
         {{ function_description }}
         """.strip("\n")
     )
@@ -76,8 +75,7 @@ class PythonListCustomToolGenerator(PromptTemplateGeneratorBase):  # noqa: N801
     def _gen_function_description(self, custom_tools: list[ToolDefinition]) -> PromptTemplate:
         template_str = textwrap.dedent(
             """
-            Here is a list of functions in JSON format that you can invoke.
-
+            Here is a list of functions in JSON format that you can invoke:
             [
                 {% for t in tools -%}
                 {# manually setting up JSON because jinja sorts keys in unexpected ways -#}
@@ -108,10 +106,6 @@ class PythonListCustomToolGenerator(PromptTemplateGeneratorBase):  # noqa: N801
                 {% endif -%}
                 {%- endfor %}
             ]
-
-            You can answer general questions or invoke tools when necessary.
-            In addition to tool calls, you should also augment your responses by using the tool outputs.
-
             """
         )
         return PromptTemplate(
