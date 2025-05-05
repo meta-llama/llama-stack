@@ -125,7 +125,7 @@ graph TD
 			classDef lightBlue fill:#C7E4F7,stroke:#999,stroke-width:5px,rx:40px,ry:40px
 			classDef lightRed fill:#F8C1B1,stroke:#999,stroke-width:5px,rx:40px,ry:40px
 			classDef lightOrange fill:#F9D591,stroke:#999,stroke-width:5px,rx:40px,ry:40px
-			Memory:::lightBlue
+			VectorIO:::lightBlue
 			Inference:::lightRed
 			Evals:::lightOrange
 			SyntheticData[Synthetic&nbsp;Data]:::violetBlock
@@ -148,7 +148,7 @@ graph TD
 			classDef resGray fill:#EEE,stroke:#999,stroke-width:5px,rx:40px,ry:40px,stroke-dasharray:50 50
 			classDef resYellow fill:#F6E3B3,stroke:#999,stroke-width:5px,rx:40px,ry:40px,stroke-dasharray:50 50
 			classDef resGreen fill:#D8EDC1,stroke:#999,stroke-width:5px,rx:40px,ry:40px,stroke-dasharray:50 50
-			MemoryBanks:::resBlue
+			VectorDBs:::resBlue
 			Models:::resGray
 			Shields:::resGreen
 			Datasets:::resYellow
