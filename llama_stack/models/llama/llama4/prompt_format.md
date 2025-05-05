@@ -173,9 +173,7 @@ INCORRECT: [get_events(location="Singapore")] <- If function not in list
 - Don't repeat tool response verbatim
 - Don't add supplementary information
 
-
-Here is a list of functions in JSON format that you can invoke.
-
+Here is a list of functions in JSON format that you can invoke:
 [
     {
         "name": "get_weather",
@@ -196,10 +194,7 @@ Here is a list of functions in JSON format that you can invoke.
             }
         }
     }
-]
-
-You can answer general questions or invoke tools when necessary.
-In addition to tool calls, you should also augment your responses by using the tool outputs.<|eot|><|header_start|>user<|header_end|>
+]<|eot|><|header_start|>user<|header_end|>
 
 What is the weather in SF and Seattle?<|eot|><|header_start|>assistant<|header_end|>
 
