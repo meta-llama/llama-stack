@@ -102,10 +102,6 @@ def get_distribution_template() -> DistributionTemplate:
             provider_id="rag-runtime",
         ),
         ToolGroupInput(
-            toolgroup_id="builtin::code_interpreter",
-            provider_id="code-interpreter",
-        ),
-        ToolGroupInput(
             toolgroup_id="builtin::wolfram_alpha",
             provider_id="wolfram-alpha",
         ),
