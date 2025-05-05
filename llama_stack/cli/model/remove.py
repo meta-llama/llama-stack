@@ -42,11 +42,12 @@ class ModelRemove(Subcommand):
         )
 
     def _run_model_remove_cmd(self, args: argparse.Namespace) -> None:
-        from .safety_models import prompt_guard_model_sku
+        from .safety_models import prompt_guard_model_sku_map
 
-        prompt_guard = prompt_guard_model_sku()
-        if args.model == prompt_guard.model_id:
-            model = prompt_guard
+        prompt_guard_model_map = prompt_guard_model_sku_map()
+
+        if args.model in prompt_guard_model_map.keys():
+            model = prompt_guard_model_map[args.model]
         else:
             model = resolve_model(args.model)
 

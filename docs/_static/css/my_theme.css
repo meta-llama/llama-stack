@@ -27,3 +27,9 @@ pre {
     white-space: pre-wrap !important;
     word-break: break-all;
 }
+
+[data-theme="dark"] .mermaid {
+    background-color: #f4f4f6 !important;
+    border-radius: 6px;
+    padding: 0.5em;
+  }

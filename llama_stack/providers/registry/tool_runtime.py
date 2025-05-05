@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import List
 
 from llama_stack.providers.datatypes import (
     AdapterSpec,
@@ -15,7 +14,7 @@ from llama_stack.providers.datatypes import (
 )
 
 
-def available_providers() -> List[ProviderSpec]:
+def available_providers() -> list[ProviderSpec]:
     return [
         InlineProviderSpec(
             api=Api.tool_runtime,
@@ -35,13 +34,6 @@ def available_providers() -> List[ProviderSpec]:
             module="llama_stack.providers.inline.tool_runtime.rag",
             config_class="llama_stack.providers.inline.tool_runtime.rag.config.RagToolRuntimeConfig",
             api_dependencies=[Api.vector_io, Api.inference],
-        ),
-        InlineProviderSpec(
-            api=Api.tool_runtime,
-            provider_type="inline::code-interpreter",
-            pip_packages=[],
-            module="llama_stack.providers.inline.tool_runtime.code_interpreter",
-            config_class="llama_stack.providers.inline.tool_runtime.code_interpreter.config.CodeInterpreterToolConfig",
         ),
         remote_provider_spec(
             api=Api.tool_runtime,

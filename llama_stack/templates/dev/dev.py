@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import List, Tuple
 
 from llama_stack.apis.models.models import ModelType
 from llama_stack.distribution.datatypes import (
@@ -50,7 +49,7 @@ from llama_stack.templates.template import (
 )
 
 
-def get_inference_providers() -> Tuple[List[Provider], List[ModelInput]]:
+def get_inference_providers() -> tuple[list[Provider], list[ModelInput]]:
     # in this template, we allow each API key to be optional
     providers = [
         (
@@ -107,7 +106,6 @@ def get_distribution_template() -> DistributionTemplate:
         "tool_runtime": [
             "remote::brave-search",
             "remote::tavily-search",
-            "inline::code-interpreter",
             "inline::rag-runtime",
             "remote::model-context-protocol",
         ],
@@ -149,10 +147,6 @@ def get_distribution_template() -> DistributionTemplate:
         ToolGroupInput(
             toolgroup_id="builtin::rag",
             provider_id="rag-runtime",
-        ),
-        ToolGroupInput(
-            toolgroup_id="builtin::code_interpreter",
-            provider_id="code-interpreter",
         ),
     ]
     embedding_model = ModelInput(

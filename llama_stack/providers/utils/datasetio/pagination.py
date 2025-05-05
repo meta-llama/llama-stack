@@ -4,13 +4,13 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, List
+from typing import Any
 
 from llama_stack.apis.common.responses import PaginatedResponse
 
 
 def paginate_records(
-    records: List[Dict[str, Any]],
+    records: list[dict[str, Any]],
     start_index: int | None = None,
     limit: int | None = None,
 ) -> PaginatedResponse:

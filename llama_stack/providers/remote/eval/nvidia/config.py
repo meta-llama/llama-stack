@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 import os
-from typing import Any, Dict
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -23,7 +23,7 @@ class NVIDIAEvalConfig(BaseModel):
     )
 
     @classmethod
-    def sample_run_config(cls, **kwargs) -> Dict[str, Any]:
+    def sample_run_config(cls, **kwargs) -> dict[str, Any]:
         return {
             "evaluator_url": "${env.NVIDIA_EVALUATOR_URL:http://localhost:7331}",
         }

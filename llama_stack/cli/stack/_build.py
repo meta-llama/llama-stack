@@ -13,13 +13,12 @@ import sys
 import textwrap
 from functools import lru_cache
 from pathlib import Path
-from typing import Dict, Optional
 
 import yaml
 from prompt_toolkit import prompt
 from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.validation import Validator
-from termcolor import cprint
+from termcolor import colored, cprint
 
 from llama_stack.cli.stack.utils import ImageType
 from llama_stack.cli.table import print_table
@@ -46,14 +45,14 @@ from llama_stack.providers.datatypes import Api
 TEMPLATES_PATH = Path(__file__).parent.parent.parent / "templates"
 
 
-@lru_cache()
-def available_templates_specs() -> Dict[str, BuildConfig]:
+@lru_cache
+def available_templates_specs() -> dict[str, BuildConfig]:
     import yaml
 
     template_specs = {}
     for p in TEMPLATES_PATH.rglob("*build.yaml"):
         template_name = p.parent.name
-        with open(p, "r") as f:
+        with open(p) as f:
             build_config = BuildConfig(**yaml.safe_load(f))
             template_specs[template_name] = build_config
     return template_specs
@@ -178,7 +177,7 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
             if not available_providers:
                 continue
             api_provider = prompt(
-                "> Enter provider for API {}: ".format(api.value),
+                f"> Enter provider for API {api.value}: ",
                 completer=WordCompleter(available_providers),
                 complete_while_typing=True,
                 validator=Validator.from_callable(
@@ -201,7 +200,7 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
 
         build_config = BuildConfig(image_type=image_type, distribution_spec=distribution_spec)
     else:
-        with open(args.config, "r") as f:
+        with open(args.config) as f:
             try:
                 build_config = BuildConfig(**yaml.safe_load(f))
             except Exception as e:
@@ -332,9 +331,9 @@ def _generate_run_config(
 
 def _run_stack_build_command_from_build_config(
     build_config: BuildConfig,
-    image_name: Optional[str] = None,
-    template_name: Optional[str] = None,
-    config_path: Optional[str] = None,
+    image_name: str | None = None,
+    template_name: str | None = None,
+    config_path: str | None = None,
 ) -> str:
     image_name = image_name or build_config.image_name
     if build_config.image_type == LlamaStackImageType.CONTAINER.value:
@@ -389,6 +388,11 @@ def _run_stack_build_command_from_build_config(
             shutil.copy(path, run_config_file)
 
         cprint("Build Successful!", color="green")
+        cprint("You can find the newly-built template here: " + colored(template_path, "light_blue"))
+        cprint(
+            "You can run the new Llama Stack distro via: "
+            + colored(f"llama stack run {template_path} --image-type {build_config.image_type}", "light_blue")
+        )
         return template_path
     else:
         return _generate_run_config(build_config, build_dir, image_name)

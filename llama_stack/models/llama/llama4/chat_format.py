@@ -8,7 +8,6 @@ import io
 import json
 import uuid
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple
 
 import torch
 from PIL import Image as PIL_Image
@@ -46,10 +45,10 @@ def role_str(role: Role) -> str:
 class TransformedImage:
     image_tiles: torch.Tensor
     # is the aspect ratio needed anywhere?
-    aspect_ratio: Tuple[int, int]
+    aspect_ratio: tuple[int, int]
 
 
-def convert_image_to_rgb(image: PIL_Image.Image, bg: Tuple[int, int, int] = (255, 255, 255)) -> PIL_Image.Image:
+def convert_image_to_rgb(image: PIL_Image.Image, bg: tuple[int, int, int] = (255, 255, 255)) -> PIL_Image.Image:
     if image.mode == "RGBA":
         image.load()  # for png.split()
         new_img = PIL_Image.new("RGB", image.size, bg)
@@ -59,12 +58,12 @@ def convert_image_to_rgb(image: PIL_Image.Image, bg: Tuple[int, int, int] = (255
 
 
 class ChatFormat:
-    possible_headers: Dict[Role, str]
+    possible_headers: dict[Role, str]
 
     def __init__(
         self,
         tokenizer: Tokenizer,
-        vision_args: Optional[VisionArgs] = None,
+        vision_args: VisionArgs | None = None,
         max_num_chunks: int = 16,
     ):
         self.tokenizer = tokenizer
@@ -81,7 +80,7 @@ class ChatFormat:
                 vision_args.image_size.width, vision_args.image_size.height
             )
 
-    def _encode_header(self, role: str) -> List[int]:
+    def _encode_header(self, role: str) -> list[int]:
         tokens = []
         tokens.append(self.tokenizer.special_tokens["<|header_start|>"])
 
@@ -98,7 +97,7 @@ class ChatFormat:
     def _encode_image(
         self,
         transformed_image: TransformedImage,
-    ) -> List[int]:
+    ) -> list[int]:
         assert self.vision_args is not None, "The model is not vision-enabled"
 
         image_tensor = transformed_image.image_tiles
@@ -140,7 +139,7 @@ class ChatFormat:
 
         return tokens
 
-    def _encode_content(self, content: RawContent, bos: bool = False) -> Tuple[List[int], List[TransformedImage]]:
+    def _encode_content(self, content: RawContent, bos: bool = False) -> tuple[list[int], list[TransformedImage]]:
         tokens = []
         tranformed_images = []
 
@@ -189,7 +188,7 @@ class ChatFormat:
 
     def encode_message(
         self, message: RawMessage, tool_prompt_format: ToolPromptFormat
-    ) -> Tuple[List[int], List[TransformedImage]]:
+    ) -> tuple[list[int], list[TransformedImage]]:
         tokens = self._encode_header(message.role)
         images = []
 
@@ -223,7 +222,7 @@ class ChatFormat:
 
     def encode_dialog_prompt(
         self,
-        messages: List[RawMessage],
+        messages: list[RawMessage],
         tool_prompt_format: ToolPromptFormat = ToolPromptFormat.json,
     ) -> LLMInput:
         tokens = []
@@ -240,7 +239,7 @@ class ChatFormat:
         return self._model_input_from_tokens_images(tokens, images)
 
     # TODO(this should be generic, not only for assistant messages)
-    def decode_assistant_message(self, tokens: List[int], stop_reason: StopReason) -> RawMessage:
+    def decode_assistant_message(self, tokens: list[int], stop_reason: StopReason) -> RawMessage:
         content = self.tokenizer.decode(tokens)
 
         return self.decode_assistant_message_from_content(content, stop_reason)
@@ -312,7 +311,7 @@ class ChatFormat:
             tool_calls=tool_calls,
         )
 
-    def _model_input_from_tokens_images(self, tokens: List[int], images: List[TransformedImage]) -> LLMInput:
+    def _model_input_from_tokens_images(self, tokens: list[int], images: list[TransformedImage]) -> LLMInput:
         return LLMInput(
             tokens=tokens,
             images=[x.image_tiles for x in images] if len(images) > 0 else None,

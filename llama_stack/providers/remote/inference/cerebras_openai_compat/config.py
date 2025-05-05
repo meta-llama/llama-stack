@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -12,7 +12,7 @@ from llama_stack.schema_utils import json_schema_type
 
 
 class CerebrasProviderDataValidator(BaseModel):
-    cerebras_api_key: Optional[str] = Field(
+    cerebras_api_key: str | None = Field(
         default=None,
         description="API key for Cerebras models",
     )
@@ -20,7 +20,7 @@ class CerebrasProviderDataValidator(BaseModel):
 
 @json_schema_type
 class CerebrasCompatConfig(BaseModel):
-    api_key: Optional[str] = Field(
+    api_key: str | None = Field(
         default=None,
         description="The Cerebras API key",
     )
@@ -31,7 +31,7 @@ class CerebrasCompatConfig(BaseModel):
     )
 
     @classmethod
-    def sample_run_config(cls, api_key: str = "${env.CEREBRAS_API_KEY}", **kwargs) -> Dict[str, Any]:
+    def sample_run_config(cls, api_key: str = "${env.CEREBRAS_API_KEY}", **kwargs) -> dict[str, Any]:
         return {
             "openai_compat_api_base": "https://api.cerebras.ai/v1",
             "api_key": api_key,

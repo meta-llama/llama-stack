@@ -119,7 +119,7 @@ class StackRun(Subcommand):
 
         if not config_file.is_file():
             self.parser.error(
-                f"Config file must be a valid file path, '{config_file}’ is not a file: type={type(config_file)}"
+                f"Config file must be a valid file path, '{config_file}' is not a file: type={type(config_file)}"
             )
 
         logger.info(f"Using run configuration: {config_file}")

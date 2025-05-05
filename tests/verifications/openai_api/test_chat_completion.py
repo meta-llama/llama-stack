@@ -7,7 +7,6 @@
 import base64
 import copy
 import json
-import re
 from pathlib import Path
 from typing import Any
 
@@ -16,64 +15,15 @@ from openai import APIError
 from pydantic import BaseModel
 
 from tests.verifications.openai_api.fixtures.fixtures import (
-    _load_all_verification_configs,
+    case_id_generator,
+    get_base_test_name,
+    should_skip_test,
 )
 from tests.verifications.openai_api.fixtures.load import load_test_cases
 
 chat_completion_test_cases = load_test_cases("chat_completion")
 
 THIS_DIR = Path(__file__).parent
-
-
-def case_id_generator(case):
-    """Generate a test ID from the case's 'case_id' field, or use a default."""
-    case_id = case.get("case_id")
-    if isinstance(case_id, (str, int)):
-        return re.sub(r"\\W|^(?=\\d)", "_", str(case_id))
-    return None
-
-
-def pytest_generate_tests(metafunc):
-    """Dynamically parametrize tests based on the selected provider and config."""
-    if "model" in metafunc.fixturenames:
-        provider = metafunc.config.getoption("provider")
-        if not provider:
-            print("Warning: --provider not specified. Skipping model parametrization.")
-            metafunc.parametrize("model", [])
-            return
-
-        try:
-            config_data = _load_all_verification_configs()
-        except (FileNotFoundError, IOError) as e:
-            print(f"ERROR loading verification configs: {e}")
-            config_data = {"providers": {}}
-
-        provider_config = config_data.get("providers", {}).get(provider)
-        if provider_config:
-            models = provider_config.get("models", [])
-            if models:
-                metafunc.parametrize("model", models)
-            else:
-                print(f"Warning: No models found for provider '{provider}' in config.")
-                metafunc.parametrize("model", [])  # Parametrize empty if no models found
-        else:
-            print(f"Warning: Provider '{provider}' not found in config. No models parametrized.")
-            metafunc.parametrize("model", [])  # Parametrize empty if provider not found
-
-
-def should_skip_test(verification_config, provider, model, test_name_base):
-    """Check if a test should be skipped based on config exclusions."""
-    provider_config = verification_config.get("providers", {}).get(provider)
-    if not provider_config:
-        return False  # No config for provider, don't skip
-
-    exclusions = provider_config.get("test_exclusions", {}).get(model, [])
-    return test_name_base in exclusions
-
-
-# Helper to get the base test name from the request object
-def get_base_test_name(request):
-    return request.node.originalname
 
 
 @pytest.fixture

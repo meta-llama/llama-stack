@@ -11,6 +11,7 @@ Type-safe data interchange for Python data classes.
 """
 
 import builtins
+import collections.abc
 import dataclasses
 import inspect
 import re
@@ -171,6 +172,13 @@ class SupportsDoc(Protocol):
     __doc__: Optional[str]
 
 
+def _maybe_unwrap_async_iterator(t):
+    origin_type = typing.get_origin(t)
+    if origin_type is collections.abc.AsyncIterator:
+        return typing.get_args(t)[0]
+    return t
+
+
 def parse_type(typ: SupportsDoc) -> Docstring:
     """
     Parse the docstring of a type into its components.
@@ -178,6 +186,8 @@ def parse_type(typ: SupportsDoc) -> Docstring:
     :param typ: The type whose documentation string to parse.
     :returns: Components of the documentation string.
     """
+    # Use docstring from the iterator origin type for streaming apis
+    typ = _maybe_unwrap_async_iterator(typ)
 
     doc = get_docstring(typ)
     if doc is None:

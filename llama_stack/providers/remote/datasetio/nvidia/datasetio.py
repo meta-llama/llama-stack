@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import aiohttp
 
@@ -27,11 +27,11 @@ class NvidiaDatasetIOAdapter:
         self,
         method: str,
         path: str,
-        headers: Optional[Dict[str, Any]] = None,
-        params: Optional[Dict[str, Any]] = None,
-        json: Optional[Dict[str, Any]] = None,
+        headers: dict[str, Any] | None = None,
+        params: dict[str, Any] | None = None,
+        json: dict[str, Any] | None = None,
         **kwargs,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Helper method to make HTTP requests to the Customizer API."""
         url = f"{self.config.datasets_url}{path}"
         request_headers = self.headers.copy()
@@ -82,11 +82,11 @@ class NvidiaDatasetIOAdapter:
     async def update_dataset(
         self,
         dataset_id: str,
-        dataset_schema: Dict[str, ParamType],
+        dataset_schema: dict[str, ParamType],
         url: URL,
-        provider_dataset_id: Optional[str] = None,
-        provider_id: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        provider_dataset_id: str | None = None,
+        provider_id: str | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> None:
         raise NotImplementedError("Not implemented")
 
@@ -103,10 +103,10 @@ class NvidiaDatasetIOAdapter:
     async def iterrows(
         self,
         dataset_id: str,
-        start_index: Optional[int] = None,
-        limit: Optional[int] = None,
+        start_index: int | None = None,
+        limit: int | None = None,
     ) -> PaginatedResponse:
         raise NotImplementedError("Not implemented")
 
-    async def append_rows(self, dataset_id: str, rows: List[Dict[str, Any]]) -> None:
+    async def append_rows(self, dataset_id: str, rows: list[dict[str, Any]]) -> None:
         raise NotImplementedError("Not implemented")

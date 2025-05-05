@@ -10,9 +10,9 @@ import importlib
 import json
 import subprocess
 import sys
+from collections.abc import Iterable
 from functools import partial
 from pathlib import Path
-from typing import Iterable
 
 from rich.progress import Progress, SpinnerColumn, TextColumn
 

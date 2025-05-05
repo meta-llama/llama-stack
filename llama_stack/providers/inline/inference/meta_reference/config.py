@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel, field_validator
 
@@ -17,11 +17,11 @@ class MetaReferenceInferenceConfig(BaseModel):
     # the actual inference model id is dtermined by the moddel id in the request
     # Note: you need to register the model before using it for inference
     # models in the resouce list in the run.yaml config will be registered automatically
-    model: Optional[str] = None
-    torch_seed: Optional[int] = None
+    model: str | None = None
+    torch_seed: int | None = None
     max_seq_len: int = 4096
     max_batch_size: int = 1
-    model_parallel_size: Optional[int] = None
+    model_parallel_size: int | None = None
 
     # when this is False, we assume that the distributed process group is setup by someone
     # outside of this code (e.g., when run inside `torchrun`). that is useful for clients
@@ -30,9 +30,9 @@ class MetaReferenceInferenceConfig(BaseModel):
 
     # By default, the implementation will look at ~/.llama/checkpoints/<model> but you
     # can override by specifying the directory explicitly
-    checkpoint_dir: Optional[str] = None
+    checkpoint_dir: str | None = None
 
-    quantization: Optional[QuantizationConfig] = None
+    quantization: QuantizationConfig | None = None
 
     @field_validator("model")
     @classmethod
@@ -55,7 +55,7 @@ class MetaReferenceInferenceConfig(BaseModel):
         max_batch_size: str = "${env.MAX_BATCH_SIZE:1}",
         max_seq_len: str = "${env.MAX_SEQ_LEN:4096}",
         **kwargs,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         return {
             "model": model,
             "checkpoint_dir": checkpoint_dir,

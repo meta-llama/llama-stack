@@ -8,7 +8,6 @@ import io
 import json
 import uuid
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple
 
 from PIL import Image as PIL_Image
 
@@ -29,14 +28,14 @@ from .tool_utils import ToolUtils
 
 @dataclass
 class VisionInput:
-    mask: List[List[int]]
-    images: List[PIL_Image.Image]
+    mask: list[list[int]]
+    images: list[PIL_Image.Image]
 
 
 @dataclass
 class LLMInput:
-    tokens: List[int]
-    vision: Optional[VisionInput] = None
+    tokens: list[int]
+    vision: VisionInput | None = None
 
 
 def role_str(role: Role) -> str:
@@ -50,7 +49,7 @@ def role_str(role: Role) -> str:
 
 
 class ChatFormat:
-    possible_headers: Dict[Role, str]
+    possible_headers: dict[Role, str]
 
     def __init__(self, tokenizer: Tokenizer):
         self.tokenizer = tokenizer
@@ -58,7 +57,7 @@ class ChatFormat:
         self.possible_headers = {role: f"<|start_header_id|>{role_str(role)}<|end_header_id|>\n\n" for role in Role}
         self.vision_token = self.tokenizer.special_tokens["<|image|>"]
 
-    def _encode_header(self, role: str) -> List[int]:
+    def _encode_header(self, role: str) -> list[int]:
         tokens = []
         tokens.append(self.tokenizer.special_tokens["<|start_header_id|>"])
         tokens.extend(self.tokenizer.encode("ipython" if role == "tool" else role, bos=False, eos=False))
@@ -70,7 +69,7 @@ class ChatFormat:
         tokens, images = self._encode_content(content, bos=True)
         return self._model_input_from_tokens_images(tokens, images)
 
-    def _encode_content(self, content: RawContent, bos: bool = False) -> Tuple[List[int], List[PIL_Image.Image]]:
+    def _encode_content(self, content: RawContent, bos: bool = False) -> tuple[list[int], list[PIL_Image.Image]]:
         tokens = []
         images = []
 
@@ -107,7 +106,7 @@ class ChatFormat:
 
     def encode_message(
         self, message: RawMessage, tool_prompt_format: ToolPromptFormat
-    ) -> Tuple[List[int], List[PIL_Image.Image]]:
+    ) -> tuple[list[int], list[PIL_Image.Image]]:
         tokens = self._encode_header(message.role)
         images = []
 
@@ -145,8 +144,8 @@ class ChatFormat:
 
     def encode_dialog_prompt(
         self,
-        messages: List[RawMessage],
-        tool_prompt_format: Optional[ToolPromptFormat] = None,
+        messages: list[RawMessage],
+        tool_prompt_format: ToolPromptFormat | None = None,
     ) -> LLMInput:
         tool_prompt_format = tool_prompt_format or ToolPromptFormat.json
         tokens = []
@@ -163,7 +162,7 @@ class ChatFormat:
         return self._model_input_from_tokens_images(tokens, images)
 
     # TODO(this should be generic, not only for assistant messages)
-    def decode_assistant_message(self, tokens: List[int], stop_reason: StopReason) -> RawMessage:
+    def decode_assistant_message(self, tokens: list[int], stop_reason: StopReason) -> RawMessage:
         content = self.tokenizer.decode(tokens)
 
         return self.decode_assistant_message_from_content(content, stop_reason)
@@ -234,7 +233,7 @@ class ChatFormat:
             tool_calls=tool_calls,
         )
 
-    def _model_input_from_tokens_images(self, tokens: List[int], images: List[PIL_Image.Image]) -> LLMInput:
+    def _model_input_from_tokens_images(self, tokens: list[int], images: list[PIL_Image.Image]) -> LLMInput:
         vision_input = None
         if len(images) > 0:
             vision_input = VisionInput(
@@ -249,9 +248,9 @@ class ChatFormat:
 
 
 def create_vision_mask(
-    tokens: List[int],
+    tokens: list[int],
     vision_token: int,
-) -> List[List[int]]:
+) -> list[list[int]]:
     vision_token_locations = [i for i, token in enumerate(tokens) if token == vision_token]
     if len(vision_token_locations) == 0:
         return []

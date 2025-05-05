@@ -3,7 +3,7 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import pandas
 
@@ -92,8 +92,8 @@ class LocalFSDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
     async def iterrows(
         self,
         dataset_id: str,
-        start_index: Optional[int] = None,
-        limit: Optional[int] = None,
+        start_index: int | None = None,
+        limit: int | None = None,
     ) -> PaginatedResponse:
         dataset_def = self.dataset_infos[dataset_id]
         dataset_impl = PandasDataframeDataset(dataset_def)
@@ -102,7 +102,7 @@ class LocalFSDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
         records = dataset_impl.df.to_dict("records")
         return paginate_records(records, start_index, limit)
 
-    async def append_rows(self, dataset_id: str, rows: List[Dict[str, Any]]) -> None:
+    async def append_rows(self, dataset_id: str, rows: list[dict[str, Any]]) -> None:
         dataset_def = self.dataset_infos[dataset_id]
         dataset_impl = PandasDataframeDataset(dataset_def)
         await dataset_impl.load()

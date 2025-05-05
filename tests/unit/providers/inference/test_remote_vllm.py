@@ -10,7 +10,7 @@ import logging
 import threading
 import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from typing import Any, Dict
+from typing import Any
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -55,7 +55,7 @@ from llama_stack.providers.remote.inference.vllm.vllm import (
 
 
 class MockInferenceAdapterWithSleep:
-    def __init__(self, sleep_time: int, response: Dict[str, Any]):
+    def __init__(self, sleep_time: int, response: dict[str, Any]):
         self.httpd = None
 
         class DelayedRequestHandler(BaseHTTPRequestHandler):

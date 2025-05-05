@@ -7,7 +7,7 @@
 import glob
 import importlib
 import os
-from typing import Any, Dict, List
+from typing import Any
 
 import yaml
 from pydantic import BaseModel
@@ -24,7 +24,7 @@ from llama_stack.providers.datatypes import (
 logger = get_logger(name=__name__, category="core")
 
 
-def stack_apis() -> List[Api]:
+def stack_apis() -> list[Api]:
     return list(Api)
 
 
@@ -33,7 +33,7 @@ class AutoRoutedApiInfo(BaseModel):
     router_api: Api
 
 
-def builtin_automatically_routed_apis() -> List[AutoRoutedApiInfo]:
+def builtin_automatically_routed_apis() -> list[AutoRoutedApiInfo]:
     return [
         AutoRoutedApiInfo(
             routing_table_api=Api.models,
@@ -66,12 +66,12 @@ def builtin_automatically_routed_apis() -> List[AutoRoutedApiInfo]:
     ]
 
 
-def providable_apis() -> List[Api]:
+def providable_apis() -> list[Api]:
     routing_table_apis = {x.routing_table_api for x in builtin_automatically_routed_apis()}
     return [api for api in Api if api not in routing_table_apis and api != Api.inspect and api != Api.providers]
 
 
-def _load_remote_provider_spec(spec_data: Dict[str, Any], api: Api) -> ProviderSpec:
+def _load_remote_provider_spec(spec_data: dict[str, Any], api: Api) -> ProviderSpec:
     adapter = AdapterSpec(**spec_data["adapter"])
     spec = remote_provider_spec(
         api=api,
@@ -81,7 +81,7 @@ def _load_remote_provider_spec(spec_data: Dict[str, Any], api: Api) -> ProviderS
     return spec
 
 
-def _load_inline_provider_spec(spec_data: Dict[str, Any], api: Api, provider_name: str) -> ProviderSpec:
+def _load_inline_provider_spec(spec_data: dict[str, Any], api: Api, provider_name: str) -> ProviderSpec:
     spec = InlineProviderSpec(
         api=api,
         provider_type=f"inline::{provider_name}",
@@ -98,7 +98,7 @@ def _load_inline_provider_spec(spec_data: Dict[str, Any], api: Api, provider_nam
 
 def get_provider_registry(
     config=None,
-) -> Dict[Api, Dict[str, ProviderSpec]]:
+) -> dict[Api, dict[str, ProviderSpec]]:
     """Get the provider registry, optionally including external providers.
 
     This function loads both built-in providers and external providers from YAML files.
@@ -133,7 +133,7 @@ def get_provider_registry(
         ValueError: If any provider spec is invalid
     """
 
-    ret: Dict[Api, Dict[str, ProviderSpec]] = {}
+    ret: dict[Api, dict[str, ProviderSpec]] = {}
     for api in providable_apis():
         name = api.name.lower()
         logger.debug(f"Importing module {name}")
