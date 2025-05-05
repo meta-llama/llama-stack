@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "llama_stack"
-version = "0.2.1"
+version = "0.2.5"
 authors = [{ name = "Meta Llama", email = "llama-oss@meta.com" }]
 description = "Llama Stack"
 readme = "README.md"
@@ -27,7 +27,7 @@ dependencies = [
     "huggingface-hub",
     "jinja2>=3.1.6",
     "jsonschema",
-    "llama-stack-client>=0.2.2",
+    "llama-stack-client>=0.2.5",
     "openai>=1.66",
     "prompt-toolkit",
     "python-dotenv",
@@ -38,6 +38,8 @@ dependencies = [
     "termcolor",
     "tiktoken",
     "pillow",
+    "h11>=0.16.0",
+    "kubernetes",
 ]
 
 [project.optional-dependencies]
@@ -46,7 +48,8 @@ dev = [
     "pytest-asyncio",
     "pytest-cov",
     "pytest-html",
-    "nbval",            # For notebook testing
+    "pytest-json-report",
+    "nbval",              # For notebook testing
     "black",
     "ruff",
     "types-requests",
@@ -54,10 +57,19 @@ dev = [
     "pre-commit",
     "uvicorn",
     "fastapi",
-    "ruamel.yaml",      # needed for openapi generator
+    "ruamel.yaml",        # needed for openapi generator
 ]
 # These are the dependencies required for running unit tests.
-unit = ["sqlite-vec", "openai", "aiosqlite", "aiohttp", "pypdf", "chardet", "qdrant-client"]
+unit = [
+    "sqlite-vec",
+    "openai",
+    "aiosqlite",
+    "aiohttp",
+    "pypdf",
+    "chardet",
+    "qdrant-client",
+    "opentelemetry-exporter-otlp-proto-http",
+]
 # These are the core dependencies required for running integration tests. They are shared across all
 # providers. If a provider requires additional dependencies, please add them to your environment
 # separately. If you are using "uv" to execute your tests, you can use the "--with" flag to specify extra
@@ -93,7 +105,7 @@ codegen = ["rich", "pydantic", "jinja2>=3.1.6"]
 ui = [
     "streamlit",
     "pandas",
-    "llama-stack-client>=0.2.1",
+    "llama-stack-client>=0.2.5",
     "streamlit-option-menu",
 ]
 
@@ -132,15 +144,26 @@ exclude = [
 
 [tool.ruff.lint]
 select = [
-    "B",   # flake8-bugbear
-    "B9",  # flake8-bugbear subset
-    "C",   # comprehensions
-    "E",   # pycodestyle
-    "F",   # Pyflakes
-    "N",   # Naming
-    "W",   # Warnings
-    "DTZ", # datetime rules
-    "I",   # isort (imports order)
+    "UP",      # pyupgrade
+    "B",       # flake8-bugbear
+    "B9",      # flake8-bugbear subset
+    "C",       # comprehensions
+    "E",       # pycodestyle
+    "F",       # Pyflakes
+    "N",       # Naming
+    "W",       # Warnings
+    "DTZ",     # datetime rules
+    "I",       # isort (imports order)
+    "RUF001",  # Checks for ambiguous Unicode characters in strings
+    "RUF002",  # Checks for ambiguous Unicode characters in docstrings
+    "RUF003",  # Checks for ambiguous Unicode characters in comments
+    "PLC2401", # Checks for the use of non-ASCII characters in variable names
+    "PLC2403", # Checks for the use of non-ASCII characters in import statements
+    "PLE2510", # Checks for strings that contain the control character BS.
+    "PLE2512", # Checks for strings that contain the raw control character SUB.
+    "PLE2513", # Checks for strings that contain the raw control character ESC.
+    "PLE2514", # Checks for strings that contain the raw control character NUL (0 byte).
+    "PLE2515", # Checks for strings that contain the zero width space character.
 ]
 ignore = [
     # The following ignores are desired by the project maintainers.
@@ -153,10 +176,18 @@ ignore = [
     # These are the additional ones we started ignoring after moving to ruff. We should look into each one of them later.
     "C901", # Complexity of the function is too high
 ]
+unfixable = [
+    "PLE2515",
+] # Do not fix this automatically since ruff will replace the zero-width space with \u200b - let's do it manually
 
 # Ignore the following errors for the following files
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = ["DTZ"] # Ignore datetime rules for tests
+"llama_stack/providers/inline/scoring/basic/utils/ifeval_utils.py" = ["RUF001"]
+"llama_stack/providers/inline/scoring/basic/scoring_fn/fn_defs/regex_parser_multiple_choice_answer.py" = [
+    "RUF001",
+    "PLE2515",
+]
 
 [tool.mypy]
 mypy_path = ["llama_stack"]
@@ -249,6 +280,7 @@ exclude = [
     "^llama_stack/providers/inline/scoring/llm_as_judge/",
     "^llama_stack/providers/remote/agents/sample/",
     "^llama_stack/providers/remote/datasetio/huggingface/",
+    "^llama_stack/providers/remote/datasetio/nvidia/",
     "^llama_stack/providers/remote/inference/anthropic/",
     "^llama_stack/providers/remote/inference/bedrock/",
     "^llama_stack/providers/remote/inference/cerebras/",
@@ -264,6 +296,7 @@ exclude = [
     "^llama_stack/providers/remote/inference/sample/",
     "^llama_stack/providers/remote/inference/tgi/",
     "^llama_stack/providers/remote/inference/together/",
+    "^llama_stack/providers/remote/inference/watsonx/",
     "^llama_stack/providers/remote/safety/bedrock/",
     "^llama_stack/providers/remote/safety/nvidia/",
     "^llama_stack/providers/remote/safety/sample/",
@@ -307,6 +340,7 @@ exclude = [
     "^llama_stack/strong_typing/serializer\\.py$",
     "^llama_stack/templates/dev/dev\\.py$",
     "^llama_stack/templates/groq/groq\\.py$",
+    "^llama_stack/templates/llama_api/llama_api\\.py$",
     "^llama_stack/templates/sambanova/sambanova\\.py$",
     "^llama_stack/templates/template\\.py$",
 ]

@@ -1,5 +1,33 @@
 # Changelog
 
+# v0.2.3
+Published on: 2025-04-25T22:46:21Z
+
+## Highlights
+
+* OpenAI compatible inference endpoints and client-SDK support. `client.chat.completions.create()` now works.
+* significant improvements and functionality added to the nVIDIA distribution
+* many improvements to the test verification suite.
+* new inference providers: Ramalama, IBM WatsonX
+* many improvements to the Playground UI
+
+
+---
+
+# v0.2.2
+Published on: 2025-04-13T01:19:49Z
+
+## Main changes
+
+- Bring Your Own Provider (@leseb) - use out-of-tree provider code to execute the distribution server
+- OpenAI compatible inference API in progress (@bbrowning)
+- Provider verifications (@ehhuang)
+- Many updates and fixes to playground
+- Several llama4 related fixes
+
+
+---
+
 # v0.2.1
 Published on: 2025-04-05T23:13:00Z
 

@@ -8,12 +8,27 @@ This framework allows you to run the same set of verification tests against diff
 
 ## Features
 
-The verification suite currently tests:
+The verification suite currently tests the following in both streaming and non-streaming modes:
 
-- Basic chat completions (streaming and non-streaming)
+- Basic chat completions
 - Image input capabilities
 - Structured JSON output formatting
 - Tool calling functionality
+
+## Report
+
+The lastest report can be found at [REPORT.md](REPORT.md).
+
+To update the report, ensure you have the API keys set,
+```bash
+export OPENAI_API_KEY=<your_openai_api_key>
+export FIREWORKS_API_KEY=<your_fireworks_api_key>
+export TOGETHER_API_KEY=<your_together_api_key>
+```
+then run
+```bash
+uv run --with-editable ".[dev]" python tests/verifications/generate_report.py --run-tests
+```
 
 ## Running Tests
 
@@ -21,16 +36,16 @@ To run the verification tests, use pytest with the following parameters:
 
 ```bash
 cd llama-stack
-pytest tests/verifications/openai --provider=<provider-name>
+pytest tests/verifications/openai_api --provider=<provider-name>
 ```
 
 Example:
 ```bash
 # Run all tests
-pytest tests/verifications/openai --provider=together
+pytest tests/verifications/openai_api --provider=together
 
 # Only run tests with Llama 4 models
-pytest tests/verifications/openai --provider=together -k 'Llama-4'
+pytest tests/verifications/openai_api --provider=together -k 'Llama-4'
 ```
 
 ### Parameters
@@ -41,23 +56,22 @@ pytest tests/verifications/openai --provider=together -k 'Llama-4'
 
 ## Supported Providers
 
-The verification suite currently supports:
-- OpenAI
-- Fireworks
-- Together
-- Groq
-- Cerebras
+The verification suite supports any provider with an OpenAI compatible endpoint.
+
+See `tests/verifications/conf/` for the list of supported providers.
+
+To run on a new provider, simply add a new yaml file to the `conf/` directory with the provider config. See `tests/verifications/conf/together.yaml` for an example.
 
 ## Adding New Test Cases
 
-To add new test cases, create appropriate JSON files in the `openai/fixtures/test_cases/` directory following the existing patterns.
+To add new test cases, create appropriate JSON files in the `openai_api/fixtures/test_cases/` directory following the existing patterns.
 
 
 ## Structure
 
 - `__init__.py` - Marks the directory as a Python package
-- `conftest.py` - Global pytest configuration and fixtures
-- `openai/` - Tests specific to OpenAI-compatible APIs
+- `conf/` - Provider-specific configuration files
+- `openai_api/` - Tests specific to OpenAI-compatible APIs
   - `fixtures/` - Test fixtures and utilities
     - `fixtures.py` - Provider-specific fixtures
     - `load.py` - Utilities for loading test cases

@@ -6,7 +6,6 @@
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
 
 
 class QuantizationScheme(Enum):
@@ -15,8 +14,8 @@ class QuantizationScheme(Enum):
 
 @dataclass
 class QuantizationArgs:
-    scheme: Optional[QuantizationScheme] = None
-    group_size: Optional[int] = None
+    scheme: QuantizationScheme | None = None
+    group_size: int | None = None
     spinquant: bool = False
 
     def __init__(self, **kwargs):
@@ -39,10 +38,10 @@ class ModelArgs:
     dim: int = 4096
     n_layers: int = 32
     n_heads: int = 32
-    n_kv_heads: Optional[int] = None
+    n_kv_heads: int | None = None
     vocab_size: int = -1
     multiple_of: int = 256  # make SwiGLU hidden layer size multiple of large power of 2
-    ffn_dim_multiplier: Optional[float] = None
+    ffn_dim_multiplier: float | None = None
     norm_eps: float = 1e-5
     rope_theta: float = 500000
     use_scaled_rope: bool = False
@@ -55,8 +54,8 @@ class ModelArgs:
     vision_max_num_chunks: int = 4
     vision_num_cross_attention_layers: int = -1
 
-    quantization_args: Optional[QuantizationArgs] = None
-    lora_args: Optional[LoRAArgs] = None
+    quantization_args: QuantizationArgs | None = None
+    lora_args: LoRAArgs | None = None
 
     def __init__(self, **kwargs):
         for k, v in kwargs.items():

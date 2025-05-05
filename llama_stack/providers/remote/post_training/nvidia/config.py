@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 import os
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -15,23 +15,23 @@ from pydantic import BaseModel, Field
 class NvidiaPostTrainingConfig(BaseModel):
     """Configuration for NVIDIA Post Training implementation."""
 
-    api_key: Optional[str] = Field(
+    api_key: str | None = Field(
         default_factory=lambda: os.getenv("NVIDIA_API_KEY"),
         description="The NVIDIA API key.",
     )
 
-    dataset_namespace: Optional[str] = Field(
+    dataset_namespace: str | None = Field(
         default_factory=lambda: os.getenv("NVIDIA_DATASET_NAMESPACE", "default"),
         description="The NVIDIA dataset namespace.",
     )
 
-    project_id: Optional[str] = Field(
+    project_id: str | None = Field(
         default_factory=lambda: os.getenv("NVIDIA_PROJECT_ID", "test-example-model@v1"),
         description="The NVIDIA project ID.",
     )
 
     # ToDO: validate this, add default value
-    customizer_url: Optional[str] = Field(
+    customizer_url: str | None = Field(
         default_factory=lambda: os.getenv("NVIDIA_CUSTOMIZER_URL"),
         description="Base URL for the NeMo Customizer API",
     )
@@ -53,7 +53,7 @@ class NvidiaPostTrainingConfig(BaseModel):
     )
 
     @classmethod
-    def sample_run_config(cls, **kwargs) -> Dict[str, Any]:
+    def sample_run_config(cls, **kwargs) -> dict[str, Any]:
         return {
             "api_key": "${env.NVIDIA_API_KEY:}",
             "dataset_namespace": "${env.NVIDIA_DATASET_NAMESPACE:default}",
@@ -71,27 +71,27 @@ class SFTLoRADefaultConfig(BaseModel):
     n_epochs: int = 50
 
     # NeMo customizer specific parameters
-    log_every_n_steps: Optional[int] = None
+    log_every_n_steps: int | None = None
     val_check_interval: float = 0.25
     sequence_packing_enabled: bool = False
     weight_decay: float = 0.01
     lr: float = 0.0001
 
     # SFT specific parameters
-    hidden_dropout: Optional[float] = None
-    attention_dropout: Optional[float] = None
-    ffn_dropout: Optional[float] = None
+    hidden_dropout: float | None = None
+    attention_dropout: float | None = None
+    ffn_dropout: float | None = None
 
     # LoRA default parameters
     lora_adapter_dim: int = 8
-    lora_adapter_dropout: Optional[float] = None
+    lora_adapter_dropout: float | None = None
     lora_alpha: int = 16
 
     # Data config
     batch_size: int = 8
 
     @classmethod
-    def sample_config(cls) -> Dict[str, Any]:
+    def sample_config(cls) -> dict[str, Any]:
         """Return a sample configuration for NVIDIA training."""
         return {
             "n_epochs": 50,

@@ -7,10 +7,9 @@
 import base64
 from enum import Enum
 from io import BytesIO
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_serializer, field_validator
-from typing_extensions import Annotated
 
 # The goal is that these set of types are relevant for all Llama models.
 # That isn't the current state yet -- e.g., BuiltinTool is somewhat specific to
@@ -31,21 +30,21 @@ class BuiltinTool(Enum):
     code_interpreter = "code_interpreter"
 
 
-Primitive = Union[str, int, float, bool, None]
-RecursiveType = Union[Primitive, List[Primitive], Dict[str, Primitive]]
+Primitive = str | int | float | bool | None
+RecursiveType = Primitive | list[Primitive] | dict[str, Primitive]
 
 
 class ToolCall(BaseModel):
     call_id: str
-    tool_name: Union[BuiltinTool, str]
+    tool_name: BuiltinTool | str
     # Plan is to deprecate the Dict in favor of a JSON string
     # that is parsed on the client side instead of trying to manage
     # the recursive type here.
     # Making this a union so that client side can start prepping for this change.
     # Eventually, we will remove both the Dict and arguments_json field,
     # and arguments will just be a str
-    arguments: Union[str, Dict[str, RecursiveType]]
-    arguments_json: Optional[str] = None
+    arguments: str | dict[str, RecursiveType]
+    arguments_json: str | None = None
 
     @field_validator("tool_name", mode="before")
     @classmethod
@@ -91,15 +90,15 @@ class StopReason(Enum):
 
 class ToolParamDefinition(BaseModel):
     param_type: str
-    description: Optional[str] = None
-    required: Optional[bool] = True
-    default: Optional[Any] = None
+    description: str | None = None
+    required: bool | None = True
+    default: Any | None = None
 
 
 class ToolDefinition(BaseModel):
-    tool_name: Union[BuiltinTool, str]
-    description: Optional[str] = None
-    parameters: Optional[Dict[str, ToolParamDefinition]] = None
+    tool_name: BuiltinTool | str
+    description: str | None = None
+    parameters: dict[str, ToolParamDefinition] | None = None
 
     @field_validator("tool_name", mode="before")
     @classmethod
@@ -119,7 +118,7 @@ class RawMediaItem(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     @field_serializer("data")
-    def serialize_data(self, data: Optional[bytes], _info):
+    def serialize_data(self, data: bytes | None, _info):
         if data is None:
             return None
         return base64.b64encode(data).decode("utf-8")
@@ -137,9 +136,9 @@ class RawTextItem(BaseModel):
     text: str
 
 
-RawContentItem = Annotated[Union[RawTextItem, RawMediaItem], Field(discriminator="type")]
+RawContentItem = Annotated[RawTextItem | RawMediaItem, Field(discriminator="type")]
 
-RawContent = str | RawContentItem | List[RawContentItem]
+RawContent = str | RawContentItem | list[RawContentItem]
 
 
 class RawMessage(BaseModel):
@@ -147,17 +146,17 @@ class RawMessage(BaseModel):
     content: RawContent
 
     # This is for RAG but likely should be absorbed into content
-    context: Optional[RawContent] = None
+    context: RawContent | None = None
 
     # These are for the output message coming from the assistant
-    stop_reason: Optional[StopReason] = None
-    tool_calls: List[ToolCall] = Field(default_factory=list)
+    stop_reason: StopReason | None = None
+    tool_calls: list[ToolCall] = Field(default_factory=list)
 
 
 class GenerationResult(BaseModel):
     token: int
     text: str
-    logprobs: Optional[List[float]] = None
+    logprobs: list[float] | None = None
 
     source: Literal["input"] | Literal["output"]
 

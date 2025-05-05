@@ -497,6 +497,54 @@
                 }
             }
         },
+        "/v1/openai/v1/responses": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Runtime representation of an annotated type.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/OpenAIResponseObject"
+                                }
+                            },
+                            "text/event-stream": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/OpenAIResponseObjectStream"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Agents"
+                ],
+                "description": "Create a new OpenAI response.",
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateOpenaiResponseRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/v1/files": {
             "get": {
                 "responses": {
@@ -1270,6 +1318,49 @@
                     {
                         "name": "model_id",
                         "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/v1/openai/v1/responses/{id}": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "An OpenAIResponseObject.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/OpenAIResponseObject"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Agents"
+                ],
+                "description": "Retrieve an OpenAI response by its ID.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The ID of the OpenAI response to retrieve.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -5221,17 +5312,25 @@
                         "default": 10
                     },
                     "model": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The model identifier to use for the agent"
                     },
                     "instructions": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The system instructions for the agent"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Optional name for the agent, used in telemetry and identification"
                     },
                     "enable_session_persistence": {
                         "type": "boolean",
-                        "default": false
+                        "default": false,
+                        "description": "Optional flag indicating whether session data has to be persisted"
                     },
                     "response_format": {
-                        "$ref": "#/components/schemas/ResponseFormat"
+                        "$ref": "#/components/schemas/ResponseFormat",
+                        "description": "Optional response format configuration"
                     }
                 },
                 "additionalProperties": false,
@@ -5239,7 +5338,8 @@
                     "model",
                     "instructions"
                 ],
-                "title": "AgentConfig"
+                "title": "AgentConfig",
+                "description": "Configuration for an agent."
             },
             "AgentTool": {
                 "oneOf": [
@@ -6182,6 +6282,430 @@
                     "turn_id"
                 ],
                 "title": "AgentTurnResponseTurnStartPayload"
+            },
+            "OpenAIResponseInputMessage": {
+                "type": "object",
+                "properties": {
+                    "content": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/OpenAIResponseInputMessageContent"
+                                }
+                            }
+                        ]
+                    },
+                    "role": {
+                        "oneOf": [
+                            {
+                                "type": "string",
+                                "const": "system"
+                            },
+                            {
+                                "type": "string",
+                                "const": "developer"
+                            },
+                            {
+                                "type": "string",
+                                "const": "user"
+                            },
+                            {
+                                "type": "string",
+                                "const": "assistant"
+                            }
+                        ]
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "message",
+                        "default": "message"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "content",
+                    "role"
+                ],
+                "title": "OpenAIResponseInputMessage"
+            },
+            "OpenAIResponseInputMessageContent": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/OpenAIResponseInputMessageContentText"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpenAIResponseInputMessageContentImage"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "input_text": "#/components/schemas/OpenAIResponseInputMessageContentText",
+                        "input_image": "#/components/schemas/OpenAIResponseInputMessageContentImage"
+                    }
+                }
+            },
+            "OpenAIResponseInputMessageContentImage": {
+                "type": "object",
+                "properties": {
+                    "detail": {
+                        "oneOf": [
+                            {
+                                "type": "string",
+                                "const": "low"
+                            },
+                            {
+                                "type": "string",
+                                "const": "high"
+                            },
+                            {
+                                "type": "string",
+                                "const": "auto"
+                            }
+                        ],
+                        "default": "auto"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "input_image",
+                        "default": "input_image"
+                    },
+                    "image_url": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "detail",
+                    "type"
+                ],
+                "title": "OpenAIResponseInputMessageContentImage"
+            },
+            "OpenAIResponseInputMessageContentText": {
+                "type": "object",
+                "properties": {
+                    "text": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "input_text",
+                        "default": "input_text"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "text",
+                    "type"
+                ],
+                "title": "OpenAIResponseInputMessageContentText"
+            },
+            "OpenAIResponseInputTool": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "oneOf": [
+                            {
+                                "type": "string",
+                                "const": "web_search"
+                            },
+                            {
+                                "type": "string",
+                                "const": "web_search_preview_2025_03_11"
+                            }
+                        ],
+                        "default": "web_search"
+                    },
+                    "search_context_size": {
+                        "type": "string",
+                        "default": "medium"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ],
+                "title": "OpenAIResponseInputToolWebSearch"
+            },
+            "CreateOpenaiResponseRequest": {
+                "type": "object",
+                "properties": {
+                    "input": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/OpenAIResponseInputMessage"
+                                }
+                            }
+                        ],
+                        "description": "Input message(s) to create the response."
+                    },
+                    "model": {
+                        "type": "string",
+                        "description": "The underlying LLM used for completions."
+                    },
+                    "previous_response_id": {
+                        "type": "string",
+                        "description": "(Optional) if specified, the new response will be a continuation of the previous response. This can be used to easily fork-off new responses from existing responses."
+                    },
+                    "store": {
+                        "type": "boolean"
+                    },
+                    "stream": {
+                        "type": "boolean"
+                    },
+                    "temperature": {
+                        "type": "number"
+                    },
+                    "tools": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/OpenAIResponseInputTool"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "input",
+                    "model"
+                ],
+                "title": "CreateOpenaiResponseRequest"
+            },
+            "OpenAIResponseError": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string"
+                    },
+                    "message": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "code",
+                    "message"
+                ],
+                "title": "OpenAIResponseError"
+            },
+            "OpenAIResponseObject": {
+                "type": "object",
+                "properties": {
+                    "created_at": {
+                        "type": "integer"
+                    },
+                    "error": {
+                        "$ref": "#/components/schemas/OpenAIResponseError"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "model": {
+                        "type": "string"
+                    },
+                    "object": {
+                        "type": "string",
+                        "const": "response",
+                        "default": "response"
+                    },
+                    "output": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/OpenAIResponseOutput"
+                        }
+                    },
+                    "parallel_tool_calls": {
+                        "type": "boolean",
+                        "default": false
+                    },
+                    "previous_response_id": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "temperature": {
+                        "type": "number"
+                    },
+                    "top_p": {
+                        "type": "number"
+                    },
+                    "truncation": {
+                        "type": "string"
+                    },
+                    "user": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "created_at",
+                    "id",
+                    "model",
+                    "object",
+                    "output",
+                    "parallel_tool_calls",
+                    "status"
+                ],
+                "title": "OpenAIResponseObject"
+            },
+            "OpenAIResponseOutput": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/OpenAIResponseOutputMessage"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpenAIResponseOutputMessageWebSearchToolCall"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "message": "#/components/schemas/OpenAIResponseOutputMessage",
+                        "web_search_call": "#/components/schemas/OpenAIResponseOutputMessageWebSearchToolCall"
+                    }
+                }
+            },
+            "OpenAIResponseOutputMessage": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "content": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/OpenAIResponseOutputMessageContent"
+                        }
+                    },
+                    "role": {
+                        "type": "string",
+                        "const": "assistant",
+                        "default": "assistant"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "message",
+                        "default": "message"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "id",
+                    "content",
+                    "role",
+                    "status",
+                    "type"
+                ],
+                "title": "OpenAIResponseOutputMessage"
+            },
+            "OpenAIResponseOutputMessageContent": {
+                "type": "object",
+                "properties": {
+                    "text": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "output_text",
+                        "default": "output_text"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "text",
+                    "type"
+                ],
+                "title": "OpenAIResponseOutputMessageContentOutputText"
+            },
+            "OpenAIResponseOutputMessageWebSearchToolCall": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "web_search_call",
+                        "default": "web_search_call"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "id",
+                    "status",
+                    "type"
+                ],
+                "title": "OpenAIResponseOutputMessageWebSearchToolCall"
+            },
+            "OpenAIResponseObjectStream": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/OpenAIResponseObjectStreamResponseCreated"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpenAIResponseObjectStreamResponseCompleted"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "response.created": "#/components/schemas/OpenAIResponseObjectStreamResponseCreated",
+                        "response.completed": "#/components/schemas/OpenAIResponseObjectStreamResponseCompleted"
+                    }
+                }
+            },
+            "OpenAIResponseObjectStreamResponseCompleted": {
+                "type": "object",
+                "properties": {
+                    "response": {
+                        "$ref": "#/components/schemas/OpenAIResponseObject"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "response.completed",
+                        "default": "response.completed"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "response",
+                    "type"
+                ],
+                "title": "OpenAIResponseObjectStreamResponseCompleted"
+            },
+            "OpenAIResponseObjectStreamResponseCreated": {
+                "type": "object",
+                "properties": {
+                    "response": {
+                        "$ref": "#/components/schemas/OpenAIResponseObject"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "response.created",
+                        "default": "response.created"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "response",
+                    "type"
+                ],
+                "title": "OpenAIResponseObjectStreamResponseCreated"
             },
             "CreateUploadSessionRequest": {
                 "type": "object",
@@ -8891,8 +9415,7 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "role",
-                    "content"
+                    "role"
                 ],
                 "title": "OpenAIAssistantMessageParam",
                 "description": "A message containing the model's (assistant) response in an OpenAI-compatible chat completion request."

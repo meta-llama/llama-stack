@@ -84,7 +84,7 @@ class ModelList(Subcommand):
         )
 
     def _run_model_list_cmd(self, args: argparse.Namespace) -> None:
-        from .safety_models import prompt_guard_model_sku
+        from .safety_models import prompt_guard_model_skus
 
         if args.downloaded:
             return _run_model_list_downloaded_cmd()
@@ -96,7 +96,7 @@ class ModelList(Subcommand):
         ]
 
         rows = []
-        for model in all_registered_models() + [prompt_guard_model_sku()]:
+        for model in all_registered_models() + prompt_guard_model_skus():
             if not args.show_all and not model.is_featured:
                 continue
 

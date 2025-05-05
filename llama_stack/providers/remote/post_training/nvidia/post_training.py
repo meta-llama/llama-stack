@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 import warnings
 from datetime import datetime
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Literal
 
 import aiohttp
 from pydantic import BaseModel, ConfigDict
@@ -27,11 +27,12 @@ from .models import _MODEL_ENTRIES
 
 # Map API status to JobStatus enum
 STATUS_MAPPING = {
-    "running": "in_progress",
-    "completed": "completed",
-    "failed": "failed",
-    "cancelled": "cancelled",
-    "pending": "scheduled",
+    "running": JobStatus.in_progress.value,
+    "completed": JobStatus.completed.value,
+    "failed": JobStatus.failed.value,
+    "cancelled": JobStatus.cancelled.value,
+    "pending": JobStatus.scheduled.value,
+    "unknown": JobStatus.scheduled.value,
 }
 
 
@@ -49,7 +50,7 @@ class NvidiaPostTrainingJob(PostTrainingJob):
 
 
 class ListNvidiaPostTrainingJobs(BaseModel):
-    data: List[NvidiaPostTrainingJob]
+    data: list[NvidiaPostTrainingJob]
 
 
 class NvidiaPostTrainingJobStatusResponse(PostTrainingJobStatusResponse):
@@ -66,22 +67,27 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
         self.timeout = aiohttp.ClientTimeout(total=config.timeout)
         # TODO: filter by available models based on /config endpoint
         ModelRegistryHelper.__init__(self, model_entries=_MODEL_ENTRIES)
-        self.session = aiohttp.ClientSession(headers=self.headers, timeout=self.timeout)
-        self.customizer_url = config.customizer_url
+        self.session = None
 
+        self.customizer_url = config.customizer_url
         if not self.customizer_url:
             warnings.warn("Customizer URL is not set, using default value: http://nemo.test", stacklevel=2)
             self.customizer_url = "http://nemo.test"
+
+    async def _get_session(self) -> aiohttp.ClientSession:
+        if self.session is None or self.session.closed:
+            self.session = aiohttp.ClientSession(headers=self.headers, timeout=self.timeout)
+        return self.session
 
     async def _make_request(
         self,
         method: str,
         path: str,
-        headers: Optional[Dict[str, Any]] = None,
-        params: Optional[Dict[str, Any]] = None,
-        json: Optional[Dict[str, Any]] = None,
+        headers: dict[str, Any] | None = None,
+        params: dict[str, Any] | None = None,
+        json: dict[str, Any] | None = None,
         **kwargs,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Helper method to make HTTP requests to the Customizer API."""
         url = f"{self.customizer_url}{path}"
         request_headers = self.headers.copy()
@@ -93,8 +99,9 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
         if json and "Content-Type" not in request_headers:
             request_headers["Content-Type"] = "application/json"
 
+        session = await self._get_session()
         for _ in range(self.config.max_retries):
-            async with self.session.request(method, url, params=params, json=json, **kwargs) as response:
+            async with session.request(method, url, params=params, json=json, **kwargs) as response:
                 if response.status >= 400:
                     error_data = await response.json()
                     raise Exception(f"API request failed: {error_data}")
@@ -102,9 +109,9 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
 
     async def get_training_jobs(
         self,
-        page: Optional[int] = 1,
-        page_size: Optional[int] = 10,
-        sort: Optional[Literal["created_at", "-created_at"]] = "created_at",
+        page: int | None = 1,
+        page_size: int | None = 10,
+        sort: Literal["created_at", "-created_at"] | None = "created_at",
     ) -> ListNvidiaPostTrainingJobs:
         """Get all customization jobs.
         Updated the base class return type from ListPostTrainingJobsResponse to ListNvidiaPostTrainingJobs.
@@ -121,8 +128,8 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
         jobs = []
         for job in response.get("data", []):
             job_id = job.pop("id")
-            job_status = job.pop("status", "unknown").lower()
-            mapped_status = STATUS_MAPPING.get(job_status, "unknown")
+            job_status = job.pop("status", "scheduled").lower()
+            mapped_status = STATUS_MAPPING.get(job_status, "scheduled")
 
             # Convert string timestamps to datetime objects
             created_at = (
@@ -176,7 +183,7 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
         )
 
         api_status = response.pop("status").lower()
-        mapped_status = STATUS_MAPPING.get(api_status, "unknown")
+        mapped_status = STATUS_MAPPING.get(api_status, "scheduled")
 
         return NvidiaPostTrainingJobStatusResponse(
             status=JobStatus(mapped_status),
@@ -200,12 +207,12 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
     async def supervised_fine_tune(
         self,
         job_uuid: str,
-        training_config: Dict[str, Any],
-        hyperparam_search_config: Dict[str, Any],
-        logger_config: Dict[str, Any],
+        training_config: dict[str, Any],
+        hyperparam_search_config: dict[str, Any],
+        logger_config: dict[str, Any],
         model: str,
-        checkpoint_dir: Optional[str],
-        algorithm_config: Optional[AlgorithmConfig] = None,
+        checkpoint_dir: str | None,
+        algorithm_config: AlgorithmConfig | None = None,
     ) -> NvidiaPostTrainingJob:
         """
         Fine-tunes a model on a dataset.
@@ -238,6 +245,7 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
 
         Supported models:
             - meta/llama-3.1-8b-instruct
+            - meta/llama-3.2-1b-instruct
 
         Supported algorithm configs:
             - LoRA, SFT
@@ -283,10 +291,6 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
 
             - LoRA config:
                 ## NeMo customizer specific LoRA parameters
-                - adapter_dim: int - Adapter dimension
-                    Default: 8 (supports powers of 2)
-                - adapter_dropout: float - Adapter dropout
-                    Default: None (0.0-1.0)
                 - alpha: int - Scaling factor for the LoRA update
                     Default: 16
             Note:
@@ -296,7 +300,7 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
             User is informed about unsupported parameters via warnings.
         """
         # Map model to nvidia model name
-        # ToDo: only supports llama-3.1-8b-instruct now, need to update this to support other models
+        # See `_MODEL_ENTRIES` for supported models
         nvidia_model = self.get_provider_model_id(model)
 
         # Check for unsupported method parameters
@@ -329,7 +333,7 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
             },
             "data_config": {"dataset_id", "batch_size"},
             "optimizer_config": {"lr", "weight_decay"},
-            "lora_config": {"type", "adapter_dim", "adapter_dropout", "alpha"},
+            "lora_config": {"type", "alpha"},
         }
 
         # Validate all parameters at once
@@ -388,16 +392,10 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
 
         # Handle LoRA-specific configuration
         if algorithm_config:
-            if isinstance(algorithm_config, dict) and algorithm_config.get("type") == "LoRA":
+            if algorithm_config.type == "LoRA":
                 warn_unsupported_params(algorithm_config, supported_params["lora_config"], "LoRA config")
                 job_config["hyperparameters"]["lora"] = {
-                    k: v
-                    for k, v in {
-                        "adapter_dim": algorithm_config.get("adapter_dim"),
-                        "alpha": algorithm_config.get("alpha"),
-                        "adapter_dropout": algorithm_config.get("adapter_dropout"),
-                    }.items()
-                    if v is not None
+                    k: v for k, v in {"alpha": algorithm_config.alpha}.items() if v is not None
                 }
             else:
                 raise NotImplementedError(f"Unsupported algorithm config: {algorithm_config}")
@@ -425,8 +423,8 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
         finetuned_model: str,
         algorithm_config: DPOAlignmentConfig,
         training_config: TrainingConfig,
-        hyperparam_search_config: Dict[str, Any],
-        logger_config: Dict[str, Any],
+        hyperparam_search_config: dict[str, Any],
+        logger_config: dict[str, Any],
     ) -> PostTrainingJob:
         """Optimize a model based on preference data."""
         raise NotImplementedError("Preference optimization is not implemented yet")

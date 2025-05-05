@@ -5,7 +5,8 @@
 # the root directory of this source tree.
 
 import warnings
-from typing import Any, AsyncGenerator, Dict, List, Optional
+from collections.abc import AsyncGenerator
+from typing import Any
 
 from openai import AsyncStream
 from openai.types.chat.chat_completion import (
@@ -64,7 +65,7 @@ async def convert_chat_completion_request(
         )
 
     nvext = {}
-    payload: Dict[str, Any] = dict(
+    payload: dict[str, Any] = dict(
         model=request.model,
         messages=[await convert_message_to_openai_dict_new(message) for message in request.messages],
         stream=request.stream,
@@ -137,7 +138,7 @@ def convert_completion_request(
     # logprobs.top_k -> logprobs
 
     nvext = {}
-    payload: Dict[str, Any] = dict(
+    payload: dict[str, Any] = dict(
         model=request.model,
         prompt=request.content,
         stream=request.stream,
@@ -176,8 +177,8 @@ def convert_completion_request(
 
 
 def _convert_openai_completion_logprobs(
-    logprobs: Optional[OpenAICompletionLogprobs],
-) -> Optional[List[TokenLogProbs]]:
+    logprobs: OpenAICompletionLogprobs | None,
+) -> list[TokenLogProbs] | None:
     """
     Convert an OpenAI CompletionLogprobs into a list of TokenLogProbs.
     """

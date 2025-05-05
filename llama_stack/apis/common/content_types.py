@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 from enum import Enum
-from typing import Annotated, List, Literal, Optional, Union
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -26,9 +26,9 @@ class _URLOrData(BaseModel):
     :param data: base64 encoded image data as string
     """
 
-    url: Optional[URL] = None
+    url: URL | None = None
     # data is a base64 encoded string, hint with contentEncoding=base64
-    data: Optional[str] = Field(contentEncoding="base64", default=None)
+    data: str | None = Field(contentEncoding="base64", default=None)
 
     @model_validator(mode="before")
     @classmethod
@@ -64,13 +64,13 @@ class TextContentItem(BaseModel):
 
 # other modalities can be added here
 InterleavedContentItem = Annotated[
-    Union[ImageContentItem, TextContentItem],
+    ImageContentItem | TextContentItem,
     Field(discriminator="type"),
 ]
 register_schema(InterleavedContentItem, name="InterleavedContentItem")
 
 # accept a single "str" as a special case since it is common
-InterleavedContent = Union[str, InterleavedContentItem, List[InterleavedContentItem]]
+InterleavedContent = str | InterleavedContentItem | list[InterleavedContentItem]
 register_schema(InterleavedContent, name="InterleavedContent")
 
 
@@ -100,13 +100,13 @@ class ToolCallDelta(BaseModel):
     # you either send an in-progress tool call so the client can stream a long
     # code generation or you send the final parsed tool call at the end of the
     # stream
-    tool_call: Union[str, ToolCall]
+    tool_call: str | ToolCall
     parse_status: ToolCallParseStatus
 
 
 # streaming completions send a stream of ContentDeltas
 ContentDelta = Annotated[
-    Union[TextDelta, ImageDelta, ToolCallDelta],
+    TextDelta | ImageDelta | ToolCallDelta,
     Field(discriminator="type"),
 ]
 register_schema(ContentDelta, name="ContentDelta")

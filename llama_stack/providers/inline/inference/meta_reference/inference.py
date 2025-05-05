@@ -6,7 +6,7 @@
 
 import asyncio
 import os
-from typing import AsyncGenerator, List, Optional, Union
+from collections.abc import AsyncGenerator
 
 from pydantic import BaseModel
 from termcolor import cprint
@@ -184,11 +184,11 @@ class MetaReferenceInferenceImpl(
         self,
         model_id: str,
         content: InterleavedContent,
-        sampling_params: Optional[SamplingParams] = None,
-        response_format: Optional[ResponseFormat] = None,
-        stream: Optional[bool] = False,
-        logprobs: Optional[LogProbConfig] = None,
-    ) -> Union[CompletionResponse, CompletionResponseStreamChunk]:
+        sampling_params: SamplingParams | None = None,
+        response_format: ResponseFormat | None = None,
+        stream: bool | None = False,
+        logprobs: LogProbConfig | None = None,
+    ) -> CompletionResponse | CompletionResponseStreamChunk:
         if sampling_params is None:
             sampling_params = SamplingParams()
         if logprobs:
@@ -215,11 +215,11 @@ class MetaReferenceInferenceImpl(
     async def batch_completion(
         self,
         model_id: str,
-        content_batch: List[InterleavedContent],
-        sampling_params: Optional[SamplingParams] = None,
-        response_format: Optional[ResponseFormat] = None,
-        stream: Optional[bool] = False,
-        logprobs: Optional[LogProbConfig] = None,
+        content_batch: list[InterleavedContent],
+        sampling_params: SamplingParams | None = None,
+        response_format: ResponseFormat | None = None,
+        stream: bool | None = False,
+        logprobs: LogProbConfig | None = None,
     ) -> BatchCompletionResponse:
         if sampling_params is None:
             sampling_params = SamplingParams()
@@ -253,7 +253,8 @@ class MetaReferenceInferenceImpl(
         def impl():
             stop_reason = None
 
-            for token_result in self.generator.completion(request):
+            for token_results in self.generator.completion([request]):
+                token_result = token_results[0]
                 if token_result.token == tokenizer.eot_id:
                     stop_reason = StopReason.end_of_turn
                     text = ""
@@ -290,14 +291,14 @@ class MetaReferenceInferenceImpl(
             for x in impl():
                 yield x
 
-    async def _nonstream_completion(self, request_batch: List[CompletionRequest]) -> List[CompletionResponse]:
+    async def _nonstream_completion(self, request_batch: list[CompletionRequest]) -> list[CompletionResponse]:
         tokenizer = self.generator.formatter.tokenizer
 
         first_request = request_batch[0]
 
         class ItemState(BaseModel):
-            tokens: List[int] = []
-            logprobs: List[TokenLogProbs] = []
+            tokens: list[int] = []
+            logprobs: list[TokenLogProbs] = []
             stop_reason: StopReason | None = None
             finished: bool = False
 
@@ -348,15 +349,15 @@ class MetaReferenceInferenceImpl(
     async def chat_completion(
         self,
         model_id: str,
-        messages: List[Message],
-        sampling_params: Optional[SamplingParams] = None,
-        response_format: Optional[ResponseFormat] = None,
-        tools: Optional[List[ToolDefinition]] = None,
-        tool_choice: Optional[ToolChoice] = ToolChoice.auto,
-        tool_prompt_format: Optional[ToolPromptFormat] = None,
-        stream: Optional[bool] = False,
-        logprobs: Optional[LogProbConfig] = None,
-        tool_config: Optional[ToolConfig] = None,
+        messages: list[Message],
+        sampling_params: SamplingParams | None = None,
+        response_format: ResponseFormat | None = None,
+        tools: list[ToolDefinition] | None = None,
+        tool_choice: ToolChoice | None = ToolChoice.auto,
+        tool_prompt_format: ToolPromptFormat | None = None,
+        stream: bool | None = False,
+        logprobs: LogProbConfig | None = None,
+        tool_config: ToolConfig | None = None,
     ) -> AsyncGenerator:
         if sampling_params is None:
             sampling_params = SamplingParams()
@@ -394,13 +395,13 @@ class MetaReferenceInferenceImpl(
     async def batch_chat_completion(
         self,
         model_id: str,
-        messages_batch: List[List[Message]],
-        sampling_params: Optional[SamplingParams] = None,
-        response_format: Optional[ResponseFormat] = None,
-        tools: Optional[List[ToolDefinition]] = None,
-        stream: Optional[bool] = False,
-        logprobs: Optional[LogProbConfig] = None,
-        tool_config: Optional[ToolConfig] = None,
+        messages_batch: list[list[Message]],
+        sampling_params: SamplingParams | None = None,
+        response_format: ResponseFormat | None = None,
+        tools: list[ToolDefinition] | None = None,
+        stream: bool | None = False,
+        logprobs: LogProbConfig | None = None,
+        tool_config: ToolConfig | None = None,
     ) -> BatchChatCompletionResponse:
         if sampling_params is None:
             sampling_params = SamplingParams()
@@ -435,15 +436,15 @@ class MetaReferenceInferenceImpl(
         return BatchChatCompletionResponse(batch=results)
 
     async def _nonstream_chat_completion(
-        self, request_batch: List[ChatCompletionRequest]
-    ) -> List[ChatCompletionResponse]:
+        self, request_batch: list[ChatCompletionRequest]
+    ) -> list[ChatCompletionResponse]:
         tokenizer = self.generator.formatter.tokenizer
 
         first_request = request_batch[0]
 
         class ItemState(BaseModel):
-            tokens: List[int] = []
-            logprobs: List[TokenLogProbs] = []
+            tokens: list[int] = []
+            logprobs: list[TokenLogProbs] = []
             stop_reason: StopReason | None = None
             finished: bool = False
 
@@ -515,7 +516,8 @@ class MetaReferenceInferenceImpl(
             stop_reason = None
             ipython = False
 
-            for token_result in self.generator.chat_completion(request):
+            for token_results in self.generator.chat_completion([request]):
+                token_result = token_results[0]
                 if os.environ.get("LLAMA_MODELS_DEBUG", "0") == "1":
                     cprint(token_result.text, "cyan", end="")
                 if os.environ.get("LLAMA_MODELS_DEBUG", "0") == "2":

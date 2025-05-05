@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import List
 
 from llama_stack.providers.datatypes import (
     AdapterSpec,
@@ -29,7 +28,7 @@ META_REFERENCE_DEPS = [
 ]
 
 
-def available_providers() -> List[ProviderSpec]:
+def available_providers() -> list[ProviderSpec]:
     return [
         InlineProviderSpec(
             api=Api.inference,
@@ -230,6 +229,16 @@ def available_providers() -> List[ProviderSpec]:
         remote_provider_spec(
             api=Api.inference,
             adapter=AdapterSpec(
+                adapter_type="llama-openai-compat",
+                pip_packages=["litellm"],
+                module="llama_stack.providers.remote.inference.llama_openai_compat",
+                config_class="llama_stack.providers.remote.inference.llama_openai_compat.config.LlamaCompatConfig",
+                provider_data_validator="llama_stack.providers.remote.inference.llama_openai_compat.config.LlamaProviderDataValidator",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
                 adapter_type="together-openai-compat",
                 pip_packages=["litellm"],
                 module="llama_stack.providers.remote.inference.together_openai_compat",
@@ -285,6 +294,16 @@ def available_providers() -> List[ProviderSpec]:
                 module="llama_stack.providers.remote.inference.passthrough",
                 config_class="llama_stack.providers.remote.inference.passthrough.PassthroughImplConfig",
                 provider_data_validator="llama_stack.providers.remote.inference.passthrough.PassthroughProviderDataValidator",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
+                adapter_type="watsonx",
+                pip_packages=["ibm_watson_machine_learning"],
+                module="llama_stack.providers.remote.inference.watsonx",
+                config_class="llama_stack.providers.remote.inference.watsonx.WatsonXConfig",
+                provider_data_validator="llama_stack.providers.remote.inference.watsonx.WatsonXProviderDataValidator",
             ),
         ),
     ]

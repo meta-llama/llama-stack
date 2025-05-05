@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 import os
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field, SecretStr
 
@@ -39,7 +39,7 @@ class NVIDIAConfig(BaseModel):
         default_factory=lambda: os.getenv("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com"),
         description="A base url for accessing the NVIDIA NIM",
     )
-    api_key: Optional[SecretStr] = Field(
+    api_key: SecretStr | None = Field(
         default_factory=lambda: os.getenv("NVIDIA_API_KEY"),
         description="The NVIDIA API key, only needed of using the hosted service",
     )
@@ -47,10 +47,15 @@ class NVIDIAConfig(BaseModel):
         default=60,
         description="Timeout for the HTTP requests",
     )
+    append_api_version: bool = Field(
+        default_factory=lambda: os.getenv("NVIDIA_APPEND_API_VERSION", "True").lower() != "false",
+        description="When set to false, the API version will not be appended to the base_url. By default, it is true.",
+    )
 
     @classmethod
-    def sample_run_config(cls, **kwargs) -> Dict[str, Any]:
+    def sample_run_config(cls, **kwargs) -> dict[str, Any]:
         return {
             "url": "${env.NVIDIA_BASE_URL:https://integrate.api.nvidia.com}",
             "api_key": "${env.NVIDIA_API_KEY:}",
+            "append_api_version": "${env.NVIDIA_APPEND_API_VERSION:True}",
         }

@@ -8,7 +8,10 @@ import logging
 import time
 import uuid
 import warnings
-from typing import Any, AsyncGenerator, AsyncIterator, Awaitable, Dict, Iterable, List, Optional, Union
+from collections.abc import AsyncGenerator, AsyncIterator, Awaitable, Iterable
+from typing import (
+    Any,
+)
 
 from openai import AsyncStream
 from openai.types.chat import (
@@ -78,6 +81,7 @@ from llama_stack.apis.common.content_types import (
     TextDelta,
     ToolCallDelta,
     ToolCallParseStatus,
+    _URLOrData,
 )
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
@@ -93,6 +97,7 @@ from llama_stack.apis.inference import (
     SamplingParams,
     SystemMessage,
     TokenLogProbs,
+    ToolChoice,
     ToolResponseMessage,
     TopKSamplingStrategy,
     TopPSamplingStrategy,
@@ -130,24 +135,24 @@ class OpenAICompatCompletionChoiceDelta(BaseModel):
 
 
 class OpenAICompatLogprobs(BaseModel):
-    text_offset: Optional[List[int]] = None
+    text_offset: list[int] | None = None
 
-    token_logprobs: Optional[List[float]] = None
+    token_logprobs: list[float] | None = None
 
-    tokens: Optional[List[str]] = None
+    tokens: list[str] | None = None
 
-    top_logprobs: Optional[List[Dict[str, float]]] = None
+    top_logprobs: list[dict[str, float]] | None = None
 
 
 class OpenAICompatCompletionChoice(BaseModel):
-    finish_reason: Optional[str] = None
-    text: Optional[str] = None
-    delta: Optional[OpenAICompatCompletionChoiceDelta] = None
-    logprobs: Optional[OpenAICompatLogprobs] = None
+    finish_reason: str | None = None
+    text: str | None = None
+    delta: OpenAICompatCompletionChoiceDelta | None = None
+    logprobs: OpenAICompatLogprobs | None = None
 
 
 class OpenAICompatCompletionResponse(BaseModel):
-    choices: List[OpenAICompatCompletionChoice]
+    choices: list[OpenAICompatCompletionChoice]
 
 
 def get_sampling_strategy_options(params: SamplingParams) -> dict:
@@ -206,8 +211,8 @@ def get_stop_reason(finish_reason: str) -> StopReason:
 
 
 def convert_openai_completion_logprobs(
-    logprobs: Optional[OpenAICompatLogprobs],
-) -> Optional[List[TokenLogProbs]]:
+    logprobs: OpenAICompatLogprobs | None,
+) -> list[TokenLogProbs] | None:
     if not logprobs:
         return None
     if hasattr(logprobs, "top_logprobs"):
@@ -224,7 +229,7 @@ def convert_openai_completion_logprobs(
     return None
 
 
-def convert_openai_completion_logprobs_stream(text: str, logprobs: Optional[Union[float, OpenAICompatLogprobs]]):
+def convert_openai_completion_logprobs_stream(text: str, logprobs: float | OpenAICompatLogprobs | None):
     if logprobs is None:
         return None
     if isinstance(logprobs, float):
@@ -513,10 +518,30 @@ async def convert_message_to_openai_dict(message: Message, download: bool = Fals
     else:
         content = [await _convert_content(message.content)]
 
-    return {
+    result = {
         "role": message.role,
         "content": content,
     }
+
+    if hasattr(message, "tool_calls") and message.tool_calls:
+        result["tool_calls"] = []
+        for tc in message.tool_calls:
+            # The tool.tool_name can be a str or a BuiltinTool enum. If
+            # it's the latter, convert to a string.
+            tool_name = tc.tool_name
+            if isinstance(tool_name, BuiltinTool):
+                tool_name = tool_name.value
+            result["tool_calls"].append(
+                {
+                    "id": tc.call_id,
+                    "type": "function",
+                    "function": {
+                        "name": tool_name,
+                        "arguments": tc.arguments_json if hasattr(tc, "arguments_json") else json.dumps(tc.arguments),
+                    },
+                }
+            )
+    return result
 
 
 class UnparseableToolCall(BaseModel):
@@ -531,7 +556,7 @@ class UnparseableToolCall(BaseModel):
 
 
 async def convert_message_to_openai_dict_new(
-    message: Message | Dict,
+    message: Message | dict,
 ) -> OpenAIChatCompletionMessage:
     """
     Convert a Message to an OpenAI API-compatible dictionary.
@@ -560,14 +585,10 @@ async def convert_message_to_openai_dict_new(
     #  List[...] -> List[...]
     async def _convert_message_content(
         content: InterleavedContent,
-    ) -> Union[str, Iterable[OpenAIChatCompletionContentPartParam]]:
+    ) -> str | Iterable[OpenAIChatCompletionContentPartParam]:
         async def impl(
             content_: InterleavedContent,
-        ) -> Union[
-            str,
-            OpenAIChatCompletionContentPartParam,
-            List[OpenAIChatCompletionContentPartParam],
-        ]:
+        ) -> str | OpenAIChatCompletionContentPartParam | list[OpenAIChatCompletionContentPartParam]:
             # Llama Stack and OpenAI spec match for str and text input
             if isinstance(content_, str):
                 return content_
@@ -614,7 +635,7 @@ async def convert_message_to_openai_dict_new(
         ]
         params = {}
         if tool_calls:
-            params = {"tool_calls": tool_calls}
+            params["tool_calls"] = tool_calls
         out = OpenAIChatCompletionAssistantMessage(
             role="assistant",
             content=await _convert_message_content(message.content),
@@ -639,7 +660,7 @@ async def convert_message_to_openai_dict_new(
 
 def convert_tool_call(
     tool_call: ChatCompletionMessageToolCall,
-) -> Union[ToolCall, UnparseableToolCall]:
+) -> ToolCall | UnparseableToolCall:
     """
     Convert a ChatCompletionMessageToolCall tool call to either a
     ToolCall or UnparseableToolCall. Returns an UnparseableToolCall
@@ -695,7 +716,10 @@ def to_openai_param_type(param_type: str) -> dict:
     if param_type.startswith("list[") and param_type.endswith("]"):
         inner_type = param_type[5:-1]
         if inner_type in basic_types:
-            return {"type": "array", "items": {"type": basic_types.get(inner_type, inner_type)}}
+            return {
+                "type": "array",
+                "items": {"type": basic_types.get(inner_type, inner_type)},
+            }
 
     return {"type": param_type}
 
@@ -812,14 +836,18 @@ def _convert_openai_finish_reason(finish_reason: str) -> StopReason:
     }.get(finish_reason, StopReason.end_of_turn)
 
 
-def _convert_openai_request_tool_config(tool_choice: Optional[Union[str, Dict[str, Any]]] = None) -> ToolConfig:
+def _convert_openai_request_tool_config(tool_choice: str | dict[str, Any] | None = None) -> ToolConfig:
     tool_config = ToolConfig()
     if tool_choice:
+        try:
+            tool_choice = ToolChoice(tool_choice)
+        except ValueError:
+            pass
         tool_config.tool_choice = tool_choice
     return tool_config
 
 
-def _convert_openai_request_tools(tools: Optional[List[Dict[str, Any]]] = None) -> List[ToolDefinition]:
+def _convert_openai_request_tools(tools: list[dict[str, Any]] | None = None) -> list[ToolDefinition]:
     lls_tools = []
     if not tools:
         return lls_tools
@@ -835,7 +863,7 @@ def _convert_openai_request_tools(tools: Optional[List[Dict[str, Any]]] = None) 
             tool_param_properties = tool_params.get("properties", {})
             for tool_param_key, tool_param_value in tool_param_properties.items():
                 tool_param_def = ToolParamDefinition(
-                    param_type=tool_param_value.get("type", None),
+                    param_type=str(tool_param_value.get("type", None)),
                     description=tool_param_value.get("description", None),
                 )
                 lls_tool_params[tool_param_key] = tool_param_def
@@ -849,7 +877,9 @@ def _convert_openai_request_tools(tools: Optional[List[Dict[str, Any]]] = None) 
     return lls_tools
 
 
-def _convert_openai_request_response_format(response_format: OpenAIResponseFormatParam = None):
+def _convert_openai_request_response_format(
+    response_format: OpenAIResponseFormatParam = None,
+):
     if not response_format:
         return None
     # response_format can be a dict or a pydantic model
@@ -863,8 +893,8 @@ def _convert_openai_request_response_format(response_format: OpenAIResponseForma
 
 
 def _convert_openai_tool_calls(
-    tool_calls: List[OpenAIChatCompletionMessageToolCall],
-) -> List[ToolCall]:
+    tool_calls: list[OpenAIChatCompletionMessageToolCall],
+) -> list[ToolCall]:
     """
     Convert an OpenAI ChatCompletionMessageToolCall list into a list of ToolCall.
 
@@ -900,7 +930,7 @@ def _convert_openai_tool_calls(
 
 def _convert_openai_logprobs(
     logprobs: OpenAIChoiceLogprobs,
-) -> Optional[List[TokenLogProbs]]:
+) -> list[TokenLogProbs] | None:
     """
     Convert an OpenAI ChoiceLogprobs into a list of TokenLogProbs.
 
@@ -933,9 +963,9 @@ def _convert_openai_logprobs(
 
 
 def _convert_openai_sampling_params(
-    max_tokens: Optional[int] = None,
-    temperature: Optional[float] = None,
-    top_p: Optional[float] = None,
+    max_tokens: int | None = None,
+    temperature: float | None = None,
+    top_p: float | None = None,
 ) -> SamplingParams:
     sampling_params = SamplingParams()
 
@@ -957,38 +987,50 @@ def _convert_openai_sampling_params(
     return sampling_params
 
 
-def _convert_openai_request_messages(messages: List[OpenAIMessageParam]):
-    # Llama Stack messages and OpenAI messages are similar, but not identical.
-    lls_messages = []
+def openai_messages_to_messages(
+    messages: list[OpenAIMessageParam],
+) -> list[Message]:
+    """
+    Convert a list of OpenAIChatCompletionMessage into a list of Message.
+    """
+    converted_messages = []
     for message in messages:
-        lls_message = dict(message)
+        if message.role == "system":
+            converted_message = SystemMessage(content=openai_content_to_content(message.content))
+        elif message.role == "user":
+            converted_message = UserMessage(content=openai_content_to_content(message.content))
+        elif message.role == "assistant":
+            converted_message = CompletionMessage(
+                content=openai_content_to_content(message.content),
+                tool_calls=_convert_openai_tool_calls(message.tool_calls),
+                stop_reason=StopReason.end_of_turn,
+            )
+        elif message.role == "tool":
+            converted_message = ToolResponseMessage(
+                role="tool",
+                call_id=message.tool_call_id,
+                content=openai_content_to_content(message.content),
+            )
+        else:
+            raise ValueError(f"Unknown role {message.role}")
+        converted_messages.append(converted_message)
+    return converted_messages
 
-        #  Llama Stack expects `call_id` but OpenAI uses `tool_call_id`
-        tool_call_id = lls_message.pop("tool_call_id", None)
-        if tool_call_id:
-            lls_message["call_id"] = tool_call_id
 
-        content = lls_message.get("content", None)
-        if isinstance(content, list):
-            lls_content = []
-            for item in content:
-                # items can either by pydantic models or dicts here...
-                item = dict(item)
-                if item.get("type", "") == "image_url":
-                    lls_item = ImageContentItem(
-                        type="image",
-                        image=URL(uri=item.get("image_url", {}).get("url", "")),
-                    )
-                elif item.get("type", "") == "text":
-                    lls_item = TextContentItem(
-                        type="text",
-                        text=item.get("text", ""),
-                    )
-                lls_content.append(lls_item)
-            lls_message["content"] = lls_content
-        lls_messages.append(lls_message)
-
-    return lls_messages
+def openai_content_to_content(content: str | Iterable[OpenAIChatCompletionContentPartParam]):
+    if isinstance(content, str):
+        return content
+    elif isinstance(content, list):
+        return [openai_content_to_content(c) for c in content]
+    elif hasattr(content, "type"):
+        if content.type == "text":
+            return TextContentItem(type="text", text=content.text)
+        elif content.type == "image_url":
+            return ImageContentItem(type="image", image=_URLOrData(url=URL(uri=content.image_url.url)))
+        else:
+            raise ValueError(f"Unknown content type: {content.type}")
+    else:
+        raise ValueError(f"Unknown content type: {content}")
 
 
 def convert_openai_chat_completion_choice(
@@ -1221,24 +1263,24 @@ class OpenAICompletionToLlamaStackMixin:
     async def openai_completion(
         self,
         model: str,
-        prompt: Union[str, List[str], List[int], List[List[int]]],
-        best_of: Optional[int] = None,
-        echo: Optional[bool] = None,
-        frequency_penalty: Optional[float] = None,
-        logit_bias: Optional[Dict[str, float]] = None,
-        logprobs: Optional[bool] = None,
-        max_tokens: Optional[int] = None,
-        n: Optional[int] = None,
-        presence_penalty: Optional[float] = None,
-        seed: Optional[int] = None,
-        stop: Optional[Union[str, List[str]]] = None,
-        stream: Optional[bool] = None,
-        stream_options: Optional[Dict[str, Any]] = None,
-        temperature: Optional[float] = None,
-        top_p: Optional[float] = None,
-        user: Optional[str] = None,
-        guided_choice: Optional[List[str]] = None,
-        prompt_logprobs: Optional[int] = None,
+        prompt: str | list[str] | list[int] | list[list[int]],
+        best_of: int | None = None,
+        echo: bool | None = None,
+        frequency_penalty: float | None = None,
+        logit_bias: dict[str, float] | None = None,
+        logprobs: bool | None = None,
+        max_tokens: int | None = None,
+        n: int | None = None,
+        presence_penalty: float | None = None,
+        seed: int | None = None,
+        stop: str | list[str] | None = None,
+        stream: bool | None = None,
+        stream_options: dict[str, Any] | None = None,
+        temperature: float | None = None,
+        top_p: float | None = None,
+        user: str | None = None,
+        guided_choice: list[str] | None = None,
+        prompt_logprobs: int | None = None,
     ) -> OpenAICompletion:
         if stream:
             raise ValueError(f"{self.__class__.__name__} doesn't support streaming openai completions")
@@ -1290,30 +1332,30 @@ class OpenAIChatCompletionToLlamaStackMixin:
     async def openai_chat_completion(
         self,
         model: str,
-        messages: List[OpenAIChatCompletionMessage],
-        frequency_penalty: Optional[float] = None,
-        function_call: Optional[Union[str, Dict[str, Any]]] = None,
-        functions: Optional[List[Dict[str, Any]]] = None,
-        logit_bias: Optional[Dict[str, float]] = None,
-        logprobs: Optional[bool] = None,
-        max_completion_tokens: Optional[int] = None,
-        max_tokens: Optional[int] = None,
-        n: Optional[int] = None,
-        parallel_tool_calls: Optional[bool] = None,
-        presence_penalty: Optional[float] = None,
-        response_format: Optional[OpenAIResponseFormatParam] = None,
-        seed: Optional[int] = None,
-        stop: Optional[Union[str, List[str]]] = None,
-        stream: Optional[bool] = None,
-        stream_options: Optional[Dict[str, Any]] = None,
-        temperature: Optional[float] = None,
-        tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
-        tools: Optional[List[Dict[str, Any]]] = None,
-        top_logprobs: Optional[int] = None,
-        top_p: Optional[float] = None,
-        user: Optional[str] = None,
-    ) -> Union[OpenAIChatCompletion, AsyncIterator[OpenAIChatCompletionChunk]]:
-        messages = _convert_openai_request_messages(messages)
+        messages: list[OpenAIMessageParam],
+        frequency_penalty: float | None = None,
+        function_call: str | dict[str, Any] | None = None,
+        functions: list[dict[str, Any]] | None = None,
+        logit_bias: dict[str, float] | None = None,
+        logprobs: bool | None = None,
+        max_completion_tokens: int | None = None,
+        max_tokens: int | None = None,
+        n: int | None = None,
+        parallel_tool_calls: bool | None = None,
+        presence_penalty: float | None = None,
+        response_format: OpenAIResponseFormatParam | None = None,
+        seed: int | None = None,
+        stop: str | list[str] | None = None,
+        stream: bool | None = None,
+        stream_options: dict[str, Any] | None = None,
+        temperature: float | None = None,
+        tool_choice: str | dict[str, Any] | None = None,
+        tools: list[dict[str, Any]] | None = None,
+        top_logprobs: int | None = None,
+        top_p: float | None = None,
+        user: str | None = None,
+    ) -> OpenAIChatCompletion | AsyncIterator[OpenAIChatCompletionChunk]:
+        messages = openai_messages_to_messages(messages)
         response_format = _convert_openai_request_response_format(response_format)
         sampling_params = _convert_openai_sampling_params(
             max_tokens=max_tokens,
@@ -1321,7 +1363,10 @@ class OpenAIChatCompletionToLlamaStackMixin:
             top_p=top_p,
         )
         tool_config = _convert_openai_request_tool_config(tool_choice)
+
         tools = _convert_openai_request_tools(tools)
+        if tool_config.tool_choice == ToolChoice.none:
+            tools = []
 
         outstanding_responses = []
         # "n" is the number of completions to generate per prompt
@@ -1346,7 +1391,9 @@ class OpenAIChatCompletionToLlamaStackMixin:
         )
 
     async def _process_stream_response(
-        self, model: str, outstanding_responses: List[Awaitable[AsyncIterator[ChatCompletionResponseStreamChunk]]]
+        self,
+        model: str,
+        outstanding_responses: list[Awaitable[AsyncIterator[ChatCompletionResponseStreamChunk]]],
     ):
         id = f"chatcmpl-{uuid.uuid4()}"
         for outstanding_response in outstanding_responses:
@@ -1369,11 +1416,31 @@ class OpenAIChatCompletionToLlamaStackMixin:
                 elif isinstance(event.delta, ToolCallDelta):
                     if event.delta.parse_status == ToolCallParseStatus.succeeded:
                         tool_call = event.delta.tool_call
+
+                        # First chunk includes full structure
                         openai_tool_call = OpenAIChoiceDeltaToolCall(
                             index=0,
                             id=tool_call.call_id,
                             function=OpenAIChoiceDeltaToolCallFunction(
-                                name=tool_call.tool_name, arguments=tool_call.arguments_json
+                                name=tool_call.tool_name,
+                                arguments="",
+                            ),
+                        )
+                        delta = OpenAIChoiceDelta(tool_calls=[openai_tool_call])
+                        yield OpenAIChatCompletionChunk(
+                            id=id,
+                            choices=[
+                                OpenAIChatCompletionChunkChoice(index=i, finish_reason=finish_reason, delta=delta)
+                            ],
+                            created=int(time.time()),
+                            model=model,
+                            object="chat.completion.chunk",
+                        )
+                        # arguments
+                        openai_tool_call = OpenAIChoiceDeltaToolCall(
+                            index=0,
+                            function=OpenAIChoiceDeltaToolCallFunction(
+                                arguments=tool_call.arguments_json,
                             ),
                         )
                         delta = OpenAIChoiceDelta(tool_calls=[openai_tool_call])
@@ -1389,7 +1456,7 @@ class OpenAIChatCompletionToLlamaStackMixin:
                 i = i + 1
 
     async def _process_non_stream_response(
-        self, model: str, outstanding_responses: List[Awaitable[ChatCompletionResponse]]
+        self, model: str, outstanding_responses: list[Awaitable[ChatCompletionResponse]]
     ) -> OpenAIChatCompletion:
         choices = []
         for outstanding_response in outstanding_responses:

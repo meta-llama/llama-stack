@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import List, Optional, Protocol, runtime_checkable
+from typing import Protocol, runtime_checkable
 
 from pydantic import BaseModel
 
@@ -42,7 +42,7 @@ class ListBucketResponse(BaseModel):
     :param data: List of FileResponse entries
     """
 
-    data: List[BucketResponse]
+    data: list[BucketResponse]
 
 
 @json_schema_type
@@ -74,7 +74,7 @@ class ListFileResponse(BaseModel):
     :param data: List of FileResponse entries
     """
 
-    data: List[FileResponse]
+    data: list[FileResponse]
 
 
 @runtime_checkable
@@ -102,7 +102,7 @@ class Files(Protocol):
     async def upload_content_to_session(
         self,
         upload_id: str,
-    ) -> Optional[FileResponse]:
+    ) -> FileResponse | None:
         """
         Upload file content to an existing upload session.
         On the server, request body will have the raw bytes that are uploaded.

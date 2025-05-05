@@ -13,13 +13,12 @@ import sys
 import textwrap
 from functools import lru_cache
 from pathlib import Path
-from typing import Dict, Optional
 
 import yaml
 from prompt_toolkit import prompt
 from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.validation import Validator
-from termcolor import cprint
+from termcolor import colored, cprint
 
 from llama_stack.cli.stack.utils import ImageType
 from llama_stack.cli.table import print_table
@@ -46,14 +45,14 @@ from llama_stack.providers.datatypes import Api
 TEMPLATES_PATH = Path(__file__).parent.parent.parent / "templates"
 
 
-@lru_cache()
-def available_templates_specs() -> Dict[str, BuildConfig]:
+@lru_cache
+def available_templates_specs() -> dict[str, BuildConfig]:
     import yaml
 
     template_specs = {}
     for p in TEMPLATES_PATH.rglob("*build.yaml"):
         template_name = p.parent.name
-        with open(p, "r") as f:
+        with open(p) as f:
             build_config = BuildConfig(**yaml.safe_load(f))
             template_specs[template_name] = build_config
     return template_specs
@@ -89,6 +88,43 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
                 color="red",
             )
             sys.exit(1)
+    elif args.providers:
+        providers = dict()
+        for api_provider in args.providers.split(","):
+            if "=" not in api_provider:
+                cprint(
+                    "Could not parse `--providers`. Please ensure the list is in the format api1=provider1,api2=provider2",
+                    color="red",
+                )
+                sys.exit(1)
+            api, provider = api_provider.split("=")
+            providers_for_api = get_provider_registry().get(Api(api), None)
+            if providers_for_api is None:
+                cprint(
+                    f"{api} is not a valid API.",
+                    color="red",
+                )
+                sys.exit(1)
+            if provider in providers_for_api:
+                providers.setdefault(api, []).append(provider)
+            else:
+                cprint(
+                    f"{provider} is not a valid provider for the {api} API.",
+                    color="red",
+                )
+                sys.exit(1)
+        distribution_spec = DistributionSpec(
+            providers=providers,
+            description=",".join(args.providers),
+        )
+        if not args.image_type:
+            cprint(
+                f"Please specify a image-type (container | conda | venv) for {args.template}",
+                color="red",
+            )
+            sys.exit(1)
+
+        build_config = BuildConfig(image_type=args.image_type, distribution_spec=distribution_spec)
     elif not args.config and not args.template:
         name = prompt(
             "> Enter a name for your Llama Stack (e.g. my-local-stack): ",
@@ -99,12 +135,13 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
         )
 
         image_type = prompt(
-            f"> Enter the image type you want your Llama Stack to be built as ({' or '.join(e.value for e in ImageType)}): ",
+            "> Enter the image type you want your Llama Stack to be built as (use <TAB> to see options): ",
+            completer=WordCompleter([e.value for e in ImageType]),
+            complete_while_typing=True,
             validator=Validator.from_callable(
                 lambda x: x in [e.value for e in ImageType],
-                error_message=f"Invalid image type, please enter {' or '.join(e.value for e in ImageType)}",
+                error_message="Invalid image type. Use <TAB> to see options",
             ),
-            default=ImageType.CONDA.value,
         )
 
         if image_type == ImageType.CONDA.value:
@@ -140,7 +177,7 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
             if not available_providers:
                 continue
             api_provider = prompt(
-                "> Enter provider for API {}: ".format(api.value),
+                f"> Enter provider for API {api.value}: ",
                 completer=WordCompleter(available_providers),
                 complete_while_typing=True,
                 validator=Validator.from_callable(
@@ -163,7 +200,7 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
 
         build_config = BuildConfig(image_type=image_type, distribution_spec=distribution_spec)
     else:
-        with open(args.config, "r") as f:
+        with open(args.config) as f:
             try:
                 build_config = BuildConfig(**yaml.safe_load(f))
             except Exception as e:
@@ -173,16 +210,9 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
                 )
                 sys.exit(1)
 
-        if build_config.image_type == LlamaStackImageType.CONTAINER.value and not args.image_name:
-            cprint(
-                "Please specify --image-name when building a container from a config file",
-                color="red",
-            )
-            sys.exit(1)
-
     if args.print_deps_only:
         print(f"# Dependencies for {args.template or args.config or image_name}")
-        normal_deps, special_deps = get_provider_dependencies(build_config.distribution_spec.providers)
+        normal_deps, special_deps = get_provider_dependencies(build_config)
         normal_deps += SERVER_DEPENDENCIES
         print(f"uv pip install {' '.join(normal_deps)}")
         for special_dep in special_deps:
@@ -198,10 +228,14 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
         )
 
     except (Exception, RuntimeError) as exc:
+        import traceback
+
         cprint(
             f"Error building stack: {exc}",
             color="red",
         )
+        cprint("Stack trace:", color="red")
+        traceback.print_exc()
         sys.exit(1)
     if run_config is None:
         cprint(
@@ -233,9 +267,10 @@ def _generate_run_config(
         image_name=image_name,
         apis=apis,
         providers={},
+        external_providers_dir=build_config.external_providers_dir if build_config.external_providers_dir else None,
     )
     # build providers dict
-    provider_registry = get_provider_registry()
+    provider_registry = get_provider_registry(build_config)
     for api in apis:
         run_config.providers[api] = []
         provider_types = build_config.distribution_spec.providers[api]
@@ -249,8 +284,22 @@ def _generate_run_config(
             if p.deprecation_error:
                 raise InvalidProviderError(p.deprecation_error)
 
-            config_type = instantiate_class_type(provider_registry[Api(api)][provider_type].config_class)
-            if hasattr(config_type, "sample_run_config"):
+            try:
+                config_type = instantiate_class_type(provider_registry[Api(api)][provider_type].config_class)
+            except ModuleNotFoundError:
+                # HACK ALERT:
+                # This code executes after building is done, the import cannot work since the
+                # package is either available in the venv or container - not available on the host.
+                # TODO: use a "is_external" flag in ProviderSpec to check if the provider is
+                # external
+                cprint(
+                    f"Failed to import provider {provider_type} for API {api} - assuming it's external, skipping",
+                    color="yellow",
+                )
+                # Set config_type to None to avoid UnboundLocalError
+                config_type = None
+
+            if config_type is not None and hasattr(config_type, "sample_run_config"):
                 config = config_type.sample_run_config(__distro_dir__=f"~/.llama/distributions/{image_name}")
             else:
                 config = {}
@@ -268,20 +317,25 @@ def _generate_run_config(
         to_write = json.loads(run_config.model_dump_json())
         f.write(yaml.dump(to_write, sort_keys=False))
 
-    # this path is only invoked when no template is provided
-    cprint(
-        f"You can now run your stack with `llama stack run {run_config_file}`",
-        color="green",
-    )
+    # Only print this message for non-container builds since it will be displayed before the
+    # container is built
+    # For non-container builds, the run.yaml is generated at the very end of the build process so it
+    # makes sense to display this message
+    if build_config.image_type != LlamaStackImageType.CONTAINER.value:
+        cprint(
+            f"You can now run your stack with `llama stack run {run_config_file}`",
+            color="green",
+        )
     return run_config_file
 
 
 def _run_stack_build_command_from_build_config(
     build_config: BuildConfig,
-    image_name: Optional[str] = None,
-    template_name: Optional[str] = None,
-    config_path: Optional[str] = None,
+    image_name: str | None = None,
+    template_name: str | None = None,
+    config_path: str | None = None,
 ) -> str:
+    image_name = image_name or build_config.image_name
     if build_config.image_type == LlamaStackImageType.CONTAINER.value:
         if template_name:
             image_name = f"distribution-{template_name}"
@@ -305,6 +359,13 @@ def _run_stack_build_command_from_build_config(
         build_file_path = build_dir / f"{image_name}-build.yaml"
 
     os.makedirs(build_dir, exist_ok=True)
+    run_config_file = None
+    # Generate the run.yaml so it can be included in the container image with the proper entrypoint
+    # Only do this if we're building a container image and we're not using a template
+    if build_config.image_type == LlamaStackImageType.CONTAINER.value and not template_name and config_path:
+        cprint("Generating run.yaml file", color="green")
+        run_config_file = _generate_run_config(build_config, build_dir, image_name)
+
     with open(build_file_path, "w") as f:
         to_write = json.loads(build_config.model_dump_json())
         f.write(yaml.dump(to_write, sort_keys=False))
@@ -313,7 +374,8 @@ def _run_stack_build_command_from_build_config(
         build_config,
         build_file_path,
         image_name,
-        template_or_config=template_name or config_path,
+        template_or_config=template_name or config_path or str(build_file_path),
+        run_config=run_config_file,
     )
     if return_code != 0:
         raise RuntimeError(f"Failed to build image {image_name}")
@@ -326,6 +388,11 @@ def _run_stack_build_command_from_build_config(
             shutil.copy(path, run_config_file)
 
         cprint("Build Successful!", color="green")
+        cprint("You can find the newly-built template here: " + colored(template_path, "light_blue"))
+        cprint(
+            "You can run the new Llama Stack distro via: "
+            + colored(f"llama stack run {template_path} --image-type {build_config.image_type}", "light_blue")
+        )
         return template_path
     else:
         return _generate_run_config(build_config, build_dir, image_name)

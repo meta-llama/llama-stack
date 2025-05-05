@@ -18,6 +18,7 @@ providers:
     config:
       url: ${env.NVIDIA_BASE_URL:https://integrate.api.nvidia.com}
       api_key: ${env.NVIDIA_API_KEY:}
+      append_api_version: ${env.NVIDIA_APPEND_API_VERSION:True}
   vector_io:
   - provider_id: faiss
     provider_type: inline::faiss
@@ -44,17 +45,14 @@ providers:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
     config:
-      service_name: "${env.OTEL_SERVICE_NAME:\u200B}"
+      service_name: ${env.OTEL_SERVICE_NAME:}
       sinks: ${env.TELEMETRY_SINKS:console,sqlite}
-      sqlite_db_path: ${env.SQLITE_DB_PATH:~/.llama/distributions/nvidia/trace_store.db}
+      sqlite_db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/nvidia}/trace_store.db
   eval:
-  - provider_id: meta-reference
-    provider_type: inline::meta-reference
+  - provider_id: nvidia
+    provider_type: remote::nvidia
     config:
-      kvstore:
-        type: sqlite
-        namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/nvidia}/meta_reference_eval.db
+      evaluator_url: ${env.NVIDIA_EVALUATOR_URL:http://localhost:7331}
   post_training:
   - provider_id: nvidia
     provider_type: remote::nvidia
@@ -64,13 +62,13 @@ providers:
       project_id: ${env.NVIDIA_PROJECT_ID:test-project}
       customizer_url: ${env.NVIDIA_CUSTOMIZER_URL:http://nemo.test}
   datasetio:
-  - provider_id: localfs
-    provider_type: inline::localfs
+  - provider_id: nvidia
+    provider_type: remote::nvidia
     config:
-      kvstore:
-        type: sqlite
-        namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/nvidia}/localfs_datasetio.db
+      api_key: ${env.NVIDIA_API_KEY:}
+      dataset_namespace: ${env.NVIDIA_DATASET_NAMESPACE:default}
+      project_id: ${env.NVIDIA_PROJECT_ID:test-project}
+      datasets_url: ${env.NVIDIA_DATASETS_URL:http://nemo.test}
   scoring:
   - provider_id: basic
     provider_type: inline::basic
@@ -172,6 +170,16 @@ models:
   model_id: meta-llama/Llama-3.2-90B-Vision-Instruct
   provider_id: nvidia
   provider_model_id: meta/llama-3.2-90b-vision-instruct
+  model_type: llm
+- metadata: {}
+  model_id: meta/llama-3.3-70b-instruct
+  provider_id: nvidia
+  provider_model_id: meta/llama-3.3-70b-instruct
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-3.3-70B-Instruct
+  provider_id: nvidia
+  provider_model_id: meta/llama-3.3-70b-instruct
   model_type: llm
 - metadata:
     embedding_dimension: 2048

@@ -15,15 +15,15 @@ import warnings
 from contextlib import asynccontextmanager
 from importlib.metadata import version as parse_version
 from pathlib import Path
-from typing import Any, List, Optional, Union
+from typing import Annotated, Any
 
 import yaml
 from fastapi import Body, FastAPI, HTTPException, Request
 from fastapi import Path as FastapiPath
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, StreamingResponse
+from openai import BadRequestError
 from pydantic import BaseModel, ValidationError
-from typing_extensions import Annotated
 
 from llama_stack.distribution.datatypes import LoggingConfig, StackRunConfig
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
@@ -90,9 +90,9 @@ async def global_exception_handler(request: Request, exc: Exception):
     return JSONResponse(status_code=http_exc.status_code, content={"error": {"detail": http_exc.detail}})
 
 
-def translate_exception(exc: Exception) -> Union[HTTPException, RequestValidationError]:
+def translate_exception(exc: Exception) -> HTTPException | RequestValidationError:
     if isinstance(exc, ValidationError):
-        exc = RequestValidationError(exc.raw_errors)
+        exc = RequestValidationError(exc.errors())
 
     if isinstance(exc, RequestValidationError):
         return HTTPException(
@@ -110,6 +110,8 @@ def translate_exception(exc: Exception) -> Union[HTTPException, RequestValidatio
         )
     elif isinstance(exc, ValueError):
         return HTTPException(status_code=400, detail=f"Invalid value: {str(exc)}")
+    elif isinstance(exc, BadRequestError):
+        return HTTPException(status_code=400, detail=str(exc))
     elif isinstance(exc, PermissionError):
         return HTTPException(status_code=403, detail=f"Permission denied: {str(exc)}")
     elif isinstance(exc, TimeoutError):
@@ -162,14 +164,17 @@ async def maybe_await(value):
     return value
 
 
-async def sse_generator(event_gen):
+async def sse_generator(event_gen_coroutine):
+    event_gen = None
     try:
-        async for item in await event_gen:
+        event_gen = await event_gen_coroutine
+        async for item in event_gen:
             yield create_sse_event(item)
             await asyncio.sleep(0.01)
     except asyncio.CancelledError:
         logger.info("Generator cancelled")
-        await event_gen.aclose()
+        if event_gen:
+            await event_gen.aclose()
     except Exception as e:
         logger.exception("Error in sse_generator")
         yield create_sse_event(
@@ -229,15 +234,30 @@ class TracingMiddleware:
     def __init__(self, app, impls):
         self.app = app
         self.impls = impls
+        # FastAPI built-in paths that should bypass custom routing
+        self.fastapi_paths = ("/docs", "/redoc", "/openapi.json", "/favicon.ico", "/static")
 
     async def __call__(self, scope, receive, send):
         if scope.get("type") == "lifespan":
             return await self.app(scope, receive, send)
 
         path = scope.get("path", "")
+
+        # Check if the path is a FastAPI built-in path
+        if path.startswith(self.fastapi_paths):
+            # Pass through to FastAPI's built-in handlers
+            logger.debug(f"Bypassing custom routing for FastAPI built-in path: {path}")
+            return await self.app(scope, receive, send)
+
         if not hasattr(self, "endpoint_impls"):
             self.endpoint_impls = initialize_endpoint_impls(self.impls)
-        _, _, trace_path = find_matching_endpoint(scope.get("method", "GET"), path, self.endpoint_impls)
+
+        try:
+            _, _, trace_path = find_matching_endpoint(scope.get("method", "GET"), path, self.endpoint_impls)
+        except ValueError:
+            # If no matching endpoint is found, pass through to FastAPI
+            logger.debug(f"No matching endpoint found for path: {path}, falling back to FastAPI")
+            return await self.app(scope, receive, send)
 
         trace_context = await start_trace(trace_path, {"__location__": "server", "raw_path": path})
 
@@ -294,7 +314,7 @@ class ClientVersionMiddleware:
         return await self.app(scope, receive, send)
 
 
-def main(args: Optional[argparse.Namespace] = None):
+def main(args: argparse.Namespace | None = None):
     """Start the LlamaStack server."""
     parser = argparse.ArgumentParser(description="Start the LlamaStack server.")
     parser.add_argument(
@@ -364,7 +384,7 @@ def main(args: Optional[argparse.Namespace] = None):
         raise ValueError("Either --yaml-config or --template must be provided")
 
     logger_config = None
-    with open(config_file, "r") as fp:
+    with open(config_file) as fp:
         config_contents = yaml.safe_load(fp)
         if isinstance(config_contents, dict) and (cfg := config_contents.get("logging_config")):
             logger_config = LoggingConfig(**cfg)
@@ -388,14 +408,19 @@ def main(args: Optional[argparse.Namespace] = None):
     safe_config = redact_sensitive_fields(config.model_dump())
     logger.info(yaml.dump(safe_config, indent=2))
 
-    app = FastAPI(lifespan=lifespan)
+    app = FastAPI(
+        lifespan=lifespan,
+        docs_url="/docs",
+        redoc_url="/redoc",
+        openapi_url="/openapi.json",
+    )
     if not os.environ.get("LLAMA_STACK_DISABLE_VERSION_CHECK"):
         app.add_middleware(ClientVersionMiddleware)
 
     # Add authentication middleware if configured
-    if config.server.auth and config.server.auth.endpoint:
-        logger.info(f"Enabling authentication with endpoint: {config.server.auth.endpoint}")
-        app.add_middleware(AuthenticationMiddleware, auth_endpoint=config.server.auth.endpoint)
+    if config.server.auth:
+        logger.info(f"Enabling authentication with provider: {config.server.auth.provider_type.value}")
+        app.add_middleware(AuthenticationMiddleware, auth_config=config.server.auth)
 
     try:
         impls = asyncio.run(construct_stack(config))
@@ -435,6 +460,7 @@ def main(args: Optional[argparse.Namespace] = None):
                 raise ValueError(f"Could not find method {endpoint.name} on {impl}!!")
 
             impl_method = getattr(impl, endpoint.name)
+            logger.debug(f"{endpoint.method.upper()} {endpoint.route}")
 
             with warnings.catch_warnings():
                 warnings.filterwarnings("ignore", category=UserWarning, module="pydantic._internal._fields")
@@ -490,7 +516,7 @@ def main(args: Optional[argparse.Namespace] = None):
     uvicorn.run(**uvicorn_config)
 
 
-def extract_path_params(route: str) -> List[str]:
+def extract_path_params(route: str) -> list[str]:
     segments = route.split("/")
     params = [seg[1:-1] for seg in segments if seg.startswith("{") and seg.endswith("}")]
     # to handle path params like {param:path}

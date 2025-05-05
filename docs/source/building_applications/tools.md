@@ -41,29 +41,8 @@ client.toolgroups.register(
 
 The tool requires an API key which can be provided either in the configuration or through the request header `X-LlamaStack-Provider-Data`. The format of the header is `{"<provider_name>_api_key": <your api key>}`.
 
+> **NOTE:** When using Tavily Search and Bing Search, the inference output will still display "Brave Search." This is because Llama models have been trained with Brave Search as a built-in tool. Tavily and bing is just being used in lieu of Brave search.
 
-
-#### Code Interpreter
-
-The Code Interpreter allows execution of Python code within a controlled environment.
-
-```python
-# Register Code Interpreter tool group
-client.toolgroups.register(
-    toolgroup_id="builtin::code_interpreter", provider_id="code_interpreter"
-)
-```
-
-Features:
-- Secure execution environment using `bwrap` sandboxing
-- Matplotlib support for generating plots
-- Disabled dangerous system operations
-- Configurable execution timeouts
-
-> ⚠️ Important: The code interpreter tool can operate in a controlled environment locally or on Podman containers. To ensure proper functionality in containerized environments:
-> - The container requires privileged access (e.g., --privileged).
-> - Users without sufficient permissions may encounter permission errors. (`bwrap: Can't mount devpts on /newroot/dev/pts: Permission denied`)
-> - 🔒 Security Warning: Privileged mode grants elevated access and bypasses security restrictions. Use only in local, isolated, or controlled environments.
 
 #### WolframAlpha
 
@@ -102,7 +81,7 @@ Features:
 - Context retrieval with token limits
 
 
-> **Note:** By default, llama stack run.yaml defines toolgroups for web search, code interpreter and rag, that are provided by tavily-search, code-interpreter and rag providers.
+> **Note:** By default, llama stack run.yaml defines toolgroups for web search, wolfram alpha and rag, that are provided by tavily-search, wolfram-alpha and rag providers.
 
 ## Model Context Protocol (MCP) Tools
 
@@ -213,4 +192,70 @@ response = agent.create_turn(
     messages=[{"role": "user", "content": "Run this code: print(3 ** 4 - 5 * 2)"}],
     session_id=session_id,
 )
+```
+## Simple Example 2: Using an Agent with the Web Search Tool
+1. Start by registering a Tavily API key at [Tavily](https://tavily.com/).
+2. [Optional] Provide the API key directly to the Llama Stack server
+```bash
+export TAVILY_SEARCH_API_KEY="your key"
+```
+```bash
+--env TAVILY_SEARCH_API_KEY=${TAVILY_SEARCH_API_KEY}
+```
+3. Run the following script.
+```python
+from llama_stack_client.lib.agents.agent import Agent
+from llama_stack_client.types.agent_create_params import AgentConfig
+from llama_stack_client.lib.agents.event_logger import EventLogger
+from llama_stack_client import LlamaStackClient
+
+client = LlamaStackClient(
+    base_url=f"http://localhost:8321",
+    provider_data={
+        "tavily_search_api_key": "your_TAVILY_SEARCH_API_KEY"
+    },  # Set this from the client side. No need to provide it if it has already been configured on the Llama Stack server.
+)
+
+agent = Agent(
+    client,
+    model="meta-llama/Llama-3.2-3B-Instruct",
+    instructions=(
+        "You are a web search assistant, must use websearch tool to look up the most current and precise information available. "
+    ),
+    tools=["builtin::websearch"],
+)
+
+session_id = agent.create_session("websearch-session")
+
+response = agent.create_turn(
+    messages=[
+        {"role": "user", "content": "How did the USA perform in the last Olympics?"}
+    ],
+    session_id=session_id,
+)
+for log in EventLogger().log(response):
+    log.print()
+```
+
+## Simple Example3: Using an Agent with the WolframAlpha Tool
+1. Start by registering for a WolframAlpha API key at [WolframAlpha Developer Portal](https://developer.wolframalpha.com/access).
+2. Provide the API key either when starting the Llama Stack server:
+    ```bash
+    --env WOLFRAM_ALPHA_API_KEY=${WOLFRAM_ALPHA_API_KEY}
+    ```
+    or from the client side:
+    ```python
+    client = LlamaStackClient(
+        base_url="http://localhost:8321",
+        provider_data={"wolfram_alpha_api_key": wolfram_api_key},
+    )
+    ```
+3. Configure the tools in the Agent by setting `tools=["builtin::wolfram_alpha"]`.
+4. Example user query:
+    ```python
+    response = agent.create_turn(
+        messages=[{"role": "user", "content": "Solve x^2 + 2x + 1 = 0 using WolframAlpha"}],
+        session_id=session_id,
+    )
+    ```
 ```

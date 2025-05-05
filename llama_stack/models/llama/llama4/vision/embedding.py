@@ -5,7 +5,8 @@
 # the root directory of this source tree.
 
 import math
-from typing import Any, Callable, Dict, List
+from collections.abc import Callable
+from typing import Any
 
 import torch
 import torch.nn as nn
@@ -136,13 +137,13 @@ class VisionEmbeddings(torch.nn.Module):
 
     def load_hook(
         self,
-        state_dict: Dict[str, Any],
+        state_dict: dict[str, Any],
         prefix: str,
-        local_metadata: Dict[str, Any],
+        local_metadata: dict[str, Any],
         strict: bool = True,
-        missing_keys: List[str] = None,
-        unexpected_keys: List[str] = None,
-        error_msgs: List[str] = None,
+        missing_keys: list[str] = None,
+        unexpected_keys: list[str] = None,
+        error_msgs: list[str] = None,
         return_state_dict: bool = False,
     ) -> None:
         original_sd = self.state_dict()
@@ -163,7 +164,7 @@ class VisionEmbeddings(torch.nn.Module):
     # each image is a tensor of shape [num_tiles, C, H, W]
     def forward(
         self,
-        image_batch: List[List[torch.Tensor]],
+        image_batch: list[list[torch.Tensor]],
         image_mask: torch.Tensor,
         h_ref: torch.Tensor,
     ) -> torch.Tensor:

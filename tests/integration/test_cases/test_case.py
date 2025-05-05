@@ -12,6 +12,7 @@ class TestCase:
     _apis = [
         "inference/chat_completion",
         "inference/completion",
+        "openai/responses",
     ]
     _jsonblob = {}
 
@@ -19,7 +20,7 @@ class TestCase:
         # loading all test cases
         if self._jsonblob == {}:
             for api in self._apis:
-                with open(pathlib.Path(__file__).parent / f"{api}.json", "r") as f:
+                with open(pathlib.Path(__file__).parent / f"{api}.json") as f:
                     coloned = api.replace("/", ":")
                     try:
                         loaded = json.load(f)

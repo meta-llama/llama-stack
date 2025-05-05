@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -28,5 +28,5 @@ class PGVectorVectorIOConfig(BaseModel):
         user: str = "${env.PGVECTOR_USER}",
         password: str = "${env.PGVECTOR_PASSWORD}",
         **kwargs: Any,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         return {"host": host, "port": port, "db": db, "user": user, "password": password}

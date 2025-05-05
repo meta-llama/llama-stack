@@ -11,8 +11,8 @@ import logging
 import random
 import re
 import string
+from collections.abc import Iterable, Sequence
 from types import MappingProxyType
-from typing import Dict, Iterable, List, Optional, Sequence, Union
 
 import emoji
 import langdetect
@@ -1673,12 +1673,11 @@ def split_chinese_japanese_hindi(lines: str) -> Iterable[str]:
     The separator for hindi is '।'
     """
     for line in lines.splitlines():
-        for sent in re.findall(
+        yield from re.findall(
             r"[^!?。\.\!\?\！\？\．\n।]+[!?。\.\!\?\！\？\．\n।]?",
             line.strip(),
             flags=re.U,
-        ):
-            yield sent
+        )
 
 
 def count_words_cjk(text: str) -> int:
@@ -1707,7 +1706,7 @@ def count_words_cjk(text: str) -> int:
     return non_asian_words_cnt + asian_chars_cnt + emoji_cnt
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def _get_sentence_tokenizer():
     return nltk.data.load("nltk:tokenizers/punkt/english.pickle")
 
@@ -1719,8 +1718,8 @@ def count_sentences(text):
     return len(tokenized_sentences)
 
 
-def get_langid(text: str, lid_path: Optional[str] = None) -> str:
-    line_langs: List[str] = []
+def get_langid(text: str, lid_path: str | None = None) -> str:
+    line_langs: list[str] = []
     lines = [line.strip() for line in text.split("\n") if len(line.strip()) >= 4]
 
     for line in lines:
@@ -1741,7 +1740,7 @@ def generate_keywords(num_keywords):
 
 
 """Library of instructions"""
-_InstructionArgsDtype = Optional[Dict[str, Union[int, str, Sequence[str]]]]
+_InstructionArgsDtype = dict[str, int | str | Sequence[str]] | None
 
 _LANGUAGES = LANGUAGE_CODES
 

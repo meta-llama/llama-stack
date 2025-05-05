@@ -22,7 +22,7 @@ The `llamastack/distribution-meta-reference-gpu` distribution consists of the fo
 | safety | `inline::llama-guard` |
 | scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |
 | telemetry | `inline::meta-reference` |
-| tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::code-interpreter`, `inline::rag-runtime`, `remote::model-context-protocol` |
+| tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::rag-runtime`, `remote::model-context-protocol` |
 | vector_io | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
 
 
@@ -81,6 +81,7 @@ LLAMA_STACK_PORT=8321
 docker run \
   -it \
   --pull always \
+  --gpu all \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ~/.llama:/root/.llama \
   llamastack/distribution-meta-reference-gpu \
@@ -94,6 +95,7 @@ If you are using Llama Stack Safety / Shield APIs, use:
 docker run \
   -it \
   --pull always \
+  --gpu all \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ~/.llama:/root/.llama \
   llamastack/distribution-meta-reference-gpu \

@@ -5,18 +5,11 @@
 # the root directory of this source tree.
 
 import os
+from collections.abc import Collection, Iterator, Sequence, Set
 from logging import getLogger
 from pathlib import Path
 from typing import (
-    AbstractSet,
-    Collection,
-    Dict,
-    Iterator,
-    List,
     Literal,
-    Optional,
-    Sequence,
-    Union,
     cast,
 )
 
@@ -114,7 +107,7 @@ class Tokenizer:
     Tokenizing and encoding/decoding text using the Tiktoken tokenizer.
     """
 
-    special_tokens: Dict[str, int]
+    special_tokens: dict[str, int]
 
     num_reserved_special_tokens = 2048
 
@@ -182,9 +175,9 @@ class Tokenizer:
         *,
         bos: bool,
         eos: bool,
-        allowed_special: Optional[Union[Literal["all"], AbstractSet[str]]] = None,
-        disallowed_special: Union[Literal["all"], Collection[str]] = (),
-    ) -> List[int]:
+        allowed_special: Literal["all"] | Set[str] | None = None,
+        disallowed_special: Literal["all"] | Collection[str] = (),
+    ) -> list[int]:
         """
         Encodes a string into a list of token IDs.
 
@@ -217,7 +210,7 @@ class Tokenizer:
                 s[i : i + TIKTOKEN_MAX_ENCODE_CHARS], MAX_NO_WHITESPACES_CHARS
             )
         )
-        t: List[int] = []
+        t: list[int] = []
         for substr in substrs:
             t.extend(
                 self.model.encode(
@@ -243,7 +236,7 @@ class Tokenizer:
             str: The decoded string.
         """
         # Typecast is safe here. Tiktoken doesn't do anything list-related with the sequence.
-        return self.model.decode(cast(List[int], t))
+        return self.model.decode(cast(list[int], t))
 
     @staticmethod
     def _split_whitespaces_or_nonwhitespaces(s: str, max_consecutive_slice_len: int) -> Iterator[str]:

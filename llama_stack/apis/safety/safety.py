@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 from enum import Enum
-from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 
 from pydantic import BaseModel, Field
 
@@ -27,16 +27,16 @@ class SafetyViolation(BaseModel):
     violation_level: ViolationLevel
 
     # what message should you convey to the user
-    user_message: Optional[str] = None
+    user_message: str | None = None
 
     # additional metadata (including specific violation codes) more for
     # debugging, telemetry
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 @json_schema_type
 class RunShieldResponse(BaseModel):
-    violation: Optional[SafetyViolation] = None
+    violation: SafetyViolation | None = None
 
 
 class ShieldStore(Protocol):
@@ -52,6 +52,6 @@ class Safety(Protocol):
     async def run_shield(
         self,
         shield_id: str,
-        messages: List[Message],
-        params: Dict[str, Any] = None,
+        messages: list[Message],
+        params: dict[str, Any] = None,
     ) -> RunShieldResponse: ...

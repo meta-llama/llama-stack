@@ -6,6 +6,7 @@
 
 import hashlib
 import ipaddress
+import types
 import typing
 from dataclasses import make_dataclass
 from typing import Any, Dict, Set, Union
@@ -179,7 +180,7 @@ class ContentBuilder:
         "Creates the content subtree for a request or response."
 
         def is_iterator_type(t):
-            return "StreamChunk" in str(t)
+            return "StreamChunk" in str(t) or "OpenAIResponseObjectStream" in str(t)
 
         def get_media_type(t):
             if is_generic_list(t):
@@ -189,7 +190,7 @@ class ContentBuilder:
             else:
                 return "application/json"
 
-        if typing.get_origin(payload_type) is typing.Union:
+        if typing.get_origin(payload_type) in (typing.Union, types.UnionType):
             media_types = []
             item_types = []
             for x in typing.get_args(payload_type):

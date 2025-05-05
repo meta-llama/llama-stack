@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from llama_stack.apis.scoring import ScoringResultRow
 from llama_stack.apis.scoring_functions import ScoringFnParams
@@ -28,9 +28,9 @@ class IfEvalScoringFn(RegisteredBaseScoringFn):
 
     async def score_row(
         self,
-        input_row: Dict[str, Any],
-        scoring_fn_identifier: Optional[str] = None,
-        scoring_params: Optional[ScoringFnParams] = None,
+        input_row: dict[str, Any],
+        scoring_fn_identifier: str | None = None,
+        scoring_params: ScoringFnParams | None = None,
     ) -> ScoringResultRow:
         from ..utils.ifeval_utils import INSTRUCTION_DICT, INSTRUCTION_LIST
 

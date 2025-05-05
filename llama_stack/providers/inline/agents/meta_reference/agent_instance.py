@@ -10,8 +10,8 @@ import re
 import secrets
 import string
 import uuid
+from collections.abc import AsyncGenerator
 from datetime import datetime, timezone
-from typing import AsyncGenerator, List, Optional, Union
 
 import httpx
 
@@ -112,7 +112,7 @@ class ChatAgent(ShieldRunnerMixin):
             output_shields=agent_config.output_shields,
         )
 
-    def turn_to_messages(self, turn: Turn) -> List[Message]:
+    def turn_to_messages(self, turn: Turn) -> list[Message]:
         messages = []
 
         # NOTE: if a toolcall response is in a step, we do not add it when processing the input messages
@@ -161,7 +161,7 @@ class ChatAgent(ShieldRunnerMixin):
     async def create_session(self, name: str) -> str:
         return await self.storage.create_session(name)
 
-    async def get_messages_from_turns(self, turns: List[Turn]) -> List[Message]:
+    async def get_messages_from_turns(self, turns: list[Turn]) -> list[Message]:
         messages = []
         if self.agent_config.instructions != "":
             messages.append(SystemMessage(content=self.agent_config.instructions))
@@ -178,6 +178,8 @@ class ChatAgent(ShieldRunnerMixin):
             span.set_attribute("request", request.model_dump_json())
             turn_id = str(uuid.uuid4())
             span.set_attribute("turn_id", turn_id)
+            if self.agent_config.name:
+                span.set_attribute("agent_name", self.agent_config.name)
 
         await self._initialize_tools(request.toolgroups)
         async for chunk in self._run_turn(request, turn_id):
@@ -190,6 +192,8 @@ class ChatAgent(ShieldRunnerMixin):
             span.set_attribute("session_id", request.session_id)
             span.set_attribute("request", request.model_dump_json())
             span.set_attribute("turn_id", request.turn_id)
+            if self.agent_config.name:
+                span.set_attribute("agent_name", self.agent_config.name)
 
         await self._initialize_tools()
         async for chunk in self._run_turn(request):
@@ -197,8 +201,8 @@ class ChatAgent(ShieldRunnerMixin):
 
     async def _run_turn(
         self,
-        request: Union[AgentTurnCreateRequest, AgentTurnResumeRequest],
-        turn_id: Optional[str] = None,
+        request: AgentTurnCreateRequest | AgentTurnResumeRequest,
+        turn_id: str | None = None,
     ) -> AsyncGenerator:
         assert request.stream is True, "Non-streaming not supported"
 
@@ -317,10 +321,10 @@ class ChatAgent(ShieldRunnerMixin):
         self,
         session_id: str,
         turn_id: str,
-        input_messages: List[Message],
+        input_messages: list[Message],
         sampling_params: SamplingParams,
         stream: bool = False,
-        documents: Optional[List[Document]] = None,
+        documents: list[Document] | None = None,
     ) -> AsyncGenerator:
         # Doing async generators makes downstream code much simpler and everything amenable to
         # streaming. However, it also makes things complicated here because AsyncGenerators cannot
@@ -370,8 +374,8 @@ class ChatAgent(ShieldRunnerMixin):
     async def run_multiple_shields_wrapper(
         self,
         turn_id: str,
-        messages: List[Message],
-        shields: List[str],
+        messages: list[Message],
+        shields: list[str],
         touchpoint: str,
     ) -> AsyncGenerator:
         async with tracing.span("run_shields") as span:
@@ -439,10 +443,10 @@ class ChatAgent(ShieldRunnerMixin):
         self,
         session_id: str,
         turn_id: str,
-        input_messages: List[Message],
+        input_messages: list[Message],
         sampling_params: SamplingParams,
         stream: bool = False,
-        documents: Optional[List[Document]] = None,
+        documents: list[Document] | None = None,
     ) -> AsyncGenerator:
         # if document is passed in a turn, we parse the raw text of the document
         # and sent it as a user message
@@ -498,6 +502,8 @@ class ChatAgent(ShieldRunnerMixin):
             stop_reason = None
 
             async with tracing.span("inference") as span:
+                if self.agent_config.name:
+                    span.set_attribute("agent_name", self.agent_config.name)
                 async for chunk in await self.inference_api.chat_completion(
                     self.agent_config.model,
                     input_messages,
@@ -754,7 +760,7 @@ class ChatAgent(ShieldRunnerMixin):
 
     async def _initialize_tools(
         self,
-        toolgroups_for_turn: Optional[List[AgentToolGroup]] = None,
+        toolgroups_for_turn: list[AgentToolGroup] | None = None,
     ) -> None:
         toolgroup_to_args = {}
         for toolgroup in (self.agent_config.toolgroups or []) + (toolgroups_for_turn or []):
@@ -841,7 +847,7 @@ class ChatAgent(ShieldRunnerMixin):
             tool_name_to_args,
         )
 
-    def _parse_toolgroup_name(self, toolgroup_name_with_maybe_tool_name: str) -> tuple[str, Optional[str]]:
+    def _parse_toolgroup_name(self, toolgroup_name_with_maybe_tool_name: str) -> tuple[str, str | None]:
         """Parse a toolgroup name into its components.
 
         Args:
@@ -915,7 +921,7 @@ async def get_raw_document_text(document: Document) -> str:
 
 def _interpret_content_as_attachment(
     content: str,
-) -> Optional[Attachment]:
+) -> Attachment | None:
     match = re.search(TOOLS_ATTACHMENT_KEY_REGEX, content)
     if match:
         snippet = match.group(1)

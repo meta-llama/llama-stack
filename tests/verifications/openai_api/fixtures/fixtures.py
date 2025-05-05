@@ -5,14 +5,16 @@
 # the root directory of this source tree.
 
 import os
+import re
 from pathlib import Path
 
 import pytest
 import yaml
 from openai import OpenAI
 
+# --- Helper Functions ---
 
-# --- Helper Function to Load Config ---
+
 def _load_all_verification_configs():
     """Load and aggregate verification configs from the conf/ directory."""
     # Note: Path is relative to *this* file (fixtures.py)
@@ -31,7 +33,7 @@ def _load_all_verification_configs():
     for config_path in yaml_files:
         provider_name = config_path.stem
         try:
-            with open(config_path, "r") as f:
+            with open(config_path) as f:
                 provider_config = yaml.safe_load(f)
                 if provider_config:
                     all_provider_configs[provider_name] = provider_config
@@ -39,12 +41,35 @@ def _load_all_verification_configs():
                     # Log warning if possible, or just skip empty files silently
                     print(f"Warning: Config file {config_path} is empty or invalid.")
         except Exception as e:
-            raise IOError(f"Error loading config file {config_path}: {e}") from e
+            raise OSError(f"Error loading config file {config_path}: {e}") from e
 
     return {"providers": all_provider_configs}
 
 
-# --- End Helper Function ---
+def case_id_generator(case):
+    """Generate a test ID from the case's 'case_id' field, or use a default."""
+    case_id = case.get("case_id")
+    if isinstance(case_id, str | int):
+        return re.sub(r"\\W|^(?=\\d)", "_", str(case_id))
+    return None
+
+
+def should_skip_test(verification_config, provider, model, test_name_base):
+    """Check if a test should be skipped based on config exclusions."""
+    provider_config = verification_config.get("providers", {}).get(provider)
+    if not provider_config:
+        return False  # No config for provider, don't skip
+
+    exclusions = provider_config.get("test_exclusions", {}).get(model, [])
+    return test_name_base in exclusions
+
+
+# Helper to get the base test name from the request object
+def get_base_test_name(request):
+    return request.node.originalname
+
+
+# --- End Helper Functions ---
 
 
 @pytest.fixture(scope="session")
@@ -52,7 +77,7 @@ def verification_config():
     """Pytest fixture to provide the loaded verification config."""
     try:
         return _load_all_verification_configs()
-    except (FileNotFoundError, IOError) as e:
+    except (OSError, FileNotFoundError) as e:
         pytest.fail(str(e))  # Fail test collection if config loading fails
 
 

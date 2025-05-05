@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict
+from typing import Any
 from uuid import uuid4
 
 import pytest
@@ -37,7 +37,7 @@ def get_boiling_point(liquid_name: str, celcius: bool = True) -> int:
         return -1
 
 
-def get_boiling_point_with_metadata(liquid_name: str, celcius: bool = True) -> Dict[str, Any]:
+def get_boiling_point_with_metadata(liquid_name: str, celcius: bool = True) -> dict[str, Any]:
     """
     Returns the boiling point of a liquid in Celcius or Fahrenheit
 
@@ -113,6 +113,70 @@ def test_agent_simple(llama_stack_client_with_mocked_inference, agent_config):
         logs = [str(log) for log in AgentEventLogger().log(bomb_response) if log is not None]
         logs_str = "".join(logs)
         assert "I can't" in logs_str
+
+
+def test_agent_name(llama_stack_client, text_model_id):
+    agent_name = f"test-agent-{uuid4()}"
+
+    try:
+        agent = Agent(
+            llama_stack_client,
+            model=text_model_id,
+            instructions="You are a helpful assistant",
+            name=agent_name,
+        )
+    except TypeError:
+        agent = Agent(
+            llama_stack_client,
+            model=text_model_id,
+            instructions="You are a helpful assistant",
+        )
+        return
+
+    session_id = agent.create_session(f"test-session-{uuid4()}")
+
+    agent.create_turn(
+        messages=[
+            {
+                "role": "user",
+                "content": "Give me a sentence that contains the word: hello",
+            }
+        ],
+        session_id=session_id,
+        stream=False,
+    )
+
+    all_spans = []
+    for span in llama_stack_client.telemetry.query_spans(
+        attribute_filters=[
+            {"key": "session_id", "op": "eq", "value": session_id},
+        ],
+        attributes_to_return=["input", "output", "agent_name", "agent_id", "session_id"],
+    ):
+        all_spans.append(span.attributes)
+
+    agent_name_spans = []
+    for span in llama_stack_client.telemetry.query_spans(
+        attribute_filters=[],
+        attributes_to_return=["agent_name"],
+    ):
+        if "agent_name" in span.attributes:
+            agent_name_spans.append(span.attributes)
+
+    agent_logs = []
+    for span in llama_stack_client.telemetry.query_spans(
+        attribute_filters=[
+            {"key": "agent_name", "op": "eq", "value": agent_name},
+        ],
+        attributes_to_return=["input", "output", "agent_name"],
+    ):
+        if "output" in span.attributes and span.attributes["output"] != "no shields":
+            agent_logs.append(span.attributes)
+
+    assert len(agent_logs) == 1
+    assert agent_logs[0]["agent_name"] == agent_name
+    assert "Give me a sentence that contains the word: hello" in agent_logs[0]["input"]
+    assert "hello" in agent_logs[0]["output"].lower()
 
 
 def test_tool_config(llama_stack_client_with_mocked_inference, agent_config):
@@ -231,6 +295,7 @@ def test_builtin_tool_code_execution(llama_stack_client_with_mocked_inference, a
 # This test must be run in an environment where `bwrap` is available. If you are running against a
 # server, this means the _server_ must have `bwrap` available. If you are using library client, then
 # you must have `bwrap` available in test's environment.
+@pytest.mark.skip(reason="Code interpreter is currently disabled in the Stack")
 def test_code_interpreter_for_attachments(llama_stack_client_with_mocked_inference, agent_config):
     agent_config = {
         **agent_config,
@@ -487,6 +552,7 @@ def test_rag_agent_with_attachments(llama_stack_client_with_mocked_inference, ag
     assert "lora" in response.output_message.content.lower()
 
 
+@pytest.mark.skip(reason="Code interpreter is currently disabled in the Stack")
 def test_rag_and_code_agent(llama_stack_client_with_mocked_inference, agent_config):
     if "llama-4" in agent_config["model"].lower():
         pytest.xfail("Not working for llama4")

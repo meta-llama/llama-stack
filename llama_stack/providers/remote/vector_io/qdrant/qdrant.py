@@ -6,7 +6,7 @@
 
 import logging
 import uuid
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 from numpy.typing import NDArray
 from qdrant_client import AsyncQdrantClient, models
@@ -44,7 +44,7 @@ class QdrantIndex(EmbeddingIndex):
         self.client = client
         self.collection_name = collection_name
 
-    async def add_chunks(self, chunks: List[Chunk], embeddings: NDArray):
+    async def add_chunks(self, chunks: list[Chunk], embeddings: NDArray):
         assert len(chunks) == len(embeddings), (
             f"Chunk length {len(chunks)} does not match embedding length {len(embeddings)}"
         )
@@ -101,7 +101,7 @@ class QdrantIndex(EmbeddingIndex):
 
 class QdrantVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
     def __init__(
-        self, config: Union[RemoteQdrantVectorIOConfig, InlineQdrantVectorIOConfig], inference_api: Api.inference
+        self, config: RemoteQdrantVectorIOConfig | InlineQdrantVectorIOConfig, inference_api: Api.inference
     ) -> None:
         self.config = config
         self.client: AsyncQdrantClient = None
@@ -131,7 +131,7 @@ class QdrantVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
             await self.cache[vector_db_id].index.delete()
             del self.cache[vector_db_id]
 
-    async def _get_and_cache_vector_db_index(self, vector_db_id: str) -> Optional[VectorDBWithIndex]:
+    async def _get_and_cache_vector_db_index(self, vector_db_id: str) -> VectorDBWithIndex | None:
         if vector_db_id in self.cache:
             return self.cache[vector_db_id]
 
@@ -150,8 +150,8 @@ class QdrantVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
     async def insert_chunks(
         self,
         vector_db_id: str,
-        chunks: List[Chunk],
-        ttl_seconds: Optional[int] = None,
+        chunks: list[Chunk],
+        ttl_seconds: int | None = None,
     ) -> None:
         index = await self._get_and_cache_vector_db_index(vector_db_id)
         if not index:
@@ -163,7 +163,7 @@ class QdrantVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
         self,
         vector_db_id: str,
         query: InterleavedContent,
-        params: Optional[Dict[str, Any]] = None,
+        params: dict[str, Any] | None = None,
     ) -> QueryChunksResponse:
         index = await self._get_and_cache_vector_db_index(vector_db_id)
         if not index:

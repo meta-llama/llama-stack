@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import List
 
 from llama_stack.providers.datatypes import (
     AdapterSpec,
@@ -15,7 +14,7 @@ from llama_stack.providers.datatypes import (
 )
 
 
-def available_providers() -> List[ProviderSpec]:
+def available_providers() -> list[ProviderSpec]:
     return [
         InlineProviderSpec(
             api=Api.datasetio,
@@ -34,6 +33,17 @@ def available_providers() -> List[ProviderSpec]:
                 ],
                 module="llama_stack.providers.remote.datasetio.huggingface",
                 config_class="llama_stack.providers.remote.datasetio.huggingface.HuggingfaceDatasetIOConfig",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.datasetio,
+            adapter=AdapterSpec(
+                adapter_type="nvidia",
+                pip_packages=[
+                    "datasets",
+                ],
+                module="llama_stack.providers.remote.datasetio.nvidia",
+                config_class="llama_stack.providers.remote.datasetio.nvidia.NvidiaDatasetIOConfig",
             ),
         ),
     ]

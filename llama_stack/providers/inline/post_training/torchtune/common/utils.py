@@ -10,7 +10,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Callable, Dict
+from collections.abc import Callable
 
 import torch
 from pydantic import BaseModel
@@ -35,7 +35,7 @@ class ModelConfig(BaseModel):
     checkpoint_type: str
 
 
-MODEL_CONFIGS: Dict[str, ModelConfig] = {
+MODEL_CONFIGS: dict[str, ModelConfig] = {
     "Llama3.2-3B-Instruct": ModelConfig(
         model_definition=lora_llama3_2_3b,
         tokenizer_type=llama3_tokenizer,
@@ -48,7 +48,7 @@ MODEL_CONFIGS: Dict[str, ModelConfig] = {
     ),
 }
 
-DATA_FORMATS: Dict[str, Transform] = {
+DATA_FORMATS: dict[str, Transform] = {
     "instruct": InputOutputToMessages,
     "dialog": ShareGPTToMessages,
 }

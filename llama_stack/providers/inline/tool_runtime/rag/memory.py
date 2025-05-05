@@ -8,7 +8,7 @@ import asyncio
 import logging
 import secrets
 import string
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pydantic import TypeAdapter
 
@@ -33,6 +33,7 @@ from llama_stack.apis.tools import (
 )
 from llama_stack.apis.vector_io import QueryChunksResponse, VectorIO
 from llama_stack.providers.datatypes import ToolsProtocolPrivate
+from llama_stack.providers.utils.inference.prompt_adapter import interleaved_content_as_str
 from llama_stack.providers.utils.memory.vector_store import (
     content_from_doc,
     make_overlapped_chunks,
@@ -73,7 +74,7 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
 
     async def insert(
         self,
-        documents: List[RAGDocument],
+        documents: list[RAGDocument],
         vector_db_id: str,
         chunk_size_in_tokens: int = 512,
     ) -> None:
@@ -100,8 +101,8 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
     async def query(
         self,
         content: InterleavedContent,
-        vector_db_ids: List[str],
-        query_config: Optional[RAGQueryConfig] = None,
+        vector_db_ids: list[str],
+        query_config: RAGQueryConfig | None = None,
     ) -> RAGQueryResult:
         if not vector_db_ids:
             return RAGQueryResult(content=None)
@@ -122,7 +123,7 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
             )
             for vector_db_id in vector_db_ids
         ]
-        results: List[QueryChunksResponse] = await asyncio.gather(*tasks)
+        results: list[QueryChunksResponse] = await asyncio.gather(*tasks)
         chunks = [c for r in results for c in r.chunks]
         scores = [s for r in results for s in r.scores]
 
@@ -153,6 +154,11 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
                 )
             )
         picked.append(TextContentItem(text="END of knowledge_search tool results.\n"))
+        picked.append(
+            TextContentItem(
+                text=f'The above results were retrieved to help answer the user\'s query: "{interleaved_content_as_str(content)}". Use them as supporting information only in answering this query.\n',
+            )
+        )
 
         return RAGQueryResult(
             content=picked,
@@ -162,7 +168,7 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
         )
 
     async def list_runtime_tools(
-        self, tool_group_id: Optional[str] = None, mcp_endpoint: Optional[URL] = None
+        self, tool_group_id: str | None = None, mcp_endpoint: URL | None = None
     ) -> ListToolDefsResponse:
         # Parameters are not listed since these methods are not yet invoked automatically
         # by the LLM. The method is only implemented so things like /tools can list without
@@ -187,7 +193,7 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
             ]
         )
 
-    async def invoke_tool(self, tool_name: str, kwargs: Dict[str, Any]) -> ToolInvocationResult:
+    async def invoke_tool(self, tool_name: str, kwargs: dict[str, Any]) -> ToolInvocationResult:
         vector_db_ids = kwargs.get("vector_db_ids", [])
         query_config = kwargs.get("query_config")
         if query_config:

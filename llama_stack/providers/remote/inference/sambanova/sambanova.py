@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 import json
-from typing import Dict, Iterable, List, Union
+from collections.abc import Iterable
 
 from openai.types.chat import (
     ChatCompletionAssistantMessageParam as OpenAIChatCompletionAssistantMessage,
@@ -72,7 +72,7 @@ logger = get_logger(name=__name__, category="inference")
 
 
 async def convert_message_to_openai_dict_with_b64_images(
-    message: Message | Dict,
+    message: Message | dict,
 ) -> OpenAIChatCompletionMessage:
     """
     Convert a Message to an OpenAI API-compatible dictionary.
@@ -101,10 +101,10 @@ async def convert_message_to_openai_dict_with_b64_images(
     #  List[...] -> List[...]
     async def _convert_message_content(
         content: InterleavedContent,
-    ) -> Union[str, Iterable[OpenAIChatCompletionContentPartParam]]:
+    ) -> str | Iterable[OpenAIChatCompletionContentPartParam]:
         async def impl(
             content_: InterleavedContent,
-        ) -> Union[str, OpenAIChatCompletionContentPartParam, List[OpenAIChatCompletionContentPartParam]]:
+        ) -> str | OpenAIChatCompletionContentPartParam | list[OpenAIChatCompletionContentPartParam]:
             # Llama Stack and OpenAI spec match for str and text input
             if isinstance(content_, str):
                 return content_

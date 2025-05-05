@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 from pathlib import Path
-from typing import Dict, List, Literal, Optional, Tuple
+from typing import Literal
 
 import jinja2
 import yaml
@@ -32,8 +32,8 @@ from llama_stack.providers.utils.kvstore.config import SqliteKVStoreConfig
 
 
 def get_model_registry(
-    available_models: Dict[str, List[ProviderModelEntry]],
-) -> List[ModelInput]:
+    available_models: dict[str, list[ProviderModelEntry]],
+) -> list[ModelInput]:
     models = []
     for provider_id, entries in available_models.items():
         for entry in entries:
@@ -57,18 +57,18 @@ class DefaultModel(BaseModel):
 
 
 class RunConfigSettings(BaseModel):
-    provider_overrides: Dict[str, List[Provider]] = Field(default_factory=dict)
-    default_models: Optional[List[ModelInput]] = None
-    default_shields: Optional[List[ShieldInput]] = None
-    default_tool_groups: Optional[List[ToolGroupInput]] = None
-    default_datasets: Optional[List[DatasetInput]] = None
-    default_benchmarks: Optional[List[BenchmarkInput]] = None
+    provider_overrides: dict[str, list[Provider]] = Field(default_factory=dict)
+    default_models: list[ModelInput] | None = None
+    default_shields: list[ShieldInput] | None = None
+    default_tool_groups: list[ToolGroupInput] | None = None
+    default_datasets: list[DatasetInput] | None = None
+    default_benchmarks: list[BenchmarkInput] | None = None
 
     def run_config(
         self,
         name: str,
-        providers: Dict[str, List[str]],
-        container_image: Optional[str] = None,
+        providers: dict[str, list[str]],
+        container_image: str | None = None,
     ) -> StackRunConfig:
         provider_registry = get_provider_registry()
 
@@ -135,15 +135,15 @@ class DistributionTemplate(BaseModel):
     description: str
     distro_type: Literal["self_hosted", "remote_hosted", "ondevice"]
 
-    providers: Dict[str, List[str]]
-    run_configs: Dict[str, RunConfigSettings]
-    template_path: Optional[Path] = None
+    providers: dict[str, list[str]]
+    run_configs: dict[str, RunConfigSettings]
+    template_path: Path | None = None
 
     # Optional configuration
-    run_config_env_vars: Optional[Dict[str, Tuple[str, str]]] = None
-    container_image: Optional[str] = None
+    run_config_env_vars: dict[str, tuple[str, str]] | None = None
+    container_image: str | None = None
 
-    available_models_by_provider: Optional[Dict[str, List[ProviderModelEntry]]] = None
+    available_models_by_provider: dict[str, list[ProviderModelEntry]] | None = None
 
     def build_config(self) -> BuildConfig:
         return BuildConfig(

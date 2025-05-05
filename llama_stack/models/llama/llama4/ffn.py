@@ -11,7 +11,7 @@
 # top-level folder for each specific model found within the models/ directory at
 # the top-level of this source tree.
 
-from typing import Any, Dict, List
+from typing import Any
 
 from fairscale.nn.model_parallel.layers import ColumnParallelLinear, RowParallelLinear
 from fairscale.nn.model_parallel.mappings import reduce_from_model_parallel_region
@@ -36,13 +36,13 @@ class FeedForward(nn.Module):
 
     def load_hook(
         self,
-        state_dict: Dict[str, Any],
+        state_dict: dict[str, Any],
         prefix: str,
-        local_metadata: Dict[str, Any],
+        local_metadata: dict[str, Any],
         strict: bool,
-        missing_keys: List[str],
-        unexpected_keys: List[str],
-        error_msgs: List[str],
+        missing_keys: list[str],
+        unexpected_keys: list[str],
+        error_msgs: list[str],
     ) -> None:
         if prefix + "mlp.fc1_weight" in state_dict:
             w1, w3 = state_dict.pop(prefix + "mlp.fc1_weight").chunk(2, dim=0)

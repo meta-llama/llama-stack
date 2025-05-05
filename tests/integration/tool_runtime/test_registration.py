@@ -114,7 +114,7 @@ def test_register_and_unregister_toolgroup(llama_stack_client, mcp_server):
     llama_stack_client.toolgroups.unregister(toolgroup_id=test_toolgroup_id)
 
     # Verify it is unregistered
-    with pytest.raises(ValueError, match=f"Tool group '{test_toolgroup_id}' not found"):
+    with pytest.raises(Exception, match=f"Tool group '{test_toolgroup_id}' not found"):
         llama_stack_client.toolgroups.get(toolgroup_id=test_toolgroup_id)
 
     # Verify tools are also unregistered

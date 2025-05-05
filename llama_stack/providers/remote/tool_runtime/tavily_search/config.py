@@ -4,13 +4,13 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
 
 class TavilySearchToolConfig(BaseModel):
-    api_key: Optional[str] = Field(
+    api_key: str | None = Field(
         default=None,
         description="The Tavily Search API Key",
     )
@@ -20,7 +20,7 @@ class TavilySearchToolConfig(BaseModel):
     )
 
     @classmethod
-    def sample_run_config(cls, __distro_dir__: str) -> Dict[str, Any]:
+    def sample_run_config(cls, __distro_dir__: str) -> dict[str, Any]:
         return {
             "api_key": "${env.TAVILY_SEARCH_API_KEY:}",
             "max_results": 3,
