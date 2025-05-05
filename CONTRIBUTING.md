@@ -141,11 +141,18 @@ uv sync
 
 ## Coding Style
 
-* Comments should provide meaningful insights into the code. Avoid filler comments that simply describe the next step, as they create unnecessary clutter, same goes for docstrings.
-* Prefer comments to clarify surprising behavior and/or relationships between parts of the code rather than explain what the next line of code does.
-* Catching exceptions, prefer using a specific exception type rather than a broad catch-all like `Exception`.
+* Comments should provide meaningful insights into the code. Avoid filler comments that simply
+  describe the next step, as they create unnecessary clutter, same goes for docstrings.
+* Prefer comments to clarify surprising behavior and/or relationships between parts of the code
+  rather than explain what the next line of code does.
+* Catching exceptions, prefer using a specific exception type rather than a broad catch-all like
+  `Exception`.
 * Error messages should be prefixed with "Failed to ..."
-* 4 spaces for indentation rather than tabs
+* 4 spaces for indentation rather than tab
+* When using `# noqa` to suppress a style or linter warning, include a comment explaining the
+  justification for bypassing the check.
+* When using `# type: ignore` to suppress a mypy warning, include a comment explaining the
+  justification for bypassing the check.
 
 ## Common Tasks
 
