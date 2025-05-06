@@ -22,14 +22,14 @@ class CommonBenchmarkFields(BaseModel):
 
 @json_schema_type
 class Benchmark(CommonBenchmarkFields, Resource):
-    type: Literal[ResourceType.benchmark.value] = ResourceType.benchmark.value
+    type: Literal[ResourceType.benchmark] = ResourceType.benchmark
 
     @property
     def benchmark_id(self) -> str:
         return self.identifier
 
     @property
-    def provider_benchmark_id(self) -> str:
+    def provider_benchmark_id(self) -> str | None:
         return self.provider_resource_id
 
 

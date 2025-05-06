@@ -4052,9 +4052,13 @@
                 "properties": {
                     "type": {
                         "type": "string",
+                        "enum": [
+                            "json_schema",
+                            "grammar"
+                        ],
+                        "description": "Must be \"grammar\" to identify this format type",
                         "const": "grammar",
-                        "default": "grammar",
-                        "description": "Must be \"grammar\" to identify this format type"
+                        "default": "grammar"
                     },
                     "bnf": {
                         "type": "object",
@@ -4178,9 +4182,13 @@
                 "properties": {
                     "type": {
                         "type": "string",
+                        "enum": [
+                            "json_schema",
+                            "grammar"
+                        ],
+                        "description": "Must be \"json_schema\" to identify this format type",
                         "const": "json_schema",
-                        "default": "json_schema",
-                        "description": "Must be \"json_schema\" to identify this format type"
+                        "default": "json_schema"
                     },
                     "json_schema": {
                         "type": "object",
@@ -5638,6 +5646,14 @@
                     },
                     "step_type": {
                         "type": "string",
+                        "enum": [
+                            "inference",
+                            "tool_execution",
+                            "shield_call",
+                            "memory_retrieval"
+                        ],
+                        "title": "StepType",
+                        "description": "Type of the step in an agent turn.",
                         "const": "inference",
                         "default": "inference"
                     },
@@ -5679,6 +5695,14 @@
                     },
                     "step_type": {
                         "type": "string",
+                        "enum": [
+                            "inference",
+                            "tool_execution",
+                            "shield_call",
+                            "memory_retrieval"
+                        ],
+                        "title": "StepType",
+                        "description": "Type of the step in an agent turn.",
                         "const": "memory_retrieval",
                         "default": "memory_retrieval"
                     },
@@ -5767,6 +5791,14 @@
                     },
                     "step_type": {
                         "type": "string",
+                        "enum": [
+                            "inference",
+                            "tool_execution",
+                            "shield_call",
+                            "memory_retrieval"
+                        ],
+                        "title": "StepType",
+                        "description": "Type of the step in an agent turn.",
                         "const": "shield_call",
                         "default": "shield_call"
                     },
@@ -5807,6 +5839,14 @@
                     },
                     "step_type": {
                         "type": "string",
+                        "enum": [
+                            "inference",
+                            "tool_execution",
+                            "shield_call",
+                            "memory_retrieval"
+                        ],
+                        "title": "StepType",
+                        "description": "Type of the step in an agent turn.",
                         "const": "tool_execution",
                         "default": "tool_execution"
                     },
@@ -6069,6 +6109,15 @@
                 "properties": {
                     "event_type": {
                         "type": "string",
+                        "enum": [
+                            "step_start",
+                            "step_complete",
+                            "step_progress",
+                            "turn_start",
+                            "turn_complete",
+                            "turn_awaiting_input"
+                        ],
+                        "title": "AgentTurnResponseEventType",
                         "const": "step_complete",
                         "default": "step_complete"
                     },
@@ -6126,6 +6175,15 @@
                 "properties": {
                     "event_type": {
                         "type": "string",
+                        "enum": [
+                            "step_start",
+                            "step_complete",
+                            "step_progress",
+                            "turn_start",
+                            "turn_complete",
+                            "turn_awaiting_input"
+                        ],
+                        "title": "AgentTurnResponseEventType",
                         "const": "step_progress",
                         "default": "step_progress"
                     },
@@ -6161,6 +6219,15 @@
                 "properties": {
                     "event_type": {
                         "type": "string",
+                        "enum": [
+                            "step_start",
+                            "step_complete",
+                            "step_progress",
+                            "turn_start",
+                            "turn_complete",
+                            "turn_awaiting_input"
+                        ],
+                        "title": "AgentTurnResponseEventType",
                         "const": "step_start",
                         "default": "step_start"
                     },
@@ -6231,6 +6298,15 @@
                 "properties": {
                     "event_type": {
                         "type": "string",
+                        "enum": [
+                            "step_start",
+                            "step_complete",
+                            "step_progress",
+                            "turn_start",
+                            "turn_complete",
+                            "turn_awaiting_input"
+                        ],
+                        "title": "AgentTurnResponseEventType",
                         "const": "turn_awaiting_input",
                         "default": "turn_awaiting_input"
                     },
@@ -6250,6 +6326,15 @@
                 "properties": {
                     "event_type": {
                         "type": "string",
+                        "enum": [
+                            "step_start",
+                            "step_complete",
+                            "step_progress",
+                            "turn_start",
+                            "turn_complete",
+                            "turn_awaiting_input"
+                        ],
+                        "title": "AgentTurnResponseEventType",
                         "const": "turn_complete",
                         "default": "turn_complete"
                     },
@@ -6269,6 +6354,15 @@
                 "properties": {
                     "event_type": {
                         "type": "string",
+                        "enum": [
+                            "step_start",
+                            "step_complete",
+                            "step_progress",
+                            "turn_start",
+                            "turn_complete",
+                            "turn_awaiting_input"
+                        ],
+                        "title": "AgentTurnResponseEventType",
                         "const": "turn_start",
                         "default": "turn_start"
                     },
@@ -6876,7 +6970,7 @@
                 "type": "object",
                 "properties": {
                     "type": {
-                        "type": "string",
+                        "$ref": "#/components/schemas/ScoringFnParamsType",
                         "const": "basic",
                         "default": "basic"
                     },
@@ -6889,7 +6983,8 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "type"
+                    "type",
+                    "aggregation_functions"
                 ],
                 "title": "BasicScoringFnParams"
             },
@@ -6941,7 +7036,7 @@
                 "type": "object",
                 "properties": {
                     "type": {
-                        "type": "string",
+                        "$ref": "#/components/schemas/ScoringFnParamsType",
                         "const": "llm_as_judge",
                         "default": "llm_as_judge"
                     },
@@ -6967,7 +7062,9 @@
                 "additionalProperties": false,
                 "required": [
                     "type",
-                    "judge_model"
+                    "judge_model",
+                    "judge_score_regexes",
+                    "aggregation_functions"
                 ],
                 "title": "LLMAsJudgeScoringFnParams"
             },
@@ -7005,7 +7102,7 @@
                 "type": "object",
                 "properties": {
                     "type": {
-                        "type": "string",
+                        "$ref": "#/components/schemas/ScoringFnParamsType",
                         "const": "regex_parser",
                         "default": "regex_parser"
                     },
@@ -7024,7 +7121,9 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "type"
+                    "type",
+                    "parsing_regexes",
+                    "aggregation_functions"
                 ],
                 "title": "RegexParserScoringFnParams"
             },
@@ -7048,6 +7147,15 @@
                         "basic": "#/components/schemas/BasicScoringFnParams"
                     }
                 }
+            },
+            "ScoringFnParamsType": {
+                "type": "string",
+                "enum": [
+                    "llm_as_judge",
+                    "regex_parser",
+                    "basic"
+                ],
+                "title": "ScoringFnParamsType"
             },
             "EvaluateRowsRequest": {
                 "type": "object",
@@ -7317,6 +7425,17 @@
                     },
                     "type": {
                         "type": "string",
+                        "enum": [
+                            "model",
+                            "shield",
+                            "vector_db",
+                            "dataset",
+                            "scoring_function",
+                            "benchmark",
+                            "tool",
+                            "tool_group"
+                        ],
+                        "title": "ResourceType",
                         "const": "benchmark",
                         "default": "benchmark"
                     },
@@ -7358,7 +7477,6 @@
                 "additionalProperties": false,
                 "required": [
                     "identifier",
-                    "provider_resource_id",
                     "provider_id",
                     "type",
                     "dataset_id",
@@ -7398,6 +7516,17 @@
                     },
                     "type": {
                         "type": "string",
+                        "enum": [
+                            "model",
+                            "shield",
+                            "vector_db",
+                            "dataset",
+                            "scoring_function",
+                            "benchmark",
+                            "tool",
+                            "tool_group"
+                        ],
+                        "title": "ResourceType",
                         "const": "dataset",
                         "default": "dataset"
                     },
@@ -7443,7 +7572,6 @@
                 "additionalProperties": false,
                 "required": [
                     "identifier",
-                    "provider_resource_id",
                     "provider_id",
                     "type",
                     "purpose",
@@ -7573,6 +7701,17 @@
                     },
                     "type": {
                         "type": "string",
+                        "enum": [
+                            "model",
+                            "shield",
+                            "vector_db",
+                            "dataset",
+                            "scoring_function",
+                            "benchmark",
+                            "tool",
+                            "tool_group"
+                        ],
+                        "title": "ResourceType",
                         "const": "model",
                         "default": "model"
                     },
@@ -7609,7 +7748,6 @@
                 "additionalProperties": false,
                 "required": [
                     "identifier",
-                    "provider_resource_id",
                     "provider_id",
                     "type",
                     "metadata",
@@ -7808,6 +7946,17 @@
                     },
                     "type": {
                         "type": "string",
+                        "enum": [
+                            "model",
+                            "shield",
+                            "vector_db",
+                            "dataset",
+                            "scoring_function",
+                            "benchmark",
+                            "tool",
+                            "tool_group"
+                        ],
+                        "title": "ResourceType",
                         "const": "scoring_function",
                         "default": "scoring_function"
                     },
@@ -7849,7 +7998,6 @@
                 "additionalProperties": false,
                 "required": [
                     "identifier",
-                    "provider_resource_id",
                     "provider_id",
                     "type",
                     "metadata",
@@ -7901,6 +8049,17 @@
                     },
                     "type": {
                         "type": "string",
+                        "enum": [
+                            "model",
+                            "shield",
+                            "vector_db",
+                            "dataset",
+                            "scoring_function",
+                            "benchmark",
+                            "tool",
+                            "tool_group"
+                        ],
+                        "title": "ResourceType",
                         "const": "shield",
                         "default": "shield"
                     },
@@ -7933,7 +8092,6 @@
                 "additionalProperties": false,
                 "required": [
                     "identifier",
-                    "provider_resource_id",
                     "provider_id",
                     "type"
                 ],
@@ -8113,6 +8271,17 @@
                     },
                     "type": {
                         "type": "string",
+                        "enum": [
+                            "model",
+                            "shield",
+                            "vector_db",
+                            "dataset",
+                            "scoring_function",
+                            "benchmark",
+                            "tool",
+                            "tool_group"
+                        ],
+                        "title": "ResourceType",
                         "const": "tool",
                         "default": "tool"
                     },
@@ -8160,7 +8329,6 @@
                 "additionalProperties": false,
                 "required": [
                     "identifier",
-                    "provider_resource_id",
                     "provider_id",
                     "type",
                     "toolgroup_id",
@@ -8193,6 +8361,17 @@
                     },
                     "type": {
                         "type": "string",
+                        "enum": [
+                            "model",
+                            "shield",
+                            "vector_db",
+                            "dataset",
+                            "scoring_function",
+                            "benchmark",
+                            "tool",
+                            "tool_group"
+                        ],
+                        "title": "ResourceType",
                         "const": "tool_group",
                         "default": "tool_group"
                     },
@@ -8228,7 +8407,6 @@
                 "additionalProperties": false,
                 "required": [
                     "identifier",
-                    "provider_resource_id",
                     "provider_id",
                     "type"
                 ],
@@ -8395,6 +8573,17 @@
                     },
                     "type": {
                         "type": "string",
+                        "enum": [
+                            "model",
+                            "shield",
+                            "vector_db",
+                            "dataset",
+                            "scoring_function",
+                            "benchmark",
+                            "tool",
+                            "tool_group"
+                        ],
+                        "title": "ResourceType",
                         "const": "vector_db",
                         "default": "vector_db"
                     },
@@ -8408,7 +8597,6 @@
                 "additionalProperties": false,
                 "required": [
                     "identifier",
-                    "provider_resource_id",
                     "provider_id",
                     "type",
                     "embedding_model",
@@ -9110,6 +9298,15 @@
                     }
                 }
             },
+            "EventType": {
+                "type": "string",
+                "enum": [
+                    "unstructured_log",
+                    "structured_log",
+                    "metric"
+                ],
+                "title": "EventType"
+            },
             "LogSeverity": {
                 "type": "string",
                 "enum": [
@@ -9158,7 +9355,7 @@
                         }
                     },
                     "type": {
-                        "type": "string",
+                        "$ref": "#/components/schemas/EventType",
                         "const": "metric",
                         "default": "metric"
                     },
@@ -9195,7 +9392,7 @@
                 "type": "object",
                 "properties": {
                     "type": {
-                        "type": "string",
+                        "$ref": "#/components/schemas/StructuredLogType",
                         "const": "span_end",
                         "default": "span_end"
                     },
@@ -9214,7 +9411,7 @@
                 "type": "object",
                 "properties": {
                     "type": {
-                        "type": "string",
+                        "$ref": "#/components/schemas/StructuredLogType",
                         "const": "span_start",
                         "default": "span_start"
                     },
@@ -9268,7 +9465,7 @@
                         }
                     },
                     "type": {
-                        "type": "string",
+                        "$ref": "#/components/schemas/EventType",
                         "const": "structured_log",
                         "default": "structured_log"
                     },
@@ -9302,6 +9499,14 @@
                         "span_end": "#/components/schemas/SpanEndPayload"
                     }
                 }
+            },
+            "StructuredLogType": {
+                "type": "string",
+                "enum": [
+                    "span_start",
+                    "span_end"
+                ],
+                "title": "StructuredLogType"
             },
             "UnstructuredLogEvent": {
                 "type": "object",
@@ -9339,7 +9544,7 @@
                         }
                     },
                     "type": {
-                        "type": "string",
+                        "$ref": "#/components/schemas/EventType",
                         "const": "unstructured_log",
                         "default": "unstructured_log"
                     },

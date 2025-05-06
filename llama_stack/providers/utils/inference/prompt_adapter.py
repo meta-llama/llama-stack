@@ -382,7 +382,7 @@ def augment_messages_for_tools_llama_3_1(
 
     messages.append(SystemMessage(content=sys_content))
 
-    has_custom_tools = any(isinstance(dfn.tool_name, str) for dfn in request.tools)
+    has_custom_tools = request.tools is not None and any(isinstance(dfn.tool_name, str) for dfn in request.tools)
     if has_custom_tools:
         fmt = request.tool_config.tool_prompt_format or ToolPromptFormat.json
         if fmt == ToolPromptFormat.json:

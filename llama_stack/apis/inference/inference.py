@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import sys
 from collections.abc import AsyncIterator
 from enum import Enum
 from typing import (
@@ -34,6 +35,16 @@ from llama_stack.schema_utils import json_schema_type, register_schema, webmetho
 register_schema(ToolCall)
 register_schema(ToolParamDefinition)
 register_schema(ToolDefinition)
+
+# TODO: use enum.StrEnum when we drop support for python 3.10
+if sys.version_info >= (3, 11):
+    from enum import StrEnum
+else:
+
+    class StrEnum(str, Enum):
+        """Backport of StrEnum for Python 3.10 and below."""
+
+        pass
 
 
 @json_schema_type
@@ -187,7 +198,7 @@ class CompletionMessage(BaseModel):
     role: Literal["assistant"] = "assistant"
     content: InterleavedContent
     stop_reason: StopReason
-    tool_calls: list[ToolCall] | None = Field(default_factory=list)
+    tool_calls: list[ToolCall] | None = Field(default_factory=lambda: [])
 
 
 Message = Annotated[
@@ -267,7 +278,7 @@ class ChatCompletionResponseEvent(BaseModel):
     stop_reason: StopReason | None = None
 
 
-class ResponseFormatType(Enum):
+class ResponseFormatType(StrEnum):
     """Types of formats for structured (guided) decoding.
 
     :cvar json_schema: Response should conform to a JSON schema. In a Python SDK, this is often a `pydantic` model.
@@ -286,7 +297,7 @@ class JsonSchemaResponseFormat(BaseModel):
     :param json_schema: The JSON schema the response should conform to. In a Python SDK, this is often a `pydantic` model.
     """
 
-    type: Literal[ResponseFormatType.json_schema.value] = ResponseFormatType.json_schema.value
+    type: Literal[ResponseFormatType.json_schema] = ResponseFormatType.json_schema
     json_schema: dict[str, Any]
 
 
@@ -298,7 +309,7 @@ class GrammarResponseFormat(BaseModel):
     :param bnf: The BNF grammar specification the response should conform to
     """
 
-    type: Literal[ResponseFormatType.grammar.value] = ResponseFormatType.grammar.value
+    type: Literal[ResponseFormatType.grammar] = ResponseFormatType.grammar
     bnf: dict[str, Any]
 
 
@@ -394,7 +405,7 @@ class ChatCompletionRequest(BaseModel):
     messages: list[Message]
     sampling_params: SamplingParams | None = Field(default_factory=SamplingParams)
 
-    tools: list[ToolDefinition] | None = Field(default_factory=list)
+    tools: list[ToolDefinition] | None = Field(default_factory=lambda: [])
     tool_config: ToolConfig | None = Field(default_factory=ToolConfig)
 
     response_format: ResponseFormat | None = None
@@ -567,14 +578,14 @@ class OpenAIResponseFormatText(BaseModel):
 @json_schema_type
 class OpenAIJSONSchema(TypedDict, total=False):
     name: str
-    description: str | None = None
-    strict: bool | None = None
+    description: str | None
+    strict: bool | None
 
     # Pydantic BaseModel cannot be used with a schema param, since it already
     # has one. And, we don't want to alias here because then have to handle
     # that alias when converting to OpenAI params. So, to support schema,
     # we use a TypedDict.
-    schema: dict[str, Any] | None = None
+    schema: dict[str, Any] | None
 
 
 @json_schema_type

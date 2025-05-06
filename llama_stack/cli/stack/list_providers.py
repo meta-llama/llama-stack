@@ -46,7 +46,7 @@ class StackListProviders(Subcommand):
         else:
             providers = [(k.value, prov) for k, prov in all_providers.items()]
 
-        providers = [p for api, p in providers if api in self.providable_apis]
+        providers = [(api, p) for api, p in providers if api in self.providable_apis]
 
         # eventually, this should query a registry at llama.meta.com/llamastack/distributions
         headers = [
@@ -57,7 +57,7 @@ class StackListProviders(Subcommand):
 
         rows = []
 
-        specs = [spec for p in providers for spec in p.values()]
+        specs = [spec for api, p in providers for spec in p.values()]
         for spec in specs:
             if spec.is_sample:
                 continue
@@ -65,7 +65,7 @@ class StackListProviders(Subcommand):
                 [
                     spec.api.value,
                     spec.provider_type,
-                    ",".join(spec.pip_packages),
+                    ",".join(spec.pip_packages) if hasattr(spec, "pip_packages") else "",
                 ]
             )
         print_table(

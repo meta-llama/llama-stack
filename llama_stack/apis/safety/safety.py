@@ -53,5 +53,5 @@ class Safety(Protocol):
         self,
         shield_id: str,
         messages: list[Message],
-        params: dict[str, Any] = None,
+        params: dict[str, Any],
     ) -> RunShieldResponse: ...

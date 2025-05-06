@@ -73,11 +73,7 @@ def configure_api_providers(config: StackRunConfig, build_spec: DistributionSpec
 
         existing_providers = config.providers.get(api_str, [])
         if existing_providers:
-            logger.info(
-                f"Re-configuring existing providers for API `{api_str}`...",
-                "green",
-                attrs=["bold"],
-            )
+            logger.info(f"Re-configuring existing providers for API `{api_str}`...")
             updated_providers = []
             for p in existing_providers:
                 logger.info(f"> Configuring provider `({p.provider_type})`")
@@ -91,7 +87,7 @@ def configure_api_providers(config: StackRunConfig, build_spec: DistributionSpec
             if not plist:
                 raise ValueError(f"No provider configured for API {api_str}?")
 
-            logger.info(f"Configuring API `{api_str}`...", "green", attrs=["bold"])
+            logger.info(f"Configuring API `{api_str}`...")
             updated_providers = []
             for i, provider_type in enumerate(plist):
                 if i >= 1:

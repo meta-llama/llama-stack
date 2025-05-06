@@ -15,7 +15,7 @@ from llama_stack.schema_utils import json_schema_type, webmethod
 
 @json_schema_type
 class VectorDB(Resource):
-    type: Literal[ResourceType.vector_db.value] = ResourceType.vector_db.value
+    type: Literal[ResourceType.vector_db] = ResourceType.vector_db
 
     embedding_model: str
     embedding_dimension: int
@@ -25,7 +25,7 @@ class VectorDB(Resource):
         return self.identifier
 
     @property
-    def provider_vector_db_id(self) -> str:
+    def provider_vector_db_id(self) -> str | None:
         return self.provider_resource_id
 
 

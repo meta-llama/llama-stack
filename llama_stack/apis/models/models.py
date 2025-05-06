@@ -29,14 +29,14 @@ class ModelType(str, Enum):
 
 @json_schema_type
 class Model(CommonModelFields, Resource):
-    type: Literal[ResourceType.model.value] = ResourceType.model.value
+    type: Literal[ResourceType.model] = ResourceType.model
 
     @property
     def model_id(self) -> str:
         return self.identifier
 
     @property
-    def provider_model_id(self) -> str:
+    def provider_model_id(self) -> str | None:
         return self.provider_resource_id
 
     model_config = ConfigDict(protected_namespaces=())
