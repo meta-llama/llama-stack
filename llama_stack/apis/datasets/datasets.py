@@ -106,14 +106,14 @@ class CommonDatasetFields(BaseModel):
 
 @json_schema_type
 class Dataset(CommonDatasetFields, Resource):
-    type: Literal[ResourceType.dataset.value] = ResourceType.dataset.value
+    type: Literal[ResourceType.dataset] = ResourceType.dataset
 
     @property
     def dataset_id(self) -> str:
         return self.identifier
 
     @property
-    def provider_dataset_id(self) -> str:
+    def provider_dataset_id(self) -> str | None:
         return self.provider_resource_id
 
 

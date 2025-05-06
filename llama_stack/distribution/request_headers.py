@@ -44,7 +44,8 @@ class RequestProviderDataContext(AbstractContextManager):
 class NeedsRequestProviderData:
     def get_request_provider_data(self) -> Any:
         spec = self.__provider_spec__
-        assert spec, f"Provider spec not set on {self.__class__}"
+        if not spec:
+            raise ValueError(f"Provider spec not set on {self.__class__}")
 
         provider_type = spec.provider_type
         validator_class = spec.provider_data_validator

@@ -245,7 +245,7 @@ class PythonListCustomToolGenerator(PromptTemplateGeneratorBase):  # noqa: N801
             {"function_description": self._gen_function_description(custom_tools)},
         )
 
-    def _gen_function_description(self, custom_tools: list[ToolDefinition]) -> PromptTemplate:
+    def _gen_function_description(self, custom_tools: list[ToolDefinition]) -> str:
         template_str = textwrap.dedent(
             """
             Here is a list of functions in JSON format that you can invoke.
@@ -286,10 +286,12 @@ class PythonListCustomToolGenerator(PromptTemplateGeneratorBase):  # noqa: N801
 
             """
         )
-        return PromptTemplate(
+        template = PromptTemplate(
             template_str.strip("\n"),
             {"tools": [t.model_dump() for t in custom_tools]},
-        ).render()
+        )
+        rendered: str = template.render()
+        return rendered
 
     def data_examples(self) -> list[list[ToolDefinition]]:
         return [

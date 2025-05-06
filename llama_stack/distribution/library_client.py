@@ -30,7 +30,7 @@ from termcolor import cprint
 
 from llama_stack.distribution.build import print_pip_install_help
 from llama_stack.distribution.configure import parse_and_maybe_upgrade_config
-from llama_stack.distribution.datatypes import Api
+from llama_stack.distribution.datatypes import Api, BuildConfig, DistributionSpec
 from llama_stack.distribution.request_headers import (
     PROVIDER_DATA_VAR,
     request_provider_data_context,
@@ -216,7 +216,18 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
                 "yellow",
             )
             if self.config_path_or_template_name.endswith(".yaml"):
-                print_pip_install_help(self.config.providers)
+                # Convert Provider objects to their types
+                provider_types: dict[str, str | list[str]] = {}
+                for api, providers in self.config.providers.items():
+                    types = [p.provider_type for p in providers]
+                    # Convert single-item lists to strings
+                    provider_types[api] = types[0] if len(types) == 1 else types
+                build_config = BuildConfig(
+                    distribution_spec=DistributionSpec(
+                        providers=provider_types,
+                    ),
+                )
+                print_pip_install_help(build_config)
             else:
                 prefix = "!" if in_notebook() else ""
                 cprint(

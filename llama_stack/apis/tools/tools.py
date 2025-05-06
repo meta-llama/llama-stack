@@ -36,7 +36,7 @@ class ToolHost(Enum):
 
 @json_schema_type
 class Tool(Resource):
-    type: Literal[ResourceType.tool.value] = ResourceType.tool.value
+    type: Literal[ResourceType.tool] = ResourceType.tool
     toolgroup_id: str
     tool_host: ToolHost
     description: str
@@ -62,7 +62,7 @@ class ToolGroupInput(BaseModel):
 
 @json_schema_type
 class ToolGroup(Resource):
-    type: Literal[ResourceType.tool_group.value] = ResourceType.tool_group.value
+    type: Literal[ResourceType.tool_group] = ResourceType.tool_group
     mcp_endpoint: URL | None = None
     args: dict[str, Any] | None = None
 

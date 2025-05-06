@@ -139,6 +139,8 @@ class OllamaInferenceAdapter(
         if sampling_params is None:
             sampling_params = SamplingParams()
         model = await self._get_model(model_id)
+        if model.provider_resource_id is None:
+            raise ValueError(f"Model {model_id} has no provider_resource_id set")
         request = CompletionRequest(
             model=model.provider_resource_id,
             content=content,
@@ -202,6 +204,8 @@ class OllamaInferenceAdapter(
         if sampling_params is None:
             sampling_params = SamplingParams()
         model = await self._get_model(model_id)
+        if model.provider_resource_id is None:
+            raise ValueError(f"Model {model_id} has no provider_resource_id set")
         request = ChatCompletionRequest(
             model=model.provider_resource_id,
             messages=messages,
@@ -346,6 +350,8 @@ class OllamaInferenceAdapter(
         #  - models not currently running are run by the ollama server as needed
         response = await self.client.list()
         available_models = [m["model"] for m in response["models"]]
+        if model.provider_resource_id is None:
+            raise ValueError("Model provider_resource_id cannot be None")
         provider_resource_id = self.register_helper.get_provider_model_id(model.provider_resource_id)
         if provider_resource_id is None:
             provider_resource_id = model.provider_resource_id
