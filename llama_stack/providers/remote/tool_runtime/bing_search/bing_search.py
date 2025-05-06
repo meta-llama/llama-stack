@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 import json
-from typing import Any, Dict, Optional
+from typing import Any
 
 import httpx
 
@@ -50,7 +50,7 @@ class BingSearchToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, NeedsRequestP
         return provider_data.bing_search_api_key
 
     async def list_runtime_tools(
-        self, tool_group_id: Optional[str] = None, mcp_endpoint: Optional[URL] = None
+        self, tool_group_id: str | None = None, mcp_endpoint: URL | None = None
     ) -> ListToolDefsResponse:
         return ListToolDefsResponse(
             data=[
@@ -68,7 +68,7 @@ class BingSearchToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, NeedsRequestP
             ]
         )
 
-    async def invoke_tool(self, tool_name: str, kwargs: Dict[str, Any]) -> ToolInvocationResult:
+    async def invoke_tool(self, tool_name: str, kwargs: dict[str, Any]) -> ToolInvocationResult:
         api_key = self._get_api_key()
         headers = {
             "Ocp-Apim-Subscription-Key": api_key,

@@ -8,7 +8,7 @@ import json
 import os
 import shutil
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 import torch
 from safetensors.torch import save_file
@@ -34,7 +34,7 @@ class TorchtuneCheckpointer:
         model_id: str,
         training_algorithm: str,
         checkpoint_dir: str,
-        checkpoint_files: List[str],
+        checkpoint_files: list[str],
         output_dir: str,
         model_type: str,
     ):
@@ -54,11 +54,11 @@ class TorchtuneCheckpointer:
         # get ckpt paths
         self._checkpoint_path = Path.joinpath(self._checkpoint_dir, self._checkpoint_file)
 
-    def load_checkpoint(self) -> Dict[str, Any]:
+    def load_checkpoint(self) -> dict[str, Any]:
         """
         Load Meta checkpoint from file. Currently only loading from a single file is supported.
         """
-        state_dict: Dict[str, Any] = {}
+        state_dict: dict[str, Any] = {}
         model_state_dict = safe_torch_load(self._checkpoint_path)
         if self._model_type == ModelType.LLAMA3_VISION:
             from torchtune.models.llama3_2_vision._convert_weights import (
@@ -82,7 +82,7 @@ class TorchtuneCheckpointer:
 
     def save_checkpoint(
         self,
-        state_dict: Dict[str, Any],
+        state_dict: dict[str, Any],
         epoch: int,
         adapter_only: bool = False,
         checkpoint_format: str | None = None,
@@ -100,7 +100,7 @@ class TorchtuneCheckpointer:
     def _save_meta_format_checkpoint(
         self,
         model_file_path: Path,
-        state_dict: Dict[str, Any],
+        state_dict: dict[str, Any],
         adapter_only: bool = False,
     ) -> None:
         model_file_path.mkdir(parents=True, exist_ok=True)
@@ -168,7 +168,7 @@ class TorchtuneCheckpointer:
     def _save_hf_format_checkpoint(
         self,
         model_file_path: Path,
-        state_dict: Dict[str, Any],
+        state_dict: dict[str, Any],
     ) -> None:
         # the config.json file contains model params needed for state dict conversion
         config = json.loads(Path.joinpath(self._checkpoint_dir.parent, "config.json").read_text())
@@ -179,7 +179,7 @@ class TorchtuneCheckpointer:
         repo_id_path = Path.joinpath(self._checkpoint_dir.parent, REPO_ID_FNAME).with_suffix(".json")
         self.repo_id = None
         if repo_id_path.exists():
-            with open(repo_id_path, "r") as json_file:
+            with open(repo_id_path) as json_file:
                 data = json.load(json_file)
                 self.repo_id = data.get("repo_id")
 

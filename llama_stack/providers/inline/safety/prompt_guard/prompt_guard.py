@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 import logging
-from typing import Any, Dict, List
+from typing import Any
 
 import torch
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
@@ -49,8 +49,8 @@ class PromptGuardSafetyImpl(Safety, ShieldsProtocolPrivate):
     async def run_shield(
         self,
         shield_id: str,
-        messages: List[Message],
-        params: Dict[str, Any] = None,
+        messages: list[Message],
+        params: dict[str, Any] = None,
     ) -> RunShieldResponse:
         shield = await self.shield_store.get_shield(shield_id)
         if not shield:
@@ -81,7 +81,7 @@ class PromptGuardShield:
         self.tokenizer = AutoTokenizer.from_pretrained(model_dir)
         self.model = AutoModelForSequenceClassification.from_pretrained(model_dir, device_map=self.device)
 
-    async def run(self, messages: List[Message]) -> RunShieldResponse:
+    async def run(self, messages: list[Message]) -> RunShieldResponse:
         message = messages[-1]
         text = interleaved_content_as_str(message.content)
 

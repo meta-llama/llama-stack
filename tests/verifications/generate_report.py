@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 # All rights reserved.
 #
@@ -48,7 +50,7 @@ import subprocess
 import time
 from collections import defaultdict
 from pathlib import Path
-from typing import Any, DefaultDict, Dict, Set, Tuple
+from typing import Any
 
 from tests.verifications.openai_api.fixtures.fixtures import _load_all_verification_configs
 
@@ -104,7 +106,7 @@ def run_tests(provider, keyword=None):
 
         # Check if the JSON file was created
         if temp_json_file.exists():
-            with open(temp_json_file, "r") as f:
+            with open(temp_json_file) as f:
                 test_results = json.load(f)
 
             test_results["run_timestamp"] = timestamp
@@ -139,7 +141,7 @@ def run_multiple_tests(providers_to_run: list[str], keyword: str | None):
 
 def parse_results(
     result_file,
-) -> Tuple[DefaultDict[str, DefaultDict[str, Dict[str, bool]]], DefaultDict[str, Set[str]], Set[str], str]:
+) -> tuple[defaultdict[str, defaultdict[str, dict[str, bool]]], defaultdict[str, set[str]], set[str], str]:
     """Parse a single test results file.
 
     Returns:
@@ -154,13 +156,13 @@ def parse_results(
         # Return empty defaultdicts/set matching the type hint
         return defaultdict(lambda: defaultdict(dict)), defaultdict(set), set(), ""
 
-    with open(result_file, "r") as f:
+    with open(result_file) as f:
         results = json.load(f)
 
     # Initialize results dictionary with specific types
-    parsed_results: DefaultDict[str, DefaultDict[str, Dict[str, bool]]] = defaultdict(lambda: defaultdict(dict))
-    providers_in_file: DefaultDict[str, Set[str]] = defaultdict(set)
-    tests_in_file: Set[str] = set()
+    parsed_results: defaultdict[str, defaultdict[str, dict[str, bool]]] = defaultdict(lambda: defaultdict(dict))
+    providers_in_file: defaultdict[str, set[str]] = defaultdict(set)
+    tests_in_file: set[str] = set()
     # Extract provider from filename (e.g., "openai.json" -> "openai")
     provider: str = result_file.stem
 
@@ -246,10 +248,10 @@ def parse_results(
 
 
 def generate_report(
-    results_dict: Dict[str, Any],
-    providers: Dict[str, Set[str]],
-    all_tests: Set[str],
-    provider_timestamps: Dict[str, str],
+    results_dict: dict[str, Any],
+    providers: dict[str, set[str]],
+    all_tests: set[str],
+    provider_timestamps: dict[str, str],
     output_file=None,
 ):
     """Generate the markdown report.
@@ -275,8 +277,8 @@ def generate_report(
     sorted_tests = sorted(all_tests)
 
     # Calculate counts for each base test name
-    base_test_case_counts: DefaultDict[str, int] = defaultdict(int)
-    base_test_name_map: Dict[str, str] = {}
+    base_test_case_counts: defaultdict[str, int] = defaultdict(int)
+    base_test_name_map: dict[str, str] = {}
     for test_name in sorted_tests:
         match = re.match(r"^(.*?)( \([^)]+\))?$", test_name)
         if match:

@@ -6,9 +6,8 @@
 
 import json
 import logging
-import shutil
 import uuid
-from typing import AsyncGenerator, List, Optional, Union
+from collections.abc import AsyncGenerator
 
 from llama_stack.apis.agents import (
     Agent,
@@ -78,10 +77,6 @@ class MetaReferenceAgentsImpl(Agents):
             tool_runtime_api=self.tool_runtime_api,
         )
 
-        # check if "bwrap" is available
-        if not shutil.which("bwrap"):
-            logger.warning("Warning: `bwrap` is not available. Code interpreter tool will not work correctly.")
-
     async def create_agent(
         self,
         agent_config: AgentConfig,
@@ -142,16 +137,11 @@ class MetaReferenceAgentsImpl(Agents):
         self,
         agent_id: str,
         session_id: str,
-        messages: List[
-            Union[
-                UserMessage,
-                ToolResponseMessage,
-            ]
-        ],
-        toolgroups: Optional[List[AgentToolGroup]] = None,
-        documents: Optional[List[Document]] = None,
-        stream: Optional[bool] = False,
-        tool_config: Optional[ToolConfig] = None,
+        messages: list[UserMessage | ToolResponseMessage],
+        toolgroups: list[AgentToolGroup] | None = None,
+        documents: list[Document] | None = None,
+        stream: bool | None = False,
+        tool_config: ToolConfig | None = None,
     ) -> AsyncGenerator:
         request = AgentTurnCreateRequest(
             agent_id=agent_id,
@@ -180,8 +170,8 @@ class MetaReferenceAgentsImpl(Agents):
         agent_id: str,
         session_id: str,
         turn_id: str,
-        tool_responses: List[ToolResponse],
-        stream: Optional[bool] = False,
+        tool_responses: list[ToolResponse],
+        stream: bool | None = False,
     ) -> AsyncGenerator:
         request = AgentTurnResumeRequest(
             agent_id=agent_id,
@@ -219,7 +209,7 @@ class MetaReferenceAgentsImpl(Agents):
         self,
         agent_id: str,
         session_id: str,
-        turn_ids: Optional[List[str]] = None,
+        turn_ids: list[str] | None = None,
     ) -> Session:
         agent = await self._get_agent_impl(agent_id)
         session_info = await agent.storage.get_session_info(session_id)
@@ -265,13 +255,14 @@ class MetaReferenceAgentsImpl(Agents):
 
     async def create_openai_response(
         self,
-        input: Union[str, List[OpenAIResponseInputMessage]],
+        input: str | list[OpenAIResponseInputMessage],
         model: str,
-        previous_response_id: Optional[str] = None,
-        store: Optional[bool] = True,
-        stream: Optional[bool] = False,
-        tools: Optional[List[OpenAIResponseInputTool]] = None,
+        previous_response_id: str | None = None,
+        store: bool | None = True,
+        stream: bool | None = False,
+        temperature: float | None = None,
+        tools: list[OpenAIResponseInputTool] | None = None,
     ) -> OpenAIResponseObject:
         return await self.openai_responses_impl.create_openai_response(
-            input, model, previous_response_id, store, stream, tools
+            input, model, previous_response_id, store, stream, temperature, tools
         )

@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -17,13 +17,13 @@ class SambaNovaImplConfig(BaseModel):
         default="https://api.sambanova.ai/v1",
         description="The URL for the SambaNova AI server",
     )
-    api_key: Optional[str] = Field(
+    api_key: str | None = Field(
         default=None,
         description="The SambaNova.ai API Key",
     )
 
     @classmethod
-    def sample_run_config(cls, **kwargs) -> Dict[str, Any]:
+    def sample_run_config(cls, **kwargs) -> dict[str, Any]:
         return {
             "url": "https://api.sambanova.ai/v1",
             "api_key": "${env.SAMBANOVA_API_KEY}",

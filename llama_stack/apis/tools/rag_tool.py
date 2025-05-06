@@ -5,10 +5,10 @@
 # the root directory of this source tree.
 
 from enum import Enum
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, Field
-from typing_extensions import Annotated, Protocol, runtime_checkable
+from typing_extensions import Protocol, runtime_checkable
 
 from llama_stack.apis.common.content_types import URL, InterleavedContent
 from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
@@ -29,13 +29,13 @@ class RAGDocument(BaseModel):
     document_id: str
     content: InterleavedContent | URL
     mime_type: str | None = None
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 @json_schema_type
 class RAGQueryResult(BaseModel):
-    content: Optional[InterleavedContent] = None
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    content: InterleavedContent | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 @json_schema_type
@@ -59,10 +59,7 @@ class LLMRAGQueryGeneratorConfig(BaseModel):
 
 
 RAGQueryGeneratorConfig = Annotated[
-    Union[
-        DefaultRAGQueryGeneratorConfig,
-        LLMRAGQueryGeneratorConfig,
-    ],
+    DefaultRAGQueryGeneratorConfig | LLMRAGQueryGeneratorConfig,
     Field(discriminator="type"),
 ]
 register_schema(RAGQueryGeneratorConfig, name="RAGQueryGeneratorConfig")
@@ -83,7 +80,7 @@ class RAGToolRuntime(Protocol):
     @webmethod(route="/tool-runtime/rag-tool/insert", method="POST")
     async def insert(
         self,
-        documents: List[RAGDocument],
+        documents: list[RAGDocument],
         vector_db_id: str,
         chunk_size_in_tokens: int = 512,
     ) -> None:
@@ -94,8 +91,8 @@ class RAGToolRuntime(Protocol):
     async def query(
         self,
         content: InterleavedContent,
-        vector_db_ids: List[str],
-        query_config: Optional[RAGQueryConfig] = None,
+        vector_db_ids: list[str],
+        query_config: RAGQueryConfig | None = None,
     ) -> RAGQueryResult:
         """Query the RAG system for context; typically invoked by the agent"""
         ...

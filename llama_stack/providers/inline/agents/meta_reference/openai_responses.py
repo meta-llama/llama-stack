@@ -6,7 +6,8 @@
 
 import json
 import uuid
-from typing import AsyncIterator, List, Optional, Union, cast
+from collections.abc import AsyncIterator
+from typing import cast
 
 from openai.types.chat import ChatCompletionToolParam
 
@@ -49,15 +50,15 @@ logger = get_logger(name=__name__, category="openai_responses")
 OPENAI_RESPONSES_PREFIX = "openai_responses:"
 
 
-async def _previous_response_to_messages(previous_response: OpenAIResponseObject) -> List[OpenAIMessageParam]:
-    messages: List[OpenAIMessageParam] = []
+async def _previous_response_to_messages(previous_response: OpenAIResponseObject) -> list[OpenAIMessageParam]:
+    messages: list[OpenAIMessageParam] = []
     for output_message in previous_response.output:
         if isinstance(output_message, OpenAIResponseOutputMessage):
             messages.append(OpenAIAssistantMessageParam(content=output_message.content[0].text))
     return messages
 
 
-async def _openai_choices_to_output_messages(choices: List[OpenAIChoice]) -> List[OpenAIResponseOutputMessage]:
+async def _openai_choices_to_output_messages(choices: list[OpenAIChoice]) -> list[OpenAIResponseOutputMessage]:
     output_messages = []
     for choice in choices:
         output_content = ""
@@ -101,21 +102,22 @@ class OpenAIResponsesImpl:
 
     async def create_openai_response(
         self,
-        input: Union[str, List[OpenAIResponseInputMessage]],
+        input: str | list[OpenAIResponseInputMessage],
         model: str,
-        previous_response_id: Optional[str] = None,
-        store: Optional[bool] = True,
-        stream: Optional[bool] = False,
-        tools: Optional[List[OpenAIResponseInputTool]] = None,
+        previous_response_id: str | None = None,
+        store: bool | None = True,
+        stream: bool | None = False,
+        temperature: float | None = None,
+        tools: list[OpenAIResponseInputTool] | None = None,
     ):
         stream = False if stream is None else stream
 
-        messages: List[OpenAIMessageParam] = []
+        messages: list[OpenAIMessageParam] = []
         if previous_response_id:
             previous_response = await self.get_openai_response(previous_response_id)
             messages.extend(await _previous_response_to_messages(previous_response))
         # TODO: refactor this user_content parsing out into a separate method
-        user_content: Union[str, List[OpenAIChatCompletionContentPartParam]] = ""
+        user_content: str | list[OpenAIChatCompletionContentPartParam] = ""
         if isinstance(input, list):
             user_content = []
             for user_input in input:
@@ -141,6 +143,7 @@ class OpenAIResponsesImpl:
             messages=messages,
             tools=chat_tools,
             stream=stream,
+            temperature=temperature,
         )
 
         if stream:
@@ -177,10 +180,10 @@ class OpenAIResponsesImpl:
             # dump and reload to map to our pydantic types
             chat_response = OpenAIChatCompletion(**chat_response.model_dump())
 
-        output_messages: List[OpenAIResponseOutput] = []
+        output_messages: list[OpenAIResponseOutput] = []
         if chat_response.choices[0].message.tool_calls:
             output_messages.extend(
-                await self._execute_tool_and_return_final_output(model, stream, chat_response, messages)
+                await self._execute_tool_and_return_final_output(model, stream, chat_response, messages, temperature)
             )
         else:
             output_messages.extend(await _openai_choices_to_output_messages(chat_response.choices))
@@ -213,9 +216,9 @@ class OpenAIResponsesImpl:
         return response
 
     async def _convert_response_tools_to_chat_tools(
-        self, tools: List[OpenAIResponseInputTool]
-    ) -> List[ChatCompletionToolParam]:
-        chat_tools: List[ChatCompletionToolParam] = []
+        self, tools: list[OpenAIResponseInputTool]
+    ) -> list[ChatCompletionToolParam]:
+        chat_tools: list[ChatCompletionToolParam] = []
         for input_tool in tools:
             # TODO: Handle other tool types
             if input_tool.type == "web_search":
@@ -241,9 +244,14 @@ class OpenAIResponsesImpl:
         return chat_tools
 
     async def _execute_tool_and_return_final_output(
-        self, model_id: str, stream: bool, chat_response: OpenAIChatCompletion, messages: List[OpenAIMessageParam]
-    ) -> List[OpenAIResponseOutput]:
-        output_messages: List[OpenAIResponseOutput] = []
+        self,
+        model_id: str,
+        stream: bool,
+        chat_response: OpenAIChatCompletion,
+        messages: list[OpenAIMessageParam],
+        temperature: float,
+    ) -> list[OpenAIResponseOutput]:
+        output_messages: list[OpenAIResponseOutput] = []
         choice = chat_response.choices[0]
 
         # If the choice is not an assistant message, we don't need to execute any tools
@@ -295,6 +303,7 @@ class OpenAIResponsesImpl:
             model=model_id,
             messages=messages,
             stream=stream,
+            temperature=temperature,
         )
         # type cast to appease mypy
         tool_results_chat_response = cast(OpenAIChatCompletion, tool_results_chat_response)
@@ -306,7 +315,7 @@ class OpenAIResponsesImpl:
     async def _execute_tool_call(
         self,
         function: OpenAIChatCompletionToolCallFunction,
-    ) -> Optional[ToolInvocationResult]:
+    ) -> ToolInvocationResult | None:
         if not function.name:
             return None
         function_args = json.loads(function.arguments) if function.arguments else {}

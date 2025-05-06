@@ -12,7 +12,6 @@
 # the top-level of this source tree.
 
 import textwrap
-from typing import List
 
 from llama_stack.models.llama.datatypes import (
     BuiltinTool,
@@ -74,7 +73,7 @@ def wolfram_alpha_response():
     )
 
 
-def usecases() -> List[UseCase | str]:
+def usecases() -> list[UseCase | str]:
     return [
         textwrap.dedent(
             """

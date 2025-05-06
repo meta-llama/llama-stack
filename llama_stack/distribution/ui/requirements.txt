@@ -1,5 +1,5 @@
-streamlit
-pandas
-llama-stack-client>=0.2.1
-streamlit-option-menu
 llama-stack>=0.2.1
+llama-stack-client>=0.2.1
+pandas
+streamlit
+streamlit-option-menu

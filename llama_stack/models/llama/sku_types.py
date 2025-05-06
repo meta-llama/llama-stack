@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -159,13 +159,13 @@ def model_family(model_id) -> ModelFamily:
 class Model(BaseModel):
     core_model_id: CoreModelId
     description: str
-    huggingface_repo: Optional[str] = None
-    arch_args: Dict[str, Any]
+    huggingface_repo: str | None = None
+    arch_args: dict[str, Any]
     variant: str = ""
 
     quantization_format: CheckpointQuantizationFormat = CheckpointQuantizationFormat.bf16
     pth_file_count: int
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
     # silence pydantic until we remove the `model_` fields
     model_config = ConfigDict(protected_namespaces=())

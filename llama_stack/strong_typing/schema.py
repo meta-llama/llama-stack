@@ -10,6 +10,7 @@ Type-safe data interchange for Python data classes.
 :see: https://github.com/hunyadi/strong_typing
 """
 
+import collections.abc
 import dataclasses
 import datetime
 import decimal
@@ -487,6 +488,9 @@ class JsonSchemaGenerator:
         elif origin_type is type:
             (concrete_type,) = typing.get_args(typ)  # unpack single tuple element
             return {"const": self.type_to_schema(concrete_type, force_expand=True)}
+        elif origin_type is collections.abc.AsyncIterator:
+            (concrete_type,) = typing.get_args(typ)
+            return self.type_to_schema(concrete_type)
 
         # dictionary of class attributes
         members = dict(inspect.getmembers(typ, lambda a: not inspect.isroutine(a)))

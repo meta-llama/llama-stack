@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field, SecretStr
 
@@ -17,13 +17,13 @@ class TogetherImplConfig(BaseModel):
         default="https://api.together.xyz/v1",
         description="The URL for the Together AI server",
     )
-    api_key: Optional[SecretStr] = Field(
+    api_key: SecretStr | None = Field(
         default=None,
         description="The Together AI API Key",
     )
 
     @classmethod
-    def sample_run_config(cls, **kwargs) -> Dict[str, Any]:
+    def sample_run_config(cls, **kwargs) -> dict[str, Any]:
         return {
             "url": "https://api.together.xyz/v1",
             "api_key": "${env.TOGETHER_API_KEY:}",

@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import List, Protocol, runtime_checkable
+from typing import Protocol, runtime_checkable
 
 from pydantic import BaseModel
 
@@ -16,7 +16,7 @@ from llama_stack.schema_utils import json_schema_type, webmethod
 class RouteInfo(BaseModel):
     route: str
     method: str
-    provider_types: List[str]
+    provider_types: list[str]
 
 
 @json_schema_type
@@ -30,7 +30,7 @@ class VersionInfo(BaseModel):
 
 
 class ListRoutesResponse(BaseModel):
-    data: List[RouteInfo]
+    data: list[RouteInfo]
 
 
 @runtime_checkable

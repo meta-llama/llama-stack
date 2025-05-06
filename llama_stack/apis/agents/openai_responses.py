@@ -4,10 +4,9 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import List, Literal, Optional, Union
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field
-from typing_extensions import Annotated
 
 from llama_stack.schema_utils import json_schema_type, register_schema
 
@@ -25,7 +24,7 @@ class OpenAIResponseOutputMessageContentOutputText(BaseModel):
 
 
 OpenAIResponseOutputMessageContent = Annotated[
-    Union[OpenAIResponseOutputMessageContentOutputText,],
+    OpenAIResponseOutputMessageContentOutputText,
     Field(discriminator="type"),
 ]
 register_schema(OpenAIResponseOutputMessageContent, name="OpenAIResponseOutputMessageContent")
@@ -34,7 +33,7 @@ register_schema(OpenAIResponseOutputMessageContent, name="OpenAIResponseOutputMe
 @json_schema_type
 class OpenAIResponseOutputMessage(BaseModel):
     id: str
-    content: List[OpenAIResponseOutputMessageContent]
+    content: list[OpenAIResponseOutputMessageContent]
     role: Literal["assistant"] = "assistant"
     status: str
     type: Literal["message"] = "message"
@@ -48,10 +47,7 @@ class OpenAIResponseOutputMessageWebSearchToolCall(BaseModel):
 
 
 OpenAIResponseOutput = Annotated[
-    Union[
-        OpenAIResponseOutputMessage,
-        OpenAIResponseOutputMessageWebSearchToolCall,
-    ],
+    OpenAIResponseOutputMessage | OpenAIResponseOutputMessageWebSearchToolCall,
     Field(discriminator="type"),
 ]
 register_schema(OpenAIResponseOutput, name="OpenAIResponseOutput")
@@ -60,18 +56,18 @@ register_schema(OpenAIResponseOutput, name="OpenAIResponseOutput")
 @json_schema_type
 class OpenAIResponseObject(BaseModel):
     created_at: int
-    error: Optional[OpenAIResponseError] = None
+    error: OpenAIResponseError | None = None
     id: str
     model: str
     object: Literal["response"] = "response"
-    output: List[OpenAIResponseOutput]
+    output: list[OpenAIResponseOutput]
     parallel_tool_calls: bool = False
-    previous_response_id: Optional[str] = None
+    previous_response_id: str | None = None
     status: str
-    temperature: Optional[float] = None
-    top_p: Optional[float] = None
-    truncation: Optional[str] = None
-    user: Optional[str] = None
+    temperature: float | None = None
+    top_p: float | None = None
+    truncation: str | None = None
+    user: str | None = None
 
 
 @json_schema_type
@@ -87,10 +83,7 @@ class OpenAIResponseObjectStreamResponseCompleted(BaseModel):
 
 
 OpenAIResponseObjectStream = Annotated[
-    Union[
-        OpenAIResponseObjectStreamResponseCreated,
-        OpenAIResponseObjectStreamResponseCompleted,
-    ],
+    OpenAIResponseObjectStreamResponseCreated | OpenAIResponseObjectStreamResponseCompleted,
     Field(discriminator="type"),
 ]
 register_schema(OpenAIResponseObjectStream, name="OpenAIResponseObjectStream")
@@ -107,12 +100,12 @@ class OpenAIResponseInputMessageContentImage(BaseModel):
     detail: Literal["low"] | Literal["high"] | Literal["auto"] = "auto"
     type: Literal["input_image"] = "input_image"
     # TODO: handle file_id
-    image_url: Optional[str] = None
+    image_url: str | None = None
 
 
 # TODO: handle file content types
 OpenAIResponseInputMessageContent = Annotated[
-    Union[OpenAIResponseInputMessageContentText, OpenAIResponseInputMessageContentImage],
+    OpenAIResponseInputMessageContentText | OpenAIResponseInputMessageContentImage,
     Field(discriminator="type"),
 ]
 register_schema(OpenAIResponseInputMessageContent, name="OpenAIResponseInputMessageContent")
@@ -120,21 +113,21 @@ register_schema(OpenAIResponseInputMessageContent, name="OpenAIResponseInputMess
 
 @json_schema_type
 class OpenAIResponseInputMessage(BaseModel):
-    content: Union[str, List[OpenAIResponseInputMessageContent]]
+    content: str | list[OpenAIResponseInputMessageContent]
     role: Literal["system"] | Literal["developer"] | Literal["user"] | Literal["assistant"]
-    type: Optional[Literal["message"]] = "message"
+    type: Literal["message"] | None = "message"
 
 
 @json_schema_type
 class OpenAIResponseInputToolWebSearch(BaseModel):
     type: Literal["web_search"] | Literal["web_search_preview_2025_03_11"] = "web_search"
     # TODO: actually use search_context_size somewhere...
-    search_context_size: Optional[str] = Field(default="medium", pattern="^low|medium|high$")
+    search_context_size: str | None = Field(default="medium", pattern="^low|medium|high$")
     # TODO: add user_location
 
 
 OpenAIResponseInputTool = Annotated[
-    Union[OpenAIResponseInputToolWebSearch,],
+    OpenAIResponseInputToolWebSearch,
     Field(discriminator="type"),
 ]
 register_schema(OpenAIResponseInputTool, name="OpenAIResponseInputTool")

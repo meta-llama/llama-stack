@@ -33,7 +33,7 @@ def _load_all_verification_configs():
     for config_path in yaml_files:
         provider_name = config_path.stem
         try:
-            with open(config_path, "r") as f:
+            with open(config_path) as f:
                 provider_config = yaml.safe_load(f)
                 if provider_config:
                     all_provider_configs[provider_name] = provider_config
@@ -41,7 +41,7 @@ def _load_all_verification_configs():
                     # Log warning if possible, or just skip empty files silently
                     print(f"Warning: Config file {config_path} is empty or invalid.")
         except Exception as e:
-            raise IOError(f"Error loading config file {config_path}: {e}") from e
+            raise OSError(f"Error loading config file {config_path}: {e}") from e
 
     return {"providers": all_provider_configs}
 
@@ -49,7 +49,7 @@ def _load_all_verification_configs():
 def case_id_generator(case):
     """Generate a test ID from the case's 'case_id' field, or use a default."""
     case_id = case.get("case_id")
-    if isinstance(case_id, (str, int)):
+    if isinstance(case_id, str | int):
         return re.sub(r"\\W|^(?=\\d)", "_", str(case_id))
     return None
 
@@ -77,7 +77,7 @@ def verification_config():
     """Pytest fixture to provide the loaded verification config."""
     try:
         return _load_all_verification_configs()
-    except (FileNotFoundError, IOError) as e:
+    except (OSError, FileNotFoundError) as e:
         pytest.fail(str(e))  # Fail test collection if config loading fails
 
 

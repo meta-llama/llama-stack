@@ -6,7 +6,6 @@
 
 import logging
 from datetime import datetime
-from typing import List, Optional
 
 import psycopg2
 from psycopg2.extras import DictCursor
@@ -54,7 +53,7 @@ class PostgresKVStoreImpl(KVStore):
             return key
         return f"{self.config.namespace}:{key}"
 
-    async def set(self, key: str, value: str, expiration: Optional[datetime] = None) -> None:
+    async def set(self, key: str, value: str, expiration: datetime | None = None) -> None:
         key = self._namespaced_key(key)
         self.cursor.execute(
             f"""
@@ -66,7 +65,7 @@ class PostgresKVStoreImpl(KVStore):
             (key, value, expiration),
         )
 
-    async def get(self, key: str) -> Optional[str]:
+    async def get(self, key: str) -> str | None:
         key = self._namespaced_key(key)
         self.cursor.execute(
             f"""
@@ -86,7 +85,7 @@ class PostgresKVStoreImpl(KVStore):
             (key,),
         )
 
-    async def range(self, start_key: str, end_key: str) -> List[str]:
+    async def range(self, start_key: str, end_key: str) -> list[str]:
         start_key = self._namespaced_key(start_key)
         end_key = self._namespaced_key(end_key)
 

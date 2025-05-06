@@ -18,7 +18,7 @@ def pytest_generate_tests(metafunc):
 
         try:
             config_data = _load_all_verification_configs()
-        except (FileNotFoundError, IOError) as e:
+        except (OSError, FileNotFoundError) as e:
             print(f"ERROR loading verification configs: {e}")
             config_data = {"providers": {}}
 

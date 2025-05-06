@@ -14,7 +14,7 @@
 import math
 from collections import defaultdict
 from logging import getLogger
-from typing import Any, Optional, Set, Tuple
+from typing import Any
 
 import torch
 import torchvision.transforms as tv
@@ -26,7 +26,7 @@ IMAGE_RES = 224
 logger = getLogger()
 
 
-class VariableSizeImageTransform(object):
+class VariableSizeImageTransform:
     """
     This class accepts images of any size and dynamically resize, pads and chunks it
     based on the image aspect ratio and the number of image chunks we allow.
@@ -75,7 +75,7 @@ class VariableSizeImageTransform(object):
         self.resample = tv.InterpolationMode.BILINEAR
 
     @staticmethod
-    def get_factors(n: int) -> Set[int]:
+    def get_factors(n: int) -> set[int]:
         """
         Calculate all factors of a given number, i.e. a dividor that leaves
         no remainder. For example, if n=12, it will return {1, 2, 3, 4, 6, 12}.
@@ -145,9 +145,9 @@ class VariableSizeImageTransform(object):
 
     @staticmethod
     def get_max_res_without_distortion(
-        image_size: Tuple[int, int],
-        target_size: Tuple[int, int],
-    ) -> Tuple[int, int]:
+        image_size: tuple[int, int],
+        target_size: tuple[int, int],
+    ) -> tuple[int, int]:
         """
         Determines the maximum resolution to which an image can be resized to without distorting its
         aspect ratio, based on the target resolution.
@@ -198,8 +198,8 @@ class VariableSizeImageTransform(object):
     def resize_without_distortion(
         self,
         image: torch.Tensor,
-        target_size: Tuple[int, int],
-        max_upscaling_size: Optional[int],
+        target_size: tuple[int, int],
+        max_upscaling_size: int | None,
     ) -> torch.Tensor:
         """
         Used to resize an image to target_resolution, without distortion.
@@ -261,10 +261,10 @@ class VariableSizeImageTransform(object):
 
     def get_best_fit(
         self,
-        image_size: Tuple[int, int],
+        image_size: tuple[int, int],
         possible_resolutions: torch.Tensor,
         resize_to_max_canvas: bool = False,
-    ) -> Tuple[int, int]:
+    ) -> tuple[int, int]:
         """
         Determines the best canvas possible from a list of possible resolutions to, without distortion,
         resize an image to.
@@ -364,7 +364,7 @@ class VariableSizeImageTransform(object):
         max_num_chunks: int,
         normalize_img: bool = True,
         resize_to_max_canvas: bool = False,
-    ) -> Tuple[Any, Any]:
+    ) -> tuple[Any, Any]:
         """
         Args:
             image (PIL.Image): Image to be resized.

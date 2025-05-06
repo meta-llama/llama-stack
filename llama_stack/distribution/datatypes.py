@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 from enum import Enum
-from typing import Annotated, Any, Dict, List, Optional, Union
+from typing import Annotated, Any
 
 from pydantic import BaseModel, Field
 
@@ -30,7 +30,7 @@ LLAMA_STACK_BUILD_CONFIG_VERSION = "2"
 LLAMA_STACK_RUN_CONFIG_VERSION = "2"
 
 
-RoutingKey = Union[str, List[str]]
+RoutingKey = str | list[str]
 
 
 class AccessAttributes(BaseModel):
@@ -47,17 +47,17 @@ class AccessAttributes(BaseModel):
     """
 
     # Standard attribute categories - the minimal set we need now
-    roles: Optional[List[str]] = Field(
+    roles: list[str] | None = Field(
         default=None, description="Role-based attributes (e.g., 'admin', 'data-scientist', 'user')"
     )
 
-    teams: Optional[List[str]] = Field(default=None, description="Team-based attributes (e.g., 'ml-team', 'nlp-team')")
+    teams: list[str] | None = Field(default=None, description="Team-based attributes (e.g., 'ml-team', 'nlp-team')")
 
-    projects: Optional[List[str]] = Field(
+    projects: list[str] | None = Field(
         default=None, description="Project-based access attributes (e.g., 'llama-3', 'customer-insights')"
     )
 
-    namespaces: Optional[List[str]] = Field(
+    namespaces: list[str] | None = Field(
         default=None, description="Namespace-based access control for resource isolation"
     )
 
@@ -106,7 +106,7 @@ class ResourceWithACL(Resource):
         # ^ User must have access to the customer-insights project AND have confidential namespace
     """
 
-    access_attributes: Optional[AccessAttributes] = None
+    access_attributes: AccessAttributes | None = None
 
 
 # Use the extended Resource for all routable objects
@@ -142,41 +142,21 @@ class ToolGroupWithACL(ToolGroup, ResourceWithACL):
     pass
 
 
-RoutableObject = Union[
-    Model,
-    Shield,
-    VectorDB,
-    Dataset,
-    ScoringFn,
-    Benchmark,
-    Tool,
-    ToolGroup,
-]
-
+RoutableObject = Model | Shield | VectorDB | Dataset | ScoringFn | Benchmark | Tool | ToolGroup
 
 RoutableObjectWithProvider = Annotated[
-    Union[
-        ModelWithACL,
-        ShieldWithACL,
-        VectorDBWithACL,
-        DatasetWithACL,
-        ScoringFnWithACL,
-        BenchmarkWithACL,
-        ToolWithACL,
-        ToolGroupWithACL,
-    ],
+    ModelWithACL
+    | ShieldWithACL
+    | VectorDBWithACL
+    | DatasetWithACL
+    | ScoringFnWithACL
+    | BenchmarkWithACL
+    | ToolWithACL
+    | ToolGroupWithACL,
     Field(discriminator="type"),
 ]
 
-RoutedProtocol = Union[
-    Inference,
-    Safety,
-    VectorIO,
-    DatasetIO,
-    Scoring,
-    Eval,
-    ToolRuntime,
-]
+RoutedProtocol = Inference | Safety | VectorIO | DatasetIO | Scoring | Eval | ToolRuntime
 
 
 # Example: /inference, /safety
@@ -184,15 +164,15 @@ class AutoRoutedProviderSpec(ProviderSpec):
     provider_type: str = "router"
     config_class: str = ""
 
-    container_image: Optional[str] = None
+    container_image: str | None = None
     routing_table_api: Api
     module: str
-    provider_data_validator: Optional[str] = Field(
+    provider_data_validator: str | None = Field(
         default=None,
     )
 
     @property
-    def pip_packages(self) -> List[str]:
+    def pip_packages(self) -> list[str]:
         raise AssertionError("Should not be called on AutoRoutedProviderSpec")
 
 
@@ -200,20 +180,20 @@ class AutoRoutedProviderSpec(ProviderSpec):
 class RoutingTableProviderSpec(ProviderSpec):
     provider_type: str = "routing_table"
     config_class: str = ""
-    container_image: Optional[str] = None
+    container_image: str | None = None
 
     router_api: Api
     module: str
-    pip_packages: List[str] = Field(default_factory=list)
+    pip_packages: list[str] = Field(default_factory=list)
 
 
 class DistributionSpec(BaseModel):
-    description: Optional[str] = Field(
+    description: str | None = Field(
         default="",
         description="Description of the distribution",
     )
-    container_image: Optional[str] = None
-    providers: Dict[str, Union[str, List[str]]] = Field(
+    container_image: str | None = None
+    providers: dict[str, str | list[str]] = Field(
         default_factory=dict,
         description="""
 Provider Types for each of the APIs provided by this distribution. If you
@@ -225,12 +205,12 @@ in the runtime configuration to help route to the correct provider.""",
 class Provider(BaseModel):
     provider_id: str
     provider_type: str
-    config: Dict[str, Any]
+    config: dict[str, Any]
 
 
 class LoggingConfig(BaseModel):
-    category_levels: Dict[str, str] = Field(
-        default_factory=Dict,
+    category_levels: dict[str, str] = Field(
+        default_factory=dict,
         description="""
  Dictionary of different logging configurations for different portions (ex: core, server) of llama stack""",
     )
@@ -248,7 +228,7 @@ class AuthenticationConfig(BaseModel):
         ...,
         description="Type of authentication provider (e.g., 'kubernetes', 'custom')",
     )
-    config: Dict[str, str] = Field(
+    config: dict[str, str] = Field(
         ...,
         description="Provider-specific configuration",
     )
@@ -261,15 +241,15 @@ class ServerConfig(BaseModel):
         ge=1024,
         le=65535,
     )
-    tls_certfile: Optional[str] = Field(
+    tls_certfile: str | None = Field(
         default=None,
         description="Path to TLS certificate file for HTTPS",
     )
-    tls_keyfile: Optional[str] = Field(
+    tls_keyfile: str | None = Field(
         default=None,
         description="Path to TLS key file for HTTPS",
     )
-    auth: Optional[AuthenticationConfig] = Field(
+    auth: AuthenticationConfig | None = Field(
         default=None,
         description="Authentication configuration for the server",
     )
@@ -285,23 +265,23 @@ Reference to the distribution this package refers to. For unregistered (adhoc) p
 this could be just a hash
 """,
     )
-    container_image: Optional[str] = Field(
+    container_image: str | None = Field(
         default=None,
         description="Reference to the container image if this package refers to a container",
     )
-    apis: List[str] = Field(
+    apis: list[str] = Field(
         default_factory=list,
         description="""
 The list of APIs to serve. If not specified, all APIs specified in the provider_map will be served""",
     )
 
-    providers: Dict[str, List[Provider]] = Field(
+    providers: dict[str, list[Provider]] = Field(
         description="""
 One or more providers to use for each API. The same provider_type (e.g., meta-reference)
 can be instantiated multiple times (with different configs) if necessary.
 """,
     )
-    metadata_store: Optional[KVStoreConfig] = Field(
+    metadata_store: KVStoreConfig | None = Field(
         default=None,
         description="""
 Configuration for the persistence store used by the distribution registry. If not specified,
@@ -309,22 +289,22 @@ a default SQLite store will be used.""",
     )
 
     # registry of "resources" in the distribution
-    models: List[ModelInput] = Field(default_factory=list)
-    shields: List[ShieldInput] = Field(default_factory=list)
-    vector_dbs: List[VectorDBInput] = Field(default_factory=list)
-    datasets: List[DatasetInput] = Field(default_factory=list)
-    scoring_fns: List[ScoringFnInput] = Field(default_factory=list)
-    benchmarks: List[BenchmarkInput] = Field(default_factory=list)
-    tool_groups: List[ToolGroupInput] = Field(default_factory=list)
+    models: list[ModelInput] = Field(default_factory=list)
+    shields: list[ShieldInput] = Field(default_factory=list)
+    vector_dbs: list[VectorDBInput] = Field(default_factory=list)
+    datasets: list[DatasetInput] = Field(default_factory=list)
+    scoring_fns: list[ScoringFnInput] = Field(default_factory=list)
+    benchmarks: list[BenchmarkInput] = Field(default_factory=list)
+    tool_groups: list[ToolGroupInput] = Field(default_factory=list)
 
-    logging: Optional[LoggingConfig] = Field(default=None, description="Configuration for Llama Stack Logging")
+    logging: LoggingConfig | None = Field(default=None, description="Configuration for Llama Stack Logging")
 
     server: ServerConfig = Field(
         default_factory=ServerConfig,
         description="Configuration for the HTTP(S) server",
     )
 
-    external_providers_dir: Optional[str] = Field(
+    external_providers_dir: str | None = Field(
         default=None,
         description="Path to directory containing external provider implementations. The providers code and dependencies must be installed on the system.",
     )
@@ -338,11 +318,11 @@ class BuildConfig(BaseModel):
         default="conda",
         description="Type of package to build (conda | container | venv)",
     )
-    image_name: Optional[str] = Field(
+    image_name: str | None = Field(
         default=None,
         description="Name of the distribution to build",
     )
-    external_providers_dir: Optional[str] = Field(
+    external_providers_dir: str | None = Field(
         default=None,
         description="Path to directory containing external provider implementations. The providers packages will be resolved from this directory. "
         "pip_packages MUST contain the provider package name.",

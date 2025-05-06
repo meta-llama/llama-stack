@@ -15,6 +15,18 @@ repos:
         args: ['--maxkb=1000']
     -   id: end-of-file-fixer
         exclude: '^(.*\.svg)$'
+    -   id: no-commit-to-branch
+    -   id: check-yaml
+        args: ["--unsafe"]
+    -   id: detect-private-key
+    -   id: requirements-txt-fixer
+    -   id: mixed-line-ending
+        args: [--fix=lf] # Forces to replace line ending by LF (line feed)
+    -   id: check-executables-have-shebangs
+    -   id: check-json
+    -   id: check-shebang-scripts-are-executable
+    -   id: check-symlinks
+    -   id: check-toml
 
 -   repo: https://github.com/Lucas-C/pre-commit-hooks
     rev: v1.5.4

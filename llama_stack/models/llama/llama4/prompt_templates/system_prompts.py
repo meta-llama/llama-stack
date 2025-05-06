@@ -12,7 +12,6 @@
 # the top-level of this source tree.
 
 import textwrap
-from typing import List, Optional
 
 from llama_stack.apis.inference import ToolDefinition, ToolParamDefinition
 from llama_stack.models.llama.llama3.prompt_templates.base import (
@@ -67,14 +66,14 @@ class PythonListCustomToolGenerator(PromptTemplateGeneratorBase):  # noqa: N801
         """.strip("\n")
     )
 
-    def gen(self, custom_tools: List[ToolDefinition], system_prompt: Optional[str] = None) -> PromptTemplate:
+    def gen(self, custom_tools: list[ToolDefinition], system_prompt: str | None = None) -> PromptTemplate:
         system_prompt = system_prompt or self.DEFAULT_PROMPT
         return PromptTemplate(
             system_prompt,
             {"function_description": self._gen_function_description(custom_tools)},
         )
 
-    def _gen_function_description(self, custom_tools: List[ToolDefinition]) -> PromptTemplate:
+    def _gen_function_description(self, custom_tools: list[ToolDefinition]) -> PromptTemplate:
         template_str = textwrap.dedent(
             """
             Here is a list of functions in JSON format that you can invoke.
@@ -120,7 +119,7 @@ class PythonListCustomToolGenerator(PromptTemplateGeneratorBase):  # noqa: N801
             {"tools": [t.model_dump() for t in custom_tools]},
         ).render()
 
-    def data_examples(self) -> List[List[ToolDefinition]]:
+    def data_examples(self) -> list[list[ToolDefinition]]:
         return [
             [
                 ToolDefinition(
