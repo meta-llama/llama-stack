@@ -6,9 +6,16 @@
 
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, SecretStr
 
 from llama_stack.schema_utils import json_schema_type
+
+
+class SambaNovaProviderDataValidator(BaseModel):
+    sambanova_api_key: str | None = Field(
+        default=None,
+        description="Sambanova Cloud API key",
+    )
 
 
 @json_schema_type
@@ -17,14 +24,14 @@ class SambaNovaImplConfig(BaseModel):
         default="https://api.sambanova.ai/v1",
         description="The URL for the SambaNova AI server",
     )
-    api_key: str | None = Field(
+    api_key: SecretStr | None = Field(
         default=None,
-        description="The SambaNova.ai API Key",
+        description="The SambaNova cloud API Key",
     )
 
     @classmethod
-    def sample_run_config(cls, **kwargs) -> dict[str, Any]:
+    def sample_run_config(cls, api_key: str = "${env.SAMBANOVA_API_KEY}", **kwargs) -> dict[str, Any]:
         return {
             "url": "https://api.sambanova.ai/v1",
-            "api_key": "${env.SAMBANOVA_API_KEY}",
+            "api_key": api_key,
         }

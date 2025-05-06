@@ -8,6 +8,7 @@ distribution_spec:
     - remote::anthropic
     - remote::gemini
     - remote::groq
+    - remote::sambanova
     - inline::sentence-transformers
     vector_io:
     - inline::sqlite-vec
