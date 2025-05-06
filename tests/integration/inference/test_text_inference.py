@@ -458,18 +458,12 @@ def test_text_chat_completion_tool_calling_tools_not_in_request(
     [
         # Tests if the model can handle simple messages like "Hi" or
         # a message unrelated to one of the tool calls
-        "inference:chat_completion:multi_turn_tool_calling_01",
+        "inference:chat_completion:text_then_tool",
         # Tests if the model can do full tool call with responses correctly
-        "inference:chat_completion:multi_turn_tool_calling_02",
+        "inference:chat_completion:tool_then_answer",
         # Tests if model can generate multiple params and
         # read outputs correctly
-        "inference:chat_completion:multi_turn_tool_calling_03",
-        # Tests if model can do different tool calls in a seqeunce
-        # and use the information between appropriately
-        "inference:chat_completion:multi_turn_tool_calling_04",
-        # Tests if model can use current date and run multiple tool calls
-        # sequentially and infer using both
-        "inference:chat_completion:multi_turn_tool_calling_05",
+        "inference:chat_completion:array_parameter",
     ],
 )
 def test_text_chat_completion_with_multi_turn_tool_calling(client_with_models, text_model_id, test_case):
