@@ -153,6 +153,8 @@ uv sync
   justification for bypassing the check.
 * When using `# type: ignore` to suppress a mypy warning, include a comment explaining the
   justification for bypassing the check.
+* Don't use unicode characters in the codebase. ASCII-only is preferred for compatibility or
+  readability reasons.
 
 ## Common Tasks
 
