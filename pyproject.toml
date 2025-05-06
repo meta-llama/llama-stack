@@ -87,6 +87,7 @@ test = [
     "mcp",
     "datasets",
     "autoevals",
+    "transformers",
 ]
 docs = [
     "sphinx-autobuild",

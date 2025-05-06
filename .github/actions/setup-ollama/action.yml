@@ -1,0 +1,26 @@
+name: Setup Ollama
+description: Start Ollama and cache model
+inputs:
+  models:
+    description: Comma-separated list of models to pull
+    default: "llama3.2:3b-instruct-fp16,all-minilm:latest"
+runs:
+  using: "composite"
+  steps:
+    - name: Install and start Ollama
+      shell: bash
+      run: |
+        # the ollama installer also starts the ollama service
+        curl -fsSL https://ollama.com/install.sh | sh
+
+    # Do NOT cache models - pulling the cache is actually slower than just pulling the model.
+    # It takes ~45 seconds to pull the models from the cache and unpack it, but only 30 seconds to
+    # pull them directly.
+    # Maybe this is because the cache is being pulled at the same time by all the matrix jobs?
+    - name: Pull requested models
+      if: inputs.models != ''
+      shell: bash
+      run: |
+        for model in $(echo "${{ inputs.models }}" | tr ',' ' '); do
+          ollama pull "$model"
+        done

@@ -4,9 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import os
-import shutil
-import tempfile
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
@@ -15,9 +12,6 @@ from llama_stack.apis.datatypes import Api
 from llama_stack.apis.models import ModelType
 from llama_stack.distribution.datatypes import AccessAttributes, ModelWithACL
 from llama_stack.distribution.routers.routing_tables import ModelsRoutingTable
-from llama_stack.distribution.store.registry import CachedDiskDistributionRegistry
-from llama_stack.providers.utils.kvstore.config import SqliteKVStoreConfig
-from llama_stack.providers.utils.kvstore.sqlite import SqliteKVStoreImpl
 
 
 class AsyncMock(MagicMock):
@@ -30,25 +24,16 @@ def _return_model(model):
 
 
 @pytest.fixture
-async def test_setup():
-    temp_dir = tempfile.mkdtemp()
-    db_path = os.path.join(temp_dir, "test_access_control.db")
-    kvstore_config = SqliteKVStoreConfig(db_path=db_path)
-    kvstore = SqliteKVStoreImpl(kvstore_config)
-    await kvstore.initialize()
-    registry = CachedDiskDistributionRegistry(kvstore)
-    await registry.initialize()
-
+async def test_setup(cached_disk_dist_registry):
     mock_inference = Mock()
     mock_inference.__provider_spec__ = MagicMock()
     mock_inference.__provider_spec__.api = Api.inference
     mock_inference.register_model = AsyncMock(side_effect=_return_model)
     routing_table = ModelsRoutingTable(
         impls_by_provider_id={"test_provider": mock_inference},
-        dist_registry=registry,
+        dist_registry=cached_disk_dist_registry,
     )
-    yield registry, routing_table
-    shutil.rmtree(temp_dir)
+    yield cached_disk_dist_registry, routing_table
 
 
 @pytest.mark.asyncio
