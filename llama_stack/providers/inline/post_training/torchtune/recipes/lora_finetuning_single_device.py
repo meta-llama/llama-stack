@@ -39,7 +39,6 @@ from llama_stack.apis.datasets import Datasets
 from llama_stack.apis.post_training import (
     Checkpoint,
     DataConfig,
-    EfficiencyConfig,
     LoraFinetuningConfig,
     OptimizerConfig,
     QATFinetuningConfig,
@@ -89,8 +88,6 @@ class LoraFinetuningSingleDevice:
         datasets_api: Datasets,
     ) -> None:
         assert isinstance(training_config.data_config, DataConfig), "DataConfig must be initialized"
-
-        assert isinstance(training_config.efficiency_config, EfficiencyConfig), "EfficiencyConfig must be initialized"
 
         self.job_uuid = job_uuid
         self.training_config = training_config
