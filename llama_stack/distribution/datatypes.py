@@ -24,6 +24,7 @@ from llama_stack.apis.shields import Shield, ShieldInput
 from llama_stack.apis.tools import Tool, ToolGroup, ToolGroupInput, ToolRuntime
 from llama_stack.apis.vector_dbs import VectorDB, VectorDBInput
 from llama_stack.apis.vector_io import VectorIO
+from llama_stack.distribution.access_control.datatypes import AccessAttributes, AccessRule
 from llama_stack.providers.datatypes import Api, ProviderSpec
 from llama_stack.providers.utils.kvstore.config import KVStoreConfig, SqliteKVStoreConfig
 from llama_stack.providers.utils.sqlstore.sqlstore import SqlStoreConfig
@@ -33,35 +34,6 @@ LLAMA_STACK_RUN_CONFIG_VERSION = "2"
 
 
 RoutingKey = str | list[str]
-
-
-class AccessAttributes(BaseModel):
-    """Structured representation of user attributes for access control.
-
-    This model defines a structured approach to representing user attributes
-    with common standard categories for access control.
-
-    Standard attribute categories include:
-    - roles: Role-based attributes (e.g., admin, data-scientist)
-    - teams: Team-based attributes (e.g., ml-team, infra-team)
-    - projects: Project access attributes (e.g., llama-3, customer-insights)
-    - namespaces: Namespace-based access control for resource isolation
-    """
-
-    # Standard attribute categories - the minimal set we need now
-    roles: list[str] | None = Field(
-        default=None, description="Role-based attributes (e.g., 'admin', 'data-scientist', 'user')"
-    )
-
-    teams: list[str] | None = Field(default=None, description="Team-based attributes (e.g., 'ml-team', 'nlp-team')")
-
-    projects: list[str] | None = Field(
-        default=None, description="Project-based access attributes (e.g., 'llama-3', 'customer-insights')"
-    )
-
-    namespaces: list[str] | None = Field(
-        default=None, description="Namespace-based access control for resource isolation"
-    )
 
 
 class ResourceWithACL(Resource):
@@ -234,6 +206,7 @@ class AuthenticationConfig(BaseModel):
         ...,
         description="Provider-specific configuration",
     )
+    access_policy: list[AccessRule] = Field(default=[], description="Rules for determining access to resources")
 
 
 class AuthenticationRequiredError(Exception):

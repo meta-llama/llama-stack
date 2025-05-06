@@ -13,23 +13,24 @@ import pytest
 from llama_stack.apis.agents import Turn
 from llama_stack.apis.inference import CompletionMessage, StopReason
 from llama_stack.distribution.datatypes import AccessAttributes
+from llama_stack.distribution.request_headers import User
 from llama_stack.providers.inline.agents.meta_reference.persistence import AgentPersistence, AgentSessionInfo
 
 
 @pytest.fixture
 async def test_setup(sqlite_kvstore):
-    agent_persistence = AgentPersistence(agent_id="test_agent", kvstore=sqlite_kvstore)
+    agent_persistence = AgentPersistence(agent_id="test_agent", kvstore=sqlite_kvstore, policy={})
     yield agent_persistence
 
 
 @pytest.mark.asyncio
-@patch("llama_stack.providers.inline.agents.meta_reference.persistence.get_auth_attributes")
-async def test_session_creation_with_access_attributes(mock_get_auth_attributes, test_setup):
+@patch("llama_stack.providers.inline.agents.meta_reference.persistence.get_authenticated_user")
+async def test_session_creation_with_access_attributes(mock_get_authenticated_user, test_setup):
     agent_persistence = test_setup
 
     # Set creator's attributes for the session
     creator_attributes = {"roles": ["researcher"], "teams": ["ai-team"]}
-    mock_get_auth_attributes.return_value = creator_attributes
+    mock_get_authenticated_user.return_value = User("test_user", creator_attributes)
 
     # Create a session
     session_id = await agent_persistence.create_session("Test Session")
@@ -43,8 +44,8 @@ async def test_session_creation_with_access_attributes(mock_get_auth_attributes,
 
 
 @pytest.mark.asyncio
-@patch("llama_stack.providers.inline.agents.meta_reference.persistence.get_auth_attributes")
-async def test_session_access_control(mock_get_auth_attributes, test_setup):
+@patch("llama_stack.providers.inline.agents.meta_reference.persistence.get_authenticated_user")
+async def test_session_access_control(mock_get_authenticated_user, test_setup):
     agent_persistence = test_setup
 
     # Create a session with specific access attributes
@@ -55,6 +56,7 @@ async def test_session_access_control(mock_get_auth_attributes, test_setup):
         started_at=datetime.now(),
         access_attributes=AccessAttributes(roles=["admin"], teams=["security-team"]),
         turns=[],
+        identifier="Restricted Session",
     )
 
     await agent_persistence.kvstore.set(
@@ -63,20 +65,22 @@ async def test_session_access_control(mock_get_auth_attributes, test_setup):
     )
 
     # User with matching attributes can access
-    mock_get_auth_attributes.return_value = {"roles": ["admin", "user"], "teams": ["security-team", "other-team"]}
+    mock_get_authenticated_user.return_value = User(
+        "testuser", {"roles": ["admin", "user"], "teams": ["security-team", "other-team"]}
+    )
     retrieved_session = await agent_persistence.get_session_info(session_id)
     assert retrieved_session is not None
     assert retrieved_session.session_id == session_id
 
     # User without matching attributes cannot access
-    mock_get_auth_attributes.return_value = {"roles": ["user"], "teams": ["other-team"]}
+    mock_get_authenticated_user.return_value = User("testuser", {"roles": ["user"], "teams": ["other-team"]})
     retrieved_session = await agent_persistence.get_session_info(session_id)
     assert retrieved_session is None
 
 
 @pytest.mark.asyncio
-@patch("llama_stack.providers.inline.agents.meta_reference.persistence.get_auth_attributes")
-async def test_turn_access_control(mock_get_auth_attributes, test_setup):
+@patch("llama_stack.providers.inline.agents.meta_reference.persistence.get_authenticated_user")
+async def test_turn_access_control(mock_get_authenticated_user, test_setup):
     agent_persistence = test_setup
 
     # Create a session with restricted access
@@ -87,6 +91,7 @@ async def test_turn_access_control(mock_get_auth_attributes, test_setup):
         started_at=datetime.now(),
         access_attributes=AccessAttributes(roles=["admin"]),
         turns=[],
+        identifier="Restricted Session",
     )
 
     await agent_persistence.kvstore.set(
@@ -109,7 +114,7 @@ async def test_turn_access_control(mock_get_auth_attributes, test_setup):
     )
 
     # Admin can add turn
-    mock_get_auth_attributes.return_value = {"roles": ["admin"]}
+    mock_get_authenticated_user.return_value = User("testuser", {"roles": ["admin"]})
     await agent_persistence.add_turn_to_session(session_id, turn)
 
     # Admin can get turn
@@ -118,7 +123,7 @@ async def test_turn_access_control(mock_get_auth_attributes, test_setup):
     assert retrieved_turn.turn_id == turn_id
 
     # Regular user cannot get turn
-    mock_get_auth_attributes.return_value = {"roles": ["user"]}
+    mock_get_authenticated_user.return_value = User("testuser", {"roles": ["user"]})
     with pytest.raises(ValueError):
         await agent_persistence.get_session_turn(session_id, turn_id)
 
@@ -128,8 +133,8 @@ async def test_turn_access_control(mock_get_auth_attributes, test_setup):
 
 
 @pytest.mark.asyncio
-@patch("llama_stack.providers.inline.agents.meta_reference.persistence.get_auth_attributes")
-async def test_tool_call_and_infer_iters_access_control(mock_get_auth_attributes, test_setup):
+@patch("llama_stack.providers.inline.agents.meta_reference.persistence.get_authenticated_user")
+async def test_tool_call_and_infer_iters_access_control(mock_get_authenticated_user, test_setup):
     agent_persistence = test_setup
 
     # Create a session with restricted access
@@ -140,6 +145,7 @@ async def test_tool_call_and_infer_iters_access_control(mock_get_auth_attributes
         started_at=datetime.now(),
         access_attributes=AccessAttributes(roles=["admin"]),
         turns=[],
+        identifier="Restricted Session",
     )
 
     await agent_persistence.kvstore.set(
@@ -150,7 +156,7 @@ async def test_tool_call_and_infer_iters_access_control(mock_get_auth_attributes
     turn_id = str(uuid.uuid4())
 
     # Admin user can set inference iterations
-    mock_get_auth_attributes.return_value = {"roles": ["admin"]}
+    mock_get_authenticated_user.return_value = User("testuser", {"roles": ["admin"]})
     await agent_persistence.set_num_infer_iters_in_turn(session_id, turn_id, 5)
 
     # Admin user can get inference iterations
@@ -158,7 +164,7 @@ async def test_tool_call_and_infer_iters_access_control(mock_get_auth_attributes
     assert infer_iters == 5
 
     # Regular user cannot get inference iterations
-    mock_get_auth_attributes.return_value = {"roles": ["user"]}
+    mock_get_authenticated_user.return_value = User("testuser", {"roles": ["user"]})
     infer_iters = await agent_persistence.get_num_infer_iters_in_turn(session_id, turn_id)
     assert infer_iters is None
 

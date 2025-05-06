@@ -10,9 +10,9 @@ import uuid
 from datetime import datetime, timezone
 
 from llama_stack.apis.agents import AgentConfig, Session, ToolExecutionStep, Turn
-from llama_stack.distribution.access_control import check_access
-from llama_stack.distribution.datatypes import AccessAttributes
-from llama_stack.distribution.request_headers import get_auth_attributes
+from llama_stack.distribution.access_control.access_control import AccessDeniedError, is_action_allowed
+from llama_stack.distribution.access_control.datatypes import AccessAttributes, AccessRule
+from llama_stack.distribution.request_headers import get_authenticated_user
 from llama_stack.providers.utils.kvstore import KVStore
 
 log = logging.getLogger(__name__)
@@ -23,6 +23,8 @@ class AgentSessionInfo(Session):
     vector_db_id: str | None = None
     started_at: datetime
     access_attributes: AccessAttributes | None = None
+    identifier: str | None = None
+    type: str = "session"
 
 
 class AgentInfo(AgentConfig):
@@ -30,15 +32,17 @@ class AgentInfo(AgentConfig):
 
 
 class AgentPersistence:
-    def __init__(self, agent_id: str, kvstore: KVStore):
+    def __init__(self, agent_id: str, kvstore: KVStore, policy: list[AccessRule]):
         self.agent_id = agent_id
         self.kvstore = kvstore
+        self.policy = policy
 
     async def create_session(self, name: str) -> str:
         session_id = str(uuid.uuid4())
 
         # Get current user's auth attributes for new sessions
-        auth_attributes = get_auth_attributes()
+        user = get_authenticated_user()
+        auth_attributes = user and user.attributes
         access_attributes = AccessAttributes(**auth_attributes) if auth_attributes else None
 
         session_info = AgentSessionInfo(
@@ -47,7 +51,10 @@ class AgentPersistence:
             started_at=datetime.now(timezone.utc),
             access_attributes=access_attributes,
             turns=[],
+            identifier=name,  # should this be qualified in any way?
         )
+        if not is_action_allowed(self.policy, "create", session_info, user):
+            raise AccessDeniedError()
 
         await self.kvstore.set(
             key=f"session:{self.agent_id}:{session_id}",
@@ -76,7 +83,7 @@ class AgentPersistence:
         if not hasattr(session_info, "access_attributes"):
             return True
 
-        return check_access(session_info.session_id, session_info.access_attributes, get_auth_attributes())
+        return is_action_allowed(self.policy, "read", session_info, get_authenticated_user())
 
     async def get_session_if_accessible(self, session_id: str) -> AgentSessionInfo | None:
         """Get session info if the user has access to it. For internal use by sub-session methods."""

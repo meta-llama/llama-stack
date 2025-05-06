@@ -30,10 +30,7 @@ from pydantic import BaseModel, ValidationError
 
 from llama_stack.distribution.datatypes import AuthenticationRequiredError, LoggingConfig, StackRunConfig
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
-from llama_stack.distribution.request_headers import (
-    PROVIDER_DATA_VAR,
-    request_provider_data_context,
-)
+from llama_stack.distribution.request_headers import PROVIDER_DATA_VAR, User, request_provider_data_context
 from llama_stack.distribution.resolver import InvalidProviderError
 from llama_stack.distribution.server.endpoints import (
     find_matching_endpoint,
@@ -213,11 +210,13 @@ def create_dynamic_typed_route(func: Any, method: str, route: str):
     async def endpoint(request: Request, **kwargs):
         # Get auth attributes from the request scope
         user_attributes = request.scope.get("user_attributes", {})
+        principal = request.scope.get("principal", "")
+        user = User(principal, user_attributes)
 
         await log_request_pre_validation(request)
 
         # Use context manager with both provider data and auth attributes
-        with request_provider_data_context(request.headers, user_attributes):
+        with request_provider_data_context(request.headers, user):
             is_streaming = is_streaming_request(func.__name__, request, **kwargs)
 
             try:
