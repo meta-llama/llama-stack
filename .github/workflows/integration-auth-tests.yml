@@ -74,32 +74,8 @@ jobs:
           cat <<'EOF' > $run_dir/run.yaml
           version: '2'
           image_name: kube
-          apis:
-          - agents
-          - datasetio
-          - eval
-          - inference
-          - safety
-          - scoring
-          - telemetry
-          - tool_runtime
-          - vector_io
-          providers:
-            agents:
-            - provider_id: meta-reference
-              provider_type: inline::meta-reference
-              config:
-                persistence_store:
-                  type: sqlite
-                  namespace: null
-                  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/agents_store.db
-            telemetry:
-            - provider_id: meta-reference
-              provider_type: inline::meta-reference
-              config:
-                service_name: "${env.OTEL_SERVICE_NAME:\u200B}"
-                sinks: ${env.TELEMETRY_SINKS:console,sqlite}
-                sqlite_db_path: ${env.SQLITE_DB_PATH:~/.llama/distributions/ollama/trace_store.db}
+          apis: []
+          providers: {}
           server:
             port: 8321
           EOF
