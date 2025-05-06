@@ -7,6 +7,7 @@ choices:
           function:
             name: web_search
             arguments: '{"query":"What is the capital of Ireland?"}'
+      role: assistant
     finish_reason: stop
     index: 0
 created: 1234567890
