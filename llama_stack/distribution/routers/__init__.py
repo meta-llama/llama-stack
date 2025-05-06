@@ -7,6 +7,7 @@
 from typing import Any
 
 from llama_stack.distribution.datatypes import RoutedProtocol
+from llama_stack.distribution.resource_attributes import ResourceAccessAttributes
 from llama_stack.distribution.store import DistributionRegistry
 from llama_stack.providers.datatypes import Api, RoutingTable
 
@@ -26,6 +27,7 @@ async def get_routing_table_impl(
     impls_by_provider_id: dict[str, RoutedProtocol],
     _deps,
     dist_registry: DistributionRegistry,
+    resource_attributes: ResourceAccessAttributes,
 ) -> Any:
     api_to_tables = {
         "vector_dbs": VectorDBsRoutingTable,
@@ -40,7 +42,7 @@ async def get_routing_table_impl(
     if api.value not in api_to_tables:
         raise ValueError(f"API {api.value} not found in router map")
 
-    impl = api_to_tables[api.value](impls_by_provider_id, dist_registry)
+    impl = api_to_tables[api.value](impls_by_provider_id, dist_registry, resource_attributes)
     await impl.initialize()
     return impl
 

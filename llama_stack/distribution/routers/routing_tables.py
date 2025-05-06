@@ -58,6 +58,7 @@ from llama_stack.distribution.datatypes import (
     VectorDBWithACL,
 )
 from llama_stack.distribution.request_headers import get_auth_attributes
+from llama_stack.distribution.resource_attributes import ResourceAccessAttributes
 from llama_stack.distribution.store import DistributionRegistry
 from llama_stack.providers.datatypes import Api, RoutingTable
 
@@ -114,9 +115,11 @@ class CommonRoutingTableImpl(RoutingTable):
         self,
         impls_by_provider_id: dict[str, RoutedProtocol],
         dist_registry: DistributionRegistry,
+        resource_attributes: ResourceAccessAttributes,
     ) -> None:
         self.impls_by_provider_id = impls_by_provider_id
         self.dist_registry = dist_registry
+        self.resource_attributes = resource_attributes
 
     async def initialize(self) -> None:
         async def add_objects(objs: list[RoutableObjectWithProvider], provider_id: str, cls) -> None:
@@ -219,8 +222,12 @@ class CommonRoutingTableImpl(RoutingTable):
 
         p = self.impls_by_provider_id[obj.provider_id]
 
-        # If object supports access control but no attributes set, use creator's attributes
-        if not obj.access_attributes:
+        if self.resource_attributes.apply(obj, get_auth_attributes()):
+            logger.info(
+                f"Setting access attributes for {obj.type} '{obj.identifier}' based on resource attribute rules"
+            )
+        else:
+            # If object supports access control but no attributes set, use creator's attributes
             creator_attributes = get_auth_attributes()
             if creator_attributes:
                 obj.access_attributes = AccessAttributes(**creator_attributes)

@@ -16,7 +16,7 @@ from llama_stack.apis.datasets import Dataset, DatasetInput
 from llama_stack.apis.eval import Eval
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.models import Model, ModelInput
-from llama_stack.apis.resource import Resource
+from llama_stack.apis.resource import Resource, ResourceType
 from llama_stack.apis.safety import Safety
 from llama_stack.apis.scoring import Scoring
 from llama_stack.apis.scoring_functions import ScoringFn, ScoringFnInput
@@ -61,6 +61,15 @@ class AccessAttributes(BaseModel):
     namespaces: list[str] | None = Field(
         default=None, description="Namespace-based access control for resource isolation"
     )
+
+
+class AccessAttributesRule(BaseModel):
+    """Rule for associating AccessAttributes with particular resources"""
+
+    resource_type: ResourceType | None = Field(default=None)
+    resource_id: str | None = Field(default=None)
+    provider_id: str | None = Field(default=None)
+    attributes: AccessAttributes
 
 
 class ResourceWithACL(Resource):
@@ -232,6 +241,9 @@ class AuthenticationConfig(BaseModel):
     config: dict[str, str] = Field(
         ...,
         description="Provider-specific configuration",
+    )
+    resource_attribute_rules: list[AccessAttributesRule] = Field(
+        default=[], description="Rules for determining access attributes for resources"
     )
 
 
