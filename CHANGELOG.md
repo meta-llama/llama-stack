@@ -1,5 +1,26 @@
 # Changelog
 
+# v0.2.5
+Published on: 2025-05-04T20:16:49Z
+
+
+
+---
+
+# v0.2.4
+Published on: 2025-04-29T17:26:01Z
+
+## Highlights
+
+* One-liner to install and run Llama Stack yay! by @reluctantfuturist in https://github.com/meta-llama/llama-stack/pull/1383
+* support for NVIDIA NeMo datastore by @raspawar in https://github.com/meta-llama/llama-stack/pull/1852
+* (yuge!) Kubernetes authentication by @leseb in https://github.com/meta-llama/llama-stack/pull/1778
+* (yuge!) OpenAI Responses API by @bbrowning in https://github.com/meta-llama/llama-stack/pull/1989
+* add api.llama provider, llama-guard-4 model by @ashwinb in https://github.com/meta-llama/llama-stack/pull/2058
+
+
+---
+
 # v0.2.3
 Published on: 2025-04-25T22:46:21Z
 
