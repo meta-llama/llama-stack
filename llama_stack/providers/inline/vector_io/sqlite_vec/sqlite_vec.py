@@ -184,7 +184,7 @@ class SQLiteVecIndex(EmbeddingIndex):
 
             except sqlite3.Error as e:
                 connection.rollback()
-                logger.error(f"Error inserting chunk batch: {e}")
+                logger.error(f"Error inserting into {self.vector_table}: {e}")
                 raise
 
             finally:
@@ -194,88 +194,99 @@ class SQLiteVecIndex(EmbeddingIndex):
         # Run batch insertion in a background thread
         await asyncio.to_thread(_execute_all_batch_inserts)
 
-    async def query(
+    async def query_vector(
         self,
-        embedding: Optional[NDArray],
-        query_string: Optional[str],
+        embedding: NDArray,
         k: int,
         score_threshold: float,
-        mode: Optional[str],
     ) -> QueryChunksResponse:
         """
-        Supports both vector-based and keyword-based searches.
-
-        1. Vector Search (`mode=VECTOR_SEARCH`):
-           Uses a virtual table for vector similarity, joined with metadata.
-
-        2. Keyword Search (`mode=KEYWORD_SEARCH`):
-           Uses SQLite FTS5 for relevance-ranked full-text search.
+        Performs vector-based search using a virtual table for vector similarity.
         """
+        if embedding is None:
+            raise ValueError("embedding is required for vector search.")
 
         def _execute_query():
             connection = _create_sqlite_connection(self.db_path)
             cur = connection.cursor()
-
             try:
-                if mode == VECTOR_SEARCH:
-                    if embedding is None:
-                        raise ValueError("embedding is required for vector search.")
-                    emb_list = embedding.tolist() if isinstance(embedding, np.ndarray) else list(embedding)
-                    emb_blob = serialize_vector(emb_list)
-
-                    query_sql = f"""
-                        SELECT m.id, m.chunk, v.distance
-                        FROM {self.vector_table} AS v
-                        JOIN {self.metadata_table} AS m ON m.id = v.id
-                        WHERE v.embedding MATCH ? AND k = ?
-                        ORDER BY v.distance;
-                    """
-                    cur.execute(query_sql, (emb_blob, k))
-
-                elif mode == KEYWORD_SEARCH:
-                    if query_string is None:
-                        raise ValueError("query_string is required for keyword search.")
-
-                    query_sql = f"""
-                        SELECT DISTINCT m.id, m.chunk, bm25({self.fts_table}) AS score
-                        FROM {self.fts_table} AS f
-                        JOIN {self.metadata_table} AS m ON m.id = f.id
-                        WHERE f.content MATCH ?
-                        ORDER BY score ASC
-                        LIMIT ?;
-                    """
-                    cur.execute(query_sql, (query_string, k))
-
-                else:
-                    raise ValueError(f"Invalid search_mode: {mode} please select from {SEARCH_MODES}")
-
+                emb_list = embedding.tolist() if isinstance(embedding, np.ndarray) else list(embedding)
+                emb_blob = serialize_vector(emb_list)
+                query_sql = f"""
+                    SELECT m.id, m.chunk, v.distance
+                    FROM {self.vector_table} AS v
+                    JOIN {self.metadata_table} AS m ON m.id = v.id
+                    WHERE v.embedding MATCH ? AND k = ?
+                    ORDER BY v.distance;
+                """
+                cur.execute(query_sql, (emb_blob, k))
                 return cur.fetchall()
             finally:
                 cur.close()
                 connection.close()
 
         rows = await asyncio.to_thread(_execute_query)
-
         chunks, scores = [], []
         for row in rows:
-            if mode == VECTOR_SEARCH:
-                _id, chunk_json, distance = row
-                score = 1.0 / distance if distance != 0 else float("inf")
-
-                if score < score_threshold:
-                    continue
-            else:
-                _id, chunk_json, score = row
-
+            _id, chunk_json, distance = row
+            score = 1.0 / distance if distance != 0 else float("inf")
+            if score < score_threshold:
+                continue
             try:
                 chunk = Chunk.model_validate_json(chunk_json)
             except Exception as e:
                 logger.error(f"Error parsing chunk JSON for id {_id}: {e}")
                 continue
-
             chunks.append(chunk)
             scores.append(score)
+        return QueryChunksResponse(chunks=chunks, scores=scores)
 
+    async def query_keyword(
+        self,
+        query_string: str | None,
+        k: int,
+        score_threshold: float,
+    ) -> QueryChunksResponse:
+        """
+        Performs keyword-based search using SQLite FTS5 for relevance-ranked full-text search.
+        """
+        if query_string is None:
+            raise ValueError("query_string is required for keyword search.")
+
+        def _execute_query():
+            connection = _create_sqlite_connection(self.db_path)
+            cur = connection.cursor()
+            try:
+                query_sql = f"""
+                    SELECT DISTINCT m.id, m.chunk, bm25({self.fts_table}) AS score
+                    FROM {self.fts_table} AS f
+                    JOIN {self.metadata_table} AS m ON m.id = f.id
+                    WHERE f.content MATCH ?
+                    ORDER BY score ASC
+                    LIMIT ?;
+                """
+                cur.execute(query_sql, (query_string, k))
+                return cur.fetchall()
+            finally:
+                cur.close()
+                connection.close()
+
+        rows = await asyncio.to_thread(_execute_query)
+        chunks, scores = [], []
+        for row in rows:
+            _id, chunk_json, score = row
+            # BM25 scores returned by sqlite-vec are NEGATED (i.e., more relevant = more negative).
+            # This design is intentional to simplify sorting by ascending score.
+            # Reference: https://alexgarcia.xyz/blog/2024/sqlite-vec-hybrid-search/index.html
+            if score > -score_threshold:
+                continue
+            try:
+                chunk = Chunk.model_validate_json(chunk_json)
+            except Exception as e:
+                logger.error(f"Error parsing chunk JSON for id {_id}: {e}")
+                continue
+            chunks.append(chunk)
+            scores.append(score)
         return QueryChunksResponse(chunks=chunks, scores=scores)
 
 
