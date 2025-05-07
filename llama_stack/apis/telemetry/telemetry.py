@@ -203,6 +203,47 @@ class QuerySpanTreeResponse(BaseModel):
     data: dict[str, SpanWithStatus]
 
 
+class MetricQueryType(Enum):
+    RANGE = "range"
+    INSTANT = "instant"
+
+
+class MetricLabelOperator(Enum):
+    EQUALS = "="
+    NOT_EQUALS = "!="
+    REGEX_MATCH = "=~"
+    REGEX_NOT_MATCH = "!~"
+
+
+class MetricLabelMatcher(BaseModel):
+    name: str
+    value: str
+    operator: MetricLabelOperator = MetricLabelOperator.EQUALS
+
+
+@json_schema_type
+class MetricLabel(BaseModel):
+    name: str
+    value: str
+
+
+@json_schema_type
+class MetricDataPoint(BaseModel):
+    timestamp: int
+    value: float
+
+
+@json_schema_type
+class MetricSeries(BaseModel):
+    metric: str
+    labels: list[MetricLabel]
+    values: list[MetricDataPoint]
+
+
+class QueryMetricsResponse(BaseModel):
+    data: list[MetricSeries]
+
+
 @runtime_checkable
 class Telemetry(Protocol):
     @webmethod(route="/telemetry/events", method="POST")
@@ -247,3 +288,14 @@ class Telemetry(Protocol):
         dataset_id: str,
         max_depth: int | None = None,
     ) -> None: ...
+
+    @webmethod(route="/telemetry/metrics/{metric_name}", method="POST")
+    async def query_metrics(
+        self,
+        metric_name: str,
+        start_time: int,
+        end_time: int | None = None,
+        granularity: str | None = "1d",
+        query_type: MetricQueryType = MetricQueryType.RANGE,
+        label_matchers: list[MetricLabelMatcher] | None = None,
+    ) -> QueryMetricsResponse: ...
