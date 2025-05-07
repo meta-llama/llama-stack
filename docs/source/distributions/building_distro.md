@@ -178,7 +178,7 @@ image_name: ollama
 image_type: conda
 
 # If some providers are external, you can specify the path to the implementation
-external_providers_dir: /etc/llama-stack/providers.d
+external_providers_dir: ~/.llama/providers.d
 ```
 
 ```
@@ -206,7 +206,7 @@ distribution_spec:
 image_type: container
 image_name: ci-test
 # Path to external provider implementations
-external_providers_dir: /etc/llama-stack/providers.d
+external_providers_dir: ~/.llama/providers.d
 ```
 
 Here's an example for a custom Ollama provider:
