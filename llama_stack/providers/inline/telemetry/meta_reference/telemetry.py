@@ -131,7 +131,7 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
         metric_name: str,
         start_time: int,
         end_time: int | None = None,
-        step: str | None = "1d",
+        granularity: str | None = "1d",
         query_type: MetricQueryType = MetricQueryType.RANGE,
         label_matchers: list[MetricLabelMatcher] | None = None,
     ) -> QueryMetricsResponse:
