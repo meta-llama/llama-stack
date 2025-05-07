@@ -64,7 +64,7 @@ class LocalFSDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
         # Load existing datasets from kvstore
         start_key = DATASETS_PREFIX
         end_key = f"{DATASETS_PREFIX}\xff"
-        stored_datasets = await self.kvstore.range(start_key, end_key)
+        stored_datasets = await self.kvstore.values_in_range(start_key, end_key)
 
         for dataset in stored_datasets:
             dataset = Dataset.model_validate_json(dataset)

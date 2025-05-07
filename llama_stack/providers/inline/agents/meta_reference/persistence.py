@@ -9,9 +9,7 @@ import logging
 import uuid
 from datetime import datetime, timezone
 
-from pydantic import BaseModel
-
-from llama_stack.apis.agents import ToolExecutionStep, Turn
+from llama_stack.apis.agents import AgentConfig, Session, ToolExecutionStep, Turn
 from llama_stack.distribution.access_control import check_access
 from llama_stack.distribution.datatypes import AccessAttributes
 from llama_stack.distribution.request_headers import get_auth_attributes
@@ -20,13 +18,15 @@ from llama_stack.providers.utils.kvstore import KVStore
 log = logging.getLogger(__name__)
 
 
-class AgentSessionInfo(BaseModel):
-    session_id: str
-    session_name: str
+class AgentSessionInfo(Session):
     # TODO: is this used anywhere?
     vector_db_id: str | None = None
     started_at: datetime
     access_attributes: AccessAttributes | None = None
+
+
+class AgentInfo(AgentConfig):
+    created_at: datetime
 
 
 class AgentPersistence:
@@ -46,6 +46,7 @@ class AgentPersistence:
             session_name=name,
             started_at=datetime.now(timezone.utc),
             access_attributes=access_attributes,
+            turns=[],
         )
 
         await self.kvstore.set(
@@ -109,7 +110,7 @@ class AgentPersistence:
         if not await self.get_session_if_accessible(session_id):
             raise ValueError(f"Session {session_id} not found or access denied")
 
-        values = await self.kvstore.range(
+        values = await self.kvstore.values_in_range(
             start_key=f"session:{self.agent_id}:{session_id}:",
             end_key=f"session:{self.agent_id}:{session_id}:\xff\xff\xff\xff",
         )
@@ -121,7 +122,6 @@ class AgentPersistence:
             except Exception as e:
                 log.error(f"Error parsing turn: {e}")
                 continue
-        turns.sort(key=lambda x: (x.completed_at or datetime.min))
         return turns
 
     async def get_session_turn(self, session_id: str, turn_id: str) -> Turn | None:
@@ -170,3 +170,43 @@ class AgentPersistence:
             key=f"num_infer_iters_in_turn:{self.agent_id}:{session_id}:{turn_id}",
         )
         return int(value) if value else None
+
+    async def list_sessions(self) -> list[Session]:
+        values = await self.kvstore.values_in_range(
+            start_key=f"session:{self.agent_id}:",
+            end_key=f"session:{self.agent_id}:\xff\xff\xff\xff",
+        )
+        sessions = []
+        for value in values:
+            try:
+                session_info = Session(**json.loads(value))
+                sessions.append(session_info)
+            except Exception as e:
+                log.error(f"Error parsing session info: {e}")
+                continue
+        return sessions
+
+    async def delete_session_turns(self, session_id: str) -> None:
+        """Delete all turns and their associated data for a session.
+
+        Args:
+            session_id: The ID of the session whose turns should be deleted.
+        """
+        turns = await self.get_session_turns(session_id)
+        for turn in turns:
+            await self.kvstore.delete(key=f"session:{self.agent_id}:{session_id}:{turn.turn_id}")
+
+    async def delete_session(self, session_id: str) -> None:
+        """Delete a session and all its associated turns.
+
+        Args:
+            session_id: The ID of the session to delete.
+
+        Raises:
+            ValueError: If the session does not exist.
+        """
+        session_info = await self.get_session_info(session_id)
+        if session_info is None:
+            raise ValueError(f"Session {session_id} not found")
+
+        await self.kvstore.delete(key=f"session:{self.agent_id}:{session_id}")
