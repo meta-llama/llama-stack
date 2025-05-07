@@ -253,6 +253,10 @@ class ServerConfig(BaseModel):
         default=None,
         description="Authentication configuration for the server",
     )
+    disable_ipv6: bool = Field(
+        default=False,
+        description="Disable IPv6 support",
+    )
 
 
 class StackRunConfig(BaseModel):

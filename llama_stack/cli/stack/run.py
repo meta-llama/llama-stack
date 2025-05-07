@@ -48,26 +48,10 @@ class StackRun(Subcommand):
             help="Name of the image to run. Defaults to the current environment",
         )
         self.parser.add_argument(
-            "--disable-ipv6",
-            action="store_true",
-            help="Disable IPv6 support",
-            default=False,
-        )
-        self.parser.add_argument(
             "--env",
             action="append",
             help="Environment variables to pass to the server in KEY=VALUE format. Can be specified multiple times.",
             metavar="KEY=VALUE",
-        )
-        self.parser.add_argument(
-            "--tls-keyfile",
-            type=str,
-            help="Path to TLS key file for HTTPS",
-        )
-        self.parser.add_argument(
-            "--tls-certfile",
-            type=str,
-            help="Path to TLS certificate file for HTTPS",
         )
         self.parser.add_argument(
             "--image-type",
@@ -158,8 +142,6 @@ class StackRun(Subcommand):
             run_args = formulate_run_args(image_type, image_name, config, template_name)
 
             run_args.extend([str(config_file), str(args.port)])
-            if args.disable_ipv6:
-                run_args.append("--disable-ipv6")
 
             if args.env:
                 for env_var in args.env:
@@ -172,6 +154,4 @@ class StackRun(Subcommand):
                         return
                     run_args.extend(["--env", f"{key}={value}"])
 
-            if args.tls_keyfile and args.tls_certfile:
-                run_args.extend(["--tls-keyfile", args.tls_keyfile, "--tls-certfile", args.tls_certfile])
             run_command(run_args)

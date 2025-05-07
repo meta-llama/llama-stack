@@ -343,16 +343,6 @@ def main(args: argparse.Namespace | None = None):
         action="append",
         help="Environment variables in KEY=value format. Can be specified multiple times.",
     )
-    parser.add_argument(
-        "--tls-keyfile",
-        help="Path to TLS key file for HTTPS",
-        required="--tls-certfile" in sys.argv,
-    )
-    parser.add_argument(
-        "--tls-certfile",
-        help="Path to TLS certificate file for HTTPS",
-        required="--tls-keyfile" in sys.argv,
-    )
 
     # Determine whether the server args are being passed by the "run" command, if this is the case
     # the args will be passed as a Namespace object to the main function, otherwise they will be
@@ -486,12 +476,8 @@ def main(args: argparse.Namespace | None = None):
     port = args.port or config.server.port
 
     ssl_config = None
-    if args.tls_keyfile:
-        keyfile = args.tls_keyfile
-        certfile = args.tls_certfile
-    else:
-        keyfile = config.server.tls_keyfile
-        certfile = config.server.tls_certfile
+    keyfile = config.server.tls_keyfile
+    certfile = config.server.tls_certfile
 
     if keyfile and certfile:
         ssl_config = {
@@ -500,7 +486,7 @@ def main(args: argparse.Namespace | None = None):
         }
         logger.info(f"HTTPS enabled with certificates:\n  Key: {keyfile}\n  Cert: {certfile}")
 
-    listen_host = ["::", "0.0.0.0"] if not args.disable_ipv6 else "0.0.0.0"
+    listen_host = ["::", "0.0.0.0"] if not config.server.disable_ipv6 else "0.0.0.0"
     logger.info(f"Listening on {listen_host}:{port}")
 
     uvicorn_config = {

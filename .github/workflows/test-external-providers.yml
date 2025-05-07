@@ -75,4 +75,5 @@ jobs:
             fi
           done
           echo "Provider failed to load"
+          cat server.log
           exit 1
