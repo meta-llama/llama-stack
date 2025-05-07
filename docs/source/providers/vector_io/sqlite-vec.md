@@ -70,7 +70,7 @@ To use sqlite-vec in your Llama Stack project, follow these steps:
 
 The sqlite-vec provider supports both vector-based and keyword-based (full-text) search modes.
 
-When using the RAGTool interface, you can specify the desired search behavior via the search_mode parameter in
+When using the RAGTool interface, you can specify the desired search behavior via the `mode` parameter in
 `RAGQueryConfig`. For example:
 
 ```python
