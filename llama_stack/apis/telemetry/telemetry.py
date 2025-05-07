@@ -240,7 +240,7 @@ class MetricSeries(BaseModel):
     values: list[MetricDataPoint]
 
 
-class GetMetricsResponse(BaseModel):
+class QueryMetricsResponse(BaseModel):
     data: list[MetricSeries]
 
 
@@ -290,7 +290,7 @@ class Telemetry(Protocol):
     ) -> None: ...
 
     @webmethod(route="/telemetry/metrics/{metric_name}", method="POST")
-    async def get_metrics(
+    async def query_metrics(
         self,
         metric_name: str,
         start_time: int,
@@ -298,4 +298,4 @@ class Telemetry(Protocol):
         granularity: str | None = "1d",
         query_type: MetricQueryType = MetricQueryType.RANGE,
         label_matchers: list[MetricLabelMatcher] | None = None,
-    ) -> GetMetricsResponse: ...
+    ) -> QueryMetricsResponse: ...
