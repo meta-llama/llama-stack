@@ -197,6 +197,26 @@ models:
   provider_id: together
   provider_model_id: meta-llama/Llama-Guard-3-11B-Vision-Turbo
   model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8
+  provider_id: together
+  provider_model_id: meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-4-Maverick-17B-128E-Instruct
+  provider_id: together
+  provider_model_id: meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-4-Scout-17B-16E-Instruct
+  provider_id: together
+  provider_model_id: meta-llama/Llama-4-Scout-17B-16E-Instruct
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-4-Scout-17B-16E-Instruct
+  provider_id: together
+  provider_model_id: meta-llama/Llama-4-Scout-17B-16E-Instruct
+  model_type: llm
 - metadata:
     embedding_dimension: 768
     context_length: 8192
