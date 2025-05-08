@@ -158,56 +158,92 @@ def _convert_to_vllm_finish_reason(finish_reason: str) -> StopReason:
     }.get(finish_reason, StopReason.end_of_turn)
 
 
+def _process_vllm_chat_completion_end_of_stream(
+    finish_reason: str | None,
+    last_chunk_content: str | None,
+    current_event_type: ChatCompletionResponseEventType,
+    tool_call_buf: UnparseableToolCall,
+) -> list[OpenAIChatCompletionChunk]:
+    chunks = []
+
+    args_str = tool_call_buf.arguments
+    args = None
+    try:
+        args = {} if not args_str else json.loads(args_str)
+    except Exception as e:
+        log.warning(f"Failed to parse tool call buffer arguments: {args_str} \nError: {e}")
+
+    if finish_reason is not None:
+        actual_finish_reason = _convert_to_vllm_finish_reason(finish_reason)
+    else:
+        actual_finish_reason = StopReason.end_of_message
+
+    if args:
+        chunks.append(
+            ChatCompletionResponseStreamChunk(
+                event=ChatCompletionResponseEvent(
+                    event_type=current_event_type,
+                    delta=ToolCallDelta(
+                        tool_call=ToolCall(
+                            call_id=tool_call_buf.call_id,
+                            tool_name=tool_call_buf.tool_name,
+                            arguments=args,
+                            arguments_json=args_str,
+                        ),
+                        parse_status=ToolCallParseStatus.succeeded,
+                    ),
+                )
+            )
+        )
+    elif args_str:
+        chunks.append(
+            ChatCompletionResponseStreamChunk(
+                event=ChatCompletionResponseEvent(
+                    event_type=ChatCompletionResponseEventType.progress,
+                    delta=ToolCallDelta(
+                        tool_call=str(tool_call_buf),
+                        parse_status=ToolCallParseStatus.failed,
+                    ),
+                )
+            )
+        )
+
+    chunks.append(
+        ChatCompletionResponseStreamChunk(
+            event=ChatCompletionResponseEvent(
+                event_type=ChatCompletionResponseEventType.complete,
+                delta=TextDelta(text=last_chunk_content or ""),
+                logprobs=None,
+                stop_reason=actual_finish_reason,
+            )
+        )
+    )
+
+    return chunks
+
+
 async def _process_vllm_chat_completion_stream_response(
     stream: AsyncGenerator[OpenAIChatCompletionChunk, None],
 ) -> AsyncGenerator:
     event_type = ChatCompletionResponseEventType.start
     tool_call_buf = UnparseableToolCall()
+    end_of_stream_processed = False
+
     async for chunk in stream:
         if not chunk.choices:
             log.warning("vLLM failed to generation any completions - check the vLLM server logs for an error.")
-            continue
+            return
         choice = chunk.choices[0]
         if choice.finish_reason:
-            args_str = tool_call_buf.arguments
-            args = None
-            try:
-                args = {} if not args_str else json.loads(args_str)
-            except Exception as e:
-                log.warning(f"Failed to parse tool call buffer arguments: {args_str} \nError: {e}")
-            if args:
-                yield ChatCompletionResponseStreamChunk(
-                    event=ChatCompletionResponseEvent(
-                        event_type=event_type,
-                        delta=ToolCallDelta(
-                            tool_call=ToolCall(
-                                call_id=tool_call_buf.call_id,
-                                tool_name=tool_call_buf.tool_name,
-                                arguments=args,
-                                arguments_json=args_str,
-                            ),
-                            parse_status=ToolCallParseStatus.succeeded,
-                        ),
-                    )
-                )
-            elif args_str:
-                yield ChatCompletionResponseStreamChunk(
-                    event=ChatCompletionResponseEvent(
-                        event_type=ChatCompletionResponseEventType.progress,
-                        delta=ToolCallDelta(
-                            tool_call=str(tool_call_buf),
-                            parse_status=ToolCallParseStatus.failed,
-                        ),
-                    )
-                )
-            yield ChatCompletionResponseStreamChunk(
-                event=ChatCompletionResponseEvent(
-                    event_type=ChatCompletionResponseEventType.complete,
-                    delta=TextDelta(text=choice.delta.content or ""),
-                    logprobs=None,
-                    stop_reason=_convert_to_vllm_finish_reason(choice.finish_reason),
-                )
+            chunks = _process_vllm_chat_completion_end_of_stream(
+                finish_reason=choice.finish_reason,
+                last_chunk_content=choice.delta.content,
+                current_event_type=event_type,
+                tool_call_buf=tool_call_buf,
             )
+            for c in chunks:
+                yield c
+            end_of_stream_processed = True
         elif choice.delta.tool_calls:
             tool_call = convert_tool_call(choice.delta.tool_calls[0])
             tool_call_buf.tool_name += str(tool_call.tool_name)
@@ -223,6 +259,17 @@ async def _process_vllm_chat_completion_stream_response(
                 )
             )
             event_type = ChatCompletionResponseEventType.progress
+
+    if end_of_stream_processed:
+        return
+
+    # the stream ended without a chunk containing finish_reason - we have to generate the
+    # respective completion chunks manually
+    chunks = _process_vllm_chat_completion_end_of_stream(
+        finish_reason=None, last_chunk_content=None, current_event_type=event_type, tool_call_buf=tool_call_buf
+    )
+    for c in chunks:
+        yield c
 
 
 class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
