@@ -129,7 +129,7 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
         scores = [s for r in results for s in r.scores]
 
         if not chunks:
-            raise ValueError("The knowledge search tool did not find any information relevant to the query.")
+            return RAGQueryResult(content=None)
 
         # sort by score
         chunks, scores = zip(*sorted(zip(chunks, scores, strict=False), key=lambda x: x[1], reverse=True), strict=False)  # type: ignore
