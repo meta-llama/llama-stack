@@ -358,7 +358,6 @@ def main(args: argparse.Namespace | None = None):
         default=int(os.getenv("LLAMA_STACK_PORT", 8321)),
         help="Port to listen on",
     )
-    parser.add_argument("--disable-ipv6", action="store_true", help="Whether to disable IPv6 support")
     parser.add_argument(
         "--env",
         action="append",
@@ -514,7 +513,7 @@ def main(args: argparse.Namespace | None = None):
         else:
             logger.info(f"HTTPS enabled with certificates:\n  Key: {keyfile}\n  Cert: {certfile}")
 
-    listen_host = ["::", "0.0.0.0"] if not config.server.disable_ipv6 else "0.0.0.0"
+    listen_host = config.server.host or ["::", "0.0.0.0"]
     logger.info(f"Listening on {listen_host}:{port}")
 
     uvicorn_config = {

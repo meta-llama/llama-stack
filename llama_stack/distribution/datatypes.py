@@ -258,9 +258,9 @@ class ServerConfig(BaseModel):
         default=None,
         description="Authentication configuration for the server",
     )
-    disable_ipv6: bool = Field(
-        default=False,
-        description="Disable IPv6 support",
+    host: str | None = Field(
+        default=None,
+        description="The host the server should listen on",
     )
 
 
