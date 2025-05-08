@@ -4537,7 +4537,34 @@ components:
     OpenAIResponseInput:
       oneOf:
         - $ref: '#/components/schemas/OpenAIResponseOutputMessageWebSearchToolCall'
+        - $ref: '#/components/schemas/OpenAIResponseOutputMessageFunctionToolCall'
+        - $ref: '#/components/schemas/OpenAIResponseInputFunctionToolCallOutput'
         - $ref: '#/components/schemas/OpenAIResponseMessage'
+    "OpenAIResponseInputFunctionToolCallOutput":
+      type: object
+      properties:
+        call_id:
+          type: string
+        output:
+          type: string
+        type:
+          type: string
+          const: function_call_output
+          default: function_call_output
+        id:
+          type: string
+        status:
+          type: string
+      additionalProperties: false
+      required:
+        - call_id
+        - output
+        - type
+      title: >-
+        OpenAIResponseInputFunctionToolCallOutput
+      description: >-
+        This represents the output of a function call that gets passed back to the
+        model.
     OpenAIResponseInputMessageContent:
       oneOf:
         - $ref: '#/components/schemas/OpenAIResponseInputMessageContentText'
@@ -4721,6 +4748,33 @@ components:
         - type
       title: >-
         OpenAIResponseOutputMessageContentOutputText
+    "OpenAIResponseOutputMessageFunctionToolCall":
+      type: object
+      properties:
+        arguments:
+          type: string
+        call_id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          const: function_call
+          default: function_call
+        id:
+          type: string
+        status:
+          type: string
+      additionalProperties: false
+      required:
+        - arguments
+        - call_id
+        - name
+        - type
+        - id
+        - status
+      title: >-
+        OpenAIResponseOutputMessageFunctionToolCall
     "OpenAIResponseOutputMessageWebSearchToolCall":
       type: object
       properties:
@@ -4840,33 +4894,6 @@ components:
           message: '#/components/schemas/OpenAIResponseMessage'
           web_search_call: '#/components/schemas/OpenAIResponseOutputMessageWebSearchToolCall'
           function_call: '#/components/schemas/OpenAIResponseOutputMessageFunctionToolCall'
-    "OpenAIResponseOutputMessageFunctionToolCall":
-      type: object
-      properties:
-        arguments:
-          type: string
-        call_id:
-          type: string
-        name:
-          type: string
-        type:
-          type: string
-          const: function_call
-          default: function_call
-        id:
-          type: string
-        status:
-          type: string
-      additionalProperties: false
-      required:
-        - arguments
-        - call_id
-        - name
-        - type
-        - id
-        - status
-      title: >-
-        OpenAIResponseOutputMessageFunctionToolCall
     OpenAIResponseObjectStream:
       oneOf:
         - $ref: '#/components/schemas/OpenAIResponseObjectStreamResponseCreated'

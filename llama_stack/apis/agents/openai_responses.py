@@ -130,9 +130,24 @@ OpenAIResponseObjectStream = Annotated[
 register_schema(OpenAIResponseObjectStream, name="OpenAIResponseObjectStream")
 
 
+@json_schema_type
+class OpenAIResponseInputFunctionToolCallOutput(BaseModel):
+    """
+    This represents the output of a function call that gets passed back to the model.
+    """
+
+    call_id: str
+    output: str
+    type: Literal["function_call_output"] = "function_call_output"
+    id: str | None = None
+    status: str | None = None
+
+
 OpenAIResponseInput = Annotated[
     # Responses API allows output messages to be passed in as input
     OpenAIResponseOutputMessageWebSearchToolCall
+    | OpenAIResponseOutputMessageFunctionToolCall
+    | OpenAIResponseInputFunctionToolCallOutput
     |
     # Fallback to the generic message type as a last resort
     OpenAIResponseMessage,

@@ -14,6 +14,7 @@ from pydantic import BaseModel
 
 from llama_stack.apis.agents.openai_responses import (
     OpenAIResponseInput,
+    OpenAIResponseInputFunctionToolCallOutput,
     OpenAIResponseInputItemList,
     OpenAIResponseInputMessageContent,
     OpenAIResponseInputMessageContentImage,
@@ -38,6 +39,7 @@ from llama_stack.apis.inference.inference import (
     OpenAIChatCompletionContentPartImageParam,
     OpenAIChatCompletionContentPartParam,
     OpenAIChatCompletionContentPartTextParam,
+    OpenAIChatCompletionToolCall,
     OpenAIChatCompletionToolCallFunction,
     OpenAIChoice,
     OpenAIDeveloperMessageParam,
@@ -97,13 +99,31 @@ async def _convert_response_input_to_chat_messages(
     messages: list[OpenAIMessageParam] = []
     if isinstance(input, list):
         for input_message in input:
-            content = await _convert_response_content_to_chat_content(input_message.content)
-            message_type = await _get_message_type_by_role(input_message.role)
-            if message_type is None:
-                raise ValueError(
-                    f"Llama Stack OpenAI Responses does not yet support message role '{input_message.role}' in this context"
+            if isinstance(input_message, OpenAIResponseInputFunctionToolCallOutput):
+                messages.append(
+                    OpenAIToolMessageParam(
+                        content=input_message.output,
+                        tool_call_id=input_message.call_id,
+                    )
                 )
-            messages.append(message_type(content=content))
+            elif isinstance(input_message, OpenAIResponseOutputMessageFunctionToolCall):
+                tool_call = OpenAIChatCompletionToolCall(
+                    index=0,
+                    id=input_message.call_id,
+                    function=OpenAIChatCompletionToolCallFunction(
+                        name=input_message.name,
+                        arguments=input_message.arguments,
+                    ),
+                )
+                messages.append(OpenAIAssistantMessageParam(tool_calls=[tool_call]))
+            else:
+                content = await _convert_response_content_to_chat_content(input_message.content)
+                message_type = await _get_message_type_by_role(input_message.role)
+                if message_type is None:
+                    raise ValueError(
+                        f"Llama Stack OpenAI Responses does not yet support message role '{input_message.role}' in this context"
+                    )
+                messages.append(message_type(content=content))
     else:
         messages.append(OpenAIUserMessageParam(content=input))
     return messages
@@ -222,6 +242,7 @@ class OpenAIResponsesImpl:
             # TODO: refactor this into a separate method that handles streaming
             chat_response_id = ""
             chat_response_content = []
+            chat_response_tool_calls: dict[int, OpenAIChatCompletionToolCall] = {}
             # TODO: these chunk_ fields are hacky and only take the last chunk into account
             chunk_created = 0
             chunk_model = ""
@@ -235,7 +256,26 @@ class OpenAIResponsesImpl:
                     chat_response_content.append(chunk_choice.delta.content or "")
                     if chunk_choice.finish_reason:
                         chunk_finish_reason = chunk_choice.finish_reason
-            assistant_message = OpenAIAssistantMessageParam(content="".join(chat_response_content))
+
+                    if chunk_choice.delta.tool_calls:
+                        for tool_call in chunk_choice.delta.tool_calls:
+                            if tool_call.index not in chat_response_tool_calls:
+                                chat_response_tool_calls[tool_call.index] = OpenAIChatCompletionToolCall(
+                                    **tool_call.model_dump()
+                                )
+                            chat_response_tool_calls[tool_call.index].function.arguments = (
+                                chat_response_tool_calls[tool_call.index].function.arguments
+                                + tool_call.function.arguments
+                            )
+
+            if chat_response_tool_calls:
+                tool_calls = [chat_response_tool_calls[i] for i in sorted(chat_response_tool_calls.keys())]
+            else:
+                tool_calls = None
+            assistant_message = OpenAIAssistantMessageParam(
+                content="".join(chat_response_content),
+                tool_calls=tool_calls,
+            )
             chat_response = OpenAIChatCompletion(
                 id=chat_response_id,
                 choices=[
