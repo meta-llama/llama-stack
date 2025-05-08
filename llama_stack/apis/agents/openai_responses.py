@@ -181,8 +181,3 @@ register_schema(OpenAIResponseInputTool, name="OpenAIResponseInputTool")
 class OpenAIResponseInputItemList(BaseModel):
     data: list[OpenAIResponseInput]
     object: Literal["list"] = "list"
-
-
-class OpenAIResponsePreviousResponseWithInputItems(BaseModel):
-    input_items: OpenAIResponseInputItemList
-    response: OpenAIResponseObject

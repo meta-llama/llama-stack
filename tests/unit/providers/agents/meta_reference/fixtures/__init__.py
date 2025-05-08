@@ -12,19 +12,11 @@ from llama_stack.apis.inference.inference import (
     OpenAIChatCompletion,
 )
 
+FIXTURES_DIR = os.path.dirname(os.path.abspath(__file__))
+
 
 def load_chat_completion_fixture(filename: str) -> OpenAIChatCompletion:
-    """
-    Load a YAML fixture file and convert it to an OpenAIChatCompletion object.
-
-    Args:
-        filename: Name of the YAML file (without path)
-
-    Returns:
-        OpenAIChatCompletion object
-    """
-    fixtures_dir = os.path.dirname(os.path.abspath(__file__))
-    fixture_path = os.path.join(fixtures_dir, filename)
+    fixture_path = os.path.join(FIXTURES_DIR, filename)
 
     with open(fixture_path) as f:
         data = yaml.safe_load(f)

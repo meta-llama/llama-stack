@@ -16,7 +16,6 @@ from llama_stack.apis.agents.openai_responses import (
     OpenAIResponseObject,
     OpenAIResponseOutputMessageContentOutputText,
     OpenAIResponseOutputMessageWebSearchToolCall,
-    OpenAIResponsePreviousResponseWithInputItems,
 )
 from llama_stack.apis.inference.inference import (
     OpenAIAssistantMessageParam,
@@ -26,6 +25,7 @@ from llama_stack.apis.inference.inference import (
 )
 from llama_stack.apis.tools.tools import Tool, ToolGroups, ToolInvocationResult, ToolParameter, ToolRuntime
 from llama_stack.providers.inline.agents.meta_reference.openai_responses import (
+    OpenAIResponsePreviousResponseWithInputItems,
     OpenAIResponsesImpl,
 )
 from llama_stack.providers.utils.kvstore import KVStore
