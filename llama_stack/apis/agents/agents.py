@@ -415,6 +415,7 @@ class Agents(Protocol):
         :returns: If stream=False, returns a Turn object.
                   If stream=True, returns an SSE event stream of AgentTurnResponseStreamChunk
         """
+        ...
 
     @webmethod(
         route="/agents/{agent_id}/session/{session_id}/turn/{turn_id}/resume",
@@ -606,3 +607,4 @@ class Agents(Protocol):
         :param model: The underlying LLM used for completions.
         :param previous_response_id: (Optional) if specified, the new response will be a continuation of the previous response. This can be used to easily fork-off new responses from existing responses.
         """
+        ...

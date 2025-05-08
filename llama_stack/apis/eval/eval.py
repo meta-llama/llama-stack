@@ -140,3 +140,4 @@ class Eval(Protocol):
         :param job_id: The ID of the job to get the result of.
         :return: The result of the job.
         """
+        ...
