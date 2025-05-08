@@ -48,6 +48,14 @@ MODEL_ENTRIES = [
         "meta-llama/Llama-Guard-3-11B-Vision-Turbo",
         CoreModelId.llama_guard_3_11b_vision.value,
     ),
+    build_hf_repo_model_entry(
+        "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
+        CoreModelId.llama4_maverick_17b_128e_instruct.value,
+    ),
+    build_hf_repo_model_entry(
+        "meta-llama/Llama-4-Scout-17B-16E-Instruct",
+        CoreModelId.llama4_scout_17b_16e_instruct.value,
+    ),
     ProviderModelEntry(
         provider_model_id="togethercomputer/m2-bert-80M-8k-retrieval",
         model_type=ModelType.embedding,

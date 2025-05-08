@@ -46,6 +46,8 @@ The following models are available by default:
 - `meta-llama/Llama-3.3-70B-Instruct-Turbo (aliases: meta-llama/Llama-3.3-70B-Instruct)`
 - `meta-llama/Meta-Llama-Guard-3-8B (aliases: meta-llama/Llama-Guard-3-8B)`
 - `meta-llama/Llama-Guard-3-11B-Vision-Turbo (aliases: meta-llama/Llama-Guard-3-11B-Vision)`
+- `meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8 (aliases: meta-llama/Llama-4-Maverick-17B-128E-Instruct)`
+- `meta-llama/Llama-4-Scout-17B-16E-Instruct (aliases: meta-llama/Llama-4-Scout-17B-16E-Instruct)`
 - `togethercomputer/m2-bert-80M-8k-retrieval `
 - `togethercomputer/m2-bert-80M-32k-retrieval `
 - `meta-llama/Llama-4-Scout-17B-16E-Instruct (aliases: meta-llama/Llama-4-Scout-17B-16E-Instruct, together/meta-llama/Llama-4-Scout-17B-16E-Instruct)`
