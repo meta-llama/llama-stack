@@ -340,7 +340,6 @@ async def test_process_vllm_chat_completion_stream_response_no_finish_reason():
             ),
         ]
         for chunk in mock_chunks:
-            print(f"Test chunk:\n{chunk}")
             yield chunk
 
     chunks = [chunk async for chunk in _process_vllm_chat_completion_stream_response(mock_stream())]
