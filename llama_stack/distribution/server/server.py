@@ -49,6 +49,7 @@ from llama_stack.providers.inline.telemetry.meta_reference.config import Telemet
 from llama_stack.providers.inline.telemetry.meta_reference.telemetry import (
     TelemetryAdapter,
 )
+from llama_stack.providers.utils.kvstore.config import SqliteKVStoreConfig
 from llama_stack.providers.utils.telemetry.tracing import (
     CURRENT_TRACE_CONTEXT,
     end_trace,
@@ -58,6 +59,7 @@ from llama_stack.providers.utils.telemetry.tracing import (
 
 from .auth import AuthenticationMiddleware
 from .endpoints import get_all_api_endpoints
+from .quota import QuotaMiddleware
 
 REPO_ROOT = Path(__file__).parent.parent.parent.parent
 
@@ -411,6 +413,34 @@ def main(args: argparse.Namespace | None = None):
     if config.server.auth:
         logger.info(f"Enabling authentication with provider: {config.server.auth.provider_type.value}")
         app.add_middleware(AuthenticationMiddleware, auth_config=config.server.auth)
+    else:
+        if config.server.quota:
+            logger.error(
+                "Quota enforcement requires authentication to be enabled, but no auth config is present. "
+                "Disable quotas or configure authentication."
+            )
+            raise RuntimeError("Quota middleware requires authentication middleware to be active.")
+
+    # Enforce per-client quota (only if configured and require authentication)
+    if config.server.quota:
+        logger.info("Enabling per-client quota middleware")
+
+        quota_conf = config.server.quota.config
+
+        kv_config = SqliteKVStoreConfig(db_path=quota_conf.db_path)
+
+        window_seconds_map = {
+            "day": 86400,
+        }
+
+        window_seconds = window_seconds_map[quota_conf.limit.period.value]
+
+        app.add_middleware(
+            QuotaMiddleware,
+            kv_config=kv_config,
+            max_requests=quota_conf.limit.max_requests,
+            window_seconds=window_seconds,
+        )
 
     try:
         impls = asyncio.run(construct_stack(config))
