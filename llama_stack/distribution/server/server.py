@@ -486,7 +486,7 @@ def main(args: argparse.Namespace | None = None):
         }
         logger.info(f"HTTPS enabled with certificates:\n  Key: {keyfile}\n  Cert: {certfile}")
 
-    listen_host = ["::", "0.0.0.0"] if not config.server.disable_ipv6 else "0.0.0.0"
+    listen_host = config.server.host or ["::", "0.0.0.0"]
     logger.info(f"Listening on {listen_host}:{port}")
 
     uvicorn_config = {

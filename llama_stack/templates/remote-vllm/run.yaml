@@ -132,4 +132,3 @@ tool_groups:
   provider_id: wolfram-alpha
 server:
   port: 8321
-  disable_ipv6: false
