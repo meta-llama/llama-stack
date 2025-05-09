@@ -833,6 +833,8 @@
     "tqdm",
     "transformers",
     "tree_sitter",
-    "uvicorn"
+    "uvicorn",
+    "sentence-transformers --no-deps",
+    "torch torchvision --index-url https://download.pytorch.org/whl/cpu"
   ]
 }

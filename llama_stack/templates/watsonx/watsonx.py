@@ -6,7 +6,11 @@
 
 from pathlib import Path
 
-from llama_stack.distribution.datatypes import Provider, ToolGroupInput
+from llama_stack.apis.models.models import ModelType
+from llama_stack.distribution.datatypes import ModelInput, Provider, ToolGroupInput
+from llama_stack.providers.inline.inference.sentence_transformers import (
+    SentenceTransformersInferenceConfig,
+)
 from llama_stack.providers.remote.inference.watsonx import WatsonXConfig
 from llama_stack.providers.remote.inference.watsonx.models import MODEL_ENTRIES
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings, get_model_registry
@@ -14,7 +18,7 @@ from llama_stack.templates.template import DistributionTemplate, RunConfigSettin
 
 def get_distribution_template() -> DistributionTemplate:
     providers = {
-        "inference": ["remote::watsonx"],
+        "inference": ["remote::watsonx", "inline::sentence-transformers"],
         "vector_io": ["inline::faiss"],
         "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],
@@ -36,6 +40,12 @@ def get_distribution_template() -> DistributionTemplate:
         config=WatsonXConfig.sample_run_config(),
     )
 
+    embedding_provider = Provider(
+        provider_id="sentence-transformers",
+        provider_type="inline::sentence-transformers",
+        config=SentenceTransformersInferenceConfig.sample_run_config(),
+    )
+
     available_models = {
         "watsonx": MODEL_ENTRIES,
     }
@@ -50,6 +60,15 @@ def get_distribution_template() -> DistributionTemplate:
         ),
     ]
 
+    embedding_model = ModelInput(
+        model_id="all-MiniLM-L6-v2",
+        provider_id="sentence-transformers",
+        model_type=ModelType.embedding,
+        metadata={
+            "embedding_dimension": 384,
+        },
+    )
+
     default_models = get_model_registry(available_models)
     return DistributionTemplate(
         name="watsonx",
@@ -62,9 +81,9 @@ def get_distribution_template() -> DistributionTemplate:
         run_configs={
             "run.yaml": RunConfigSettings(
                 provider_overrides={
-                    "inference": [inference_provider],
+                    "inference": [inference_provider, embedding_provider],
                 },
-                default_models=default_models,
+                default_models=default_models + [embedding_model],
                 default_tool_groups=default_tool_groups,
             ),
         },
