@@ -14,6 +14,7 @@ from .build import StackBuild
 from .list_apis import StackListApis
 from .list_providers import StackListProviders
 from .run import StackRun
+from .remove import StackRemove
 
 
 class StackParser(Subcommand):
@@ -41,5 +42,6 @@ class StackParser(Subcommand):
         StackListApis.create(subparsers)
         StackListProviders.create(subparsers)
         StackRun.create(subparsers)
+        StackRemove.create(subparsers)
 
         print_subcommand_description(self.parser, subparsers)
