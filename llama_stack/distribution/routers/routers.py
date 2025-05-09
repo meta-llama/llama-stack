@@ -630,7 +630,7 @@ class InferenceRouter(Inference):
                     continue
                 health = await asyncio.wait_for(impl.health(), timeout=timeout)
                 health_statuses[provider_id] = health
-            except asyncio.TimeoutError:
+            except (asyncio.TimeoutError, TimeoutError):
                 health_statuses[provider_id] = HealthResponse(
                     status=HealthStatus.ERROR,
                     message=f"Health check timed out after {timeout} seconds",

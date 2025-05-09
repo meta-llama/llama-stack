@@ -114,7 +114,7 @@ def translate_exception(exc: Exception) -> HTTPException | RequestValidationErro
         return HTTPException(status_code=400, detail=str(exc))
     elif isinstance(exc, PermissionError):
         return HTTPException(status_code=403, detail=f"Permission denied: {str(exc)}")
-    elif isinstance(exc, TimeoutError):
+    elif isinstance(exc, asyncio.TimeoutError | TimeoutError):
         return HTTPException(status_code=504, detail=f"Operation timed out: {str(exc)}")
     elif isinstance(exc, NotImplementedError):
         return HTTPException(status_code=501, detail=f"Not implemented: {str(exc)}")
@@ -139,7 +139,7 @@ async def shutdown(app):
                 await asyncio.wait_for(impl.shutdown(), timeout=5)
             else:
                 logger.warning("No shutdown method for %s", impl_name)
-        except asyncio.TimeoutError:
+        except (asyncio.TimeoutError, TimeoutError):
             logger.exception("Shutdown timeout for %s ", impl_name, exc_info=True)
         except (Exception, asyncio.CancelledError) as e:
             logger.exception("Failed to shutdown %s: %s", impl_name, {e})
