@@ -348,3 +348,52 @@ async def test_process_vllm_chat_completion_stream_response_no_finish_reason():
     assert chunks[-2].event.delta.type == "tool_call"
     assert chunks[-2].event.delta.tool_call.tool_name == mock_tool_name
     assert chunks[-2].event.delta.tool_call.arguments == mock_tool_arguments
+
+
+@pytest.mark.asyncio
+async def test_process_vllm_chat_completion_stream_response_tool_without_args():
+    """
+    Tests the edge case where no arguments are provided for the tool call.
+    Tool calls with no arguments should be treated as regular tool calls, which was not the case until now.
+    """
+    mock_tool_name = "mock_tool"
+
+    async def mock_stream():
+        mock_chunks = [
+            OpenAIChatCompletionChunk(
+                id="chunk-1",
+                created=1,
+                model="foo",
+                object="chat.completion.chunk",
+                choices=[
+                    {
+                        "delta": {
+                            "content": None,
+                            "tool_calls": [
+                                {
+                                    "index": 0,
+                                    "id": "mock_id",
+                                    "type": "function",
+                                    "function": {
+                                        "name": mock_tool_name,
+                                        "arguments": "",
+                                    },
+                                }
+                            ],
+                        },
+                        "finish_reason": None,
+                        "logprobs": None,
+                        "index": 0,
+                    }
+                ],
+            ),
+        ]
+        for chunk in mock_chunks:
+            yield chunk
+
+    chunks = [chunk async for chunk in _process_vllm_chat_completion_stream_response(mock_stream())]
+    assert len(chunks) == 2
+    assert chunks[-1].event.event_type == ChatCompletionResponseEventType.complete
+    assert chunks[-2].event.delta.type == "tool_call"
+    assert chunks[-2].event.delta.tool_call.tool_name == mock_tool_name
+    assert chunks[-2].event.delta.tool_call.arguments == {}

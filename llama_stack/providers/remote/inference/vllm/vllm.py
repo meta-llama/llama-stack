@@ -166,47 +166,52 @@ def _process_vllm_chat_completion_end_of_stream(
 ) -> list[OpenAIChatCompletionChunk]:
     chunks = []
 
-    args_str = tool_call_buf.arguments
-    args = None
-    try:
-        args = {} if not args_str else json.loads(args_str)
-    except Exception as e:
-        log.warning(f"Failed to parse tool call buffer arguments: {args_str} \nError: {e}")
-
     if finish_reason is not None:
         actual_finish_reason = _convert_to_vllm_finish_reason(finish_reason)
     else:
         actual_finish_reason = StopReason.end_of_message
 
-    if args:
-        chunks.append(
-            ChatCompletionResponseStreamChunk(
-                event=ChatCompletionResponseEvent(
-                    event_type=current_event_type,
-                    delta=ToolCallDelta(
-                        tool_call=ToolCall(
-                            call_id=tool_call_buf.call_id,
-                            tool_name=tool_call_buf.tool_name,
-                            arguments=args,
-                            arguments_json=args_str,
+    if tool_call_buf.tool_name:
+        # at least one tool call request is received
+
+        args_str = tool_call_buf.arguments or "{}"
+        args = {}
+        args_parsed_successfully = True
+        try:
+            args = json.loads(args_str)
+        except Exception as e:
+            args_parsed_successfully = False
+            log.warning(f"Failed to parse tool call buffer arguments: {args_str} \nError: {e}")
+
+        if args_parsed_successfully:
+            chunks.append(
+                ChatCompletionResponseStreamChunk(
+                    event=ChatCompletionResponseEvent(
+                        event_type=current_event_type,
+                        delta=ToolCallDelta(
+                            tool_call=ToolCall(
+                                call_id=tool_call_buf.call_id,
+                                tool_name=tool_call_buf.tool_name,
+                                arguments=args,
+                                arguments_json=args_str,
+                            ),
+                            parse_status=ToolCallParseStatus.succeeded,
                         ),
-                        parse_status=ToolCallParseStatus.succeeded,
-                    ),
+                    )
                 )
             )
-        )
-    elif args_str:
-        chunks.append(
-            ChatCompletionResponseStreamChunk(
-                event=ChatCompletionResponseEvent(
-                    event_type=ChatCompletionResponseEventType.progress,
-                    delta=ToolCallDelta(
-                        tool_call=str(tool_call_buf),
-                        parse_status=ToolCallParseStatus.failed,
-                    ),
+        else:
+            chunks.append(
+                ChatCompletionResponseStreamChunk(
+                    event=ChatCompletionResponseEvent(
+                        event_type=ChatCompletionResponseEventType.progress,
+                        delta=ToolCallDelta(
+                            tool_call=str(tool_call_buf),
+                            parse_status=ToolCallParseStatus.failed,
+                        ),
+                    )
                 )
             )
-        )
 
     chunks.append(
         ChatCompletionResponseStreamChunk(
