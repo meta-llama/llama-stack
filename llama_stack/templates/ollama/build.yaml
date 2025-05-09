@@ -29,4 +29,6 @@ distribution_spec:
     - inline::rag-runtime
     - remote::model-context-protocol
     - remote::wolfram-alpha
+    files:
+    - remote::s3
 image_type: conda

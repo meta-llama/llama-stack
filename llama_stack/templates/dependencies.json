@@ -459,6 +459,7 @@
     "uvicorn"
   ],
   "ollama": [
+    "aioboto3",
     "aiohttp",
     "aiosqlite",
     "autoevals",
