@@ -139,22 +139,27 @@ async def content_from_doc(doc: RAGDocument) -> str:
         return interleaved_content_as_str(doc.content)
 
 
-def make_overlapped_chunks(document_id: str, text: str, window_len: int, overlap_len: int) -> list[Chunk]:
+def make_overlapped_chunks(
+    document_id: str, text: str, window_len: int, overlap_len: int, metadata: dict[str, Any]
+) -> list[Chunk]:
     tokenizer = Tokenizer.get_instance()
     tokens = tokenizer.encode(text, bos=False, eos=False)
+    metadata_tokens = tokenizer.encode(str(metadata), bos=False, eos=False)
 
     chunks = []
     for i in range(0, len(tokens), window_len - overlap_len):
         toks = tokens[i : i + window_len]
         chunk = tokenizer.decode(toks)
+        chunk_metadata = metadata.copy()
+        chunk_metadata["document_id"] = document_id
+        chunk_metadata["token_count"] = len(toks)
+        chunk_metadata["metadata_token_count"] = len(metadata_tokens)
+
         # chunk is a string
         chunks.append(
             Chunk(
                 content=chunk,
-                metadata={
-                    "token_count": len(toks),
-                    "document_id": document_id,
-                },
+                metadata=chunk_metadata,
             )
         )
 

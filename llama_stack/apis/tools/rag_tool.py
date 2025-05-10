@@ -72,6 +72,7 @@ class RAGQueryConfig(BaseModel):
     query_generator_config: RAGQueryGeneratorConfig = Field(default=DefaultRAGQueryGeneratorConfig())
     max_tokens_in_context: int = 4096
     max_chunks: int = 5
+    include_metadata_in_content: bool = False
 
 
 @runtime_checkable

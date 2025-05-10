@@ -51,6 +51,7 @@ chunks = [
         "mime_type": "text/plain",
         "metadata": {
             "document_id": "doc1",
+            "author": "Jane Doe",
         },
     },
 ]
@@ -98,6 +99,17 @@ results = client.tool_runtime.rag_tool.query(
 )
 ```
 
+You can configure adding metadata to the context if you find it useful for your application. Simply add:
+```python
+# Query documents
+results = client.tool_runtime.rag_tool.query(
+    vector_db_ids=[vector_db_id],
+    content="What do you know about...",
+    query_config={
+        "include_metadata_in_content": True,
+    },
+)
+```
 ### Building RAG-Enhanced Agents
 
 One of the most powerful patterns is combining agents with RAG capabilities. Here's a complete example:
@@ -115,6 +127,12 @@ agent = Agent(
             "name": "builtin::rag/knowledge_search",
             "args": {
                 "vector_db_ids": [vector_db_id],
+                # Defaults
+                "query_config": {
+                    "chunk_size_in_tokens": 512,
+                    "chunk_overlap_in_tokens": 0,
+                    "include_metadata_in_content": False,
+                },
             },
         }
     ],

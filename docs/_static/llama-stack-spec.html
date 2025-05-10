@@ -11133,13 +11133,18 @@
                     "max_chunks": {
                         "type": "integer",
                         "default": 5
+                    },
+                    "include_metadata_in_content": {
+                        "type": "boolean",
+                        "default": false
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "query_generator_config",
                     "max_tokens_in_context",
-                    "max_chunks"
+                    "max_chunks",
+                    "include_metadata_in_content"
                 ],
                 "title": "RAGQueryConfig"
             },
