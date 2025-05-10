@@ -81,7 +81,7 @@ class TestVectorStore:
         "window_len, overlap_len, expected_chunks",
         [
             (5, 2, 4),  # Create 4 chunks with window of 5 and overlap of 2
-            (4, 1, 4),  # Create 4 chunks with window of 3 and overlap of 1
+            (4, 1, 4),  # Create 4 chunks with window of 4 and overlap of 1
         ],
     )
     def test_make_overlapped_chunks(self, window_len, overlap_len, expected_chunks):
@@ -93,6 +93,7 @@ class TestVectorStore:
         chunks = make_overlapped_chunks(document_id, text, window_len, overlap_len, original_metadata)
 
         assert len(chunks) == expected_chunks
+        print(len(chunks), expected_chunks)
 
         # Check that each chunk has the right metadata
         for chunk in chunks:
