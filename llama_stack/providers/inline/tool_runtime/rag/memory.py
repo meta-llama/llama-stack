@@ -87,6 +87,7 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
                     content,
                     chunk_size_in_tokens,
                     chunk_size_in_tokens // 4,
+                    doc.metadata,
                 )
             )
 
@@ -140,19 +141,29 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
                 text=f"knowledge_search tool found {len(chunks)} chunks:\nBEGIN of knowledge_search tool results.\n"
             )
         ]
-        for i, c in enumerate(chunks):
-            metadata = c.metadata
+        for i, chunk in enumerate(chunks):
+            metadata = chunk.metadata
             tokens += metadata["token_count"]
+            if query_config.include_metadata_in_content:
+                tokens += metadata["metadata_token_count"]
+
             if tokens > query_config.max_tokens_in_context:
                 log.error(
                     f"Using {len(picked)} chunks; reached max tokens in context: {tokens}",
                 )
                 break
-            picked.append(
-                TextContentItem(
-                    text=f"Result {i + 1}:\nDocument_id:{metadata['document_id'][:5]}\nContent: {c.content}\n",
-                )
-            )
+
+            text_content = f"Result {i + 1}:\n"
+            if query_config.include_metadata_in_content:
+                metadata_subset = {
+                    k: v for k, v in metadata.items() if k not in ["token_count", "metadata_token_count"]
+                }
+                text_content += f"\nMetadata: {metadata_subset}"
+            else:
+                text_content += f"Document_id:{metadata['document_id'][:5]}"
+            text_content += f"\nContent: {chunk.content}\n"
+            picked.append(TextContentItem(text=text_content))
+
         picked.append(TextContentItem(text="END of knowledge_search tool results.\n"))
         picked.append(
             TextContentItem(
