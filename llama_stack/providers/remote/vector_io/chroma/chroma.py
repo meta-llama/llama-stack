@@ -26,8 +26,7 @@ from .config import ChromaVectorIOConfig as RemoteChromaVectorIOConfig
 
 log = logging.getLogger(__name__)
 
-
-ChromaClientType = chromadb.AsyncHttpClient | chromadb.PersistentClient
+ChromaClientType = chromadb.api.AsyncClientAPI | chromadb.api.ClientAPI
 
 
 # this is a helper to allow us to use async and non-async chroma clients interchangeably
