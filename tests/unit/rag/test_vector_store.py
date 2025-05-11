@@ -108,3 +108,22 @@ class TestVectorStore:
             assert isinstance(chunk.metadata["token_count"], int)
             assert chunk.metadata["token_count"] > 0
             assert chunk.metadata["metadata_token_count"] == len_metadata_tokens
+
+    def test_raise_overlapped_chunks_metadata_serialization_error(self):
+        document_id = "test_doc_ex"
+        text = "Some text"
+        window_len = 5
+        overlap_len = 2
+
+        class BadMetadata:
+            def __repr__(self):
+                raise TypeError("Cannot convert to string")
+
+        problematic_metadata = {"bad_metadata_example": BadMetadata()}
+
+        with pytest.raises(ValueError) as excinfo:
+            make_overlapped_chunks(document_id, text, window_len, overlap_len, problematic_metadata)
+
+        assert str(excinfo.value) == "Failed to serialize metadata to string"
+        assert isinstance(excinfo.value.__cause__, TypeError)
+        assert str(excinfo.value.__cause__) == "Cannot convert to string"

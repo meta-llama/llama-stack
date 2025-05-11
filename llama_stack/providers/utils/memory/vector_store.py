@@ -144,7 +144,12 @@ def make_overlapped_chunks(
 ) -> list[Chunk]:
     tokenizer = Tokenizer.get_instance()
     tokens = tokenizer.encode(text, bos=False, eos=False)
-    metadata_tokens = tokenizer.encode(str(metadata), bos=False, eos=False)
+    try:
+        metadata_string = str(metadata)
+    except Exception as e:
+        raise ValueError("Failed to serialize metadata to string") from e
+
+    metadata_tokens = tokenizer.encode(metadata_string, bos=False, eos=False)
 
     chunks = []
     for i in range(0, len(tokens), window_len - overlap_len):
