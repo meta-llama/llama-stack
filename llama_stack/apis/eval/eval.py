@@ -95,6 +95,7 @@ class Eval(Protocol):
         :param benchmark_config: The configuration for the benchmark.
         :return: The job that was created to run the evaluation.
         """
+        ...
 
     @webmethod(route="/eval/benchmarks/{benchmark_id}/evaluations", method="POST")
     async def evaluate_rows(
@@ -112,6 +113,7 @@ class Eval(Protocol):
         :param benchmark_config: The configuration for the benchmark.
         :return: EvaluateResponse object containing generations and scores
         """
+        ...
 
     @webmethod(route="/eval/benchmarks/{benchmark_id}/jobs/{job_id}", method="GET")
     async def job_status(self, benchmark_id: str, job_id: str) -> Job:
@@ -140,3 +142,4 @@ class Eval(Protocol):
         :param job_id: The ID of the job to get the result of.
         :return: The result of the job.
         """
+        ...
