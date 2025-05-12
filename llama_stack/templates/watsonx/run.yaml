@@ -18,6 +18,9 @@ providers:
       url: ${env.WATSONX_BASE_URL:https://us-south.ml.cloud.ibm.com}
       api_key: ${env.WATSONX_API_KEY:}
       project_id: ${env.WATSONX_PROJECT_ID:}
+  - provider_id: sentence-transformers
+    provider_type: inline::sentence-transformers
+    config: {}
   vector_io:
   - provider_id: faiss
     provider_type: inline::faiss
@@ -191,6 +194,11 @@ models:
   provider_id: watsonx
   provider_model_id: meta-llama/llama-guard-3-11b-vision
   model_type: llm
+- metadata:
+    embedding_dimension: 384
+  model_id: all-MiniLM-L6-v2
+  provider_id: sentence-transformers
+  model_type: embedding
 shields: []
 vector_dbs: []
 datasets: []
