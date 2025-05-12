@@ -23,7 +23,7 @@ The `llamastack/distribution-dell` distribution consists of the following provid
 | safety | `inline::llama-guard` |
 | scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |
 | telemetry | `inline::meta-reference` |
-| tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::code-interpreter`, `inline::rag-runtime` |
+| tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::rag-runtime` |
 | vector_io | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
 
 
