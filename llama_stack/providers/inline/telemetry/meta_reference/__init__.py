@@ -7,15 +7,16 @@
 from typing import Any
 
 from llama_stack.distribution.datatypes import Api
+from llama_stack.providers.datatypes import ProviderContext
 
 from .config import TelemetryConfig, TelemetrySink
 
 __all__ = ["TelemetryConfig", "TelemetrySink"]
 
 
-async def get_provider_impl(config: TelemetryConfig, deps: dict[Api, Any]):
+async def get_provider_impl(context: ProviderContext, config: TelemetryConfig, deps: dict[Api, Any]):
     from .telemetry import TelemetryAdapter
 
-    impl = TelemetryAdapter(config, deps)
+    impl = TelemetryAdapter(context, config, deps)
     await impl.initialize()
     return impl

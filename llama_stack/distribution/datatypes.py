@@ -317,6 +317,11 @@ a default SQLite store will be used.""",
         description="Path to directory containing external provider implementations. The providers code and dependencies must be installed on the system.",
     )
 
+    storage_dir: str | None = Field(
+        default=None,
+        description="Directory to use for provider state. Can be set by CLI, environment variable and default to the distribution directory",
+    )
+
 
 class BuildConfig(BaseModel):
     version: str = LLAMA_STACK_BUILD_CONFIG_VERSION

@@ -10,7 +10,7 @@ import pandas
 from llama_stack.apis.common.responses import PaginatedResponse
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Dataset
-from llama_stack.providers.datatypes import DatasetsProtocolPrivate
+from llama_stack.providers.datatypes import DatasetsProtocolPrivate, ProviderContext
 from llama_stack.providers.utils.datasetio.url_utils import get_dataframe_from_uri
 from llama_stack.providers.utils.kvstore import kvstore_impl
 from llama_stack.providers.utils.pagination import paginate_records
@@ -53,7 +53,8 @@ class PandasDataframeDataset:
 
 
 class LocalFSDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
-    def __init__(self, config: LocalFSDatasetIOConfig) -> None:
+    def __init__(self, context: ProviderContext, config: LocalFSDatasetIOConfig) -> None:
+        self.context = context
         self.config = config
         # local registry for keeping track of datasets within the provider
         self.dataset_infos = {}

@@ -7,7 +7,7 @@
 from .config import VLLMInferenceAdapterConfig
 
 
-async def get_adapter_impl(config: VLLMInferenceAdapterConfig, _deps):
+async def get_adapter_impl(config: VLLMInferenceAdapterConfig, deps):
     from .vllm import VLLMInferenceAdapter
 
     assert isinstance(config, VLLMInferenceAdapterConfig), f"Unexpected config type: {type(config)}"

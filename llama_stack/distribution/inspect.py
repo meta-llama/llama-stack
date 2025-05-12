@@ -24,7 +24,7 @@ class DistributionInspectConfig(BaseModel):
     run_config: StackRunConfig
 
 
-async def get_provider_impl(config, deps):
+async def get_provider_impl(context, config, deps):
     impl = DistributionInspectImpl(config, deps)
     await impl.initialize()
     return impl

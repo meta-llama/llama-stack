@@ -6,12 +6,14 @@
 
 from typing import Any
 
+from llama_stack.providers.datatypes import ProviderContext
+
 from .config import VLLMConfig
 
 
-async def get_provider_impl(config: VLLMConfig, _deps: dict[str, Any]):
+async def get_provider_impl(context: ProviderContext, config: VLLMConfig, deps: dict[str, Any]):
     from .vllm import VLLMInferenceImpl
 
-    impl = VLLMInferenceImpl(config)
+    impl = VLLMInferenceImpl(context, config)
     await impl.initialize()
     return impl

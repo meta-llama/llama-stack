@@ -6,17 +6,20 @@
 from typing import Any
 
 from llama_stack.distribution.datatypes import Api
+from llama_stack.providers.datatypes import ProviderContext
 
 from .config import BasicScoringConfig
 
 
 async def get_provider_impl(
+    context: ProviderContext,
     config: BasicScoringConfig,
     deps: dict[Api, Any],
 ):
     from .scoring import BasicScoringImpl
 
     impl = BasicScoringImpl(
+        context,
         config,
         deps[Api.datasetio],
         deps[Api.datasets],

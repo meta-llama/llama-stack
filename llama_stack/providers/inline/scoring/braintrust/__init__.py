@@ -8,6 +8,7 @@ from typing import Any
 from pydantic import BaseModel
 
 from llama_stack.distribution.datatypes import Api
+from llama_stack.providers.datatypes import ProviderContext
 
 from .config import BraintrustScoringConfig
 
@@ -17,6 +18,7 @@ class BraintrustProviderDataValidator(BaseModel):
 
 
 async def get_provider_impl(
+    context: ProviderContext,
     config: BraintrustScoringConfig,
     deps: dict[Api, Any],
 ):

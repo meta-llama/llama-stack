@@ -19,7 +19,7 @@ from llama_stack.apis.safety import (
 )
 from llama_stack.apis.shields import Shield
 from llama_stack.distribution.utils.model_utils import model_local_dir
-from llama_stack.providers.datatypes import ShieldsProtocolPrivate
+from llama_stack.providers.datatypes import ProviderContext, ShieldsProtocolPrivate
 from llama_stack.providers.utils.inference.prompt_adapter import (
     interleaved_content_as_str,
 )
@@ -32,8 +32,10 @@ PROMPT_GUARD_MODEL = "Prompt-Guard-86M"
 
 
 class PromptGuardSafetyImpl(Safety, ShieldsProtocolPrivate):
-    def __init__(self, config: PromptGuardConfig, _deps) -> None:
+    def __init__(self, context: ProviderContext, config: PromptGuardConfig, _deps) -> None:
+        self.context = context
         self.config = config
+        self.deps = _deps
 
     async def initialize(self) -> None:
         model_dir = model_local_dir(PROMPT_GUARD_MODEL)

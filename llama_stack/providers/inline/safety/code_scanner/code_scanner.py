@@ -15,6 +15,7 @@ from llama_stack.apis.safety import (
     ViolationLevel,
 )
 from llama_stack.apis.shields import Shield
+from llama_stack.providers.datatypes import ProviderContext
 from llama_stack.providers.utils.inference.prompt_adapter import (
     interleaved_content_as_str,
 )
@@ -30,8 +31,10 @@ ALLOWED_CODE_SCANNER_MODEL_IDS = [
 
 
 class MetaReferenceCodeScannerSafetyImpl(Safety):
-    def __init__(self, config: CodeScannerConfig, deps) -> None:
+    def __init__(self, context: ProviderContext, config: CodeScannerConfig, deps) -> None:
+        self.context = context
         self.config = config
+        self.deps = deps
 
     async def initialize(self) -> None:
         pass

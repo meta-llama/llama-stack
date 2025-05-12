@@ -6,11 +6,13 @@
 from typing import Any
 
 from llama_stack.distribution.datatypes import Api
+from llama_stack.providers.datatypes import ProviderContext
 
 from .config import MetaReferenceEvalConfig
 
 
 async def get_provider_impl(
+    context: ProviderContext,
     config: MetaReferenceEvalConfig,
     deps: dict[Api, Any],
 ):

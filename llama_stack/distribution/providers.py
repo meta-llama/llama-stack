@@ -23,7 +23,7 @@ class ProviderImplConfig(BaseModel):
     run_config: StackRunConfig
 
 
-async def get_provider_impl(config, deps):
+async def get_provider_impl(context, config, deps):
     impl = ProviderImpl(config, deps)
     await impl.initialize()
     return impl

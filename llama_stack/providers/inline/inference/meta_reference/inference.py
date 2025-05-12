@@ -50,7 +50,7 @@ from llama_stack.models.llama.llama4.chat_format import ChatFormat as Llama4Chat
 from llama_stack.models.llama.llama4.tokenizer import Tokenizer as Llama4Tokenizer
 from llama_stack.models.llama.sku_list import resolve_model
 from llama_stack.models.llama.sku_types import ModelFamily
-from llama_stack.providers.datatypes import ModelsProtocolPrivate
+from llama_stack.providers.datatypes import ModelsProtocolPrivate, ProviderContext
 from llama_stack.providers.utils.inference.embedding_mixin import (
     SentenceTransformerEmbeddingMixin,
 )
@@ -89,7 +89,8 @@ class MetaReferenceInferenceImpl(
     Inference,
     ModelsProtocolPrivate,
 ):
-    def __init__(self, config: MetaReferenceInferenceConfig) -> None:
+    def __init__(self, context: ProviderContext, config: MetaReferenceInferenceConfig) -> None:
+        self.context = context
         self.config = config
         self.model_id = None
         self.llama_model = None
