@@ -27,7 +27,6 @@ class BuiltinTool(Enum):
     brave_search = "brave_search"
     wolfram_alpha = "wolfram_alpha"
     photogen = "photogen"
-    code_interpreter = "code_interpreter"
 
 
 Primitive = str | int | float | bool | None

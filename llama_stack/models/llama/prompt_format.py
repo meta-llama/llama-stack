@@ -30,7 +30,6 @@ from llama_stack.models.llama.llama4.tokenizer import Tokenizer
 
 from .llama3.interface import LLama31Interface
 from .llama3.template_data import (
-    system_message_builtin_code_only,
     system_message_builtin_tools_only,
     system_message_custom_tools_only,
 )
@@ -160,17 +159,6 @@ def llama3_1_builtin_tool_call_dialog(tool_prompt_format=ToolPromptFormat.json):
 
     messages = interface.system_messages(**system_message_builtin_tools_only())
     messages += interface.user_message(content="Search the web for the latest price of 1oz gold?")
-
-    return messages
-
-
-def llama3_1_builtin_code_interpreter_dialog(tool_prompt_format=ToolPromptFormat.json):
-    interface = LLama31Interface(tool_prompt_format)
-
-    messages = interface.system_messages(**system_message_builtin_code_only())
-    messages += interface.user_message(
-        content="Write code to check if number is prime. Use it to verify if number 7 is prime"
-    )
 
     return messages
 

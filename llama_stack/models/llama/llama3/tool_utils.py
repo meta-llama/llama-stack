@@ -229,8 +229,6 @@ class ToolUtils:
         elif t.tool_name == BuiltinTool.photogen:
             q = t.arguments["query"]
             return f'photogen.call(query="{q}")'
-        elif t.tool_name == BuiltinTool.code_interpreter:
-            return t.arguments["code"]
         else:
             fname = t.tool_name
 

@@ -91,7 +91,6 @@ agent = Agent(
             "name": "builtin::rag/knowledge_search",
             "args": {"vector_db_ids": ["my_docs"]},
         },
-        "builtin::code_interpreter",
     ],
     # Configure safety (optional)
     input_shields=["llama_guard"],

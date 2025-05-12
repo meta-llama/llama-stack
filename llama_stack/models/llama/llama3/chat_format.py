@@ -115,13 +115,6 @@ class ChatFormat:
             tokens.extend(toks)
             images.extend(imgs)
 
-        if (
-            message.role == "assistant"
-            and len(message.tool_calls) > 0
-            and message.tool_calls[0].tool_name == BuiltinTool.code_interpreter
-        ):
-            tokens.append(self.tokenizer.special_tokens["<|python_tag|>"])
-
         _process_content(message.content)
 
         if message.role == "user" and message.context is not None:
@@ -173,10 +166,6 @@ class ChatFormat:
         if content.startswith(header_str):
             content = content[len(header_str) :]
 
-        ipython = content.startswith("<|python_tag|>")
-        if ipython:
-            content = content[len("<|python_tag|>") :]
-
         if content.endswith("<|eot_id|>"):
             content = content[: -len("<|eot_id|>")]
             stop_reason = StopReason.end_of_turn
@@ -208,11 +197,6 @@ class ChatFormat:
                 }
                 if tool_name in BuiltinTool.__members__:
                     tool_name = BuiltinTool[tool_name]
-            elif ipython:
-                tool_name = BuiltinTool.code_interpreter
-                tool_arguments = {
-                    "code": content,
-                }
 
         tool_calls = []
         if tool_name is not None and tool_arguments is not None:

@@ -147,7 +147,6 @@ print(is_prime(7))  # Output: True<|eom_id|>
 
 
 - Model starts with <|python_tag|> and continues writing python code that it needs to be executed
-- No explicit mention of code_interpreter in system prompt. `Environment: ipython` implicitly enables it.
 
 
 ## Built-in tools full interaction

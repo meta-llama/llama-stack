@@ -42,7 +42,6 @@ AGENTS_API_TEST_MAP = {
     "create_agent_turn": {
         "rag": ["test_rag_agent"],
         "custom_tool": ["test_custom_tool"],
-        "code_execution": ["test_code_interpreter_for_attachments"],
     }
 }
 

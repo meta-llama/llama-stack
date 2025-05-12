@@ -62,7 +62,6 @@ Llama3.2 vision models follow the same tool calling format as Llama3.1 models wh
 Use `Environment: ipython` to enable tools.
 Add `Tools: {{tool_name1}},{{tool_name2}}` for each of the builtin tools.
 The same builtin tools as Llama3.1 are available,
-- code_interpreter (for executing python code)
 - brave_search (to search the web)
 - wolfram_alpha (for querying wolfram alpha for mathematical questions)
 
@@ -94,7 +93,6 @@ Search the web for the latest price of 1oz gold?<|eot_id|><|start_header_id|>ass
 
 - Note the `<|python_tag|>` before `brave_search` function call.
 - The `<|eom_id|>` tag is used to indicate the end of the message.
-- Similar to Llama3.1, code_interpreter is not explicitly mentioned but is enabled via `Environment: ipython`.
 - Tool Calling does NOT work with images in the prompt as of now.
 
 

@@ -285,11 +285,6 @@ class ChatFormat:
                 }
                 if tool_name in BuiltinTool.__members__:
                     tool_name = BuiltinTool[tool_name]
-            elif ipython:
-                tool_name = BuiltinTool.code_interpreter
-                tool_arguments = {
-                    "code": content,
-                }
 
         tool_calls = []
         if tool_name is not None and tool_arguments is not None:

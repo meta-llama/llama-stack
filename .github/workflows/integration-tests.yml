@@ -96,7 +96,7 @@ jobs:
             stack_config="http://localhost:8321"
           fi
           uv run pytest -v tests/integration/${{ matrix.test-type }} --stack-config=${stack_config} \
-            -k "not(builtin_tool or safety_with_image or code_interpreter or test_rag)" \
+            -k "not(builtin_tool or safety_with_image or test_rag)" \
             --text-model="meta-llama/Llama-3.2-3B-Instruct" \
             --embedding-model=all-MiniLM-L6-v2
 

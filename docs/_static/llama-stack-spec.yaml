@@ -3104,7 +3104,6 @@ components:
                 - brave_search
                 - wolfram_alpha
                 - photogen
-                - code_interpreter
               title: BuiltinTool
             - type: string
         arguments:
@@ -3200,7 +3199,6 @@ components:
                 - brave_search
                 - wolfram_alpha
                 - photogen
-                - code_interpreter
               title: BuiltinTool
             - type: string
         description:
@@ -4210,7 +4208,6 @@ components:
                 - brave_search
                 - wolfram_alpha
                 - photogen
-                - code_interpreter
               title: BuiltinTool
             - type: string
         content:

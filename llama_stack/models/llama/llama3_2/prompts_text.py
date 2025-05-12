@@ -17,7 +17,6 @@ from llama_stack.models.llama.datatypes import (
 from ..prompt_format import (
     TextCompletionContent,
     UseCase,
-    llama3_1_builtin_code_interpreter_dialog,
 )
 
 
@@ -154,22 +153,6 @@ def usecases():
                 """
                 - The tool call format for the model is the same whether your function calls are provided in the system or user message.
                 - While builtin tool calls end with a <|eom_id|>, notice the <|eot_id|> for zero shot tool calls.
-                """
-            ),
-        ),
-        UseCase(
-            title="Code Interpreter",
-            description=textwrap.dedent(
-                """
-                Code Interpreter continues to work in 3.2 text models similar to Llama 3.1 model family.
-                Here is an example,
-                """
-            ),
-            dialogs=[llama3_1_builtin_code_interpreter_dialog()],
-            notes=textwrap.dedent(
-                """
-                - Note `Environment: ipython` in the system prompt.
-                - Note that the response starts with `<|python_tag|>` and ends with `<|eom_id|>`
                 """
             ),
         ),

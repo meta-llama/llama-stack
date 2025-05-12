@@ -149,25 +149,6 @@ def usecases() -> list[UseCase | str]:
             ),
         ),
         UseCase(
-            title="Builtin Code Interpreter",
-            description="Here is an actual example of model responding with code",
-            dialogs=[
-                [
-                    RawMessage(role="system", content="Environment: ipython"),
-                    RawMessage(
-                        role="user",
-                        content="Write code to check if number is prime, use that to see if the number 7 is prime",
-                    ),
-                ],
-            ],
-            notes=textwrap.dedent(
-                """
-                - Model starts with <|python_tag|> and continues writing python code that it needs to be executed
-                - No explicit mention of code_interpreter in system prompt. `Environment: ipython` implicitly enables it.
-                """
-            ),
-        ),
-        UseCase(
             title="Built-in tools full interaction",
             description="Here is a full interaction with the built-in tools including the tool response and the final assistant response.",
             dialogs=[

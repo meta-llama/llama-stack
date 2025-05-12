@@ -61,7 +61,7 @@ class BuiltinToolGenerator(PromptTemplateGeneratorBase):
             {% if builtin_tools or custom_tools -%}
             Environment: ipython
             {% endif -%}
-            {% set builtin_tools = builtin_tools | reject('equalto', 'code_interpreter') | list -%}
+            {% set builtin_tools = builtin_tools | list -%}
             {% if builtin_tools -%}
             Tools: {{ builtin_tools | join(", ") | trim -}}
             {% endif %}
@@ -79,13 +79,8 @@ class BuiltinToolGenerator(PromptTemplateGeneratorBase):
         return [
             # builtin tools
             [
-                ToolDefinition(tool_name=BuiltinTool.code_interpreter),
                 ToolDefinition(tool_name=BuiltinTool.brave_search),
                 ToolDefinition(tool_name=BuiltinTool.wolfram_alpha),
-            ],
-            # only code interpretor
-            [
-                ToolDefinition(tool_name=BuiltinTool.code_interpreter),
             ],
         ]
 
