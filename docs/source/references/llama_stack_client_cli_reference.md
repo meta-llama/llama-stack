@@ -253,8 +253,6 @@ llama-stack-client toolgroups list
 +---------------------------+------------------+------+---------------+
 | identifier                | provider_id      | args | mcp_endpoint  |
 +===========================+==================+======+===============+
-| builtin::code_interpreter | code-interpreter | None | None          |
-+---------------------------+------------------+------+---------------+
 | builtin::rag              | rag-runtime      | None | None          |
 +---------------------------+------------------+------+---------------+
 | builtin::websearch        | tavily-search    | None | None          |

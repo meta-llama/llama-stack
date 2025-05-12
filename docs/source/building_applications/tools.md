@@ -165,34 +165,6 @@ all_tools = client.tools.list_tools()
 group_tools = client.tools.list_tools(toolgroup_id="search_tools")
 ```
 
-## Simple Example: Using an Agent with the Code-Interpreter Tool
-
-```python
-from llama_stack_client import Agent
-
-# Instantiate the AI agent with the given configuration
-agent = Agent(
-    client,
-    name="code-interpreter",
-    description="A code interpreter agent for executing Python code snippets",
-    instructions="""
-    You are a highly reliable, concise, and precise assistant.
-    Always show the generated code, never generate your own code, and never anticipate results.
-    """,
-    model="meta-llama/Llama-3.2-3B-Instruct",
-    tools=["builtin::code_interpreter"],
-    max_infer_iters=5,
-)
-
-# Start a session
-session_id = agent.create_session("tool_session")
-
-# Send a query to the AI agent for code execution
-response = agent.create_turn(
-    messages=[{"role": "user", "content": "Run this code: print(3 ** 4 - 5 * 2)"}],
-    session_id=session_id,
-)
-```
 ## Simple Example 2: Using an Agent with the Web Search Tool
 1. Start by registering a Tavily API key at [Tavily](https://tavily.com/).
 2. [Optional] Provide the API key directly to the Llama Stack server
