@@ -167,23 +167,16 @@ def _process_vllm_chat_completion_end_of_stream(
     chunks = []
 
     if finish_reason is not None:
-        actual_finish_reason = _convert_to_vllm_finish_reason(finish_reason)
+        stop_reason = _convert_to_vllm_finish_reason(finish_reason)
     else:
-        actual_finish_reason = StopReason.end_of_message
+        stop_reason = StopReason.end_of_message
 
     if tool_call_buf.tool_name:
         # at least one tool call request is received
 
         args_str = tool_call_buf.arguments or "{}"
-        args = {}
-        args_parsed_successfully = True
         try:
             args = json.loads(args_str)
-        except Exception as e:
-            args_parsed_successfully = False
-            log.warning(f"Failed to parse tool call buffer arguments: {args_str} \nError: {e}")
-
-        if args_parsed_successfully:
             chunks.append(
                 ChatCompletionResponseStreamChunk(
                     event=ChatCompletionResponseEvent(
@@ -200,7 +193,9 @@ def _process_vllm_chat_completion_end_of_stream(
                     )
                 )
             )
-        else:
+        except Exception as e:
+            log.warning(f"Failed to parse tool call buffer arguments: {args_str} \nError: {e}")
+
             chunks.append(
                 ChatCompletionResponseStreamChunk(
                     event=ChatCompletionResponseEvent(
@@ -219,7 +214,7 @@ def _process_vllm_chat_completion_end_of_stream(
                 event_type=ChatCompletionResponseEventType.complete,
                 delta=TextDelta(text=last_chunk_content or ""),
                 logprobs=None,
-                stop_reason=actual_finish_reason,
+                stop_reason=stop_reason,
             )
         )
     )
