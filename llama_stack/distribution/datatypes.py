@@ -249,6 +249,10 @@ class ServerConfig(BaseModel):
         default=None,
         description="Path to TLS key file for HTTPS",
     )
+    tls_cafile: str | None = Field(
+        default=None,
+        description="Path to TLS CA file for HTTPS with mutual TLS authentication",
+    )
     auth: AuthenticationConfig | None = Field(
         default=None,
         description="Authentication configuration for the server",
