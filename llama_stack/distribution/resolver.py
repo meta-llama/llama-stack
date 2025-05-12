@@ -8,11 +8,11 @@ import inspect
 from typing import Any
 
 from llama_stack.apis.agents import Agents
+from llama_stack.apis.artifacts import Artifacts
 from llama_stack.apis.benchmarks import Benchmarks
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
 from llama_stack.apis.eval import Eval
-from llama_stack.apis.files import Files
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.inspect import Inspect
 from llama_stack.apis.models import Models
@@ -79,7 +79,7 @@ def api_protocol_map() -> dict[Api, Any]:
         Api.post_training: PostTraining,
         Api.tool_groups: ToolGroups,
         Api.tool_runtime: ToolRuntime,
-        Api.files: Files,
+        Api.artifacts: Artifacts,
     }
 
 

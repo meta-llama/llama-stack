@@ -171,6 +171,42 @@
                 }
             }
         },
+        "/v1/artifacts/bulk": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Artifacts"
+                ],
+                "description": "Delete multiple artifacts in a single request.",
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BulkDeleteArtifactsRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/v1/post-training/job/cancel": {
             "post": {
                 "responses": {
@@ -564,7 +600,7 @@
                 }
             }
         },
-        "/v1/files": {
+        "/v1/artifacts": {
             "get": {
                 "responses": {
                     "200": {
@@ -572,7 +608,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ListBucketResponse"
+                                    "$ref": "#/components/schemas/PaginatedResponse"
                                 }
                             }
                         }
@@ -591,16 +627,26 @@
                     }
                 },
                 "tags": [
-                    "Files"
+                    "Artifacts"
                 ],
-                "description": "List all buckets.",
+                "description": "List all artifacts with pagination.",
                 "parameters": [
                     {
-                        "name": "bucket",
+                        "name": "start_index",
                         "in": "query",
-                        "required": true,
+                        "description": "Start index of the artifacts to list",
+                        "required": false,
                         "schema": {
-                            "type": "string"
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Number of artifacts to list",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
                         }
                     }
                 ]
@@ -612,7 +658,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/FileUploadResponse"
+                                    "$ref": "#/components/schemas/ArtifactUploadResponse"
                                 }
                             }
                         }
@@ -631,9 +677,9 @@
                     }
                 },
                 "tags": [
-                    "Files"
+                    "Artifacts"
                 ],
-                "description": "Create a new upload session for a file identified by a bucket and key.",
+                "description": "Create a new upload session for an artifact identified by a key.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -831,7 +877,7 @@
                 ]
             }
         },
-        "/v1/files/{bucket}/{key}": {
+        "/v1/artifacts/{key}": {
             "get": {
                 "responses": {
                     "200": {
@@ -839,7 +885,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/FileResponse"
+                                    "$ref": "#/components/schemas/ArtifactResponse"
                                 }
                             }
                         }
@@ -858,23 +904,14 @@
                     }
                 },
                 "tags": [
-                    "Files"
+                    "Artifacts"
                 ],
-                "description": "Get a file info identified by a bucket and key.",
+                "description": "Get an artifact info identified by a key.",
                 "parameters": [
-                    {
-                        "name": "bucket",
-                        "in": "path",
-                        "description": "Bucket name (valid chars: a-zA-Z0-9_-)",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
                     {
                         "name": "key",
                         "in": "path",
-                        "description": "Key under which the file is stored (valid chars: a-zA-Z0-9_-/.)",
+                        "description": "Key under which the artifact is stored (valid chars: a-zA-Z0-9_-/.)",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -901,23 +938,14 @@
                     }
                 },
                 "tags": [
-                    "Files"
+                    "Artifacts"
                 ],
-                "description": "Delete a file identified by a bucket and key.",
+                "description": "Delete an artifact identified by a key.",
                 "parameters": [
-                    {
-                        "name": "bucket",
-                        "in": "path",
-                        "description": "Bucket name (valid chars: a-zA-Z0-9_-)",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
                     {
                         "name": "key",
                         "in": "path",
-                        "description": "Key under which the file is stored (valid chars: a-zA-Z0-9_-/.)",
+                        "description": "Key under which the artifact is stored (valid chars: a-zA-Z0-9_-/.)",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1850,7 +1878,7 @@
                 "parameters": []
             }
         },
-        "/v1/files/session:{upload_id}": {
+        "/v1/artifacts/sessions/{upload_id}": {
             "get": {
                 "responses": {
                     "200": {
@@ -1858,7 +1886,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/FileUploadResponse"
+                                    "$ref": "#/components/schemas/ArtifactUploadResponse"
                                 }
                             }
                         }
@@ -1877,9 +1905,9 @@
                     }
                 },
                 "tags": [
-                    "Files"
+                    "Artifacts"
                 ],
-                "description": "Returns information about an existsing upload session",
+                "description": "Returns information about an existing upload session",
                 "parameters": [
                     {
                         "name": "upload_id",
@@ -1901,7 +1929,7 @@
                                 "schema": {
                                     "oneOf": [
                                         {
-                                            "$ref": "#/components/schemas/FileResponse"
+                                            "$ref": "#/components/schemas/ArtifactResponse"
                                         },
                                         {
                                             "type": "null"
@@ -1925,9 +1953,9 @@
                     }
                 },
                 "tags": [
-                    "Files"
+                    "Artifacts"
                 ],
-                "description": "Upload file content to an existing upload session. On the server, request body will have the raw bytes that are uploaded.",
+                "description": "Upload artifact content to an existing upload session. On the server, request body will have the raw bytes that are uploaded.",
                 "parameters": [
                     {
                         "name": "upload_id",
@@ -2625,49 +2653,6 @@
                     },
                     "required": true
                 }
-            }
-        },
-        "/v1/files/{bucket}": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ListFileResponse"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest400"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/TooManyRequests429"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError500"
-                    },
-                    "default": {
-                        "$ref": "#/components/responses/DefaultError"
-                    }
-                },
-                "tags": [
-                    "Files"
-                ],
-                "description": "List all files in a bucket.",
-                "parameters": [
-                    {
-                        "name": "bucket",
-                        "in": "path",
-                        "description": "Bucket name (valid chars: a-zA-Z0-9_-)",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
             }
         },
         "/v1/models": {
@@ -5022,6 +5007,53 @@
                 "title": "CompletionResponse",
                 "description": "Response from a completion request."
             },
+            "ArtifactDeleteRequest": {
+                "type": "object",
+                "properties": {
+                    "key": {
+                        "type": "string",
+                        "description": "Key under which the artifact is stored (valid chars: a-zA-Z0-9_-/.)"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "key"
+                ],
+                "title": "ArtifactDeleteRequest",
+                "description": "Request model for deleting a single artifact."
+            },
+            "BulkDeleteRequest": {
+                "type": "object",
+                "properties": {
+                    "artifacts": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ArtifactDeleteRequest"
+                        },
+                        "description": "List of artifacts to delete"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "artifacts"
+                ],
+                "title": "BulkDeleteRequest",
+                "description": "Request model for bulk deletion of artifacts."
+            },
+            "BulkDeleteArtifactsRequest": {
+                "type": "object",
+                "properties": {
+                    "request": {
+                        "$ref": "#/components/schemas/BulkDeleteRequest",
+                        "description": "Bulk delete request containing list of artifacts to delete"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "request"
+                ],
+                "title": "BulkDeleteArtifactsRequest"
+            },
             "CancelTrainingJobRequest": {
                 "type": "object",
                 "properties": {
@@ -6893,42 +6925,37 @@
             "CreateUploadSessionRequest": {
                 "type": "object",
                 "properties": {
-                    "bucket": {
-                        "type": "string",
-                        "description": "Bucket under which the file is stored (valid chars: a-zA-Z0-9_-)"
-                    },
                     "key": {
                         "type": "string",
-                        "description": "Key under which the file is stored (valid chars: a-zA-Z0-9_-/.)"
+                        "description": "Key under which the artifact is stored (valid chars: a-zA-Z0-9_-/.)"
                     },
                     "mime_type": {
                         "type": "string",
-                        "description": "MIME type of the file"
+                        "description": "MIME type of the artifact"
                     },
                     "size": {
                         "type": "integer",
-                        "description": "File size in bytes"
+                        "description": "Artifact size in bytes"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "bucket",
                     "key",
                     "mime_type",
                     "size"
                 ],
                 "title": "CreateUploadSessionRequest"
             },
-            "FileUploadResponse": {
+            "ArtifactUploadResponse": {
                 "type": "object",
                 "properties": {
                     "id": {
                         "type": "string",
                         "description": "ID of the upload session"
                     },
-                    "url": {
+                    "uri": {
                         "type": "string",
-                        "description": "Upload URL for the file or file parts"
+                        "description": "Upload URI for the artifact or artifact parts"
                     },
                     "offset": {
                         "type": "integer",
@@ -6942,12 +6969,12 @@
                 "additionalProperties": false,
                 "required": [
                     "id",
-                    "url",
+                    "uri",
                     "offset",
                     "size"
                 ],
-                "title": "FileUploadResponse",
-                "description": "Response after initiating a file upload session."
+                "title": "ArtifactUploadResponse",
+                "description": "Response after initiating an artifact upload session."
             },
             "EmbeddingsRequest": {
                 "type": "object",
@@ -7500,6 +7527,41 @@
                 ],
                 "title": "AgentStepResponse"
             },
+            "ArtifactResponse": {
+                "type": "object",
+                "properties": {
+                    "key": {
+                        "type": "string",
+                        "description": "Key under which the artifact is stored (valid chars: a-zA-Z0-9_-/.)"
+                    },
+                    "mime_type": {
+                        "type": "string",
+                        "description": "MIME type of the artifact"
+                    },
+                    "uri": {
+                        "type": "string",
+                        "description": "Upload URI for the artifact contents"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "description": "Size of the artifact in bytes"
+                    },
+                    "created_at": {
+                        "type": "integer",
+                        "description": "Timestamp of when the artifact was created"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "key",
+                    "mime_type",
+                    "uri",
+                    "size",
+                    "created_at"
+                ],
+                "title": "ArtifactResponse",
+                "description": "Response representing an artifact entry."
+            },
             "Benchmark": {
                 "type": "object",
                 "properties": {
@@ -7735,46 +7797,6 @@
                 ],
                 "title": "URIDataSource",
                 "description": "A dataset that can be obtained from a URI."
-            },
-            "FileResponse": {
-                "type": "object",
-                "properties": {
-                    "bucket": {
-                        "type": "string",
-                        "description": "Bucket under which the file is stored (valid chars: a-zA-Z0-9_-)"
-                    },
-                    "key": {
-                        "type": "string",
-                        "description": "Key under which the file is stored (valid chars: a-zA-Z0-9_-/.)"
-                    },
-                    "mime_type": {
-                        "type": "string",
-                        "description": "MIME type of the file"
-                    },
-                    "url": {
-                        "type": "string",
-                        "description": "Upload URL for the file contents"
-                    },
-                    "bytes": {
-                        "type": "integer",
-                        "description": "Size of the file in bytes"
-                    },
-                    "created_at": {
-                        "type": "integer",
-                        "description": "Timestamp of when the file was created"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "bucket",
-                    "key",
-                    "mime_type",
-                    "url",
-                    "bytes",
-                    "created_at"
-                ],
-                "title": "FileResponse",
-                "description": "Response representing a file entry."
             },
             "Model": {
                 "type": "object",
@@ -9019,32 +9041,7 @@
                 "type": "object",
                 "properties": {
                     "data": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "oneOf": [
-                                    {
-                                        "type": "null"
-                                    },
-                                    {
-                                        "type": "boolean"
-                                    },
-                                    {
-                                        "type": "number"
-                                    },
-                                    {
-                                        "type": "string"
-                                    },
-                                    {
-                                        "type": "array"
-                                    },
-                                    {
-                                        "type": "object"
-                                    }
-                                ]
-                            }
-                        },
+                        "type": "object",
                         "description": "The list of items for the current page"
                     },
                     "has_more": {
@@ -9085,37 +9082,6 @@
                 ],
                 "title": "Job"
             },
-            "BucketResponse": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "name"
-                ],
-                "title": "BucketResponse"
-            },
-            "ListBucketResponse": {
-                "type": "object",
-                "properties": {
-                    "data": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/BucketResponse"
-                        },
-                        "description": "List of FileResponse entries"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "data"
-                ],
-                "title": "ListBucketResponse",
-                "description": "Response representing a list of file entries."
-            },
             "ListBenchmarksResponse": {
                 "type": "object",
                 "properties": {
@@ -9147,24 +9113,6 @@
                     "data"
                 ],
                 "title": "ListDatasetsResponse"
-            },
-            "ListFileResponse": {
-                "type": "object",
-                "properties": {
-                    "data": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/FileResponse"
-                        },
-                        "description": "List of FileResponse entries"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "data"
-                ],
-                "title": "ListFileResponse",
-                "description": "Response representing a list of file entries."
             },
             "ListModelsResponse": {
                 "type": "object",
@@ -12486,6 +12434,9 @@
             "x-displayName": "Agents API for creating and interacting with agentic systems."
         },
         {
+            "name": "Artifacts"
+        },
+        {
             "name": "BatchInference (Coming Soon)",
             "description": "This is an asynchronous API. If the request is successful, the response will be a job which can be polled for completion.\n\nNOTE: This API is not yet implemented and is subject to change in concert with other asynchronous APIs\nincluding (post-training, evals, etc).",
             "x-displayName": "Batch inference API for generating completions and chat completions."
@@ -12502,9 +12453,6 @@
         {
             "name": "Eval",
             "x-displayName": "Llama Stack Evaluation API for running evaluations on model and agent candidates."
-        },
-        {
-            "name": "Files"
         },
         {
             "name": "Inference",
@@ -12560,12 +12508,12 @@
             "name": "Operations",
             "tags": [
                 "Agents",
+                "Artifacts",
                 "BatchInference (Coming Soon)",
                 "Benchmarks",
                 "DatasetIO",
                 "Datasets",
                 "Eval",
-                "Files",
                 "Inference",
                 "Inspect",
                 "Models",

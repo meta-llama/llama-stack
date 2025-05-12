@@ -13,12 +13,12 @@ from typing import Any
 import yaml
 
 from llama_stack.apis.agents import Agents
+from llama_stack.apis.artifacts import Artifacts
 from llama_stack.apis.batch_inference import BatchInference
 from llama_stack.apis.benchmarks import Benchmarks
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
 from llama_stack.apis.eval import Eval
-from llama_stack.apis.files import Files
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.inspect import Inspect
 from llama_stack.apis.models import Models
@@ -69,7 +69,7 @@ class LlamaStack(
     ToolGroups,
     ToolRuntime,
     RAGToolRuntime,
-    Files,
+    Artifacts,
 ):
     pass
 

@@ -33,7 +33,7 @@ class Api(Enum):
     scoring_functions = "scoring_functions"
     benchmarks = "benchmarks"
     tool_groups = "tool_groups"
-    files = "files"
+    artifacts = "artifacts"
 
     # built-in API
     inspect = "inspect"

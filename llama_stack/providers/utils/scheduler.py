@@ -37,7 +37,7 @@ JobType: TypeAlias = str
 class JobArtifact(BaseModel):
     type: JobType
     name: str
-    # TODO: uri should be a reference to /files API; revisit when /files is implemented
+    # TODO: uri should be a reference to /artifacts API; revisit when /artifacts is implemented
     uri: str | None = None
     metadata: dict[str, Any]
 
