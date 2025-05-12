@@ -13,9 +13,10 @@ distribution_spec:
     - inline::basic
     - inline::braintrust
     post_training:
-    - inline::torchtune
+    - inline::huggingface
     datasetio:
     - inline::localfs
+    - remote::huggingface
     telemetry:
     - inline::meta-reference
     agents:
