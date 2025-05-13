@@ -98,30 +98,30 @@ async def _convert_response_input_to_chat_messages(
     """
     messages: list[OpenAIMessageParam] = []
     if isinstance(input, list):
-        for input_message in input:
-            if isinstance(input_message, OpenAIResponseInputFunctionToolCallOutput):
+        for input_item in input:
+            if isinstance(input_item, OpenAIResponseInputFunctionToolCallOutput):
                 messages.append(
                     OpenAIToolMessageParam(
-                        content=input_message.output,
-                        tool_call_id=input_message.call_id,
+                        content=input_item.output,
+                        tool_call_id=input_item.call_id,
                     )
                 )
-            elif isinstance(input_message, OpenAIResponseOutputMessageFunctionToolCall):
+            elif isinstance(input_item, OpenAIResponseOutputMessageFunctionToolCall):
                 tool_call = OpenAIChatCompletionToolCall(
                     index=0,
-                    id=input_message.call_id,
+                    id=input_item.call_id,
                     function=OpenAIChatCompletionToolCallFunction(
-                        name=input_message.name,
-                        arguments=input_message.arguments,
+                        name=input_item.name,
+                        arguments=input_item.arguments,
                     ),
                 )
                 messages.append(OpenAIAssistantMessageParam(tool_calls=[tool_call]))
             else:
-                content = await _convert_response_content_to_chat_content(input_message.content)
-                message_type = await _get_message_type_by_role(input_message.role)
+                content = await _convert_response_content_to_chat_content(input_item.content)
+                message_type = await _get_message_type_by_role(input_item.role)
                 if message_type is None:
                     raise ValueError(
-                        f"Llama Stack OpenAI Responses does not yet support message role '{input_message.role}' in this context"
+                        f"Llama Stack OpenAI Responses does not yet support message role '{input_item.role}' in this context"
                     )
                 messages.append(message_type(content=content))
     else:
@@ -257,17 +257,17 @@ class OpenAIResponsesImpl:
                     if chunk_choice.finish_reason:
                         chunk_finish_reason = chunk_choice.finish_reason
 
+                    # Aggregate tool call arguments across chunks, using their index as the aggregation key
                     if chunk_choice.delta.tool_calls:
                         for tool_call in chunk_choice.delta.tool_calls:
-                            if tool_call.index not in chat_response_tool_calls:
-                                chat_response_tool_calls[tool_call.index] = OpenAIChatCompletionToolCall(
-                                    **tool_call.model_dump()
-                                )
-                            chat_response_tool_calls[tool_call.index].function.arguments = (
-                                chat_response_tool_calls[tool_call.index].function.arguments
-                                + tool_call.function.arguments
-                            )
+                            response_tool_call = chat_response_tool_calls.get(tool_call.index, None)
+                            if response_tool_call:
+                                response_tool_call.function.arguments += tool_call.function.arguments
+                            else:
+                                response_tool_call = OpenAIChatCompletionToolCall(**tool_call.model_dump())
+                            chat_response_tool_calls[tool_call.index] = response_tool_call
 
+            # Convert the dict of tool calls by index to a list of tool calls to pass back in our response
             if chat_response_tool_calls:
                 tool_calls = [chat_response_tool_calls[i] for i in sorted(chat_response_tool_calls.keys())]
             else:
