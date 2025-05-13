@@ -28,7 +28,6 @@ if no model is specified.
 
 Experimental, under development, options:
 - `--record-responses`: record new API responses instead of using cached ones
-- `--report`: path where the test report should be written, e.g. --report=/path/to/report.md
 
 
 ## Examples

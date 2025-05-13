@@ -15,8 +15,6 @@ from dotenv import load_dotenv
 
 from llama_stack.log import get_logger
 
-from .report import Report
-
 logger = get_logger(__name__, category="tests")
 
 
@@ -59,9 +57,6 @@ def pytest_configure(config):
     if platform.system() == "Darwin":  # Darwin is the system name for macOS
         os.environ["DISABLE_CODE_SANDBOX"] = "1"
         logger.info("Setting DISABLE_CODE_SANDBOX=1 for macOS")
-
-    if config.getoption("--report"):
-        config.pluginmanager.register(Report(config))
 
 
 def pytest_addoption(parser):
