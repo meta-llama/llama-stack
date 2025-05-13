@@ -6,6 +6,7 @@
 
 
 from collections import defaultdict
+from pathlib import Path
 
 import pytest
 from pytest import CollectReport
@@ -65,6 +66,7 @@ class Report:
     def __init__(self, config):
         self.distro_name = None
         self.config = config
+        self.output_path = Path(config.getoption("--report")) if config.getoption("--report") else None
 
         stack_config = self.config.getoption("--stack-config")
         if stack_config:
@@ -161,7 +163,7 @@ class Report:
                 "|:-----|:-----|:-----|:-----|:-----|",
             ]
             provider = [p for p in providers if p.api == str(api_group.name)]
-            provider_str = ",".join(provider) if provider else ""
+            provider_str = ",".join(str(p) for p in provider) if provider else ""
             for api, capa_map in API_MAPS[api_group].items():
                 for capa, tests in capa_map.items():
                     for test_name in tests:
@@ -184,10 +186,12 @@ class Report:
 
         # Get values from fixtures for report output
         if model_id := item.funcargs.get("text_model_id"):
-            text_model = model_id.split("/")[1]
+            parts = model_id.split("/")
+            text_model = parts[1] if len(parts) > 1 else model_id
             self.text_model_id = self.text_model_id or text_model
         elif model_id := item.funcargs.get("vision_model_id"):
-            vision_model = model_id.split("/")[1]
+            parts = model_id.split("/")
+            vision_model = parts[1] if len(parts) > 1 else model_id
             self.vision_model_id = self.vision_model_id or vision_model
 
         if not self.client:
