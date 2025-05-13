@@ -13,6 +13,7 @@ from llama_stack.distribution.datatypes import (
     ShieldInput,
     ToolGroupInput,
 )
+from llama_stack.providers.inline.post_training.huggingface import HuggingFacePostTrainingConfig
 from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOConfig
 from llama_stack.providers.remote.inference.ollama import OllamaImplConfig
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
@@ -28,6 +29,7 @@ def get_distribution_template() -> DistributionTemplate:
         "eval": ["inline::meta-reference"],
         "datasetio": ["remote::huggingface", "inline::localfs"],
         "scoring": ["inline::basic", "inline::llm-as-judge", "inline::braintrust"],
+        "post_training": ["inline::huggingface"],
         "tool_runtime": [
             "remote::brave-search",
             "remote::tavily-search",
@@ -47,7 +49,11 @@ def get_distribution_template() -> DistributionTemplate:
         provider_type="inline::faiss",
         config=FaissVectorIOConfig.sample_run_config(f"~/.llama/distributions/{name}"),
     )
-
+    posttraining_provider = Provider(
+        provider_id="huggingface",
+        provider_type="inline::huggingface",
+        config=HuggingFacePostTrainingConfig.sample_run_config(f"~/.llama/distributions/{name}"),
+    )
     inference_model = ModelInput(
         model_id="${env.INFERENCE_MODEL}",
         provider_id="ollama",
@@ -92,6 +98,7 @@ def get_distribution_template() -> DistributionTemplate:
                 provider_overrides={
                     "inference": [inference_provider],
                     "vector_io": [vector_io_provider_faiss],
+                    "post_training": [posttraining_provider],
                 },
                 default_models=[inference_model, embedding_model],
                 default_tool_groups=default_tool_groups,
@@ -100,6 +107,7 @@ def get_distribution_template() -> DistributionTemplate:
                 provider_overrides={
                     "inference": [inference_provider],
                     "vector_io": [vector_io_provider_faiss],
+                    "post_training": [posttraining_provider],
                     "safety": [
                         Provider(
                             provider_id="llama-guard",
