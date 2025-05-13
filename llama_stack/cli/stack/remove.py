@@ -5,18 +5,20 @@
 # the root directory of this source tree.
 
 import argparse
-from pathlib import Path
 import shutil
-from typing import Dict
+import sys
+from pathlib import Path
+
+from termcolor import cprint
 
 from llama_stack.cli.subcommand import Subcommand
 from llama_stack.cli.table import print_table
 
 
 class StackRemove(Subcommand):
-     """Remove the build stack"""
+    """Remove the build stack"""
 
-     def __init__(self, subparsers: argparse._SubParsersAction):
+    def __init__(self, subparsers: argparse._SubParsersAction):
         super().__init__()
         self.parser = subparsers.add_parser(
             "rm",
@@ -27,24 +29,12 @@ class StackRemove(Subcommand):
         self._add_arguments()
         self.parser.set_defaults(func=self._remove_stack_build_command)
 
-     def _add_arguments(self) -> None:
+    def _add_arguments(self) -> None:
         self.parser.add_argument(
             "name",
             type=str,
             nargs="?",
             help="Name of the stack to delete",
-        )
-        self.parser.add_argument(
-            "--list",
-            "-l",
-            action="store_true",
-            help="List available stacks before deletion",
-        )
-        self.parser.add_argument(
-            "--force",
-            "-f",
-            action="store_true",
-            help="Force deletion without confirmation",
         )
         self.parser.add_argument(
             "--all",
@@ -53,18 +43,18 @@ class StackRemove(Subcommand):
             help="Delete all stacks (use with caution)",
         )
 
-     def _get_distribution_dirs(self) -> Dict[str, Path]:
+    def _get_distribution_dirs(self) -> dict[str, Path]:
         """Return a dictionary of distribution names and their paths"""
         distributions = {}
         dist_dir = Path.home() / ".llama" / "distributions"
-        
+
         if dist_dir.exists():
             for stack_dir in dist_dir.iterdir():
                 if stack_dir.is_dir():
                     distributions[stack_dir.name] = stack_dir
         return distributions
 
-     def _list_stacks(self) -> None:
+    def _list_stacks(self) -> None:
         """Display available stacks in a table"""
         distributions = self._get_distribution_dirs()
         if not distributions:
@@ -75,44 +65,52 @@ class StackRemove(Subcommand):
         rows = [[name, str(path)] for name, path in distributions.items()]
         print_table(rows, headers, separate_rows=True)
 
-     def _remove_stack_build_command(self, args: argparse.Namespace) -> None:
+    def _remove_stack_build_command(self, args: argparse.Namespace) -> None:
         distributions = self._get_distribution_dirs()
-        
+
         if args.all:
-            if not args.force:
-                confirm = input("Are you sure you want to delete ALL stacks? [y/N] ").lower()
-                if confirm != 'y':
-                    print("Deletion cancelled.")
-                    return
-            
+            confirm = input("Are you sure you want to delete ALL stacks? [yes-i-really-want/N] ").lower()
+            if confirm != "yes-i-really-want":
+                print("Deletion cancelled.")
+                return
+
             for name, path in distributions.items():
                 try:
                     shutil.rmtree(path)
                     print(f"Deleted stack: {name}")
                 except Exception as e:
-                    print(f"Failed to delete stack {name}: {e}")
-            return
+                    cprint(
+                        f"Failed to delete stack {name}: {e}",
+                        color="red",
+                    )
+                    sys.exit(2)
 
-        if args.list or not args.name:
+        if not args.name:
             self._list_stacks()
             if not args.name:
                 return
 
         if args.name not in distributions:
             self._list_stacks()
-            print(f"Stack not found: {args.name}")
+            cprint(
+                f"Stack not found: {args.name}",
+                color="red",
+            )
             return
 
         stack_path = distributions[args.name]
-        
-        if not args.force:
-            confirm = input(f"Are you sure you want to delete stack '{args.name}'? [y/N] ").lower()
-            if confirm != 'y':
-                print("Deletion cancelled.")
-                return
+
+        confirm = input(f"Are you sure you want to delete stack '{args.name}'? [y/N] ").lower()
+        if confirm != "y":
+            print("Deletion cancelled.")
+            return
 
         try:
             shutil.rmtree(stack_path)
             print(f"Successfully deleted stack: {args.name}")
         except Exception as e:
-            print(f"Failed to delete stack {args.name}: {e}")
+            cprint(
+                f"Failed to delete stack {args.name}: {e}",
+                color="red",
+            )
+            sys.exit(2)
