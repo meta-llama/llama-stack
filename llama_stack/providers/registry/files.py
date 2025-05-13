@@ -11,6 +11,7 @@ from llama_stack.providers.datatypes import (
     ProviderSpec,
     remote_provider_spec,
 )
+from llama_stack.providers.utils.kvstore import kvstore_dependencies
 
 
 def available_providers() -> list[ProviderSpec]:
@@ -19,7 +20,7 @@ def available_providers() -> list[ProviderSpec]:
             api=Api.files,
             adapter=AdapterSpec(
                 adapter_type="s3",
-                pip_packages=["aioboto3"],
+                pip_packages=["aioboto3"] + kvstore_dependencies(),
                 module="llama_stack.providers.remote.files.object.s3",
                 config_class="llama_stack.providers.remote.files.object.s3.config.S3FilesImplConfig",
                 provider_data_validator="llama_stack.providers.remote.files.object.s3.S3ProviderDataValidator",

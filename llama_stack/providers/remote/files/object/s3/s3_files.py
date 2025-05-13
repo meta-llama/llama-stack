@@ -14,19 +14,21 @@ from llama_stack.apis.files.files import (
     Files,
     FileUploadResponse,
 )
+from llama_stack.log import get_logger
+from llama_stack.providers.utils.kvstore import KVStore
 from llama_stack.providers.utils.pagination import paginate_records
 
-from .config import S3ImplConfig
+from .config import S3FilesImplConfig
+from .persistence import S3FilesPersistence
+
+logger = get_logger(name=__name__, category="files")
 
 
 class S3FilesAdapter(Files):
-    def __init__(self, config: S3ImplConfig):
+    def __init__(self, config: S3FilesImplConfig, kvstore: KVStore):
         self.config = config
-        self.session = aioboto3.Session(
-            aws_access_key_id=config.aws_access_key_id,
-            aws_secret_access_key=config.aws_secret_access_key,
-            region_name=config.region_name,
-        )
+        self.session = aioboto3.Session()
+        self.persistence = S3FilesPersistence(kvstore)
 
     async def initialize(self):
         # TODO: health check?
@@ -41,8 +43,16 @@ class S3FilesAdapter(Files):
     ) -> FileUploadResponse:
         """Create a presigned URL for uploading a file to S3."""
         try:
+            logger.debug(
+                "create_upload_session",
+                {"original_key": key, "s3_key": key, "bucket": bucket, "mime_type": mime_type, "size": size},
+            )
+
             async with self.session.client(
                 "s3",
+                aws_access_key_id=self.config.aws_access_key_id,
+                aws_secret_access_key=self.config.aws_secret_access_key,
+                region_name=self.config.region_name,
                 endpoint_url=self.config.endpoint_url,
             ) as s3:
                 url = await s3.generate_presigned_url(
@@ -52,15 +62,29 @@ class S3FilesAdapter(Files):
                         "Key": key,
                         "ContentType": mime_type,
                     },
-                    ExpiresIn=3600,  # URL expires in 1 hour
+                    ExpiresIn=3600,  # URL expires in 1 hour - should it be longer?
                 )
-                return FileUploadResponse(
+                logger.debug("Generated presigned URL", {"url": url})
+
+                response = FileUploadResponse(
                     id=f"{bucket}/{key}",
                     url=url,
                     offset=0,
                     size=size,
                 )
+
+                # Store the session info
+                await self.persistence.store_upload_session(
+                    session_info=response,
+                    bucket=bucket,
+                    key=key,  # Store the original key for file reading
+                    mime_type=mime_type,
+                    size=size,
+                )
+
+                return response
         except ClientError as e:
+            logger.error("S3 ClientError in create_upload_session", {"error": str(e)})
             raise Exception(f"Failed to create upload session: {str(e)}") from e
 
     async def upload_content_to_session(
@@ -68,31 +92,78 @@ class S3FilesAdapter(Files):
         upload_id: str,
     ) -> FileResponse | None:
         """Upload content to S3 using the upload session."""
-        bucket, key = upload_id.split("/", 1)
+
         try:
+            # Get the upload session info from persistence
+            session_info = await self.persistence.get_upload_session(upload_id)
+            if not session_info:
+                raise Exception(f"Upload session {upload_id} not found")
+
+            logger.debug(
+                "upload_content_to_session",
+                {
+                    "upload_id": upload_id,
+                    "bucket": session_info.bucket,
+                    "key": session_info.key,
+                    "mime_type": session_info.mime_type,
+                    "size": session_info.size,
+                },
+            )
+
+            # Read the file content
+            with open(session_info.key, "rb") as f:
+                content = f.read()
+            logger.debug("Read content", {"length": len(content)})
+
+            # Use a single S3 client for all operations
             async with self.session.client(
                 "s3",
+                aws_access_key_id=self.config.aws_access_key_id,
+                aws_secret_access_key=self.config.aws_secret_access_key,
+                region_name=self.config.region_name,
                 endpoint_url=self.config.endpoint_url,
             ) as s3:
-                response = await s3.head_object(Bucket=bucket, Key=key)
+                # Upload the content
+                await s3.put_object(
+                    Bucket=session_info.bucket, Key=session_info.key, Body=content, ContentType=session_info.mime_type
+                )
+                logger.debug("Upload successful")
+
+                # Get the file info after upload
+                response = await s3.head_object(Bucket=session_info.bucket, Key=session_info.key)
+                logger.debug(
+                    "File info retrieved",
+                    {
+                        "ContentType": response.get("ContentType"),
+                        "ContentLength": response["ContentLength"],
+                        "LastModified": response["LastModified"],
+                    },
+                )
+
+                # Generate a presigned URL for reading
                 url = await s3.generate_presigned_url(
                     "get_object",
                     Params={
-                        "Bucket": bucket,
-                        "Key": key,
+                        "Bucket": session_info.bucket,
+                        "Key": session_info.key,
                     },
                     ExpiresIn=3600,
                 )
+
                 return FileResponse(
-                    bucket=bucket,
-                    key=key,
+                    bucket=session_info.bucket,
+                    key=session_info.key,  # Use the original key to match test expectations
                     mime_type=response.get("ContentType", "application/octet-stream"),
                     url=url,
                     bytes=response["ContentLength"],
                     created_at=int(response["LastModified"].timestamp()),
                 )
-        except ClientError:
-            return None
+        except ClientError as e:
+            logger.error("S3 ClientError in upload_content_to_session", {"error": str(e)})
+            raise Exception(f"Failed to upload content: {str(e)}") from e
+        finally:
+            # Clean up the upload session
+            await self.persistence.delete_upload_session(upload_id)
 
     async def get_upload_session_info(
         self,
@@ -103,6 +174,9 @@ class S3FilesAdapter(Files):
         try:
             async with self.session.client(
                 "s3",
+                aws_access_key_id=self.config.aws_access_key_id,
+                aws_secret_access_key=self.config.aws_secret_access_key,
+                region_name=self.config.region_name,
                 endpoint_url=self.config.endpoint_url,
             ) as s3:
                 response = await s3.head_object(Bucket=bucket, Key=key)
@@ -132,15 +206,17 @@ class S3FilesAdapter(Files):
         """List all available S3 buckets."""
 
         try:
-            async with self.session.client(
+            response = await self.session.client(
                 "s3",
+                aws_access_key_id=self.config.aws_access_key_id,
+                aws_secret_access_key=self.config.aws_secret_access_key,
+                region_name=self.config.region_name,
                 endpoint_url=self.config.endpoint_url,
-            ) as s3:
-                response = await s3.list_buckets()
-                buckets = [BucketResponse(name=bucket["Name"]) for bucket in response["Buckets"]]
-                # Convert BucketResponse objects to dictionaries for pagination
-                bucket_dicts = [bucket.model_dump() for bucket in buckets]
-                return paginate_records(bucket_dicts, page, size)
+            ).list_buckets()
+            buckets = [BucketResponse(name=bucket["Name"]) for bucket in response["Buckets"]]
+            # Convert BucketResponse objects to dictionaries for pagination
+            bucket_dicts = [bucket.model_dump() for bucket in buckets]
+            return paginate_records(bucket_dicts, page, size)
         except ClientError as e:
             raise Exception(f"Failed to list buckets: {str(e)}") from e
 
@@ -152,37 +228,45 @@ class S3FilesAdapter(Files):
     ) -> PaginatedResponse:
         """List all files in an S3 bucket."""
         try:
-            async with self.session.client(
+            response = await self.session.client(
                 "s3",
+                aws_access_key_id=self.config.aws_access_key_id,
+                aws_secret_access_key=self.config.aws_secret_access_key,
+                region_name=self.config.region_name,
                 endpoint_url=self.config.endpoint_url,
-            ) as s3:
-                response = await s3.list_objects_v2(Bucket=bucket)
-                files: list[FileResponse] = []
+            ).list_objects_v2(Bucket=bucket)
+            files: list[FileResponse] = []
 
-                for obj in response.get("Contents", []):
-                    url = await s3.generate_presigned_url(
-                        "get_object",
-                        Params={
-                            "Bucket": bucket,
-                            "Key": obj["Key"],
-                        },
-                        ExpiresIn=3600,
+            for obj in response.get("Contents", []):
+                url = await self.session.client(
+                    "s3",
+                    aws_access_key_id=self.config.aws_access_key_id,
+                    aws_secret_access_key=self.config.aws_secret_access_key,
+                    region_name=self.config.region_name,
+                    endpoint_url=self.config.endpoint_url,
+                ).generate_presigned_url(
+                    "get_object",
+                    Params={
+                        "Bucket": bucket,
+                        "Key": obj["Key"],
+                    },
+                    ExpiresIn=3600,
+                )
+
+                files.append(
+                    FileResponse(
+                        bucket=bucket,
+                        key=obj["Key"],
+                        mime_type="application/octet-stream",  # Default mime type
+                        url=url,
+                        bytes=obj["Size"],
+                        created_at=int(obj["LastModified"].timestamp()),
                     )
+                )
 
-                    files.append(
-                        FileResponse(
-                            bucket=bucket,
-                            key=obj["Key"],
-                            mime_type="application/octet-stream",  # Default mime type
-                            url=url,
-                            bytes=obj["Size"],
-                            created_at=int(obj["LastModified"].timestamp()),
-                        )
-                    )
-
-                # Convert FileResponse objects to dictionaries for pagination
-                file_dicts = [file.model_dump() for file in files]
-                return paginate_records(file_dicts, page, size)
+            # Convert FileResponse objects to dictionaries for pagination
+            file_dicts = [file.model_dump() for file in files]
+            return paginate_records(file_dicts, page, size)
         except ClientError as e:
             raise Exception(f"Failed to list files in bucket: {str(e)}") from e
 
@@ -195,6 +279,9 @@ class S3FilesAdapter(Files):
         try:
             async with self.session.client(
                 "s3",
+                aws_access_key_id=self.config.aws_access_key_id,
+                aws_secret_access_key=self.config.aws_secret_access_key,
+                region_name=self.config.region_name,
                 endpoint_url=self.config.endpoint_url,
             ) as s3:
                 response = await s3.head_object(Bucket=bucket, Key=key)
@@ -227,9 +314,11 @@ class S3FilesAdapter(Files):
         try:
             async with self.session.client(
                 "s3",
+                aws_access_key_id=self.config.aws_access_key_id,
+                aws_secret_access_key=self.config.aws_secret_access_key,
+                region_name=self.config.region_name,
                 endpoint_url=self.config.endpoint_url,
             ) as s3:
-                # Delete the file
                 await s3.delete_object(Bucket=bucket, Key=key)
         except ClientError as e:
             raise Exception(f"Failed to delete file: {str(e)}") from e

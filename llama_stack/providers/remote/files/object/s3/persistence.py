@@ -21,7 +21,8 @@ class UploadSessionInfo(BaseModel):
 
     upload_id: str
     bucket: str
-    key: str
+    key: str  # Original key for file reading
+    s3_key: str  # S3 key for S3 operations
     mime_type: str
     size: int
     url: str
@@ -31,12 +32,12 @@ class UploadSessionInfo(BaseModel):
 class S3FilesPersistence:
     def __init__(self, kvstore: KVStore):
         self._kvstore = kvstore
-        self._store = None
+        self._store: KVStore | None = None
 
     async def _get_store(self) -> KVStore:
         """Get the kvstore instance, initializing it if needed."""
         if self._store is None:
-            self._store = await anext(self._kvstore)
+            self._store = self._kvstore
         return self._store
 
     async def store_upload_session(
@@ -47,6 +48,7 @@ class S3FilesPersistence:
             upload_id=session_info.id,
             bucket=bucket,
             key=key,
+            s3_key=key,
             mime_type=mime_type,
             size=size,
             url=session_info.url,

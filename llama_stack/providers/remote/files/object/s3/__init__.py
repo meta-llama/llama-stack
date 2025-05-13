@@ -10,6 +10,9 @@ from .config import S3FilesImplConfig
 async def get_adapter_impl(config: S3FilesImplConfig, _deps):
     from .s3_files import S3FilesAdapter
 
-    impl = S3FilesAdapter(config)
+    impl = S3FilesAdapter(
+        config,
+        _deps,
+    )
     await impl.initialize()
     return impl
