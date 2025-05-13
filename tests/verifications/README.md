@@ -4,7 +4,7 @@ Llama Stack Verifications provide standardized test suites to ensure API compati
 
 ## Overview
 
-This framework allows you to run the same set of verification tests against different LLM providers'  OpenAI-compatible endpoints (Fireworks, Together, Groq, Cerebras, etc., and OpenAI itself) to ensure they meet the expected behavior and interface standards.
+This framework allows you to run the same set of verification tests against different LLM providers' OpenAI-compatible endpoints (Fireworks, Together, Groq, Cerebras, etc., and OpenAI itself) to ensure they meet the expected behavior and interface standards.
 
 ## Features
 
