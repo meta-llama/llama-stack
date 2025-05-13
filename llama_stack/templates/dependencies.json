@@ -441,6 +441,7 @@
     "opentelemetry-exporter-otlp-proto-http",
     "opentelemetry-sdk",
     "pandas",
+    "peft",
     "pillow",
     "psycopg2-binary",
     "pymongo",
@@ -451,9 +452,11 @@
     "scikit-learn",
     "scipy",
     "sentencepiece",
+    "torch",
     "tqdm",
     "transformers",
     "tree_sitter",
+    "trl",
     "uvicorn"
   ],
   "open-benchmark": [
