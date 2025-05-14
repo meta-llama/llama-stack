@@ -234,6 +234,12 @@ async def _process_vllm_chat_completion_stream_response(
             log.warning("vLLM failed to generation any completions - check the vLLM server logs for an error.")
             return
         choice = chunk.choices[0]
+        if choice.delta.tool_calls:
+            tool_call = convert_tool_call(choice.delta.tool_calls[0])
+            tool_call_buf.tool_name += str(tool_call.tool_name)
+            tool_call_buf.call_id += tool_call.call_id
+            # TODO: remove str() when dict type for 'arguments' is no longer allowed
+            tool_call_buf.arguments += str(tool_call.arguments)
         if choice.finish_reason:
             chunks = _process_vllm_chat_completion_end_of_stream(
                 finish_reason=choice.finish_reason,
@@ -244,13 +250,7 @@ async def _process_vllm_chat_completion_stream_response(
             for c in chunks:
                 yield c
             end_of_stream_processed = True
-        elif choice.delta.tool_calls:
-            tool_call = convert_tool_call(choice.delta.tool_calls[0])
-            tool_call_buf.tool_name += str(tool_call.tool_name)
-            tool_call_buf.call_id += tool_call.call_id
-            # TODO: remove str() when dict type for 'arguments' is no longer allowed
-            tool_call_buf.arguments += str(tool_call.arguments)
-        else:
+        elif not choice.delta.tool_calls:
             yield ChatCompletionResponseStreamChunk(
                 event=ChatCompletionResponseEvent(
                     event_type=event_type,

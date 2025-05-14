@@ -298,6 +298,85 @@ async def test_get_params_empty_tools(vllm_inference_adapter):
 
 
 @pytest.mark.asyncio
+async def test_process_vllm_chat_completion_stream_response_tool_call_args_last_chunk():
+    """
+    Tests the edge case where the model returns the arguments for the tool call in the same chunk that
+    contains the finish reason (i.e., the last one).
+    We want to make sure the tool call is executed in this case, and the parameters are passed correctly.
+    """
+
+    mock_tool_name = "mock_tool"
+    mock_tool_arguments = {"arg1": 0, "arg2": 100}
+    mock_tool_arguments_str = json.dumps(mock_tool_arguments)
+
+    async def mock_stream():
+        mock_chunks = [
+            OpenAIChatCompletionChunk(
+                id="chunk-1",
+                created=1,
+                model="foo",
+                object="chat.completion.chunk",
+                choices=[
+                    {
+                        "delta": {
+                            "content": None,
+                            "tool_calls": [
+                                {
+                                    "index": 0,
+                                    "id": "mock_id",
+                                    "type": "function",
+                                    "function": {
+                                        "name": mock_tool_name,
+                                        "arguments": None,
+                                    },
+                                }
+                            ],
+                        },
+                        "finish_reason": None,
+                        "logprobs": None,
+                        "index": 0,
+                    }
+                ],
+            ),
+            OpenAIChatCompletionChunk(
+                id="chunk-1",
+                created=1,
+                model="foo",
+                object="chat.completion.chunk",
+                choices=[
+                    {
+                        "delta": {
+                            "content": None,
+                            "tool_calls": [
+                                {
+                                    "index": 0,
+                                    "id": None,
+                                    "function": {
+                                        "name": None,
+                                        "arguments": mock_tool_arguments_str,
+                                    },
+                                }
+                            ],
+                        },
+                        "finish_reason": "tool_calls",
+                        "logprobs": None,
+                        "index": 0,
+                    }
+                ],
+            ),
+        ]
+        for chunk in mock_chunks:
+            yield chunk
+
+    chunks = [chunk async for chunk in _process_vllm_chat_completion_stream_response(mock_stream())]
+    assert len(chunks) == 2
+    assert chunks[-1].event.event_type == ChatCompletionResponseEventType.complete
+    assert chunks[-2].event.delta.type == "tool_call"
+    assert chunks[-2].event.delta.tool_call.tool_name == mock_tool_name
+    assert chunks[-2].event.delta.tool_call.arguments == mock_tool_arguments
+
+
+@pytest.mark.asyncio
 async def test_process_vllm_chat_completion_stream_response_no_finish_reason():
     """
     Tests the edge case where the model requests a tool call and stays idle without explicitly providing the
