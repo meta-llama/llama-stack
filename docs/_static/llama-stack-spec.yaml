@@ -380,6 +380,30 @@ paths:
             schema:
               $ref: '#/components/schemas/CreateOpenaiResponseRequest'
         required: true
+    delete:
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Agents
+      description: Delete an OpenAI response by its ID.
+      parameters:
+        - name: id
+          in: query
+          description: The ID of the OpenAI response to delete.
+          required: true
+          schema:
+            type: string
   /v1/files:
     get:
       responses:
