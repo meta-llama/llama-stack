@@ -67,6 +67,15 @@ register_schema(RAGQueryGeneratorConfig, name="RAGQueryGeneratorConfig")
 
 @json_schema_type
 class RAGQueryConfig(BaseModel):
+    """
+    Configuration for the RAG query generation.
+
+    :param query_generator_config: Configuration for the query generator.
+    :param max_tokens_in_context: Maximum number of tokens in the context.
+    :param max_chunks: Maximum number of chunks to retrieve.
+    :param chunk_template: Template for formatting each retrieved chunk in the context.
+    """
+
     # This config defines how a query is generated using the messages
     # for memory bank retrieval.
     query_generator_config: RAGQueryGeneratorConfig = Field(default=DefaultRAGQueryGeneratorConfig())

@@ -7794,12 +7794,15 @@ components:
       properties:
         query_generator_config:
           $ref: '#/components/schemas/RAGQueryGeneratorConfig'
+          description: Configuration for the query generator.
         max_tokens_in_context:
           type: integer
           default: 4096
+          description: Maximum number of tokens in the context.
         max_chunks:
           type: integer
           default: 5
+          description: Maximum number of chunks to retrieve.
         chunk_template:
           type: string
           default: >
@@ -7808,6 +7811,8 @@ components:
             Content: {chunk.content}
 
             Metadata: {metadata}
+          description: >-
+            Template for formatting each retrieved chunk in the context.
       additionalProperties: false
       required:
         - query_generator_config
@@ -7815,6 +7820,8 @@ components:
         - max_chunks
         - chunk_template
       title: RAGQueryConfig
+      description: >-
+        Configuration for the RAG query generation.
     RAGQueryGeneratorConfig:
       oneOf:
         - $ref: '#/components/schemas/DefaultRAGQueryGeneratorConfig'
