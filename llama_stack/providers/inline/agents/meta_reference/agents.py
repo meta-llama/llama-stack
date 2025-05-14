@@ -20,7 +20,7 @@ from llama_stack.apis.agents import (
     AgentTurnCreateRequest,
     AgentTurnResumeRequest,
     Document,
-    OpenAIResponseInputMessage,
+    OpenAIResponseInput,
     OpenAIResponseInputTool,
     OpenAIResponseObject,
     Session,
@@ -37,8 +37,8 @@ from llama_stack.apis.inference import (
 from llama_stack.apis.safety import Safety
 from llama_stack.apis.tools import ToolGroups, ToolRuntime
 from llama_stack.apis.vector_io import VectorIO
-from llama_stack.providers.utils.datasetio.pagination import paginate_records
 from llama_stack.providers.utils.kvstore import InmemoryKVStoreImpl, kvstore_impl
+from llama_stack.providers.utils.pagination import paginate_records
 
 from .agent_instance import ChatAgent
 from .config import MetaReferenceAgentsImplConfig
@@ -311,7 +311,7 @@ class MetaReferenceAgentsImpl(Agents):
 
     async def create_openai_response(
         self,
-        input: str | list[OpenAIResponseInputMessage],
+        input: str | list[OpenAIResponseInput],
         model: str,
         previous_response_id: str | None = None,
         store: bool | None = True,
