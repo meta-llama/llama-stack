@@ -154,7 +154,6 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
                 )
                 break
 
-            # text_content = f"Result {i + 1}:\n"
             metadata_subset = {k: v for k, v in metadata.items() if k not in ["token_count", "metadata_token_count"]}
             text_content = query_config.chunk_template.format(index=i + 1, chunk=chunk, metadata=metadata_subset)
             picked.append(TextContentItem(text=text_content))
