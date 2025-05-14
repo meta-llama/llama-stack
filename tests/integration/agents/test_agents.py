@@ -22,7 +22,7 @@ from llama_stack.apis.agents.agents import (
 
 def get_boiling_point(liquid_name: str, celcius: bool = True) -> int:
     """
-    Returns the boiling point of a liquid in Celcius or Fahrenheit.
+    Returns the boiling point of a liquid in Celcius or Fahrenheit (even fictional liquids).
 
     :param liquid_name: The name of the liquid
     :param celcius: Whether to return the boiling point in Celcius
@@ -39,7 +39,7 @@ def get_boiling_point(liquid_name: str, celcius: bool = True) -> int:
 
 def get_boiling_point_with_metadata(liquid_name: str, celcius: bool = True) -> dict[str, Any]:
     """
-    Returns the boiling point of a liquid in Celcius or Fahrenheit
+    Returns the boiling point of a liquid in Celcius or Fahrenheit (even fictional liquids).
 
     :param liquid_name: The name of the liquid
     :param celcius: Whether to return the boiling point in Celcius
