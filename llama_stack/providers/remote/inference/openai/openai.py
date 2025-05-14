@@ -19,6 +19,13 @@ class OpenAIInferenceAdapter(LiteLLMOpenAIMixin):
             provider_data_api_key_field="openai_api_key",
         )
         self.config = config
+        # we set is_openai_compat so users can use the canonical
+        # openai model names like "gpt-4" or "gpt-3.5-turbo"
+        # and the model name will be translated to litellm's
+        # "openai/gpt-4" or "openai/gpt-3.5-turbo" transparently.
+        # if we do not set this, users will be exposed to the
+        # litellm specific model names, an abstraction leak.
+        self.is_openai_compat = True
 
     async def initialize(self) -> None:
         await super().initialize()
