@@ -7,10 +7,18 @@
 from unittest.mock import AsyncMock, patch
 
 import pytest
+from openai.types.chat.chat_completion_chunk import (
+    ChatCompletionChunk,
+    Choice,
+    ChoiceDelta,
+    ChoiceDeltaToolCall,
+    ChoiceDeltaToolCallFunction,
+)
 
 from llama_stack.apis.agents.openai_responses import (
     OpenAIResponseInputItemList,
     OpenAIResponseInputMessageContentText,
+    OpenAIResponseInputToolFunction,
     OpenAIResponseInputToolWebSearch,
     OpenAIResponseMessage,
     OpenAIResponseObject,
@@ -165,6 +173,68 @@ async def test_create_openai_response_with_string_input_with_tools(openai_respon
     assert len(result.output) >= 1
     assert isinstance(result.output[1], OpenAIResponseMessage)
     assert result.output[1].content[0].text == "Dublin"
+
+
+@pytest.mark.asyncio
+async def test_create_openai_response_with_tool_call_type_none(openai_responses_impl, mock_inference_api):
+    """Test creating an OpenAI response with a tool call response that has a type of None."""
+    # Setup
+    input_text = "How hot it is in San Francisco today?"
+    model = "meta-llama/Llama-3.1-8B-Instruct"
+
+    async def fake_stream():
+        yield ChatCompletionChunk(
+            id="123",
+            choices=[
+                Choice(
+                    index=0,
+                    delta=ChoiceDelta(
+                        tool_calls=[
+                            ChoiceDeltaToolCall(
+                                index=0,
+                                id="tc_123",
+                                function=ChoiceDeltaToolCallFunction(name="get_weather", arguments="{}"),
+                                type=None,
+                            )
+                        ]
+                    ),
+                ),
+            ],
+            created=1,
+            model=model,
+            object="chat.completion.chunk",
+        )
+
+    mock_inference_api.openai_chat_completion.return_value = fake_stream()
+
+    # Execute
+    result = await openai_responses_impl.create_openai_response(
+        input=input_text,
+        model=model,
+        stream=True,
+        temperature=0.1,
+        tools=[
+            OpenAIResponseInputToolFunction(
+                name="get_weather",
+                description="Get current temperature for a given location.",
+                parameters={
+                    "location": "string",
+                },
+            )
+        ],
+    )
+
+    # Verify
+    first_call = mock_inference_api.openai_chat_completion.call_args_list[0]
+    assert first_call.kwargs["messages"][0].content == input_text
+    assert first_call.kwargs["tools"] is not None
+    assert first_call.kwargs["temperature"] == 0.1
+
+    # Check that we got the content from our mocked tool execution result
+    chunks = [chunk async for chunk in result]
+    assert len(chunks) > 0
+    assert chunks[0].response.output[0].type == "function_call"
+    assert chunks[0].response.output[0].name == "get_weather"
 
 
 @pytest.mark.asyncio
