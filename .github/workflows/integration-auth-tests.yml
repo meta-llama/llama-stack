@@ -44,7 +44,7 @@ jobs:
 
       - name: Install minikube
         if: ${{ matrix.auth-provider == 'kubernetes' }}
-        uses: medyagh/setup-minikube@latest
+        uses: medyagh/setup-minikube@cea33675329b799adccc9526aa5daccc26cd5052 # v0.0.19
 
       - name: Start minikube
         if: ${{ matrix.auth-provider == 'kubernetes' }}
