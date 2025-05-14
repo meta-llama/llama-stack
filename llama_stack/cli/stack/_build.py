@@ -209,6 +209,8 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
                     color="red",
                 )
                 sys.exit(1)
+        if args.image_type:
+            build_config.image_type = args.image_type
 
     if args.print_deps_only:
         print(f"# Dependencies for {args.template or args.config or image_name}")
