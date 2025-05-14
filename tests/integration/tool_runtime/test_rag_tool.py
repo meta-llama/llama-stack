@@ -141,7 +141,7 @@ def test_vector_db_insert_from_url_and_query(client_with_empty_registry, sample_
             document_id=f"num-{i}",
             content=f"https://raw.githubusercontent.com/pytorch/torchtune/main/docs/source/tutorials/{url}",
             mime_type="text/plain",
-            metadata={"author": "llama", "source": url},
+            metadata={},
         )
         for i, url in enumerate(urls)
     ]
@@ -205,12 +205,29 @@ def test_rag_tool_insert_and_query(client_with_empty_registry, embedding_model_i
         chunk_size_in_tokens=512,
     )
 
-    response = client_with_empty_registry.tool_runtime.rag_tool.query(
+    response_with_metadata = client_with_empty_registry.tool_runtime.rag_tool.query(
+        vector_db_ids=[vector_db_id],
+        content="What is the name of the method used for fine-tuning?",
+    )
+    assert_valid_text_response(response_with_metadata)
+    assert any("metadata:" in chunk.text.lower() for chunk in response_with_metadata.content)
+
+    response_without_metadata = client_with_empty_registry.tool_runtime.rag_tool.query(
         vector_db_ids=[vector_db_id],
         content="What is the name of the method used for fine-tuning?",
         query_config={
             "include_metadata_in_content": True,
+            "chunk_template": "Result {index}\nContent: {chunk.content}\n",
         },
     )
-    assert_valid_text_response(response)
-    assert any("metadata:" in chunk.text.lower() for chunk in response.content)
+    assert_valid_text_response(response_without_metadata)
+    assert not any("metadata:" in chunk.text.lower() for chunk in response_without_metadata.content)
+
+    with pytest.raises(ValueError):
+        client_with_empty_registry.tool_runtime.rag_tool.query(
+            vector_db_ids=[vector_db_id],
+            content="What is the name of the method used for fine-tuning?",
+            query_config={
+                "chunk_template": "This should raise a ValueError because it is missing the proper template variables",
+            },
+        )

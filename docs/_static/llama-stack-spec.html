@@ -11134,9 +11134,9 @@
                         "type": "integer",
                         "default": 5
                     },
-                    "include_metadata_in_content": {
-                        "type": "boolean",
-                        "default": false
+                    "chunk_template": {
+                        "type": "string",
+                        "default": "Result {index}\nContent: {chunk.content}\nMetadata: {metadata}\n"
                     }
                 },
                 "additionalProperties": false,
@@ -11144,7 +11144,7 @@
                     "query_generator_config",
                     "max_tokens_in_context",
                     "max_chunks",
-                    "include_metadata_in_content"
+                    "chunk_template"
                 ],
                 "title": "RAGQueryConfig"
             },

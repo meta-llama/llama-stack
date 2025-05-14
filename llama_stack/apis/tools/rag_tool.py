@@ -7,7 +7,7 @@
 from enum import Enum
 from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing_extensions import Protocol, runtime_checkable
 
 from llama_stack.apis.common.content_types import URL, InterleavedContent
@@ -72,7 +72,19 @@ class RAGQueryConfig(BaseModel):
     query_generator_config: RAGQueryGeneratorConfig = Field(default=DefaultRAGQueryGeneratorConfig())
     max_tokens_in_context: int = 4096
     max_chunks: int = 5
-    include_metadata_in_content: bool = False
+    # Optional template for formatting each retrieved chunk in the context.
+    # Available placeholders: {index} (1-based chunk ordinal), {metadata} (chunk metadata dict), {chunk.content} (chunk content string).
+    chunk_template: str = "Result {index}\nContent: {chunk.content}\nMetadata: {metadata}\n"
+
+    @field_validator("chunk_template")
+    def validate_chunk_template(cls, v: str) -> str:
+        if "{chunk.content}" not in v:
+            raise ValueError("chunk_template must contain {chunk.content}")
+        if "{index}" not in v:
+            raise ValueError("chunk_template must contain {index}")
+        if len(v) == 0:
+            raise ValueError("chunk_template must not be empty")
+        return v
 
 
 @runtime_checkable

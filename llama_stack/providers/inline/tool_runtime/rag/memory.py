@@ -146,8 +146,7 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
         for i, chunk in enumerate(chunks):
             metadata = chunk.metadata
             tokens += metadata["token_count"]
-            if query_config.include_metadata_in_content:
-                tokens += metadata["metadata_token_count"]
+            tokens += metadata["metadata_token_count"]
 
             if tokens > query_config.max_tokens_in_context:
                 log.error(
@@ -155,15 +154,9 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
                 )
                 break
 
-            text_content = f"Result {i + 1}:\n"
-            if query_config.include_metadata_in_content:
-                metadata_subset = {
-                    k: v for k, v in metadata.items() if k not in ["token_count", "metadata_token_count"]
-                }
-                text_content += f"\nMetadata: {metadata_subset}"
-            else:
-                text_content += f"Document_id:{metadata['document_id'][:5]}"
-            text_content += f"\nContent: {chunk.content}\n"
+            # text_content = f"Result {i + 1}:\n"
+            metadata_subset = {k: v for k, v in metadata.items() if k not in ["token_count", "metadata_token_count"]}
+            text_content = query_config.chunk_template.format(index=i + 1, chunk=chunk, metadata=metadata_subset)
             picked.append(TextContentItem(text=text_content))
 
         picked.append(TextContentItem(text="END of knowledge_search tool results.\n"))

@@ -7690,15 +7690,20 @@ components:
         max_chunks:
           type: integer
           default: 5
-        include_metadata_in_content:
-          type: boolean
-          default: false
+        chunk_template:
+          type: string
+          default: >
+            Result {index}
+
+            Content: {chunk.content}
+
+            Metadata: {metadata}
       additionalProperties: false
       required:
         - query_generator_config
         - max_tokens_in_context
         - max_chunks
-        - include_metadata_in_content
+        - chunk_template
       title: RAGQueryConfig
     RAGQueryGeneratorConfig:
       oneOf:

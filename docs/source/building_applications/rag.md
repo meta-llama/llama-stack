@@ -99,14 +99,14 @@ results = client.tool_runtime.rag_tool.query(
 )
 ```
 
-You can configure adding metadata to the context if you find it useful for your application. Simply add:
+You can configure how the RAG tool adds metadata to the context if you find it useful for your application. Simply add:
 ```python
 # Query documents
 results = client.tool_runtime.rag_tool.query(
     vector_db_ids=[vector_db_id],
     content="What do you know about...",
     query_config={
-        "include_metadata_in_content": True,
+        "chunk_template": "Result {index}\nContent: {chunk.content}\nMetadata: {metadata}\n",
     },
 )
 ```
@@ -131,7 +131,7 @@ agent = Agent(
                 "query_config": {
                     "chunk_size_in_tokens": 512,
                     "chunk_overlap_in_tokens": 0,
-                    "include_metadata_in_content": False,
+                    "chunk_template": "Result {index}\nContent: {chunk.content}\nMetadata: {metadata}\n",
                 },
             },
         }
