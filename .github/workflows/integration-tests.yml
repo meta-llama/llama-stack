@@ -24,7 +24,7 @@ jobs:
       matrix:
         # Listing tests manually since some of them currently fail
         # TODO: generate matrix list from tests/integration when fixed
-        test-type: [agents, inference, datasets, inspect, scoring, post_training, providers]
+        test-type: [agents, inference, datasets, inspect, scoring, post_training, providers, files]
         client-type: [library, http]
       fail-fast: false # we want to run all tests regardless of failure
 
@@ -51,6 +51,20 @@ jobs:
           uv pip install git+https://github.com/meta-llama/llama-stack-client-python.git@main
           uv pip install -e .
           llama stack build --template ollama --image-type venv
+
+      - name: Setup minio when testing files
+        if: matrix.test-type == 'files'
+        run: |
+          mkdir -p ~/minio/data
+          docker run \
+            -d \
+            -p 9000:9000 \
+            -p 9001:9001 \
+            --name minio \
+            -v ~/minio/data:/data \
+            -e "MINIO_ROOT_USER=ROOTNAME" \
+            -e "MINIO_ROOT_PASSWORD=CHANGEME123" \
+            quay.io/minio/minio server /data --console-address ":9001"
 
       - name: Start Llama Stack server in background
         if: matrix.client-type == 'http'

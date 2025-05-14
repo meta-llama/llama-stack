@@ -8,6 +8,7 @@ from typing import Protocol, runtime_checkable
 
 from pydantic import BaseModel
 
+from llama_stack.apis.common.responses import PaginatedResponse
 from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
 from llama_stack.schema_utils import json_schema_type, webmethod
 
@@ -35,17 +36,6 @@ class BucketResponse(BaseModel):
 
 
 @json_schema_type
-class ListBucketResponse(BaseModel):
-    """
-    Response representing a list of file entries.
-
-    :param data: List of FileResponse entries
-    """
-
-    data: list[BucketResponse]
-
-
-@json_schema_type
 class FileResponse(BaseModel):
     """
     Response representing a file entry.
@@ -64,17 +54,6 @@ class FileResponse(BaseModel):
     url: str
     bytes: int
     created_at: int
-
-
-@json_schema_type
-class ListFileResponse(BaseModel):
-    """
-    Response representing a list of file entries.
-
-    :param data: List of FileResponse entries
-    """
-
-    data: list[FileResponse]
 
 
 @runtime_checkable
@@ -98,7 +77,7 @@ class Files(Protocol):
         """
         ...
 
-    @webmethod(route="/files/session:{upload_id}", method="POST", raw_bytes_request_body=True)
+    @webmethod(route="/files/session/{upload_id}", method="POST", raw_bytes_request_body=True)
     async def upload_content_to_session(
         self,
         upload_id: str,
@@ -111,7 +90,7 @@ class Files(Protocol):
         """
         ...
 
-    @webmethod(route="/files/session:{upload_id}", method="GET")
+    @webmethod(route="/files/session/{upload_id}", method="GET")
     async def get_upload_session_info(
         self,
         upload_id: str,
@@ -126,10 +105,15 @@ class Files(Protocol):
     @webmethod(route="/files", method="GET")
     async def list_all_buckets(
         self,
-        bucket: str,
-    ) -> ListBucketResponse:
+        page: int | None = None,
+        size: int | None = None,
+    ) -> PaginatedResponse:
         """
         List all buckets.
+
+        :param page: The page number (1-based). If None, starts from first page.
+        :param size: Number of items per page. If None or -1, returns all items.
+        :return: PaginatedResponse with the list of buckets
         """
         ...
 
@@ -137,11 +121,16 @@ class Files(Protocol):
     async def list_files_in_bucket(
         self,
         bucket: str,
-    ) -> ListFileResponse:
+        page: int | None = None,
+        size: int | None = None,
+    ) -> PaginatedResponse:
         """
         List all files in a bucket.
 
         :param bucket: Bucket name (valid chars: a-zA-Z0-9_-)
+        :param page: The page number (1-based). If None, starts from first page.
+        :param size: Number of items per page. If None or -1, returns all items.
+        :return: PaginatedResponse with the list of files
         """
         ...
 
