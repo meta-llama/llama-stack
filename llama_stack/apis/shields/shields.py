@@ -46,10 +46,21 @@ class ListShieldsResponse(BaseModel):
 @trace_protocol
 class Shields(Protocol):
     @webmethod(route="/shields", method="GET")
-    async def list_shields(self) -> ListShieldsResponse: ...
+    async def list_shields(self) -> ListShieldsResponse:
+        """List all shields.
+
+        :returns: A ListShieldsResponse.
+        """
+        ...
 
     @webmethod(route="/shields/{identifier:path}", method="GET")
-    async def get_shield(self, identifier: str) -> Shield: ...
+    async def get_shield(self, identifier: str) -> Shield:
+        """Get a shield by its identifier.
+
+        :param identifier: The identifier of the shield to get.
+        :returns: A Shield.
+        """
+        ...
 
     @webmethod(route="/shields", method="POST")
     async def register_shield(
@@ -58,4 +69,13 @@ class Shields(Protocol):
         provider_shield_id: str | None = None,
         provider_id: str | None = None,
         params: dict[str, Any] | None = None,
-    ) -> Shield: ...
+    ) -> Shield:
+        """Register a shield.
+
+        :param shield_id: The identifier of the shield to register.
+        :param provider_shield_id: The identifier of the shield in the provider.
+        :param provider_id: The identifier of the provider.
+        :param params: The parameters of the shield.
+        :returns: A Shield.
+        """
+        ...

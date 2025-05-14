@@ -134,10 +134,21 @@ class ListScoringFunctionsResponse(BaseModel):
 @runtime_checkable
 class ScoringFunctions(Protocol):
     @webmethod(route="/scoring-functions", method="GET")
-    async def list_scoring_functions(self) -> ListScoringFunctionsResponse: ...
+    async def list_scoring_functions(self) -> ListScoringFunctionsResponse:
+        """List all scoring functions.
+
+        :returns: A ListScoringFunctionsResponse.
+        """
+        ...
 
     @webmethod(route="/scoring-functions/{scoring_fn_id:path}", method="GET")
-    async def get_scoring_function(self, scoring_fn_id: str, /) -> ScoringFn: ...
+    async def get_scoring_function(self, scoring_fn_id: str, /) -> ScoringFn:
+        """Get a scoring function by its ID.
+
+        :param scoring_fn_id: The ID of the scoring function to get.
+        :returns: A ScoringFn.
+        """
+        ...
 
     @webmethod(route="/scoring-functions", method="POST")
     async def register_scoring_function(
@@ -148,4 +159,14 @@ class ScoringFunctions(Protocol):
         provider_scoring_fn_id: str | None = None,
         provider_id: str | None = None,
         params: ScoringFnParams | None = None,
-    ) -> None: ...
+    ) -> None:
+        """Register a scoring function.
+
+        :param scoring_fn_id: The ID of the scoring function to register.
+        :param description: The description of the scoring function.
+        :param return_type: The return type of the scoring function.
+        :param provider_scoring_fn_id: The ID of the provider scoring function to use for the scoring function.
+        :param provider_id: The ID of the provider to use for the scoring function.
+        :param params: The parameters for the scoring function for benchmark eval, these can be overridden for app eval.
+        """
+        ...

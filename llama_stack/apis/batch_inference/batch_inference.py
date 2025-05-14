@@ -38,7 +38,17 @@ class BatchInference(Protocol):
         sampling_params: SamplingParams | None = None,
         response_format: ResponseFormat | None = None,
         logprobs: LogProbConfig | None = None,
-    ) -> Job: ...
+    ) -> Job:
+        """Generate completions for a batch of content.
+
+        :param model: The model to use for the completion.
+        :param content_batch: The content to complete.
+        :param sampling_params: The sampling parameters to use for the completion.
+        :param response_format: The response format to use for the completion.
+        :param logprobs: The logprobs to use for the completion.
+        :returns: A job for the completion.
+        """
+        ...
 
     @webmethod(route="/batch-inference/chat-completion", method="POST")
     async def chat_completion(
@@ -52,4 +62,17 @@ class BatchInference(Protocol):
         tool_prompt_format: ToolPromptFormat | None = None,
         response_format: ResponseFormat | None = None,
         logprobs: LogProbConfig | None = None,
-    ) -> Job: ...
+    ) -> Job:
+        """Generate chat completions for a batch of messages.
+
+        :param model: The model to use for the chat completion.
+        :param messages_batch: The messages to complete.
+        :param sampling_params: The sampling parameters to use for the completion.
+        :param tools: The tools to use for the chat completion.
+        :param tool_choice: The tool choice to use for the chat completion.
+        :param tool_prompt_format: The tool prompt format to use for the chat completion.
+        :param response_format: The response format to use for the chat completion.
+        :param logprobs: The logprobs to use for the chat completion.
+        :returns: A job for the chat completion.
+        """
+        ...

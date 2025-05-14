@@ -182,7 +182,19 @@ class PostTraining(Protocol):
         ),
         checkpoint_dir: str | None = None,
         algorithm_config: AlgorithmConfig | None = None,
-    ) -> PostTrainingJob: ...
+    ) -> PostTrainingJob:
+        """Run supervised fine-tuning of a model.
+
+        :param job_uuid: The UUID of the job to create.
+        :param training_config: The training configuration.
+        :param hyperparam_search_config: The hyperparam search configuration.
+        :param logger_config: The logger configuration.
+        :param model: The model to fine-tune.
+        :param checkpoint_dir: The directory to save checkpoint(s) to.
+        :param algorithm_config: The algorithm configuration.
+        :returns: A PostTrainingJob.
+        """
+        ...
 
     @webmethod(route="/post-training/preference-optimize", method="POST")
     async def preference_optimize(
@@ -193,16 +205,49 @@ class PostTraining(Protocol):
         training_config: TrainingConfig,
         hyperparam_search_config: dict[str, Any],
         logger_config: dict[str, Any],
-    ) -> PostTrainingJob: ...
+    ) -> PostTrainingJob:
+        """Run preference optimization of a model.
+
+        :param job_uuid: The UUID of the job to create.
+        :param finetuned_model: The model to fine-tune.
+        :param algorithm_config: The algorithm configuration.
+        :param training_config: The training configuration.
+        :param hyperparam_search_config: The hyperparam search configuration.
+        :param logger_config: The logger configuration.
+        :returns: A PostTrainingJob.
+        """
+        ...
 
     @webmethod(route="/post-training/jobs", method="GET")
-    async def get_training_jobs(self) -> ListPostTrainingJobsResponse: ...
+    async def get_training_jobs(self) -> ListPostTrainingJobsResponse:
+        """Get all training jobs.
+
+        :returns: A ListPostTrainingJobsResponse.
+        """
+        ...
 
     @webmethod(route="/post-training/job/status", method="GET")
-    async def get_training_job_status(self, job_uuid: str) -> PostTrainingJobStatusResponse: ...
+    async def get_training_job_status(self, job_uuid: str) -> PostTrainingJobStatusResponse:
+        """Get the status of a training job.
+
+        :param job_uuid: The UUID of the job to get the status of.
+        :returns: A PostTrainingJobStatusResponse.
+        """
+        ...
 
     @webmethod(route="/post-training/job/cancel", method="POST")
-    async def cancel_training_job(self, job_uuid: str) -> None: ...
+    async def cancel_training_job(self, job_uuid: str) -> None:
+        """Cancel a training job.
+
+        :param job_uuid: The UUID of the job to cancel.
+        """
+        ...
 
     @webmethod(route="/post-training/job/artifacts", method="GET")
-    async def get_training_job_artifacts(self, job_uuid: str) -> PostTrainingJobArtifactsResponse: ...
+    async def get_training_job_artifacts(self, job_uuid: str) -> PostTrainingJobArtifactsResponse:
+        """Get the artifacts of a training job.
+
+        :param job_uuid: The UUID of the job to get the artifacts of.
+        :returns: A PostTrainingJobArtifactsResponse.
+        """
+        ...

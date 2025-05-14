@@ -61,7 +61,15 @@ class Scoring(Protocol):
         dataset_id: str,
         scoring_functions: dict[str, ScoringFnParams | None],
         save_results_dataset: bool = False,
-    ) -> ScoreBatchResponse: ...
+    ) -> ScoreBatchResponse:
+        """Score a batch of rows.
+
+        :param dataset_id: The ID of the dataset to score.
+        :param scoring_functions: The scoring functions to use for the scoring.
+        :param save_results_dataset: Whether to save the results to a dataset.
+        :returns: A ScoreBatchResponse.
+        """
+        ...
 
     @webmethod(route="/scoring/score", method="POST")
     async def score(
@@ -73,6 +81,6 @@ class Scoring(Protocol):
 
         :param input_rows: The rows to score.
         :param scoring_functions: The scoring functions to use for the scoring.
-        :return: ScoreResponse object containing rows and aggregated results
+        :returns: A ScoreResponse object containing rows and aggregated results.
         """
         ...
