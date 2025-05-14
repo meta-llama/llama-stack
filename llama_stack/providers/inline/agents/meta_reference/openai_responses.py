@@ -7,7 +7,7 @@
 import json
 import uuid
 from collections.abc import AsyncIterator
-from typing import cast
+from typing import Any, cast
 
 from openai.types.chat import ChatCompletionToolParam
 from pydantic import BaseModel
@@ -264,7 +264,11 @@ class OpenAIResponsesImpl:
                             if response_tool_call:
                                 response_tool_call.function.arguments += tool_call.function.arguments
                             else:
-                                response_tool_call = OpenAIChatCompletionToolCall(**tool_call.model_dump())
+                                tool_call_dict: dict[str, Any] = tool_call.model_dump()
+                                # Ensure we don't have any empty type field in the tool call dict.
+                                # The OpenAI client used by providers often returns a type=None here.
+                                tool_call_dict.pop("type", None)
+                                response_tool_call = OpenAIChatCompletionToolCall(**tool_call_dict)
                             chat_response_tool_calls[tool_call.index] = response_tool_call
 
             # Convert the dict of tool calls by index to a list of tool calls to pass back in our response
