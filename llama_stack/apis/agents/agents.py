@@ -31,7 +31,7 @@ from llama_stack.apis.tools import ToolDef
 from llama_stack.schema_utils import json_schema_type, register_schema, webmethod
 
 from .openai_responses import (
-    OpenAIResponseInputMessage,
+    OpenAIResponseInput,
     OpenAIResponseInputTool,
     OpenAIResponseObject,
     OpenAIResponseObjectStream,
@@ -593,7 +593,7 @@ class Agents(Protocol):
     @webmethod(route="/openai/v1/responses", method="POST")
     async def create_openai_response(
         self,
-        input: str | list[OpenAIResponseInputMessage],
+        input: str | list[OpenAIResponseInput],
         model: str,
         previous_response_id: str | None = None,
         store: bool | None = True,

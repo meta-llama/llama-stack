@@ -9,6 +9,7 @@ import asyncio
 import inspect
 import json
 import os
+import ssl
 import sys
 import traceback
 import warnings
@@ -17,6 +18,7 @@ from importlib.metadata import version as parse_version
 from pathlib import Path
 from typing import Annotated, Any
 
+import rich.pretty
 import yaml
 from fastapi import Body, FastAPI, HTTPException, Request
 from fastapi import Path as FastapiPath
@@ -186,10 +188,29 @@ async def sse_generator(event_gen_coroutine):
         )
 
 
+async def log_request_pre_validation(request: Request):
+    if request.method in ("POST", "PUT", "PATCH"):
+        try:
+            body_bytes = await request.body()
+            if body_bytes:
+                try:
+                    parsed_body = json.loads(body_bytes.decode())
+                    log_output = rich.pretty.pretty_repr(parsed_body)
+                except (json.JSONDecodeError, UnicodeDecodeError):
+                    log_output = repr(body_bytes)
+                logger.debug(f"Incoming raw request body for {request.method} {request.url.path}:\n{log_output}")
+            else:
+                logger.debug(f"Incoming {request.method} {request.url.path} request with empty body.")
+        except Exception as e:
+            logger.warning(f"Could not read or log request body for {request.method} {request.url.path}: {e}")
+
+
 def create_dynamic_typed_route(func: Any, method: str, route: str):
     async def endpoint(request: Request, **kwargs):
         # Get auth attributes from the request scope
         user_attributes = request.scope.get("user_attributes", {})
+
+        await log_request_pre_validation(request)
 
         # Use context manager with both provider data and auth attributes
         with request_provider_data_context(request.headers, user_attributes):
@@ -484,7 +505,14 @@ def main(args: argparse.Namespace | None = None):
             "ssl_keyfile": keyfile,
             "ssl_certfile": certfile,
         }
-        logger.info(f"HTTPS enabled with certificates:\n  Key: {keyfile}\n  Cert: {certfile}")
+        if config.server.tls_cafile:
+            ssl_config["ssl_ca_certs"] = config.server.tls_cafile
+            ssl_config["ssl_cert_reqs"] = ssl.CERT_REQUIRED
+            logger.info(
+                f"HTTPS enabled with certificates:\n  Key: {keyfile}\n  Cert: {certfile}\n  CA: {config.server.tls_cafile}"
+            )
+        else:
+            logger.info(f"HTTPS enabled with certificates:\n  Key: {keyfile}\n  Cert: {certfile}")
 
     listen_host = ["::", "0.0.0.0"] if not config.server.disable_ipv6 else "0.0.0.0"
     logger.info(f"Listening on {listen_host}:{port}")

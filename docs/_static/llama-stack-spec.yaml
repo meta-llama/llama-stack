@@ -4534,34 +4534,37 @@ components:
         - event_type
         - turn_id
       title: AgentTurnResponseTurnStartPayload
-    OpenAIResponseInputMessage:
+    OpenAIResponseInput:
+      oneOf:
+        - $ref: '#/components/schemas/OpenAIResponseOutputMessageWebSearchToolCall'
+        - $ref: '#/components/schemas/OpenAIResponseOutputMessageFunctionToolCall'
+        - $ref: '#/components/schemas/OpenAIResponseInputFunctionToolCallOutput'
+        - $ref: '#/components/schemas/OpenAIResponseMessage'
+    "OpenAIResponseInputFunctionToolCallOutput":
       type: object
       properties:
-        content:
-          oneOf:
-            - type: string
-            - type: array
-              items:
-                $ref: '#/components/schemas/OpenAIResponseInputMessageContent'
-        role:
-          oneOf:
-            - type: string
-              const: system
-            - type: string
-              const: developer
-            - type: string
-              const: user
-            - type: string
-              const: assistant
+        call_id:
+          type: string
+        output:
+          type: string
         type:
           type: string
-          const: message
-          default: message
+          const: function_call_output
+          default: function_call_output
+        id:
+          type: string
+        status:
+          type: string
       additionalProperties: false
       required:
-        - content
-        - role
-      title: OpenAIResponseInputMessage
+        - call_id
+        - output
+        - type
+      title: >-
+        OpenAIResponseInputFunctionToolCallOutput
+      description: >-
+        This represents the output of a function call that gets passed back to the
+        model.
     OpenAIResponseInputMessageContent:
       oneOf:
         - $ref: '#/components/schemas/OpenAIResponseInputMessageContentText'
@@ -4609,6 +4612,71 @@ components:
         - type
       title: OpenAIResponseInputMessageContentText
     OpenAIResponseInputTool:
+      oneOf:
+        - $ref: '#/components/schemas/OpenAIResponseInputToolWebSearch'
+        - $ref: '#/components/schemas/OpenAIResponseInputToolFileSearch'
+        - $ref: '#/components/schemas/OpenAIResponseInputToolFunction'
+      discriminator:
+        propertyName: type
+        mapping:
+          web_search: '#/components/schemas/OpenAIResponseInputToolWebSearch'
+          file_search: '#/components/schemas/OpenAIResponseInputToolFileSearch'
+          function: '#/components/schemas/OpenAIResponseInputToolFunction'
+    OpenAIResponseInputToolFileSearch:
+      type: object
+      properties:
+        type:
+          type: string
+          const: file_search
+          default: file_search
+        vector_store_id:
+          type: array
+          items:
+            type: string
+        ranking_options:
+          type: object
+          properties:
+            ranker:
+              type: string
+            score_threshold:
+              type: number
+              default: 0.0
+          additionalProperties: false
+          title: FileSearchRankingOptions
+      additionalProperties: false
+      required:
+        - type
+        - vector_store_id
+      title: OpenAIResponseInputToolFileSearch
+    OpenAIResponseInputToolFunction:
+      type: object
+      properties:
+        type:
+          type: string
+          const: function
+          default: function
+        name:
+          type: string
+        description:
+          type: string
+        parameters:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+        strict:
+          type: boolean
+      additionalProperties: false
+      required:
+        - type
+        - name
+      title: OpenAIResponseInputToolFunction
+    OpenAIResponseInputToolWebSearch:
       type: object
       properties:
         type:
@@ -4625,6 +4693,106 @@ components:
       required:
         - type
       title: OpenAIResponseInputToolWebSearch
+    OpenAIResponseMessage:
+      type: object
+      properties:
+        content:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                $ref: '#/components/schemas/OpenAIResponseInputMessageContent'
+            - type: array
+              items:
+                $ref: '#/components/schemas/OpenAIResponseOutputMessageContent'
+        role:
+          oneOf:
+            - type: string
+              const: system
+            - type: string
+              const: developer
+            - type: string
+              const: user
+            - type: string
+              const: assistant
+        type:
+          type: string
+          const: message
+          default: message
+        id:
+          type: string
+        status:
+          type: string
+      additionalProperties: false
+      required:
+        - content
+        - role
+        - type
+      title: OpenAIResponseMessage
+      description: >-
+        Corresponds to the various Message types in the Responses API. They are all
+        under one type because the Responses API gives them all the same "type" value,
+        and there is no way to tell them apart in certain scenarios.
+    OpenAIResponseOutputMessageContent:
+      type: object
+      properties:
+        text:
+          type: string
+        type:
+          type: string
+          const: output_text
+          default: output_text
+      additionalProperties: false
+      required:
+        - text
+        - type
+      title: >-
+        OpenAIResponseOutputMessageContentOutputText
+    "OpenAIResponseOutputMessageFunctionToolCall":
+      type: object
+      properties:
+        arguments:
+          type: string
+        call_id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          const: function_call
+          default: function_call
+        id:
+          type: string
+        status:
+          type: string
+      additionalProperties: false
+      required:
+        - arguments
+        - call_id
+        - name
+        - type
+        - id
+        - status
+      title: >-
+        OpenAIResponseOutputMessageFunctionToolCall
+    "OpenAIResponseOutputMessageWebSearchToolCall":
+      type: object
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+        type:
+          type: string
+          const: web_search_call
+          default: web_search_call
+      additionalProperties: false
+      required:
+        - id
+        - status
+        - type
+      title: >-
+        OpenAIResponseOutputMessageWebSearchToolCall
     CreateOpenaiResponseRequest:
       type: object
       properties:
@@ -4633,7 +4801,7 @@ components:
             - type: string
             - type: array
               items:
-                $ref: '#/components/schemas/OpenAIResponseInputMessage'
+                $ref: '#/components/schemas/OpenAIResponseInput'
           description: Input message(s) to create the response.
         model:
           type: string
@@ -4717,73 +4885,15 @@ components:
       title: OpenAIResponseObject
     OpenAIResponseOutput:
       oneOf:
-        - $ref: '#/components/schemas/OpenAIResponseOutputMessage'
+        - $ref: '#/components/schemas/OpenAIResponseMessage'
         - $ref: '#/components/schemas/OpenAIResponseOutputMessageWebSearchToolCall'
+        - $ref: '#/components/schemas/OpenAIResponseOutputMessageFunctionToolCall'
       discriminator:
         propertyName: type
         mapping:
-          message: '#/components/schemas/OpenAIResponseOutputMessage'
+          message: '#/components/schemas/OpenAIResponseMessage'
           web_search_call: '#/components/schemas/OpenAIResponseOutputMessageWebSearchToolCall'
-    OpenAIResponseOutputMessage:
-      type: object
-      properties:
-        id:
-          type: string
-        content:
-          type: array
-          items:
-            $ref: '#/components/schemas/OpenAIResponseOutputMessageContent'
-        role:
-          type: string
-          const: assistant
-          default: assistant
-        status:
-          type: string
-        type:
-          type: string
-          const: message
-          default: message
-      additionalProperties: false
-      required:
-        - id
-        - content
-        - role
-        - status
-        - type
-      title: OpenAIResponseOutputMessage
-    OpenAIResponseOutputMessageContent:
-      type: object
-      properties:
-        text:
-          type: string
-        type:
-          type: string
-          const: output_text
-          default: output_text
-      additionalProperties: false
-      required:
-        - text
-        - type
-      title: >-
-        OpenAIResponseOutputMessageContentOutputText
-    "OpenAIResponseOutputMessageWebSearchToolCall":
-      type: object
-      properties:
-        id:
-          type: string
-        status:
-          type: string
-        type:
-          type: string
-          const: web_search_call
-          default: web_search_call
-      additionalProperties: false
-      required:
-        - id
-        - status
-        - type
-      title: >-
-        OpenAIResponseOutputMessageWebSearchToolCall
+          function_call: '#/components/schemas/OpenAIResponseOutputMessageFunctionToolCall'
     OpenAIResponseObjectStream:
       oneOf:
         - $ref: '#/components/schemas/OpenAIResponseObjectStreamResponseCreated'

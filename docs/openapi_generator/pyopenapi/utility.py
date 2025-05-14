@@ -174,14 +174,25 @@ def _validate_list_parameters_contain_data(method) -> str | None:
         return "does not have a mandatory data attribute containing the list of objects"
 
 
+def _validate_has_ellipsis(method) -> str | None:
+    source = inspect.getsource(method)
+    if "..." not in source and not "NotImplementedError" in source:
+        return "does not contain ellipsis (...) in its implementation"
+
+
 _VALIDATORS = {
     "GET": [
         _validate_api_method_return_type,
         _validate_list_parameters_contain_data,
         _validate_api_method_doesnt_return_list,
+        _validate_has_ellipsis,
     ],
     "DELETE": [
         _validate_api_delete_method_returns_none,
+        _validate_has_ellipsis,
+    ],
+    "POST": [
+        _validate_has_ellipsis,
     ],
 }
 
