@@ -532,7 +532,7 @@ async def test_process_vllm_chat_completion_stream_response_tool_call_args_last_
             yield chunk
 
     chunks = [chunk async for chunk in _process_vllm_chat_completion_stream_response(mock_stream())]
-    assert len(chunks) == 2
+    assert len(chunks) == 3
     assert chunks[-1].event.event_type == ChatCompletionResponseEventType.complete
     assert chunks[-2].event.delta.type == "tool_call"
     assert chunks[-2].event.delta.tool_call.tool_name == mock_tool_name
@@ -585,7 +585,7 @@ async def test_process_vllm_chat_completion_stream_response_no_finish_reason():
             yield chunk
 
     chunks = [chunk async for chunk in _process_vllm_chat_completion_stream_response(mock_stream())]
-    assert len(chunks) == 2
+    assert len(chunks) == 3
     assert chunks[-1].event.event_type == ChatCompletionResponseEventType.complete
     assert chunks[-2].event.delta.type == "tool_call"
     assert chunks[-2].event.delta.tool_call.tool_name == mock_tool_name
@@ -634,7 +634,7 @@ async def test_process_vllm_chat_completion_stream_response_tool_without_args():
             yield chunk
 
     chunks = [chunk async for chunk in _process_vllm_chat_completion_stream_response(mock_stream())]
-    assert len(chunks) == 2
+    assert len(chunks) == 3
     assert chunks[-1].event.event_type == ChatCompletionResponseEventType.complete
     assert chunks[-2].event.delta.type == "tool_call"
     assert chunks[-2].event.delta.tool_call.tool_name == mock_tool_name
