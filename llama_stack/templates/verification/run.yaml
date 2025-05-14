@@ -151,6 +151,76 @@ models:
   provider_id: openai
   provider_model_id: openai/chatgpt-4o-latest
   model_type: llm
+- metadata: {}
+  model_id: gpt-3.5-turbo-0125
+  provider_id: openai
+  provider_model_id: gpt-3.5-turbo-0125
+  model_type: llm
+- metadata: {}
+  model_id: gpt-3.5-turbo
+  provider_id: openai
+  provider_model_id: gpt-3.5-turbo
+  model_type: llm
+- metadata: {}
+  model_id: gpt-3.5-turbo-instruct
+  provider_id: openai
+  provider_model_id: gpt-3.5-turbo-instruct
+  model_type: llm
+- metadata: {}
+  model_id: gpt-4
+  provider_id: openai
+  provider_model_id: gpt-4
+  model_type: llm
+- metadata: {}
+  model_id: gpt-4-turbo
+  provider_id: openai
+  provider_model_id: gpt-4-turbo
+  model_type: llm
+- metadata: {}
+  model_id: gpt-4o
+  provider_id: openai
+  provider_model_id: gpt-4o
+  model_type: llm
+- metadata: {}
+  model_id: gpt-4o-2024-08-06
+  provider_id: openai
+  provider_model_id: gpt-4o-2024-08-06
+  model_type: llm
+- metadata: {}
+  model_id: gpt-4o-mini
+  provider_id: openai
+  provider_model_id: gpt-4o-mini
+  model_type: llm
+- metadata: {}
+  model_id: gpt-4o-audio-preview
+  provider_id: openai
+  provider_model_id: gpt-4o-audio-preview
+  model_type: llm
+- metadata: {}
+  model_id: chatgpt-4o-latest
+  provider_id: openai
+  provider_model_id: chatgpt-4o-latest
+  model_type: llm
+- metadata: {}
+  model_id: o1
+  provider_id: openai
+  provider_model_id: o1
+  model_type: llm
+- metadata: {}
+  model_id: o1-mini
+  provider_id: openai
+  provider_model_id: o1-mini
+  model_type: llm
+- metadata: {}
+  model_id: o3-mini
+  provider_id: openai
+  provider_model_id: o3-mini
+  model_type: llm
+- metadata: {}
+  model_id: o4-mini
+  provider_id: openai
+  provider_model_id: o4-mini
+  model_type: llm
 - metadata:
     embedding_dimension: 1536
     context_length: 8192
@@ -164,6 +234,20 @@ models:
   model_id: openai/text-embedding-3-large
   provider_id: openai
   provider_model_id: openai/text-embedding-3-large
+  model_type: embedding
+- metadata:
+    embedding_dimension: 1536
+    context_length: 8192
+  model_id: text-embedding-3-small
+  provider_id: openai
+  provider_model_id: text-embedding-3-small
+  model_type: embedding
+- metadata:
+    embedding_dimension: 3072
+    context_length: 8192
+  model_id: text-embedding-3-large
+  provider_id: openai
+  provider_model_id: text-embedding-3-large
   model_type: embedding
 - metadata: {}
   model_id: accounts/fireworks/models/llama-v3p1-8b-instruct
